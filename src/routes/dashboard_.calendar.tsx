@@ -1,35 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Apple,
-  AreaChart,
   ArrowUpRight,
-  Bell,
   Calendar as CalendarIcon,
   CalendarPlus,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
   Clock,
-  CreditCard,
-  Dumbbell,
-  FileText,
-  GraduationCap,
-  LayoutDashboard,
-  MessagesSquare,
   Plus,
-  Search,
-  Settings,
-  Sparkles,
-  Target,
   Users,
-  Wrench,
-  type LucideIcon,
 } from "lucide-react";
 
-import proJames from "@/assets/pro-james.jpg";
-
+import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/calendar")({
   head: () => ({
     meta: [

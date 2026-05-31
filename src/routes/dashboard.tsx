@@ -172,7 +172,7 @@ function TopBar() {
     <header className="flex items-center justify-between gap-6 px-8 pt-7">
       <div>
         <h1 className="font-display text-[22px] font-bold leading-tight text-white">
-          Welcome back, James <span aria-hidden>👋</span>
+          Welcome back, James 👋
         </h1>
         <p className="mt-0.5 text-[13px] text-white/55">
           Here&apos;s what&apos;s happening with your business today.
