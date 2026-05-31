@@ -372,8 +372,8 @@ function ProProfilePage() {
       {/* ============ ABOUT + SPECIALISMS + LOCATION ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-3">
-            {/* About */}
+          <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+            {/* About (wide, left) */}
             <div id="about" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 About {pro.firstName}
@@ -384,7 +384,7 @@ function ProProfilePage() {
                 ))}
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
                 <AboutStat icon={Users} value={`${pro.years}+ yrs`} label="experience" />
                 <AboutStat icon={Calendar} value={pro.clients} label="clients helped" />
                 <AboutStat
@@ -394,97 +394,62 @@ function ProProfilePage() {
                 />
                 <AboutStat icon={MessageCircle} value={`Replies in ${pro.responseTime}`} label="on average" />
               </div>
+            </div>
 
-              <div className="mt-auto pt-5">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                  Training style
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {pro.trainingStyle.map((s) => (
+            {/* Right column: Specialisms over Location */}
+            <div className="flex flex-col gap-5">
+              <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {pro.specialisms.map((tag) => (
                     <span
-                      key={s}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11.5px] font-medium text-reps-charcoal"
+                      key={tag}
+                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
                     >
-                      {s}
+                      {tag}
                     </span>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Specialisms */}
-            <div id="specialisms" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
+              <div id="location" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {pro.specialisms.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                <div className="relative mt-4 aspect-[16/9] w-full overflow-hidden rounded-[12px] bg-reps-stone">
+                  <MapPlaceholder />
+                </div>
+
+                <dl className="mt-4 grid grid-cols-[72px_1fr] gap-x-3 gap-y-2 text-[13px]">
+                  <dt className="text-reps-muted-light">Area</dt>
+                  <dd className="font-semibold text-reps-charcoal">{pro.area}</dd>
+                  <dt className="text-reps-muted-light">Region</dt>
+                  <dd className="text-reps-charcoal">{pro.region}</dd>
+                  <dt className="text-reps-muted-light">Format</dt>
+                  <dd className="text-reps-charcoal">In-person · private studio or local gym</dd>
+                  <dt className="text-reps-muted-light">Travel</dt>
+                  <dd className="text-reps-charcoal">{pro.travelRadius}</dd>
+                </dl>
+
+                <div className="mt-5 flex items-center justify-between">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
                   >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-6">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                  Works with
+                    <MapPin className="h-3.5 w-3.5" />
+                    View on map
+                  </button>
+                  <a
+                    href="#"
+                    className="inline-flex items-center gap-1 text-[12px] font-medium text-reps-orange hover:underline"
+                  >
+                    Get directions
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </a>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {pro.worksWith.map((w) => (
-                    <span
-                      key={w}
-                      className="inline-flex items-center rounded-full bg-reps-ivory px-2.5 py-1 text-[11.5px] font-medium text-reps-muted-light"
-                    >
-                      {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-auto pt-5 text-[12px] italic text-reps-muted-light">
-                Sessions tailored per client.
-              </div>
-            </div>
-
-            {/* Location */}
-            <div id="location" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
-
-              <div className="relative mt-4 aspect-[16/9] w-full overflow-hidden rounded-[12px] bg-reps-stone">
-                <MapPlaceholder />
-              </div>
-
-              <dl className="mt-4 grid grid-cols-[88px_1fr] gap-x-3 gap-y-2 text-[13px]">
-                <dt className="text-reps-muted-light">Area</dt>
-                <dd className="font-semibold text-reps-charcoal">{pro.area}</dd>
-                <dt className="text-reps-muted-light">Region</dt>
-                <dd className="text-reps-charcoal">{pro.region}</dd>
-                <dt className="text-reps-muted-light">Format</dt>
-                <dd className="text-reps-charcoal">In-person · private studio or local gym</dd>
-                <dt className="text-reps-muted-light">Travel</dt>
-                <dd className="text-reps-charcoal">{pro.travelRadius}</dd>
-              </dl>
-
-              <div className="mt-auto flex items-center justify-between pt-5">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
-                >
-                  <MapPin className="h-3.5 w-3.5" />
-                  View on map
-                </button>
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-1 text-[12px] font-medium text-reps-orange hover:underline"
-                >
-                  Get directions
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </a>
               </div>
             </div>
           </div>
+
 
         </div>
       </section>
