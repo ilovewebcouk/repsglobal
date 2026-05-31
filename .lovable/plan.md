@@ -1,13 +1,16 @@
-## Add "Greater London" subline under London, UK
+## Restore original Specialisms pill size
 
-Single, scoped change to the Location card on the pro profile page.
+The pills were shrunk in an earlier pass (gap-1.5, px-2 py-1, text-[11px]) to force 3 lines. Revert to the original mock-up sizing.
 
-### Changes
+### Change
 
-1. **Mock data** (`src/routes/pro.$slug.tsx`, pro objects): Add a `region: string` field to each pro mock (e.g. James Carter → `"Greater London"`, Sophie Taylor → her appropriate region). Since this is a mockup, values are hardcoded per pro.
+In `src/routes/pro.$slug.tsx`, Specialisms block (~lines 459-467):
 
-2. **Location card** (around line 478): Under the `{pro.location}` line ("London, UK"), add a second line rendering `{pro.region}` styled as `text-[12px] text-reps-muted-light` (one line, no extra spacing beyond the existing `gap-2`).
+- container: `gap-1.5` → `gap-2`
+- pill: `px-2 py-1 text-[11px]` → `px-3 py-1 text-[12px]`
+
+Border, radius, colors, and wrap behavior unchanged. Tags will wrap to ~4 lines again, which is the original look.
 
 ### Out of scope
 
-No other Location card changes (map, CTA button, description, grid ratio all stay as-is). No changes to Services & Pricing or Specialisms — those remain open for a later pass.
+No other changes to Specialisms card, Location, Services & Pricing, or anywhere else.
