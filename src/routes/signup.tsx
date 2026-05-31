@@ -177,7 +177,7 @@ function SignupPage() {
           style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
         />
 
-        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-[1.05fr_minmax(0,460px)] lg:gap-16 lg:px-10">
+        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:gap-14 lg:px-10">
           {/* Left: value prop */}
           <div className="flex flex-col">
             <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
