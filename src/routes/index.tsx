@@ -26,7 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroComposite from "@/assets/hero-composite.jpg";
+import heroCoaching from "@/assets/hero-coaching-moment.jpg";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -144,9 +144,9 @@ function HomePage() {
         {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
           <img
-            src={heroComposite}
+            src={heroCoaching}
             alt=""
-            className="h-full w-full object-cover object-[70%_center]"
+            className="h-full w-full object-cover object-center"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div

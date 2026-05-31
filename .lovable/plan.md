@@ -1,24 +1,23 @@
 ## Goal
-Make the trainers look like they're actually standing in the gym by merging the two existing images (`hero-gym-bg.jpg` + `hero-trainers-cutout.png`) into one AI-composited hero image with matched lighting, contact shadows, and color grade.
+Replace the current composited hero image with a single world-class "coaching moment" shot that fits the dark gym aesthetic and the existing design system, without touching any other hero element.
 
 ## Steps
 
-### 1. Generate the composite
-- Tool: `imagegen--edit_image` with both source images as input.
-- Aspect: 16:9, saved as `src/assets/hero-composite.jpg`.
-- Prompt locks: same two trainers (faces, skin tones, outfits, REPs logo on male's tank), same gym scene, trainers placed right-of-center mid-ground, cinematic depth-of-field, matched warm gym lighting with real contact shadows under their feet.
+### 1. Generate the image
+- Tool: `imagegen--generate_image`, standard quality, 1920×1080.
+- Save to `src/assets/hero-coaching-moment.jpg`.
+- Brief: cinematic editorial gym photo, single certified trainer mid-coaching (spotting a barbell back squat), client soft-blurred in foreground, shallow depth-of-field, warm tungsten key + cool teal rim, polished concrete, matte black power rack, atmospheric haze, deep blacks (#0B0D10) with warm amber highlights, negative space on the left third for the headline.
 
-### 2. Update `src/routes/index.tsx` hero block (lines ~155–185)
-- Replace the gym `<img>` + absolutely-positioned trainer `<div>` (with its ground shadow and drop-shadow) with a single `<img>` of `hero-composite.jpg`.
-- Keep the left-to-right dark gradient overlay so the headline and CTA stay readable.
-- Keep the bottom fade into the search panel.
-- Remove the now-dead trainer cutout import if nothing else uses it.
+### 2. Swap the import in `src/routes/index.tsx`
+- Replace `heroComposite` import + usage with `heroCoaching` from the new file.
+- Keep both gradient overlays, the bottom fade, the Why REPs card, the headline, sub-copy, CTA, search panel, and `object-cover` framing identical.
 
-### 3. Leave source assets in place
-Keep `hero-gym-bg.jpg` and `hero-trainers-cutout.png` so we can re-roll the composite without regenerating from scratch.
+### 3. Verify and tune framing only
+- Take a preview screenshot after the swap.
+- Adjust only the `object-position` (`object-[x%_center]`) if the subject collides with the Why REPs card.
+
+### 4. Keep old assets
+Leave `hero-composite.jpg`, `hero-gym-bg.jpg`, `hero-trainers-cutout.png` in place for instant revert.
 
 ## Out of scope
-Copy, Why REPs card, search panel, header, mobile layout (mobile keeps the gym backdrop alone), design tokens, any other section.
-
-## Risk
-AI compositing may need 1–2 re-rolls to keep faces and outfits true. If the first result drifts, we iterate on the prompt before touching the markup.
+Headline, sub-copy, CTA, Why REPs card, search panel, header, mobile layout, design tokens, any other section of the page.
