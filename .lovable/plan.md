@@ -1,35 +1,40 @@
 ## Goal
+Replace the 3-equal-column row with a 2-column layout so each card holds the right amount of content for its width. Removes the empty-space problem at the source and lets us drop the redundant "Works with" and "Training style" sections.
 
-The three cards (About, Specialisms, Location) keep equal widths, but each one currently runs out of content well before the column ends. Specialisms has ~60% empty space below the chips, Location wastes the area under the square map, and About ends with two thin stat rows. The fix is to make each card *earn* its column with more substance — not to squeeze the grid asymmetrically (we already rejected that).
+## Layout
 
-## Approach
+```text
+┌──────────────────────────────┬─────────────────────┐
+│                              │ Specialisms        │
+│  About James (wider)         ├─────────────────────┤
+│                              │ Location           │
+└──────────────────────────────┴─────────────────────┘
+```
 
-Keep `lg:grid-cols-3` with `gap-5` and the locked `rounded-[22px]` panel radius. Enrich each card so the visual weight balances naturally.
+Grid: `lg:grid-cols-[1.4fr_1fr]` with `gap-5`. Right column is a vertical stack (`flex flex-col gap-5`) holding Specialisms then Location.
 
-### About card
-Add a compact credentials strip below the existing bio + stats:
-- Stats become a 2-column mini-grid: `8+ yrs experience`, `100+ clients`, `4.9 rating · 87 reviews`, `Replies in ~2 hrs` (each with a small icon + label/value stack, not a single inline row).
-- Below the strip: a short "Training style" line — 3 small outlined pills (e.g. *Evidence-based*, *Supportive*, *Goal-led*) that reinforce tone and add visual texture.
+## Card content
 
-### Specialisms card
-- Keep the chip cloud, but split into two labelled groups so the card has structure instead of a single shapeless cluster:
-  - **Specialisms** (existing tags)
-  - **Works with** — small sub-list of client types (Beginners, Returning to training, Post-injury, Athletes) as lighter chips.
-- Add a one-line footer: `Sessions tailored per client.` in muted text — anchors the bottom of the card.
+### About (left, wide)
+- Keep bio paragraphs.
+- Keep 2×2 stats grid (years, clients, rating, response time).
+- **Remove** "Training style" pills.
+- No new content needed — the wider column makes the bio breathe.
 
-### Location card
-- Promote the map: full-card-width `aspect-[16/9]` map at the top instead of the cramped square left column.
-- Below the map, a clean 2-column key/value list:
-  - Area: Clerkenwell, EC1
-  - Region: Greater London
-  - Format: In-person · private studio or local gym
-  - Travel: Up to 3 miles
-- Footer row: `View on map` button + `Get directions` text link, both aligned.
+### Specialisms (right, top)
+- Heading + chip cloud (existing tags).
+- **Remove** "Works with" group and the italic footer line.
+- Card shrinks to fit its contents; no forced height.
 
-### Out of scope
-- No changes to grid template, max-width, page chrome, Services band, hero, sub-nav, reviews, FAQ, footer, or tokens.
-- No new routes, no data-model changes — new fields (`rating`, `reviews`, `responseTime`, `worksWith`, `travelRadius`, `trainingStyle`) are added as static values on the same `pro` mock object used today.
-- Radii stay locked (panel 22, chips full, buttons 10, map 12).
+### Location (right, bottom)
+- Keep enlarged `aspect-[16/9]` map.
+- Keep 4-row key/value list (Area, Region, Format, Travel).
+- Keep footer row (View on map · Get directions).
+
+## Out of scope
+- No changes to hero, sub-nav, Services & Pricing band, reviews, FAQ, footer, page max-width, or tokens.
+- Remove unused `worksWith` and `trainingStyle` fields from the `Pro` type and `james-carter` data (cleanup only).
+- Radii stay locked (panel 22, map 12, chips full, buttons 10).
 
 ## Verify
-Screenshot `/pro/sophie-taylor` and `/pro/james-carter` at 1469 viewport; confirm all three cards reach roughly the same height and no card has a large empty tail.
+Screenshot `/pro/james-carter` at 1469 viewport; confirm About fills its wider column, Specialisms and Location stack cleanly on the right, and no card has a large empty tail.
