@@ -440,21 +440,20 @@ function ProProfilePage() {
 
               <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
-                <div className="mt-4 grid grid-cols-[1fr_1.1fr] gap-4">
+                <div className="mt-3 grid grid-cols-[1fr_1.1fr] gap-3">
                   <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
                     <MapPlaceholder />
                   </div>
                   <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
                     <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
-                    <div>{pro.region}</div>
-                    <div className="mt-1 leading-snug">
+                    <div className="leading-snug">
                       In-person at private
                       <br />
                       studio or local gym
                     </div>
                     <button
                       type="button"
-                      className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
+                      className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
                     >
                       <MapPin className="h-3.5 w-3.5" />
                       View on map
