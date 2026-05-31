@@ -1,59 +1,54 @@
-# Phase 1 visual completion — proposed batch
+# Phase 1 final sweep — remaining static pages
 
-## What's already built (✅)
-Public: `/` · `/find-a-professional` · `/pro/$slug` · `/login` · `/signup`
-Professional dashboard: `/dashboard` · `/dashboard/profile` · `/dashboard/leads` · `/dashboard/clients/sarah-johnson` · `/dashboard/calendar` · `/dashboard/programs` · `/dashboard/check-ins`
-Admin: `/admin` (shell only)
+Build all outstanding Phase 1 visual routes in one pass, reusing existing shells (`ProShell`, `AdminShell`, `PublicHeader`/`PublicFooter`) and REPs design tokens. Static high-fidelity only — no auth, DB, or business logic.
 
-## Proposed batch — remaining Phase 1 pages
+## Pages to build (13 total)
 
-All built against the locked `reps_fullpage_*_v1.png` mock-ups and the REPs visual system / radius / token rules (REPs Build Compliance skill enforced post-flight).
+### Group D — Remaining professional dashboard (1)
+1. `/dashboard/clients` — clients index list (table view with search, status chips, LTV, last check-in, adherence). Complements existing `clients/$slug` deep page.
 
-### Group A — Professional dashboard (remaining 6)
-Per the spec doc §8.1 future routes:
+### Group E — Remaining admin sub-pages (4)
+2. `/admin/directory` — public directory health: listings count, completeness scores, broken-link queue, featured-pro rotation.
+3. `/admin/cpd` — CPD oversight: cycle compliance %, pros at risk, evidence audit queue, course catalogue moderation.
+4. `/admin/support` — support ticket queue: open/pending/resolved tabs, priority chips, assignee, response SLA timers.
+5. `/admin/settings` — platform settings tabs: General, Branding, Email, Integrations, Feature flags, Audit log.
 
-1. **`/dashboard/bookings`** — payments-adjacent booking ledger (separate from calendar): upcoming / completed / cancelled / refund-requested, filters, per-booking row with client + service + status + amount.
-2. **`/dashboard/payments`** — revenue KPIs, payouts timeline, invoices table, subscription clients, failed payment alerts.
-3. **`/dashboard/nutrition`** — meal-plan builder analogue to programmes: plan list, daily macro targets, per-meal cards, client assignment, adherence.
-4. **`/dashboard/messages`** — 3-pane inbox (conversation list / thread / client context panel), unread badges, quick replies.
-5. **`/dashboard/reviews`** — public reviews feed, rating breakdown, response composer, flagged/pending moderation list.
-6. **`/dashboard/cpd`** — CPD log, current cycle progress ring, certificate cards, upcoming courses, evidence uploads (visual only).
-7. **`/dashboard/settings`** — account / business profile / notifications / billing / integrations tabs.
+### Group F — Auth helper pages (3)
+6. `/forgot-password` — single-field email form, matches `/login` visual language (dark left panel + white card).
+7. `/reset-password` — new password + confirm, strength meter, same visual frame.
+8. `/verify-email` — "Check your inbox" confirmation state with resend CTA.
 
-(Skipping `/dashboard/clients` index — `clients/$slug` already covers the deep page and the leads/CRM list serves a similar shell. Will add a clients index only if you want it.)
+### Group G — Legal & info (5)
+9. `/terms` — long-form legal layout (sticky TOC sidebar, numbered sections, last-updated stamp).
+10. `/privacy` — same legal layout, UK GDPR-flavoured placeholder copy.
+11. `/cookies` — cookie categories table (Essential / Analytics / Marketing) + preferences placeholder.
+12. `/help` — help-centre landing: category grid (Getting started, Billing, Verification, Profile, Bookings), search bar, popular articles.
+13. `/faq` — accordion list grouped by audience (Clients / Professionals / Billing).
 
-### Group B — Admin sub-pages (spec §9.1)
-Lighter than dashboard — shell consistency over deep functionality:
+## Working agreement
 
-8. **`/admin/professionals`** — searchable directory of pros, status chips, bulk actions.
-9. **`/admin/verification`** — verification queue with evidence preview panel + approve/reject.
-10. **`/admin/memberships`** — plan tiers, active member counts, churn signals.
-11. **`/admin/reviews`** — moderation queue, flagged review detail panel.
-12. **`/admin/payments`** — platform revenue, payout runs, refund queue.
-13. **`/admin/migration`** — Brilliant Directories migration progress dashboard (BD-specific, allowed in Phase 1 as a visual shell).
+- All pages built directly (no per-page prompt) using realistic UK-fitness placeholder data consistent with existing pages (Sarah Johnson, Amelia Carter, £ amounts, REPs verification language).
+- Phase 1 lock respected: no Supabase calls, no form submission wiring, no real search — purely visual.
+- REPs tokens enforced: brand orange via semantic token only, radii from the 9-step scale (button 10 / input 12 / card 16-18 / panel 22 / hero 24), no `rounded-xl/2xl/3xl`, no button shadows.
+- Each route gets unique `head()` metadata (title + description + og tags).
+- Legal pages share a small `LegalShell` component (TOC + content column) to avoid duplication.
+- Auth helper pages share the existing `/login` split-screen frame.
 
-(Skipping `/admin/directory`, `/admin/cpd`, `/admin/support`, `/admin/settings` from the batch — flag if you want any added back.)
+## Technical notes
 
-### Group C — Public marketplace gaps
-Phase 1 lock targets the 6 mock-ups. Public site only has homepage, directory, profile, signup/login. Likely-needed extras — **not in the batch unless you confirm**:
-- `/about`, `/for-professionals`, `/pricing`, `/contact`
-These have no locked mock-up, so they'd be derived from the public homepage visual language.
+- Flat-nested route filenames: `dashboard_.clients.tsx`, `admin_.directory.tsx`, etc., matching the existing convention. `routeTree.gen.ts` is auto-generated.
+- New shared components:
+  - `src/components/legal/LegalShell.tsx` — sticky TOC + prose column
+  - `src/components/auth/AuthShell.tsx` — extracted from `/login` for reuse across forgot/reset/verify
+- Post-flight: run the REPs build-compliance audit script; fix any violations before handing back.
 
-## Working agreement per page (Option A inside the batch)
+## Out of scope (explicit)
 
-For each page in the batch:
-1. You give me ~5 lines: route confirm, any specific copy/numbers/sections that matter, anything to skip.
-2. I build it directly (no plan tool, no long prompt) reusing the dashboard shell + tokens.
-3. Post-flight: run the REPs build-compliance audit, capture a full-page screenshot, hand back.
-4. You approve or request tweaks before I move to the next.
+- Real auth flows, password reset emails, session handling.
+- `/blog` (no content model decided yet — confirm separately if wanted).
+- Sweeping pre-existing shadcn `rounded-xl` violations (separate task).
+- Screenshot QA pass across all built pages (separate task — can follow this sweep).
 
-If you say "just go" for a page with no brief, I'll invent realistic UK-fitness placeholder data (client names, £ amounts, dates) consistent with the existing pages (Sarah Johnson, Amelia Carter, etc.).
+## Deliverable
 
-## Decisions I need from you
-
-1. **Approve the Group A + Group B list above?** (13 pages total.) Remove or add any?
-2. **Group C public pages** — in or out of Phase 1?
-3. **Order** — build in the order listed, or prioritise specific pages first (e.g. messages + payments first because they're core to the pro's daily use)?
-4. **`/dashboard/clients` index page** — add it or skip?
-
-Once you answer, I'll start with page #1 and we'll work through the batch one at a time.
+13 new route files + 2 small shared components, all visually consistent with the locked mock-ups, audit-clean, ready for review.
