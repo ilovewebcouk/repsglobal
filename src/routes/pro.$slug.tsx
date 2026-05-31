@@ -356,10 +356,10 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ ABOUT + SERVICES + SPECIALISMS / LOCATION ============ */}
+      {/* ============ ABOUT + SPECIALISMS + LOCATION ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
+          <div className="grid gap-5 lg:grid-cols-3">
             {/* About */}
             <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
@@ -382,90 +382,105 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* Services */}
-            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                  Services &amp; Pricing
-                </h2>
-                <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#services">
-                  View all services
-                </a>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {pro.services.map((s) => (
-                  <article
-                    key={s.title}
-                    className="overflow-hidden rounded-[18px] bg-reps-panel text-white"
+            {/* Specialisms */}
+            <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {pro.specialisms.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img
-                        src={s.image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                      <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white">
-                        <s.icon className="h-4 w-4" />
-                      </span>
-                    </div>
-                    <div className="space-y-2 p-4">
-                      <div className="font-display text-[15px] font-bold leading-tight">
-                        {s.title}
-                      </div>
-                      <div className="text-[12px] leading-snug text-white/65">{s.desc}</div>
-                      <div className="pt-3 text-[15px] font-bold text-white">{s.price}</div>
-                      <div className="text-[11px] text-white/55">{s.unit}</div>
-                    </div>
-                  </article>
+                    {tag}
+                  </span>
                 ))}
               </div>
             </div>
 
-            {/* Specialisms + Location */}
-            <div className="flex flex-col gap-5">
-              <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {pro.specialisms.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+            {/* Location */}
+            <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
+              <div className="mt-4 grid grid-cols-[1fr_1.1fr] gap-4">
+                <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
+                  <MapPlaceholder />
                 </div>
-              </div>
-
-              <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
-                <div className="mt-4 grid grid-cols-[1fr_1.1fr] gap-4">
-                  <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
-                    <MapPlaceholder />
+                <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
+                  <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
+                  <div>{pro.region}</div>
+                  <div className="mt-1 leading-snug">
+                    In-person at private
+                    <br />
+                    studio or local gym
                   </div>
-                  <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
-                    <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
-                    <div>{pro.region}</div>
-                    <div className="mt-1 leading-snug">
-                      In-person at private
-                      <br />
-                      studio or local gym
-                    </div>
-                    <button
-                      type="button"
-                      className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
-                    >
-                      <MapPin className="h-3.5 w-3.5" />
-                      View on map
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                    View on map
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ============ SERVICES & PRICING (full width) ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
+          <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                Services &amp; Pricing
+              </h2>
+              <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#services">
+                View all services
+              </a>
+            </div>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {pro.services.map((s) => (
+                <article
+                  key={s.title}
+                  className="overflow-hidden rounded-[18px] bg-reps-panel text-white"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={s.image}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white">
+                      <s.icon className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="space-y-2 p-5">
+                    <div className="font-display text-[16px] font-bold leading-tight">
+                      {s.title}
+                    </div>
+                    <div className="text-[12.5px] leading-snug text-white/65">{s.desc}</div>
+                    <div className="flex items-end justify-between pt-3">
+                      <div>
+                        <span className="text-[16px] font-bold text-white">{s.price}</span>
+                        <span className="ml-1.5 text-[12px] text-white/55">· {s.unit}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 rounded-[10px] text-[12px] font-semibold text-reps-orange hover:text-white"
+                      >
+                        Select
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* ============ QUALIFICATIONS + TRUST ============ */}
       <section className="bg-reps-ivory">
