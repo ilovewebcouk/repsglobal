@@ -46,6 +46,7 @@ function ClientsIndex() {
   const active = CLIENTS.filter((c) => c.status === "Active").length;
   const atRisk = CLIENTS.filter((c) => c.status === "At risk").length;
   const onboarding = CLIENTS.filter((c) => c.status === "Onboarding").length;
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   return (
     <ProShell
@@ -53,8 +54,11 @@ function ClientsIndex() {
       title="Clients"
       subtitle="148 active · 6 onboarding · 4 at risk"
       actions={
-        <button className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover">
-          <Plus className="h-4 w-4" /> Add client
+        <button
+          onClick={() => setInviteOpen(true)}
+          className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+        >
+          <Plus className="h-4 w-4" /> Invite client
         </button>
       }
     >
