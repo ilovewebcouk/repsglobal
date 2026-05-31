@@ -54,7 +54,7 @@ const NAV_PLATFORM: NavItem[] = [
 
 function Sidebar({ active }: { active: AdminActive }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
+    <aside className="sticky top-0 hidden h-screen max-h-screen w-[232px] shrink-0 self-start flex-col border-r border-reps-border bg-reps-midnight lg:flex">
       <Link to="/" className="flex items-center gap-3 px-5 pb-5 pt-6">
         <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
           REPs
