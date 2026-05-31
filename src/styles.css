@@ -45,7 +45,10 @@
 
   /* REPs brand tokens — accents */
   --color-reps-orange: var(--reps-orange);
+  --color-reps-orange-hover: var(--reps-orange-hover);
   --color-reps-orange-dark: var(--reps-orange-dark);
+  --color-reps-orange-soft: var(--reps-orange-soft);
+  --color-reps-orange-border: var(--reps-orange-border);
   --color-reps-gold: var(--reps-gold);
   --color-reps-green: var(--reps-green);
   --color-reps-red: var(--reps-red);
@@ -109,9 +112,12 @@
   --reps-muted: #8D96A3;
   --reps-muted-light: #6D716F;
 
-  /* REPs accents */
-  --reps-orange: #F28C38;
-  --reps-orange-dark: #D87322;
+  /* REPs accents — brand orange #FF7A00 */
+  --reps-orange: #FF7A00;
+  --reps-orange-hover: #E96F00;
+  --reps-orange-dark: #CC6200;
+  --reps-orange-soft: rgba(255, 122, 0, 0.12);
+  --reps-orange-border: rgba(255, 122, 0, 0.35);
   --reps-gold: #D9B66F;
   --reps-green: #3CCB7F;
   --reps-red: #F05D5E;
