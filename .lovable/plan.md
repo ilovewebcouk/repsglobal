@@ -1,30 +1,23 @@
-## Swap laptop screen to a REPs professional dashboard
+## Mirror signup hero on /login + stop the form card stretching
 
-Single asset replacement. No layout/CSS changes needed.
+Bring `/login` in line with `/signup` (50/50 layout with the REPs dashboard background) and fix the form card stretching to full page height.
 
-### What I see in the mockup (zoomed)
-The laptop screen shows a fitness-professional dashboard:
-- **Top-left**: REPs orange logo/wordmark in a dark sidebar header
-- **Left sidebar**: dark vertical nav with small icons
-- **Top row**: three small KPI tiles ("£2,480", "142 clients", "87%" etc.)
-- **Center**: a large dark panel titled "Weekly Progress" with an orange line chart (rising curve)
-- **Right column**: stacked smaller widget cards
-- All dark UI with bright orange accents — clearly REPs branded, not generic
+### Changes to `src/routes/login.tsx`
 
-### Change
-1. **Edit `src/assets/signup-hero-bg.jpg` in place** using `imagegen--edit_image` with the current image as the input. Prompt the model to replace what's on the laptop screen with a REPs fitness professional dashboard matching the description above — explicitly:
-   - Orange "REPs" wordmark logo in the top-left sidebar header
-   - Dark sidebar nav on the left
-   - Three small KPI tiles along the top (revenue, clients, retention)
-   - Large "Weekly Progress" chart panel with bright orange line graph in the center
-   - Stack of smaller widget cards on the right
-   - Keep the rest of the photo identical: same dark desk, same warm orange spill lighting, same laptop angle, same depth of field
-
-2. **No code edits** — the file path stays `src/assets/signup-hero-bg.jpg`, so the existing import in `src/routes/signup.tsx` picks the new image up automatically.
-
-### Verification
-After the edit, view the new asset, then screenshot `/signup` at 1469px and confirm the laptop now reads as a REPs branded dashboard (logo visible, orange chart prominent) and the overall hero ambience still matches the mockup.
+1. **Import shared hero background** — `signupHeroBg` from `@/assets/signup-hero-bg.jpg`. Reuses the same asset as signup, no new image.
+2. **Hero section background treatment** (currently lines 88–99):
+   - Add the dashboard `<img>` as a `z-0` absolute background (`object-cover object-left`, `opacity-80`).
+   - Add the same `z-10` ink-wash gradient overlay so the right-side form card stays high contrast.
+   - Move the two existing orange radial swooshes to `z-10`.
+   - Wrap the grid in `relative z-20`.
+3. **Grid columns**: change `lg:grid-cols-[1.05fr_minmax(0,460px)]` → `lg:grid-cols-2` to match signup exactly.
+4. **Fix the full-height card stretching**:
+   - Remove `min-h-[calc(100vh-76px)]` from the grid container — that's what's forcing the whole hero to viewport height and making the white form card stretch.
+   - Add `lg:items-start` to the grid so the form card sizes to its own content instead of filling the row.
+   - Replace the form card's `p-7` with `p-8` to match signup's padding rhythm.
 
 ### Out of scope
-- No CSS, positioning, opacity, or overlay changes — the user said it's "very, very good and almost perfect."
-- `/login` not touched.
+
+- No copy, form, or header changes.
+- No new assets.
+- No changes to `/signup` or other pages.
