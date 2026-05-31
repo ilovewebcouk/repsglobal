@@ -1,48 +1,25 @@
-## Lock professional profile + build Sign Up / Login
+## Rebalance /signup hero to match mockup
 
-### Part 1 — Lock the profile page
+Single, scoped change to `src/routes/signup.tsx` — hero section only. No other pages, no token changes, no new components.
 
-- Add a memory file `mem://design/locked-profile` noting `/pro/$slug` is the locked Phase 1 visual for `reps_fullpage_professional_profile_v1.png`.
-- Update `mem://index.md` to list it under Memories so future edits don't drift from the agreed layout (horizontal service cards, no icons, current radii and tokens).
-- No code changes to `src/routes/pro.$slug.tsx`.
+### What changes
 
-### Part 2 — Build Sign Up / Login (static Phase 1)
+1. **Grid columns** — change the hero grid from `lg:grid-cols-[1.05fr_minmax(0,460px)]` to `lg:grid-cols-2` with a generous `lg:gap-14` (~56px) gutter so the two columns read as ~50/50 with clear breathing room, like the mockup.
 
-Source of truth: `src/mockups/reps_fullpage_signup_login_v1.png`.
+2. **Left column (value prop)**
+   - Drop the `max-w-[520px]` / `max-w-[560px]` constraints on the paragraph and bullet list so they fill the narrower (now ~50%) column naturally.
+   - Keep the h1 unchanged — at ~50% width the headline naturally wraps to 3 lines ("Your fitness business, clients and professional profile" / "in one place.") as in the mockup. Verify after render; if it still wraps to 2, nudge with a soft break.
+   - Testimonial card: bump `max-w-[420px]` to `max-w-[480px]` so it sits proportionally in the wider column.
 
-**Routes (two new files):**
-- `src/routes/login.tsx` → `/login`
-- `src/routes/signup.tsx` → `/signup`
+3. **Right column (form card)**
+   - Remove the `minmax(0,460px)` cap so the card expands to fill its 50% column (will land around ~560–600px wide at 1469px viewport, matching the mockup's wider card).
+   - Internal padding bump from `p-7` to `p-8` so the form doesn't feel cramped at the new width.
+   - Account-type pills, fields, and social buttons keep their current structure — they reflow naturally inside the wider card.
 
-Each route gets its own `head()` with distinct title, description, og:title, og:description.
-
-**Shared layout (both pages):**
-- Use existing `PublicHeader` (solid variant) and `PublicFooter`.
-- Two-column split: left = form panel on `bg-reps-warm-white`, right = visual / value-prop panel (image + bullet trust points), matching the mockup composition.
-- Card radius 22px for the form panel, 24px for the hero-style visual, inputs 12px, buttons 10px — per locked radius system.
-- All colors via tokens (`bg-reps-orange`, `text-reps-charcoal`, `border-reps-stone`, etc.) — no hex in components.
-
-**Login page elements:**
-- Email + password inputs (static, no auth wiring)
-- "Remember me" checkbox + "Forgot password?" link
-- Primary CTA: "Log in" (flat, no shadow)
-- Social: "Continue with Google" / "Continue with Apple" outline buttons
-- Footer line: "New to REPs? Sign up" linking to `/signup`
-
-**Sign up page elements:**
-- First name, last name, email, password, confirm password
-- Account type selector: "I'm looking for a professional" / "I'm a professional" (pill toggle)
-- Terms checkbox
-- Primary CTA: "Create account"
-- Social sign-up buttons (same as login)
-- Footer line: "Already have an account? Log in" → `/login`
-
-**Out of scope (Phase 1 rule):**
-- No Lovable Cloud / auth wiring, no real form submit, no validation logic beyond `required` attributes
-- No password-strength meter logic, no email verification flow
+### Out of scope
+- No changes to header, stats strip, features, FAQ, CTA, or footer.
+- No copy changes, no new fields, no token/radius changes.
+- `/login` is not touched in this pass (can mirror after approval if you want parity).
 
 ### Verification
-After build, screenshot both `/login` and `/signup` at 1469px wide and compare to the mockup. Run the REPs compliance audit (no banned hex, no banned radii, no button shadows).
-
-### Open question (non-blocking)
-If you'd rather start with the **Professional Dashboard** or **Admin Dashboard** instead of Sign Up / Login, say the word and I'll re-scope the plan to that mockup. Otherwise I'll proceed with Sign Up / Login on approval.
+Screenshot `/signup` at 1469px and compare side-by-side with `src/mockups/reps_fullpage_signup_login_v1.png` — confirm column balance, headline line count, and form card width match.

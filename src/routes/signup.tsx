@@ -177,20 +177,21 @@ function SignupPage() {
           style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
         />
 
-        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-[1.05fr_minmax(0,460px)] lg:gap-16 lg:px-10">
+        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:gap-14 lg:px-10">
           {/* Left: value prop */}
           <div className="flex flex-col">
             <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
               Your fitness business, clients and professional profile{" "}
               <span className="text-reps-orange">in one place.</span>
             </h1>
-            <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-white/65">
+            <p className="mt-5 text-[15px] leading-relaxed text-white/65">
               Join thousands of exercise professionals who use REPs to grow
               their business, manage clients and advance their career with
               confidence.
             </p>
 
-            <ul className="mt-8 grid max-w-[560px] gap-5">
+            <ul className="mt-8 grid gap-5">
+
               {TRUST_BULLETS.map((b) => (
                 <li key={b.title} className="flex items-start gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
@@ -207,7 +208,7 @@ function SignupPage() {
             </ul>
 
             {/* Testimonial */}
-            <figure className="mt-10 w-full max-w-[420px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
+            <figure className="mt-10 w-full max-w-[480px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star
@@ -239,7 +240,7 @@ function SignupPage() {
           </div>
 
           {/* Right: signup form */}
-          <div className="rounded-[22px] bg-reps-warm-white p-7 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
+          <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
             <div className="text-center">
               <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
                 Create Your REPs Account
