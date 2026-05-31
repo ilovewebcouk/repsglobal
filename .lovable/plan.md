@@ -1,24 +1,25 @@
 ## Problem
 
-Looked at the source `cta-band.jpg`: trainers occupy roughly **55%–100%** of the image width. My current desktop gradient still has ~55% ink at the 55% mark, which falls right on the female trainer — that's why she looks washed out / invisible.
+Compared the locked mockup (`src/mockups/reps_fullpage_home_v1.png`) against the current hero asset:
 
-## Fix — pull gradient stops left so trainers are 100% clear
+- **Mockup:** trainers occupy ~40%–65% of the image width, scaled modestly, with dark gym extending across the right third behind the Why REPs card.
+- **Current `src/assets/hero-trainer.jpg`:** trainers are oversized and sit flush right (~55%–100%), so they slide directly under the Why REPs card no matter how the gradient is tuned.
 
-**Desktop (`lg`)**: copy column is `max-w-[520px]` inside `px-14` padding = ends around the 46% mark in a ~1240px container. Trainers start at 55%. So the gradient must be fully transparent by ~50%.
+Gradient tweaks alone can't fix this — the figures need to physically move within the image.
 
-New stops:
-- `#0B0D10` 0% → `rgba(11,13,16,0.95)` 25% → `rgba(11,13,16,0.55)` 38% → `rgba(11,13,16,0)` **50%**
+## Fix
 
-That keeps the copy panel dense ink, and gives the trainers a 50%→100% completely clear band.
+Re-edit `src/assets/hero-trainer.jpg` (in place) using `imagegen--edit_image`, keeping the same two trainers, lighting, wardrobe, and gym backdrop. The edit instructions:
 
-**Tablet (`md`–`lg`)**: same idea but vertical. Trainers occupy the top portion of the cropped image. Currently transparent from 0–30%, ramping in by 60%. That's fine — trainers stay clear up top. No change needed there, but I'll verify after the desktop fix.
+- Shrink the trainer pair to roughly **70%** of their current size
+- Reposition them so they sit centered around the **45%–50%** horizontal mark (i.e. between the headline column and where the Why REPs card lives)
+- Extend the dark gym background (rack, weights, kettlebells, soft rim light) across the **right third** of the frame so the Why REPs card sits over environment, not bodies
+- Keep the 21:9 aspect ratio and the existing dark, cinematic palette
 
-**Mobile**: image is on its own (no overlay), already clean.
+## Code
 
-## Single-line code change
-
-`src/routes/index.tsx`, the `lg:block` gradient div — swap its `backgroundImage` for the new stops above. Tablet gradient and text contrast stay as-is.
+No changes to `src/routes/index.tsx`. The current gradient (solid left → clear 45%–70% center → soft re-ink right) is already calibrated for trainers in the center band, so once the image moves it will line up automatically.
 
 ## Out of scope
 
-No new asset, no token changes, no other sections.
+No layout, copy, or token changes. Mobile/tablet gradients stay as-is.
