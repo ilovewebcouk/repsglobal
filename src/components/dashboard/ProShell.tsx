@@ -96,7 +96,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 function Sidebar({ active }: { active: ProActive }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
+    <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
       <Link to="/" className="flex items-center gap-3 px-5 pb-6 pt-6">
         <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
           REPs
@@ -108,7 +108,7 @@ function Sidebar({ active }: { active: ProActive }) {
         </span>
       </Link>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         {NAV_GROUPS.map((group) => (
           <div key={group.title} className="mb-5">
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
@@ -222,10 +222,10 @@ export function ProShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
-      <div className="flex min-h-screen">
+    <div className="h-screen bg-reps-ink text-reps-text">
+      <div className="flex h-screen">
         <Sidebar active={active} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar title={title} subtitle={subtitle} actions={actions} />
           <main className="flex-1 px-8 pb-12 pt-6">{children}</main>
         </div>

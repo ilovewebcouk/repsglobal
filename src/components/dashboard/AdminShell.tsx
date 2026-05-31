@@ -54,7 +54,7 @@ const NAV_PLATFORM: NavItem[] = [
 
 function Sidebar({ active }: { active: AdminActive }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
+    <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
       <Link to="/" className="flex items-center gap-3 px-5 pb-5 pt-6">
         <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
           REPs
@@ -71,7 +71,7 @@ function Sidebar({ active }: { active: AdminActive }) {
         <span className="text-[12px] font-semibold text-reps-orange">REPs Admin</span>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         <NavSection title="Manage" items={NAV_MANAGE} active={active} />
         <NavSection title="Platform" items={NAV_PLATFORM} active={active} />
       </nav>
@@ -203,10 +203,10 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
-      <div className="flex min-h-screen">
+    <div className="h-screen bg-reps-ink text-reps-text">
+      <div className="flex h-screen">
         <Sidebar active={active} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar title={title} subtitle={subtitle} actions={actions} />
           <main className="flex-1 px-8 pb-12 pt-6">{children}</main>
         </div>
