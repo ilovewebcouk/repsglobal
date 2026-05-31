@@ -261,6 +261,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_client_invite: { Args: { _token_hash: string }; Returns: string }
+      get_invite_by_token: {
+        Args: { _token_hash: string }
+        Returns: {
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          professional_id: string
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
