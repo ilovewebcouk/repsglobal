@@ -1983,6 +1983,16 @@ The admin shell is approved only if:
 - It does not introduce a separate admin theme.
 - It remains a visual shell only in Phase 1.
 
+### 9.11 Audit Log (Phase 2 placeholder)
+
+**Route:** `/admin/audit` (not built in Phase 1).
+
+Append-only log of every admin and user mutation: actor, action, target, IP, timestamp, diff snippet. Filterable by actor, action type, date. Compliance requirement once auth and DB land.
+
+### 9.12 Feature Flags (Phase 2 placeholder)
+
+Lives as a tab inside `/admin/settings` in Phase 1; promoted to its own section once flag count exceeds ~10. Per-flag rows: key, description, environment, rollout %, last changed by/when.
+
 ## 10. Shared Components Required in Phase 1
 
 Lovable must create reusable components for these items.
