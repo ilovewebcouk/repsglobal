@@ -1,16 +1,27 @@
-## Restore original Specialisms pill size
+## Restore mock-up price lockup on Service cards
 
-The pills were shrunk in an earlier pass (gap-1.5, px-2 py-1, text-[11px]) to force 3 lines. Revert to the original mock-up sizing.
+Two-line layout matching the original mock-up:
+
+- Line 1: `From £60` (single line, "From" before the price)
+- Line 2: `per session` (or `per month`, `one-off plan`)
 
 ### Change
 
-In `src/routes/pro.$slug.tsx`, Specialisms block (~lines 459-467):
+In `src/routes/pro.$slug.tsx` Services cards (lines 441-448), replace the current inline lockup with:
 
-- container: `gap-1.5` → `gap-2`
-- pill: `px-2 py-1 text-[11px]` → `px-3 py-1 text-[12px]`
+```
+<div className="pt-1">
+  <div className="font-display text-[22px] font-bold leading-none text-white">
+    {s.price}  {/* already includes "From £60" */}
+  </div>
+  <div className="mt-1 text-[11px] uppercase tracking-wider text-white/55">
+    {s.unit}
+  </div>
+</div>
+```
 
-Border, radius, colors, and wrap behavior unchanged. Tags will wrap to ~4 lines again, which is the original look.
+`s.price` already starts with `From` so no string surgery is needed — drop the `.replace(/^From\s*/, "")`.
 
 ### Out of scope
 
-No other changes to Specialisms card, Location, Services & Pricing, or anywhere else.
+No other changes to the Services card (image, icon badge, title, description, header link all stay). No changes to Specialisms, Location, or any other section.
