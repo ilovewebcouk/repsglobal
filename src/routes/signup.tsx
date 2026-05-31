@@ -143,6 +143,73 @@ const FAQS = [
 ];
 
 function SignupPage() {
+  const navigate = useNavigate();
+  const [accountTypeIdx, setAccountTypeIdx] = useState(0);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    setLoading(true);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            full_name: fullName,
+            signup_kind: "professional",
+            account_type: ACCOUNT_TYPES[accountTypeIdx]?.id ?? "pro",
+          },
+        },
+      });
+      if (signUpError) throw signUpError;
+      if (data.session && data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      } else {
+        setInfo("Check your inbox to verify your email, then sign in.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign up failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-up failed");
+        setGoogleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-up failed");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       {/* ============ AUTH HEADER ============ */}
