@@ -1,44 +1,23 @@
-## Goal
+## Problem
 
-Keep the trainers fully visible on the right while guaranteeing readable copy on the left, at every breakpoint.
+Looked at the source `cta-band.jpg`: trainers occupy roughly **55%–100%** of the image width. My current desktop gradient still has ~55% ink at the 55% mark, which falls right on the female trainer — that's why she looks washed out / invisible.
 
-## Problem with current implementation
+## Fix — pull gradient stops left so trainers are 100% clear
 
-Two overlays sit on top of the whole image:
-1. A gradient that still leaves ~25–60% ink across the trainer area on desktop.
-2. A flat `bg-reps-ink/25` "deepener" covering 100% of the image — this is what's darkening the trainers.
+**Desktop (`lg`)**: copy column is `max-w-[520px]` inside `px-14` padding = ends around the 46% mark in a ~1240px container. Trainers start at 55%. So the gradient must be fully transparent by ~50%.
 
-So yes — the overlay is currently on the whole image div, not shaped to the copy area. We need to shape it.
+New stops:
+- `#0B0D10` 0% → `rgba(11,13,16,0.95)` 25% → `rgba(11,13,16,0.55)` 38% → `rgba(11,13,16,0)` **50%**
 
-## Fix (CTA section only in `src/routes/index.tsx`, ~lines 515–528)
+That keeps the copy panel dense ink, and gives the trainers a 50%→100% completely clear band.
 
-**Remove the flat 25% deepener.** It's the main culprit dimming the trainers.
+**Tablet (`md`–`lg`)**: same idea but vertical. Trainers occupy the top portion of the cropped image. Currently transparent from 0–30%, ramping in by 60%. That's fine — trainers stay clear up top. No change needed there, but I'll verify after the desktop fix.
 
-**Reshape the gradient overlay per breakpoint** so ink is dense behind the copy and fully transparent over the trainers:
+**Mobile**: image is on its own (no overlay), already clean.
 
-- **Desktop (≥ lg, trainers on right half):**
-  `bg-gradient-to-r from-reps-ink via-reps-ink/85 from-0% via-45% to-transparent to-70%`
-  → solid ink behind copy column (0–45%), clean fade out, fully transparent across the trainer half (70%+).
+## Single-line code change
 
-- **Tablet (md, trainers top, copy bottom):**
-  `md:bg-gradient-to-b md:from-transparent md:via-reps-ink/40 md:to-reps-ink md:from-30% md:via-60% md:to-85%`
-  → top 30% untouched (trainers' faces clear), ink ramps in over the copy band below.
-
-- **Mobile (< md, stacked: image on top, copy below on solid ink):**
-  No overlay needed on the image — copy sits on the solid `bg-reps-ink` panel below. Drop the overlay div on mobile (`hidden md:block` on the gradient layer), so the 4:3 hero image renders clean with no dimming.
-
-## Copy-side contrast safety net
-
-To compensate for removing the flat deepener, bump text contrast slightly on the copy:
-- Body `text-white/75` → `text-white/85`
-- Checklist items `text-white/90` → `text-white` (unchanged in weight)
-- Add a soft text-shadow utility on the headline only as belt-and-braces against any bright pixels bleeding through (`drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]`).
-
-## Why this answers your question directly
-
-> "do we put the overlay on the image? Or is this what you've done?"
-
-Current code puts the overlay on a wrapper that contains *only* the image, but it covers the image edge-to-edge — same visual effect as overlaying the trainers. The fix is to **shape the overlay** (gradient stops + breakpoint-specific direction) so it only covers the pixels under the copy, leaving the trainer pixels untouched. No flat full-cover layer.
+`src/routes/index.tsx`, the `lg:block` gradient div — swap its `backgroundImage` for the new stops above. Tablet gradient and text contrast stay as-is.
 
 ## Out of scope
 

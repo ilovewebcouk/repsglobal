@@ -536,7 +536,7 @@ function HomePage() {
                 className="absolute inset-0 hidden lg:block"
                 style={{
                   backgroundImage:
-                    "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 38%, rgba(11,13,16,0.55) 55%, rgba(11,13,16,0) 72%)",
+                    "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 25%, rgba(11,13,16,0.55) 38%, rgba(11,13,16,0) 50%)",
                 }}
               />
             </div>
