@@ -209,7 +209,7 @@ function HomePage() {
             </div>
 
             {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
+            <aside className="rounded-[28px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
               <div className="flex items-center gap-2 border-b border-white/10 pb-4">
                 <ShieldCheck className="h-4 w-4 text-reps-gold" />
                 <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
@@ -231,7 +231,7 @@ function HomePage() {
               </ul>
               <button
                 type="button"
-                className="mt-6 w-full rounded-[12px] border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-white/5"
+                className="mt-6 w-full rounded-[14px] border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-white/5"
               >
                 Learn more about REPs
               </button>
@@ -239,7 +239,7 @@ function HomePage() {
           </div>
 
           {/* Search panel */}
-          <div className="mt-12 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
+          <div className="mt-12 rounded-[28px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
