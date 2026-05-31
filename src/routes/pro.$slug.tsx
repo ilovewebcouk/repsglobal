@@ -403,9 +403,17 @@ function ProProfilePage() {
 
             {/* Services */}
             <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                Services &amp; Pricing
-              </h2>
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                  Services &amp; Pricing
+                </h2>
+                <a
+                  href={`/pro/${pro.slug}/services`}
+                  className="text-[12px] font-semibold text-reps-orange hover:underline"
+                >
+                  View all services →
+                </a>
+              </div>
               <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-3">
                 {pro.services.map((s) => (
                   <article
@@ -438,13 +446,6 @@ function ProProfilePage() {
                           From · {s.unit}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        className="mt-2 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange text-[12px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
-                      >
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        Enquire
-                      </button>
                     </div>
                   </article>
                 ))}
@@ -455,11 +456,11 @@ function ProProfilePage() {
             <div className="flex flex-col gap-5">
               <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
-                <div className="mt-4 grid grid-cols-3 gap-1.5">
+                <div className="mt-4 flex flex-wrap gap-1.5">
                   {pro.specialisms.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white px-2 py-1 text-center text-[11px] font-medium text-reps-charcoal"
+                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-2 py-1 text-[11px] font-medium text-reps-charcoal"
                     >
                       {tag}
                     </span>
