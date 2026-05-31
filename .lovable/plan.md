@@ -1,27 +1,30 @@
-## Restore mock-up price lockup on Service cards
+## Match price lockup to title size (per mock-up)
 
-Two-line layout matching the original mock-up:
+In the mock-up, `From £60` is the **same size and weight as the title** (`Personal Training`), and `per session` is a small lowercase line directly underneath — not uppercase, not tracked.
 
-- Line 1: `From £60` (single line, "From" before the price)
-- Line 2: `per session` (or `per month`, `one-off plan`)
+### Current vs target
+
+| | Current | Target (mock-up) |
+|---|---|---|
+| Price | `text-[22px]` bold | `text-[15px]` bold (same as title) |
+| Unit | `text-[11px] uppercase tracking-wider` | `text-[12px]` lowercase, no tracking |
+| Spacing | `mt-1` | tight (`mt-0.5`) |
 
 ### Change
 
-In `src/routes/pro.$slug.tsx` Services cards (lines 441-448), replace the current inline lockup with:
+`src/routes/pro.$slug.tsx` price block (lines 441-448):
 
-```
+```tsx
 <div className="pt-1">
-  <div className="font-display text-[22px] font-bold leading-none text-white">
-    {s.price}  {/* already includes "From £60" */}
+  <div className="font-display text-[15px] font-bold leading-tight text-white">
+    {s.price}
   </div>
-  <div className="mt-1 text-[11px] uppercase tracking-wider text-white/55">
+  <div className="mt-0.5 text-[12px] text-white/60">
     {s.unit}
   </div>
 </div>
 ```
 
-`s.price` already starts with `From` so no string surgery is needed — drop the `.replace(/^From\s*/, "")`.
-
 ### Out of scope
 
-No other changes to the Services card (image, icon badge, title, description, header link all stay). No changes to Specialisms, Location, or any other section.
+Title, description, image, icon badge, header link, and all other sections unchanged.
