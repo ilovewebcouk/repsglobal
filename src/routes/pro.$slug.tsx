@@ -420,7 +420,7 @@ function ProProfilePage() {
                     key={s.title}
                     className="flex h-full flex-col overflow-hidden rounded-[18px] bg-reps-panel text-white"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden">
+                    <div className="relative aspect-[5/4] overflow-hidden">
                       <img
                         src={s.image}
                         alt=""
