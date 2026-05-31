@@ -22,11 +22,17 @@ fi
 
 fail=0
 section() { echo; echo "── $1 ──"; }
+
+# Lines describing the rules themselves are not violations.
+# Skip any hit whose line contains one of these guidance markers.
+GUIDANCE_RE='[Ff]orbidden|[Nn]ever use|[Mm]ust not|[Dd]o not use|[Rr]etired|[Dd]eprecated|[Aa]rchived|[Rr]eplace[ds]?\b|→|former|previously|rejected|legacy|migration'
+
 check() {
   local label="$1"; shift
   local pattern="$1"; shift
   local hits
-  hits=$(rg -n --no-heading -e "$pattern" "${EXISTING[@]}" "$@" 2>/dev/null || true)
+  hits=$(rg -n --no-heading -e "$pattern" "${EXISTING[@]}" "$@" 2>/dev/null \
+         | rg -v -e "$GUIDANCE_RE" || true)
   if [ -n "$hits" ]; then
     section "$label"
     echo "$hits"
