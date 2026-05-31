@@ -108,7 +108,7 @@ function Sidebar({ active }: { active: ProActive }) {
         </span>
       </Link>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         {NAV_GROUPS.map((group) => (
           <div key={group.title} className="mb-5">
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
