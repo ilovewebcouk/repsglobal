@@ -32,6 +32,7 @@ import { Route as AdminVerificationRouteImport } from './routes/admin_.verificat
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
+import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
@@ -150,6 +151,11 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   path: '/admin/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMigrationRoute = AdminMigrationRouteImport.update({
+  id: '/admin_/migration',
+  path: '/admin/migration',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   id: '/admin_/memberships',
   path: '/admin/memberships',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
+  '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reviews': typeof AdminReviewsRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/memberships'
+    | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/memberships'
+    | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin_/memberships'
+    | '/admin_/migration'
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reviews'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
+  AdminMigrationRoute: typeof AdminMigrationRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
@@ -518,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/migration': {
+      id: '/admin_/migration'
+      path: '/admin/migration'
+      fullPath: '/admin/migration'
+      preLoaderRoute: typeof AdminMigrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/memberships': {
       id: '/admin_/memberships'
       path: '/admin/memberships'
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
+  AdminMigrationRoute: AdminMigrationRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
