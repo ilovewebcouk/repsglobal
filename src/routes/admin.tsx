@@ -1,21 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Bell,
-  Building2,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
-  FileCheck,
   FileText,
   GraduationCap,
-  LayoutDashboard,
-  LifeBuoy,
-  Plus,
-  Search,
-  Settings,
   ShieldCheck,
   Star,
-  Target,
   TrendingDown,
   TrendingUp,
   UserCheck,
@@ -24,6 +14,8 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+
+import { AdminShell } from "@/components/dashboard/AdminShell";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -51,175 +43,6 @@ export const Route = createFileRoute("/admin")({
   }),
   component: AdminDashboardPage,
 });
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-
-type NavItem = {
-  icon: LucideIcon;
-  label: string;
-  badge?: string;
-  active?: boolean;
-};
-
-const NAV_MANAGE: NavItem[] = [
-  { icon: LayoutDashboard, label: "Overview", active: true },
-  { icon: Users, label: "Professionals" },
-  { icon: UserCheck, label: "Members" },
-  { icon: Target, label: "Leads" },
-  { icon: FileCheck, label: "Qualifications" },
-  { icon: GraduationCap, label: "CPD & Education" },
-  { icon: Star, label: "Reviews" },
-];
-
-const NAV_PLATFORM: NavItem[] = [
-  { icon: FileText, label: "Content Studio" },
-  { icon: Building2, label: "Reports" },
-  { icon: Settings, label: "Settings" },
-  { icon: ShieldCheck, label: "System Logs" },
-  { icon: LifeBuoy, label: "Support Tickets", badge: "5" },
-];
-
-function Sidebar() {
-  return (
-    <aside className="hidden w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
-      <Link to="/" className="flex items-center gap-3 px-5 pb-5 pt-6">
-        <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPs
-        </span>
-        <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
-          The Register of
-          <br />
-          Exercise Professionals
-        </span>
-      </Link>
-
-      <div className="mx-3 mb-3 flex items-center gap-2 rounded-[10px] bg-reps-orange-soft px-3 py-2">
-        <ShieldCheck className="h-4 w-4 text-reps-orange" />
-        <span className="text-[12px] font-semibold text-reps-orange">
-          REPs Admin
-        </span>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        <NavSection title="Manage" items={NAV_MANAGE} />
-        <NavSection title="Platform" items={NAV_PLATFORM} />
-      </nav>
-
-      {/* Admin user card */}
-      <div className="px-3 pb-5">
-        <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
-          <img
-            src={proJames}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover"
-          />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-semibold text-white">
-              James Admin
-            </div>
-            <div className="truncate text-[11px] text-white/55">
-              Super Administrator
-            </div>
-            <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-reps-green">
-              <span className="h-1.5 w-1.5 rounded-full bg-reps-green" />
-              Online
-            </span>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function NavSection({ title, items }: { title: string; items: NavItem[] }) {
-  return (
-    <div className="mb-5">
-      <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
-        {title}
-      </div>
-      <ul className="space-y-1">
-        {items.map((item) => (
-          <li key={item.label}>
-            <button
-              type="button"
-              className={`flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors ${
-                item.active
-                  ? "bg-reps-orange-soft text-reps-orange"
-                  : "text-white/70 hover:bg-reps-panel hover:text-white"
-              }`}
-            >
-              <item.icon className="h-[18px] w-[18px] shrink-0" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {item.badge ? (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
-                  {item.badge}
-                </span>
-              ) : null}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/* ============================================================
-   TOP BAR
-   ============================================================ */
-
-function TopBar() {
-  return (
-    <header className="flex items-center justify-between gap-6 px-8 pt-7">
-      <div>
-        <h1 className="font-display text-[22px] font-bold leading-tight text-white">
-          Platform Overview
-        </h1>
-        <p className="mt-0.5 text-[13px] text-white/55">
-          Real-time overview of the REPs platform and key operational metrics.
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="hidden h-10 w-[360px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/55 md:flex">
-          <Search className="h-4 w-4" />
-          <span className="flex-1">Search professionals, members, leads…</span>
-          <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
-            ⌘K
-          </kbd>
-        </div>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-reps-orange px-1 text-[9px] font-semibold text-white">
-            12
-          </span>
-        </button>
-        <button
-          type="button"
-          aria-label="Help"
-          className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
-        >
-          <CircleHelp className="h-4 w-4" />
-        </button>
-        <div className="flex items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-2 py-1.5">
-          <img
-            src={proJames}
-            alt=""
-            className="h-8 w-8 rounded-full object-cover"
-          />
-          <div className="pr-1 leading-tight">
-            <div className="text-[12px] font-semibold text-white">James Admin</div>
-            <div className="text-[10px] text-white/55">Super Admin</div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 /* ============================================================
    PRIMITIVES
@@ -1405,40 +1228,20 @@ function TopProsTable() {
 
 function AdminDashboardPage() {
   return (
-    <div className="dark min-h-screen bg-reps-ink text-white">
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <div className="min-w-0 flex-1">
-          <TopBar />
-          <div className="flex items-center justify-end gap-2 px-8 pt-4">
-            <RangePill />
-          </div>
-          <main className="space-y-6 px-8 pb-12 pt-4">
-            <KpiRow />
-            <RegistrationsAndSpecialisms />
-            <ActivityRow />
-            <RevenueAndMembership />
-            <BreakdownRow />
-            <TopProsTable />
-          </main>
-          <footer className="flex items-center justify-between border-t border-reps-border px-8 py-5 text-[12px] text-white/50">
-            <span>© 2025 REPs. All rights reserved.</span>
-            <div className="flex items-center gap-5">
-              <a href="#" className="hover:text-white">Privacy Policy</a>
-              <a href="#" className="hover:text-white">Terms of Service</a>
-            </div>
-          </footer>
-        </div>
+    <AdminShell
+      active="Overview"
+      title="Platform Overview"
+      subtitle="Real-time overview of the REPs platform and key operational metrics."
+      actions={<RangePill />}
+    >
+      <div className="space-y-6">
+        <KpiRow />
+        <RegistrationsAndSpecialisms />
+        <ActivityRow />
+        <RevenueAndMembership />
+        <BreakdownRow />
+        <TopProsTable />
       </div>
-
-      {/* Floating + action */}
-      <button
-        type="button"
-        aria-label="Quick action"
-        className="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange text-white shadow-none transition-colors hover:bg-reps-orange-hover"
-      >
-        <Plus className="h-5 w-5" />
-      </button>
-    </div>
+    </AdminShell>
   );
 }

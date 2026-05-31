@@ -1,25 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Activity,
-  Apple,
-  AreaChart,
-  Bell,
+import { Activity,
   Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   ClipboardList,
-  CreditCard,
-  Dumbbell,
   FileText,
   GraduationCap,
   Inbox,
-  LayoutDashboard,
   Mail,
-  MessagesSquare,
   Plus,
-  Search,
-  Settings,
   ShieldCheck,
   Sparkles,
   Star,
@@ -27,199 +17,46 @@ import {
   TrendingDown,
   TrendingUp,
   Trophy,
-  Users,
   Wallet,
-  Wrench,
-  type LucideIcon,
+  type LucideIcon
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
+import { ProShell } from "@/components/dashboard/ProShell";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import holoFigure from "@/assets/dashboard-holo-figure.png";
 
-export const Route = createFileRoute("/dashboard")({
-  head: () => ({
-    meta: [
+export const Route = createFileRoute("/dashboard")({ head: () => ({ meta: [
       { title: "Dashboard — REPs Professional" },
-      {
-        name: "description",
+      { name: "description",
         content:
-          "Your REPs professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place.",
-      },
+          "Your REPs professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place."
+},
       { property: "og:title", content: "REPs Professional Dashboard" },
-      {
-        property: "og:description",
+      { property: "og:description",
         content:
-          "Manage your clients, schedule, revenue and career — the REPs Professional Dashboard.",
-      },
+          "Manage your clients, schedule, revenue and career — the REPs Professional Dashboard."
+},
       { property: "og:url", content: "/dashboard" },
     ],
-    links: [{ rel: "canonical", href: "/dashboard" }],
-  }),
-  component: DashboardPage,
+    links: [{ rel: "canonical", href: "/dashboard" }]
+}),
+  component: DashboardPage
 });
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-
-type NavItem = {
-  icon: LucideIcon;
-  label: string;
-  badge?: string;
-  active?: boolean;
-};
-
-const NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Users, label: "Clients" },
-  { icon: Calendar, label: "Calendar" },
-  { icon: Dumbbell, label: "Programs" },
-  { icon: Apple, label: "Nutrition" },
-  { icon: ClipboardList, label: "Check-Ins" },
-  { icon: MessagesSquare, label: "Messages", badge: "6" },
-  { icon: Target, label: "Leads" },
-  { icon: CreditCard, label: "Payments" },
-  { icon: AreaChart, label: "Reports" },
-  { icon: FileText, label: "Content Studio" },
-  { icon: GraduationCap, label: "Education & CPD" },
-  { icon: Users, label: "Community" },
-  { icon: Wrench, label: "Business Tools" },
-  { icon: Settings, label: "Settings" },
-];
-
-function Sidebar() {
-  return (
-    <aside className="hidden w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
-      {/* Logo */}
-      <Link to="/" className="flex items-center gap-3 px-5 pb-6 pt-6">
-        <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPs
-        </span>
-        <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
-          The Register of
-          <br />
-          Exercise Professionals
-        </span>
-      </Link>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        <ul className="space-y-1">
-          {NAV.map((item) => (
-            <li key={item.label}>
-              <button
-                type="button"
-                className={`flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors ${
-                  item.active
-                    ? "bg-reps-orange-soft text-reps-orange"
-                    : "text-white/70 hover:bg-reps-panel hover:text-white"
-                }`}
-              >
-                <item.icon className="h-[18px] w-[18px] shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge ? (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* User card */}
-      <div className="space-y-3 px-3 pb-5">
-        <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
-          <img
-            src={proJames}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover"
-          />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-semibold text-white">
-              James Trainer
-            </div>
-            <div className="truncate text-[11px] text-white/55">
-              Personal Trainer
-            </div>
-            <span className="mt-1 inline-flex h-4 items-center rounded-full bg-reps-orange-soft px-2 text-[10px] font-semibold text-reps-orange">
-              REPs Level 3
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-[13px] font-semibold text-reps-orange shadow-none transition-colors hover:bg-reps-orange/15"
-        >
-          <Sparkles className="h-4 w-4" />
-          AI Assistant
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-/* ============================================================
-   TOP BAR
-   ============================================================ */
-
-function TopBar() {
-  return (
-    <header className="flex items-center justify-between gap-6 px-8 pt-7">
-      <div>
-        <h1 className="font-display text-[22px] font-bold leading-tight text-white">
-          Welcome back, James <span aria-hidden>👋</span>
-        </h1>
-        <p className="mt-0.5 text-[13px] text-white/55">
-          Here&apos;s what&apos;s happening with your business today.
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="hidden h-10 w-[320px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/55 md:flex">
-          <Search className="h-4 w-4" />
-          <span className="flex-1">Search clients, leads, programs…</span>
-          <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
-            ⌘K
-          </kbd>
-        </div>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-reps-orange px-1 text-[9px] font-semibold text-white">
-            12
-          </span>
-        </button>
-        <img
-          src={proJames}
-          alt=""
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-reps-border"
-        />
-      </div>
-    </header>
-  );
-}
 
 /* ============================================================
    PRIMITIVES
    ============================================================ */
 
-function Card({
-  children,
+function Card({ children,
   className = "",
-  size = "card",
-}: {
-  children: React.ReactNode;
+  size = "card"
+}: { children: React.ReactNode;
   className?: string;
   size?: "card" | "panel";
-}) {
-  const radius = size === "panel" ? "rounded-[22px]" : "rounded-[18px]";
+}) { const radius = size === "panel" ? "rounded-[22px]" : "rounded-[18px]";
   return (
     <div
       className={`${radius} border border-reps-border bg-reps-panel p-5 ${className}`}
@@ -229,16 +66,13 @@ function Card({
   );
 }
 
-function PanelHeader({
-  title,
+function PanelHeader({ title,
   right,
-  icon: Icon,
-}: {
-  title: string;
+  icon: Icon
+}: { title: string;
   right?: React.ReactNode;
   icon?: LucideIcon;
-}) {
-  return (
+}) { return (
     <div className="mb-4 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2">
         {Icon ? <Icon className="h-4 w-4 text-white/70" /> : null}
@@ -251,8 +85,7 @@ function PanelHeader({
   );
 }
 
-function OutlineButton({ children }: { children: React.ReactNode }) {
-  return (
+function OutlineButton({ children }: { children: React.ReactNode }) { return (
     <button
       type="button"
       className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft text-[13px] font-semibold text-white/80 shadow-none transition-colors hover:bg-reps-panel-soft/70 hover:text-white"
@@ -262,8 +95,7 @@ function OutlineButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-function GhostButton({ children }: { children: React.ReactNode }) {
-  return (
+function GhostButton({ children }: { children: React.ReactNode }) { return (
     <button
       type="button"
       className="inline-flex h-8 items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none transition-colors hover:text-white"
@@ -274,14 +106,11 @@ function GhostButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Delta({
-  value,
-  positive = true,
-}: {
-  value: string;
+function Delta({ value,
+  positive = true
+}: { value: string;
   positive?: boolean;
-}) {
-  const Icon = positive ? TrendingUp : TrendingDown;
+}) { const Icon = positive ? TrendingUp : TrendingDown;
   const color = positive ? "text-reps-green" : "text-reps-red";
   return (
     <span className={`inline-flex items-center gap-1 text-[12px] font-semibold ${color}`}>
@@ -290,8 +119,7 @@ function Delta({
   );
 }
 
-function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) {
-  const path =
+function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) { const path =
     trend === "up"
       ? "M0 28 L10 24 L20 26 L30 18 L40 20 L50 12 L60 16 L70 8 L80 14 L90 6 L100 10"
       : "M0 6 L10 10 L20 8 L30 16 L40 14 L50 22 L60 18 L70 26 L80 20 L90 28 L100 24";
@@ -318,8 +146,7 @@ function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) {
    ROW 1 — KPI tiles
    ============================================================ */
 
-function KpiRow() {
-  return (
+function KpiRow() { return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
       <KpiTile
         label="Monthly Revenue"
@@ -387,18 +214,15 @@ function KpiRow() {
   );
 }
 
-function KpiTile({
-  label,
+function KpiTile({ label,
   value,
   delta,
-  sub,
-}: {
-  label: string;
+  sub
+}: { label: string;
   value: string;
   delta: string;
   sub: string;
-}) {
-  return (
+}) { return (
     <Card>
       <div className="text-[12px] text-white/55">{label}</div>
       <div className="mt-2 flex items-baseline gap-2">
@@ -428,30 +252,25 @@ const SCHEDULE = [
 ];
 
 const AI_INSIGHTS = [
-  {
-    icon: TrendingUp,
+  { icon: TrendingUp,
     title: "Revenue is up 14% this month",
-    sub: "Great work! You are on track to hit £15k this month.",
-  },
-  {
-    icon: Activity,
+    sub: "Great work! You are on track to hit £15k this month."
+},
+  { icon: Activity,
     title: "3 clients are at cancellation risk",
-    sub: "We recommend reaching out to them this week.",
-  },
-  {
-    icon: ClipboardList,
+    sub: "We recommend reaching out to them this week."
+},
+  { icon: ClipboardList,
     title: "8 check-ins require your review",
-    sub: "Clients are waiting for your feedback.",
-  },
-  {
-    icon: Target,
+    sub: "Clients are waiting for your feedback."
+},
+  { icon: Target,
     title: "2 leads are likely to convert today",
-    sub: "High intent leads ready for your follow up.",
-  },
+    sub: "High intent leads ready for your follow up."
+},
 ];
 
-function ScheduleAndAi() {
-  return (
+function ScheduleAndAi() { return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {/* Today's Schedule */}
       <Card>
@@ -487,8 +306,7 @@ function ScheduleAndAi() {
         <PanelHeader
           title="AI Business Command Centre"
           icon={Sparkles}
-          right={
-            <button
+          right={ <button
               type="button"
               className="inline-flex h-8 items-center gap-1 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
             >
@@ -534,8 +352,7 @@ function ScheduleAndAi() {
         <PanelHeader
           title="Your Professional Status"
           icon={Trophy}
-          right={
-            <button
+          right={ <button
               type="button"
               className="inline-flex h-8 items-center rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none hover:text-white"
             >
@@ -593,18 +410,15 @@ function ScheduleAndAi() {
   );
 }
 
-function StatusRow({
-  icon: Icon,
+function StatusRow({ icon: Icon,
   iconColor,
   title,
-  sub,
-}: {
-  icon: LucideIcon;
+  sub
+}: { icon: LucideIcon;
   iconColor: string;
   title: string;
   sub: string;
-}) {
-  return (
+}) { return (
     <li className="flex items-start gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2.5">
       <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
       <div>
@@ -615,16 +429,13 @@ function StatusRow({
   );
 }
 
-function PillRow({
-  icon: Icon,
+function PillRow({ icon: Icon,
   label,
-  pill,
-}: {
-  icon: LucideIcon;
+  pill
+}: { icon: LucideIcon;
   label: string;
   pill: string;
-}) {
-  return (
+}) { return (
     <li className="flex items-center justify-between rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2.5">
       <span className="flex items-center gap-2 text-[12.5px] text-white/80">
         <Icon className="h-4 w-4 text-reps-orange" />
@@ -642,27 +453,24 @@ function PillRow({
    ============================================================ */
 
 const CLIENT_ALERTS = [
-  {
-    avatar: proSophie,
+  { avatar: proSophie,
     name: "Sarah Mitchell",
     risk: "High Risk",
     riskColor: "bg-reps-red/15 text-reps-red",
-    note: "Weight loss has stalled for 14 days. Adherence down 23%.",
-  },
-  {
-    avatar: proDaniel,
+    note: "Weight loss has stalled for 14 days. Adherence down 23%."
+},
+  { avatar: proDaniel,
     name: "Mike Johnson",
     risk: "Medium Risk",
     riskColor: "bg-reps-orange-soft text-reps-orange",
-    note: "Recovery score is low. Injury risk is elevated.",
-  },
-  {
-    avatar: proLaura,
+    note: "Recovery score is low. Injury risk is elevated."
+},
+  { avatar: proLaura,
     name: "Emma Davis",
     risk: "Medium Risk",
     riskColor: "bg-reps-orange-soft text-reps-orange",
-    note: "Missed 2 workouts this week. Engagement declining.",
-  },
+    note: "Missed 2 workouts this week. Engagement declining."
+},
 ];
 
 const LEAD_PIPELINE = [
@@ -674,58 +482,50 @@ const LEAD_PIPELINE = [
 ];
 
 const LEADS = [
-  {
-    avatar: proDaniel,
+  { avatar: proDaniel,
     name: "Tom Harris",
     sub: "Enquired 2h ago",
     intent: "High intent",
-    intentColor: "bg-reps-green/15 text-reps-green",
-  },
-  {
-    avatar: proLaura,
+    intentColor: "bg-reps-green/15 text-reps-green"
+},
+  { avatar: proLaura,
     name: "Lucy Green",
     sub: "Enquired 1d ago",
     intent: "Medium intent",
-    intentColor: "bg-reps-orange-soft text-reps-orange",
-  },
-  {
-    avatar: proJames,
+    intentColor: "bg-reps-orange-soft text-reps-orange"
+},
+  { avatar: proJames,
     name: "David Wilson",
     sub: "Enquired 2d ago",
     intent: "High intent",
-    intentColor: "bg-reps-green/15 text-reps-green",
-  },
+    intentColor: "bg-reps-green/15 text-reps-green"
+},
 ];
 
 const CONTENT_ITEMS = [
-  {
-    title: "7 Breakfast Ideas for Fat Loss",
+  { title: "7 Breakfast Ideas for Fat Loss",
     sub: "Instagram Post",
     status: "Scheduled for Tomorrow",
-    statusColor: "bg-reps-blue/15 text-reps-blue",
-  },
-  {
-    title: "5 Tips to Improve Your Sleep",
+    statusColor: "bg-reps-blue/15 text-reps-blue"
+},
+  { title: "5 Tips to Improve Your Sleep",
     sub: "Email",
     status: "Scheduled for 19 May",
-    statusColor: "bg-reps-blue/15 text-reps-blue",
-  },
-  {
-    title: "Full Body Strength Workout",
+    statusColor: "bg-reps-blue/15 text-reps-blue"
+},
+  { title: "Full Body Strength Workout",
     sub: "YouTube Video",
     status: "Draft",
-    statusColor: "bg-reps-panel-soft text-white/70",
-  },
-  {
-    title: "May Challenge | 10K Steps",
+    statusColor: "bg-reps-panel-soft text-white/70"
+},
+  { title: "May Challenge | 10K Steps",
     sub: "Challenge",
     status: "Active",
-    statusColor: "bg-reps-green/15 text-reps-green",
-  },
+    statusColor: "bg-reps-green/15 text-reps-green"
+},
 ];
 
-function PerformanceRow() {
-  return (
+function PerformanceRow() { return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
       {/* Client Performance */}
       <Card className="xl:col-span-1">
@@ -738,8 +538,7 @@ function PerformanceRow() {
             <button
               key={t}
               type="button"
-              className={`pb-2 ${
-                i === 0
+              className={`pb-2 ${ i === 0
                   ? "border-b-2 border-reps-orange font-semibold text-reps-orange"
                   : "text-white/55 hover:text-white"
               }`}
@@ -761,8 +560,7 @@ function PerformanceRow() {
       <Card>
         <PanelHeader
           title="AI Client Alerts"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">
+          right={ <span className="text-[12px] font-semibold text-reps-orange">
               View all (12)
             </span>
           }
@@ -852,8 +650,7 @@ function PerformanceRow() {
       <Card>
         <PanelHeader
           title="Content Studio"
-          right={
-            <button
+          right={ <button
               type="button"
               className="inline-flex h-8 items-center gap-1 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
@@ -866,8 +663,7 @@ function PerformanceRow() {
             <button
               key={t}
               type="button"
-              className={`pb-2 ${
-                i === 0
+              className={`pb-2 ${ i === 0
                   ? "border-b-2 border-reps-orange font-semibold text-reps-orange"
                   : "text-white/55 hover:text-white"
               }`}
@@ -906,16 +702,13 @@ function PerformanceRow() {
   );
 }
 
-function MiniStat({
-  label,
+function MiniStat({ label,
   value,
-  delta,
-}: {
-  label: string;
+  delta
+}: { label: string;
   value: string;
   delta: string;
-}) {
-  return (
+}) { return (
     <div>
       <div className="truncate text-[10px] text-white/55">{label}</div>
       <div className="mt-0.5 font-display text-[13px] font-bold text-white">
@@ -926,8 +719,7 @@ function MiniStat({
   );
 }
 
-function LineChartSvg() {
-  return (
+function LineChartSvg() { return (
     <svg
       viewBox="0 0 320 140"
       className="mt-3 h-[150px] w-full"
@@ -978,8 +770,7 @@ const PROGRAMS = [
   { name: "HIIT Program", pct: 52, color: "var(--reps-red)" },
 ];
 
-function RevenueRow() {
-  return (
+function RevenueRow() { return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {/* Revenue Overview */}
       <Card size="panel">
@@ -1056,16 +847,13 @@ function RevenueRow() {
   );
 }
 
-function BreakdownStat({
-  label,
+function BreakdownStat({ label,
   value,
-  delta,
-}: {
-  label: string;
+  delta
+}: { label: string;
   value: string;
   delta: string;
-}) {
-  return (
+}) { return (
     <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2">
       <div className="text-[10.5px] text-white/55">{label}</div>
       <div className="mt-1 font-display text-[15px] font-bold text-white">
@@ -1076,8 +864,7 @@ function BreakdownStat({
   );
 }
 
-function RevenueChart() {
-  return (
+function RevenueChart() { return (
     <svg
       viewBox="0 0 600 200"
       className="mt-4 h-[200px] w-full"
@@ -1116,8 +903,7 @@ function RevenueChart() {
   );
 }
 
-function DonutChart() {
-  // 69 / 20 / 11. Stroke length over 2π·r
+function DonutChart() { // 69 / 20 / 11. Stroke length over 2π·r
   const r = 56;
   const c = 2 * Math.PI * r;
   const seg = (pct: number) => (pct / 100) * c;
@@ -1164,16 +950,13 @@ function DonutChart() {
   );
 }
 
-function DonutLegend({
-  color,
+function DonutLegend({ color,
   label,
-  value,
-}: {
-  color: string;
+  value
+}: { color: string;
   label: string;
   value: string;
-}) {
-  return (
+}) { return (
     <li className="flex items-center gap-2 whitespace-nowrap">
       <span
         className="h-2.5 w-2.5 rounded-full"
@@ -1209,15 +992,13 @@ const EVENTS = [
   { month: "MAY", day: "21", title: "CPD Workshop: Nutrition", sub: "Wednesday, 10:00", trailing: "8 Registered" },
 ];
 
-function SpotlightRow() {
-  return (
+function SpotlightRow() { return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {/* Spotlight */}
       <Card>
         <PanelHeader
           title="Client Progress Spotlight"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">View all</span>
+          right={ <span className="text-[12px] font-semibold text-reps-orange">View all</span>
           }
         />
         <div className="grid grid-cols-3 gap-2">
@@ -1284,8 +1065,7 @@ function SpotlightRow() {
       <Card>
         <PanelHeader
           title="Upcoming Events"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">
+          right={ <span className="text-[12px] font-semibold text-reps-orange">
               View calendar
             </span>
           }
@@ -1339,15 +1119,13 @@ const TIPS = [
   { icon: Inbox, title: "Bundle your services", sub: "Increase revenue with service packages." },
 ];
 
-function BottomRow() {
-  return (
+function BottomRow() { return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {/* Reviews */}
       <Card>
         <PanelHeader
           title="Recent Client Reviews"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">
+          right={ <span className="text-[12px] font-semibold text-reps-orange">
               View all (128)
             </span>
           }
@@ -1387,8 +1165,7 @@ function BottomRow() {
       <Card>
         <PanelHeader
           title="CPD & Education"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">View all</span>
+          right={ <span className="text-[12px] font-semibold text-reps-orange">View all</span>
           }
         />
         <ul className="space-y-3">
@@ -1422,8 +1199,7 @@ function BottomRow() {
       <Card>
         <PanelHeader
           title="Business Growth Tips"
-          right={
-            <span className="text-[12px] font-semibold text-reps-orange">View all</span>
+          right={ <span className="text-[12px] font-semibold text-reps-orange">View all</span>
           }
         />
         <ul className="space-y-3">
@@ -1455,8 +1231,7 @@ function BottomRow() {
    FOOTER + FAB
    ============================================================ */
 
-function DashboardFooter() {
-  return (
+function DashboardFooter() { return (
     <footer className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-reps-border px-8 py-6 text-[12px] text-white/55 sm:flex-row">
       <div className="flex items-center gap-3">
         <span className="font-display text-[18px] font-bold tracking-tight text-white">
@@ -1484,20 +1259,20 @@ function DashboardFooter() {
 
 function DashboardPage() {
   return (
-    <div className="flex min-h-screen bg-reps-ink text-reps-text">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar />
-        <main className="flex flex-col gap-4 px-8 py-6">
-          <KpiRow />
-          <ScheduleAndAi />
-          <PerformanceRow />
-          <RevenueRow />
-          <SpotlightRow />
-          <BottomRow />
-        </main>
-        <DashboardFooter />
+    <ProShell
+      active="Dashboard"
+      title="Welcome back, James 👋"
+      subtitle="Here's what's happening with your business today."
+    >
+      <div className="flex flex-col gap-4">
+        <KpiRow />
+        <ScheduleAndAi />
+        <PerformanceRow />
+        <RevenueRow />
+        <SpotlightRow />
+        <BottomRow />
       </div>
+      <DashboardFooter />
 
       {/* FAB */}
       <button
@@ -1507,6 +1282,6 @@ function DashboardPage() {
       >
         <Plus className="h-6 w-6" />
       </button>
-    </div>
+    </ProShell>
   );
 }
