@@ -184,13 +184,14 @@ function SignupPage() {
               Your fitness business, clients and professional profile{" "}
               <span className="text-reps-orange">in one place.</span>
             </h1>
-            <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-white/65">
+            <p className="mt-5 text-[15px] leading-relaxed text-white/65">
               Join thousands of exercise professionals who use REPs to grow
               their business, manage clients and advance their career with
               confidence.
             </p>
 
-            <ul className="mt-8 grid max-w-[560px] gap-5">
+            <ul className="mt-8 grid gap-5">
+
               {TRUST_BULLETS.map((b) => (
                 <li key={b.title} className="flex items-start gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
