@@ -1,15 +1,15 @@
-## Make service-card images a touch taller
+## Move service icon to straddle the image/body seam
 
-The mock-up images sit closer to a 5:4 ratio (slightly taller than wide); the current `aspect-[4/3]` reads as too short/letterboxed.
+In the mock-up, the orange icon circle sits at the **bottom-left of the image** and overlaps onto the dark card body. That overlap pushes the title down, giving the card more vertical breathing room.
 
-### Change
+### Changes (`src/routes/pro.$slug.tsx`)
 
-`src/routes/pro.$slug.tsx` line 423:
+1. **Icon position** (line 430): from `absolute left-3 top-3` to `absolute left-3 -bottom-4` so the circle straddles the seam (half on the image, half on the body).
 
-- `aspect-[4/3]` → `aspect-[5/4]`
+2. **Body top padding** (line 434): bump from `p-4` to `pt-7 px-4 pb-4` so the title clears the overlapping icon.
 
-That's the only edit. Image, icon badge position, title, description, and price lockup all stay the same.
+That's it — image ratio (5/4), title, description, and price lockup all unchanged.
 
 ### Out of scope
 
-No other changes anywhere on the page.
+No other cards, sections, or pages.

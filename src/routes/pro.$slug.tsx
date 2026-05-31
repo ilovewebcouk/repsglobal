@@ -420,18 +420,18 @@ function ProProfilePage() {
                     key={s.title}
                     className="flex h-full flex-col overflow-hidden rounded-[18px] bg-reps-panel text-white"
                   >
-                    <div className="relative aspect-[5/4] overflow-hidden">
+                    <div className="relative aspect-[5/4]">
                       <img
                         src={s.image}
                         alt=""
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
-                      <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white">
+                      <span className="absolute -bottom-4 left-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white ring-4 ring-reps-panel">
                         <s.icon className="h-4 w-4" />
                       </span>
                     </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
+                    <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-7">
                       <div className="min-h-[2.4em] font-display text-[15px] font-bold leading-tight line-clamp-2">
                         {s.title}
                       </div>
