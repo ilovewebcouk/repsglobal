@@ -408,8 +408,8 @@ function HomePage() {
                     <MapPin className="h-3.5 w-3.5" />
                     {p.location}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[13px] text-reps-gold">
-                    <Star className="h-3.5 w-3.5 fill-reps-gold text-reps-gold" />
+                  <div className="flex items-center gap-1.5 text-[13px] text-reps-orange">
+                    <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
                     <span className="font-semibold text-white">{p.rating.toFixed(1)}</span>
                     <span className="text-white/55">({p.reviews})</span>
                   </div>
