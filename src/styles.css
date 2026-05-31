@@ -63,6 +63,9 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--reps-orange-hover);
+  --color-primary-soft: var(--reps-orange-soft);
+  --color-primary-border: var(--reps-orange-border);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
