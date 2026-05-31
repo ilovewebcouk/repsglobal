@@ -146,7 +146,7 @@ function HomePage() {
           <img
             src={heroImg}
             alt=""
-            className="h-full w-full object-cover object-center"
+            className="h-full w-full object-cover object-center lg:object-[78%_top]"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
