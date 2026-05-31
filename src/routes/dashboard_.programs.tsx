@@ -52,7 +52,7 @@ function Card({
 }) {
   return (
     <section
-      className={}
+      className={`rounded-[16px] border border-reps-border bg-reps-panel p-5 ${className}`}
     >
       {children}
     </section>
