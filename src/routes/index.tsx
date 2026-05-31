@@ -146,7 +146,7 @@ function HomePage() {
           <img
             src={heroCoaching}
             alt=""
-            className="h-full w-full object-cover object-center"
+            className="h-full w-full object-cover object-[25%_center]"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
