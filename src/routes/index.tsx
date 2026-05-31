@@ -255,7 +255,7 @@ function HomePage() {
               />
               <button
                 type="button"
-                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[14px] bg-reps-orange px-7 text-[15px] font-semibold text-white shadow-[0_10px_28px_-10px_rgba(242,140,56,0.8)] transition-colors hover:bg-reps-orange-dark"
+                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[14px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
               >
                 <Search className="h-4 w-4" />
                 Find Professionals
@@ -587,7 +587,7 @@ function HomePage() {
 
                 <Link
                   to="/signup"
-                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-[0_10px_28px_-10px_rgba(242,140,56,0.7)] transition-colors hover:bg-reps-orange-dark"
+                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
                 >
                   Join REPs today
                 </Link>
