@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Apple,
   Award,
@@ -10,6 +10,7 @@ import {
   Eye,
   Globe,
   GraduationCap,
+  Loader2,
   Mail,
   ShieldCheck,
   Star,
@@ -17,8 +18,12 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { redirectAfterAuth } from "@/lib/auth-redirect";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
