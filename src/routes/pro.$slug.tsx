@@ -418,20 +418,17 @@ function ProProfilePage() {
                 {pro.services.map((s) => (
                   <article
                     key={s.title}
-                    className="flex items-stretch gap-3 rounded-[18px] bg-reps-panel p-3 text-white"
+                    className="flex items-stretch gap-4 rounded-[18px] bg-reps-panel p-3 text-white"
                   >
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[12px]">
+                    <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px]">
                       <img
                         src={s.image}
                         alt=""
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
-                      <span className="absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-reps-orange text-white">
-                        <s.icon className="h-3.5 w-3.5" />
-                      </span>
                     </div>
-                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-1">
+                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                       <div className="font-display text-[16px] font-bold leading-tight text-white">
                         {s.title}
                       </div>
@@ -450,6 +447,7 @@ function ProProfilePage() {
                   </article>
                 ))}
               </div>
+
 
             </div>
 
