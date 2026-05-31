@@ -536,12 +536,19 @@ function HomePage() {
                 <img
                   src={ctaTrainers}
                   alt="Two REPs verified fitness professionals"
-                  className="h-[240px] w-auto object-contain"
+                  className="h-[280px] w-auto object-contain"
                   loading="lazy"
                   width={1024}
                   height={768}
+                  style={{
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse at center, black 55%, transparent 85%)",
+                    maskImage:
+                      "radial-gradient(ellipse at center, black 55%, transparent 85%)",
+                  }}
                 />
               </div>
+
 
               {/* Right: checklist */}
               <ul className="space-y-3">
