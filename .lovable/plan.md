@@ -1,23 +1,30 @@
-## Add dashboard hero background to /signup
+## Swap laptop screen to a REPs professional dashboard
 
-The mockup shows a dark photo of a laptop displaying a REPs-style dashboard (orange chart accents on dark UI) behind the hero, faded into the `reps-ink` background.
+Single asset replacement. No layout/CSS changes needed.
 
-### What changes
+### What I see in the mockup (zoomed)
+The laptop screen shows a fitness-professional dashboard:
+- **Top-left**: REPs orange logo/wordmark in a dark sidebar header
+- **Left sidebar**: dark vertical nav with small icons
+- **Top row**: three small KPI tiles ("£2,480", "142 clients", "87%" etc.)
+- **Center**: a large dark panel titled "Weekly Progress" with an orange line chart (rising curve)
+- **Right column**: stacked smaller widget cards
+- All dark UI with bright orange accents — clearly REPs branded, not generic
 
-1. **Generate one new asset** — `src/assets/signup-hero-bg.jpg` (1920×1080, `standard` quality). Prompt: a dark moody photograph of an open laptop on a black desk, screen displaying a dark-themed analytics dashboard with orange line charts, KPI cards and sidebar nav; deep blacks, subtle warm orange glow from the screen, cinematic side lighting, shallow depth of field. No text legibility required — it reads as ambience.
+### Change
+1. **Edit `src/assets/signup-hero-bg.jpg` in place** using `imagegen--edit_image` with the current image as the input. Prompt the model to replace what's on the laptop screen with a REPs fitness professional dashboard matching the description above — explicitly:
+   - Orange "REPs" wordmark logo in the top-left sidebar header
+   - Dark sidebar nav on the left
+   - Three small KPI tiles along the top (revenue, clients, retention)
+   - Large "Weekly Progress" chart panel with bright orange line graph in the center
+   - Stack of smaller widget cards on the right
+   - Keep the rest of the photo identical: same dark desk, same warm orange spill lighting, same laptop angle, same depth of field
 
-2. **Edit `src/routes/signup.tsx` hero section only**:
-   - Add the image as an absolute-positioned `<img>` inside the existing hero `<section>` (behind the grid, above the two existing orange radial swooshes).
-   - Apply `object-cover`, anchored roughly to the left/center so the laptop sits behind the left value-prop column like the mockup.
-   - Overlay: a horizontal gradient from `reps-ink` (left, ~85% opacity) fading to ~40% over the image, plus a stronger gradient on the right side so the white form card always sits on near-solid `reps-ink` for contrast.
-   - Keep the existing orange radial glows on top of the image at low opacity for the brand wash.
-   - `z-index` order: image (z-0) → gradient overlays (z-10) → orange glows (z-10) → grid content (`relative z-20`).
-
-3. **No other changes** — header, stats strip, features, FAQ, CTA, footer untouched. No token changes.
-
-### Out of scope
-- Other routes, including `/login`.
-- Replacing the image with a real screenshot of the actual REPs dashboard (we haven't built that page yet — Phase 1 placeholder image is appropriate and matches the mockup's intent).
+2. **No code edits** — the file path stays `src/assets/signup-hero-bg.jpg`, so the existing import in `src/routes/signup.tsx` picks the new image up automatically.
 
 ### Verification
-Screenshot `/signup` at 1469px, compare to `src/mockups/reps_fullpage_signup_login_v1.png` — confirm the laptop/dashboard reads behind the left column, the form card stays high-contrast on dark, and headline + bullets remain fully legible.
+After the edit, view the new asset, then screenshot `/signup` at 1469px and confirm the laptop now reads as a REPs branded dashboard (logo visible, orange chart prominent) and the overall hero ambience still matches the mockup.
+
+### Out of scope
+- No CSS, positioning, opacity, or overlay changes — the user said it's "very, very good and almost perfect."
+- `/login` not touched.
