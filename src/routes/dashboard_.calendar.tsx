@@ -832,7 +832,3 @@ function CalendarPage() {
     </ProShell>
   );
 }
-
-void CheckCircle2;
-void CalendarPlus;
-void FileText;
