@@ -361,42 +361,56 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
             {/* About */}
-            <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div id="about" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
-              <div className="mt-3 space-y-3 text-[13.5px] leading-relaxed text-reps-muted-light">
+              <p className="mt-3 border-l-2 border-reps-orange pl-3 font-display text-[15px] italic leading-snug text-reps-charcoal">
+                &ldquo;{pro.blurb}&rdquo;
+              </p>
+              <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-reps-muted-light">
                 {pro.bio.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
               </div>
-              <div className="mt-5 space-y-3 text-[13px] text-reps-charcoal">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-reps-muted-light" />
-                  {pro.years}+ years experience
+              <div className="mt-auto grid grid-cols-3 gap-2 pt-5">
+                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
+                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
+                    {pro.years}+
+                  </div>
+                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                    Years experience
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-reps-muted-light" />
-                  {pro.clients} clients helped
+                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
+                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
+                    {pro.clients}
+                  </div>
+                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                    Clients helped
+                  </div>
+                </div>
+                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
+                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
+                    {pro.qualifications[0]?.issued.split(" ").pop() ?? "—"}
+                  </div>
+                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                    Verified since
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Services */}
             <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                  Services &amp; Pricing
-                </h2>
-                <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#services">
-                  View all services
-                </a>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                Services &amp; Pricing
+              </h2>
+              <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-3">
                 {pro.services.map((s) => (
                   <article
                     key={s.title}
-                    className="overflow-hidden rounded-[18px] bg-reps-panel text-white"
+                    className="flex h-full flex-col overflow-hidden rounded-[18px] bg-reps-panel text-white"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <img
@@ -409,13 +423,28 @@ function ProProfilePage() {
                         <s.icon className="h-4 w-4" />
                       </span>
                     </div>
-                    <div className="space-y-2 p-4">
-                      <div className="font-display text-[15px] font-bold leading-tight">
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                      <div className="min-h-[2.4em] font-display text-[15px] font-bold leading-tight line-clamp-2">
                         {s.title}
                       </div>
-                      <div className="text-[12px] leading-snug text-white/65">{s.desc}</div>
-                      <div className="pt-3 text-[15px] font-bold text-white">{s.price}</div>
-                      <div className="text-[11px] text-white/55">{s.unit}</div>
+                      <div className="flex-1 text-[12px] leading-snug text-white/65 line-clamp-3">
+                        {s.desc}
+                      </div>
+                      <div className="flex items-baseline gap-1.5 pt-1">
+                        <span className="font-display text-[22px] font-bold leading-none text-white">
+                          {s.price.replace(/^From\s*/, "")}
+                        </span>
+                        <span className="text-[10.5px] uppercase tracking-wider text-white/55">
+                          From · {s.unit}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="mt-2 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange text-[12px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        Enquire
+                      </button>
                     </div>
                   </article>
                 ))}
@@ -426,11 +455,11 @@ function ProProfilePage() {
             <div className="flex flex-col gap-5">
               <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
-                <div className="mt-4 flex flex-wrap gap-1.5">
+                <div className="mt-4 grid grid-cols-3 gap-1.5">
                   {pro.specialisms.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
+                      className="inline-flex items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white px-2 py-1 text-center text-[11px] font-medium text-reps-charcoal"
                     >
                       {tag}
                     </span>
@@ -441,7 +470,7 @@ function ProProfilePage() {
               <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
                 <div className="mt-3 grid grid-cols-[1fr_1.1fr] gap-3">
-                  <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
+                  <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
                     <MapPlaceholder />
                   </div>
                   <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
@@ -752,17 +781,29 @@ function TrustItem({
 function MapPlaceholder() {
   return (
     <div className="absolute inset-0 bg-[linear-gradient(135deg,#E8E2D4_0%,#DCD4C3_50%,#CFC6B3_100%)]">
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-reps-charcoal">
+      {/* faint grid overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(40,30,20,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,30,20,0.06) 1px, transparent 1px)",
+          backgroundSize: "25% 25%",
+        }}
+      />
+      {/* centred pin */}
+      <div className="absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 text-reps-charcoal">
         <MapPin className="h-6 w-6 fill-reps-charcoal" />
       </div>
-      <div className="absolute left-2 top-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
+      {/* area labels — corners only, truncated so they never collide */}
+      <div className="absolute left-2 top-2 max-w-[44%] truncate text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
         Clerkenwell
       </div>
-      <div className="absolute bottom-2 left-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
-        Farringdon
-      </div>
-      <div className="absolute bottom-2 right-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
+      <div className="absolute right-2 top-2 max-w-[44%] truncate text-right text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
         City of London
+      </div>
+      <div className="absolute bottom-2 left-2 max-w-[44%] truncate text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
+        Farringdon
       </div>
     </div>
   );
