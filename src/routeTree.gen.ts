@@ -28,6 +28,7 @@ import { Route as DashboardCpdRouteImport } from './routes/dashboard_.cpd'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
+import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
@@ -126,6 +127,11 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   path: '/dashboard/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVerificationRoute = AdminVerificationRouteImport.update({
+  id: '/admin_/verification',
+  path: '/admin/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
   id: '/admin_/professionals',
   path: '/admin/professionals',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
+  '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/professionals'
+    | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/professionals'
+    | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin_/professionals'
+    | '/admin_/verification'
     | '/dashboard_/bookings'
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
+  AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
@@ -438,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/verification': {
+      id: '/admin_/verification'
+      path: '/admin/verification'
+      fullPath: '/admin/verification'
+      preLoaderRoute: typeof AdminVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/professionals': {
       id: '/admin_/professionals'
       path: '/admin/professionals'
@@ -463,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
+  AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
