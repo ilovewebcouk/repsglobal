@@ -1,70 +1,59 @@
-# Check-ins Review Page — Build Plan
+# Phase 1 visual completion — proposed batch
 
-## Route
-Create `src/routes/dashboard_.check-ins.tsx` (flat-nested pattern, matches the other dashboard pages: profile, leads, calendar, programs, clients/$slug). Route string: `/dashboard_/check-ins`, URL: `/dashboard/check-ins`.
+## What's already built (✅)
+Public: `/` · `/find-a-professional` · `/pro/$slug` · `/login` · `/signup`
+Professional dashboard: `/dashboard` · `/dashboard/profile` · `/dashboard/leads` · `/dashboard/clients/sarah-johnson` · `/dashboard/calendar` · `/dashboard/programs` · `/dashboard/check-ins`
+Admin: `/admin` (shell only)
 
-## Naming note
-You asked about naming the mock-up page. Inside the route file the page component will be `CheckInsReviewPage`. If you specifically want the internal label "settlement" used somewhere visible (heading, file, or comment), say where — by default I will use **"Check-ins"** as the visible H1 per the spec, and `CheckInsReviewPage` as the component name. No "settlement" label will appear unless you confirm.
+## Proposed batch — remaining Phase 1 pages
 
-## Shell reuse
-Reuse the existing professional dashboard shell already used by `dashboard_.profile.tsx`, `dashboard_.leads.tsx`, `dashboard_.calendar.tsx`, `dashboard_.programs.tsx`, `dashboard_.clients.$slug.tsx`:
-- Same dark sidebar, same 15-item nav list, **Check-ins** active (orange accent).
-- Same dark TopBar with title + subheading + right-side actions (`Create template`, `Send check-in`, `Export`).
-- Black/charcoal page background, dark cards, subtle borders, Inter typography.
+All built against the locked `reps_fullpage_*_v1.png` mock-ups and the REPs visual system / radius / token rules (REPs Build Compliance skill enforced post-flight).
 
-## Layout (12-col grid)
+### Group A — Professional dashboard (remaining 6)
+Per the spec doc §8.1 future routes:
 
-```text
-[ 6 KPI cards row — Due today | Submitted | Reviewed | At risk | Avg adherence | Response time ]
+1. **`/dashboard/bookings`** — payments-adjacent booking ledger (separate from calendar): upcoming / completed / cancelled / refund-requested, filters, per-booking row with client + service + status + amount.
+2. **`/dashboard/payments`** — revenue KPIs, payouts timeline, invoices table, subscription clients, failed payment alerts.
+3. **`/dashboard/nutrition`** — meal-plan builder analogue to programmes: plan list, daily macro targets, per-meal cards, client assignment, adherence.
+4. **`/dashboard/messages`** — 3-pane inbox (conversation list / thread / client context panel), unread badges, quick replies.
+5. **`/dashboard/reviews`** — public reviews feed, rating breakdown, response composer, flagged/pending moderation list.
+6. **`/dashboard/cpd`** — CPD log, current cycle progress ring, certificate cards, upcoming courses, evidence uploads (visual only).
+7. **`/dashboard/settings`** — account / business profile / notifications / billing / integrations tabs.
 
-[ Inbox 3col ] [ Sarah Johnson review panel 6col ] [ Right stack 3col ]
-                                                    - AI check-in summary
-                                                    - Coach response (textarea)
-                                                    - Risk indicators
-                                                    - Next actions
+(Skipping `/dashboard/clients` index — `clients/$slug` already covers the deep page and the leads/CRM list serves a similar shell. Will add a clients index only if you want it.)
 
-[ At-risk clients 4col ] [ Check-in templates 4col ] [ Adherence trends 4col ]
-```
+### Group B — Admin sub-pages (spec §9.1)
+Lighter than dashboard — shell consistency over deep functionality:
 
-### Left — Check-in inbox (col-span-3)
-Search input (12px radius), filter chips (pill), 6 client rows. Sarah Johnson selected (orange left accent + subtle orange-tinted bg). Each row: avatar, name, programme, submitted/due timestamp, adherence %, status badge, priority dot.
+8. **`/admin/professionals`** — searchable directory of pros, status chips, bulk actions.
+9. **`/admin/verification`** — verification queue with evidence preview panel + approve/reject.
+10. **`/admin/memberships`** — plan tiers, active member counts, churn signals.
+11. **`/admin/reviews`** — moderation queue, flagged review detail panel.
+12. **`/admin/payments`** — platform revenue, payout runs, refund queue.
+13. **`/admin/migration`** — Brilliant Directories migration progress dashboard (BD-specific, allowed in Phase 1 as a visual shell).
 
-### Centre — Sarah Johnson weekly check-in panel (col-span-6, 22px radius)
-- Header: avatar, name, programme, week 5/12, submitted timestamp, status + priority badges.
-- 4 metric tiles (Adherence 85%, Energy 4/5, Sleep 7 hrs, Stress Mild).
-- 4 question/response blocks with the verbatim copy from the spec.
-- Progress metrics grid (8 data points).
-- Progress chart card with tabs (Weight / Adherence / Sleep / Steps) and custom inline-SVG orange trend line + gradient fill (same pattern as the client profile page chart).
+(Skipping `/admin/directory`, `/admin/cpd`, `/admin/support`, `/admin/settings` from the batch — flag if you want any added back.)
 
-### Right stack (col-span-3)
-1. **AI check-in summary** — orange-tinted panel, Sparkles icon, summary text, 5 suggested actions, `Use summary` + `Edit` buttons.
-2. **Coach response** — textarea (12px radius) with prefilled draft, `Send response` / `Save draft` / `Add note`.
-3. **Risk indicators** — 4 items with restrained coloured status dots.
-4. **Next actions** — checklist of 5 items.
+### Group C — Public marketplace gaps
+Phase 1 lock targets the 6 mock-ups. Public site only has homepage, directory, profile, signup/login. Likely-needed extras — **not in the batch unless you confirm**:
+- `/about`, `/for-professionals`, `/pricing`, `/contact`
+These have no locked mock-up, so they'd be derived from the public homepage visual language.
 
-### Bottom row (3 × col-span-4 cards, 16px radius)
-- At-risk clients (3 rows + `Review risk list`)
-- Check-in templates (5 rows + `Manage templates`)
-- Adherence trends (4 metrics + small inline-SVG orange spark line)
+## Working agreement per page (Option A inside the batch)
 
-## Design tokens (locked)
-- Brand orange via existing semantic classes (`bg-reps-orange`, `text-reps-orange`, etc.) — no raw hex in components.
-- Radii: buttons `rounded-[10px]`, inputs/textarea `rounded-[12px]`, cards `rounded-[16px]`, large panels `rounded-[22px]`, pills/chips/badges `rounded-full`.
-- No shadows on buttons.
-- Status dot colours: use existing semantic tokens (orange for medium, red/destructive for high, muted for low/reviewed).
+For each page in the batch:
+1. You give me ~5 lines: route confirm, any specific copy/numbers/sections that matter, anything to skip.
+2. I build it directly (no plan tool, no long prompt) reusing the dashboard shell + tokens.
+3. Post-flight: run the REPs build-compliance audit, capture a full-page screenshot, hand back.
+4. You approve or request tweaks before I move to the next.
 
-## Phase 1 scope guard
-Static placeholder data only. No Supabase, no AI calls, no auth, no real textarea submission, no DB. Buttons are visual only.
+If you say "just go" for a page with no brief, I'll invent realistic UK-fitness placeholder data (client names, £ amounts, dates) consistent with the existing pages (Sarah Johnson, Amelia Carter, etc.).
 
-## Post-flight
-Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` and capture a full-page screenshot of `/dashboard/check-ins` before handing back.
+## Decisions I need from you
 
-## Files
-- create `src/routes/dashboard_.check-ins.tsx`
-- `src/routeTree.gen.ts` will auto-regenerate via the TanStack Router Vite plugin (no manual edit needed).
+1. **Approve the Group A + Group B list above?** (13 pages total.) Remove or add any?
+2. **Group C public pages** — in or out of Phase 1?
+3. **Order** — build in the order listed, or prioritise specific pages first (e.g. messages + payments first because they're core to the pro's daily use)?
+4. **`/dashboard/clients` index page** — add it or skip?
 
----
-
-**Confirm before I build:**
-1. Component name `CheckInsReviewPage`, visible H1 "Check-ins" — OK? Or do you want "settlement" appearing anywhere?
-2. Anything else to adjust before I implement?
+Once you answer, I'll start with page #1 and we'll work through the batch one at a time.
