@@ -71,7 +71,7 @@ function Sidebar({ active }: { active: AdminActive }) {
         <span className="text-[12px] font-semibold text-reps-orange">REPs Admin</span>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         <NavSection title="Manage" items={NAV_MANAGE} active={active} />
         <NavSection title="Platform" items={NAV_PLATFORM} active={active} />
       </nav>
