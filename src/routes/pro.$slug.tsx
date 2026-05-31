@@ -414,44 +414,43 @@ function ProProfilePage() {
                   View all services →
                 </a>
               </div>
-              <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-3">
+              <div className="mt-4 flex flex-col gap-3">
                 {pro.services.map((s) => (
                   <article
                     key={s.title}
-                    className="flex h-full flex-col rounded-[18px] bg-reps-panel text-white"
+                    className="flex items-stretch gap-3 rounded-[18px] bg-reps-panel p-3 text-white"
                   >
-                    <div className="relative">
-                      <div className="aspect-[5/4] overflow-hidden rounded-t-[18px]">
-                        <img
-                          src={s.image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                      <span className="absolute -bottom-4 left-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white ring-4 ring-reps-panel">
-                        <s.icon className="h-4 w-4" />
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[12px]">
+                      <img
+                        src={s.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                      <span className="absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-reps-orange text-white">
+                        <s.icon className="h-3.5 w-3.5" />
                       </span>
                     </div>
-                    <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-7">
-                      <div className="min-h-[2.4em] font-display text-[15px] font-bold leading-tight line-clamp-2">
+                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-1">
+                      <div className="font-display text-[16px] font-bold leading-tight text-white">
                         {s.title}
                       </div>
-                      <div className="flex-1 text-[12px] leading-snug text-white/65 line-clamp-3">
+                      <div className="text-[13px] leading-snug text-white/65 line-clamp-2">
                         {s.desc}
                       </div>
-                      <div className="pt-1">
-                        <div className="font-display text-[15px] font-bold leading-tight text-white">
-                          {s.price}
-                        </div>
-                        <div className="mt-0.5 text-[12px] text-white/60">
-                          {s.unit}
-                        </div>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end justify-center pl-2 pr-1 text-right">
+                      <div className="font-display text-[16px] font-bold leading-tight text-white">
+                        {s.price}
+                      </div>
+                      <div className="mt-0.5 text-[12px] text-white/60">
+                        {s.unit}
                       </div>
                     </div>
                   </article>
                 ))}
               </div>
+
             </div>
 
             {/* Specialisms + Location */}
