@@ -154,13 +154,12 @@ function HomePage() {
           <div className="grid gap-10 lg:grid-cols-[1.45fr_1fr] lg:items-start">
             {/* Left: headline + badges */}
             <div>
-              <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[78px]">
-                Find. Trust.
-                <br />
-                Train.
+              <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
+                Find. Trust. Train.
                 <br />
                 Transform.
               </h1>
+
               <p className="mt-6 max-w-[520px] text-[17px] leading-relaxed text-white/75">
                 REPs connects you with verified fitness professionals you can trust to help you
                 reach your goals.
