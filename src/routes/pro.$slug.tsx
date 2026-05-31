@@ -781,17 +781,29 @@ function TrustItem({
 function MapPlaceholder() {
   return (
     <div className="absolute inset-0 bg-[linear-gradient(135deg,#E8E2D4_0%,#DCD4C3_50%,#CFC6B3_100%)]">
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-reps-charcoal">
+      {/* faint grid overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(40,30,20,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,30,20,0.06) 1px, transparent 1px)",
+          backgroundSize: "25% 25%",
+        }}
+      />
+      {/* centred pin */}
+      <div className="absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 text-reps-charcoal">
         <MapPin className="h-6 w-6 fill-reps-charcoal" />
       </div>
-      <div className="absolute left-2 top-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
+      {/* area labels — corners only, truncated so they never collide */}
+      <div className="absolute left-2 top-2 max-w-[44%] truncate text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
         Clerkenwell
       </div>
-      <div className="absolute bottom-2 left-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
-        Farringdon
-      </div>
-      <div className="absolute bottom-2 right-2 text-[8px] font-medium uppercase tracking-wider text-reps-muted-light/80">
+      <div className="absolute right-2 top-2 max-w-[44%] truncate text-right text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
         City of London
+      </div>
+      <div className="absolute bottom-2 left-2 max-w-[44%] truncate text-[7.5px] font-semibold uppercase tracking-[0.08em] text-reps-charcoal/55">
+        Farringdon
       </div>
     </div>
   );
