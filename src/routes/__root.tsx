@@ -85,13 +85,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:site_name", content: "REPs" },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "REPs — The Register of Exercise Professionals" },
+      { property: "og:title", content: "REPs — Find. Trust. Train. Transform." },
       {
         property: "og:description",
         content:
           "Find verified personal trainers, Pilates instructors, nutritionists and coaches you can trust.",
       },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "REPs — Find. Trust. Train. Transform." },
+      { name: "description", content: "Approved Mockup Hub locks approved visual mockups as the source of truth for platform development." },
+      { property: "og:description", content: "Approved Mockup Hub locks approved visual mockups as the source of truth for platform development." },
+      { name: "twitter:description", content: "Approved Mockup Hub locks approved visual mockups as the source of truth for platform development." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7540707a-1c31-41ef-a604-3ae2a3001cc0/id-preview-2f2ca10b--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1780220683283.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7540707a-1c31-41ef-a604-3ae2a3001cc0/id-preview-2f2ca10b--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1780220683283.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
