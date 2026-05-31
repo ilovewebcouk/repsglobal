@@ -521,19 +521,33 @@ function HomePage() {
                 className="aspect-[4/3] w-full object-cover object-center md:aspect-auto md:h-full md:object-top lg:object-center"
                 loading="lazy"
               />
-              {/* Overlay: vertical ramp on mobile/tablet, horizontal ramp on desktop */}
-              <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/10 via-reps-ink/60 to-reps-ink lg:bg-gradient-to-r lg:from-reps-ink lg:via-reps-ink/70 lg:to-transparent" />
-              {/* Soft deepener for overall contrast */}
-              <div className="absolute inset-0 bg-reps-ink/25" />
+              {/* Shaped overlay: only covers the copy area, leaves trainers clear.
+                  Mobile: image stacks above solid ink panel — no overlay needed.
+                  Tablet: bottom-weighted ramp (trainers top, copy bottom).
+                  Desktop: left-weighted ramp (copy left, trainers right). */}
+              <div
+                className="absolute inset-0 hidden md:block"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(11,13,16,0.45) 60%, #0B0D10 88%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 hidden lg:block"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 38%, rgba(11,13,16,0.55) 55%, rgba(11,13,16,0) 72%)",
+                }}
+              />
             </div>
 
             {/* Foreground copy */}
             <div className="relative px-6 py-8 md:min-h-[480px] md:px-10 md:py-12 lg:min-h-[440px] lg:px-14 lg:py-14">
               <div className="max-w-[520px]">
-                <h2 className="font-display text-[26px] font-bold leading-tight text-white sm:text-[28px] lg:text-[34px]">
+                <h2 className="font-display text-[26px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[28px] lg:text-[34px]">
                   Are you a fitness professional?
                 </h2>
-                <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/75">
+                <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/85">
                   Join REPs and connect with clients who are looking for professionals they can
                   trust.
                 </p>
@@ -546,7 +560,7 @@ function HomePage() {
                     "Access resources & CPD",
                     "Be part of a global community",
                   ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-[14px] text-white/90">
+                    <li key={item} className="flex items-center gap-3 text-[14px] text-white">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
                         <Check className="h-3 w-3" strokeWidth={3} />
                       </span>
