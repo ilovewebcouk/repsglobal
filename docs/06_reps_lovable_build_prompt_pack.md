@@ -1,5 +1,12 @@
 # REPs Global Platform - Lovable Build Prompt Pack
 
+> **Source-of-truth override clause**
+>
+> The approved full-page mock-ups in `src/mockups/` are the locked visual source of truth: `reps_fullpage_home_v1.png`, `reps_fullpage_professional_dashboard_v1.png`, `reps_fullpage_directory_search_results_v1.png`, `reps_fullpage_professional_profile_v1.png`, `reps_fullpage_signup_login_v1.png`, `reps_fullpage_admin_dashboard_v1.png`. They override any earlier written radius, colour or layout guidance where there is a conflict. Older 16:9 mock-up filenames are archived references only and must not drive the build.
+>
+> **Phase 1 scope:** static high-fidelity screens only. No real auth, database, payments, bookings, AI APIs, live maps or Brilliant Directories migration during Phase 1.
+
+
 ## 1. Purpose
 
 This document provides the controlled Lovable prompt sequence for building the REPs Global Platform.
@@ -18,12 +25,12 @@ The objective is to build the app in Lovable without design drift, feature creep
 
 The six approved mock-ups are the only visual source of truth:
 
-1. Public Homepage v1: `home_v1.png`
-2. Professional Dashboard v1: `dashboard_v1.png`
-3. Directory Search Results: `reps_directory_search_results_page.png`
-4. Professional Profile Page: `profile_of_fitness_professional_james_carter.png`
-5. Login / Signup Page: `fitness_professional_sign_up_page_mockup.png`
-6. Admin Dashboard Shell: `platform_overview_dashboard_with_analytics.png`
+1. Public Homepage v1: `reps_fullpage_home_v1.png`
+2. Professional Dashboard v1: `reps_fullpage_professional_dashboard_v1.png`
+3. Directory Search Results: `reps_fullpage_directory_search_results_v1.png`
+4. Professional Profile Page: `reps_fullpage_professional_profile_v1.png`
+5. Login / Signup Page: `reps_fullpage_signup_login_v1.png`
+6. Admin Dashboard Shell: `reps_fullpage_admin_dashboard_v1.png`
 
 The six-screen collage previously generated is rejected and must not be used.
 
@@ -94,12 +101,12 @@ This is Phase 1 only: create static high-fidelity visual screens and reusable UI
 
 Use the approved REPs visual source of truth:
 
-1. home_v1.png
-2. dashboard_v1.png
-3. reps_directory_search_results_page.png
-4. profile_of_fitness_professional_james_carter.png
-5. fitness_professional_sign_up_page_mockup.png
-6. platform_overview_dashboard_with_analytics.png
+1. reps_fullpage_home_v1.png
+2. reps_fullpage_professional_dashboard_v1.png
+3. reps_fullpage_directory_search_results_v1.png
+4. reps_fullpage_professional_profile_v1.png
+5. reps_fullpage_signup_login_v1.png
+6. reps_fullpage_admin_dashboard_v1.png
 
 The six-screen collage is rejected and must not be used.
 
@@ -133,8 +140,11 @@ Use these core colour tokens:
 --reps-text-soft: #D8DCE2
 --reps-muted: #8D96A3
 --reps-muted-light: #6D716F
---reps-orange: #F28C38
---reps-orange-dark: #D87322
+--reps-orange: #FF7A00
+--reps-orange-hover: #E96F00
+--reps-orange-dark: #CC6200
+--reps-orange-soft: rgba(255, 122, 0, 0.12)
+--reps-orange-border: rgba(255, 122, 0, 0.35)
 --reps-gold: #D9B66F
 --reps-green: #3CCB7F
 --reps-red: #F05D5E
@@ -183,14 +193,14 @@ Do not use generic SaaS styling, purple gradients, neon fitness colours, childis
 
 ## Purpose
 
-Build the homepage to match `home_v1.png`.
+Build the homepage to match `reps_fullpage_home_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the public homepage at route `/`.
 
-This page must visually match the approved mock-up `home_v1.png` as closely as possible. Do not reinterpret the design.
+This page must visually match the approved mock-up `reps_fullpage_home_v1.png` as closely as possible. Do not reinterpret the design.
 
 Use the REPs visual design system already created. Do not introduce a new theme.
 
@@ -269,7 +279,7 @@ Do not add live search functionality yet. Buttons can navigate to placeholder ro
 
 ## Acceptance Criteria
 
-- Visually matches `home_v1.png`.
+- Visually matches `reps_fullpage_home_v1.png`.
 - Hero/search area is dominant.
 - Public marketplace trust is clear.
 - Featured professionals match the mock-up structure.
@@ -281,14 +291,14 @@ Do not add live search functionality yet. Buttons can navigate to placeholder ro
 
 ## Purpose
 
-Build the directory results page to match `reps_directory_search_results_page.png`.
+Build the directory results page to match `reps_fullpage_directory_search_results_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the directory search results page at route `/find-a-professional`.
 
-This page must visually match the approved mock-up `reps_directory_search_results_page.png` as closely as possible.
+This page must visually match the approved mock-up `reps_fullpage_directory_search_results_v1.png` as closely as possible.
 
 Use the existing REPs public header, colour system, typography and component styling. Do not introduce a new theme.
 
@@ -395,14 +405,14 @@ Do not add live filtering, maps or database search yet. This is static visual bu
 
 ## Purpose
 
-Build the profile page to match `profile_of_fitness_professional_james_carter.png`.
+Build the profile page to match `reps_fullpage_professional_profile_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the public professional profile page at route `/professional/james-carter`.
 
-This page must visually match the approved mock-up `profile_of_fitness_professional_james_carter.png` as closely as possible.
+This page must visually match the approved mock-up `reps_fullpage_professional_profile_v1.png` as closely as possible.
 
 Use the existing REPs public header, public marketplace design system and white/ivory page background.
 
@@ -500,14 +510,14 @@ Do not add real enquiry forms, booking logic, live reviews or database connectio
 
 ## Purpose
 
-Build the auth acquisition page to match `fitness_professional_sign_up_page_mockup.png`.
+Build the auth acquisition page to match `reps_fullpage_signup_login_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the login/signup page at route `/signup`.
 
-This page must visually match the approved mock-up `fitness_professional_sign_up_page_mockup.png` as closely as possible.
+This page must visually match the approved mock-up `reps_fullpage_signup_login_v1.png` as closely as possible.
 
 This is still Phase 1 static visual build. Do not add working authentication, Supabase, OAuth, password reset or account creation logic yet.
 
@@ -601,14 +611,14 @@ Do not connect any auth logic yet. Form submission can be disabled or visual onl
 
 ## Purpose
 
-Build the professional dashboard to match `dashboard_v1.png`.
+Build the professional dashboard to match `reps_fullpage_professional_dashboard_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the professional dashboard at route `/dashboard`.
 
-This page must visually match the approved mock-up `dashboard_v1.png` as closely as possible.
+This page must visually match the approved mock-up `reps_fullpage_professional_dashboard_v1.png` as closely as possible.
 
 Use the REPs dark operating-system dashboard design system. Do not use a generic SaaS dashboard theme. Do not create a light dashboard.
 
@@ -749,7 +759,7 @@ The dashboard must feel like a professional business operating system, not a wor
 
 ## Acceptance Criteria
 
-- Visually matches `dashboard_v1.png`.
+- Visually matches `reps_fullpage_professional_dashboard_v1.png`.
 - Sidebar, KPIs and card proportions follow the approved mock-up.
 - AI Business Command Centre is central.
 - Professional status is clearly visible.
@@ -761,14 +771,14 @@ The dashboard must feel like a professional business operating system, not a wor
 
 ## Purpose
 
-Build the admin dashboard shell to match `platform_overview_dashboard_with_analytics.png`.
+Build the admin dashboard shell to match `reps_fullpage_admin_dashboard_v1.png`.
 
 ## Copy Box
 
 ```text
 Build the admin dashboard shell at route `/admin`.
 
-This page must visually match the approved mock-up `platform_overview_dashboard_with_analytics.png` as closely as possible.
+This page must visually match the approved mock-up `reps_fullpage_admin_dashboard_v1.png` as closely as possible.
 
 Use the same premium dark operating-system interface as the professional dashboard, adapted for REPs admin operations. Do not create a separate light admin theme.
 
@@ -904,12 +914,12 @@ Review the six Phase 1 screens against the approved REPs mock-ups and tighten th
 
 Approved mock-ups:
 
-1. `/` must match `home_v1.png`
-2. `/find-a-professional` must match `reps_directory_search_results_page.png`
-3. `/professional/james-carter` must match `profile_of_fitness_professional_james_carter.png`
-4. `/signup` must match `fitness_professional_sign_up_page_mockup.png`
-5. `/dashboard` must match `dashboard_v1.png`
-6. `/admin` must match `platform_overview_dashboard_with_analytics.png`
+1. `/` must match `reps_fullpage_home_v1.png`
+2. `/find-a-professional` must match `reps_fullpage_directory_search_results_v1.png`
+3. `/professional/james-carter` must match `reps_fullpage_professional_profile_v1.png`
+4. `/signup` must match `reps_fullpage_signup_login_v1.png`
+5. `/dashboard` must match `reps_fullpage_professional_dashboard_v1.png`
+6. `/admin` must match `reps_fullpage_admin_dashboard_v1.png`
 
 Fix only visual and component consistency issues.
 
@@ -1786,12 +1796,12 @@ Do not change the approved visual direction.
 
 Check visual consistency against the six approved mock-ups:
 
-1. home_v1.png
-2. dashboard_v1.png
-3. reps_directory_search_results_page.png
-4. profile_of_fitness_professional_james_carter.png
-5. fitness_professional_sign_up_page_mockup.png
-6. platform_overview_dashboard_with_analytics.png
+1. reps_fullpage_home_v1.png
+2. reps_fullpage_professional_dashboard_v1.png
+3. reps_fullpage_directory_search_results_v1.png
+4. reps_fullpage_professional_profile_v1.png
+5. reps_fullpage_signup_login_v1.png
+6. reps_fullpage_admin_dashboard_v1.png
 
 Check:
 

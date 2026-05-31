@@ -1,5 +1,12 @@
 # REPs Global Platform — Visual Design System
 
+> **Source-of-truth override clause**
+>
+> The approved full-page mock-ups in `src/mockups/` are the locked visual source of truth: `reps_fullpage_home_v1.png`, `reps_fullpage_professional_dashboard_v1.png`, `reps_fullpage_directory_search_results_v1.png`, `reps_fullpage_professional_profile_v1.png`, `reps_fullpage_signup_login_v1.png`, `reps_fullpage_admin_dashboard_v1.png`. They override any earlier written radius, colour or layout guidance where there is a conflict. Older 16:9 mock-up filenames are archived references only and must not drive the build.
+>
+> **Phase 1 scope:** static high-fidelity screens only. No real auth, database, payments, bookings, AI APIs, live maps or Brilliant Directories migration during Phase 1.
+
+
 ## 1. Purpose
 
 This document defines the visual system for the REPs global platform. It must be used as the design source of truth for all Lovable prompts, page builds, components, layouts and future product decisions.
@@ -133,8 +140,11 @@ The colour system is deliberately restrained. REPs must not become colourful, ch
 | `reps-charcoal` | `#1B1C1E` | Primary text on light backgrounds |
 | `reps-muted` | `#8D96A3` | Muted dark-mode text |
 | `reps-muted-light` | `#6D716F` | Muted light-mode text |
-| `reps-orange` | `#F28C38` | Primary accent, CTAs, active states |
-| `reps-orange-dark` | `#D87322` | Hover state and pressed buttons |
+| `reps-orange` | `#FF7A00` | Primary accent, CTAs, active states |
+| `reps-orange-hover` | `#E96F00` | Hover state on primary buttons |
+| `reps-orange-dark` | `#CC6200` | Pressed / active button state |
+| `reps-orange-soft` | `rgba(255, 122, 0, 0.12)` | Soft tinted fills, badges |
+| `reps-orange-border` | `rgba(255, 122, 0, 0.35)` | Soft outlines on orange surfaces |
 | `reps-gold` | `#D9B66F` | Verification, professional score, premium status |
 | `reps-green` | `#3CCB7F` | Success and positive status |
 | `reps-red` | `#F05D5E` | Risk, failed payment, urgent alert |
@@ -164,18 +174,26 @@ Use this as the first design-token block in Lovable.
   --reps-muted: #8D96A3;
   --reps-muted-light: #6D716F;
 
-  --reps-orange: #F28C38;
-  --reps-orange-dark: #D87322;
+  --reps-orange: #FF7A00;
+  --reps-orange-hover: #E96F00;
+  --reps-orange-dark: #CC6200;
+  --reps-orange-soft: rgba(255, 122, 0, 0.12);
+  --reps-orange-border: rgba(255, 122, 0, 0.35);
   --reps-gold: #D9B66F;
   --reps-green: #3CCB7F;
   --reps-red: #F05D5E;
   --reps-blue: #5FA8FF;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
+  /* REPs radius system (FINAL) */
+  --reps-radius-xs: 6px;
+  --reps-radius-sm: 8px;
+  --reps-radius-button: 10px;
+  --reps-radius-input: 12px;
+  --reps-radius-card: 16px;
+  --reps-radius-card-lg: 18px;
+  --reps-radius-panel: 22px;
+  --reps-radius-hero: 24px;
+  --reps-radius-pill: 999px;
 
   --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.18);
   --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.24);
@@ -292,18 +310,21 @@ Dashboard pages:
 
 ## 8. Border Radius
 
-The visual system should feel refined, not bubbly.
+The visual system must feel premium, structured and refined. Buttons must be sharper than cards. Cards should be softly rounded but not bubbly. Large panels should be slightly softer than standard cards but never feel overly rounded. **14px, 20px, 28px and 32px are not part of the REPs radius system.**
 
 | Component | Radius |
 |---|---:|
-| Small badges | 999px |
-| Inputs | 14px |
-| Buttons | 14px |
-| Profile cards | 22px |
-| Dashboard cards | 22px |
-| Hero image cards | 28px |
-| Large floating search panels | 28px |
-| Modals | 28px |
+| Checkboxes and micro chrome | 6px |
+| Small / compact controls | 8px |
+| Buttons (primary, secondary, outline), filter chips, small dashboard controls | 10px |
+| Inputs, search fields, selects, dropdown triggers, in-card thumbnails | 12px |
+| Dashboard KPI cards, admin metric cards, standard dashboard cards | 16px |
+| Directory result cards, professional profile cards, service cards, featured professional cards | 18px |
+| Large dashboard panels, AI insight panels, search panel containers, signup/auth main card | 22px (signup card may extend to 24px) |
+| Hero image panels, large image containers | 24px |
+| Badges, chips, pills, avatars, icon circles | 999px |
+
+Tailwind usage: prefer exact arbitrary values — `rounded-[6px]`, `rounded-[8px]`, `rounded-[10px]`, `rounded-[12px]`, `rounded-[16px]`, `rounded-[18px]`, `rounded-[22px]`, `rounded-[24px]`, `rounded-full`. Never use `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-[14px]`, `rounded-[20px]`, `rounded-[28px]` or `rounded-[32px]`.
 
 Avoid fully rounded oversized cards unless the component is a badge or pill.
 
@@ -932,9 +953,9 @@ Admin must feel operational and serious, not like a consumer app.
 Primary button:
 
 - Background: `reps-orange`
-- Text: `#111111`
-- Hover: `reps-orange-dark`
-- Radius: 14px
+- Text: `#ffffff`
+- Hover: `reps-orange-hover` (pressed: `reps-orange-dark`)
+- Radius: 10px
 - Font: 14px to 15px, 600
 - Height: 44px to 52px
 
@@ -966,7 +987,7 @@ Danger button:
 Input style:
 
 - Height: 48px to 56px.
-- Radius: 14px.
+- Radius: 12px.
 - Border: soft neutral.
 - Focus border: orange/gold.
 - Focus ring: soft orange at low opacity.
@@ -987,18 +1008,19 @@ Public light inputs:
 
 ### 17.3 Cards
 
-Dashboard cards:
+Dashboard cards (standard KPI / metric / content cards):
 
 - Background: `reps-panel`.
 - Border: 1px solid `reps-border`.
-- Radius: 22px.
+- Radius: 16px.
 - Padding: 20px to 28px.
+- Large dashboard panels (AI insight, search containers, signup card) step up to 22px.
 
-Public cards:
+Public cards (directory result, professional profile, service, featured professional):
 
 - Background: `reps-warm-white`.
 - Border: 1px solid `reps-stone`.
-- Radius: 22px.
+- Radius: 18px.
 - Padding: 24px.
 - Hover: subtle shadow and border lift.
 
@@ -1051,7 +1073,7 @@ Use drawers for:
 
 Modal style:
 
-- Radius: 28px.
+- Radius: 22px (large image-led modals may extend to 24px).
 - Background follows current environment.
 - Clear title, description and CTA row.
 
@@ -1077,7 +1099,7 @@ Hero image style:
 
 - Cinematic crop.
 - Slight dark overlay.
-- Rounded 28px card or full-height image panel.
+- Rounded 24px hero image panel (or full-height image panel).
 - Should support the trust-led search message.
 
 ### 18.2 Professional Profile Imagery
@@ -1232,8 +1254,11 @@ const repsTheme = {
       textSoft: '#D8DCE2',
       muted: '#8D96A3',
       mutedLight: '#6D716F',
-      orange: '#F28C38',
-      orangeDark: '#D87322',
+      orange: '#FF7A00',
+      orangeHover: '#E96F00',
+      orangeDark: '#CC6200',
+      orangeSoft: 'rgba(255, 122, 0, 0.12)',
+      orangeBorder: 'rgba(255, 122, 0, 0.35)',
       gold: '#D9B66F',
       green: '#3CCB7F',
       red: '#F05D5E',
@@ -1241,11 +1266,15 @@ const repsTheme = {
     }
   },
   borderRadius: {
+    xs: '6px',
     sm: '8px',
-    md: '12px',
-    lg: '18px',
-    xl: '24px',
-    '2xl': '32px'
+    button: '10px',
+    input: '12px',
+    card: '16px',
+    cardLg: '18px',
+    panel: '22px',
+    hero: '24px',
+    pill: '9999px'
   },
   boxShadow: {
     soft: '0 18px 60px rgba(0, 0, 0, 0.18)',

@@ -1,5 +1,12 @@
 # REPs Global Platform — Master Product Scope
 
+> **Source-of-truth override clause**
+>
+> The approved full-page mock-ups in `src/mockups/` are the locked visual source of truth: `reps_fullpage_home_v1.png`, `reps_fullpage_professional_dashboard_v1.png`, `reps_fullpage_directory_search_results_v1.png`, `reps_fullpage_professional_profile_v1.png`, `reps_fullpage_signup_login_v1.png`, `reps_fullpage_admin_dashboard_v1.png`. They override any earlier written radius, colour or layout guidance where there is a conflict. Older 16:9 mock-up filenames are archived references only and must not drive the build.
+>
+> **Phase 1 scope:** static high-fidelity screens only. No real auth, database, payments, bookings, AI APIs, live maps or Brilliant Directories migration during Phase 1.
+
+
 ## 1. Product Definition
 
 REPs will become a global fitness professional platform that combines a public-facing professional directory with a complete business operating system for fitness professionals.

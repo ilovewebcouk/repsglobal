@@ -1,5 +1,12 @@
 # REPs Global Platform — Page-by-Page Specification
 
+> **Source-of-truth override clause**
+>
+> The approved full-page mock-ups in `src/mockups/` are the locked visual source of truth: `reps_fullpage_home_v1.png`, `reps_fullpage_professional_dashboard_v1.png`, `reps_fullpage_directory_search_results_v1.png`, `reps_fullpage_professional_profile_v1.png`, `reps_fullpage_signup_login_v1.png`, `reps_fullpage_admin_dashboard_v1.png`. They override any earlier written radius, colour or layout guidance where there is a conflict. Older 16:9 mock-up filenames are archived references only and must not drive the build.
+>
+> **Phase 1 scope:** static high-fidelity screens only. No real auth, database, payments, bookings, AI APIs, live maps or Brilliant Directories migration during Phase 1.
+
+
 ## 1. Purpose
 
 This document defines the first-build page specification for the REPs global platform. It translates the Master Product Scope and Visual Design System into exact page structures that can be built inside Lovable without design drift.
@@ -186,7 +193,7 @@ Hero image direction:
 - Clean studio or gym environment.
 - Realistic, professional and calm.
 - Dark overlay or contained image card.
-- Rounded 28px image container.
+- Rounded 24px hero image container.
 - No aggressive gym posing.
 - No influencer aesthetic.
 
@@ -197,7 +204,7 @@ The search panel is the central homepage component.
 Panel style:
 
 - Warm white background.
-- Rounded 28px.
+- Rounded 22px (search panel container).
 - Large soft shadow.
 - Padding: 16px to 20px desktop.
 - Sits within hero left column or slightly overlaps the lower hero area.
@@ -255,7 +262,7 @@ Search button:
 - Orange fill.
 - Dark text.
 - Height: 56px.
-- Rounded 14px.
+- Rounded 10px (button radius).
 
 Mobile search panel:
 

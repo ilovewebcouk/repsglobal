@@ -1,5 +1,12 @@
 # REPs Global Platform - Mock-up Lock and Source of Truth
 
+> **Source-of-truth override clause**
+>
+> The approved full-page mock-ups in `src/mockups/` are the locked visual source of truth: `reps_fullpage_home_v1.png`, `reps_fullpage_professional_dashboard_v1.png`, `reps_fullpage_directory_search_results_v1.png`, `reps_fullpage_professional_profile_v1.png`, `reps_fullpage_signup_login_v1.png`, `reps_fullpage_admin_dashboard_v1.png`. They override any earlier written radius, colour or layout guidance where there is a conflict. Older 16:9 mock-up filenames are archived references only and must not drive the build.
+>
+> **Phase 1 scope:** static high-fidelity screens only. No real auth, database, payments, bookings, AI APIs, live maps or Brilliant Directories migration during Phase 1.
+
+
 ## 1. Purpose
 
 This document locks the approved visual source of truth for the REPs Global Platform.
@@ -14,7 +21,7 @@ The six-screen collage previously generated is rejected and must not be used as 
 
 File name:
 
-`home_v1.png`
+`reps_fullpage_home_v1.png`
 
 Purpose:
 
@@ -38,7 +45,7 @@ Must define:
 
 File name:
 
-`dashboard_v1.png`
+`reps_fullpage_professional_dashboard_v1.png`
 
 Purpose:
 
@@ -64,7 +71,7 @@ Must define:
 
 File name:
 
-`reps_directory_search_results_page.png`
+`reps_fullpage_directory_search_results_v1.png`
 
 Purpose:
 
@@ -88,7 +95,7 @@ Must define:
 
 File name:
 
-`profile_of_fitness_professional_james_carter.png`
+`reps_fullpage_professional_profile_v1.png`
 
 Purpose:
 
@@ -115,7 +122,7 @@ Must define:
 
 File name:
 
-`fitness_professional_sign_up_page_mockup.png`
+`reps_fullpage_signup_login_v1.png`
 
 Purpose:
 
@@ -139,7 +146,7 @@ Must define:
 
 File name:
 
-`platform_overview_dashboard_with_analytics.png`
+`reps_fullpage_admin_dashboard_v1.png`
 
 Purpose:
 
@@ -160,6 +167,21 @@ Must define:
 - System Status
 - Admin user block
 - Support Tickets indicator
+
+## 2.bis Archived References (must NOT drive the build)
+
+The following older 16:9 mock-up filenames are kept only as archived reference material. They must **not** be used as the visual source of truth for any Lovable build, prompt or documentation:
+
+| Route | Archived filename (reference only) | Locked full-page source of truth |
+|---|---|---|
+| `/` | `home_v1.png` | `reps_fullpage_home_v1.png` |
+| `/dashboard` | `dashboard_v1.png` | `reps_fullpage_professional_dashboard_v1.png` |
+| `/find-a-professional` | `reps_directory_search_results_page.png` | `reps_fullpage_directory_search_results_v1.png` |
+| `/professional/james-carter` | `profile_of_fitness_professional_james_carter.png` | `reps_fullpage_professional_profile_v1.png` |
+| `/signup` | `fitness_professional_sign_up_page_mockup.png` | `reps_fullpage_signup_login_v1.png` |
+| `/admin` | `platform_overview_dashboard_with_analytics.png` | `reps_fullpage_admin_dashboard_v1.png` |
+
+If a document, prompt or PR references one of the archived filenames as if it were the source of truth, treat it as a documentation bug and update it to the corresponding `reps_fullpage_*_v1.png` file.
 
 ## 3. Rejected Visual Reference
 
@@ -230,12 +252,12 @@ The Phase 1 build is only approved when each Lovable screen visually matches its
 
 | Route | Approved Mock-up |
 |---|---|
-| `/` | `home_v1.png` |
-| `/find-a-professional` | `reps_directory_search_results_page.png` |
-| `/professional/james-carter` | `profile_of_fitness_professional_james_carter.png` |
-| `/signup` | `fitness_professional_sign_up_page_mockup.png` |
-| `/dashboard` | `dashboard_v1.png` |
-| `/admin` | `platform_overview_dashboard_with_analytics.png` |
+| `/` | `reps_fullpage_home_v1.png` |
+| `/find-a-professional` | `reps_fullpage_directory_search_results_v1.png` |
+| `/professional/james-carter` | `reps_fullpage_professional_profile_v1.png` |
+| `/signup` | `reps_fullpage_signup_login_v1.png` |
+| `/dashboard` | `reps_fullpage_professional_dashboard_v1.png` |
+| `/admin` | `reps_fullpage_admin_dashboard_v1.png` |
 
 ## 9. Next Build Step
 
