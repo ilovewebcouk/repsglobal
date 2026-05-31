@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   id: '/find-a-professional',
@@ -22,31 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProSlugRoute = ProSlugRouteImport.update({
+  id: '/pro/$slug',
+  path: '/pro/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/find-a-professional'
+  fullPaths: '/' | '/find-a-professional' | '/pro/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/find-a-professional'
-  id: '__root__' | '/' | '/find-a-professional'
+  to: '/' | '/find-a-professional' | '/pro/$slug'
+  id: '__root__' | '/' | '/find-a-professional' | '/pro/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
+  ProSlugRoute: typeof ProSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$slug': {
+      id: '/pro/$slug'
+      path: '/pro/$slug'
+      fullPath: '/pro/$slug'
+      preLoaderRoute: typeof ProSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
+  ProSlugRoute: ProSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
