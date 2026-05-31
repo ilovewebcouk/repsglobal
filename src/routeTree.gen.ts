@@ -31,6 +31,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.booki
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
+import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
@@ -144,6 +145,11 @@ const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
   path: '/admin/professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin_/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   id: '/admin_/memberships',
   path: '/admin/memberships',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
+  '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/verification': typeof AdminVerificationRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/memberships'
+    | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
     | '/admin/verification'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin/memberships'
+    | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
     | '/admin/verification'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin_/memberships'
+    | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reviews'
     | '/admin_/verification'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/payments': {
+      id: '/admin_/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/memberships': {
       id: '/admin_/memberships'
       path: '/admin/memberships'
@@ -523,6 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminVerificationRoute: AdminVerificationRoute,
