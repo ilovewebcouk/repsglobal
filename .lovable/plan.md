@@ -1,25 +1,23 @@
-## Rebalance /signup hero to match mockup
+## Add dashboard hero background to /signup
 
-Single, scoped change to `src/routes/signup.tsx` — hero section only. No other pages, no token changes, no new components.
+The mockup shows a dark photo of a laptop displaying a REPs-style dashboard (orange chart accents on dark UI) behind the hero, faded into the `reps-ink` background.
 
 ### What changes
 
-1. **Grid columns** — change the hero grid from `lg:grid-cols-[1.05fr_minmax(0,460px)]` to `lg:grid-cols-2` with a generous `lg:gap-14` (~56px) gutter so the two columns read as ~50/50 with clear breathing room, like the mockup.
+1. **Generate one new asset** — `src/assets/signup-hero-bg.jpg` (1920×1080, `standard` quality). Prompt: a dark moody photograph of an open laptop on a black desk, screen displaying a dark-themed analytics dashboard with orange line charts, KPI cards and sidebar nav; deep blacks, subtle warm orange glow from the screen, cinematic side lighting, shallow depth of field. No text legibility required — it reads as ambience.
 
-2. **Left column (value prop)**
-   - Drop the `max-w-[520px]` / `max-w-[560px]` constraints on the paragraph and bullet list so they fill the narrower (now ~50%) column naturally.
-   - Keep the h1 unchanged — at ~50% width the headline naturally wraps to 3 lines ("Your fitness business, clients and professional profile" / "in one place.") as in the mockup. Verify after render; if it still wraps to 2, nudge with a soft break.
-   - Testimonial card: bump `max-w-[420px]` to `max-w-[480px]` so it sits proportionally in the wider column.
+2. **Edit `src/routes/signup.tsx` hero section only**:
+   - Add the image as an absolute-positioned `<img>` inside the existing hero `<section>` (behind the grid, above the two existing orange radial swooshes).
+   - Apply `object-cover`, anchored roughly to the left/center so the laptop sits behind the left value-prop column like the mockup.
+   - Overlay: a horizontal gradient from `reps-ink` (left, ~85% opacity) fading to ~40% over the image, plus a stronger gradient on the right side so the white form card always sits on near-solid `reps-ink` for contrast.
+   - Keep the existing orange radial glows on top of the image at low opacity for the brand wash.
+   - `z-index` order: image (z-0) → gradient overlays (z-10) → orange glows (z-10) → grid content (`relative z-20`).
 
-3. **Right column (form card)**
-   - Remove the `minmax(0,460px)` cap so the card expands to fill its 50% column (will land around ~560–600px wide at 1469px viewport, matching the mockup's wider card).
-   - Internal padding bump from `p-7` to `p-8` so the form doesn't feel cramped at the new width.
-   - Account-type pills, fields, and social buttons keep their current structure — they reflow naturally inside the wider card.
+3. **No other changes** — header, stats strip, features, FAQ, CTA, footer untouched. No token changes.
 
 ### Out of scope
-- No changes to header, stats strip, features, FAQ, CTA, or footer.
-- No copy changes, no new fields, no token/radius changes.
-- `/login` is not touched in this pass (can mirror after approval if you want parity).
+- Other routes, including `/login`.
+- Replacing the image with a real screenshot of the actual REPs dashboard (we haven't built that page yet — Phase 1 placeholder image is appropriate and matches the mockup's intent).
 
 ### Verification
-Screenshot `/signup` at 1469px and compare side-by-side with `src/mockups/reps_fullpage_signup_login_v1.png` — confirm column balance, headline line count, and form card width match.
+Screenshot `/signup` at 1469px, compare to `src/mockups/reps_fullpage_signup_login_v1.png` — confirm the laptop/dashboard reads behind the left column, the form card stays high-contrast on dark, and headline + bullets remain fully legible.
