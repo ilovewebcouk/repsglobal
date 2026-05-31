@@ -862,9 +862,8 @@ function BookingsPage() {
                 </Card>
               </div>
             </div>
-          </main>
-        </div>
       </div>
-    </div>
+    </ProShell>
   );
 }
+
