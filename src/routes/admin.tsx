@@ -566,7 +566,7 @@ const SPECIALISMS = [
   { label: "Pilates", pct: "14%", count: "3,486", color: "var(--reps-green)" },
   { label: "Nutrition", pct: "11%", count: "2,738", color: "var(--reps-gold)" },
   { label: "Sports Coaching", pct: "9%", count: "2,239", color: "#9B6BE2" },
-  { label: "Pre & Postnatal", pct: "7%", count: "1,743", color: "#FF7A00" },
+  { label: "Pre & Postnatal", pct: "7%", count: "1,743", color: "var(--reps-orange)" },
   { label: "Other", pct: "13%", count: "3,237", color: "#5D6573" },
 ];
 
