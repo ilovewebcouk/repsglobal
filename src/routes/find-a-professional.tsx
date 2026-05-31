@@ -543,7 +543,7 @@ function ProCard({ pro }: { pro: Pro }) {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+        <div className="flex flex-col items-stretch gap-2 sm:items-center">
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
