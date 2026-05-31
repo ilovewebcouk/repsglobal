@@ -1692,6 +1692,88 @@ The dashboard is approved only if:
 - It does not feel like a generic SaaS dashboard.
 - It does not feel like a basic coaching app.
 
+### 8.19 Reports & Analytics Page
+
+**Route:** `/dashboard/reports`
+
+**Purpose:** give the professional a single screen that proves their business is healthy, so renewing membership is an obvious decision.
+
+**Primary user intent:** "Is my business growing, and where is the money coming from?"
+
+**Page sections (Phase 1 visual):**
+
+- KPI strip: revenue (last 30d), active clients, session utilisation %, lead-to-client conversion %, average client LTV.
+- Revenue trend chart (12 weeks) with breakdown by stream (1:1, programmes, group, nutrition).
+- Client cohort table: acquired month, retained, churned, LTV.
+- Top-performing services card.
+- Lead source attribution card.
+- Export button (visual only).
+
+**Acceptance criteria:** matches dashboard dark shell; chart styling uses brand orange for primary series only; no real data wiring in Phase 1.
+
+### 8.20 Content Studio Page
+
+**Route:** `/dashboard/content`
+
+**Purpose:** central place to plan, draft and store all content the professional ships — programme thumbnails, social posts, blog drafts, video library. Note: §8.15 covers the *card* on the dashboard; this section covers the full page.
+
+**Primary user intent:** "Where do I publish and manage everything I post?"
+
+**Page sections (Phase 1 visual):**
+
+- Library tabs: Videos, Images, Posts, Blog drafts, Programme assets.
+- Grid of asset cards (thumbnail, title, type chip, last edited).
+- "New" split-button (visual only).
+- Right-hand panel: scheduled posts calendar (next 14 days).
+- Top strip: storage used, AI suggestions count (visual placeholder), drafts awaiting review.
+
+**Acceptance criteria:** card grid uses 18px radius; thumbnails 16:9; no upload functionality in Phase 1.
+
+### 8.21 Community Page
+
+**Route:** `/dashboard/community`
+
+**Purpose:** pro-to-pro forum plus client-facing group spaces. Differentiator: REPs becomes a network, not a tool.
+
+**Primary user intent:** "What are other verified pros saying, and how do I run a group for my clients?"
+
+**Page sections (Phase 1 visual):**
+
+- Two-tab layout: **Pro Lounge** (verified pros only) and **My Groups** (client-facing).
+- Pro Lounge: thread list with author, replies, last activity, category chip (Coaching, Business, CPD, Off-topic).
+- My Groups: cards for each client group, member count, last post, "Open" button.
+- Sidebar: trending topics, suggested pros to follow, community guidelines link.
+- Compose-thread CTA (visual only).
+
+**Acceptance criteria:** thread cards 16px radius; verified pros always show the orange shield mini-badge; no posting in Phase 1.
+
+### 8.22 Business Tools Page
+
+**Route:** `/dashboard/business`
+
+**Purpose:** the un-glamorous but business-critical surface — invoices, contracts, intake forms, waivers, tax exports. Wins B2B retention.
+
+**Primary user intent:** "Run the admin side of my business without leaving REPs."
+
+**Page sections (Phase 1 visual):**
+
+- Tabbed shell: **Invoices**, **Contracts**, **Intake Forms**, **Waivers**, **Tax & Exports**.
+- Invoices: table (number, client, issued, due, amount, status chip).
+- Contracts: template library + signed-contracts list.
+- Intake Forms: form template cards + responses count.
+- Waivers: same shape as contracts.
+- Tax & Exports: date-range selector, export type cards (CSV/PDF), HMRC self-assessment helper card.
+
+**Acceptance criteria:** consistent table styling with §8 patterns; status chips use shared chip component; no document generation in Phase 1.
+
+### 8.23 Public Profile Editor (existing)
+
+**Route:** `/dashboard/profile`
+
+This page exists and is built. Spec entry added here to formalise its sidebar listing under *Grow*. Purpose: edit the public-facing `/pro/$slug` page (hero copy, services, gallery, reviews moderation). Acceptance criteria already covered by the locked profile mock-up.
+
+
+
 ## 9. Page 6 — Admin Dashboard Shell
 
 ### 9.1 Route
