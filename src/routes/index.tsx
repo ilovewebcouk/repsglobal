@@ -376,9 +376,11 @@ function HomePage() {
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredPros.map((p) => (
-              <article
+              <Link
                 key={p.name}
-                className="group overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5"
+                to="/pro/$slug"
+                params={{ slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
+                className="group block overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5"
               >
                 <div className="relative aspect-[4/5] overflow-hidden">
                   <img
@@ -418,7 +420,7 @@ function HomePage() {
                     {p.mode}
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

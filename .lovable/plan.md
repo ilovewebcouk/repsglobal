@@ -1,52 +1,46 @@
-## Goal
-Bring your originally-uploaded REPs documents into the repo at `docs/`, then update them in place so they match the final approved source of truth. The structure, voice, headings and content of your originals are preserved — only conflicting tokens, radius rules, mock-up filenames and naming inconsistencies are rewritten.
+# Next screen: Professional Profile (`/pro/:slug`)
 
-## Source documents (already on disk at `/tmp/repsdocs/`)
+Build the static high-fidelity Professional Profile page to match `src/mockups/reps_fullpage_professional_profile_v1.png` pixel-for-pixel. Phase 1 scope — visual only, no booking logic, DB, or auth.
 
-1. `01_reps_master_product_scope.md`
-2. `02_reps_visual_design_system.md`
-3. `03_reps_page_by_page_specification.md`
-4. `04_database_schema_and_data_model.md`
-5. `reps_global_platform_mock_up_lock_source_of_truth.md`
-6. `reps_lovable_build_prompt_pack.md`
+## Route
 
-(`__MACOSX` is skipped.)
+- New file: `src/routes/pro.$slug.tsx` → URL `/pro/:slug`
+- `createFileRoute("/pro/$slug")` with `head()` setting title/description/og tags derived from the (static) pro
+- Component reads `Route.useParams()` for `slug`, looks up a hard-coded pro from a local map keyed by slug, falls back to James Wilson if unknown (Phase 1 — no notFound yet)
+- Wire `featuredPros` cards on `/` and `directoryPros` cards on `/find-a-professional` to `<Link to="/pro/$slug" params={{ slug }}>` so the existing flow opens this page
 
-## Destination
+## Page structure (mirrors mock-up, top to bottom)
 
-```
-docs/
-  00_README.md                                    new — index + override clause
-  01_reps_master_product_scope.md                 copied + synced
-  02_reps_visual_design_system.md                 copied + synced
-  03_reps_page_by_page_specification.md           copied + synced
-  04_database_schema_and_data_model.md            copied + synced
-  05_reps_mockup_lock_source_of_truth.md          copied (renamed for ordering) + synced
-  06_reps_lovable_build_prompt_pack.md            copied (renamed for ordering) + synced
-```
+1. **PublicHeader** (transparent variant over dark band)
+2. **Profile hero band** — dark `bg-reps-black`:
+   - Left: large rounded portrait `rounded-[24px]`, REPs Verified pill overlay
+   - Right: name (font-display, ~48px), role + location row, orange rating row, mode chips (In-person / Online), short bio, primary "Book a session" button (`rounded-[10px] bg-reps-orange`) + secondary "Message" outline button
+   - Trust mini-row: years experience, sessions delivered, response time
+3. **Sticky in-page sub-nav** (About · Services · Reviews · Availability · Credentials) — `rounded-full` pill bar on ivory
+4. **About section** — two-column: long-form bio + side card with quick facts (languages, training style, age groups)
+5. **Services & pricing** — 3 service cards `rounded-[18px]` (1:1, 6, 12-session packages) with price, duration, what's included, "Select" button
+6. **Specialisms** — chip cloud `rounded-full` of tags
+7. **Reviews** — header with aggregate rating + count, 3–4 review cards `rounded-[18px]` with avatar, stars, date, body; "View all reviews" link
+8. **Availability** — week strip with morning/afternoon/evening slot pills `rounded-[10px]`, "View full calendar" button
+9. **Credentials & verification** — list of qualifications, insurance, DBS, CPD with check icons; REPs Verified callout panel `rounded-[22px]`
+10. **Similar professionals** — 3 cards `rounded-[18px]` linking to other `/pro/:slug`
+11. **PublicFooter**
 
-## Sync rules applied to every file (only where conflicts exist)
+## Design compliance (skill: reps-build-compliance)
 
-- Replace `#F28C38` (and any `#D87322` pair) with the final orange set: `#FF7A00 / #E96F00 / #CC6200 / rgba(255,122,0,.12) / rgba(255,122,0,.35)`.
-- Replace any old radius guidance (`--radius-2xl: 32px`, `--reps-radius-button: 14px`, `--reps-radius-card: 22px` as button/card defaults, `--reps-radius-panel: 28px`, `rounded-[14px]`, `rounded-[28px]`, `rounded-[32px]`, `rounded-xl/2xl/3xl`) with the final scale and component mapping (`xs 6 / sm 8 / button 10 / input 12 / card 16 / card-lg 18 / panel 22 / hero 24 / pill 999`).
-- Demote the six older 16:9 filenames (`home_v1.png`, `dashboard_v1.png`, `reps_directory_search_results_page.png`, `profile_of_fitness_professional_james_carter.png`, `fitness_professional_sign_up_page_mockup.png`, `platform_overview_dashboard_with_analytics.png`) to an "Archived references — must not drive the build" list. Promote the six `reps_fullpage_*_v1.png` files as the sole build references.
-- Normalise product name to **REPs**. Keep "REPs UK" only where it refers to legacy data / current domain / Brilliant Directories migration.
-- Reaffirm Phase 1 = static visual screens only. No auth, DB, payments, bookings, AI, live maps, BD migration in Phase 1.
-- In `04_database_schema_and_data_model.md`, prepend a clear "Deferred to post-Phase-1 — not implemented during the static-screens phase" note; do not change schema content.
-- Insert the override clause near the top of every doc:
-  *"The approved full-page mock-ups override any earlier written radius, colour or layout guidance where there is a conflict."*
+- Orange only via `bg-reps-orange / -hover / -dark`, `text-reps-orange`, soft/border tokens
+- Radii: button 10, input 12, std card 16, profile/service/review/similar cards 18, large panels (about side card, verification callout) 22, hero portrait 24, chips/avatars full — no `rounded-xl/2xl/3xl`, no 14/20/28/32px
+- Flat buttons (no shadows), shadows only on cards where the mock-up shows them via `--reps-shadow-card`
+- Stars and ratings in `text-reps-orange` (never gold/yellow)
+- Use existing `pro-*.jpg` assets for portraits and similar-pros; no new image generation in this turn
 
-## What I will NOT touch
+## Out of scope (Phase 1)
 
-- Routes, components, `src/styles.css`, mock-up assets, `routeTree.gen.ts`.
-- Schema field names, table names, or relationships — only the deferred-phase note is added.
-- Typography, spacing, content hierarchy, visual direction.
-- The originals' voice / structure — edits are surgical replacements at conflict points only.
+- Real booking flow, calendar widget logic, message composer, review submission
+- Data layer / Supabase / Cloud — all content hard-coded in the route file
+- `notFound` handling for unknown slugs (deferred until auth/data lands)
+- Analytics, JSON-LD (can layer in after visuals approved)
 
-## Change report (delivered after writes)
+## Verification
 
-1. Documents checked: the 6 originals in `/tmp/repsdocs/`, plus in-repo `.lovable/plan.md`, `src/routes/README.md`, `mem://index.md`, `mem://design/source-of-truth`, `src/styles.css`.
-2. Documents created/updated under `docs/`: the 7 files above.
-3. Replacements made: per-file diff list of every `#F28C38` → `#FF7A00`, every retired radius token, every demoted 16:9 filename, every `REPs UK` → `REPs` correction.
-4. Remaining conflicts: any items I could not auto-resolve (e.g. radius rules expressed only as prose) will be flagged for your review.
-5. Confirmation that `docs/` + `mem://` + `src/styles.css` + `.lovable/plan.md` all state the same final orange, radius and mock-up lock.
+After build: navigate to `/pro/james-wilson` (and verify a click from `/` and `/find-a-professional` lands there), screenshot full page, compare against `src/mockups/reps_fullpage_professional_profile_v1.png`, and run the `reps-build-compliance` audit script.
