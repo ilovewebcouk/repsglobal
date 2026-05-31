@@ -156,12 +156,12 @@ function HomePage() {
                 "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: left-weighted ramp — solid behind copy, fully clear by 55% so trainers stay visible */}
+          {/* Desktop: solid behind copy column → clear center band for trainers → soft re-ink under the Why REPs card on the right */}
           <div
             className="absolute inset-0 hidden lg:block"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 28%, rgba(11,13,16,0.5) 42%, rgba(11,13,16,0) 55%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 22%, rgba(11,13,16,0.35) 34%, rgba(11,13,16,0) 45%, rgba(11,13,16,0) 70%, rgba(11,13,16,0.35) 84%, rgba(11,13,16,0.6) 100%)",
             }}
           />
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
