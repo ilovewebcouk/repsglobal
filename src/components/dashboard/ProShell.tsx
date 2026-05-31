@@ -3,6 +3,7 @@ import {
   Apple,
   AreaChart,
   Bell,
+  Briefcase,
   Calendar as CalendarIcon,
   ClipboardList,
   CreditCard,
@@ -16,8 +17,8 @@ import {
   Sparkles,
   Star,
   Target,
+  UserCircle,
   Users,
-  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,48 +26,72 @@ import proJames from "@/assets/pro-james.jpg";
 
 export type ProActive =
   | "Dashboard"
+  | "Leads"
   | "Clients"
   | "Calendar"
   | "Bookings"
+  | "Messages"
   | "Programs"
   | "Nutrition"
   | "Check-Ins"
-  | "Messages"
-  | "Leads"
-  | "Payments"
-  | "Reports"
   | "Reviews"
+  | "Reports"
   | "Content Studio"
-  | "Education & CPD"
   | "Community"
+  | "Education & CPD"
+  | "Public Profile"
+  | "Payments"
   | "Business Tools"
   | "Settings";
 
 type NavItem = {
   icon: LucideIcon;
   label: ProActive;
-  to?: string;
+  to: string;
   badge?: string;
 };
 
-const NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { icon: Users, label: "Clients" },
-  { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
-  { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
-  { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
-  { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
-  { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
-  { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages", badge: "6" },
-  { icon: Target, label: "Leads", to: "/dashboard/leads" },
-  { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
-  { icon: AreaChart, label: "Reports" },
-  { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
-  { icon: FileText, label: "Content Studio" },
-  { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-  { icon: Users, label: "Community" },
-  { icon: Wrench, label: "Business Tools" },
-  { icon: Settings, label: "Settings", to: "/dashboard/settings" },
+type NavGroup = { title: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    title: "Work",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: Target, label: "Leads", to: "/dashboard/leads" },
+      { icon: Users, label: "Clients", to: "/dashboard/clients" },
+      { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
+      { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
+      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages", badge: "6" },
+    ],
+  },
+  {
+    title: "Deliver",
+    items: [
+      { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
+      { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
+      { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
+      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
+    ],
+  },
+  {
+    title: "Grow",
+    items: [
+      { icon: AreaChart, label: "Reports", to: "/dashboard/reports" },
+      { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
+      { icon: Users, label: "Community", to: "/dashboard/community" },
+      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
+      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+    ],
+  },
+  {
+    title: "Money & Admin",
+    items: [
+      { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
+      { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
+      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
+    ],
+  },
 ];
 
 function Sidebar({ active }: { active: ProActive }) {
@@ -84,40 +109,36 @@ function Sidebar({ active }: { active: ProActive }) {
       </Link>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        <ul className="space-y-1">
-          {NAV.map((item) => {
-            const isActive = item.label === active;
-            const content = (
-              <>
-                <item.icon className="h-[18px] w-[18px] shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge ? (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </>
-            );
-            const base =
-              "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors";
-            const cls = isActive
-              ? `${base} bg-reps-orange-soft text-reps-orange`
-              : `${base} text-white/70 hover:bg-reps-panel hover:text-white`;
-            return (
-              <li key={item.label}>
-                {item.to ? (
-                  <Link to={item.to} className={cls}>
-                    {content}
-                  </Link>
-                ) : (
-                  <button type="button" className={cls}>
-                    {content}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.title} className="mb-5">
+            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
+              {group.title}
+            </div>
+            <ul className="space-y-1">
+              {group.items.map((item) => {
+                const isActive = item.label === active;
+                const base =
+                  "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors";
+                const cls = isActive
+                  ? `${base} bg-reps-orange-soft text-reps-orange`
+                  : `${base} text-white/70 hover:bg-reps-panel hover:text-white`;
+                return (
+                  <li key={item.label}>
+                    <Link to={item.to} className={cls}>
+                      <item.icon className="h-[18px] w-[18px] shrink-0" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.badge ? (
+                        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       <div className="space-y-3 px-3 pb-5">
