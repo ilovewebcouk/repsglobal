@@ -16,6 +16,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
+import { Route as DashboardProgramsRouteImport } from './routes/dashboard_.programs'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
@@ -56,6 +57,11 @@ const ProSlugRoute = ProSlugRouteImport.update({
   path: '/pro/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardProgramsRoute = DashboardProgramsRouteImport.update({
+  id: '/dashboard_/programs',
+  path: '/dashboard/programs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
   id: '/dashboard_/profile',
   path: '/dashboard/profile',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/programs': typeof DashboardProgramsRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/programs': typeof DashboardProgramsRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/profile': typeof DashboardProfileRoute
+  '/dashboard_/programs': typeof DashboardProgramsRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/leads'
     | '/dashboard/profile'
+    | '/dashboard/programs'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/leads'
     | '/dashboard/profile'
+    | '/dashboard/programs'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/dashboard_/calendar'
     | '/dashboard_/leads'
     | '/dashboard_/profile'
+    | '/dashboard_/programs'
     | '/pro/$slug'
     | '/dashboard_/clients/$slug'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardProgramsRoute: typeof DashboardProgramsRoute
   ProSlugRoute: typeof ProSlugRoute
   DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/programs': {
+      id: '/dashboard_/programs'
+      path: '/dashboard/programs'
+      fullPath: '/dashboard/programs'
+      preLoaderRoute: typeof DashboardProgramsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/profile': {
       id: '/dashboard_/profile'
       path: '/dashboard/profile'
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardProgramsRoute: DashboardProgramsRoute,
   ProSlugRoute: ProSlugRoute,
   DashboardClientsSlugRoute: DashboardClientsSlugRoute,
 }
