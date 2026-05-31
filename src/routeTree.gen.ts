@@ -30,6 +30,7 @@ import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calen
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
+import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
 const SignupRoute = SignupRouteImport.update({
@@ -137,6 +138,11 @@ const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
   path: '/admin/professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
+  id: '/admin_/memberships',
+  path: '/admin/memberships',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   id: '/dashboard_/clients/$slug',
   path: '/dashboard/clients/$slug',
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/admin/memberships'
     | '/admin/professionals'
     | '/admin/verification'
     | '/dashboard/bookings'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/admin/memberships'
     | '/admin/professionals'
     | '/admin/verification'
     | '/dashboard/bookings'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/admin_/memberships'
     | '/admin_/professionals'
     | '/admin_/verification'
     | '/dashboard_/bookings'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/memberships': {
+      id: '/admin_/memberships'
+      path: '/admin/memberships'
+      fullPath: '/admin/memberships'
+      preLoaderRoute: typeof AdminMembershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients/$slug': {
       id: '/dashboard_/clients/$slug'
       path: '/dashboard/clients/$slug'
@@ -482,6 +502,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  AdminMembershipsRoute: AdminMembershipsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
