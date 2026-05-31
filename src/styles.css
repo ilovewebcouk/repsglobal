@@ -15,13 +15,26 @@
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Inter Tight", "Inter", system-ui, -apple-system, sans-serif;
 
+  /* REPs radius system (FINAL) — buttons sharper than cards, panels softer than cards. */
+  --reps-radius-xs: 6px;
+  --reps-radius-sm: 8px;
+  --reps-radius-button: 10px;
+  --reps-radius-input: 12px;
+  --reps-radius-card: 16px;
+  --reps-radius-card-lg: 18px;
+  --reps-radius-panel: 22px;
+  --reps-radius-hero: 24px;
+  --reps-radius-pill: 999px;
+
+  /* shadcn aliases mapped to the REPs scale */
+  --radius-xs: 6px;
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 22px;
-  --radius-3xl: 28px;
-  --radius-4xl: 32px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 18px;
+  --radius-3xl: 22px;
+  --radius-4xl: 24px;
 
   /* REPs brand tokens — surfaces */
   --color-reps-black: var(--reps-black);
