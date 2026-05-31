@@ -1,23 +1,21 @@
 ## Goal
-Replace the current composited hero image with a single world-class "coaching moment" shot that fits the dark gym aesthetic and the existing design system, without touching any other hero element.
+Fine-tune the hero so the trainer sits cleanly in the gap between the headline and the Why REPs card, and add a REPs wordmark to his tank's left chest.
 
 ## Steps
 
-### 1. Generate the image
-- Tool: `imagegen--generate_image`, standard quality, 1920×1080.
-- Save to `src/assets/hero-coaching-moment.jpg`.
-- Brief: cinematic editorial gym photo, single certified trainer mid-coaching (spotting a barbell back squat), client soft-blurred in foreground, shallow depth-of-field, warm tungsten key + cool teal rim, polished concrete, matte black power rack, atmospheric haze, deep blacks (#0B0D10) with warm amber highlights, negative space on the left third for the headline.
+### 1. AI-edit the hero image to add the wordmark
+- Tool: `imagegen--edit_image` on `src/assets/hero-coaching-moment.jpg`, overwriting in place.
+- Prompt: add a small white "REPs" wordmark printed on the trainer's left chest, athletic-apparel print, follows fabric curvature, matches warm tungsten lighting. Preserve face, pose, gym, depth-of-field, and color grade exactly.
 
-### 2. Swap the import in `src/routes/index.tsx`
-- Replace `heroComposite` import + usage with `heroCoaching` from the new file.
-- Keep both gradient overlays, the bottom fade, the Why REPs card, the headline, sub-copy, CTA, search panel, and `object-cover` framing identical.
+### 2. Shift framing
+- `src/routes/index.tsx` line 151: change `object-center` to `object-[25%_center]` so the trainer moves out from behind the headline and into the clear zone in front of the Why REPs card.
 
-### 3. Verify and tune framing only
-- Take a preview screenshot after the swap.
-- Adjust only the `object-position` (`object-[x%_center]`) if the subject collides with the Why REPs card.
-
-### 4. Keep old assets
-Leave `hero-composite.jpg`, `hero-gym-bg.jpg`, `hero-trainers-cutout.png` in place for instant revert.
+### 3. Verify
+- Take a preview screenshot.
+- If the trainer overshoots or still overlaps the headline, tune the x% in increments of 5 (range 20–35%).
 
 ## Out of scope
-Headline, sub-copy, CTA, Why REPs card, search panel, header, mobile layout, design tokens, any other section of the page.
+Headline, sub-copy, CTA, Why REPs card, search panel, header, mobile layout, design tokens.
+
+## Risk
+AI text rendering can mis-spell "REPs" on the first pass. If the result is dirty, re-roll once; if still bad, fall back to overlaying an SVG REPs wordmark via CSS positioned over the chest.
