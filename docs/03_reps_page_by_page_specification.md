@@ -1792,6 +1792,7 @@ Optional future routes:
 - `/admin/migration`
 - `/admin/support`
 - `/admin/settings`
+- `/admin/audit` (Phase 2)
 
 ### 9.2 Page Purpose
 
