@@ -14,6 +14,7 @@ import {
   Search,
   Settings,
   Sparkles,
+  Star,
   Target,
   Users,
   Wrench,
