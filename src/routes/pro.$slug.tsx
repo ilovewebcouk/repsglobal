@@ -418,19 +418,21 @@ function ProProfilePage() {
                 {pro.services.map((s) => (
                   <article
                     key={s.title}
-                    className="relative flex h-full flex-col rounded-[18px] bg-reps-panel text-white"
+                    className="flex h-full flex-col rounded-[18px] bg-reps-panel text-white"
                   >
-                    <div className="relative aspect-[5/4] overflow-hidden rounded-t-[18px]">
-                      <img
-                        src={s.image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
+                    <div className="relative">
+                      <div className="aspect-[5/4] overflow-hidden rounded-t-[18px]">
+                        <img
+                          src={s.image}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <span className="absolute -bottom-4 left-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white ring-4 ring-reps-panel">
+                        <s.icon className="h-4 w-4" />
+                      </span>
                     </div>
-                    <span className="absolute left-3 top-[calc(((100%-2.25rem)*4/9)+0px)] z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-reps-orange text-white ring-4 ring-reps-panel">
-                      <s.icon className="h-4 w-4" />
-                    </span>
                     <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-7">
                       <div className="min-h-[2.4em] font-display text-[15px] font-bold leading-tight line-clamp-2">
                         {s.title}
