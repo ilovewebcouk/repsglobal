@@ -21,6 +21,7 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profil
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
+import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
 const SignupRoute = SignupRouteImport.update({
@@ -83,6 +84,11 @@ const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   path: '/dashboard/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
+  id: '/dashboard_/bookings',
+  path: '/dashboard/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   id: '/dashboard_/clients/$slug',
   path: '/dashboard/clients/$slug',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard_/bookings': typeof DashboardBookingsRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/leads'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/leads'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard_/bookings'
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
     | '/dashboard_/leads'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  DashboardBookingsRoute: typeof DashboardBookingsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/bookings': {
+      id: '/dashboard_/bookings'
+      path: '/dashboard/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof DashboardBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients/$slug': {
       id: '/dashboard_/clients/$slug'
       path: '/dashboard/clients/$slug'
@@ -302,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  DashboardBookingsRoute: DashboardBookingsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
@@ -313,3 +334,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
