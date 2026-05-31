@@ -11,6 +11,8 @@ The shadcn `Button` variants are now flat, but four hand-rolled CTA buttons in r
 
 No other classes change; flat orange buttons remain orange with hover color transition only.
 
+**Status:** completed — all four CTA shadows removed.
+
 ## Out of scope
 
 - Card / panel `shadow-[var(--reps-shadow-card)]` on `index.tsx` lines 381 and 531 — these are container surfaces, not buttons; mock-ups show elevation on those cards.
