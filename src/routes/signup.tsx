@@ -167,19 +167,38 @@ function SignupPage() {
 
       {/* ============ HERO + FORM ============ */}
       <section className="relative overflow-hidden">
+        {/* Dashboard laptop background */}
+        <img
+          src={signupHeroBg}
+          alt=""
+          aria-hidden
+          width={1920}
+          height={1080}
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-left opacity-80"
+        />
+        {/* Ink wash + right-side fade so the form card stays high contrast */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--reps-ink) 0%, color-mix(in oklab, var(--reps-ink) 55%, transparent) 35%, color-mix(in oklab, var(--reps-ink) 75%, transparent) 60%, var(--reps-ink) 100%)",
+          }}
+        />
         {/* Decorative orange swooshes */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-20 top-20 h-[420px] w-[420px] rounded-full opacity-[0.06]"
+          className="pointer-events-none absolute -left-20 top-20 z-10 h-[420px] w-[420px] rounded-full opacity-[0.06]"
           style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-32 -top-10 h-[520px] w-[520px] rounded-full opacity-[0.05]"
+          className="pointer-events-none absolute -right-32 -top-10 z-10 h-[520px] w-[520px] rounded-full opacity-[0.05]"
           style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
         />
 
-        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:gap-14 lg:px-10">
+        <div className="relative z-20 mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:gap-14 lg:px-10">
+
           {/* Left: value prop */}
           <div className="flex flex-col">
             <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
