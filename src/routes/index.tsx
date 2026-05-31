@@ -141,15 +141,31 @@ function HomePage() {
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background image */}
+        {/* Background image with shaped overlays — keeps the right side (trainer + client) clearly visible */}
         <div className="absolute inset-0 -z-10">
           <img
             src={heroImg}
             alt=""
-            className="h-full w-full object-cover object-center opacity-55"
+            className="h-full w-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-reps-black via-reps-black/85 to-reps-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-b from-reps-black/40 via-transparent to-reps-black" />
+          {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
+          <div
+            className="absolute inset-0 lg:hidden"
+            style={{
+              backgroundImage:
+                "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
+            }}
+          />
+          {/* Desktop: left-weighted ramp — solid behind copy, fully clear by 55% so trainers stay visible */}
+          <div
+            className="absolute inset-0 hidden lg:block"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 28%, rgba(11,13,16,0.5) 42%, rgba(11,13,16,0) 55%)",
+            }}
+          />
+          {/* Subtle bottom fade so the search panel sits on a denser ground */}
+          <div className="absolute inset-x-0 bottom-0 hidden h-[180px] bg-gradient-to-t from-reps-black to-transparent lg:block" />
         </div>
 
         <PublicHeader variant="transparent" />
