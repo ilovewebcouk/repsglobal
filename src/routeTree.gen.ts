@@ -30,6 +30,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard_.reports'
 import { Route as DashboardProgramsRouteImport } from './routes/dashboard_.programs'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
 import { Route as DashboardPaymentsRouteImport } from './routes/dashboard_.payments'
@@ -156,6 +157,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
 const DashboardReviewsRoute = DashboardReviewsRouteImport.update({
   id: '/dashboard_/reviews',
   path: '/dashboard/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/dashboard_/reports',
+  path: '/dashboard/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardProgramsRoute = DashboardProgramsRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/programs': typeof DashboardProgramsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/programs': typeof DashboardProgramsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -400,6 +408,7 @@ export interface FileRoutesById {
   '/dashboard_/payments': typeof DashboardPaymentsRoute
   '/dashboard_/profile': typeof DashboardProfileRoute
   '/dashboard_/programs': typeof DashboardProgramsRoute
+  '/dashboard_/reports': typeof DashboardReportsRoute
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/profile'
     | '/dashboard/programs'
+    | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/pro/$slug'
@@ -492,6 +502,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/profile'
     | '/dashboard/programs'
+    | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/pro/$slug'
@@ -537,6 +548,7 @@ export interface FileRouteTypes {
     | '/dashboard_/payments'
     | '/dashboard_/profile'
     | '/dashboard_/programs'
+    | '/dashboard_/reports'
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/pro/$slug'
@@ -583,6 +595,7 @@ export interface RootRouteChildren {
   DashboardPaymentsRoute: typeof DashboardPaymentsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardProgramsRoute: typeof DashboardProgramsRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   ProSlugRoute: typeof ProSlugRoute
@@ -735,6 +748,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/reviews'
       fullPath: '/dashboard/reviews'
       preLoaderRoute: typeof DashboardReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard_/reports': {
+      id: '/dashboard_/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard_/programs': {
@@ -945,6 +965,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardPaymentsRoute: DashboardPaymentsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardProgramsRoute: DashboardProgramsRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   ProSlugRoute: ProSlugRoute,
