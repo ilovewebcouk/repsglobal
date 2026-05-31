@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Filter, Plus, Search } from "lucide-react";
+import { Check, Copy, Filter, Loader2, Mail, Plus, Search, X } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { ProShell, PCard } from "@/components/dashboard/ProShell";
+import { createClientInvite } from "@/lib/invites.functions";
 
 export const Route = createFileRoute("/dashboard_/clients")({
   head: () => ({
