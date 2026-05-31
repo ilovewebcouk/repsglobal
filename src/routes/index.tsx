@@ -168,7 +168,7 @@ function HomePage() {
           />
           {/* Layer B — trainers cutout, anchored bottom-right, filling hero vertically (desktop only) */}
           {/* Layer B — trainers cutout, sized to fit between headline and Why REPs card */}
-          <div className="pointer-events-none absolute bottom-[170px] right-[22%] hidden lg:block">
+          <div className="pointer-events-none absolute bottom-[200px] right-[19%] hidden lg:block">
             <div
               aria-hidden="true"
               className="absolute -bottom-3 left-1/2 h-10 w-[78%] -translate-x-1/2 rounded-[50%] bg-black/70 blur-2xl"
@@ -177,7 +177,7 @@ function HomePage() {
               src={heroTrainersCutout}
               alt=""
               aria-hidden="true"
-              className="relative h-auto w-[460px] select-none drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
+              className="relative h-auto w-[500px] select-none drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
             />
           </div>
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
