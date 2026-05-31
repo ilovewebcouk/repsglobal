@@ -496,8 +496,17 @@ function ScheduleAndAi() {
             </button>
           }
         />
-        <div className="relative grid grid-cols-[1fr_auto] gap-3">
-          <ul className="space-y-3">
+        <div className="relative">
+          <img
+            src={holoFigure}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            width={1024}
+            height={1024}
+            className="pointer-events-none absolute -right-4 -top-2 h-[280px] w-auto object-contain opacity-60"
+          />
+          <ul className="relative space-y-3 pr-[120px]">
             {AI_INSIGHTS.map((i) => (
               <li key={i.title} className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
@@ -514,15 +523,6 @@ function ScheduleAndAi() {
               </li>
             ))}
           </ul>
-          <img
-            src={holoFigure}
-            alt=""
-            aria-hidden
-            loading="lazy"
-            width={1024}
-            height={1024}
-            className="pointer-events-none -my-4 h-[260px] w-auto object-contain opacity-90"
-          />
         </div>
         <div className="mt-4">
           <OutlineButton>View all recommendations</OutlineButton>
