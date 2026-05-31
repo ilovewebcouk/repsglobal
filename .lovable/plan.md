@@ -1,44 +1,37 @@
-# Standardise REPs Orange to #FF7A00
+# Tailwind Theme: Lock Orange Utilities & Focus Rings to --reps-orange Tokens
 
-A pure colour-token correction. No layout, typography, or component-structure changes.
+The token wiring is already mostly correct (`--ring`, `--primary`, `--chart-1`, `--sidebar-primary`, `--sidebar-ring` all reference `var(--reps-orange)`, and every shadcn component uses semantic utilities like `ring-ring`, `border-input`, `bg-primary`). This pass is a verification + small additive refactor so the new hover/soft/border tokens are reachable from utilities and there is zero ambiguity.
 
-## 1. Update design tokens (`src/styles.css`)
+## 1. Expand `@theme inline` mappings in `src/styles.css`
 
-Replace the two hardcoded orange values (lines 113–114) and add the new hover / soft / border tokens so the whole app inherits the brighter, more saturated brand orange.
-
-```css
-/* REPs accents */
---reps-orange: #FF7A00;          /* was #F28C38 */
---reps-orange-hover: #E96F00;    /* new */
---reps-orange-dark: #CC6200;     /* was #D87322 */
---reps-orange-soft: rgba(255, 122, 0, 0.12);    /* new */
---reps-orange-border: rgba(255, 122, 0, 0.35);  /* new */
-```
-
-Also expose the new tokens to Tailwind v4 in the `@theme` block at the top of the file so they can be used as utility classes (`bg-reps-orange-hover`, `bg-reps-orange-soft`, `border-reps-orange-border`):
+Add semantic aliases so utilities resolve to the new tokens — purely additive, nothing renamed:
 
 ```css
---color-reps-orange: var(--reps-orange);
---color-reps-orange-hover: var(--reps-orange-hover);
---color-reps-orange-dark: var(--reps-orange-dark);
---color-reps-orange-soft: var(--reps-orange-soft);
---color-reps-orange-border: var(--reps-orange-border);
+/* Hover variant of primary (orange) — for non-opacity hovers */
+--color-primary-hover: var(--reps-orange-hover);
+
+/* Soft orange fill + border, for chips/badges/selected cards */
+--color-primary-soft: var(--reps-orange-soft);
+--color-primary-border: var(--reps-orange-border);
 ```
 
-Because `--primary`, `--ring`, `--chart-1`, `--sidebar-primary`, and `--sidebar-ring` all reference `var(--reps-orange)`, every primary CTA, focus ring, active nav state, selected card highlight, chart-1 series, dashboard action button, and badge accent will pick up #FF7A00 automatically. No component edits required for those.
+This makes `bg-primary-hover`, `bg-primary-soft`, `border-primary-border` available as Tailwind utilities, alongside the existing `bg-reps-orange*` family.
 
-## 2. Sweep for stray hardcoded oranges
+## 2. Wire the ring offset and focus tokens explicitly
 
-Grep across `src/` for `#F28C38`, `#D87322`, `#F97316`, and `orange-(400|500|600|700)` utility classes. Current sweep finds zero outside `src/styles.css`, but re-run after the edit to confirm. Any straggler gets swapped to the token (`bg-reps-orange`, `hover:bg-reps-orange-hover`, `ring-reps-orange`, etc.).
+Today `--color-ring-offset-background: var(--background)` is set, and `--ring` already maps to `--reps-orange` in both `:root` and `.dark`. Confirm that's still the case after this turn (no edit needed unless verification finds drift). All shadcn components already use `focus-visible:ring-ring` / `focus:ring-ring` / `ring-offset-background`, so focus rings will be REPs orange everywhere with no component changes.
 
-## 3. Update internal documentation
+## 3. Sweep for hardcoded oranges and raw Tailwind orange utilities
 
-- `mem://design/source-of-truth` — set Primary REPs orange to `#FF7A00`, hover `#E96F00`, dark/pressed `#CC6200`, soft `rgba(255,122,0,0.12)`, border `rgba(255,122,0,0.35)`. Reaffirm the six full-page mock-ups as the locked visual source of truth and mark older 16:9 crops as archive-only.
-- `mem://index.md` Core — refresh any orange hex if mentioned (currently none — leave as-is).
-- `.lovable/plan.md` — append a short note that brand orange is now `#FF7A00` and prior `#F28C38` references are superseded.
+Run a final grep across `src/` for `#F28C38`, `#D87322`, `#F97316`, `#FF7A00` (outside `styles.css`), `bg-orange-`, `text-orange-`, `border-orange-`, `ring-orange-`, `outline-orange-`. Current sweep is clean — re-run after the edit to confirm and replace any stragglers with the token utility (`bg-primary`, `ring-primary`, `bg-reps-orange-soft`, etc.).
 
-No separate Visual Design System / Build Prompt Pack / Page-by-Page Spec files exist in the repo today; the memory file above is the canonical project doc, so it's where the colour standard lives.
+## 4. Documentation note
+
+Append a one-line note to `mem://design/source-of-truth` listing the new utility aliases (`bg-primary-hover`, `bg-primary-soft`, `border-primary-border`) so future components reach for those instead of hand-rolled hex.
 
 ## Out of scope
 
-No changes to layout, spacing, typography, sidebar structure, card styling, page hierarchy, or any non-orange palette token (ivory, stone, charcoal, gold, green, red, blue, shadows). No new themes, no component refactors.
+- No edits to shadcn primitives — they already use semantic tokens.
+- No changes to non-orange tokens (gold, green, red, blue, neutrals, shadows, radii, typography).
+- No layout, spacing, or component-structure changes.
+- Dark theme keeps the same orange — no dark-mode-specific orange variant.
