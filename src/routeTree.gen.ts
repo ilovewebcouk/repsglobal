@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
+import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -58,6 +59,11 @@ const DashboardProfileRoute = DashboardProfileRouteImport.update({
   path: '/dashboard/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
+  id: '/dashboard_/leads',
+  path: '/dashboard/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/leads'
     | '/dashboard/profile'
     | '/pro/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/leads'
     | '/dashboard/profile'
     | '/pro/$slug'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard_/leads'
     | '/dashboard_/profile'
     | '/pro/$slug'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   ProSlugRoute: typeof ProSlugRoute
 }
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/leads': {
+      id: '/dashboard_/leads'
+      path: '/dashboard/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof DashboardLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -202,19 +222,10 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   ProSlugRoute: ProSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
