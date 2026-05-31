@@ -26,7 +26,8 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroImg from "@/assets/hero-trainer.jpg";
+import heroGymBg from "@/assets/hero-gym-bg.jpg";
+import heroTrainersCutout from "@/assets/hero-trainers-cutout.png";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
