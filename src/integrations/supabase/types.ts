@@ -14,16 +14,272 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_user_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string | null
+          id: string
+          professional_id: string
+          status: Database["public"]["Enums"]["invite_status"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          professional_id: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          professional_id?: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_invites_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          height_cm: number | null
+          id: string
+          primary_goal: string | null
+          sex: Database["public"]["Enums"]["sex_at_birth"] | null
+          starting_weight_kg: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          height_cm?: number | null
+          id: string
+          primary_goal?: string | null
+          sex?: Database["public"]["Enums"]["sex_at_birth"] | null
+          starting_weight_kg?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          height_cm?: number | null
+          id?: string
+          primary_goal?: string | null
+          sex?: Database["public"]["Enums"]["sex_at_birth"] | null
+          starting_weight_kg?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coach_client: {
+        Row: {
+          client_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          notes: string | null
+          professional_id: string
+          started_at: string
+          status: Database["public"]["Enums"]["coach_client_status"]
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          professional_id: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["coach_client_status"]
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["coach_client_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_client_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_client_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professionals: {
+        Row: {
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          dbs_valid_until: string | null
+          headline: string | null
+          hourly_rate_pence: number | null
+          id: string
+          in_person_available: boolean
+          insurance_valid_until: string | null
+          is_published: boolean
+          online_available: boolean
+          reps_level: Database["public"]["Enums"]["reps_level"] | null
+          slug: string | null
+          specialisms: string[]
+          trading_name: string | null
+          updated_at: string
+          verification: Database["public"]["Enums"]["verification_status"]
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          dbs_valid_until?: string | null
+          headline?: string | null
+          hourly_rate_pence?: number | null
+          id: string
+          in_person_available?: boolean
+          insurance_valid_until?: string | null
+          is_published?: boolean
+          online_available?: boolean
+          reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          slug?: string | null
+          specialisms?: string[]
+          trading_name?: string | null
+          updated_at?: string
+          verification?: Database["public"]["Enums"]["verification_status"]
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          dbs_valid_until?: string | null
+          headline?: string | null
+          hourly_rate_pence?: number | null
+          id?: string
+          in_person_available?: boolean
+          insurance_valid_until?: string | null
+          is_published?: boolean
+          online_available?: boolean
+          reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          slug?: string | null
+          specialisms?: string[]
+          trading_name?: string | null
+          updated_at?: string
+          verification?: Database["public"]["Enums"]["verification_status"]
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_coach_of: {
+        Args: { _client_id: string; _pro_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "professional" | "client"
+      coach_client_status: "active" | "paused" | "ended"
+      invite_status: "pending" | "accepted" | "expired" | "revoked"
+      reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
+      sex_at_birth: "female" | "male" | "prefer_not_to_say"
+      verification_status: "pending" | "verified" | "rejected" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +406,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "professional", "client"],
+      coach_client_status: ["active", "paused", "ended"],
+      invite_status: ["pending", "accepted", "expired", "revoked"],
+      reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
+      sex_at_birth: ["female", "male", "prefer_not_to_say"],
+      verification_status: ["pending", "verified", "rejected", "suspended"],
+    },
   },
 } as const
