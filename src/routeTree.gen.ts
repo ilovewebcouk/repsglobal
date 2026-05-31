@@ -9,10 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   id: '/find-a-professional',
   path: '/find-a-professional',
@@ -32,35 +44,63 @@ const ProSlugRoute = ProSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pro/$slug': typeof ProSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/find-a-professional' | '/pro/$slug'
+  fullPaths: '/' | '/find-a-professional' | '/login' | '/signup' | '/pro/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/find-a-professional' | '/pro/$slug'
-  id: '__root__' | '/' | '/find-a-professional' | '/pro/$slug'
+  to: '/' | '/find-a-professional' | '/login' | '/signup' | '/pro/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/find-a-professional'
+    | '/login'
+    | '/signup'
+    | '/pro/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   ProSlugRoute: typeof ProSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/find-a-professional': {
       id: '/find-a-professional'
       path: '/find-a-professional'
@@ -88,8 +128,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   ProSlugRoute: ProSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
