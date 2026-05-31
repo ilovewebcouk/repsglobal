@@ -156,12 +156,12 @@ function HomePage() {
                 "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: left-weighted ramp — solid behind copy, fully clear by 55% so trainers stay visible */}
+          {/* Desktop: solid behind copy column → clear center band for trainers → soft re-ink under the Why REPs card on the right */}
           <div
             className="absolute inset-0 hidden lg:block"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 28%, rgba(11,13,16,0.5) 42%, rgba(11,13,16,0) 55%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 22%, rgba(11,13,16,0.35) 34%, rgba(11,13,16,0) 45%, rgba(11,13,16,0) 70%, rgba(11,13,16,0.35) 84%, rgba(11,13,16,0.6) 100%)",
             }}
           />
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
@@ -171,7 +171,7 @@ function HomePage() {
         <PublicHeader variant="transparent" />
 
         <div className="mx-auto max-w-[1320px] px-6 pb-12 pt-[140px] lg:px-10 lg:pb-16 lg:pt-[160px]">
-          <div className="grid gap-10 lg:grid-cols-[1.45fr_1fr] lg:items-start">
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_minmax(0,300px)] lg:items-start lg:gap-16">
             {/* Left: headline + badges */}
             <div>
               <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
@@ -209,7 +209,7 @@ function HomePage() {
             </div>
 
             {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-6 backdrop-blur-md lg:p-7">
+            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
               <div className="flex items-center gap-2 border-b border-white/10 pb-4">
                 <ShieldCheck className="h-4 w-4 text-reps-gold" />
                 <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
