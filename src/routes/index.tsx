@@ -27,6 +27,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import repsWordmark from "@/assets/reps-wordmark.svg";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -143,11 +144,30 @@ function HomePage() {
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
-          <img
-            src={heroCoaching}
-            alt=""
-            className="h-full w-full origin-right scale-110 object-cover object-center translate-x-[18%]"
-          />
+          {/* Photo + chest wordmark share the same transform so the logo stays glued to the vest */}
+          <div className="absolute inset-0 origin-right scale-110 translate-x-[18%]">
+            <img
+              src={heroCoaching}
+              alt=""
+              className="h-full w-full object-cover object-center"
+            />
+            {/* Locked REPS® wordmark, printed on the trainer's left chest (desktop only) */}
+            <img
+              src={repsWordmark}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute hidden lg:block"
+              style={{
+                left: "44.5%",
+                top: "49%",
+                width: "5.2%",
+                opacity: 0.88,
+                transform: "skewY(-3deg) rotate(-2deg)",
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))",
+                mixBlendMode: "screen",
+              }}
+            />
+          </div>
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
             className="absolute inset-0 lg:hidden"
