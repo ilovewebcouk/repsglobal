@@ -39,11 +39,8 @@ type Pro = {
   role: string;
   location: string;
   region: string;
-  area: string;
   rating: number;
   reviews: number;
-  responseTime: string;
-  travelRadius: string;
   modes: ("In-person" | "Online")[];
   blurb: string;
   image: string;
@@ -51,7 +48,6 @@ type Pro = {
   clients: string;
   bio: string[];
   specialisms: string[];
-
   services: {
     title: string;
     desc: string;
@@ -70,7 +66,6 @@ type Pro = {
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
-
 const PROS: Record<string, Pro> = {
   "james-carter": {
     slug: "james-carter",
@@ -79,13 +74,9 @@ const PROS: Record<string, Pro> = {
     role: "Personal Trainer",
     location: "London, UK",
     region: "Greater London",
-    area: "Clerkenwell, EC1",
     rating: 5.0,
     reviews: 128,
-    responseTime: "~2 hrs",
-    travelRadius: "Up to 3 miles",
     modes: ["In-person", "Online"],
-
     blurb: "Helping busy professionals build strength, move better and perform at their best.",
     image: proJames,
     years: 8,
@@ -103,9 +94,6 @@ const PROS: Record<string, Pro> = {
       "Posture & Mobility",
       "Performance Training",
     ],
-
-
-
     services: [
       {
         title: "Personal Training",
@@ -240,7 +228,7 @@ function ProProfilePage() {
 
       {/* ============ HERO ============ */}
       <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-8 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 pb-8 pt-8 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
             <div className="relative overflow-hidden rounded-[24px] bg-reps-stone">
@@ -349,7 +337,7 @@ function ProProfilePage() {
 
       {/* ============ SUB NAV ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 lg:px-10">
           <nav className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-reps-stone py-4 text-[14px]">
             {SUB_NAV.map((s, i) => (
               <a
@@ -368,12 +356,12 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ ABOUT + SPECIALISMS + LOCATION ============ */}
+      {/* ============ ABOUT + SERVICES + SPECIALISMS / LOCATION ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-            {/* About (wide, left) */}
-            <div id="about" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+        <div className="mx-auto max-w-[1180px] px-6 py-8 lg:px-10">
+          <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
+            {/* About */}
+            <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
@@ -382,20 +370,59 @@ function ProProfilePage() {
                   <p key={p}>{p}</p>
                 ))}
               </div>
-
-              <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
-                <AboutStat icon={Users} value={`${pro.years}+ yrs`} label="experience" />
-                <AboutStat icon={Calendar} value={pro.clients} label="clients helped" />
-                <AboutStat
-                  icon={Star}
-                  value={`${pro.rating.toFixed(1)} rating`}
-                  label={`${pro.reviews} reviews`}
-                />
-                <AboutStat icon={MessageCircle} value={`Replies in ${pro.responseTime}`} label="on average" />
+              <div className="mt-5 space-y-3 text-[13px] text-reps-charcoal">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-reps-muted-light" />
+                  {pro.years}+ years experience
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-reps-muted-light" />
+                  {pro.clients} clients helped
+                </div>
               </div>
             </div>
 
-            {/* Right column: Specialisms over Location */}
+            {/* Services */}
+            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                  Services &amp; Pricing
+                </h2>
+                <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#services">
+                  View all services
+                </a>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {pro.services.map((s) => (
+                  <article
+                    key={s.title}
+                    className="overflow-hidden rounded-[18px] bg-reps-panel text-white"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <img
+                        src={s.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                      <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white">
+                        <s.icon className="h-4 w-4" />
+                      </span>
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <div className="font-display text-[15px] font-bold leading-tight">
+                        {s.title}
+                      </div>
+                      <div className="text-[12px] leading-snug text-white/65">{s.desc}</div>
+                      <div className="pt-3 text-[15px] font-bold text-white">{s.price}</div>
+                      <div className="text-[11px] text-white/55">{s.unit}</div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            {/* Specialisms + Location */}
             <div className="flex flex-col gap-5">
               <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
@@ -411,107 +438,38 @@ function ProProfilePage() {
                 </div>
               </div>
 
-              <div id="location" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
-
-                <div className="relative mt-4 aspect-[16/9] w-full overflow-hidden rounded-[12px] bg-reps-stone">
-                  <MapPlaceholder />
-                </div>
-
-                <dl className="mt-4 grid grid-cols-[72px_1fr] gap-x-3 gap-y-2 text-[13px]">
-                  <dt className="text-reps-muted-light">Area</dt>
-                  <dd className="font-semibold text-reps-charcoal">{pro.area}</dd>
-                  <dt className="text-reps-muted-light">Region</dt>
-                  <dd className="text-reps-charcoal">{pro.region}</dd>
-                  <dt className="text-reps-muted-light">Format</dt>
-                  <dd className="text-reps-charcoal">In-person · private studio or local gym</dd>
-                  <dt className="text-reps-muted-light">Travel</dt>
-                  <dd className="text-reps-charcoal">{pro.travelRadius}</dd>
-                </dl>
-
-                <div className="mt-5 flex items-center justify-between">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
-                  >
-                    <MapPin className="h-3.5 w-3.5" />
-                    View on map
-                  </button>
-                  <a
-                    href="#"
-                    className="inline-flex items-center gap-1 text-[12px] font-medium text-reps-orange hover:underline"
-                  >
-                    Get directions
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </a>
+                <div className="mt-4 grid grid-cols-[1fr_1.1fr] gap-4">
+                  <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
+                    <MapPlaceholder />
+                  </div>
+                  <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
+                    <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
+                    <div>{pro.region}</div>
+                    <div className="mt-1 leading-snug">
+                      In-person at private
+                      <br />
+                      studio or local gym
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      View on map
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-
         </div>
       </section>
-
-      {/* ============ SERVICES & PRICING (full width) ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
-          <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                Services &amp; Pricing
-              </h2>
-              <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#services">
-                View all services
-              </a>
-            </div>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {pro.services.map((s) => (
-                <article
-                  key={s.title}
-                  className="overflow-hidden rounded-[18px] bg-reps-panel text-white"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
-                      src={s.image}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-white">
-                      <s.icon className="h-4 w-4" />
-                    </span>
-                  </div>
-                  <div className="space-y-2 p-5">
-                    <div className="font-display text-[16px] font-bold leading-tight">
-                      {s.title}
-                    </div>
-                    <div className="text-[12.5px] leading-snug text-white/65">{s.desc}</div>
-                    <div className="flex items-end justify-between pt-3">
-                      <div>
-                        <span className="text-[16px] font-bold text-white">{s.price}</span>
-                        <span className="ml-1.5 text-[12px] text-white/55">· {s.unit}</span>
-                      </div>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 rounded-[10px] text-[12px] font-semibold text-reps-orange hover:text-white"
-                      >
-                        Select
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
 
       {/* ============ QUALIFICATIONS + TRUST ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 pb-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
             <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
@@ -587,7 +545,7 @@ function ProProfilePage() {
 
       {/* ============ REVIEWS + FAQ ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 pb-10 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
             {/* Reviews */}
             <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
@@ -700,7 +658,7 @@ function ProProfilePage() {
 
       {/* ============ CTA BAND ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 pb-10 lg:px-10">
           <div className="flex flex-col items-start justify-between gap-5 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6 md:flex-row md:items-center lg:p-7">
             <div className="flex items-start gap-4">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
@@ -737,7 +695,7 @@ function ProProfilePage() {
 
       {/* ============ STATS ============ */}
       <section className="bg-reps-ivory pb-10">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+        <div className="mx-auto max-w-[1180px] px-6 lg:px-10">
           <div className="grid grid-cols-2 gap-4 border-t border-reps-stone pt-6 sm:grid-cols-3 lg:grid-cols-5">
             {STATS.map((s) => (
               <div key={s.label} className="flex items-center gap-3">
@@ -810,24 +768,3 @@ function MapPlaceholder() {
     </div>
   );
 }
-
-function AboutStat({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: typeof Users;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-[12px] border border-reps-stone bg-reps-ivory p-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-      <div className="min-w-0">
-        <div className="text-[13px] font-semibold leading-tight text-reps-charcoal">{value}</div>
-        <div className="text-[11.5px] text-reps-muted-light">{label}</div>
-      </div>
-    </div>
-  );
-}
-
