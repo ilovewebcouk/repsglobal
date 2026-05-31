@@ -43,6 +43,7 @@ import { Route as DashboardCommunityRouteImport } from './routes/dashboard_.comm
 import { Route as DashboardClientsRouteImport } from './routes/dashboard_.clients'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
+import { Route as DashboardBusinessRouteImport } from './routes/dashboard_.business'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -226,6 +227,11 @@ const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   path: '/dashboard/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBusinessRoute = DashboardBusinessRouteImport.update({
+  id: '/dashboard_/business',
+  path: '/dashboard/business',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   id: '/dashboard_/bookings',
   path: '/dashboard/bookings',
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
@@ -414,6 +422,7 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
+  '/dashboard_/business': typeof DashboardBusinessRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
   '/dashboard_/clients': typeof DashboardClientsRouteWithChildren
@@ -464,6 +473,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
+    | '/dashboard/business'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
@@ -512,6 +522,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
+    | '/dashboard/business'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
@@ -560,6 +571,7 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/verification'
     | '/dashboard_/bookings'
+    | '/dashboard_/business'
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
     | '/dashboard_/clients'
@@ -609,6 +621,7 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
+  DashboardBusinessRoute: typeof DashboardBusinessRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
   DashboardClientsRoute: typeof DashboardClientsRouteWithChildren
@@ -867,6 +880,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/business': {
+      id: '/dashboard_/business'
+      path: '/dashboard/business'
+      fullPath: '/dashboard/business'
+      preLoaderRoute: typeof DashboardBusinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/bookings': {
       id: '/dashboard_/bookings'
       path: '/dashboard/bookings'
@@ -995,6 +1015,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
+  DashboardBusinessRoute: DashboardBusinessRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
   DashboardClientsRoute: DashboardClientsRouteWithChildren,
