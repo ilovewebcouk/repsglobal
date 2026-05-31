@@ -171,7 +171,7 @@ function DirectoryPage() {
         <PublicHeader variant="transparent" />
 
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-[120px] lg:px-10 lg:pb-10 lg:pt-[140px]">
-          <div className="rounded-[20px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
+          <div className="rounded-[28px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
@@ -215,7 +215,7 @@ function DirectoryPage() {
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {/* Filter rail */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[20px] border border-reps-stone bg-reps-warm-white p-5">
+              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
                 <div className="flex items-center justify-between border-b border-reps-stone pb-3">
                   <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
                   <button
@@ -266,7 +266,7 @@ function DirectoryPage() {
                   Sort by
                   <span className="relative">
                     <select
-                      className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
+                      className="appearance-none rounded-[14px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
                       defaultValue="relevant"
                     >
                       <option value="relevant">Most relevant</option>
@@ -311,7 +311,7 @@ function DirectoryPage() {
       {/* ============ TRUST BAND ============ */}
       <section className="bg-reps-ivory pb-12">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[20px] border border-reps-stone bg-reps-warm-white p-6 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-8">
+          <div className="grid items-center gap-6 rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-8">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust REPs
@@ -435,7 +435,7 @@ function Select({ value, placeholder }: { value: string; placeholder?: boolean }
     <div className="relative">
       <button
         type="button"
-        className={`flex w-full items-center justify-between rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-2 text-[13px] ${
+        className={`flex w-full items-center justify-between rounded-[14px] border border-reps-stone bg-reps-warm-white px-3 py-2 text-[13px] ${
           placeholder ? "text-reps-muted-light" : "text-reps-charcoal"
         }`}
       >
@@ -493,7 +493,7 @@ function RatingRow({ stars }: { stars: number }) {
 
 function ProCard({ pro }: { pro: Pro }) {
   return (
-    <article className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-4">
+    <article className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
       <div className="grid gap-4 sm:grid-cols-[112px_1fr_auto] sm:items-center">
         <img
           src={pro.image}
@@ -546,13 +546,13 @@ function ProCard({ pro }: { pro: Pro }) {
         <div className="flex flex-col items-stretch gap-2 sm:items-center">
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+            className="inline-flex items-center justify-center rounded-[14px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             View Profile
           </button>
           <button
             type="button"
-            className="inline-flex items-center justify-center gap-1.5 rounded-[10px] px-2 py-1 text-[12px] font-medium text-reps-muted-light hover:text-reps-charcoal"
+            className="inline-flex items-center justify-center gap-1.5 rounded-[14px] px-2 py-1 text-[12px] font-medium text-reps-muted-light hover:text-reps-charcoal"
           >
             <Bookmark className="h-3.5 w-3.5" />
             Save

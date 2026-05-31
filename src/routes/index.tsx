@@ -209,7 +209,7 @@ function HomePage() {
             </div>
 
             {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
+            <aside className="rounded-[28px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
               <div className="flex items-center gap-2 border-b border-white/10 pb-4">
                 <ShieldCheck className="h-4 w-4 text-reps-gold" />
                 <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
@@ -231,7 +231,7 @@ function HomePage() {
               </ul>
               <button
                 type="button"
-                className="mt-6 w-full rounded-[12px] border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-white/5"
+                className="mt-6 w-full rounded-[14px] border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-white/5"
               >
                 Learn more about REPs
               </button>
@@ -239,7 +239,7 @@ function HomePage() {
           </div>
 
           {/* Search panel */}
-          <div className="mt-12 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
+          <div className="mt-12 rounded-[28px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
@@ -280,7 +280,7 @@ function HomePage() {
       {/* ============ STATS STRIP ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
-          <div className="grid grid-cols-2 gap-4 rounded-[20px] border border-reps-stone bg-reps-warm-white p-6 sm:grid-cols-3 lg:grid-cols-5 lg:p-7">
+          <div className="grid grid-cols-2 gap-4 rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 sm:grid-cols-3 lg:grid-cols-5 lg:p-7">
             {stats.map((s) => (
               <div key={s.label} className="flex items-center gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
@@ -316,7 +316,7 @@ function HomePage() {
               </p>
               <button
                 type="button"
-                className="mt-5 inline-flex items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-4 py-2.5 text-[13px] font-medium text-reps-charcoal transition-colors hover:bg-reps-ivory"
+                className="mt-5 inline-flex items-center gap-2 rounded-[14px] border border-reps-stone bg-reps-warm-white px-4 py-2.5 text-[13px] font-medium text-reps-charcoal transition-colors hover:bg-reps-ivory"
               >
                 View all specialisms
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -510,7 +510,7 @@ function HomePage() {
             ].map((c) => (
               <article
                 key={c.title}
-                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+                className="flex flex-col gap-3 rounded-[22px] border border-reps-stone bg-reps-warm-white p-6"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone text-reps-charcoal">
                   <c.icon className="h-5 w-5" strokeWidth={1.6} />
@@ -528,7 +528,7 @@ function HomePage() {
       {/* ============ PROFESSIONAL CTA ============ */}
       <section className="bg-reps-ivory pb-20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
+          <div className="relative isolate overflow-hidden rounded-[28px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
             {/* Background image: inline on mobile, absolutely positioned ≥md */}
             <div className="relative w-full md:absolute md:inset-0">
               <img
@@ -587,7 +587,7 @@ function HomePage() {
 
                 <Link
                   to="/signup"
-                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[14px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
                 >
                   Join REPs today
                 </Link>
