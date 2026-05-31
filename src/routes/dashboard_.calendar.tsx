@@ -785,35 +785,51 @@ function ClassAttendance() {
 
 function CalendarPage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-white">
-      <div className="flex">
-        <Sidebar />
-        <main className="min-w-0 flex-1">
-          <TopBar />
-          <div className="space-y-5 px-8 pb-10 pt-6">
-            <ControlsRow />
+    <ProShell
+      active="Calendar"
+      title="Calendar"
+      subtitle="Manage sessions, consultations, classes and online bookings."
+      actions={
+        <>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none transition-colors hover:text-white"
+          >
+            <Clock className="h-4 w-4" />
+            Set availability
+          </button>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+          >
+            <Plus className="h-4 w-4" />
+            New booking
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <ControlsRow />
 
-            <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-12 xl:col-span-9">
-                <WeekCalendar />
-              </div>
-              <div className="col-span-12 space-y-5 xl:col-span-3">
-                <TodaysSchedule />
-                <BookingSummary />
-                <Availability />
-                <BookingAlerts />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-              <UpcomingConsultations />
-              <SessionRevenue />
-              <ClassAttendance />
-            </div>
+        <div className="grid grid-cols-12 gap-5">
+          <div className="col-span-12 xl:col-span-9">
+            <WeekCalendar />
           </div>
-        </main>
+          <div className="col-span-12 space-y-5 xl:col-span-3">
+            <TodaysSchedule />
+            <BookingSummary />
+            <Availability />
+            <BookingAlerts />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <UpcomingConsultations />
+          <SessionRevenue />
+          <ClassAttendance />
+        </div>
       </div>
-    </div>
+    </ProShell>
   );
 }
 
