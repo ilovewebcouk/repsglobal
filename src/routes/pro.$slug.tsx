@@ -80,9 +80,13 @@ const PROS: Record<string, Pro> = {
     role: "Personal Trainer",
     location: "London, UK",
     region: "Greater London",
+    area: "Clerkenwell, EC1",
     rating: 5.0,
     reviews: 128,
+    responseTime: "~2 hrs",
+    travelRadius: "Up to 3 miles",
     modes: ["In-person", "Online"],
+
     blurb: "Helping busy professionals build strength, move better and perform at their best.",
     image: proJames,
     years: 8,
