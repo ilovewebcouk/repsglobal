@@ -53,7 +53,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
           </Link>
           <Link
             to="/signup"
-            className="inline-flex h-10 items-center rounded-[12px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+            className="inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             Join REPs
           </Link>
