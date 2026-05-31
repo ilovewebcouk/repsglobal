@@ -766,8 +766,8 @@ function ProgressChart() {
         >
           <defs>
             <linearGradient id="ciFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF7A00" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#FF7A00" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[0.25, 0.5, 0.75].map((g) => (
@@ -782,9 +782,9 @@ function ProgressChart() {
             />
           ))}
           <path d={area} fill="url(#ciFill)" />
-          <path d={line} stroke="#FF7A00" strokeWidth={2} fill="none" />
+          <path d={line} stroke="var(--reps-orange)" strokeWidth={2} fill="none" />
           {coords.map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r={2.5} fill="#FF7A00" />
+            <circle key={i} cx={x} cy={y} r={2.5} fill="var(--reps-orange)" />
           ))}
         </svg>
       </div>
@@ -1084,7 +1084,7 @@ function AdherenceTrends() {
       <SectionHeader title="Adherence trends" subtitle="Last 9 weeks" />
       <div className="rounded-[12px] border border-reps-border bg-reps-ink p-3">
         <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-[70px] w-full">
-          <path d={line} stroke="#FF7A00" strokeWidth={2} fill="none" />
+          <path d={line} stroke="var(--reps-orange)" strokeWidth={2} fill="none" />
         </svg>
       </div>
       <ul className="mt-3 space-y-2">

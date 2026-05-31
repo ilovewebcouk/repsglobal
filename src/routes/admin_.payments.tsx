@@ -85,8 +85,8 @@ function AdminPaymentsPage() {
             <svg viewBox="0 0 600 180" className="h-44 w-full">
               <defs>
                 <linearGradient id="rev" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#FF7A00" stopOpacity="0.45" />
-                  <stop offset="100%" stopColor="#FF7A00" stopOpacity="0" />
+                  <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity="0" />
                 </linearGradient>
               </defs>
               {(() => {
@@ -100,9 +100,9 @@ function AdminPaymentsPage() {
                 return (
                   <>
                     <path d={area} fill="url(#rev)" />
-                    <path d={line} fill="none" stroke="#FF7A00" strokeWidth="2.5" />
+                    <path d={line} fill="none" stroke="var(--reps-orange)" strokeWidth="2.5" />
                     {pts.map((p, i) => (
-                      <circle key={i} cx={p[0]} cy={p[1]} r="3" fill="#FF7A00" />
+                      <circle key={i} cx={p[0]} cy={p[1]} r="3" fill="var(--reps-orange)" />
                     ))}
                   </>
                 );

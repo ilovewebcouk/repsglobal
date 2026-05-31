@@ -780,8 +780,8 @@ function TrendLine() {
     <svg viewBox="0 0 240 56" className="h-14 w-full" preserveAspectRatio="none">
       <defs>
         <linearGradient id="prog-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FF7A00" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#FF7A00" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path
@@ -790,7 +790,7 @@ function TrendLine() {
       />
       <path
         d="M0,40 L30,34 L60,38 L90,28 L120,30 L150,22 L180,26 L210,18 L240,20"
-        stroke="#FF7A00"
+        stroke="var(--reps-orange)"
         strokeWidth="2"
         fill="none"
         strokeLinecap="round"
