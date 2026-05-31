@@ -1,15 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Apple,
   BadgeCheck,
   Eye,
   Globe,
+  Loader2,
   Mail,
   Star,
   TrendingUp,
   Users,
 } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { redirectAfterAuth } from "@/lib/auth-redirect";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
