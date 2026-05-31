@@ -27,7 +27,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroImg from "@/assets/hero-trainer.jpg";
-import ctaTrainers from "@/assets/cta-trainers.jpg";
+import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
@@ -512,65 +512,61 @@ function HomePage() {
       {/* ============ PROFESSIONAL CTA ============ */}
       <section className="bg-reps-ivory pb-20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="relative overflow-hidden rounded-[24px] bg-reps-panel px-6 py-10 text-white shadow-[var(--reps-shadow-card)] lg:px-12 lg:py-12">
-            <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr_1.1fr]">
-              {/* Left: copy + CTA */}
-              <div>
-                <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[32px]">
+          <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
+            {/* Background image: inline on mobile, absolutely positioned ≥md */}
+            <div className="relative w-full md:absolute md:inset-0">
+              <img
+                src={ctaTrainers}
+                alt=""
+                className="aspect-[4/3] w-full object-cover object-center md:aspect-auto md:h-full md:object-top lg:object-center"
+                loading="lazy"
+              />
+              {/* Overlay: vertical ramp on mobile/tablet, horizontal ramp on desktop */}
+              <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/10 via-reps-ink/60 to-reps-ink lg:bg-gradient-to-r lg:from-reps-ink lg:via-reps-ink/70 lg:to-transparent" />
+              {/* Soft deepener for overall contrast */}
+              <div className="absolute inset-0 bg-reps-ink/25" />
+            </div>
+
+            {/* Foreground copy */}
+            <div className="relative px-6 py-8 md:min-h-[480px] md:px-10 md:py-12 lg:min-h-[440px] lg:px-14 lg:py-14">
+              <div className="max-w-[520px]">
+                <h2 className="font-display text-[26px] font-bold leading-tight text-white sm:text-[28px] lg:text-[34px]">
                   Are you a fitness professional?
                 </h2>
-                <p className="mt-3 max-w-[360px] text-[14.5px] leading-relaxed text-white/70">
+                <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/75">
                   Join REPs and connect with clients who are looking for professionals they can
                   trust.
                 </p>
+
+                <ul className="mt-6 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
+                  {[
+                    "Get verified and stand out",
+                    "Build trust with client reviews",
+                    "Grow your professional reputation",
+                    "Access resources & CPD",
+                    "Be part of a global community",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-[14px] text-white/90">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
                 <Link
                   to="/signup"
-                  className="mt-6 inline-flex h-[46px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-[0_10px_28px_-10px_rgba(242,140,56,0.7)] transition-colors hover:bg-reps-orange-dark"
+                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-[0_10px_28px_-10px_rgba(242,140,56,0.7)] transition-colors hover:bg-reps-orange-dark"
                 >
                   Join REPs today
                 </Link>
               </div>
-
-              {/* Center: image */}
-              <div className="hidden justify-center lg:flex">
-                <img
-                  src={ctaTrainers}
-                  alt="Two REPs verified fitness professionals"
-                  className="h-[280px] w-auto object-contain"
-                  loading="lazy"
-                  width={1024}
-                  height={768}
-                  style={{
-                    WebkitMaskImage:
-                      "radial-gradient(ellipse at center, black 55%, transparent 85%)",
-                    maskImage:
-                      "radial-gradient(ellipse at center, black 55%, transparent 85%)",
-                  }}
-                />
-              </div>
-
-
-              {/* Right: checklist */}
-              <ul className="space-y-3">
-                {[
-                  "Get verified and stand out",
-                  "Build trust with client reviews",
-                  "Grow your professional reputation",
-                  "Access resources & CPD",
-                  "Be part of a global community",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-[14px] text-white/85">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>
       </section>
+
 
       <PublicFooter />
     </div>
