@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
 const SignupRoute = SignupRouteImport.update({
@@ -65,6 +66,11 @@ const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
   path: '/dashboard/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/dashboard_/calendar',
+  path: '/dashboard/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   id: '/dashboard_/clients/$slug',
   path: '/dashboard/clients/$slug',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/profile': typeof DashboardProfileRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/calendar'
     | '/dashboard/leads'
     | '/dashboard/profile'
     | '/pro/$slug'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard/calendar'
     | '/dashboard/leads'
     | '/dashboard/profile'
     | '/pro/$slug'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/login'
     | '/signup'
+    | '/dashboard_/calendar'
     | '/dashboard_/leads'
     | '/dashboard_/profile'
     | '/pro/$slug'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   ProSlugRoute: typeof ProSlugRoute
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/calendar': {
+      id: '/dashboard_/calendar'
+      path: '/dashboard/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients/$slug': {
       id: '/dashboard_/clients/$slug'
       path: '/dashboard/clients/$slug'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   ProSlugRoute: ProSlugRoute,
