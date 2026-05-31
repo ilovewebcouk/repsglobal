@@ -521,10 +521,24 @@ function HomePage() {
                 className="aspect-[4/3] w-full object-cover object-center md:aspect-auto md:h-full md:object-top lg:object-center"
                 loading="lazy"
               />
-              {/* Overlay: vertical ramp on mobile/tablet, horizontal ramp on desktop */}
-              <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/10 via-reps-ink/60 to-reps-ink lg:bg-gradient-to-r lg:from-reps-ink lg:via-reps-ink/70 lg:to-transparent" />
-              {/* Soft deepener for overall contrast */}
-              <div className="absolute inset-0 bg-reps-ink/25" />
+              {/* Shaped overlay: only covers the copy area, leaves trainers clear.
+                  Mobile: image stacks above solid ink panel — no overlay needed.
+                  Tablet: bottom-weighted ramp (trainers top, copy bottom).
+                  Desktop: left-weighted ramp (copy left, trainers right). */}
+              <div
+                className="absolute inset-0 hidden md:block"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(13,14,16,0.45) 60%, rgb(13,14,16) 88%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 hidden lg:block"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, rgb(13,14,16) 0%, rgba(13,14,16,0.92) 38%, rgba(13,14,16,0.55) 55%, rgba(13,14,16,0) 72%)",
+                }}
+              />
             </div>
 
             {/* Foreground copy */}
