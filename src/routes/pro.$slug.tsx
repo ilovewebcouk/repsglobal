@@ -475,7 +475,10 @@ function ProProfilePage() {
                     <MapPlaceholder />
                   </div>
                   <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
-                    <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
+                      <div className="text-[12px] text-reps-muted-light">{pro.region}</div>
+                    </div>
                     <div className="leading-snug">
                       In-person at private
                       <br />
