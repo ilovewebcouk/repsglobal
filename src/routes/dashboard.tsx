@@ -15,7 +15,6 @@ import {
   GraduationCap,
   Inbox,
   LayoutDashboard,
-  LineChart,
   Mail,
   MessagesSquare,
   Plus,
