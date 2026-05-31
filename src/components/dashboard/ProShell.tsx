@@ -34,6 +34,7 @@ export type ProActive =
   | "Leads"
   | "Payments"
   | "Reports"
+  | "Reviews"
   | "Content Studio"
   | "Education & CPD"
   | "Community"
