@@ -32,6 +32,7 @@ import {
   Users,
   Wrench,
   X,
+import { ProShell } from "@/components/dashboard/ProShell";
   Youtube,
   type LucideIcon,
 } from "lucide-react";
