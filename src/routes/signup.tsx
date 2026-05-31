@@ -20,6 +20,8 @@ import {
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import proSophie from "@/assets/pro-sophie.jpg";
+import signupHeroBg from "@/assets/signup-hero-bg.jpg";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
