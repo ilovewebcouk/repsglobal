@@ -1,34 +1,24 @@
-## Option 1 — resize and reposition the trainer cutout
+## Goal
+Make the trainers look like they're actually standing in the gym by merging the two existing images (`hero-gym-bg.jpg` + `hero-trainers-cutout.png`) into one AI-composited hero image with matched lighting, contact shadows, and color grade.
 
-Single change to the cutout's `<img>` block in `src/routes/index.tsx` (currently lines 170–175).
+## Steps
 
-### New markup
+### 1. Generate the composite
+- Tool: `imagegen--edit_image` with both source images as input.
+- Aspect: 16:9, saved as `src/assets/hero-composite.jpg`.
+- Prompt locks: same two trainers (faces, skin tones, outfits, REPs logo on male's tank), same gym scene, trainers placed right-of-center mid-ground, cinematic depth-of-field, matched warm gym lighting with real contact shadows under their feet.
 
-```tsx
-{/* Layer B — trainers cutout, sized to fit between headline and Why REPs card */}
-<div className="pointer-events-none absolute bottom-[150px] right-[24%] hidden lg:block">
-  {/* Soft elliptical ground shadow */}
-  <div
-    aria-hidden="true"
-    className="absolute -bottom-4 left-1/2 h-8 w-[80%] -translate-x-1/2 rounded-[50%] bg-black/60 blur-2xl"
-  />
-  <img
-    src={heroTrainersCutout}
-    alt=""
-    aria-hidden="true"
-    className="relative h-auto w-[340px] select-none drop-shadow-[0_25px_35px_rgba(0,0,0,0.55)]"
-  />
-</div>
-```
+### 2. Update `src/routes/index.tsx` hero block (lines ~155–185)
+- Replace the gym `<img>` + absolutely-positioned trainer `<div>` (with its ground shadow and drop-shadow) with a single `<img>` of `hero-composite.jpg`.
+- Keep the left-to-right dark gradient overlay so the headline and CTA stay readable.
+- Keep the bottom fade into the search panel.
+- Remove the now-dead trainer cutout import if nothing else uses it.
 
-### Why these numbers
+### 3. Leave source assets in place
+Keep `hero-gym-bg.jpg` and `hero-trainers-cutout.png` so we can re-roll the composite without regenerating from scratch.
 
-- `w-[340px]` — at the native ~425×375 cutout aspect, this renders trainers at roughly the mockup scale (about 26% of the 1320px hero container)
-- `right-[24%]` — sits them between the copy column and the Why REPs card, so the card overlaps the male trainer's shoulder the same way it does in the mockup
-- `bottom-[150px]` — anchors them just above the search panel so head + full torso + hips are visible (no more cropping at neck/face)
-- `drop-shadow-…` + soft elliptical ground shadow — grounds them in the room so they don't look pasted on
-- `pointer-events-none` — keeps the headline/CTA fully interactive underneath
+## Out of scope
+Copy, Why REPs card, search panel, header, mobile layout (mobile keeps the gym backdrop alone), design tokens, any other section.
 
-### Out of scope
-
-No changes to the gym backdrop, gradients, copy, Why REPs card, search panel, or any tokens. Mobile still uses the gym backdrop alone (no cutout).
+## Risk
+AI compositing may need 1–2 re-rolls to keep faces and outfits true. If the first result drifts, we iterate on the prompt before touching the markup.
