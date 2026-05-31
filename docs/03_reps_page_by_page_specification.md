@@ -1282,21 +1282,37 @@ Top:
 - REPs wordmark.
 - Membership badge: Verified Pro.
 
-Navigation items:
+Navigation is grouped into four labelled sections. Group headers use small uppercase muted labels; section dividers are 1px `--reps-border`.
 
-1. Dashboard
-2. Leads
-3. Clients
-4. Bookings
-5. Payments
-6. Programmes
-7. Nutrition
-8. Check-ins
-9. Messages
-10. Reviews
-11. CPD
-12. Public Profile
-13. Settings
+**Work** — the daily operating surface
+
+1. Dashboard — `/dashboard`
+2. Leads — `/dashboard/leads`
+3. Clients — `/dashboard/clients`
+4. Calendar — `/dashboard/calendar`
+5. Bookings — `/dashboard/bookings`
+6. Messages — `/dashboard/messages`
+
+**Deliver** — programming and accountability
+
+7. Programmes — `/dashboard/programs`
+8. Nutrition — `/dashboard/nutrition`
+9. Check-ins — `/dashboard/check-ins`
+10. Reviews — `/dashboard/reviews`
+
+**Grow** — visibility, expertise and audience
+
+11. Reports — `/dashboard/reports`
+12. Content Studio — `/dashboard/content`
+13. Community — `/dashboard/community`
+14. CPD — `/dashboard/cpd`
+15. Public Profile — `/dashboard/profile`
+
+**Money & Admin**
+
+16. Payments — `/dashboard/payments`
+17. Business Tools — `/dashboard/business`
+18. Settings — `/dashboard/settings`
 
 Bottom area:
 
@@ -1310,6 +1326,8 @@ Active item:
 - Dashboard active by default.
 - Orange icon or left rail.
 - Soft panel background.
+
+Rationale: a flat 13-item list does not scale to a serious business operating system. The four-group structure mirrors the daily workflow of a working professional (work it → deliver it → grow it → bill for it) and matches the information architecture used by leading category competitors.
 
 ### 8.6 Top Bar
 
@@ -1674,6 +1692,88 @@ The dashboard is approved only if:
 - It does not feel like a generic SaaS dashboard.
 - It does not feel like a basic coaching app.
 
+### 8.19 Reports & Analytics Page
+
+**Route:** `/dashboard/reports`
+
+**Purpose:** give the professional a single screen that proves their business is healthy, so renewing membership is an obvious decision.
+
+**Primary user intent:** "Is my business growing, and where is the money coming from?"
+
+**Page sections (Phase 1 visual):**
+
+- KPI strip: revenue (last 30d), active clients, session utilisation %, lead-to-client conversion %, average client LTV.
+- Revenue trend chart (12 weeks) with breakdown by stream (1:1, programmes, group, nutrition).
+- Client cohort table: acquired month, retained, churned, LTV.
+- Top-performing services card.
+- Lead source attribution card.
+- Export button (visual only).
+
+**Acceptance criteria:** matches dashboard dark shell; chart styling uses brand orange for primary series only; no real data wiring in Phase 1.
+
+### 8.20 Content Studio Page
+
+**Route:** `/dashboard/content`
+
+**Purpose:** central place to plan, draft and store all content the professional ships — programme thumbnails, social posts, blog drafts, video library. Note: §8.15 covers the *card* on the dashboard; this section covers the full page.
+
+**Primary user intent:** "Where do I publish and manage everything I post?"
+
+**Page sections (Phase 1 visual):**
+
+- Library tabs: Videos, Images, Posts, Blog drafts, Programme assets.
+- Grid of asset cards (thumbnail, title, type chip, last edited).
+- "New" split-button (visual only).
+- Right-hand panel: scheduled posts calendar (next 14 days).
+- Top strip: storage used, AI suggestions count (visual placeholder), drafts awaiting review.
+
+**Acceptance criteria:** card grid uses 18px radius; thumbnails 16:9; no upload functionality in Phase 1.
+
+### 8.21 Community Page
+
+**Route:** `/dashboard/community`
+
+**Purpose:** pro-to-pro forum plus client-facing group spaces. Differentiator: REPs becomes a network, not a tool.
+
+**Primary user intent:** "What are other verified pros saying, and how do I run a group for my clients?"
+
+**Page sections (Phase 1 visual):**
+
+- Two-tab layout: **Pro Lounge** (verified pros only) and **My Groups** (client-facing).
+- Pro Lounge: thread list with author, replies, last activity, category chip (Coaching, Business, CPD, Off-topic).
+- My Groups: cards for each client group, member count, last post, "Open" button.
+- Sidebar: trending topics, suggested pros to follow, community guidelines link.
+- Compose-thread CTA (visual only).
+
+**Acceptance criteria:** thread cards 16px radius; verified pros always show the orange shield mini-badge; no posting in Phase 1.
+
+### 8.22 Business Tools Page
+
+**Route:** `/dashboard/business`
+
+**Purpose:** the un-glamorous but business-critical surface — invoices, contracts, intake forms, waivers, tax exports. Wins B2B retention.
+
+**Primary user intent:** "Run the admin side of my business without leaving REPs."
+
+**Page sections (Phase 1 visual):**
+
+- Tabbed shell: **Invoices**, **Contracts**, **Intake Forms**, **Waivers**, **Tax & Exports**.
+- Invoices: table (number, client, issued, due, amount, status chip).
+- Contracts: template library + signed-contracts list.
+- Intake Forms: form template cards + responses count.
+- Waivers: same shape as contracts.
+- Tax & Exports: date-range selector, export type cards (CSV/PDF), HMRC self-assessment helper card.
+
+**Acceptance criteria:** consistent table styling with §8 patterns; status chips use shared chip component; no document generation in Phase 1.
+
+### 8.23 Public Profile Editor (existing)
+
+**Route:** `/dashboard/profile`
+
+This page exists and is built. Spec entry added here to formalise its sidebar listing under *Grow*. Purpose: edit the public-facing `/pro/$slug` page (hero copy, services, gallery, reviews moderation). Acceptance criteria already covered by the locked profile mock-up.
+
+
+
 ## 9. Page 6 — Admin Dashboard Shell
 
 ### 9.1 Route
@@ -1692,6 +1792,7 @@ Optional future routes:
 - `/admin/migration`
 - `/admin/support`
 - `/admin/settings`
+- `/admin/audit` (Phase 2)
 
 ### 9.2 Page Purpose
 
@@ -1882,6 +1983,16 @@ The admin shell is approved only if:
 - It clearly supports verification, membership, directory and migration management.
 - It does not introduce a separate admin theme.
 - It remains a visual shell only in Phase 1.
+
+### 9.11 Audit Log (Phase 2 placeholder)
+
+**Route:** `/admin/audit` (not built in Phase 1).
+
+Append-only log of every admin and user mutation: actor, action, target, IP, timestamp, diff snippet. Filterable by actor, action type, date. Compliance requirement once auth and DB land.
+
+### 9.12 Feature Flags (Phase 2 placeholder)
+
+Lives as a tab inside `/admin/settings` in Phase 1; promoted to its own section once flag count exceeds ~10. Per-flag rows: key, description, environment, rollout %, last changed by/when.
 
 ## 10. Shared Components Required in Phase 1
 
