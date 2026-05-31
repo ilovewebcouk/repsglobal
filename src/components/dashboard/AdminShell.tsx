@@ -40,16 +40,16 @@ const NAV_MANAGE: NavItem[] = [
   { icon: Users, label: "Professionals", to: "/admin/professionals" },
   { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
   { icon: UserCheck, label: "Memberships", to: "/admin/memberships" },
-  { icon: Target, label: "Directory" },
+  { icon: Target, label: "Directory", to: "/admin/directory" },
   { icon: Star, label: "Reviews", to: "/admin/reviews" },
   { icon: CreditCard, label: "Payments", to: "/admin/payments" },
-  { icon: GraduationCap, label: "CPD" },
+  { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
 ];
 
 const NAV_PLATFORM: NavItem[] = [
   { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-  { icon: LifeBuoy, label: "Support", badge: "5" },
-  { icon: Settings, label: "Settings" },
+  { icon: LifeBuoy, label: "Support", to: "/admin/support", badge: "5" },
+  { icon: Settings, label: "Settings", to: "/admin/settings" },
 ];
 
 function Sidebar({ active }: { active: AdminActive }) {
