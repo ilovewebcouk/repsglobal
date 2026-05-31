@@ -30,6 +30,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard_.reports'
 import { Route as DashboardProgramsRouteImport } from './routes/dashboard_.programs'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
 import { Route as DashboardPaymentsRouteImport } from './routes/dashboard_.payments'
@@ -37,9 +38,12 @@ import { Route as DashboardNutritionRouteImport } from './routes/dashboard_.nutr
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard_.messages'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 import { Route as DashboardCpdRouteImport } from './routes/dashboard_.cpd'
+import { Route as DashboardContentRouteImport } from './routes/dashboard_.content'
+import { Route as DashboardCommunityRouteImport } from './routes/dashboard_.community'
 import { Route as DashboardClientsRouteImport } from './routes/dashboard_.clients'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
+import { Route as DashboardBusinessRouteImport } from './routes/dashboard_.business'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -158,6 +162,11 @@ const DashboardReviewsRoute = DashboardReviewsRouteImport.update({
   path: '/dashboard/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/dashboard_/reports',
+  path: '/dashboard/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardProgramsRoute = DashboardProgramsRouteImport.update({
   id: '/dashboard_/programs',
   path: '/dashboard/programs',
@@ -193,6 +202,16 @@ const DashboardCpdRoute = DashboardCpdRouteImport.update({
   path: '/dashboard/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardContentRoute = DashboardContentRouteImport.update({
+  id: '/dashboard_/content',
+  path: '/dashboard/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCommunityRoute = DashboardCommunityRouteImport.update({
+  id: '/dashboard_/community',
+  path: '/dashboard/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardClientsRoute = DashboardClientsRouteImport.update({
   id: '/dashboard_/clients',
   path: '/dashboard/clients',
@@ -206,6 +225,11 @@ const DashboardCheckInsRoute = DashboardCheckInsRouteImport.update({
 const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   id: '/dashboard_/calendar',
   path: '/dashboard/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardBusinessRoute = DashboardBusinessRouteImport.update({
+  id: '/dashboard_/business',
+  path: '/dashboard/business',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
@@ -299,9 +323,12 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard/community': typeof DashboardCommunityRoute
+  '/dashboard/content': typeof DashboardContentRoute
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -309,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/programs': typeof DashboardProgramsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -344,9 +372,12 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard/community': typeof DashboardCommunityRoute
+  '/dashboard/content': typeof DashboardContentRoute
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -354,6 +385,7 @@ export interface FileRoutesByTo {
   '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/programs': typeof DashboardProgramsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -390,9 +422,12 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
+  '/dashboard_/business': typeof DashboardBusinessRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
   '/dashboard_/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard_/community': typeof DashboardCommunityRoute
+  '/dashboard_/content': typeof DashboardContentRoute
   '/dashboard_/cpd': typeof DashboardCpdRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/messages': typeof DashboardMessagesRoute
@@ -400,6 +435,7 @@ export interface FileRoutesById {
   '/dashboard_/payments': typeof DashboardPaymentsRoute
   '/dashboard_/profile': typeof DashboardProfileRoute
   '/dashboard_/programs': typeof DashboardProgramsRoute
+  '/dashboard_/reports': typeof DashboardReportsRoute
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -437,9 +473,12 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
+    | '/dashboard/business'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -447,6 +486,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/profile'
     | '/dashboard/programs'
+    | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/pro/$slug'
@@ -482,9 +522,12 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
+    | '/dashboard/business'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -492,6 +535,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/profile'
     | '/dashboard/programs'
+    | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/pro/$slug'
@@ -527,9 +571,12 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/verification'
     | '/dashboard_/bookings'
+    | '/dashboard_/business'
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
     | '/dashboard_/clients'
+    | '/dashboard_/community'
+    | '/dashboard_/content'
     | '/dashboard_/cpd'
     | '/dashboard_/leads'
     | '/dashboard_/messages'
@@ -537,6 +584,7 @@ export interface FileRouteTypes {
     | '/dashboard_/payments'
     | '/dashboard_/profile'
     | '/dashboard_/programs'
+    | '/dashboard_/reports'
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/pro/$slug'
@@ -573,9 +621,12 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
+  DashboardBusinessRoute: typeof DashboardBusinessRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
   DashboardClientsRoute: typeof DashboardClientsRouteWithChildren
+  DashboardCommunityRoute: typeof DashboardCommunityRoute
+  DashboardContentRoute: typeof DashboardContentRoute
   DashboardCpdRoute: typeof DashboardCpdRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
@@ -583,6 +634,7 @@ export interface RootRouteChildren {
   DashboardPaymentsRoute: typeof DashboardPaymentsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardProgramsRoute: typeof DashboardProgramsRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   ProSlugRoute: typeof ProSlugRoute
@@ -737,6 +789,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/reports': {
+      id: '/dashboard_/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/programs': {
       id: '/dashboard_/programs'
       path: '/dashboard/programs'
@@ -786,6 +845,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/content': {
+      id: '/dashboard_/content'
+      path: '/dashboard/content'
+      fullPath: '/dashboard/content'
+      preLoaderRoute: typeof DashboardContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard_/community': {
+      id: '/dashboard_/community'
+      path: '/dashboard/community'
+      fullPath: '/dashboard/community'
+      preLoaderRoute: typeof DashboardCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients': {
       id: '/dashboard_/clients'
       path: '/dashboard/clients'
@@ -805,6 +878,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/calendar'
       fullPath: '/dashboard/calendar'
       preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard_/business': {
+      id: '/dashboard_/business'
+      path: '/dashboard/business'
+      fullPath: '/dashboard/business'
+      preLoaderRoute: typeof DashboardBusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard_/bookings': {
@@ -935,9 +1015,12 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
+  DashboardBusinessRoute: DashboardBusinessRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
   DashboardClientsRoute: DashboardClientsRouteWithChildren,
+  DashboardCommunityRoute: DashboardCommunityRoute,
+  DashboardContentRoute: DashboardContentRoute,
   DashboardCpdRoute: DashboardCpdRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
@@ -945,6 +1028,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardPaymentsRoute: DashboardPaymentsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardProgramsRoute: DashboardProgramsRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   ProSlugRoute: ProSlugRoute,
