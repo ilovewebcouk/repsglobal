@@ -29,6 +29,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
+import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
 import { Route as DashboardReportsRouteImport } from './routes/dashboard_.reports'
@@ -156,6 +157,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProSlugRoute = ProSlugRouteImport.update({
   id: '/pro/$slug',
   path: '/pro/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalTodayRoute = PortalTodayRouteImport.update({
+  id: '/portal_/today',
+  path: '/portal/today',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -396,6 +403,7 @@ export interface FileRoutesByTo {
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -447,6 +455,7 @@ export interface FileRoutesById {
   '/dashboard_/reports': typeof DashboardReportsRoute
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
+  '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
 }
@@ -499,6 +508,7 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
+    | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -549,6 +559,7 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
+    | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
   id:
@@ -599,6 +610,7 @@ export interface FileRouteTypes {
     | '/dashboard_/reports'
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
+    | '/portal_/today'
     | '/pro/$slug'
     | '/dashboard_/clients/$slug'
   fileRoutesById: FileRoutesById
@@ -650,6 +662,7 @@ export interface RootRouteChildren {
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRoute
 }
 
@@ -793,6 +806,13 @@ declare module '@tanstack/react-router' {
       path: '/pro/$slug'
       fullPath: '/pro/$slug'
       preLoaderRoute: typeof ProSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/today': {
+      id: '/portal_/today'
+      path: '/portal/today'
+      fullPath: '/portal/today'
+      preLoaderRoute: typeof PortalTodayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard_/settings': {
@@ -1052,8 +1072,19 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
