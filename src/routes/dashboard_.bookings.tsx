@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
+import { ProShell } from "@/components/dashboard/ProShell";
 
 export const Route = createFileRoute("/dashboard_/bookings")({
   head: () => ({
