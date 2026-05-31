@@ -240,7 +240,7 @@ function SignupPage() {
           </div>
 
           {/* Right: signup form */}
-          <div className="rounded-[22px] bg-reps-warm-white p-7 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
+          <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
             <div className="text-center">
               <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
                 Create Your REPs Account
