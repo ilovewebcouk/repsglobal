@@ -83,12 +83,22 @@ export function AuthField({
   placeholder,
   hint,
   right,
+  value,
+  onChange,
+  required,
+  autoComplete,
+  minLength,
 }: {
   label: string;
   type?: string;
   placeholder?: string;
   hint?: string;
   right?: React.ReactNode;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+  autoComplete?: string;
+  minLength?: number;
 }) {
   return (
     <div>
@@ -100,6 +110,11 @@ export function AuthField({
         <input
           type={type}
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          required={required}
+          autoComplete={autoComplete}
+          minLength={minLength}
           className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
         />
       </div>
@@ -110,11 +125,23 @@ export function AuthField({
   );
 }
 
-export function AuthPrimaryButton({ children }: { children: React.ReactNode }) {
+export function AuthPrimaryButton({
+  children,
+  disabled,
+  onClick,
+  type = "submit",
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+  type?: "submit" | "button";
+}) {
   return (
     <button
-      type="submit"
-      className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
     >
       {children}
     </button>
