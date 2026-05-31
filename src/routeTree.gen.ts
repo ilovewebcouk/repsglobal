@@ -38,6 +38,8 @@ import { Route as DashboardNutritionRouteImport } from './routes/dashboard_.nutr
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard_.messages'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 import { Route as DashboardCpdRouteImport } from './routes/dashboard_.cpd'
+import { Route as DashboardContentRouteImport } from './routes/dashboard_.content'
+import { Route as DashboardCommunityRouteImport } from './routes/dashboard_.community'
 import { Route as DashboardClientsRouteImport } from './routes/dashboard_.clients'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
@@ -199,6 +201,16 @@ const DashboardCpdRoute = DashboardCpdRouteImport.update({
   path: '/dashboard/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardContentRoute = DashboardContentRouteImport.update({
+  id: '/dashboard_/content',
+  path: '/dashboard/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCommunityRoute = DashboardCommunityRouteImport.update({
+  id: '/dashboard_/community',
+  path: '/dashboard/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardClientsRoute = DashboardClientsRouteImport.update({
   id: '/dashboard_/clients',
   path: '/dashboard/clients',
@@ -308,6 +320,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard/community': typeof DashboardCommunityRoute
+  '/dashboard/content': typeof DashboardContentRoute
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -354,6 +368,8 @@ export interface FileRoutesByTo {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
   '/dashboard/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard/community': typeof DashboardCommunityRoute
+  '/dashboard/content': typeof DashboardContentRoute
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -401,6 +417,8 @@ export interface FileRoutesById {
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
   '/dashboard_/clients': typeof DashboardClientsRouteWithChildren
+  '/dashboard_/community': typeof DashboardCommunityRoute
+  '/dashboard_/content': typeof DashboardContentRoute
   '/dashboard_/cpd': typeof DashboardCpdRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/messages': typeof DashboardMessagesRoute
@@ -449,6 +467,8 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -495,6 +515,8 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
     | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -541,6 +563,8 @@ export interface FileRouteTypes {
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
     | '/dashboard_/clients'
+    | '/dashboard_/community'
+    | '/dashboard_/content'
     | '/dashboard_/cpd'
     | '/dashboard_/leads'
     | '/dashboard_/messages'
@@ -588,6 +612,8 @@ export interface RootRouteChildren {
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
   DashboardClientsRoute: typeof DashboardClientsRouteWithChildren
+  DashboardCommunityRoute: typeof DashboardCommunityRoute
+  DashboardContentRoute: typeof DashboardContentRoute
   DashboardCpdRoute: typeof DashboardCpdRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
@@ -806,6 +832,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/content': {
+      id: '/dashboard_/content'
+      path: '/dashboard/content'
+      fullPath: '/dashboard/content'
+      preLoaderRoute: typeof DashboardContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard_/community': {
+      id: '/dashboard_/community'
+      path: '/dashboard/community'
+      fullPath: '/dashboard/community'
+      preLoaderRoute: typeof DashboardCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients': {
       id: '/dashboard_/clients'
       path: '/dashboard/clients'
@@ -958,6 +998,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
   DashboardClientsRoute: DashboardClientsRouteWithChildren,
+  DashboardCommunityRoute: DashboardCommunityRoute,
+  DashboardContentRoute: DashboardContentRoute,
   DashboardCpdRoute: DashboardCpdRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
@@ -973,3 +1015,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
