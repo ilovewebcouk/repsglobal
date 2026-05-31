@@ -15,13 +15,20 @@
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Inter Tight", "Inter", system-ui, -apple-system, sans-serif;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 22px;
-  --radius-3xl: 28px;
-  --radius-4xl: 32px;
+  /* REPs radius system (approved, full-page mock-ups) */
+  --radius-sm: 8px;       /* reps-radius-sm */
+  --radius-md: 12px;      /* reps-radius-md */
+  --radius-lg: 14px;      /* reps-radius-button / input */
+  --radius-xl: 22px;      /* reps-radius-card */
+  --radius-2xl: 28px;     /* reps-radius-panel */
+
+  --reps-radius-sm: 8px;
+  --reps-radius-md: 12px;
+  --reps-radius-button: 14px;
+  --reps-radius-input: 14px;
+  --reps-radius-card: 22px;
+  --reps-radius-panel: 28px;
+  --reps-radius-pill: 999px;
 
   /* REPs brand tokens — surfaces */
   --color-reps-black: var(--reps-black);
