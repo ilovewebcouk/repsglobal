@@ -208,7 +208,7 @@ function SignupPage() {
             </ul>
 
             {/* Testimonial */}
-            <figure className="mt-10 w-full max-w-[420px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
+            <figure className="mt-10 w-full max-w-[480px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star
