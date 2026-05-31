@@ -26,8 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGymBg from "@/assets/hero-gym-bg.jpg";
-import heroTrainersCutout from "@/assets/hero-trainers-cutout.png";
+import heroComposite from "@/assets/hero-composite.jpg";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -142,11 +141,10 @@ function HomePage() {
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: empty gym backdrop + gradient overlay + trainers cutout layered on top so skin tones stay true */}
+        {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
-          {/* Layer A — empty dark gym backdrop */}
           <img
-            src={heroGymBg}
+            src={heroComposite}
             alt=""
             className="h-full w-full object-cover object-center"
           />
@@ -166,20 +164,6 @@ function HomePage() {
                 "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
             }}
           />
-          {/* Layer B — trainers cutout, anchored bottom-right, filling hero vertically (desktop only) */}
-          {/* Layer B — trainers cutout, sized to fit between headline and Why REPs card */}
-          <div className="pointer-events-none absolute bottom-[180px] right-[16%] hidden lg:block">
-            <div
-              aria-hidden="true"
-              className="absolute -bottom-3 left-1/2 h-10 w-[78%] -translate-x-1/2 rounded-[50%] bg-black/70 blur-2xl"
-            />
-            <img
-              src={heroTrainersCutout}
-              alt=""
-              aria-hidden="true"
-              className="relative h-auto w-[620px] select-none drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
-            />
-          </div>
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
           <div className="absolute inset-x-0 bottom-0 hidden h-[180px] bg-gradient-to-t from-reps-black to-transparent lg:block" />
         </div>
