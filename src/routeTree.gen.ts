@@ -10,10 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
@@ -41,9 +45,19 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
+  id: '/for-professionals',
+  path: '/for-professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
@@ -56,9 +70,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -169,10 +193,14 @@ const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
@@ -197,10 +225,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
@@ -226,10 +258,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/migration': typeof AdminMigrationRoute
@@ -256,10 +292,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
+    | '/contact'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin/memberships'
     | '/admin/migration'
@@ -284,10 +324,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/admin'
+    | '/contact'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin/memberships'
     | '/admin/migration'
@@ -312,10 +356,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
+    | '/contact'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin_/memberships'
     | '/admin_/migration'
@@ -341,10 +389,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
+  ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminMigrationRoute: typeof AdminMigrationRoute
@@ -377,11 +429,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-professionals': {
+      id: '/for-professionals'
+      path: '/for-professionals'
+      fullPath: '/for-professionals'
+      preLoaderRoute: typeof ForProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/find-a-professional': {
@@ -398,11 +464,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -557,10 +637,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
+  ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminMigrationRoute: AdminMigrationRoute,
