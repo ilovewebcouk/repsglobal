@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
@@ -41,6 +42,11 @@ import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.cl
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/migration': typeof AdminMigrationRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin/memberships'
     | '/admin/migration'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin/memberships'
     | '/admin/migration'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/login'
+    | '/pricing'
     | '/signup'
     | '/admin_/memberships'
     | '/admin_/migration'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminMigrationRoute: typeof AdminMigrationRoute
@@ -401,6 +414,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminMigrationRoute: AdminMigrationRoute,
