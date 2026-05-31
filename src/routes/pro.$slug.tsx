@@ -104,6 +104,9 @@ const PROS: Record<string, Pro> = {
       "Posture & Mobility",
       "Performance Training",
     ],
+    worksWith: ["Beginners", "Returning to training", "Post-injury", "Athletes"],
+    trainingStyle: ["Evidence-based", "Supportive", "Goal-led"],
+
     services: [
       {
         title: "Personal Training",
