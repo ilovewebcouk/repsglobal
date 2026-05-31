@@ -29,6 +29,7 @@ import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
+import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
@@ -133,6 +134,11 @@ const AdminVerificationRoute = AdminVerificationRouteImport.update({
   path: '/admin/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin_/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
   id: '/admin_/professionals',
   path: '/admin/professionals',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
+  '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/memberships'
     | '/admin/professionals'
+    | '/admin/reviews'
     | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/memberships'
     | '/admin/professionals'
+    | '/admin/reviews'
     | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin_/memberships'
     | '/admin_/professionals'
+    | '/admin_/reviews'
     | '/admin_/verification'
     | '/dashboard_/bookings'
     | '/dashboard_/calendar'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
@@ -471,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/reviews': {
+      id: '/admin_/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/professionals': {
       id: '/admin_/professionals'
       path: '/admin/professionals'
@@ -504,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
