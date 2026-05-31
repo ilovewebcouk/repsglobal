@@ -1,19 +1,15 @@
-## Why card 1 looks different — and the fix
+## Move service icon to straddle the image/body seam
 
-All three cards have identical structure, sizing, and aspect ratio. The visual difference is content, not layout:
+In the mock-up, the orange icon circle sits at the **bottom-left of the image** and overlaps onto the dark card body. That overlap pushes the title down, giving the card more vertical breathing room.
 
-- **Card 1's image** (`hero-coaching-moment.jpg`) is a dark gym shot that blends into the dark `bg-reps-panel` card body. The image-to-body seam vanishes, the icon's bottom half disappears against the dark image, and the ring (`ring-reps-panel`) blends in too. Result: the icon looks like it floats over the image rather than straddling the seam.
-- **Cards 2 & 3** use bright portrait shots (`pro-daniel.jpg`, `pro-sophie.jpg`) with light skin against the dark body, so the seam and icon ring read clearly.
+### Changes (`src/routes/pro.$slug.tsx`)
 
-### Fix
+1. **Icon position** (line 430): from `absolute left-3 top-3` to `absolute left-3 -bottom-4` so the circle straddles the seam (half on the image, half on the body).
 
-Swap card 1's image to a brighter, higher-contrast shot so the seam reads the same as the other two cards.
+2. **Body top padding** (line 434): bump from `p-4` to `pt-7 px-4 pb-4` so the title clears the overlapping icon.
 
-`src/routes/pro.$slug.tsx` line 103:
-- `image: heroCoaching` → `image: proLaura` (Laura portrait — same look as the other two cards)
-
-That's the only change. No structural edits, no other cards touched.
+That's it — image ratio (5/4), title, description, and price lockup all unchanged.
 
 ### Out of scope
 
-Layout, padding, icon position, aspect ratio, and everything else stays exactly as-is.
+No other cards, sections, or pages.
