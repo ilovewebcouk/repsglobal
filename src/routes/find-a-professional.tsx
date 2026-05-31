@@ -476,12 +476,12 @@ function Checkbox({ label, defaultChecked }: { label: string; defaultChecked?: b
 function RatingRow({ stars }: { stars: number }) {
   return (
     <div className="flex items-center gap-2 text-[13px] text-reps-charcoal">
-      <span className="flex items-center gap-0.5 text-reps-gold">
+      <span className="flex items-center gap-0.5 text-reps-orange">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
             className={`h-3.5 w-3.5 ${
-              i < stars ? "fill-reps-gold text-reps-gold" : "text-reps-stone"
+              i < stars ? "fill-reps-orange text-reps-orange" : "text-reps-stone"
             }`}
           />
         ))}
@@ -520,7 +520,7 @@ function ProCard({ pro }: { pro: Pro }) {
               {pro.distance}
             </span>
             <span className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 fill-reps-gold text-reps-gold" />
+              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
               <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
               <span>({pro.reviews})</span>
             </span>
