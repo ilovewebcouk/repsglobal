@@ -403,9 +403,17 @@ function ProProfilePage() {
 
             {/* Services */}
             <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                Services &amp; Pricing
-              </h2>
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                  Services &amp; Pricing
+                </h2>
+                <a
+                  href={`/pro/${pro.slug}/services`}
+                  className="text-[12px] font-semibold text-reps-orange hover:underline"
+                >
+                  View all services →
+                </a>
+              </div>
               <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-3">
                 {pro.services.map((s) => (
                   <article
