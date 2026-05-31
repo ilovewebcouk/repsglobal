@@ -544,10 +544,10 @@ function HomePage() {
             {/* Foreground copy */}
             <div className="relative px-6 py-8 md:min-h-[480px] md:px-10 md:py-12 lg:min-h-[440px] lg:px-14 lg:py-14">
               <div className="max-w-[520px]">
-                <h2 className="font-display text-[26px] font-bold leading-tight text-white sm:text-[28px] lg:text-[34px]">
+                <h2 className="font-display text-[26px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[28px] lg:text-[34px]">
                   Are you a fitness professional?
                 </h2>
-                <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/75">
+                <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/85">
                   Join REPs and connect with clients who are looking for professionals they can
                   trust.
                 </p>
@@ -560,7 +560,7 @@ function HomePage() {
                     "Access resources & CPD",
                     "Be part of a global community",
                   ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-[14px] text-white/90">
+                    <li key={item} className="flex items-center gap-3 text-[14px] text-white">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
                         <Check className="h-3 w-3" strokeWidth={3} />
                       </span>
