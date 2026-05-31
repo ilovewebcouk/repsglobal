@@ -426,11 +426,11 @@ function ProProfilePage() {
             <div className="flex flex-col gap-5">
               <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-1.5">
                   {pro.specialisms.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
                     >
                       {tag}
                     </span>
