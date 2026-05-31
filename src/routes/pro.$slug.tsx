@@ -846,3 +846,24 @@ function MapPlaceholder() {
     </div>
   );
 }
+
+function AboutStat({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: typeof Users;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5 rounded-[12px] border border-reps-stone bg-reps-ivory p-3">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+      <div className="min-w-0">
+        <div className="text-[13px] font-semibold leading-tight text-reps-charcoal">{value}</div>
+        <div className="text-[11.5px] text-reps-muted-light">{label}</div>
+      </div>
+    </div>
+  );
+}
+
