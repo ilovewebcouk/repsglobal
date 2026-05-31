@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Clock,
   Plus,
+  Target,
   Users,
 } from "lucide-react";
 

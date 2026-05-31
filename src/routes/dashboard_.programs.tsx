@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Filter,
   GripVertical,
+  MessagesSquare,
   MoreHorizontal,
   Pencil,
   Plus,
