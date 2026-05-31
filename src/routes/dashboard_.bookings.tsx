@@ -482,13 +482,31 @@ function Avatar({ initials }: { initials: string }) {
 
 function BookingsPage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar />
+    <ProShell
+      active="Bookings"
+      title="Bookings"
+      subtitle="Every session, consultation, class and online booking across your REPs services."
+      actions={
+        <>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none transition-colors hover:text-white"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+          >
+            <Plus className="h-4 w-4" />
+            New booking
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-6">
 
-          <main className="flex-1 px-8 pb-12 pt-6">
             {/* KPI ROW */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
               {KPIS.map((k) => (
