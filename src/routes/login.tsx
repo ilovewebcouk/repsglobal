@@ -1,15 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Apple,
   BadgeCheck,
   Eye,
   Globe,
+  Loader2,
   Mail,
   Star,
   TrendingUp,
   Users,
 } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { redirectAfterAuth } from "@/lib/auth-redirect";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
@@ -59,6 +64,60 @@ const TRUST_BULLETS = [
 ];
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInError) throw signInError;
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-in failed");
+        setGoogleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      // Tokens received in-line — resolve role and redirect
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       {/* ============ AUTH HEADER ============ */}
@@ -188,7 +247,7 @@ function LoginPage() {
               </p>
             </div>
 
-            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               {/* Email */}
               <div>
                 <label className="text-[13px] font-semibold text-reps-charcoal">
@@ -199,7 +258,10 @@ function LoginPage() {
                   <input
                     type="email"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
+                    autoComplete="email"
                     className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                   />
                 </div>
@@ -211,29 +273,39 @@ function LoginPage() {
                   <label className="text-[13px] font-semibold text-reps-charcoal">
                     Password
                   </label>
-                  <a
-                    href="#"
+                  <Link
+                    to="/forgot-password"
                     className="text-[12px] font-semibold text-reps-orange hover:underline"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
                   <input
-                    type="password"
+                    type={showPw ? "text" : "password"}
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
+                    autoComplete="current-password"
                     className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                   />
                   <button
                     type="button"
-                    aria-label="Show password"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    onClick={() => setShowPw((v) => !v)}
                     className="text-reps-muted-light hover:text-reps-charcoal"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
                 </div>
               </div>
+
+              {error && (
+                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+                  {error}
+                </div>
+              )}
 
               <label className="flex items-center gap-2 text-[13px] text-reps-charcoal">
                 <input
@@ -245,9 +317,11 @@ function LoginPage() {
 
               <button
                 type="submit"
-                className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+                disabled={loading}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
               >
-                Sign in
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Signing in…" : "Sign in"}
               </button>
 
               <div className="flex items-center gap-3 py-1 text-[11px] uppercase tracking-wider text-reps-muted-light">
@@ -257,10 +331,14 @@ function LoginPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <SocialButton label="Continue with Google">
+                <SocialButton
+                  label={googleLoading ? "Connecting…" : "Continue with Google"}
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                >
                   <GoogleGlyph />
                 </SocialButton>
-                <SocialButton label="Continue with Apple">
+                <SocialButton label="Continue with Apple" disabled>
                   <Apple className="h-4 w-4 text-reps-charcoal" />
                 </SocialButton>
               </div>
@@ -285,14 +363,20 @@ function LoginPage() {
 function SocialButton({
   label,
   children,
+  onClick,
+  disabled,
 }: {
   label: string;
   children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
       {label}

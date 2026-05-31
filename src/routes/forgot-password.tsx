@@ -1,5 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
+import { Loader2 } from "lucide-react";
+
 import { AuthShell, AuthField, AuthPrimaryButton } from "@/components/auth/AuthShell";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -14,6 +18,30 @@ export const Route = createFileRoute("/forgot-password")({
 });
 
 function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo: `${window.location.origin}/reset-password` },
+      );
+      if (resetError) throw resetError;
+      setSent(true);
+    } catch (err) {
+      // Don't disclose whether the email exists; still flag generic failures.
+      setError(err instanceof Error ? err.message : "Couldn't send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthShell
       topRight={
@@ -41,15 +69,38 @@ function ForgotPasswordPage() {
         </p>
       </div>
 
-      <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
-        <AuthField label="Email address" type="email" placeholder="you@example.com" />
-        <AuthPrimaryButton>Send reset link</AuthPrimaryButton>
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <AuthField
+          label="Email address"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+
+        {error && (
+          <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+            {error}
+          </div>
+        )}
+        {sent && (
+          <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-700">
+            If an account exists for that email, a reset link is on its way.
+          </div>
+        )}
+
+        <AuthPrimaryButton disabled={loading || sent}>
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Sending…" : sent ? "Sent" : "Send reset link"}
+        </AuthPrimaryButton>
 
         <p className="text-center text-[12px] text-reps-muted-light">
           Need a different option?{" "}
-          <a href="#" className="font-semibold text-reps-orange hover:underline">
+          <Link to="/contact" className="font-semibold text-reps-orange hover:underline">
             Contact support
-          </a>
+          </Link>
         </p>
       </form>
 

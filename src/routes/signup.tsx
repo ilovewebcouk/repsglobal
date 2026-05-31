@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Apple,
   Award,
@@ -10,6 +10,7 @@ import {
   Eye,
   Globe,
   GraduationCap,
+  Loader2,
   Mail,
   ShieldCheck,
   Star,
@@ -17,8 +18,12 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { redirectAfterAuth } from "@/lib/auth-redirect";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
@@ -138,6 +143,73 @@ const FAQS = [
 ];
 
 function SignupPage() {
+  const navigate = useNavigate();
+  const [accountTypeIdx, setAccountTypeIdx] = useState(0);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    setLoading(true);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            full_name: fullName,
+            signup_kind: "professional",
+            account_type: ACCOUNT_TYPES[accountTypeIdx]?.id ?? "pro",
+          },
+        },
+      });
+      if (signUpError) throw signUpError;
+      if (data.session && data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      } else {
+        setInfo("Check your inbox to verify your email, then sign in.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign up failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-up failed");
+        setGoogleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-up failed");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       {/* ============ AUTH HEADER ============ */}
@@ -271,7 +343,7 @@ function SignupPage() {
               </p>
             </div>
 
-            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               {/* Account type */}
               <div>
                 <label className="text-[13px] font-semibold text-reps-charcoal">
@@ -279,11 +351,12 @@ function SignupPage() {
                 </label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {ACCOUNT_TYPES.map((t, i) => {
-                    const selected = i === 0;
+                    const selected = i === accountTypeIdx;
                     return (
                       <button
                         key={t.id}
                         type="button"
+                        onClick={() => setAccountTypeIdx(i)}
                         className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-2 py-3 text-center transition-colors ${
                           selected
                             ? "border-reps-orange bg-reps-orange-soft"
@@ -313,7 +386,10 @@ function SignupPage() {
                 <input
                   type="text"
                   required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
+                  autoComplete="name"
                   className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                 />
               </Field>
@@ -324,7 +400,10 @@ function SignupPage() {
                 <input
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
+                  autoComplete="email"
                   className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                 />
               </Field>
@@ -336,14 +415,19 @@ function SignupPage() {
                 </label>
                 <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
                   <input
-                    type="password"
+                    type={showPw ? "text" : "password"}
                     required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a strong password"
+                    autoComplete="new-password"
                     className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                   />
                   <button
                     type="button"
-                    aria-label="Show password"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    onClick={() => setShowPw((v) => !v)}
                     className="text-reps-muted-light hover:text-reps-charcoal"
                   >
                     <Eye className="h-4 w-4" />
@@ -354,12 +438,25 @@ function SignupPage() {
                 </p>
               </div>
 
+              {error && (
+                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+                  {error}
+                </div>
+              )}
+              {info && (
+                <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-700">
+                  {info}
+                </div>
+              )}
+
               {/* Submit */}
               <button
                 type="submit"
-                className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+                disabled={loading}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
               >
-                Create Account
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Creating account…" : "Create Account"}
               </button>
 
               {/* Divider */}
@@ -371,10 +468,14 @@ function SignupPage() {
 
               {/* Social */}
               <div className="grid grid-cols-2 gap-2">
-                <SocialButton label="Continue with Google">
+                <SocialButton
+                  label={googleLoading ? "Connecting…" : "Continue with Google"}
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                >
                   <GoogleGlyph />
                 </SocialButton>
-                <SocialButton label="Continue with Apple">
+                <SocialButton label="Continue with Apple" disabled>
                   <Apple className="h-4 w-4 text-reps-charcoal" />
                 </SocialButton>
               </div>
@@ -529,14 +630,20 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function SocialButton({
   label,
   children,
+  onClick,
+  disabled,
 }: {
   label: string;
   children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
       {label}
