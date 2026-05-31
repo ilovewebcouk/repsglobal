@@ -361,7 +361,7 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
             {/* About */}
-            <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
@@ -383,7 +383,7 @@ function ProProfilePage() {
             </div>
 
             {/* Services */}
-            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                   Services &amp; Pricing
@@ -424,7 +424,7 @@ function ProProfilePage() {
 
             {/* Specialisms + Location */}
             <div className="flex flex-col gap-5">
-              <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {pro.specialisms.map((tag) => (
@@ -438,7 +438,7 @@ function ProProfilePage() {
                 </div>
               </div>
 
-              <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
                 <div className="mt-4 grid grid-cols-[1fr_1.1fr] gap-4">
                   <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone">
@@ -471,7 +471,7 @@ function ProProfilePage() {
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-            <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Qualifications &amp; Credentials
               </h2>
@@ -504,7 +504,7 @@ function ProProfilePage() {
               </a>
             </div>
 
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Trust &amp; Assurance
               </h2>
@@ -548,7 +548,7 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
             {/* Reviews */}
-            <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                   What Clients Say
@@ -621,7 +621,7 @@ function ProProfilePage() {
             </div>
 
             {/* FAQ */}
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Frequently Asked Questions
               </h2>
@@ -659,7 +659,7 @@ function ProProfilePage() {
       {/* ============ CTA BAND ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
-          <div className="flex flex-col items-start justify-between gap-5 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6 md:flex-row md:items-center lg:p-7">
+          <div className="flex flex-col items-start justify-between gap-5 rounded-[18px] border border-reps-stone bg-reps-warm-white p-4 md:flex-row md:items-center lg:p-5">
             <div className="flex items-start gap-4">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
                 <Calendar className="h-5 w-5" />

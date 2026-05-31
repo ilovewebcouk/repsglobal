@@ -215,7 +215,7 @@ function DirectoryPage() {
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {/* Filter rail */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
+              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-4">
                 <div className="flex items-center justify-between border-b border-reps-stone pb-3">
                   <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
                   <button
@@ -311,7 +311,7 @@ function DirectoryPage() {
       {/* ============ TRUST BAND ============ */}
       <section className="bg-reps-ivory pb-12">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-8">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-4 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-5">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust REPs

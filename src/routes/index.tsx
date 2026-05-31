@@ -209,7 +209,7 @@ function HomePage() {
             </div>
 
             {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
+            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-4 backdrop-blur-md lg:justify-self-end lg:p-4">
               <div className="flex items-center gap-2 border-b border-white/10 pb-4">
                 <ShieldCheck className="h-4 w-4 text-reps-gold" />
                 <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
@@ -280,7 +280,7 @@ function HomePage() {
       {/* ============ STATS STRIP ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
-          <div className="grid grid-cols-2 gap-4 rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 sm:grid-cols-3 lg:grid-cols-5 lg:p-7">
+          <div className="grid grid-cols-2 gap-4 rounded-[22px] border border-reps-stone bg-reps-warm-white p-4 sm:grid-cols-3 lg:grid-cols-5 lg:p-5">
             {stats.map((s) => (
               <div key={s.label} className="flex items-center gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
@@ -512,7 +512,7 @@ function HomePage() {
             ].map((c) => (
               <article
                 key={c.title}
-                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-4"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone text-reps-charcoal">
                   <c.icon className="h-5 w-5" strokeWidth={1.6} />
