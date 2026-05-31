@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
   CheckCircle2,
   ChevronDown,
   Copy,
@@ -13,10 +14,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
   Sparkles,
   TrendingUp,
   Users,
+} from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
-
 import { ProShell } from "@/components/dashboard/ProShell";
+
 export const Route = createFileRoute("/dashboard_/programs")({
   head: () => ({
     meta: [
@@ -38,26 +40,24 @@ export const Route = createFileRoute("/dashboard_/programs")({
 });
 
 /* ============================================================
-   SIDEBAR
+   PRIMITIVES
    ============================================================ */
 
-type NavItem = {
-  icon: LucideIcon;
-  label: string;
-  to?: string;
-  badge?: string;
-  active?: boolean;
-};
-
-const NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { icon: Users, label: "Clients" },
+function Card({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={}
     >
       {children}
     </section>
   );
 }
-
 function Panel({
   children,
   className = "",
