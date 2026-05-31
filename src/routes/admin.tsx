@@ -1,7 +1,21 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ChevronDown,  ChevronRight,  FileText,  GraduationCap,  ShieldCheck,  Star,  TrendingDown,  TrendingUp,  UserCheck,  UserPlus,  Users,  Wallet,  type LucideIcon,} from "lucide-react";
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  GraduationCap,
+  ShieldCheck,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  UserCheck,
+  UserPlus,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 
-import { AdminShell } from "@/components/dashboard/AdminShell";
+import { AdminShell } from "@\/components\/dashboard\/AdminShell";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";

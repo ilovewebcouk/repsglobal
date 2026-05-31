@@ -1,23 +1,39 @@
-import re
+import sys
 
-with open('src/routes/dashboard_.profile.tsx', 'r') as f:
+with open('src/routes/admin.tsx', 'r') as f:
     lines = f.readlines()
 
-new_lines = []
-pro_shell_line = ''
-in_lucide_import = False
+# Find the end of imports (should be before proJames)
+pro_james_index = -1
+for i, line in enumerate(lines):
+    if 'import proJames' in line:
+        pro_james_index = i
+        break
 
-for line in lines:
-    if 'import { ProShell }' in line:
-        pro_shell_line = line
-        continue
-    new_lines.append(line)
+new_content = [
+    'import { createFileRoute, Link } from "@tanstack/react-router";\n',
+    'import {\n',
+    '  ChevronDown,\n',
+    '  ChevronRight,\n',
+    '  FileText,\n',
+    '  GraduationCap,\n',
+    '  ShieldCheck,\n',
+    '  Star,\n',
+    '  TrendingDown,\n',
+    '  TrendingUp,\n',
+    '  UserCheck,\n',
+    '  UserPlus,\n',
+    '  Users,\n',
+    '  Wallet,\n',
+    '  type LucideIcon,\n',
+    '} from "lucide-react";\n',
+    '\n',
+    'import { AdminShell } from "@\/components\/dashboard\/AdminShell";\n',
+    '\n'
+]
 
-final_lines = []
-for line in new_lines:
-    final_lines.append(line)
-    if 'import { createFileRoute' in line:
-        final_lines.append(pro_shell_line)
+# The remaining content from pro_james_index
+final_content = new_content + lines[pro_james_index:]
 
-with open('src/routes/dashboard_.profile.tsx', 'w') as f:
-    f.writelines(final_lines)
+with open('src/routes/admin.tsx', 'w') as f:
+    f.writelines(final_content)
