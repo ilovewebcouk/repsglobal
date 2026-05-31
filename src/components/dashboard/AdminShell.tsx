@@ -203,10 +203,10 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
-      <div className="flex min-h-screen">
+    <div className="h-screen bg-reps-ink text-reps-text">
+      <div className="flex h-screen">
         <Sidebar active={active} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar title={title} subtitle={subtitle} actions={actions} />
           <main className="flex-1 px-8 pb-12 pt-6">{children}</main>
         </div>
