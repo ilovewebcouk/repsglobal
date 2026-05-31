@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
   Apple,
+  Award,
   BadgeCheck,
   Calendar,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -12,6 +14,7 @@ import {
   Heart,
   Laptop,
   MapPin,
+  MessageCircle,
   Search,
   ShieldCheck,
   Star,
@@ -24,6 +27,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroImg from "@/assets/hero-trainer.jpg";
+import ctaTrainers from "@/assets/cta-trainers.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
@@ -322,7 +326,7 @@ function HomePage() {
       </section>
 
       {/* ============ FEATURED PROFESSIONALS ============ */}
-      <section className="bg-reps-ivory pb-20">
+      <section className="bg-reps-ivory pb-14">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="flex items-end justify-between gap-4">
             <h2 className="font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
@@ -400,6 +404,163 @@ function HomePage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ HOW REPs WORKS ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="text-center">
+            <h2 className="font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
+              How REPs works
+            </h2>
+            <p className="mt-2 text-[15px] text-reps-muted-light">
+              Finding the right professional is simple
+            </p>
+          </div>
+
+          <div className="relative mt-12 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: Search, title: "Search", body: "Tell us what you need and where" },
+              {
+                icon: ShieldCheck,
+                title: "Verify",
+                body: "We check qualifications, insurance & standards",
+              },
+              {
+                icon: Users,
+                title: "Connect",
+                body: "Review profiles, read reviews and connect",
+              },
+              { icon: Target, title: "Achieve", body: "Train, improve and reach your goals" },
+            ].map((step, i, arr) => (
+              <div key={step.title} className="relative flex flex-col items-center text-center">
+                <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-reps-stone bg-reps-ivory text-reps-charcoal">
+                  <step.icon className="h-7 w-7" strokeWidth={1.6} />
+                </span>
+                <h3 className="mt-5 font-display text-[18px] font-bold text-reps-charcoal">
+                  {step.title}
+                </h3>
+                <p className="mt-2 max-w-[200px] text-[13px] leading-relaxed text-reps-muted-light">
+                  {step.body}
+                </p>
+                {i < arr.length - 1 ? (
+                  <span
+                    aria-hidden
+                    className="absolute left-[calc(50%+50px)] top-[36px] hidden h-px w-[calc(100%-100px)] border-t border-dashed border-reps-stone lg:block"
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ WHY TRUST REPs ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="text-center">
+            <h2 className="font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
+              Why trust REPs?
+            </h2>
+            <p className="mt-2 text-[15px] text-reps-muted-light">
+              We set the standard for fitness professionals
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: ShieldCheck,
+                title: "Verified Professionals",
+                body: "All REPs are qualified, insured and verified.",
+              },
+              {
+                icon: Award,
+                title: "Standards & CPD",
+                body: "Ongoing education to keep skills and knowledge up to date.",
+              },
+              {
+                icon: MessageCircle,
+                title: "Client Reviews",
+                body: "Real feedback from real clients you can trust.",
+              },
+              {
+                icon: Globe,
+                title: "Global Community",
+                body: "A worldwide network committed to excellence in fitness.",
+              },
+            ].map((c) => (
+              <article
+                key={c.title}
+                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone text-reps-charcoal">
+                  <c.icon className="h-5 w-5" strokeWidth={1.6} />
+                </span>
+                <h3 className="font-display text-[17px] font-bold text-reps-charcoal">
+                  {c.title}
+                </h3>
+                <p className="text-[13.5px] leading-relaxed text-reps-muted-light">{c.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ PROFESSIONAL CTA ============ */}
+      <section className="bg-reps-ivory pb-20">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="relative overflow-hidden rounded-[24px] bg-reps-panel px-6 py-10 text-white shadow-[var(--reps-shadow-card)] lg:px-12 lg:py-12">
+            <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr_1.1fr]">
+              {/* Left: copy + CTA */}
+              <div>
+                <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[32px]">
+                  Are you a fitness professional?
+                </h2>
+                <p className="mt-3 max-w-[360px] text-[14.5px] leading-relaxed text-white/70">
+                  Join REPs and connect with clients who are looking for professionals they can
+                  trust.
+                </p>
+                <Link
+                  to="/signup"
+                  className="mt-6 inline-flex h-[46px] items-center justify-center rounded-[12px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-[0_10px_28px_-10px_rgba(242,140,56,0.7)] transition-colors hover:bg-reps-orange-dark"
+                >
+                  Join REPs today
+                </Link>
+              </div>
+
+              {/* Center: image */}
+              <div className="hidden justify-center lg:flex">
+                <img
+                  src={ctaTrainers}
+                  alt="Two REPs verified fitness professionals"
+                  className="h-[240px] w-auto object-contain"
+                  loading="lazy"
+                  width={1024}
+                  height={768}
+                />
+              </div>
+
+              {/* Right: checklist */}
+              <ul className="space-y-3">
+                {[
+                  "Get verified and stand out",
+                  "Build trust with client reviews",
+                  "Grow your professional reputation",
+                  "Access resources & CPD",
+                  "Be part of a global community",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[14px] text-white/85">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
