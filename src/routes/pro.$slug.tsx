@@ -224,9 +224,7 @@ function ProProfilePage() {
 
   return (
     <div className="min-h-screen bg-reps-ivory">
-      <div className="bg-reps-warm-white">
-        <PublicHeader variant="solid" />
-      </div>
+      <PublicHeader variant="solid" />
 
       {/* ============ HERO ============ */}
       <section className="bg-reps-warm-white">
