@@ -971,62 +971,92 @@ function AiCoachingInsight() {
 
 function ClientProfilePage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-white">
-      <div className="flex">
-        <Sidebar />
-        <main className="min-w-0 flex-1">
-          <TopBar />
-          <div className="space-y-5 px-8 pb-10 pt-6">
-            <ClientHeaderCard />
-            <Tabs />
+    <ProShell
+      active="Clients"
+      title="Sarah Johnson"
+      subtitle="Client record, progress, coaching plan and account status."
+      actions={
+        <>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none transition-colors hover:text-white"
+          >
+            <Send className="h-4 w-4" />
+            Message
+          </button>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+          >
+            <CalendarPlus className="h-4 w-4" />
+            Book session
+          </button>
+          <button
+            type="button"
+            aria-label="More"
+            className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition-colors hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to clients
+        </Link>
+        <ClientHeaderCard />
+        <Tabs />
 
-            {/* Metric strip */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {METRICS.map((m) => (
-                <MetricCard key={m.label} m={m} />
-              ))}
-            </div>
+        {/* Metric strip */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {METRICS.map((m) => (
+            <MetricCard key={m.label} m={m} />
+          ))}
+        </div>
 
-            {/* Row 1: overview / chart / check-in */}
-            <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-12 xl:col-span-3">
-                <ClientOverviewCard />
-              </div>
-              <div className="col-span-12 xl:col-span-6">
-                <ProgressChart />
-              </div>
-              <div className="col-span-12 xl:col-span-3">
-                <LatestCheckIn />
-              </div>
-            </div>
-
-            {/* Row 2: programme / nutrition / bookings */}
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-              <AssignedProgramme />
-              <NutritionSnapshot />
-              <UpcomingBookings />
-            </div>
-
-            {/* Row 3: photos / activity / payments */}
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-              <ProgressPhotos />
-              <RecentActivity />
-              <PaymentStatus />
-            </div>
-
-            {/* Notes + AI */}
-            <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-12 xl:col-span-8">
-                <CoachNotes />
-              </div>
-              <div className="col-span-12 xl:col-span-4">
-                <AiCoachingInsight />
-              </div>
-            </div>
+        {/* Row 1: overview / chart / check-in */}
+        <div className="grid grid-cols-12 gap-5">
+          <div className="col-span-12 xl:col-span-3">
+            <ClientOverviewCard />
           </div>
-        </main>
+          <div className="col-span-12 xl:col-span-6">
+            <ProgressChart />
+          </div>
+          <div className="col-span-12 xl:col-span-3">
+            <LatestCheckIn />
+          </div>
+        </div>
+
+        {/* Row 2: programme / nutrition / bookings */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <AssignedProgramme />
+          <NutritionSnapshot />
+          <UpcomingBookings />
+        </div>
+
+        {/* Row 3: photos / activity / payments */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <ProgressPhotos />
+          <RecentActivity />
+          <PaymentStatus />
+        </div>
+
+        {/* Notes + AI */}
+        <div className="grid grid-cols-12 gap-5">
+          <div className="col-span-12 xl:col-span-8">
+            <CoachNotes />
+          </div>
+          <div className="col-span-12 xl:col-span-4">
+            <AiCoachingInsight />
+          </div>
+        </div>
       </div>
-    </div>
+    </ProShell>
   );
 }
 

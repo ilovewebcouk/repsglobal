@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { AdminShell } from "@\/components\/dashboard\/AdminShell";
+import { AdminShell } from "@/components/dashboard/AdminShell";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
