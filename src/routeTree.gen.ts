@@ -9,12 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HelpRouteImport } from './routes/help'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -29,20 +37,45 @@ import { Route as DashboardNutritionRouteImport } from './routes/dashboard_.nutr
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard_.messages'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
 import { Route as DashboardCpdRouteImport } from './routes/dashboard_.cpd'
+import { Route as DashboardClientsRouteImport } from './routes/dashboard_.clients'
 import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
+import { Route as AdminSupportRouteImport } from './routes/admin_.support'
+import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
+import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
+import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -55,6 +88,16 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
   id: '/for-professionals',
   path: '/for-professionals',
@@ -65,9 +108,19 @@ const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   path: '/find-a-professional',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -140,6 +193,11 @@ const DashboardCpdRoute = DashboardCpdRouteImport.update({
   path: '/dashboard/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardClientsRoute = DashboardClientsRouteImport.update({
+  id: '/dashboard_/clients',
+  path: '/dashboard/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardCheckInsRoute = DashboardCheckInsRouteImport.update({
   id: '/dashboard_/check-ins',
   path: '/dashboard/check-ins',
@@ -158,6 +216,16 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/admin_/support',
+  path: '/admin/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin_/settings',
+  path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
@@ -185,10 +253,20 @@ const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   path: '/admin/memberships',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
-  id: '/dashboard_/clients/$slug',
-  path: '/dashboard/clients/$slug',
+const AdminDirectoryRoute = AdminDirectoryRouteImport.update({
+  id: '/admin_/directory',
+  path: '/admin/directory',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCpdRoute = AdminCpdRouteImport.update({
+  id: '/admin_/cpd',
+  path: '/admin/cpd',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DashboardClientsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -196,21 +274,34 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/cpd': typeof AdminCpdRoute
+  '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
+  '/dashboard/clients': typeof DashboardClientsRouteWithChildren
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -228,21 +319,34 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/cpd': typeof AdminCpdRoute
+  '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/dashboard/bookings': typeof DashboardBookingsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/check-ins': typeof DashboardCheckInsRoute
+  '/dashboard/clients': typeof DashboardClientsRouteWithChildren
   '/dashboard/cpd': typeof DashboardCpdRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -261,21 +365,34 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin_/cpd': typeof AdminCpdRoute
+  '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reviews': typeof AdminReviewsRoute
+  '/admin_/settings': typeof AdminSettingsRoute
+  '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
   '/dashboard_/check-ins': typeof DashboardCheckInsRoute
+  '/dashboard_/clients': typeof DashboardClientsRouteWithChildren
   '/dashboard_/cpd': typeof DashboardCpdRoute
   '/dashboard_/leads': typeof DashboardLeadsRoute
   '/dashboard_/messages': typeof DashboardMessagesRoute
@@ -295,21 +412,34 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/cookies'
     | '/dashboard'
+    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/forgot-password'
+    | '/help'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/reset-password'
     | '/signup'
+    | '/terms'
+    | '/verify-email'
+    | '/admin/cpd'
+    | '/admin/directory'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
+    | '/admin/settings'
+    | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
+    | '/dashboard/clients'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -327,21 +457,34 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/cookies'
     | '/dashboard'
+    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/forgot-password'
+    | '/help'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/reset-password'
     | '/signup'
+    | '/terms'
+    | '/verify-email'
+    | '/admin/cpd'
+    | '/admin/directory'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
+    | '/admin/settings'
+    | '/admin/support'
     | '/admin/verification'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/check-ins'
+    | '/dashboard/clients'
     | '/dashboard/cpd'
     | '/dashboard/leads'
     | '/dashboard/messages'
@@ -359,21 +502,34 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/cookies'
     | '/dashboard'
+    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/forgot-password'
+    | '/help'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/reset-password'
     | '/signup'
+    | '/terms'
+    | '/verify-email'
+    | '/admin_/cpd'
+    | '/admin_/directory'
     | '/admin_/memberships'
     | '/admin_/migration'
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reviews'
+    | '/admin_/settings'
+    | '/admin_/support'
     | '/admin_/verification'
     | '/dashboard_/bookings'
     | '/dashboard_/calendar'
     | '/dashboard_/check-ins'
+    | '/dashboard_/clients'
     | '/dashboard_/cpd'
     | '/dashboard_/leads'
     | '/dashboard_/messages'
@@ -392,21 +548,34 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   ContactRoute: typeof ContactRoute
+  CookiesRoute: typeof CookiesRoute
   DashboardRoute: typeof DashboardRoute
+  FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  AdminCpdRoute: typeof AdminCpdRoute
+  AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardCheckInsRoute: typeof DashboardCheckInsRoute
+  DashboardClientsRoute: typeof DashboardClientsRouteWithChildren
   DashboardCpdRoute: typeof DashboardCpdRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
@@ -417,16 +586,43 @@ export interface RootRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   ProSlugRoute: typeof ProSlugRoute
-  DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -443,6 +639,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/for-professionals': {
       id: '/for-professionals'
       path: '/for-professionals'
@@ -457,11 +667,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FindAProfessionalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -562,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard_/clients': {
+      id: '/dashboard_/clients'
+      path: '/dashboard/clients'
+      fullPath: '/dashboard/clients'
+      preLoaderRoute: typeof DashboardClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/check-ins': {
       id: '/dashboard_/check-ins'
       path: '/dashboard/check-ins'
@@ -588,6 +819,20 @@ declare module '@tanstack/react-router' {
       path: '/admin/verification'
       fullPath: '/admin/verification'
       preLoaderRoute: typeof AdminVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/support': {
+      id: '/admin_/support'
+      path: '/admin/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/settings': {
+      id: '/admin_/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/reviews': {
@@ -625,36 +870,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembershipsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/directory': {
+      id: '/admin_/directory'
+      path: '/admin/directory'
+      fullPath: '/admin/directory'
+      preLoaderRoute: typeof AdminDirectoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/cpd': {
+      id: '/admin_/cpd'
+      path: '/admin/cpd'
+      fullPath: '/admin/cpd'
+      preLoaderRoute: typeof AdminCpdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard_/clients/$slug': {
       id: '/dashboard_/clients/$slug'
-      path: '/dashboard/clients/$slug'
+      path: '/$slug'
       fullPath: '/dashboard/clients/$slug'
       preLoaderRoute: typeof DashboardClientsSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardClientsRoute
     }
   }
 }
+
+interface DashboardClientsRouteChildren {
+  DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
+}
+
+const DashboardClientsRouteChildren: DashboardClientsRouteChildren = {
+  DashboardClientsSlugRoute: DashboardClientsSlugRoute,
+}
+
+const DashboardClientsRouteWithChildren =
+  DashboardClientsRoute._addFileChildren(DashboardClientsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   ContactRoute: ContactRoute,
+  CookiesRoute: CookiesRoute,
   DashboardRoute: DashboardRoute,
+  FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  AdminCpdRoute: AdminCpdRoute,
+  AdminDirectoryRoute: AdminDirectoryRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminMigrationRoute: AdminMigrationRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardCheckInsRoute: DashboardCheckInsRoute,
+  DashboardClientsRoute: DashboardClientsRouteWithChildren,
   DashboardCpdRoute: DashboardCpdRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
@@ -665,7 +948,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   ProSlugRoute: ProSlugRoute,
-  DashboardClientsSlugRoute: DashboardClientsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
