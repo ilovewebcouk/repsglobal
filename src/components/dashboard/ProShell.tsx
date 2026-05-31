@@ -60,6 +60,7 @@ const NAV: NavItem[] = [
   { icon: Target, label: "Leads", to: "/dashboard/leads" },
   { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
   { icon: AreaChart, label: "Reports" },
+  { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
   { icon: FileText, label: "Content Studio" },
   { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
   { icon: Users, label: "Community" },
