@@ -529,14 +529,14 @@ function HomePage() {
                 className="absolute inset-0 hidden md:block"
                 style={{
                   backgroundImage:
-                    "linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(13,14,16,0.45) 60%, rgb(13,14,16) 88%)",
+                    "linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(11,13,16,0.45) 60%, #0B0D10 88%)",
                 }}
               />
               <div
                 className="absolute inset-0 hidden lg:block"
                 style={{
                   backgroundImage:
-                    "linear-gradient(to right, rgb(13,14,16) 0%, rgba(13,14,16,0.92) 38%, rgba(13,14,16,0.55) 55%, rgba(13,14,16,0) 72%)",
+                    "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 38%, rgba(11,13,16,0.55) 55%, rgba(11,13,16,0) 72%)",
                 }}
               />
             </div>
