@@ -1,51 +1,34 @@
-## Problem
+## Option 1 — resize and reposition the trainer cutout
 
-Two issues with the current hero:
-1. **Skin tone shifted** — re-running `imagegen--edit_image` on a photo of real people warped her complexion. Every AI re-edit will keep doing this; the only safe path is to stop touching the figures and composite them as a layer.
-2. **Trainers too small / too low** — in the locked mockup they fill the hero vertically (head near the top of the section, body extending down past the search bar). Current asset has them centered mid-frame and small.
+Single change to the cutout's `<img>` block in `src/routes/index.tsx` (currently lines 170–175).
 
-## Fix — layer the cutout instead of baking it into the photo
+### New markup
 
-Two-layer hero background:
-
-**Layer A — gym backdrop only (no people).** Generate `src/assets/hero-gym-bg.jpg` (21:9) with the same dark cinematic squat rack / kettlebells / rubber flooring environment, but empty. This becomes the full-bleed `<img>` behind the headline.
-
-**Layer B — trainers cutout (user-uploaded PNG).** Save the attached transparent PNG to `src/assets/hero-trainers-cutout.png`. Render as a separate `<img>` absolutely positioned inside the hero's background container, anchored to the **bottom-right** with their head clearing the top of the hero section — matching the mockup's vertical fill.
-
-## Layout details
-
-In `src/routes/index.tsx`, the `<div className="absolute inset-0 -z-10">` block becomes:
-
-```
-<img src={gymBg} class="absolute inset-0 h-full w-full object-cover" />     // empty gym
-<div class="absolute inset-0 ... gradient overlays" />                       // existing gradients
-<img src={trainersCutout}                                                    // NEW layer, on top of gradient
-     class="absolute bottom-0 right-[6%] hidden h-[110%] w-auto select-none lg:block"
-     style={{ objectPosition: 'bottom right' }} />
+```tsx
+{/* Layer B — trainers cutout, sized to fit between headline and Why REPs card */}
+<div className="pointer-events-none absolute bottom-[150px] right-[24%] hidden lg:block">
+  {/* Soft elliptical ground shadow */}
+  <div
+    aria-hidden="true"
+    className="absolute -bottom-4 left-1/2 h-8 w-[80%] -translate-x-1/2 rounded-[50%] bg-black/60 blur-2xl"
+  />
+  <img
+    src={heroTrainersCutout}
+    alt=""
+    aria-hidden="true"
+    className="relative h-auto w-[340px] select-none drop-shadow-[0_25px_35px_rgba(0,0,0,0.55)]"
+  />
+</div>
 ```
 
-Key positioning:
-- `h-[110%]` so the figures fill the hero vertically (head reaches the top band where header/badges sit, feet anchored at bottom — matches mockup proportions)
-- `right-[6%]` puts them between the headline column and the Why REPs card, slightly off the right edge so the card overlaps the male trainer's shoulder/arm the way it does in the mockup
-- `hidden lg:block` — only on desktop. Mobile still uses the gym backdrop alone, which already reads cleanly.
+### Why these numbers
 
-## Gradient tuning
+- `w-[340px]` — at the native ~425×375 cutout aspect, this renders trainers at roughly the mockup scale (about 26% of the 1320px hero container)
+- `right-[24%]` — sits them between the copy column and the Why REPs card, so the card overlaps the male trainer's shoulder the same way it does in the mockup
+- `bottom-[150px]` — anchors them just above the search panel so head + full torso + hips are visible (no more cropping at neck/face)
+- `drop-shadow-…` + soft elliptical ground shadow — grounds them in the room so they don't look pasted on
+- `pointer-events-none` — keeps the headline/CTA fully interactive underneath
 
-Because the trainers now sit **on top of** the gradient (not under it), the gradient only ever darkens the gym backdrop. I'll simplify the desktop ramp back to a clean left-weighted ink with no center-clear gymnastics:
+### Out of scope
 
-```
-linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)
-```
-
-Trainers' true skin tones are preserved because nothing covers them.
-
-## Steps
-
-1. Copy `user-uploads://image-2.png` → `src/assets/hero-trainers-cutout.png`
-2. Generate empty gym backdrop → `src/assets/hero-gym-bg.jpg` (21:9, same lighting/dressing, no people)
-3. Edit `src/routes/index.tsx` hero background block: swap to two-layer structure, add cutout `<img>`, retune desktop gradient stops
-4. Update import (`heroImg` → `gymBg` + new `trainersCutout`)
-
-## Out of scope
-
-No copy, layout grid, Why REPs card, search panel, or token changes. Mobile/tablet gradients untouched.
+No changes to the gym backdrop, gradients, copy, Why REPs card, search panel, or any tokens. Mobile still uses the gym backdrop alone (no cutout).
