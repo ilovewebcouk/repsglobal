@@ -1,37 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Apple,
-  AreaChart,
   ArrowUpRight,
-  Bell,
-  Calendar,
   CalendarPlus,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  Dumbbell,
   FileText,
-  GraduationCap,
-  LayoutDashboard,
   Mail,
   MapPin,
-  MessagesSquare,
   MoreHorizontal,
   Phone,
   Plus,
   Search,
   Send,
-  Settings,
   Sparkles,
-  Target,
   Upload,
   UserCheck,
-  Users,
-  Wrench,
-  type LucideIcon,
 } from "lucide-react";
 
-import proJames from "@/assets/pro-james.jpg";
+import { ProShell } from "@/components/dashboard/ProShell";
 
 export const Route = createFileRoute("/dashboard_/leads")({
   head: () => ({
@@ -222,6 +207,8 @@ function TopBar() {
     </header>
   );
 }
+
+/* ============================================================
 
 /* ============================================================
    PRIMITIVES
@@ -826,40 +813,56 @@ function ConversionCard() {
 
 function LeadsPage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-white">
-      <div className="flex">
-        <Sidebar />
-        <main className="min-w-0 flex-1">
-          <TopBar />
-          <div className="space-y-5 px-8 pb-10 pt-6">
-            {/* Pipeline metric strip */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-              {METRICS.map((m) => (
-                <MetricCard key={m.label} m={m} />
-              ))}
-              <RevenueInsight />
-            </div>
+    <ProShell
+      active="Leads"
+      title="Leads pipeline"
+      subtitle="Track enquiries, prioritise follow-ups and convert leads into clients."
+      actions={
+        <>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none transition-colors hover:text-white"
+          >
+            <Upload className="h-4 w-4" />
+            Import leads
+          </button>
+          <button
+            type="button"
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+          >
+            <Plus className="h-4 w-4" />
+            New lead
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        {/* Pipeline metric strip */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {METRICS.map((m) => (
+            <MetricCard key={m.label} m={m} />
+          ))}
+          <RevenueInsight />
+        </div>
 
-            {/* Main grid: pipeline + selected lead */}
-            <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-12 xl:col-span-8">
-                <PipelinePanel />
-              </div>
-              <div className="col-span-12 space-y-5 xl:col-span-4">
-                <SelectedLead />
-                <AiInsight />
-              </div>
-            </div>
-
-            {/* Lower supporting cards */}
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-              <FollowUpsCard />
-              <LeadSourcesCard />
-              <ConversionCard />
-            </div>
+        {/* Main grid: pipeline + selected lead */}
+        <div className="grid grid-cols-12 gap-5">
+          <div className="col-span-12 xl:col-span-8">
+            <PipelinePanel />
           </div>
-        </main>
+          <div className="col-span-12 space-y-5 xl:col-span-4">
+            <SelectedLead />
+            <AiInsight />
+          </div>
+        </div>
+
+        {/* Lower supporting cards */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <FollowUpsCard />
+          <LeadSourcesCard />
+          <ConversionCard />
+        </div>
       </div>
-    </div>
+    </ProShell>
   );
 }
