@@ -171,7 +171,7 @@ function DirectoryPage() {
         <PublicHeader variant="transparent" />
 
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-[120px] lg:px-10 lg:pb-10 lg:pt-[140px]">
-          <div className="rounded-[20px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
+          <div className="rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
@@ -187,7 +187,7 @@ function DirectoryPage() {
               />
               <button
                 type="button"
-                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[14px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
               >
                 <Search className="h-4 w-4" />
                 Find Professionals
@@ -215,7 +215,7 @@ function DirectoryPage() {
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {/* Filter rail */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[20px] border border-reps-stone bg-reps-warm-white p-5">
+              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
                 <div className="flex items-center justify-between border-b border-reps-stone pb-3">
                   <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
                   <button
@@ -311,7 +311,7 @@ function DirectoryPage() {
       {/* ============ TRUST BAND ============ */}
       <section className="bg-reps-ivory pb-12">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[20px] border border-reps-stone bg-reps-warm-white p-6 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-8">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-8">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust REPs
@@ -394,7 +394,7 @@ function SearchField({
   isSelect?: boolean;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 rounded-[14px] bg-reps-panel-soft/70 px-4 pb-3 pt-2.5">
+    <label className="flex flex-col gap-1.5 rounded-[12px] bg-reps-panel-soft/70 px-4 pb-3 pt-2.5">
       <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
         {label}
       </span>
@@ -450,7 +450,7 @@ function Checkbox({ label, defaultChecked }: { label: string; defaultChecked?: b
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-reps-charcoal">
       <span
-        className={`flex h-4 w-4 items-center justify-center rounded-[4px] border ${
+        className={`flex h-4 w-4 items-center justify-center rounded-[6px] border ${
           defaultChecked
             ? "border-reps-orange bg-reps-orange text-white"
             : "border-reps-stone bg-reps-warm-white"

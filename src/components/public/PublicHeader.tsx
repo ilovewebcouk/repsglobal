@@ -47,13 +47,13 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
         <div className="flex items-center gap-2">
           <Link
             to="/signup"
-            className="hidden h-10 items-center rounded-[12px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
+            className="hidden h-10 items-center rounded-[10px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
           >
             Log in
           </Link>
           <Link
             to="/signup"
-            className="inline-flex h-10 items-center rounded-[12px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+            className="inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             Join REPs
           </Link>
