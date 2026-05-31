@@ -1,17 +1,27 @@
 ## Goal
-Make all rating `Star` icons use the REPs orange instead of the current gold (`#D9B66F`).
+Apply the corrected REPs radius system across tokens, components, and docs.
 
-## Changes
-Replace `fill-reps-gold text-reps-gold` (and the wrapping `text-reps-gold` on rating rows) with `fill-reps-orange text-reps-orange` at these star locations:
+## Token scale (src/styles.css)
+xs 6 / sm 8 / button 10 / input 12 / card 16 / card-lg 18 / panel 22 / hero 24 / pill full.
+shadcn aliases remapped, default `--radius: 12px`. `--radius-3xl/4xl` recycled to 22/24.
 
-- `src/routes/find-a-professional.tsx:479` — RatingRow wrapper span
-- `src/routes/find-a-professional.tsx:484` — filled stars in RatingRow
-- `src/routes/find-a-professional.tsx:523` — inline star next to rating number
-- `src/routes/index.tsx:411` — rating row wrapper span
-- `src/routes/index.tsx:412` — inline star
+## Component rules
+- Buttons & filter chips → `rounded-[10px]`
+- Inputs / selects / dropdowns / in-card thumbs → `rounded-[12px]`
+- KPI/admin/standard dashboard cards → `rounded-[16px]`
+- Directory/profile/service/featured pro cards → `rounded-[18px]`
+- AI insight / search panel / signup card / large dashboard panel → `rounded-[22px]`
+- Hero image panels → `rounded-[24px]`
+- Badges / pills / avatars / icon circles → `rounded-full`
+- Checkbox → `rounded-[6px]`
 
-Empty/unfilled stars keep `text-reps-stone`.
+## Files touched
+- `src/styles.css` — tokens + default radius
+- `src/components/public/PublicHeader.tsx` — header buttons 12→10
+- `src/routes/index.tsx` — CTA/buttons 12/14→10, stats panel 20→22, featured card 22→18, SearchField 14→12
+- `src/routes/find-a-professional.tsx` — search/filters panels 20→22, hero search button 14→10, featured pro 20→18, SearchField 14→12, checkbox 4→6
+- `src/routes/__root.tsx` — error/notfound buttons `rounded-md`→10
+- `mem://design/source-of-truth`, `mem://index.md` — updated radius rules
 
 ## Out of scope
-- `ShieldCheck` icon at `src/routes/index.tsx:214` (not a star) stays gold.
-- `--reps-gold` token and `--chart-4` mapping remain untouched (still used by ShieldCheck / charts).
+Colors, typography, spacing, content, routes, functionality. No UI redesign.
