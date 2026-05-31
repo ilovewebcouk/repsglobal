@@ -494,7 +494,7 @@ function RatingRow({ stars }: { stars: number }) {
 function ProCard({ pro }: { pro: Pro }) {
   return (
     <article className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-4">
-      <div className="grid gap-4 sm:grid-cols-[112px_1fr_auto] sm:items-start">
+      <div className="grid gap-4 sm:grid-cols-[112px_1fr_auto] sm:items-center">
         <img
           src={pro.image}
           alt={`${pro.name} — ${pro.role}`}
@@ -514,25 +514,25 @@ function ProCard({ pro }: { pro: Pro }) {
             </span>
           </div>
           <div className="mt-0.5 text-[13px] text-reps-muted-light">{pro.role}</div>
-          <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-reps-muted-light">
-            <MapPin className="h-3.5 w-3.5" />
-            {pro.distance}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-reps-muted-light">
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              {pro.distance}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 fill-reps-gold text-reps-gold" />
+              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+              <span>({pro.reviews})</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Laptop className="h-3.5 w-3.5" />
+              {pro.mode}
+            </span>
           </div>
-          <div className="mt-1 flex items-center gap-1.5 text-[13px]">
-            <Star className="h-3.5 w-3.5 fill-reps-gold text-reps-gold" />
-            <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-            <span className="text-reps-muted-light">({pro.reviews})</span>
-          </div>
-          <div className="mt-1 flex items-center gap-1.5 text-[12px] text-reps-muted-light">
-            <Laptop className="h-3.5 w-3.5" />
-            {pro.mode}
-          </div>
-          <p className="mt-2 max-w-[420px] text-[13px] leading-snug text-reps-charcoal/80">
+          <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
             {pro.blurb}
           </p>
-        </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
-          <div className="flex flex-wrap gap-1.5 sm:justify-end">
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
             {pro.tags.map((t) => (
               <span
                 key={t}
@@ -542,9 +542,11 @@ function ProCard({ pro }: { pro: Pro }) {
               </span>
             ))}
           </div>
+        </div>
+        <div className="flex flex-col items-stretch gap-2 sm:items-end">
           <button
             type="button"
-            className="mt-1 inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+            className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             View Profile
           </button>
