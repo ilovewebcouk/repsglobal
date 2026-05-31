@@ -4,8 +4,6 @@ import {
   Apple,
   ArrowLeft,
   ArrowUpRight,
-  AreaChart,
-  Bell,
   Calendar,
   CalendarPlus,
   CheckCircle2,
@@ -14,24 +12,17 @@ import {
   Dumbbell,
   FileText,
   Flame,
-  GraduationCap,
-  LayoutDashboard,
   MapPin,
   MessagesSquare,
   MoreHorizontal,
   Plus,
-  Search,
   Send,
-  Settings,
   Sparkles,
-  Target,
-  Users,
-  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
-import proJames from "@/assets/pro-james.jpg";
 
+import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/clients/$slug")({
   head: () => ({
     meta: [
@@ -68,21 +59,13 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { icon: Users, label: "Clients", active: true },
   { icon: Calendar, label: "Calendar" },
   { icon: Dumbbell, label: "Programs" },
   { icon: Apple, label: "Nutrition" },
   { icon: ClipboardList, label: "Check-Ins" },
   { icon: MessagesSquare, label: "Messages", badge: "6" },
-  { icon: Target, label: "Leads", to: "/dashboard/leads" },
   { icon: CreditCard, label: "Payments" },
-  { icon: AreaChart, label: "Reports" },
   { icon: FileText, label: "Content Studio" },
-  { icon: GraduationCap, label: "Education & CPD" },
-  { icon: Users, label: "Community" },
-  { icon: Wrench, label: "Business Tools" },
-  { icon: Settings, label: "Settings" },
 ];
 
 function Sidebar() {

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProShell } from "@/components/dashboard/ProShell";
 import {
   Apple,
   AreaChart,
@@ -23,7 +24,6 @@ import {
   Star,
   Trash2,
   X,
-import { ProShell } from "@/components/dashboard/ProShell";
   Youtube,
 } from "lucide-react";
 

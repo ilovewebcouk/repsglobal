@@ -37,16 +37,6 @@ export const Route = createFileRoute("/dashboard_/check-ins")({
   }),
   component: CheckInsReviewPage,
 });
-
-
-          alt=""
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-reps-border"
-        />
-      </div>
-    </header>
-  );
-}
-
 /* ============================================================
    PRIMITIVES
    ============================================================ */
