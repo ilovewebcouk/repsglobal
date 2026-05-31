@@ -46,10 +46,14 @@ function AdminSettings() {
           <ACard>
             <h3 className="font-display text-[14px] font-semibold text-white">Branding</h3>
             <div className="mt-3 grid grid-cols-3 gap-2">
-              {["#FF7A00", "#0B0F14", "#F7F4EE"].map((c) => (
-                <div key={c} className="rounded-[8px] border border-reps-border bg-reps-ink p-3">
-                  <div className="h-10 rounded-[6px]" style={{ background: c }} />
-                  <div className="mt-1.5 font-mono text-[10px] text-white/55">{c}</div>
+              {[
+                { token: "--reps-orange", label: "Brand orange" },
+                { token: "--reps-ink", label: "Ink" },
+                { token: "--reps-warm-white", label: "Warm white" },
+              ].map((c) => (
+                <div key={c.token} className="rounded-[8px] border border-reps-border bg-reps-ink p-3">
+                  <div className="h-10 rounded-[6px]" style={{ background: `var(${c.token})` }} />
+                  <div className="mt-1.5 font-mono text-[10px] text-white/55">{c.token}</div>
                 </div>
               ))}
             </div>
