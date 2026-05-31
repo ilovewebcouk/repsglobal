@@ -144,7 +144,7 @@
   --reps-shadow-deep: 0 28px 90px rgba(0, 0, 0, 0.38);
 
   /* Public marketplace surface = warm ivory by default */
-  --radius: 14px;
+  --radius: 12px;
   --background: var(--reps-ivory);
   --foreground: var(--reps-charcoal);
   --card: var(--reps-warm-white);
