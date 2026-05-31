@@ -160,7 +160,115 @@ function ClientsIndex() {
           </table>
         </div>
       </PCard>
+      {inviteOpen && <InviteClientDialog onClose={() => setInviteOpen(false)} />}
     </ProShell>
+  );
+}
+
+function InviteClientDialog({ onClose }: { onClose: () => void }) {
+  const create = useServerFn(createClientInvite);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [link, setLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await create({ data: { email, full_name: fullName || undefined } });
+      setLink(res.acceptUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create invite");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[22px] border border-reps-border bg-reps-panel p-6 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.7)]">
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <div className="text-[15px] font-semibold text-white">Invite a client</div>
+            <div className="text-[12.5px] text-white/55">
+              They'll get a secure activation link to set their password.
+            </div>
+          </div>
+          <button onClick={onClose} className="text-white/55 hover:text-white">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {!link ? (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-white/60">
+                Client email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="sarah@example.com"
+                className="h-11 w-full rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[14px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-white/60">
+                Full name (optional)
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Sarah Johnson"
+                className="h-11 w-full rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[14px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
+              />
+            </div>
+            {error && <p className="text-xs text-rose-400">{error}</p>}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[13.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              Create invite
+            </button>
+          </form>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft p-3 text-[12.5px] text-reps-orange">
+              Invite created. Share this secure link with your client (email auto-send coming soon).
+            </div>
+            <div className="flex items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2.5">
+              <code className="flex-1 truncate text-[12px] text-white/80">{link}</code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(link);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="inline-flex h-8 items-center gap-1.5 rounded-[8px] bg-reps-orange px-2.5 text-[12px] font-semibold text-white"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <button
+              onClick={onClose}
+              className="inline-flex h-10 w-full items-center justify-center rounded-[10px] border border-reps-border bg-reps-ink text-[13px] font-medium text-white/80 hover:text-white"
+            >
+              Done
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
