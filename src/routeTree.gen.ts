@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -45,6 +46,11 @@ const SignupRoute = SignupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
+  id: '/for-professionals',
+  path: '/for-professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
     | '/signup'
     | '/admin/memberships'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
     | '/signup'
     | '/admin/memberships'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/find-a-professional'
+    | '/for-professionals'
     | '/login'
     | '/signup'
     | '/admin_/memberships'
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
+  ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-professionals': {
+      id: '/for-professionals'
+      path: '/for-professionals'
+      fullPath: '/for-professionals'
+      preLoaderRoute: typeof ForProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/find-a-professional': {
@@ -581,6 +601,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
+  ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
