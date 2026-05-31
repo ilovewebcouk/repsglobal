@@ -142,10 +142,11 @@ function HomePage() {
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background image with shaped overlays — keeps the right side (trainer + client) clearly visible */}
+        {/* Background: empty gym backdrop + gradient overlay + trainers cutout layered on top so skin tones stay true */}
         <div className="absolute inset-0 -z-10">
+          {/* Layer A — empty dark gym backdrop */}
           <img
-            src={heroImg}
+            src={heroGymBg}
             alt=""
             className="h-full w-full object-cover object-center"
           />
@@ -157,13 +158,20 @@ function HomePage() {
                 "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: solid behind copy column → clear center band for trainers → soft re-ink under the Why REPs card on the right */}
+          {/* Desktop: solid behind copy column, fading clear to the right so the gym/trainers come through */}
           <div
             className="absolute inset-0 hidden lg:block"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 22%, rgba(11,13,16,0.35) 34%, rgba(11,13,16,0) 45%, rgba(11,13,16,0) 70%, rgba(11,13,16,0.35) 84%, rgba(11,13,16,0.6) 100%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
             }}
+          />
+          {/* Layer B — trainers cutout, anchored bottom-right, filling hero vertically (desktop only) */}
+          <img
+            src={heroTrainersCutout}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 right-[8%] hidden h-[105%] w-auto select-none lg:block"
           />
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
           <div className="absolute inset-x-0 bottom-0 hidden h-[180px] bg-gradient-to-t from-reps-black to-transparent lg:block" />
