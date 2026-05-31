@@ -578,7 +578,7 @@ function SpecialismsDonut() {
     { value: 14, color: "var(--reps-green)" },
     { value: 11, color: "var(--reps-gold)" },
     { value: 9, color: "#9B6BE2" },
-    { value: 7, color: "#E96F00" },
+    { value: 7, color: "var(--reps-orange-hover)" },
     { value: 13, color: "#5D6573" },
   ];
   const r = 56;
