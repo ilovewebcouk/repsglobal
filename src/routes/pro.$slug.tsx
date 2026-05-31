@@ -446,13 +446,6 @@ function ProProfilePage() {
                           From · {s.unit}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        className="mt-2 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange text-[12px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
-                      >
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        Enquire
-                      </button>
                     </div>
                   </article>
                 ))}
