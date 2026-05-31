@@ -1282,21 +1282,37 @@ Top:
 - REPs wordmark.
 - Membership badge: Verified Pro.
 
-Navigation items:
+Navigation is grouped into four labelled sections. Group headers use small uppercase muted labels; section dividers are 1px `--reps-border`.
 
-1. Dashboard
-2. Leads
-3. Clients
-4. Bookings
-5. Payments
-6. Programmes
-7. Nutrition
-8. Check-ins
-9. Messages
-10. Reviews
-11. CPD
-12. Public Profile
-13. Settings
+**Work** — the daily operating surface
+
+1. Dashboard — `/dashboard`
+2. Leads — `/dashboard/leads`
+3. Clients — `/dashboard/clients`
+4. Calendar — `/dashboard/calendar`
+5. Bookings — `/dashboard/bookings`
+6. Messages — `/dashboard/messages`
+
+**Deliver** — programming and accountability
+
+7. Programmes — `/dashboard/programs`
+8. Nutrition — `/dashboard/nutrition`
+9. Check-ins — `/dashboard/check-ins`
+10. Reviews — `/dashboard/reviews`
+
+**Grow** — visibility, expertise and audience
+
+11. Reports — `/dashboard/reports`
+12. Content Studio — `/dashboard/content`
+13. Community — `/dashboard/community`
+14. CPD — `/dashboard/cpd`
+15. Public Profile — `/dashboard/profile`
+
+**Money & Admin**
+
+16. Payments — `/dashboard/payments`
+17. Business Tools — `/dashboard/business`
+18. Settings — `/dashboard/settings`
 
 Bottom area:
 
@@ -1310,6 +1326,8 @@ Active item:
 - Dashboard active by default.
 - Orange icon or left rail.
 - Soft panel background.
+
+Rationale: a flat 13-item list does not scale to a serious business operating system. The four-group structure mirrors the daily workflow of a working professional (work it → deliver it → grow it → bill for it) and matches the information architecture used by leading category competitors.
 
 ### 8.6 Top Bar
 
