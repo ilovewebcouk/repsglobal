@@ -343,7 +343,7 @@ function SignupPage() {
               </p>
             </div>
 
-            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               {/* Account type */}
               <div>
                 <label className="text-[13px] font-semibold text-reps-charcoal">
@@ -351,11 +351,12 @@ function SignupPage() {
                 </label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {ACCOUNT_TYPES.map((t, i) => {
-                    const selected = i === 0;
+                    const selected = i === accountTypeIdx;
                     return (
                       <button
                         key={t.id}
                         type="button"
+                        onClick={() => setAccountTypeIdx(i)}
                         className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-2 py-3 text-center transition-colors ${
                           selected
                             ? "border-reps-orange bg-reps-orange-soft"
@@ -385,7 +386,10 @@ function SignupPage() {
                 <input
                   type="text"
                   required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
+                  autoComplete="name"
                   className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                 />
               </Field>
@@ -396,7 +400,10 @@ function SignupPage() {
                 <input
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
+                  autoComplete="email"
                   className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                 />
               </Field>
@@ -408,14 +415,19 @@ function SignupPage() {
                 </label>
                 <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
                   <input
-                    type="password"
+                    type={showPw ? "text" : "password"}
                     required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a strong password"
+                    autoComplete="new-password"
                     className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
                   />
                   <button
                     type="button"
-                    aria-label="Show password"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    onClick={() => setShowPw((v) => !v)}
                     className="text-reps-muted-light hover:text-reps-charcoal"
                   >
                     <Eye className="h-4 w-4" />
@@ -426,12 +438,25 @@ function SignupPage() {
                 </p>
               </div>
 
+              {error && (
+                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+                  {error}
+                </div>
+              )}
+              {info && (
+                <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-700">
+                  {info}
+                </div>
+              )}
+
               {/* Submit */}
               <button
                 type="submit"
-                className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+                disabled={loading}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
               >
-                Create Account
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Creating account…" : "Create Account"}
               </button>
 
               {/* Divider */}
@@ -443,10 +468,14 @@ function SignupPage() {
 
               {/* Social */}
               <div className="grid grid-cols-2 gap-2">
-                <SocialButton label="Continue with Google">
+                <SocialButton
+                  label={googleLoading ? "Connecting…" : "Continue with Google"}
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                >
                   <GoogleGlyph />
                 </SocialButton>
-                <SocialButton label="Continue with Apple">
+                <SocialButton label="Continue with Apple" disabled>
                   <Apple className="h-4 w-4 text-reps-charcoal" />
                 </SocialButton>
               </div>
