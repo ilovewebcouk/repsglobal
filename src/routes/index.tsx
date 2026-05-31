@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
   Apple,
+  Award,
   BadgeCheck,
   Calendar,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -12,6 +14,7 @@ import {
   Heart,
   Laptop,
   MapPin,
+  MessageCircle,
   Search,
   ShieldCheck,
   Star,
@@ -24,6 +27,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroImg from "@/assets/hero-trainer.jpg";
+import ctaTrainers from "@/assets/cta-trainers.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
