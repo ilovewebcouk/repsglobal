@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   Bookmark,
@@ -491,6 +491,10 @@ function RatingRow({ stars }: { stars: number }) {
   );
 }
 
+function proSlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 function ProCard({ pro }: { pro: Pro }) {
   return (
     <article className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-4">
@@ -544,12 +548,13 @@ function ProCard({ pro }: { pro: Pro }) {
           </div>
         </div>
         <div className="flex flex-col items-stretch gap-2 sm:items-center">
-          <button
-            type="button"
+          <Link
+            to="/pro/$slug"
+            params={{ slug: proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             View Profile
-          </button>
+          </Link>
           <button
             type="button"
             className="inline-flex items-center justify-center gap-1.5 rounded-[10px] px-2 py-1 text-[12px] font-medium text-reps-muted-light hover:text-reps-charcoal"
