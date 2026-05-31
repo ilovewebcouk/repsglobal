@@ -438,13 +438,13 @@ function ProProfilePage() {
                       <div className="flex-1 text-[12px] leading-snug text-white/65 line-clamp-3">
                         {s.desc}
                       </div>
-                      <div className="flex items-baseline gap-1.5 pt-1">
-                        <span className="font-display text-[22px] font-bold leading-none text-white">
-                          {s.price.replace(/^From\s*/, "")}
-                        </span>
-                        <span className="text-[10.5px] uppercase tracking-wider text-white/55">
-                          From · {s.unit}
-                        </span>
+                      <div className="pt-1">
+                        <div className="font-display text-[22px] font-bold leading-none text-white">
+                          {s.price}
+                        </div>
+                        <div className="mt-1 text-[11px] uppercase tracking-wider text-white/55">
+                          {s.unit}
+                        </div>
                       </div>
                     </div>
                   </article>
