@@ -228,7 +228,7 @@ function ProProfilePage() {
 
       {/* ============ HERO ============ */}
       <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1180px] px-6 pb-8 pt-8 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-8 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
             <div className="relative overflow-hidden rounded-[24px] bg-reps-stone">
@@ -337,7 +337,7 @@ function ProProfilePage() {
 
       {/* ============ SUB NAV ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1180px] px-6 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <nav className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-reps-stone py-4 text-[14px]">
             {SUB_NAV.map((s, i) => (
               <a
@@ -358,7 +358,7 @@ function ProProfilePage() {
 
       {/* ============ ABOUT + SERVICES + SPECIALISMS / LOCATION ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1180px] px-6 py-8 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
             {/* About */}
             <div id="about" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
@@ -469,7 +469,7 @@ function ProProfilePage() {
 
       {/* ============ QUALIFICATIONS + TRUST ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1180px] px-6 pb-8 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
             <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
@@ -545,7 +545,7 @@ function ProProfilePage() {
 
       {/* ============ REVIEWS + FAQ ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1180px] px-6 pb-10 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
           <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
             {/* Reviews */}
             <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
@@ -658,7 +658,7 @@ function ProProfilePage() {
 
       {/* ============ CTA BAND ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1180px] px-6 pb-10 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
           <div className="flex flex-col items-start justify-between gap-5 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6 md:flex-row md:items-center lg:p-7">
             <div className="flex items-start gap-4">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
@@ -695,7 +695,7 @@ function ProProfilePage() {
 
       {/* ============ STATS ============ */}
       <section className="bg-reps-ivory pb-10">
-        <div className="mx-auto max-w-[1180px] px-6 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="grid grid-cols-2 gap-4 border-t border-reps-stone pt-6 sm:grid-cols-3 lg:grid-cols-5">
             {STATS.map((s) => (
               <div key={s.label} className="flex items-center gap-3">
