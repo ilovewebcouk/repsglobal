@@ -51,8 +51,7 @@ type Pro = {
   clients: string;
   bio: string[];
   specialisms: string[];
-  worksWith: string[];
-  trainingStyle: string[];
+
   services: {
     title: string;
     desc: string;
