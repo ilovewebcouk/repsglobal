@@ -39,8 +39,11 @@ type Pro = {
   role: string;
   location: string;
   region: string;
+  area: string;
   rating: number;
   reviews: number;
+  responseTime: string;
+  travelRadius: string;
   modes: ("In-person" | "Online")[];
   blurb: string;
   image: string;
@@ -48,6 +51,8 @@ type Pro = {
   clients: string;
   bio: string[];
   specialisms: string[];
+  worksWith: string[];
+  trainingStyle: string[];
   services: {
     title: string;
     desc: string;
@@ -65,6 +70,7 @@ type Pro = {
   }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
+
 
 const PROS: Record<string, Pro> = {
   "james-carter": {
