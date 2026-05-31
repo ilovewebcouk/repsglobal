@@ -209,7 +209,7 @@ function HomePage() {
             </div>
 
             {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-6 backdrop-blur-md lg:p-7">
+            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-5 backdrop-blur-md lg:justify-self-end lg:p-5">
               <div className="flex items-center gap-2 border-b border-white/10 pb-4">
                 <ShieldCheck className="h-4 w-4 text-reps-gold" />
                 <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
