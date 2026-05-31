@@ -47,7 +47,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
         <div className="flex items-center gap-2">
           <Link
             to="/signup"
-            className="hidden h-10 items-center rounded-[12px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
+            className="hidden h-10 items-center rounded-[10px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
           >
             Log in
           </Link>
