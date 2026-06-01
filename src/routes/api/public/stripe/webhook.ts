@@ -222,6 +222,3 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
     },
   },
 });
-
-// Suppress unused EventDb type warning (kept for future extension).
-export type _Internal = EventDb;
