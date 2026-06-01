@@ -34,6 +34,7 @@ import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
 import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
+import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
@@ -192,6 +193,11 @@ const PortalProgrammeRoute = PortalProgrammeRouteImport.update({
 const PortalNutritionRoute = PortalNutritionRouteImport.update({
   id: '/portal_/nutrition',
   path: '/portal/nutrition',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalMessagesRoute = PortalMessagesRouteImport.update({
+  id: '/portal_/messages',
+  path: '/portal/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
@@ -480,6 +487,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
@@ -542,6 +550,7 @@ export interface FileRoutesById {
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
+  '/portal_/messages': typeof PortalMessagesRoute
   '/portal_/nutrition': typeof PortalNutritionRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
@@ -605,6 +614,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/email/unsubscribe'
     | '/portal/check-ins'
+    | '/portal/messages'
     | '/portal/nutrition'
     | '/portal/programme'
     | '/portal/today'
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/email/unsubscribe'
     | '/portal/check-ins'
+    | '/portal/messages'
     | '/portal/nutrition'
     | '/portal/programme'
     | '/portal/today'
@@ -727,6 +738,7 @@ export interface FileRouteTypes {
     | '/dashboard_/settings'
     | '/email/unsubscribe'
     | '/portal_/check-ins'
+    | '/portal_/messages'
     | '/portal_/nutrition'
     | '/portal_/programme'
     | '/portal_/today'
@@ -789,6 +801,7 @@ export interface RootRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
+  PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNutritionRoute: typeof PortalNutritionRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
@@ -974,6 +987,13 @@ declare module '@tanstack/react-router' {
       path: '/portal/nutrition'
       fullPath: '/portal/nutrition'
       preLoaderRoute: typeof PortalNutritionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/messages': {
+      id: '/portal_/messages'
+      path: '/portal/messages'
+      fullPath: '/portal/messages'
+      preLoaderRoute: typeof PortalMessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal_/check-ins': {
@@ -1279,6 +1299,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
+  PortalMessagesRoute: PortalMessagesRoute,
   PortalNutritionRoute: PortalNutritionRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
