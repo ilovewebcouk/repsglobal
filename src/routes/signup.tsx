@@ -171,7 +171,17 @@ const FAQS = [
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [accountTypeIdx, setAccountTypeIdx] = useState(0);
+  const search = Route.useSearch();
+  const startCheckout = useServerFn(createCheckoutSession);
+
+  // Pre-select account type based on the tier they picked on /pricing
+  const initialIdx = useMemo(() => {
+    const want = search.tier ? TIER_TO_ACCOUNT_TYPE[search.tier] : undefined;
+    const idx = ACCOUNT_TYPES.findIndex((t) => t.id === want);
+    return idx >= 0 ? idx : 0;
+  }, [search.tier]);
+
+  const [accountTypeIdx, setAccountTypeIdx] = useState(initialIdx);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -181,28 +191,69 @@ function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
+  useEffect(() => {
+    setAccountTypeIdx(initialIdx);
+  }, [initialIdx]);
+
+  const planLabel = search.tier ? PLAN_LABELS[search.tier] : null;
+  const wantsCheckout =
+    search.next === "checkout" &&
+    !!search.tier &&
+    search.tier !== "verified" && // verified can be added; checkout supports verified/pro/business/studio
+    !!search.period;
+
+  // After we have a session, route to Stripe Checkout or fall back to dashboard
+  const continueAfterAuth = async (userId: string) => {
+    if (
+      search.next === "checkout" &&
+      search.tier &&
+      search.tier !== undefined &&
+      search.period
+    ) {
+      try {
+        const result = await startCheckout({
+          data: { tier: search.tier, period: search.period },
+        });
+        if (result?.url) {
+          window.location.href = result.url;
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Could not start checkout");
+      }
+    }
+    const to = await redirectAfterAuth(userId);
+    navigate({ to, replace: true });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setInfo(null);
     setLoading(true);
     try {
+      // Preserve checkout intent across email-verification redirect
+      const redirectPath = wantsCheckout
+        ? `/signup?tier=${search.tier}&period=${search.period}&next=checkout`
+        : "/dashboard";
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}${redirectPath}`,
           data: {
             full_name: fullName,
             signup_kind: "professional",
             account_type: ACCOUNT_TYPES[accountTypeIdx]?.id ?? "pro",
+            intended_tier: search.tier ?? null,
+            intended_period: search.period ?? null,
           },
         },
       });
       if (signUpError) throw signUpError;
       if (data.session && data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
+        await continueAfterAuth(data.user.id);
       } else {
         setInfo("Check your inbox to verify your email, then sign in.");
       }
@@ -228,14 +279,14 @@ function SignupPage() {
       if (result.redirected) return;
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
+        await continueAfterAuth(data.user.id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-up failed");
       setGoogleLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
