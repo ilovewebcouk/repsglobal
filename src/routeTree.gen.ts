@@ -249,9 +249,9 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ResourcesRoute,
+  id: '/resources/$slug',
+  path: '/resources/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfessionsProfessionRoute = ProfessionsProfessionRouteImport.update({
   id: '/professions/$profession',
@@ -1033,6 +1033,7 @@ export interface RootRouteChildren {
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1269,10 +1270,10 @@ declare module '@tanstack/react-router' {
     }
     '/resources/$slug': {
       id: '/resources/$slug'
-      path: '/$slug'
+      path: '/resources/$slug'
       fullPath: '/resources/$slug'
       preLoaderRoute: typeof ResourcesSlugRouteImport
-      parentRoute: typeof ResourcesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/professions/$profession': {
       id: '/professions/$profession'
@@ -1685,6 +1686,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
+  ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
