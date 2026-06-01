@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ProShell, PCard } from "@/components/dashboard/ProShell";
 import { createClientInvite } from "@/lib/invites.functions";
+import { sendTransactionalEmail } from "@/lib/email/send";
 
 export const Route = createFileRoute("/dashboard_/clients")({
   head: () => ({
