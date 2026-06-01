@@ -19,13 +19,13 @@ export const TOP_LOCATIONS: { slug: string; label: string }[] = [
   { slug: "bristol", label: "Bristol" },
 ];
 
-export const ABOUT_LINKS: { to: string; label: string; sub: string }[] = [
+export const ABOUT_LINKS = [
   { to: "/about", label: "About REPs", sub: "Who we are and what we stand for" },
   { to: "/standards", label: "Our Standards", sub: "The bar every professional clears" },
   { to: "/verify", label: "Verification", sub: "How the Verified badge works" },
   { to: "/reviews", label: "Reviews", sub: "Verified client feedback, on the record" },
   { to: "/complaints", label: "Complaints", sub: "Raise an issue with our standards team" },
-];
+] as const;
 
 export const RESOURCE_TOPICS: { category: string; label: string }[] = [
   { category: "Find a Professional", label: "Find a Professional" },
