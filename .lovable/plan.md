@@ -1,142 +1,66 @@
-# Pricing page rebuild: 6-tier model + feature comparison
+# Monthly / Annual toggle on /pricing
 
-Replace the current Foundation/Pro/Elite cards with the new 6-tier REPs model, lead with Founding pricing, and add a feature comparison table for the 4 paid solo/coach tiers.
+Add a single Monthly / Annual toggle that drives all the plan cards (Free, Verified, Pro, Business) and the Studio panel. Annual = 10× monthly (2 months free, ~17% off). Founding pricing applies in both billing periods.
 
-All work happens in `src/routes/pricing.tsx`. No backend, no Stripe, no DB — Phase 1 visual only.
+All work happens in `src/routes/pricing.tsx`. Visual-only, no backend.
 
-## Page structure (top to bottom)
+## Toggle behaviour
 
-1. **Hero** — unchanged copy, but subhead nods to "Free to list. Verified to be trusted. Pro to run your business."
-2. **Founding banner** — slim strip above the cards: "Founding member pricing — limited spots. Lock in £29/mo Pro or £59/mo Business before public launch." Subtle orange accent, dismissable visually but not functional.
-3. **Plan cards (4)** — Free Profile, Verified, Pro, Business. Pro is the highlighted "Most popular" card.
-4. **Teams & organisations strip** — full-width horizontal panel below the cards, two columns: Studio (£149/mo) and Enterprise (Custom). Visually distinct from the 4 cards — single panel, side-by-side, smaller pricing treatment, clear "for teams" framing.
-5. **Comparison table** — Verified / Pro / Business / Studio across the top. Free and Enterprise excluded by design. Desktop = 5-column table (feature + 4 tiers). Mobile = sticky tier selector + 2-column view (decision from previous turn).
-6. **"Why REPs is priced this way" trust block** — 3 short cards: Visibility (Free), Trust (Verified), Operating system (Pro+). Explains the ladder so people don't see it as a paywall.
-7. **FAQ** — existing FAQ section, refreshed for the new tiers.
+- Pill toggle placed centered, just above the 4-card grid (below the Founding banner).
+- Two options: **Monthly** · **Annual** with a small green/orange "Save 2 months" chip next to "Annual".
+- Default selection: **Annual** (drives higher LTV; standard SaaS pricing-page default).
+- Pure client state — `useState<'monthly' | 'annual'>('annual')`. No URL param, no persistence.
 
-## Plan card content (the 4 cards)
+## Price changes per tier
 
-**Free Profile — £0**
-- Subhead: "Get listed. Get found."
-- Features: Basic public profile, Claim flow, Category & location listing, Unverified status badge
-- CTA: "Create free profile" → /signup
+All annual prices = monthly × 10. Display format on cards: headline = effective per-month price, secondary line = annual total.
 
-**Verified — £99/year (or £12/mo)**
-- Subhead: "Monetise your professional trust."
-- Features: Verified badge, Credentials displayed, Reviews enabled, Enhanced directory profile, Enquiries inbox
-- CTA: "Get verified" → /signup
-- Price display: "£99/year" as primary, "or £12/mo" as secondary
+| Tier | Monthly view | Annual view |
+|---|---|---|
+| Free Profile | £0 — Free forever | £0 — Free forever (unchanged) |
+| Verified | £12/mo · "billed monthly" | £8.25/mo · "£99 billed yearly · 2 months free" |
+| Pro (Founding) | ~~£39~~ £29/mo · "billed monthly" | ~~£32~~ £24/mo · "£290 billed yearly · 2 months free" |
+| Business (Founding) | ~~£79~~ £59/mo · "billed monthly" | ~~£66~~ £49/mo · "£590 billed yearly · 2 months free" |
+| Studio (Teams strip) | £149/mo · "billed monthly" | £124/mo · "£1,490 billed yearly · 2 months free" |
+| Enterprise | Custom (unchanged in both views) | Custom (unchanged in both views) |
 
-**Pro — £29/mo** ⭐ Most popular (Founding price)
-- Strikethrough £39, headline £29, "Founding price — limited" pill in orange
-- Subhead: "Run your full coaching practice."
-- Features: Everything in Verified, Leads CRM, Client management, Bookings & calendar, Programmes, Basic nutrition, Check-ins, Messaging inbox
-- CTA: "Start Founding Pro" → /signup
+Founding strikethrough math: monthly standard 39/79 → annual standard becomes 32/66 (rounded from 32.50 / 65.83 for clean display).
 
-**Business — £59/mo** (Founding price)
-- Strikethrough £79, headline £59, "Founding price — limited" pill
-- Subhead: "Scale online and hybrid coaching."
-- Features: Everything in Pro, AI insights, Advanced check-ins, Automations, Content studio, Enhanced directory placement
-- CTA: "Start Founding Business" → /signup
+## Data shape
 
-## Teams & organisations strip
+Replace per-plan `price`/`period`/`priceWas` strings with a `pricing` object:
 
-Single `rounded-[22px] border border-reps-border bg-reps-panel` panel, split 50/50:
+```ts
+type PriceTier = {
+  monthly: { price: string; was?: string; meta: string };
+  annual:  { price: string; was?: string; meta: string };
+};
+```
 
-- **Studio — £149/mo** — "Teams, gyms, multi-coach businesses." Features inline: Multi-coach roles, Organisation profile, Shared clients, Locations, Reporting. CTA: "Talk to sales" → /contact
-- **Enterprise — Custom** — "Chains, education providers, associations." Features inline: Bulk verification, API, Migration, SSO, Custom onboarding, SLAs. CTA: "Contact us" → /contact
-
-Visual divider between the two halves. No "most popular" treatment — utilitarian, business-buyer tone.
+Each plan card reads `plan.pricing[billing]` and renders. Free + Enterprise have identical monthly/annual entries so the toggle is a no-op for them.
 
 ## Comparison table
 
-Same mechanics as agreed in the previous turn (grouped rows, desktop 5-col table, mobile sticky tier selector defaulting to Pro), but with new columns and rows reflecting the new tier model.
+Adds one row at the top of the **Support** group (or its own "Billing" group — recommend a new group at the very top):
 
-**Columns:** Verified · Pro · Business · Studio
+**Billing**
+- Monthly price — £12 / £29 / £59 / £149
+- Annual price (per month) — £8.25 / £24 / £49 / £124
+- Save with annual — 2 months free / 2 months free / 2 months free / 2 months free
 
-**Groups & rows** (values: ✓, —, or short text)
-
-**Profile & visibility**
-- Public directory listing — ✓ / ✓ / ✓ / ✓
-- Verified badge — ✓ / ✓ / ✓ / ✓
-- Enhanced directory placement — — / — / ✓ / ✓
-- Organisation profile — — / — / — / ✓
-- Multiple locations — — / — / — / ✓
-
-**Clients & enquiries**
-- Reviews — ✓ / ✓ / ✓ / ✓
-- Enquiries inbox — ✓ / ✓ / ✓ / ✓
-- Leads CRM — — / ✓ / ✓ / ✓
-- Client management — — / ✓ / ✓ / ✓
-- Shared clients across coaches — — / — / — / ✓
-
-**Coaching delivery**
-- Bookings & calendar — — / ✓ / ✓ / ✓
-- Programmes — — / ✓ / ✓ / ✓
-- Basic nutrition — — / ✓ / ✓ / ✓
-- Check-ins — — / Basic / Advanced / Advanced
-- Messaging inbox — — / ✓ / ✓ / ✓
-
-**Growth & automation**
-- Content studio — — / — / ✓ / ✓
-- Automations — — / — / ✓ / ✓
-- AI insights — — / — / ✓ / ✓
-
-**Teams & operations**
-- Multi-coach roles — — / — / — / ✓
-- Reporting — — / — / — / ✓
-- Coach seats included — — / 1 / 1 / 5
-
-**Support**
-- Verification speed — Standard / Priority / Priority / Priority
-- Account manager — — / — / — / ✓
-
-Below the table: a single muted line — "Need API, SSO, bulk verification or migration? See Enterprise →" linking to /contact.
-
-## "Why REPs is priced this way" trust block
-
-Three 18px cards side-by-side, explaining the ladder:
-
-- **Visibility — Free.** "Every professional gets a free, claimable profile so clients can find you."
-- **Trust — Verified.** "Pay once to prove your credentials and unlock reviews and enquiries."
-- **Operating system — Pro & up.** "Run bookings, clients, programmes and growth tools in one place."
-
-Helps prevent "why is it free if real value starts at £29?" objections.
-
-## FAQ updates
-
-Refresh the existing FAQ entries for the new model:
-- "Is REPs really free to join?" — keep, mention Free Profile vs Verified distinction.
-- "How does verification work?" — keep.
-- "What does REPs take per booking?" — keep, confirm 15% on bookings made through the platform on Pro+.
-- "Can I cancel anytime?" — keep.
-- New: "What's the difference between Verified and Pro?" — short answer: Verified is trust + visibility; Pro adds the operating system to actually run your practice.
-- New: "Will founding pricing stay forever?" — short answer: yes, locked for the lifetime of the subscription, but only available before public launch.
+These don't depend on the toggle — the table is a complete reference, so it shows both. (Toggle only affects the cards above.)
 
 ## Visual / token rules
 
-- All cards use existing tokens: `bg-reps-panel`, `border-reps-border`, `text-reps-orange`, `bg-reps-orange-soft`.
-- Cards: 22px radius (large panel). Inside chips/pills: full radius. Buttons: 10px. Strict adherence to the locked radius system.
-- Founding price pill: `bg-reps-orange/15 text-reps-orange border border-reps-orange/30 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider`.
-- Struck-through standard price: smaller, `text-white/40 line-through` next to the headline price.
-- Pro card keeps the existing "Most popular" border-2 + orange-border treatment.
-- Teams strip: same panel treatment but no "most popular" glow; clearly secondary in hierarchy.
-- Mobile sticky selector for the comparison table: `sticky top-[64px] z-20 lg:hidden`, pill toggle, active = `bg-reps-orange text-white`.
-
-## Implementation notes (technical)
-
-- Single file change: `src/routes/pricing.tsx`. Rewrite the PLANS array and FAQ array; add three new sections (Founding banner, Teams strip, Comparison table, Trust block).
-- Extract the comparison table to `src/components/pricing/FeatureComparison.tsx` if `pricing.tsx` grows past ~400 lines; otherwise keep co-located.
-- Data shape for table: `const GROUPS = [{ title, rows: [{ label, verified, pro, business, studio }] }]`, where each cell is `true | false | string`.
-- Mobile tier state: `useState<'verified' | 'pro' | 'business' | 'studio'>('pro')`.
-- Use semantic `<table>` for both desktop and mobile (a11y).
-- No new routes, no backend, no Stripe wiring, no DB.
-- Page metadata: update title/description to "Pricing — REPs · Free to list, verified to be trusted, pro to run your business" style.
+- Toggle: `rounded-full` pill group inside `border border-reps-border bg-reps-panel p-1`. Active option = `bg-reps-orange text-white`, inactive = `text-white/65 hover:text-white`. Both halves `h-9 px-5 text-[13px] font-semibold`.
+- "Save 2 months" chip next to Annual: `bg-reps-orange-soft border border-reps-orange-border text-reps-orange rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider`.
+- Secondary price line on cards (e.g. "£290 billed yearly · 2 months free"): existing `text-[12px] text-white/55` style, no new tokens.
+- All radii respect the locked system. No new colors.
 
 ## Out of scope
 
-- No actual Stripe / Paddle integration (Phase 2).
-- No signup flow changes — CTAs continue to point at `/signup` and `/contact`.
-- No changes to `/for-professionals`, footer, or nav.
-- No annual/monthly billing toggle on the cards (Verified is the only annual-priced tier; rest are monthly).
-- No currency switcher.
+- No Stripe / Paddle wiring (Phase 2).
+- No persistence of toggle choice across sessions.
+- No URL-driven `?billing=annual` deep-link.
+- No changes to Enterprise (stays "Custom" in both views).
+- No changes to FAQ copy beyond optionally adding one entry: "Can I switch between monthly and annual?" → "Yes, anytime from your dashboard. Annual saves you 2 months versus monthly."
