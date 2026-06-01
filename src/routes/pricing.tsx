@@ -134,6 +134,14 @@ type CompareGroup = {
 
 const COMPARE_GROUPS: CompareGroup[] = [
   {
+    title: "Billing",
+    rows: [
+      { label: "Monthly price", verified: "£12", pro: "£29", business: "£59", studio: "£149" },
+      { label: "Annual price (per month)", verified: "£8.25", pro: "£24", business: "£49", studio: "£124" },
+      { label: "Save with annual", verified: "2 months free", pro: "2 months free", business: "2 months free", studio: "2 months free" },
+    ],
+  },
+  {
     title: "Profile & visibility",
     rows: [
       { label: "Public directory listing", verified: true, pro: true, business: true, studio: true },
