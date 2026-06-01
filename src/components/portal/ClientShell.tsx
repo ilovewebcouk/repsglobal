@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type PortalActive = "Today" | "Programme" | "Nutrition" | "Check-ins" | "Messages";
+export type PortalActive = "Today" | "Programme" | "Nutrition" | "Check-ins" | "Messages" | "Profile";
 
 const NAV: { label: PortalActive; to: string; icon: LucideIcon }[] = [
   { label: "Today", to: "/portal/today", icon: Home },
