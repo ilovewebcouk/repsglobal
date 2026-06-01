@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type PortalActive = "Today" | "Programme" | "Nutrition" | "Check-ins" | "Messages";
+export type PortalActive = "Today" | "Programme" | "Nutrition" | "Check-ins" | "Messages" | "Profile";
 
 const NAV: { label: PortalActive; to: string; icon: LucideIcon }[] = [
   { label: "Today", to: "/portal/today", icon: Home },
@@ -61,10 +61,10 @@ function Sidebar({ active }: { active: PortalActive }) {
 
       <div className="border-t border-reps-border px-3 py-3">
         <Link
-          to="/portal/today"
+          to="/portal/profile"
           className="flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13px] font-medium text-white/65 hover:bg-white/5 hover:text-white"
         >
-          <Settings className="h-4 w-4" /> Settings
+          <Settings className="h-4 w-4" /> Profile & settings
         </Link>
       </div>
     </aside>

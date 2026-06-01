@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ProShell, PCard } from "@/components/dashboard/ProShell";
 import { createClientInvite } from "@/lib/invites.functions";
+import { sendTransactionalEmail } from "@/lib/email/send";
 
 export const Route = createFileRoute("/dashboard_/clients")({
   head: () => ({
@@ -173,6 +174,7 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sent" | "failed">("idle");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -181,6 +183,23 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
     try {
       const res = await create({ data: { email, full_name: fullName || undefined } });
       setLink(res.acceptUrl);
+      // Fire-and-forward: attempt branded email. Copy-link fallback remains visible.
+      try {
+        await sendTransactionalEmail({
+          templateName: "client-invite",
+          recipientEmail: res.invite.email,
+          idempotencyKey: `client-invite-${res.invite.id}`,
+          templateData: {
+            proName: res.professional_name,
+            tradingName: res.trading_name,
+            clientName: res.client_name,
+            acceptUrl: res.acceptUrl,
+          },
+        });
+        setEmailStatus("sent");
+      } catch {
+        setEmailStatus("failed");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create invite");
     } finally {
@@ -243,7 +262,11 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
         ) : (
           <div className="space-y-3">
             <div className="rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft p-3 text-[12.5px] text-reps-orange">
-              Invite created. Share this secure link with your client (email auto-send coming soon).
+              {emailStatus === "sent"
+                ? `Invite emailed to ${email}. The link below is a fallback you can share directly.`
+                : emailStatus === "failed"
+                  ? "Invite created — but the email didn't send. Share the secure link below instead."
+                  : "Invite created. Share this secure link with your client."}
             </div>
             <div className="flex items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2.5">
               <code className="flex-1 truncate text-[12px] text-white/80">{link}</code>
