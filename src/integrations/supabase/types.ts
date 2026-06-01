@@ -18,40 +18,61 @@ export type Database = {
         Row: {
           accepted_at: string | null
           accepted_user_id: string | null
+          auto_sent: boolean
           created_at: string
           email: string
+          email_at_issue: string | null
           expires_at: string
           full_name: string | null
           id: string
           professional_id: string
+          revoked_at: string | null
+          roster_id: string | null
           status: Database["public"]["Enums"]["invite_status"]
           token_hash: string
+          trigger_reason:
+            | Database["public"]["Enums"]["invite_trigger_reason"]
+            | null
           updated_at: string
         }
         Insert: {
           accepted_at?: string | null
           accepted_user_id?: string | null
+          auto_sent?: boolean
           created_at?: string
           email: string
+          email_at_issue?: string | null
           expires_at?: string
           full_name?: string | null
           id?: string
           professional_id: string
+          revoked_at?: string | null
+          roster_id?: string | null
           status?: Database["public"]["Enums"]["invite_status"]
           token_hash: string
+          trigger_reason?:
+            | Database["public"]["Enums"]["invite_trigger_reason"]
+            | null
           updated_at?: string
         }
         Update: {
           accepted_at?: string | null
           accepted_user_id?: string | null
+          auto_sent?: boolean
           created_at?: string
           email?: string
+          email_at_issue?: string | null
           expires_at?: string
           full_name?: string | null
           id?: string
           professional_id?: string
+          revoked_at?: string | null
+          roster_id?: string | null
           status?: Database["public"]["Enums"]["invite_status"]
           token_hash?: string
+          trigger_reason?:
+            | Database["public"]["Enums"]["invite_trigger_reason"]
+            | null
           updated_at?: string
         }
         Relationships: [
@@ -62,7 +83,71 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "client_invites_roster_id_fkey"
+            columns: ["roster_id"]
+            isOneToOne: false
+            referencedRelation: "client_roster"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      client_roster: {
+        Row: {
+          activated_at: string | null
+          archived_at: string | null
+          auth_user_id: string | null
+          client_id: string | null
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          first_payment_at: string | null
+          first_programme_at: string | null
+          full_name: string | null
+          id: string
+          invite_id: string | null
+          notes: string | null
+          professional_id: string
+          status: Database["public"]["Enums"]["roster_status"]
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          archived_at?: string | null
+          auth_user_id?: string | null
+          client_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          first_payment_at?: string | null
+          first_programme_at?: string | null
+          full_name?: string | null
+          id?: string
+          invite_id?: string | null
+          notes?: string | null
+          professional_id: string
+          status?: Database["public"]["Enums"]["roster_status"]
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          archived_at?: string | null
+          auth_user_id?: string | null
+          client_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          first_payment_at?: string | null
+          first_programme_at?: string | null
+          full_name?: string | null
+          id?: string
+          invite_id?: string | null
+          notes?: string | null
+          professional_id?: string
+          status?: Database["public"]["Enums"]["roster_status"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       clients: {
         Row: {
@@ -425,7 +510,14 @@ export type Database = {
       app_role: "admin" | "professional" | "client"
       coach_client_status: "active" | "paused" | "ended"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
+      invite_trigger_reason:
+        | "confirmed"
+        | "programme_assigned"
+        | "payment_received"
+        | "manual_resend"
+        | "manual_create"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
+      roster_status: "prospect" | "confirmed" | "active" | "archived"
       sex_at_birth: "female" | "male" | "prefer_not_to_say"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
     }
@@ -558,7 +650,15 @@ export const Constants = {
       app_role: ["admin", "professional", "client"],
       coach_client_status: ["active", "paused", "ended"],
       invite_status: ["pending", "accepted", "expired", "revoked"],
+      invite_trigger_reason: [
+        "confirmed",
+        "programme_assigned",
+        "payment_received",
+        "manual_resend",
+        "manual_create",
+      ],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
+      roster_status: ["prospect", "confirmed", "active", "archived"],
       sex_at_birth: ["female", "male", "prefer_not_to_say"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
     },
