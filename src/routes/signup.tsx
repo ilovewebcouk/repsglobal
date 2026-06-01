@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Apple,
   Award,
@@ -9,7 +10,6 @@ import {
   ChevronDown,
   Eye,
   Globe,
-  GraduationCap,
   Loader2,
   Mail,
   ShieldCheck,
@@ -18,17 +18,42 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
+import { createCheckoutSession } from "@/lib/billing/billing.functions";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
 
+type SignupSearch = {
+  tier?: "verified" | "pro" | "business" | "studio";
+  period?: "monthly" | "annual";
+  next?: "checkout";
+};
+
+const PLAN_LABELS: Record<NonNullable<SignupSearch["tier"]>, string> = {
+  verified: "REPs Verified",
+  pro: "Founding Pro",
+  business: "Founding Business",
+  studio: "Studio",
+};
+
 export const Route = createFileRoute("/signup")({
+  validateSearch: (search: Record<string, unknown>): SignupSearch => {
+    const tier = search.tier as SignupSearch["tier"];
+    const period = search.period as SignupSearch["period"];
+    const next = search.next as SignupSearch["next"];
+    return {
+      tier: ["verified", "pro", "business", "studio"].includes(tier as string) ? tier : undefined,
+      period: ["monthly", "annual"].includes(period as string) ? period : undefined,
+      next: next === "checkout" ? "checkout" : undefined,
+    };
+  },
+
   head: () => ({
     meta: [
       { title: "Create Your REPs Account — Join the Professional Community" },
