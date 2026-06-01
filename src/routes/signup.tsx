@@ -327,7 +327,8 @@ function SignupPage() {
           data: {
             full_name: fullName,
             signup_kind: "professional",
-            account_type: ACCOUNT_TYPES[accountTypeIdx]?.id ?? "pro",
+            account_type:
+              search.tier === "business" || search.tier === "studio" ? "biz" : "pro",
             intended_tier: search.tier ?? null,
             intended_period: search.period ?? null,
           },
