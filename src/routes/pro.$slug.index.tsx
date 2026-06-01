@@ -290,13 +290,14 @@ function ProProfilePage() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <button
-                  type="button"
+                <Link
+                  to="/pro/$slug/enquire"
+                  params={{ slug: pro.slug }}
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
                 >
                   <MessageCircle className="h-4 w-4" />
                   Enquire Now
-                </button>
+                </Link>
                 <button
                   type="button"
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
@@ -705,13 +706,14 @@ function ProProfilePage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
+              <Link
+                to="/pro/$slug/enquire"
+                params={{ slug: pro.slug }}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
               >
                 <MessageCircle className="h-4 w-4" />
                 Send Enquiry
-              </button>
+              </Link>
               <button
                 type="button"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
