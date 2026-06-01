@@ -262,6 +262,35 @@ function Cell({ value, dim = false }: { value: CellValue; dim?: boolean }) {
 function PricingPage() {
   const [activeTier, setActiveTier] = useState<TierKey>("pro");
   const [billing, setBilling] = useState<Billing>("annual");
+  const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
+  const navigate = useNavigate();
+  const startCheckout = useServerFn(createCheckoutSession);
+
+  async function handlePaidCta(tierKey: Exclude<PlanTierKey, "free">) {
+    setCheckoutTier(tierKey);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        navigate({
+          to: "/signup",
+          search: { tier: tierKey, period: billing, next: "checkout" } as never,
+        });
+        return;
+      }
+      const result = await startCheckout({ data: { tier: tierKey, period: billing } });
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error("Could not start checkout. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Checkout failed");
+    } finally {
+      setCheckoutTier(null);
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
