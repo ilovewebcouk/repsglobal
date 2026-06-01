@@ -51,7 +51,7 @@ Status legend:
 |---|---|---|
 | `/pro/$slug` | Shipped | Layout outlet. |
 | `/pro/$slug/` | Shipped | Locked profile layout — horizontal service cards, no icons, 3-col grid. Do not redesign without explicit request. |
-| `/pro/$slug/enquire` | Shipped | Enquiry page with summary card (14px radius on scaled-down pro photo per memory rule). |
+| `/pro/$slug/enquire` | Shipped | Enquiry page with summary card (scaled-down pro photo uses the documented exception in `mem://design/source-of-truth`). |
 
 ## 4. Auth
 
