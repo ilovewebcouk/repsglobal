@@ -138,6 +138,7 @@ The following are explicitly out of scope until Phase 1 visuals are signed off:
 ## 9. Known visual debt
 
 - `/terms` and `/privacy` — legal copy still placeholder via `LegalShell`. Awaiting final wording before promoting to Shipped.
+- Mobile mega-menu for `PublicHeader` is deferred — header dropdowns are desktop (`lg:`) only; mobile keeps the CTA-only state until a drawer pass.
 - Final compliance audit (`reps-build-compliance` skill) should be re-run before sign-off to catch any drift in hex/radius/shadow rules across recently edited files.
 
 ## 10. Phase 2 candidates
