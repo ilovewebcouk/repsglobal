@@ -405,16 +405,27 @@ function PricingPage() {
                   </div>
                 )}
 
-                <Link
-                  to={p.ctaHref}
-                  className={
-                    p.featured
-                      ? "mt-6 flex h-11 items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
-                      : "mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10"
-                  }
-                >
-                  {p.cta}
-                </Link>
+                {p.tierKey === "free" ? (
+                  <Link
+                    to={p.ctaHref}
+                    className="mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10"
+                  >
+                    {p.cta}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={checkoutTier === p.tierKey}
+                    onClick={() => handlePaidCta(p.tierKey as Exclude<PlanTierKey, "free">)}
+                    className={
+                      p.featured
+                        ? "mt-6 flex h-11 items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+                        : "mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10 disabled:opacity-60"
+                    }
+                  >
+                    {checkoutTier === p.tierKey ? "Redirecting…" : p.cta}
+                  </button>
+                )}
 
                 <ul className="mt-6 space-y-2.5 text-[13px]">
                   {p.features.map((f) => (
