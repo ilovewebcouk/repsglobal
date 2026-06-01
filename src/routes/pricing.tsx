@@ -34,8 +34,11 @@ type Billing = "monthly" | "annual";
 
 type PriceView = { price: string; was?: string; period: string; meta?: string };
 
+type PlanTierKey = "free" | "verified" | "pro" | "business";
+
 type PlanCard = {
   tier: string;
+  tierKey: PlanTierKey;
   desc: string;
   cta: string;
   ctaHref: string;
