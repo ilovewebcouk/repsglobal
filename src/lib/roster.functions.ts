@@ -387,7 +387,11 @@ export const assignProgrammeToClient = createServerFn({ method: "POST" })
       .single();
     if (getErr || !roster) throw new Error("Roster row not found");
 
-    const updates: Record<string, string> = {};
+    const updates: {
+      first_programme_at?: string;
+      status?: "confirmed";
+      confirmed_at?: string;
+    } = {};
     if (!roster.first_programme_at) {
       updates.first_programme_at = new Date().toISOString();
     }
