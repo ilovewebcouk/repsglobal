@@ -33,6 +33,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
+import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
+import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
@@ -185,6 +187,16 @@ const PortalTodayRoute = PortalTodayRouteImport.update({
 const PortalProgrammeRoute = PortalProgrammeRouteImport.update({
   id: '/portal_/programme',
   path: '/portal/programme',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalNutritionRoute = PortalNutritionRouteImport.update({
+  id: '/portal_/nutrition',
+  path: '/portal/nutrition',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
+  id: '/portal_/check-ins',
+  path: '/portal/check-ins',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -406,6 +418,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal/check-ins': typeof PortalCheckInsRoute
+  '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -465,6 +479,8 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal/check-ins': typeof PortalCheckInsRoute
+  '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -525,6 +541,8 @@ export interface FileRoutesById {
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal_/check-ins': typeof PortalCheckInsRoute
+  '/portal_/nutrition': typeof PortalNutritionRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -586,6 +604,8 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/portal/check-ins'
+    | '/portal/nutrition'
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
@@ -645,6 +665,8 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/portal/check-ins'
+    | '/portal/nutrition'
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
@@ -704,6 +726,8 @@ export interface FileRouteTypes {
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/email/unsubscribe'
+    | '/portal_/check-ins'
+    | '/portal_/nutrition'
     | '/portal_/programme'
     | '/portal_/today'
     | '/pro/$slug'
@@ -764,6 +788,8 @@ export interface RootRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  PortalCheckInsRoute: typeof PortalCheckInsRoute
+  PortalNutritionRoute: typeof PortalNutritionRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRoute
@@ -941,6 +967,20 @@ declare module '@tanstack/react-router' {
       path: '/portal/programme'
       fullPath: '/portal/programme'
       preLoaderRoute: typeof PortalProgrammeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/nutrition': {
+      id: '/portal_/nutrition'
+      path: '/portal/nutrition'
+      fullPath: '/portal/nutrition'
+      preLoaderRoute: typeof PortalNutritionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/check-ins': {
+      id: '/portal_/check-ins'
+      path: '/portal/check-ins'
+      fullPath: '/portal/check-ins'
+      preLoaderRoute: typeof PortalCheckInsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -1238,6 +1278,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  PortalCheckInsRoute: PortalCheckInsRoute,
+  PortalNutritionRoute: PortalNutritionRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRoute,
@@ -1249,3 +1291,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
