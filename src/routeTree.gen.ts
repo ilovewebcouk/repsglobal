@@ -32,6 +32,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
+import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
@@ -179,6 +180,11 @@ const ProSlugRoute = ProSlugRouteImport.update({
 const PortalTodayRoute = PortalTodayRouteImport.update({
   id: '/portal_/today',
   path: '/portal/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalProgrammeRoute = PortalProgrammeRouteImport.update({
+  id: '/portal_/programme',
+  path: '/portal/programme',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -400,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
@@ -517,6 +525,7 @@ export interface FileRoutesById {
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
@@ -577,6 +586,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
@@ -635,6 +645,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
@@ -693,6 +704,7 @@ export interface FileRouteTypes {
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/email/unsubscribe'
+    | '/portal_/programme'
     | '/portal_/today'
     | '/pro/$slug'
     | '/dashboard_/clients/$slug'
@@ -752,6 +764,7 @@ export interface RootRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -921,6 +934,13 @@ declare module '@tanstack/react-router' {
       path: '/portal/today'
       fullPath: '/portal/today'
       preLoaderRoute: typeof PortalTodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/programme': {
+      id: '/portal_/programme'
+      path: '/portal/programme'
+      fullPath: '/portal/programme'
+      preLoaderRoute: typeof PortalProgrammeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -1218,6 +1238,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
