@@ -16,6 +16,7 @@
 | 04 | [Database Schema and Data Model](./04_database_schema_and_data_model.md) | Reference schema — **deferred to post-Phase-1** |
 | 05 | [Mock-up Lock and Source of Truth](./05_reps_mockup_lock_source_of_truth.md) | Locked full-page mock-ups + archived 16:9 list |
 | 06 | [Lovable Build Prompt Pack](./06_reps_lovable_build_prompt_pack.md) | Per-screen Lovable build prompts |
+| 07 | [Phase 1 Build Status](./07_phase1_build_status.md) | Per-route shipped / partial / not-started snapshot |
 
 ## Final approved tokens (canonical)
 

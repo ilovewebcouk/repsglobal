@@ -561,12 +561,11 @@ Right signup card:
 
 - Title: Create Your REPs Account
 - Subtitle: Join the professional community and take your career further.
-- Account type label: I am a
-- Three account type cards:
+- Two account type cards (no "I am a" picker label — cards stand on their own):
   1. Fitness Professional, PT, Coach, Instructor
   2. Business / Facility, Gym, Studio, Club
-  3. Student, Studying Fitness
 - Selected state should be Fitness Professional with orange border.
+- Student account type has been removed from Phase 1 signup.
 
 Form fields:
 
@@ -1072,9 +1071,8 @@ Account types:
 1. Public/client user
 2. Fitness professional
 3. Business/facility
-4. Student
-5. Admin
-6. Super admin
+4. Admin
+5. Super admin
 
 Use the existing `/signup` page visually. Connect the form to create accounts and insert records into:
 
