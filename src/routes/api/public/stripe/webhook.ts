@@ -11,17 +11,17 @@ const CORS = {
   "Access-Control-Allow-Headers": "stripe-signature, content-type",
 } as const;
 
-type EventDb = ReturnType<typeof supabaseAdmin>;
+
 
 async function logEvent(event: Stripe.Event, opts: { userId?: string | null; processingError?: string | null }) {
-  const customerId =
-    (event.data.object as { customer?: string } | undefined)?.customer ?? null;
-  const subscriptionId =
-    "subscription" in (event.data.object as Record<string, unknown>)
-      ? ((event.data.object as { subscription?: string }).subscription ?? null)
-      : (event.data.object as { id?: string; object?: string })?.object === "subscription"
-        ? ((event.data.object as { id?: string }).id ?? null)
-        : null;
+  const obj = event.data.object as unknown as Record<string, unknown>;
+  const customerId = typeof obj.customer === "string" ? (obj.customer as string) : null;
+  let subscriptionId: string | null = null;
+  if (typeof obj.subscription === "string") {
+    subscriptionId = obj.subscription as string;
+  } else if (obj.object === "subscription" && typeof obj.id === "string") {
+    subscriptionId = obj.id as string;
+  }
 
   // payment_events has insert blocked from authenticated; we use admin client which bypasses RLS.
   await supabaseAdmin.from("payment_events").insert({
