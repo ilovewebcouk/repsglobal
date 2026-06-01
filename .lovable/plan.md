@@ -1,93 +1,40 @@
-# Next Steps — Phased Build Plan
+## Plan: Auto-send invites + flesh out Client Portal (Phase 2)
 
-You've completed **Phase 1** (locked static screens for public site, pro dashboard, admin). Below is the sequence I'd build in, based on your answers: foundation + client portal in parallel, invite-only client onboarding with automatic email, all four portal features in v1, FatSecret ready.
+Use the existing verified workspace domain `notify.dogboss.io` for sending. No new DNS required.
 
----
+### 1. Email infrastructure + invite auto-send
+- Run email infrastructure setup against the existing `notify.dogboss.io` domain (queues, send log, suppression, unsubscribe tokens, cron dispatcher).
+- Scaffold app (transactional) email templates and a `sendTransactionalEmail` helper.
+- Add a branded **Client invite** template at `src/lib/email-templates/client-invite.tsx` with: pro/trading name, optional personal note, big "Accept invite" button → `/accept-invite?token=…`, 14-day expiry line. Register in `registry.ts`.
+- Wire the existing "Send invite" flow in `dashboard_.clients.tsx` so on successful insert into `client_invites` it calls `sendTransactionalEmail({ templateName: 'client-invite', recipientEmail, idempotencyKey: 'invite-' + invite.id, templateData: { fullName, proName, acceptUrl, note } })`. Keep the copy-link fallback visible.
+- Create `/unsubscribe` page for the system-managed footer link.
 
-## Phase 2 — Foundation + Client Portal (parallel)
+### 2. Client portal screens (static high-fidelity, MyFitnessPal-style)
+All under the existing `ClientShell` (sidebar = Today / Programme / Nutrition / Check-ins / Messages / Profile). No auth gating yet — Phase 2 visuals first, wiring later.
 
-Two tracks run side-by-side. Track A is invisible plumbing; Track B is visible design progress so you always see something moving.
+- **`portal.today.tsx`** (rename from `portal_.today.tsx` so it nests cleanly and appears in the Pages picker) — keep current Today layout.
+- **`portal.programme.tsx`** — Week strip (M–S), today's session card (warm-up / main lifts table with sets×reps×RPE / finisher), upcoming sessions list, "Swap" + "Mark complete" pill buttons.
+- **`portal.nutrition.tsx`** — **MyFitnessPal-style daily log** powered later by FatSecret:
+  - Top: calorie ring + macro bars (P/C/F) with target vs eaten.
+  - Meal sections: Breakfast / Lunch / Dinner / Snacks — each with rows (food name, serving, kcal, P/C/F) and an "+ Add food" button.
+  - Water tracker row (8 cups).
+  - Search sheet mock-up (FatSecret-style results list with brand, serving picker).
+  - Quick-add buttons (recent foods, barcode scan icon — visual only).
+- **`portal.check-ins.tsx`** — Weekly check-in card (weight trend sparkline, waist/hip, sleep, energy, adherence %), photo grid (front/side/back placeholders), "Submit this week's check-in" CTA, history list.
+- **`portal.messages.tsx`** — Two-pane: thread list (coach + any group) on left, conversation on right with bubbles, attachment chip, message composer. Mobile collapses to single pane.
+- **`portal.profile.tsx`** — Goals, training availability, dietary preferences, allergies, units (kg/lb, cm/in), notification toggles — all static for now.
 
-### Track A — Foundation (data + auth)
+All screens use locked REPs tokens (orange primary, radius system, semantic colors from `styles.css`). Cards = 18px radius, large panels = 22px, buttons = 10px, pills = full. Match visual weight of the existing `/portal/today` mock-up.
 
-1. **Enable Lovable Cloud** (Supabase under the hood).
-2. **Design the database schema** for the whole platform, but only create tables we need now. Core tables:
-   - `profiles` (1:1 with `auth.users`, basic info)
-   - `app_role` enum: `admin | professional | client`
-   - `user_roles` (separate table — never store roles on profile, prevents privilege escalation)
-   - `professionals` (extends profile for pros — REPs level, specialisms, DBS, insurance)
-   - `clients` (extends profile for clients)
-   - `coach_client` (links a professional to their clients, status = active/paused/ended)
-   - `client_invites` (token, email, invited_by, expires_at, accepted_at)
-3. **Row-Level Security** on every table:
-   - Clients can only read/write their own data.
-   - Professionals can read/write only data for clients linked to them via `coach_client`.
-   - Admins use a `has_role()` security-definer function (no recursive RLS).
-4. **Auth flow:**
-   - Public can only sign up as a **professional** (existing `/signup` page).
-   - **Clients cannot self-signup.** A pro adds a client → row in `client_invites` → branded email auto-sent with a one-time token link → `/accept-invite?token=…` page → client sets password → account created with `client` role and `coach_client` link in place.
-5. **Branded auth emails** via Lovable's built-in email infrastructure (welcome, invite, password reset, magic link) — using the REPs orange/dark design.
-6. **Protect routes:** `_authenticated` layout + role gates so `/dashboard/*` requires `professional` or `admin`, `/admin/*` requires `admin`, `/portal/*` requires `client`.
+### 3. Not doing this turn
+- No FatSecret API calls yet — Nutrition screen is a high-fidelity static mock with realistic sample foods. Real search/barcode lookup comes in the next phase once visuals are signed off.
+- No auth guard on `/portal/*` yet (stays open for review).
+- No DB writes from portal screens.
+- No changes to the locked `/pro/$slug` profile or the 6 source-of-truth mock-ups.
 
-### Track B — Client portal mock-ups (visible progress)
+### Technical notes
+- Email: `email_domain--setup_email_infra` then `email_domain--scaffold_transactional_email`. Templates use React Email components, white body background, brand styling pulled from `styles.css`. Invite send goes through the queue (retry-safe).
+- Route rename: `portal_.today.tsx` → `portal.today.tsx` so all portal pages become children of the `portal.tsx` layout and surface in the Lovable Pages picker.
+- New routes auto-register via the TanStack router plugin — no manual `routeTree.gen.ts` edits.
 
-The client portal is a **new surface** — it's not in the six locked mock-ups. We design and build it static first, then wire data in Phase 3. Four locked screens at `/portal/*`, matching REPs dark + orange visual language:
-
-1. **`/portal`** — Today dashboard: today's session, macros ring, next check-in due, unread messages, weekly adherence.
-2. **`/portal/program`** — Assigned programme, weekly schedule, today's workout with set/rep/RPE/notes logging.
-3. **`/portal/nutrition`** — Daily food log, macros vs target, food search (FatSecret), meal builder, water + weight.
-4. **`/portal/check-ins`** — Weekly check-in form, photos, measurements, progress chart.
-5. **`/portal/messages`** — 1:1 thread with assigned coach.
-6. Shared `ClientShell` with sticky sidebar + footer, same shell pattern as `ProShell`/`AdminShell`.
-
-We design these as static screens (real-looking placeholder data) before wiring anything, same workflow as Phase 1.
-
----
-
-## Phase 3 — Wire live data
-
-Once Phase 2 is approved, swap placeholder JSON for Supabase queries via TanStack Start `createServerFn` (auth-aware, RLS-respected). Order:
-
-1. **Clients list** — `/dashboard/clients` reads real `coach_client` rows. Pro can "Add client" → triggers invite email.
-2. **Programs** — pro builds programmes at `/dashboard/programs`; client sees assigned programme at `/portal/program`; client logs workouts → pro sees adherence on the client detail page.
-3. **Check-ins** — pro defines weekly template; client submits at `/portal/check-ins`; pro reviews at `/dashboard/check-ins`.
-4. **Messages** — 1:1 thread per `coach_client`, realtime via Supabase Realtime.
-5. **Bookings + calendar** — wire `/dashboard/bookings` and `/dashboard/calendar` to a `bookings` table.
-
----
-
-## Phase 4 — FatSecret nutrition engine
-
-You have credentials, so this slots in cleanly.
-
-1. Add `FATSECRET_CONSUMER_KEY` + `FATSECRET_CONSUMER_SECRET` as runtime secrets.
-2. Server-only OAuth1 helper in `src/lib/fatsecret.server.ts` (Worker-compatible — no Node-only deps).
-3. `createServerFn` wrappers: `searchFoods`, `getFood`, `getRecipes`. Server-side cache table `food_cache` keyed on FatSecret ID to stay under the rate limit and speed up repeat lookups.
-4. App tables: `food_log_entry`, `meal`, `meal_plan`, `meal_plan_assignment`.
-5. Client portal: searchable food log on `/portal/nutrition` with macros vs target, water, weight; mobile-friendly.
-6. Pro side: meal-plan builder on `/dashboard/nutrition`, assigns plan → client sees it on `/portal/nutrition`; pro sees adherence on the client detail page.
-
----
-
-## Phase 5+ — Later
-
-- **Stripe payments** — Stripe Connect for client subscriptions to pros, plus REPs Pro membership billing.
-- **AI assist** — Lovable AI Gateway for programme suggestions, check-in summaries, lead-reply drafts. AI enhances workflows that already work; never replaces missing structure.
-- **BD migration** — only after schema is fully stable and live for new pros.
-- **Public marketplace booking** — wire `/find-a-professional` search + booking flow to live data.
-
----
-
-## What I'd do next (decision)
-
-I recommend we kick off **Phase 2 immediately**: I enable Lovable Cloud, ship the schema + roles + RLS + invite-email auth flow in one go, and in parallel start the static design of the **four client portal screens** (Today, Program, Nutrition, Check-ins + Messages). When both are approved, Phase 3 wires them up.
-
-If you approve this plan I'll start with **Cloud enablement + the schema migration + the invite flow**, then move straight into the portal `Today` screen mock-up so you have something visual to react to.
-
-## Technical notes
-
-- Roles in a separate `user_roles` table + `has_role()` security-definer function — required to avoid RLS recursion and privilege-escalation bugs.
-- Client invite emails use Lovable's built-in email queue (durable, retried, rate-limit-aware).
-- Server access via TanStack `createServerFn` with `requireSupabaseAuth` middleware — no Supabase Edge Functions, no direct DB calls from loaders.
-- FatSecret OAuth1 signing runs server-side only; consumer secret never reaches the browser.
-- All new screens reuse existing design tokens in `src/styles.css` and the REPs radius scale — no new visual language introduced.
+Shall I proceed?
