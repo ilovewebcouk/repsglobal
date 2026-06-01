@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 
-const navItems: { label: string; to: string; hasDropdown: boolean }[] = [
-  { label: "Find a Professional", to: "/find-a-professional", hasDropdown: true },
-  { label: "How REPs Works", to: "/how-it-works", hasDropdown: false },
-  { label: "For Professionals", to: "/for-professionals", hasDropdown: false },
-  { label: "Resources", to: "/resources", hasDropdown: true },
-  { label: "About REPs", to: "/about", hasDropdown: true },
+const navItems = [
+  { label: "Find a Professional", hasDropdown: true },
+  { label: "How REPs Works", hasDropdown: false },
+  { label: "For Professionals", hasDropdown: false },
+  { label: "Resources", hasDropdown: true },
+  { label: "About REPs", hasDropdown: true },
 ];
 
 type Variant = "transparent" | "solid";
@@ -32,22 +32,28 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.to}
-              className="flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white"
-              activeProps={{ className: "text-white" }}
-            >
-              {item.label}
-              {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5 opacity-70" />}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const linkClass =
+              "flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white";
+            if (item.label === "Resources") {
+              return (
+                <Link key={item.label} to="/resources" className={linkClass}>
+                  Resources
+                </Link>
+              );
+            }
+            return (
+              <button key={item.label} type="button" className={linkClass}>
+                {item.label}
+                {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5 opacity-70" />}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
           <Link
-            to="/login"
+            to="/signup"
             className="hidden h-10 items-center rounded-[10px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
           >
             Log in
