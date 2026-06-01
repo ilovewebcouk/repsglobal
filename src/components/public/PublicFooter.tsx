@@ -1,21 +1,48 @@
 import { Link } from "@tanstack/react-router";
 
-const cols = [
+type FooterLink = { label: string; to: string };
+
+const cols: { title: string; links: FooterLink[] }[] = [
   {
     title: "For Members",
-    links: ["Find a Professional", "How REPs Works", "Specialisms", "Reviews", "Help Centre"],
+    links: [
+      { label: "Find a Professional", to: "/find-a-professional" },
+      { label: "How REPs Works", to: "/how-it-works" },
+      { label: "Specialisms", to: "/specialisms" },
+      { label: "Reviews", to: "/reviews" },
+      { label: "Help Centre", to: "/help" },
+    ],
   },
   {
     title: "For Professionals",
-    links: ["Join REPs", "Pricing", "Dashboard", "CPD & Education", "Business Tools"],
+    links: [
+      { label: "Join REPs", to: "/for-professionals" },
+      { label: "Pricing", to: "/pricing" },
+      { label: "Dashboard", to: "/dashboard" },
+      { label: "CPD & Education", to: "/cpd" },
+      { label: "Business Tools", to: "/business-tools" },
+    ],
   },
   {
     title: "Company",
-    links: ["About REPs", "Standards", "Verification", "Careers", "Press"],
+    links: [
+      { label: "About REPs", to: "/about" },
+      { label: "Standards", to: "/standards" },
+      { label: "Verification", to: "/verify" },
+      { label: "Resources", to: "/resources" },
+      { label: "Careers", to: "/careers" },
+      { label: "Press", to: "/press" },
+    ],
   },
   {
     title: "Legal",
-    links: ["Terms of Use", "Privacy Policy", "Cookies", "Complaints", "Contact"],
+    links: [
+      { label: "Terms of Use", to: "/terms" },
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Cookies", to: "/cookies" },
+      { label: "Complaints", to: "/complaints" },
+      { label: "Contact", to: "/contact" },
+    ],
   },
 ];
 
@@ -48,12 +75,12 @@ export function PublicFooter() {
               </h4>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <Link
-                      to="/"
+                      to={link.to}
                       className="text-[14px] text-reps-muted transition-colors hover:text-white"
                     >
-                      {link}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
