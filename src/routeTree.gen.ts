@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
@@ -81,6 +82,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -446,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/verify': typeof VerifyRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -516,6 +523,7 @@ export interface FileRoutesByTo {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/verify': typeof VerifyRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -586,6 +594,7 @@ export interface FileRoutesById {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/verify': typeof VerifyRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
@@ -658,6 +667,7 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/unsubscribe'
+    | '/verify'
     | '/verify-email'
     | '/admin/cpd'
     | '/admin/directory'
@@ -728,6 +738,7 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/unsubscribe'
+    | '/verify'
     | '/verify-email'
     | '/admin/cpd'
     | '/admin/directory'
@@ -797,6 +808,7 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/unsubscribe'
+    | '/verify'
     | '/verify-email'
     | '/admin_/cpd'
     | '/admin_/directory'
@@ -868,6 +880,7 @@ export interface RootRouteChildren {
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  VerifyRoute: typeof VerifyRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
@@ -919,6 +932,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -1441,6 +1461,7 @@ const rootRouteChildren: RootRouteChildren = {
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  VerifyRoute: VerifyRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
@@ -1487,13 +1508,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
