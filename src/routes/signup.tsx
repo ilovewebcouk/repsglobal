@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Apple,
   Award,
@@ -9,7 +10,6 @@ import {
   ChevronDown,
   Eye,
   Globe,
-  GraduationCap,
   Loader2,
   Mail,
   ShieldCheck,
@@ -18,17 +18,42 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
+import { createCheckoutSession } from "@/lib/billing/billing.functions";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
 
+type SignupSearch = {
+  tier?: "verified" | "pro" | "business" | "studio";
+  period?: "monthly" | "annual";
+  next?: "checkout";
+};
+
+const PLAN_LABELS: Record<NonNullable<SignupSearch["tier"]>, string> = {
+  verified: "REPs Verified",
+  pro: "Founding Pro",
+  business: "Founding Business",
+  studio: "Studio",
+};
+
 export const Route = createFileRoute("/signup")({
+  validateSearch: (search: Record<string, unknown>): SignupSearch => {
+    const tier = search.tier as SignupSearch["tier"];
+    const period = search.period as SignupSearch["period"];
+    const next = search.next as SignupSearch["next"];
+    return {
+      tier: ["verified", "pro", "business", "studio"].includes(tier as string) ? tier : undefined,
+      period: ["monthly", "annual"].includes(period as string) ? period : undefined,
+      next: next === "checkout" ? "checkout" : undefined,
+    };
+  },
+
   head: () => ({
     meta: [
       { title: "Create Your REPs Account — Join the Professional Community" },
@@ -86,13 +111,15 @@ const ACCOUNT_TYPES = [
     title: "Business / Facility",
     sub: "Gym, Studio, Club",
   },
-  {
-    id: "student",
-    icon: GraduationCap,
-    title: "Student",
-    sub: "Studying Fitness",
-  },
 ];
+
+// Map a pricing-page tier to the right account-type card
+const TIER_TO_ACCOUNT_TYPE: Record<string, "pro" | "biz"> = {
+  verified: "pro",
+  pro: "pro",
+  business: "biz",
+  studio: "biz",
+};
 
 const STATS = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
@@ -144,7 +171,17 @@ const FAQS = [
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [accountTypeIdx, setAccountTypeIdx] = useState(0);
+  const search = Route.useSearch();
+  const startCheckout = useServerFn(createCheckoutSession);
+
+  // Pre-select account type based on the tier they picked on /pricing
+  const initialIdx = useMemo(() => {
+    const want = search.tier ? TIER_TO_ACCOUNT_TYPE[search.tier] : undefined;
+    const idx = ACCOUNT_TYPES.findIndex((t) => t.id === want);
+    return idx >= 0 ? idx : 0;
+  }, [search.tier]);
+
+  const [accountTypeIdx, setAccountTypeIdx] = useState(initialIdx);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -154,28 +191,69 @@ function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
+  useEffect(() => {
+    setAccountTypeIdx(initialIdx);
+  }, [initialIdx]);
+
+  const planLabel: string | null =
+    search.tier && search.tier in PLAN_LABELS
+      ? PLAN_LABELS[search.tier as keyof typeof PLAN_LABELS]
+      : null;
+  const wantsCheckout =
+    search.next === "checkout" && !!search.tier && !!search.period;
+
+  // After we have a session, route to Stripe Checkout or fall back to dashboard
+  const continueAfterAuth = async (userId: string) => {
+    if (
+      search.next === "checkout" &&
+      search.tier &&
+      search.tier !== undefined &&
+      search.period
+    ) {
+      try {
+        const result = await startCheckout({
+          data: { tier: search.tier, period: search.period },
+        });
+        if (result?.url) {
+          window.location.href = result.url;
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Could not start checkout");
+      }
+    }
+    const to = await redirectAfterAuth(userId);
+    navigate({ to, replace: true });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setInfo(null);
     setLoading(true);
     try {
+      // Preserve checkout intent across email-verification redirect
+      const redirectPath = wantsCheckout
+        ? `/signup?tier=${search.tier}&period=${search.period}&next=checkout`
+        : "/dashboard";
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}${redirectPath}`,
           data: {
             full_name: fullName,
             signup_kind: "professional",
             account_type: ACCOUNT_TYPES[accountTypeIdx]?.id ?? "pro",
+            intended_tier: search.tier ?? null,
+            intended_period: search.period ?? null,
           },
         },
       });
       if (signUpError) throw signUpError;
       if (data.session && data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
+        await continueAfterAuth(data.user.id);
       } else {
         setInfo("Check your inbox to verify your email, then sign in.");
       }
@@ -201,14 +279,14 @@ function SignupPage() {
       if (result.redirected) return;
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
+        await continueAfterAuth(data.user.id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-up failed");
       setGoogleLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
@@ -344,12 +422,25 @@ function SignupPage() {
             </div>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              {planLabel && (
+                <div className="flex items-start gap-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft px-3 py-2.5 text-[12px] text-reps-charcoal">
+                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>
+                    You're signing up for{" "}
+                    <strong className="font-semibold">{planLabel}</strong>
+                    {search.period ? ` (${search.period})` : ""}. We'll take
+                    you to checkout right after you create your account.
+                  </span>
+                </div>
+              )}
+
               {/* Account type */}
               <div>
                 <label className="text-[13px] font-semibold text-reps-charcoal">
                   I am a
                 </label>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2">
+
                   {ACCOUNT_TYPES.map((t, i) => {
                     const selected = i === accountTypeIdx;
                     return (
