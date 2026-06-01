@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment, useState } from "react";
-import { Check, Crown, Minus, Sparkles, Star, Users, Building2, ShieldCheck, Eye, LayoutGrid } from "lucide-react";
+import { Check, Minus, Sparkles, Star, Users, Building2, ShieldCheck, Eye, LayoutGrid } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
