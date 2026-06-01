@@ -174,6 +174,7 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sent" | "failed">("idle");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -182,6 +183,23 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
     try {
       const res = await create({ data: { email, full_name: fullName || undefined } });
       setLink(res.acceptUrl);
+      // Fire-and-forward: attempt branded email. Copy-link fallback remains visible.
+      try {
+        await sendTransactionalEmail({
+          templateName: "client-invite",
+          recipientEmail: res.invite.email,
+          idempotencyKey: `client-invite-${res.invite.id}`,
+          templateData: {
+            proName: res.professional_name,
+            tradingName: res.trading_name,
+            clientName: res.client_name,
+            acceptUrl: res.acceptUrl,
+          },
+        });
+        setEmailStatus("sent");
+      } catch {
+        setEmailStatus("failed");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create invite");
     } finally {
