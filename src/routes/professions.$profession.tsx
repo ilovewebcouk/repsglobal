@@ -1,0 +1,611 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  BadgeCheck,
+  Bookmark,
+  ChevronRight,
+  Laptop,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Star,
+  Trophy,
+  UserRound,
+  Users,
+} from "lucide-react";
+
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import proDaniel from "@/assets/pro-daniel.jpg";
+import proJames from "@/assets/pro-james.jpg";
+import proLaura from "@/assets/pro-laura.jpg";
+import proSophie from "@/assets/pro-sophie.jpg";
+
+/* ------------------------------------------------------------------ */
+/* Profession catalogue (Phase 1 static)                               */
+/* ------------------------------------------------------------------ */
+
+type ProfessionMeta = {
+  slug: string;
+  title: string;
+  plural: string;
+  blurb: string;
+  qualifications: string[];
+  specialisms: string[];
+  avgRate: string;
+  count: number;
+  related: { slug: string; label: string }[];
+};
+
+const PROFESSIONS: Record<string, ProfessionMeta> = {
+  "personal-trainer": {
+    slug: "personal-trainer",
+    title: "Personal Trainer",
+    plural: "Personal Trainers",
+    blurb:
+      "REPs-verified personal trainers help you build strength, lose body fat and feel better in your training — one-to-one, in person or online.",
+    qualifications: ["Level 3 PT (RQF)", "Level 4 Specialist", "First Aid (current)"],
+    specialisms: [
+      "Strength Training",
+      "Fat Loss",
+      "Hypertrophy",
+      "Pre & Postnatal",
+      "Older Adults",
+      "Sports Performance",
+      "Online Coaching",
+      "1:1 In-Person",
+    ],
+    avgRate: "£45 – £85 / hour",
+    count: 1284,
+    related: [
+      { slug: "strength-coach", label: "Strength Coach" },
+      { slug: "nutritionist", label: "Nutritionist" },
+      { slug: "online-coach", label: "Online Coach" },
+    ],
+  },
+  "pilates-instructor": {
+    slug: "pilates-instructor",
+    title: "Pilates Instructor",
+    plural: "Pilates Instructors",
+    blurb:
+      "Find REPs-verified Pilates teachers for mat, reformer and rehabilitation Pilates — improving posture, mobility and long-term strength.",
+    qualifications: ["Level 3 Mat Pilates", "Reformer Certification", "First Aid (current)"],
+    specialisms: [
+      "Mat Pilates",
+      "Reformer Pilates",
+      "Pre & Postnatal",
+      "Rehabilitation",
+      "Posture & Mobility",
+      "Older Adults",
+      "Online Classes",
+      "Studio Sessions",
+    ],
+    avgRate: "£35 – £70 / hour",
+    count: 412,
+    related: [
+      { slug: "yoga-teacher", label: "Yoga Teacher" },
+      { slug: "personal-trainer", label: "Personal Trainer" },
+      { slug: "rehab-specialist", label: "Rehab Specialist" },
+    ],
+  },
+  nutritionist: {
+    slug: "nutritionist",
+    title: "Nutritionist",
+    plural: "Nutritionists",
+    blurb:
+      "Evidence-based nutrition support from REPs-verified professionals — fat loss, performance, gut health and habit-building plans.",
+    qualifications: ["BSc Nutrition", "Registered Nutritionist (ANutr / RNutr)", "Sports Nutrition (ISSN)"],
+    specialisms: [
+      "Fat Loss",
+      "Muscle Gain",
+      "Sports Nutrition",
+      "Gut Health",
+      "Plant-Based",
+      "Female Hormones",
+      "Online Plans",
+      "Body Composition",
+    ],
+    avgRate: "£60 – £120 / session",
+    count: 326,
+    related: [
+      { slug: "personal-trainer", label: "Personal Trainer" },
+      { slug: "online-coach", label: "Online Coach" },
+      { slug: "strength-coach", label: "Strength Coach" },
+    ],
+  },
+  "strength-coach": {
+    slug: "strength-coach",
+    title: "Strength Coach",
+    plural: "Strength Coaches",
+    blurb:
+      "Specialist strength and conditioning coaches for powerlifting, hypertrophy and athletic performance — all REPs-verified.",
+    qualifications: ["Level 4 Strength & Conditioning", "UKSCA / NSCA-CSCS", "First Aid (current)"],
+    specialisms: [
+      "Powerlifting",
+      "Hypertrophy",
+      "Athletic Performance",
+      "Programme Design",
+      "Olympic Lifting",
+      "Conditioning",
+      "Online Programming",
+      "Competition Prep",
+    ],
+    avgRate: "£55 – £95 / hour",
+    count: 198,
+    related: [
+      { slug: "personal-trainer", label: "Personal Trainer" },
+      { slug: "online-coach", label: "Online Coach" },
+      { slug: "nutritionist", label: "Nutritionist" },
+    ],
+  },
+  "online-coach": {
+    slug: "online-coach",
+    title: "Online Coach",
+    plural: "Online Coaches",
+    blurb:
+      "Remote coaching from REPs-verified professionals — bespoke programming, weekly check-ins and video feedback, wherever you train.",
+    qualifications: ["Level 3 PT (RQF)", "Online Coaching Certification", "Specialist Level 4"],
+    specialisms: [
+      "Online Programming",
+      "Weekly Check-ins",
+      "Video Form Reviews",
+      "Habit Coaching",
+      "Fat Loss",
+      "Muscle Gain",
+      "Strength Building",
+      "Nutrition Support",
+    ],
+    avgRate: "£99 – £249 / month",
+    count: 873,
+    related: [
+      { slug: "personal-trainer", label: "Personal Trainer" },
+      { slug: "nutritionist", label: "Nutritionist" },
+      { slug: "strength-coach", label: "Strength Coach" },
+    ],
+  },
+};
+
+function getProfession(slug: string): ProfessionMeta {
+  return (
+    PROFESSIONS[slug] ?? {
+      slug,
+      title: slug
+        .split("-")
+        .map((s) => s[0]?.toUpperCase() + s.slice(1))
+        .join(" "),
+      plural:
+        slug
+          .split("-")
+          .map((s) => s[0]?.toUpperCase() + s.slice(1))
+          .join(" ") + "s",
+      blurb: "REPs-verified professionals across the UK and online. Search, compare and book with confidence.",
+      qualifications: ["Level 3 (RQF)", "Specialist Qualifications", "First Aid (current)"],
+      specialisms: ["1:1 Coaching", "Online Sessions", "Group Classes", "Specialist Programmes"],
+      avgRate: "£40 – £80 / hour",
+      count: 64,
+      related: [
+        { slug: "personal-trainer", label: "Personal Trainer" },
+        { slug: "nutritionist", label: "Nutritionist" },
+        { slug: "online-coach", label: "Online Coach" },
+      ],
+    }
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Route                                                               */
+/* ------------------------------------------------------------------ */
+
+export const Route = createFileRoute("/professions/$profession")({
+  head: ({ params }) => {
+    const meta = getProfession(params.profession);
+    return {
+      meta: [
+        { title: `${meta.plural} — Find REPs-Verified ${meta.plural} | REPs` },
+        {
+          name: "description",
+          content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPs.`,
+        },
+        { property: "og:title", content: `${meta.plural} — REPs` },
+        { property: "og:description", content: meta.blurb },
+        { property: "og:url", content: `/professions/${meta.slug}` },
+      ],
+      links: [{ rel: "canonical", href: `/professions/${meta.slug}` }],
+    };
+  },
+  component: ProfessionLanding,
+});
+
+/* ------------------------------------------------------------------ */
+/* Featured pros (static, Phase 1)                                     */
+/* ------------------------------------------------------------------ */
+
+type Pro = {
+  name: string;
+  role: string;
+  city: string;
+  rating: number;
+  reviews: number;
+  mode: "In-person" | "Online" | "In-person & Online";
+  tags: string[];
+  image: string;
+};
+
+const FEATURED: Pro[] = [
+  {
+    name: "James Wilson",
+    role: "Personal Trainer",
+    city: "London",
+    rating: 5.0,
+    reviews: 128,
+    mode: "In-person & Online",
+    tags: ["Strength Training", "Fat Loss", "Hypertrophy"],
+    image: proJames,
+  },
+  {
+    name: "Sophie Taylor",
+    role: "Pilates Instructor",
+    city: "London",
+    rating: 5.0,
+    reviews: 96,
+    mode: "In-person & Online",
+    tags: ["Reformer", "Posture", "Pre & Postnatal"],
+    image: proSophie,
+  },
+  {
+    name: "Liam Roberts",
+    role: "Strength Coach",
+    city: "Manchester",
+    rating: 4.9,
+    reviews: 74,
+    mode: "In-person",
+    tags: ["Powerlifting", "Hypertrophy", "Performance"],
+    image: proDaniel,
+  },
+  {
+    name: "Priya Sharma",
+    role: "Nutritionist",
+    city: "Bristol",
+    rating: 5.0,
+    reviews: 112,
+    mode: "Online",
+    tags: ["Sports Nutrition", "Fat Loss", "Habit Coaching"],
+    image: proLaura,
+  },
+];
+
+const CITIES = [
+  { slug: "london", label: "London", count: 482 },
+  { slug: "manchester", label: "Manchester", count: 164 },
+  { slug: "birmingham", label: "Birmingham", count: 128 },
+  { slug: "leeds", label: "Leeds", count: 86 },
+  { slug: "edinburgh", label: "Edinburgh", count: 74 },
+  { slug: "glasgow", label: "Glasgow", count: 69 },
+  { slug: "bristol", label: "Bristol", count: 58 },
+  { slug: "cardiff", label: "Cardiff", count: 41 },
+];
+
+const TRUST = [
+  { icon: ShieldCheck, title: "Verified Credentials", sub: "Every professional is identity & qualification checked." },
+  { icon: Trophy, title: "Recognised Training", sub: "Held to Ofqual-regulated standards across the UK." },
+  { icon: BadgeCheck, title: "Insurance & DBS", sub: "Active insurance and enhanced DBS where required." },
+  { icon: Users, title: "Real Reviews", sub: "Only verified clients can leave a review." },
+];
+
+const FAQS = [
+  {
+    q: "What does REPs-verified mean?",
+    a: "Each professional has had their identity, qualifications, insurance and (where required) DBS checked by our verification team before going live on the platform.",
+  },
+  {
+    q: "Can I book a session through REPs?",
+    a: "Yes. Once you find someone you like, send an enquiry directly from their profile. They'll confirm availability and pricing, and you can book straight from the chat.",
+  },
+  {
+    q: "Are there online options?",
+    a: "Yes — many professionals offer remote coaching. Use the 'Online' filter on the directory to see only those who deliver online programmes and check-ins.",
+  },
+  {
+    q: "How much does it cost?",
+    a: "Pricing is set by each professional. You'll see typical rates on their profile and a clear quote on your enquiry before you commit to anything.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
+function ProfessionLanding() {
+  const { profession } = Route.useParams();
+  const meta = getProfession(profession);
+
+  return (
+    <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
+      <PublicHeader variant="solid" />
+
+      {/* Breadcrumb */}
+      <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-reps-muted-light">
+          <Link to="/" className="hover:text-reps-charcoal">Home</Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link to="/find-a-professional" className="hover:text-reps-charcoal">Find a Professional</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="font-medium text-reps-charcoal">{meta.plural}</span>
+        </nav>
+      </div>
+
+      {/* Hero */}
+      <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-6 lg:px-10 lg:pb-14 lg:pt-10">
+        <div className="grid items-end gap-8 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+              <BadgeCheck className="h-3 w-3 text-reps-orange" />
+              {meta.count.toLocaleString()} REPs-verified {meta.plural.toLowerCase()}
+            </span>
+            <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
+              Find a verified <span className="text-reps-orange">{meta.title}</span>
+            </h1>
+            <p className="mt-4 max-w-[620px] text-[16px] leading-relaxed text-reps-muted-light">
+              {meta.blurb}
+            </p>
+
+            {/* Inline search */}
+            <form className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
+              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
+                <Search className="h-4 w-4 text-reps-muted-light" />
+                <input
+                  type="text"
+                  defaultValue={meta.title}
+                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
+                  placeholder="Specialism or service"
+                />
+              </label>
+              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
+                <MapPin className="h-4 w-4 text-reps-muted-light" />
+                <input
+                  type="text"
+                  placeholder="City, town or postcode"
+                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
+                />
+              </label>
+              <Link
+                to="/find-a-professional"
+                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+              >
+                Search
+              </Link>
+            </form>
+          </div>
+
+          {/* Meta panel */}
+          <aside className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
+            <h2 className="font-display text-[18px] font-bold text-reps-charcoal">At a glance</h2>
+            <dl className="mt-4 space-y-3 text-[13px]">
+              <div className="flex items-center justify-between">
+                <dt className="text-reps-muted-light">Typical rate</dt>
+                <dd className="font-semibold text-reps-charcoal">{meta.avgRate}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-reps-muted-light">Verified pros</dt>
+                <dd className="font-semibold text-reps-charcoal">{meta.count.toLocaleString()}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-reps-muted-light">Avg. rating</dt>
+                <dd className="flex items-center gap-1 font-semibold text-reps-charcoal">
+                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" /> 4.9 / 5
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-5 border-t border-reps-stone pt-4">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                Typical qualifications
+              </div>
+              <ul className="space-y-1.5">
+                {meta.qualifications.map((q) => (
+                  <li key={q} className="flex items-start gap-2 text-[13px] text-reps-charcoal">
+                    <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                    {q}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* Specialism chips */}
+      <section className="border-y border-reps-stone bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
+          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+            Popular {meta.title.toLowerCase()} specialisms
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {meta.specialisms.map((s) => (
+              <Link
+                key={s}
+                to="/find-a-professional"
+                className="rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
+              >
+                {s}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured pros */}
+      <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+              Featured {meta.plural.toLowerCase()}
+            </h2>
+            <p className="mt-1 text-[14px] text-reps-muted-light">
+              Hand-picked, REPs-verified and accepting new clients.
+            </p>
+          </div>
+          <Link
+            to="/find-a-professional"
+            className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+          >
+            See all {meta.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURED.map((p) => (
+            <FeaturedCard key={p.name} pro={p} />
+          ))}
+        </div>
+      </section>
+
+      {/* Cities */}
+      <section className="bg-reps-warm-white py-14">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+            {meta.plural} by city
+          </h2>
+          <p className="mt-1 text-[14px] text-reps-muted-light">Browse verified {meta.plural.toLowerCase()} in your area.</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {CITIES.map((c) => (
+              <Link
+                key={c.slug}
+                to="/in/$location"
+                params={{ location: c.slug }}
+                className="group flex items-center justify-between rounded-[16px] border border-reps-stone bg-reps-ivory px-4 py-3.5 transition-colors hover:border-reps-orange"
+              >
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-reps-orange" />
+                  <span className="text-[14px] font-semibold text-reps-charcoal">{meta.plural} in {c.label}</span>
+                </span>
+                <span className="text-[12px] text-reps-muted-light group-hover:text-reps-orange">{c.count}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust band */}
+      <section className="bg-reps-ivory py-12">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
+            <div>
+              <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
+                Why every {meta.title.toLowerCase()}
+                <br />on REPs is verified
+              </h2>
+              <p className="mt-2 text-[13px] text-reps-muted-light">
+                You shouldn't have to guess whether someone is qualified. We do the checking.
+              </p>
+            </div>
+            {TRUST.map((t) => (
+              <div key={t.title} className="flex flex-col items-center gap-2 text-center">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
+                  <t.icon className="h-5 w-5" strokeWidth={1.6} />
+                </span>
+                <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
+                <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-reps-warm-white py-14">
+        <div className="mx-auto max-w-[860px] px-6 lg:px-10">
+          <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+            Hiring a {meta.title.toLowerCase()} on REPs
+          </h2>
+          <div className="mt-6 divide-y divide-reps-stone overflow-hidden rounded-[18px] border border-reps-stone bg-reps-ivory">
+            {FAQS.map((f) => (
+              <details key={f.q} className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[15px] font-semibold text-reps-charcoal">
+                  {f.q}
+                  <ChevronRight className="h-4 w-4 text-reps-muted-light transition-transform group-open:rotate-90" />
+                </summary>
+                <p className="px-5 pb-5 text-[14px] leading-relaxed text-reps-muted-light">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Related */}
+      <section className="bg-reps-ivory py-14">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <h2 className="font-display text-[22px] font-bold leading-tight text-reps-charcoal">
+            Related professions
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {meta.related.map((r) => (
+              <Link
+                key={r.slug}
+                to="/professions/$profession"
+                params={{ profession: r.slug }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-4 py-2 text-[13px] font-semibold text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
+              >
+                <UserRound className="h-3.5 w-3.5" />
+                {r.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <PublicFooter />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Featured card                                                       */
+/* ------------------------------------------------------------------ */
+
+function FeaturedCard({ pro }: { pro: Pro }) {
+  const slug = pro.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return (
+    <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
+      <div className="relative">
+        <img src={pro.image} alt={pro.name} className="h-44 w-full object-cover" loading="lazy" />
+        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+          <BadgeCheck className="h-3 w-3" /> Verified
+        </span>
+        <button
+          aria-label="Save"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-reps-warm-white/90 text-reps-charcoal hover:text-reps-orange"
+        >
+          <Bookmark className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
+            <p className="text-[12px] text-reps-muted-light">{pro.role}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1 text-[12px]">
+            <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+            <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+            <span className="text-reps-muted-light">({pro.reviews})</span>
+          </div>
+        </div>
+        <div className="mt-2 flex items-center gap-3 text-[11.5px] text-reps-muted-light">
+          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {pro.city}</span>
+          <span className="flex items-center gap-1"><Laptop className="h-3 w-3" /> {pro.mode}</span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-1">
+          {pro.tags.slice(0, 2).map((t) => (
+            <span key={t} className="rounded-full bg-reps-ivory px-2 py-0.5 text-[10.5px] font-medium text-reps-charcoal">{t}</span>
+          ))}
+        </div>
+        <Link
+          to="/pro/$slug"
+          params={{ slug }}
+          className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+        >
+          View Profile
+        </Link>
+      </div>
+    </article>
+  );
+}
