@@ -26,25 +26,24 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
+type Billing = "monthly" | "annual";
+
+type PriceView = { price: string; was?: string; period: string; meta?: string };
+
 type PlanCard = {
   tier: string;
-  price: string;
-  priceWas?: string;
-  period: string;
-  secondaryPrice?: string;
   desc: string;
   cta: string;
   ctaHref: string;
   founding?: boolean;
   featured?: boolean;
   features: string[];
+  pricing: Record<Billing, PriceView>;
 };
 
 const PLANS: PlanCard[] = [
   {
     tier: "Free Profile",
-    price: "£0",
-    period: "Free forever",
     desc: "Get listed. Get found.",
     cta: "Create free profile",
     ctaHref: "/signup",
@@ -54,12 +53,13 @@ const PLANS: PlanCard[] = [
       "Category & location listing",
       "Unverified status badge",
     ],
+    pricing: {
+      monthly: { price: "£0", period: "Free forever" },
+      annual: { price: "£0", period: "Free forever" },
+    },
   },
   {
     tier: "Verified",
-    price: "£99",
-    period: "per year",
-    secondaryPrice: "or £12/mo",
     desc: "Monetise your professional trust.",
     cta: "Get verified",
     ctaHref: "/signup",
@@ -70,12 +70,13 @@ const PLANS: PlanCard[] = [
       "Enhanced directory profile",
       "Enquiries inbox",
     ],
+    pricing: {
+      monthly: { price: "£12", period: "per month", meta: "Billed monthly" },
+      annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly · 2 months free" },
+    },
   },
   {
     tier: "Pro",
-    price: "£29",
-    priceWas: "£39",
-    period: "per month",
     desc: "Run your full coaching practice.",
     cta: "Start Founding Pro",
     ctaHref: "/signup",
@@ -91,12 +92,13 @@ const PLANS: PlanCard[] = [
       "Check-ins",
       "Messaging inbox",
     ],
+    pricing: {
+      monthly: { price: "£29", was: "£39", period: "per month", meta: "Billed monthly" },
+      annual: { price: "£24", was: "£32", period: "per month", meta: "£290 billed yearly · 2 months free" },
+    },
   },
   {
     tier: "Business",
-    price: "£59",
-    priceWas: "£79",
-    period: "per month",
     desc: "Scale online and hybrid coaching.",
     cta: "Start Founding Business",
     ctaHref: "/signup",
@@ -109,8 +111,18 @@ const PLANS: PlanCard[] = [
       "Content studio",
       "Enhanced directory placement",
     ],
+    pricing: {
+      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free" },
+    },
   },
 ];
+
+const STUDIO_PRICING: Record<Billing, PriceView> = {
+  monthly: { price: "£149", period: "per month", meta: "Billed monthly" },
+  annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · 2 months free" },
+};
+
 
 type TierKey = "verified" | "pro" | "business" | "studio";
 type CellValue = boolean | string;
