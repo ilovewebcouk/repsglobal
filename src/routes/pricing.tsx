@@ -1,9 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { Check, Minus, Sparkles, Star, Users, Building2, ShieldCheck, Eye, LayoutGrid } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { createCheckoutSession } from "@/lib/billing/billing.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -30,8 +34,11 @@ type Billing = "monthly" | "annual";
 
 type PriceView = { price: string; was?: string; period: string; meta?: string };
 
+type PlanTierKey = "free" | "verified" | "pro" | "business";
+
 type PlanCard = {
   tier: string;
+  tierKey: PlanTierKey;
   desc: string;
   cta: string;
   ctaHref: string;
@@ -44,6 +51,7 @@ type PlanCard = {
 const PLANS: PlanCard[] = [
   {
     tier: "Free Profile",
+    tierKey: "free",
     desc: "Get listed. Get found.",
     cta: "Create free profile",
     ctaHref: "/signup",
@@ -60,6 +68,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Verified",
+    tierKey: "verified",
     desc: "Monetise your professional trust.",
     cta: "Get verified",
     ctaHref: "/signup",
@@ -77,6 +86,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Pro",
+    tierKey: "pro",
     desc: "Run your full coaching practice.",
     cta: "Start Founding Pro",
     ctaHref: "/signup",
@@ -99,6 +109,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Business",
+    tierKey: "business",
     desc: "Scale online and hybrid coaching.",
     cta: "Start Founding Business",
     ctaHref: "/signup",
@@ -251,6 +262,35 @@ function Cell({ value, dim = false }: { value: CellValue; dim?: boolean }) {
 function PricingPage() {
   const [activeTier, setActiveTier] = useState<TierKey>("pro");
   const [billing, setBilling] = useState<Billing>("annual");
+  const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
+  const navigate = useNavigate();
+  const startCheckout = useServerFn(createCheckoutSession);
+
+  async function handlePaidCta(tierKey: Exclude<PlanTierKey, "free">) {
+    setCheckoutTier(tierKey);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        navigate({
+          to: "/signup",
+          search: { tier: tierKey, period: billing, next: "checkout" } as never,
+        });
+        return;
+      }
+      const result = await startCheckout({ data: { tier: tierKey, period: billing } });
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error("Could not start checkout. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Checkout failed");
+    } finally {
+      setCheckoutTier(null);
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
@@ -365,16 +405,27 @@ function PricingPage() {
                   </div>
                 )}
 
-                <Link
-                  to={p.ctaHref}
-                  className={
-                    p.featured
-                      ? "mt-6 flex h-11 items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
-                      : "mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10"
-                  }
-                >
-                  {p.cta}
-                </Link>
+                {p.tierKey === "free" ? (
+                  <Link
+                    to={p.ctaHref}
+                    className="mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10"
+                  >
+                    {p.cta}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={checkoutTier === p.tierKey}
+                    onClick={() => handlePaidCta(p.tierKey as Exclude<PlanTierKey, "free">)}
+                    className={
+                      p.featured
+                        ? "mt-6 flex h-11 items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+                        : "mt-6 flex h-11 items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10 disabled:opacity-60"
+                    }
+                  >
+                    {checkoutTier === p.tierKey ? "Redirecting…" : p.cta}
+                  </button>
+                )}
 
                 <ul className="mt-6 space-y-2.5 text-[13px]">
                   {p.features.map((f) => (
