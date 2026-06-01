@@ -1,60 +1,82 @@
-# Doc update pass — sync specs + add build status
+## Goal
 
-Two parallel workstreams over the `docs/` folder. No code/route changes.
+Make every nav link in `PublicHeader` and `PublicFooter` actually navigate, and replace the three header `<button>` items with full mega-menu dropdowns on hover/focus. Phase 1 visuals only — no new routes, no backend.
 
-## 1. Sync existing specs (doc-sync skill)
+## 1. Confirmed nav inventory (Q&A result)
 
-Run the `doc-sync-source-of-truth` audit across `docs/**/*.md`, root `*.md`, and `.lovable/plan.md`. Apply the standard replacement matrix:
+**Header (left → right)**
+- Logo → `/`
+- Find a Professional ▾ (mega-menu)
+- How REPs Works → `/how-it-works`
+- For Professionals → `/for-professionals`
+- Resources ▾ (mega-menu)
+- About REPs ▾ (mega-menu)
+- Log in → `/login` *(currently points at `/signup` — fix)*
+- Join REPs → `/signup`
 
-- `#F28C38` → `#FF7A00`, `#D87322` → `#E96F00` / `#CC6200`
-- Banned radii (`14/20/28/32px`, `rounded-xl/2xl/3xl`) → 9-step scale (6/8/10/12/16/18/22/24/999)
-- Archived mock-up filenames → `reps_fullpage_*_v1.png` (the 6 locked names)
-- "REPs UK" → "REPs" (outside legacy/migration context)
-- Gold/yellow rating stars → brand orange
-- Button shadow guidance → "flat — `shadow-none` only"
+**Footer columns** — current targets are correct, just confirming:
+- For Members: `/find-a-professional`, `/how-it-works`, `/specialisms`, `/reviews`, `/help`
+- For Professionals: `/for-professionals`, `/pricing`, `/dashboard`, `/cpd`, `/business-tools`
+- Company: `/about`, `/standards`, `/verify`, `/resources`, `/careers`, `/press`
+- Legal: `/terms`, `/privacy`, `/cookies`, `/complaints`, `/contact`
 
-Then reconcile **scope drift** in `03_reps_page_by_page_specification.md` and `06_reps_lovable_build_prompt_pack.md` against what actually shipped:
+All footer destinations already exist as routes — only fix is the header "Log in" bug.
 
-- Signup card style + removed "I am a" picker
-- Student membership removed from pricing
-- Resources hub (`/resources` + `/resources/$slug`) replaces any earlier "Blog" or "Resources" placeholder language
-- Any other contradictions surfaced by the audit (flagged, not silently rewritten)
+## 2. Mega-menu structure
 
-Voice and structure preserved. Replace values, not paragraphs. Anything ambiguous goes under "Remaining conflicts" in the report — not auto-resolved.
+### Find a Professional ▾ (Browse by profession + location)
+Two-column panel + footer CTA.
+- **Column 1 — Top professions** (links to `/professions/$profession`):
+  Personal Trainer, Pilates Instructor, Yoga Teacher, Nutritionist, Strength Coach, Online Coach
+- **Column 2 — Top locations** (links to `/in/$location`):
+  London, Manchester, Birmingham, Edinburgh, Glasgow, Bristol
+- Footer row: "Browse all professionals →" → `/find-a-professional`
 
-## 2. New file: `docs/07_phase1_build_status.md`
+### About REPs ▾ (Trust & standards focus)
+Single column of links with short subtitles:
+- About REPs → `/about`
+- Our Standards → `/standards`
+- Verification → `/verify`
+- Reviews → `/reviews`
+- Complaints → `/complaints`
 
-Single page, grouped by surface, derived from `src/routes/` (~80 route files). Each row: route → state (Shipped / Partial / Not started) → notes.
+### Resources ▾ (Hub + categories)
+Two-column panel.
+- **Column 1 — Browse by topic** (filtered hub links, e.g. `/resources?category=find-a-professional`):
+  Find a Professional, Fitness Business, Verification & Standards
+- **Column 2 — Featured articles** (3 latest from `src/lib/resources.ts`, each → `/resources/$slug`)
+- Footer row: "All articles →" → `/resources`
 
-Sections:
+Note: category filter on `/resources` will read `?category=` via search params; if the hub doesn't yet support it, links degrade gracefully to the hub. (No new logic required for Phase 1 — the dropdown link still navigates.)
 
-- **Public marketing** — `/`, `/about`, `/how-it-works`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/professions/$profession`, `/specialisms`, `/standards`, `/cpd`, `/business-tools`, `/help`, `/faq`, `/contact`, `/complaints`, `/press`, `/careers`, `/reviews`, `/terms`, `/privacy`, `/cookies`
-- **Resources** — `/resources`, `/resources/$slug`
-- **Professional profile** — `/pro/$slug`, `/pro/$slug/enquire`
-- **Auth** — `/signup`, `/login`, `/forgot-password`, `/reset-password`, `/verify`, `/verify-email`, `/accept-invite`, `/unsubscribe`
-- **Professional dashboard** — every `dashboard_.*` route
-- **Client portal** — every `portal_.*` route
-- **Admin** — every `admin_.*` route
+## 3. Component changes
 
-Plus three short closing sections:
+### `src/components/public/PublicHeader.tsx`
+- Replace the static `navItems` array with typed nav config including dropdown contents.
+- Replace `<button>` placeholders with a `NavDropdown` subcomponent:
+  - Trigger: same chrome as today (white/85 text, chevron, hover → white).
+  - Panel: absolutely positioned under the header, centered to trigger, opens on hover + focus, closes on mouse-leave + Escape + blur outside.
+  - Built with `@radix-ui/react-navigation-menu` (already pulled in by `src/components/ui/navigation-menu.tsx`) so we get keyboard + a11y for free; styled with REPs tokens.
+- Panel styling: `bg-white text-reps-charcoal rounded-[18px]` (card radius), `border border-reps-stone`, no shadow drama — flat per token rules. Width ~640px for two-column panels, ~320px for the single-column About panel.
+- Fix `Log in` `to="/signup"` → `to="/login"`.
+- Top-level direct links (How REPs Works, For Professionals) become real `<Link>` with the same hover treatment.
 
-- **Phase 1 deferred** — auth wiring, RLS, DB, payments, bookings, AI, live maps, real search/filter logic, BD migration (per the locked Phase 1 scope)
-- **Known visual debt** — any open items the compliance audit currently flags
-- **Phase 2 candidates** — Resources CMS, real search, etc.
+### `src/components/public/PublicFooter.tsx`
+- No structural changes — all `<Link>`s already point to live routes. Audit pass only: confirm every `to` resolves, no edits expected.
 
-Status is judged by what each route file actually renders (static high-fidelity vs placeholder vs missing), not by feature completeness — consistent with Phase 1 = static screens only.
+### New file: `src/components/public/nav-config.ts`
+Single source of truth for top professions, top locations, and About/Resources panel link lists. Header imports from here so future edits are one-touch.
 
-## 3. Index update
+## 4. Out of scope (Phase 1 guardrail)
+- No new routes, no auth wiring, no real category-filter logic on `/resources`.
+- No mobile drawer redesign in this pass (current header is `hidden lg:flex` for nav; mobile will keep the existing CTA-only state, tracked as visual debt in `docs/07_phase1_build_status.md`).
+- No design-system token changes.
 
-Add a one-liner to `docs/00_README.md` pointing to `07_phase1_build_status.md` so it's discoverable.
+## 5. Verification
+- Click every header link + dropdown item → lands on the expected route.
+- Hover + keyboard (Tab/Enter/Escape) open and close each mega-menu.
+- Click every footer link → lands on the expected route.
+- Run `reps-build-compliance` audit (no banned hex, no banned radii, no button shadows).
 
-## Out of scope (explicit)
-
-- No route additions, deletions, renames
-- No component edits
-- No memory file changes (Core rules already match the locked system)
-- No new specs invented — gaps surface as "Remaining conflicts" in the report, not new docs
-
-## Deliverable
-
-Doc-sync change report in the standard 5-section format (Documents checked / updated / replacements / remaining conflicts / confirmation), plus a link to the new `07_phase1_build_status.md`.
+## 6. Doc update
+- Append a one-liner to `docs/07_phase1_build_status.md` "Known visual debt" noting the mobile mega-menu is deferred.
