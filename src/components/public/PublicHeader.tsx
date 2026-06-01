@@ -32,16 +32,23 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              className="flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white"
-            >
-              {item.label}
-              {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5 opacity-70" />}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const linkClass =
+              "flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white";
+            if (item.label === "Resources") {
+              return (
+                <Link key={item.label} to="/resources" className={linkClass}>
+                  Resources
+                </Link>
+              );
+            }
+            return (
+              <button key={item.label} type="button" className={linkClass}>
+                {item.label}
+                {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5 opacity-70" />}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">

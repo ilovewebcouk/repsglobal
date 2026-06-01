@@ -41,6 +41,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
@@ -246,6 +247,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ResourcesRoute,
 } as any)
 const ProfessionsProfessionRoute = ProfessionsProfessionRouteImport.update({
   id: '/professions/$profession',
@@ -500,7 +506,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/specialisms': typeof SpecialismsRoute
@@ -546,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -579,7 +586,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/specialisms': typeof SpecialismsRoute
@@ -624,6 +631,7 @@ export interface FileRoutesByTo {
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -658,7 +666,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/specialisms': typeof SpecialismsRoute
@@ -704,6 +712,7 @@ export interface FileRoutesById {
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -785,6 +794,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/pro/$slug'
     | '/professions/$profession'
+    | '/resources/$slug'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -863,6 +873,7 @@ export interface FileRouteTypes {
     | '/portal/programme'
     | '/portal/today'
     | '/professions/$profession'
+    | '/resources/$slug'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -942,6 +953,7 @@ export interface FileRouteTypes {
     | '/portal_/today'
     | '/pro/$slug'
     | '/professions/$profession'
+    | '/resources/$slug'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -976,7 +988,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ResourcesRoute: typeof ResourcesRoute
+  ResourcesRoute: typeof ResourcesRouteWithChildren
   ReviewsRoute: typeof ReviewsRoute
   SignupRoute: typeof SignupRoute
   SpecialismsRoute: typeof SpecialismsRoute
@@ -1254,6 +1266,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/resources/$slug': {
+      id: '/resources/$slug'
+      path: '/$slug'
+      fullPath: '/resources/$slug'
+      preLoaderRoute: typeof ResourcesSlugRouteImport
+      parentRoute: typeof ResourcesRoute
     }
     '/professions/$profession': {
       id: '/professions/$profession'
@@ -1573,6 +1592,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ResourcesRouteChildren {
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
+}
+
+const ResourcesRouteChildren: ResourcesRouteChildren = {
+  ResourcesSlugRoute: ResourcesSlugRoute,
+}
+
+const ResourcesRouteWithChildren = ResourcesRoute._addFileChildren(
+  ResourcesRouteChildren,
+)
+
 interface DashboardClientsRouteChildren {
   DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
@@ -1621,7 +1652,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ResourcesRoute: ResourcesRoute,
+  ResourcesRoute: ResourcesRouteWithChildren,
   ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,
   SpecialismsRoute: SpecialismsRoute,
