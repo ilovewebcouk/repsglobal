@@ -13,6 +13,7 @@ import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -30,6 +31,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
@@ -37,6 +39,7 @@ import { Route as PortalProfileRouteImport } from './routes/portal_.profile'
 import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
+import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
@@ -65,6 +68,7 @@ import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
+import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -89,6 +93,11 @@ const TermsRoute = TermsRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -176,6 +185,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfessionsProfessionRoute = ProfessionsProfessionRouteImport.update({
+  id: '/professions/$profession',
+  path: '/professions/$profession',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProSlugRoute = ProSlugRouteImport.update({
   id: '/pro/$slug',
   path: '/pro/$slug',
@@ -209,6 +223,11 @@ const PortalMessagesRoute = PortalMessagesRouteImport.update({
 const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
   id: '/portal_/check-ins',
   path: '/portal/check-ins',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InLocationRoute = InLocationRouteImport.update({
+  id: '/in/$location',
+  path: '/in/$location',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -351,6 +370,11 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProSlugEnquireRoute = ProSlugEnquireRouteImport.update({
+  id: '/enquire',
+  path: '/enquire',
+  getParentRoute: () => ProSlugRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -398,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -430,15 +455,18 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
-  '/pro/$slug': typeof ProSlugRoute
+  '/pro/$slug': typeof ProSlugRouteWithChildren
+  '/professions/$profession': typeof ProfessionsProfessionRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -461,6 +489,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -493,15 +522,18 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
-  '/pro/$slug': typeof ProSlugRoute
+  '/pro/$slug': typeof ProSlugRouteWithChildren
+  '/professions/$profession': typeof ProfessionsProfessionRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -525,6 +557,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -557,15 +590,18 @@ export interface FileRoutesById {
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
   '/portal_/nutrition': typeof PortalNutritionRoute
   '/portal_/profile': typeof PortalProfileRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
-  '/pro/$slug': typeof ProSlugRoute
+  '/pro/$slug': typeof ProSlugRouteWithChildren
+  '/professions/$profession': typeof ProfessionsProfessionRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -590,6 +626,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/signup'
     | '/terms'
     | '/unsubscribe'
@@ -622,6 +659,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
@@ -629,8 +667,10 @@ export interface FileRouteTypes {
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
+    | '/professions/$profession'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -653,6 +693,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/signup'
     | '/terms'
     | '/unsubscribe'
@@ -685,6 +726,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
@@ -692,8 +734,10 @@ export interface FileRouteTypes {
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
+    | '/professions/$profession'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -716,6 +760,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/signup'
     | '/terms'
     | '/unsubscribe'
@@ -748,6 +793,7 @@ export interface FileRouteTypes {
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/email/unsubscribe'
+    | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
     | '/portal_/nutrition'
@@ -755,8 +801,10 @@ export interface FileRouteTypes {
     | '/portal_/programme'
     | '/portal_/today'
     | '/pro/$slug'
+    | '/professions/$profession'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -780,6 +828,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ReviewsRoute: typeof ReviewsRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -812,13 +861,15 @@ export interface RootRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNutritionRoute: typeof PortalNutritionRoute
   PortalProfileRoute: typeof PortalProfileRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
-  ProSlugRoute: typeof ProSlugRoute
+  ProSlugRoute: typeof ProSlugRouteWithChildren
+  ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -853,6 +904,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -974,6 +1032,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/professions/$profession': {
+      id: '/professions/$profession'
+      path: '/professions/$profession'
+      fullPath: '/professions/$profession'
+      preLoaderRoute: typeof ProfessionsProfessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pro/$slug': {
       id: '/pro/$slug'
       path: '/pro/$slug'
@@ -1021,6 +1086,13 @@ declare module '@tanstack/react-router' {
       path: '/portal/check-ins'
       fullPath: '/portal/check-ins'
       preLoaderRoute: typeof PortalCheckInsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/in/$location': {
+      id: '/in/$location'
+      path: '/in/$location'
+      fullPath: '/in/$location'
+      preLoaderRoute: typeof InLocationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -1219,6 +1291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$slug/enquire': {
+      id: '/pro/$slug/enquire'
+      path: '/enquire'
+      fullPath: '/pro/$slug/enquire'
+      preLoaderRoute: typeof ProSlugEnquireRouteImport
+      parentRoute: typeof ProSlugRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -1268,6 +1347,17 @@ const DashboardClientsRouteChildren: DashboardClientsRouteChildren = {
 const DashboardClientsRouteWithChildren =
   DashboardClientsRoute._addFileChildren(DashboardClientsRouteChildren)
 
+interface ProSlugRouteChildren {
+  ProSlugEnquireRoute: typeof ProSlugEnquireRoute
+}
+
+const ProSlugRouteChildren: ProSlugRouteChildren = {
+  ProSlugEnquireRoute: ProSlugEnquireRoute,
+}
+
+const ProSlugRouteWithChildren =
+  ProSlugRoute._addFileChildren(ProSlugRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -1286,6 +1376,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
@@ -1318,13 +1409,15 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
   PortalNutritionRoute: PortalNutritionRoute,
   PortalProfileRoute: PortalProfileRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
-  ProSlugRoute: ProSlugRoute,
+  ProSlugRoute: ProSlugRouteWithChildren,
+  ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
