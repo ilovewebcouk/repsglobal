@@ -157,7 +157,7 @@ const directoryPros: Pro[] = [
 ];
 
 const trustItems = [
-  { icon: ShieldCheck, title: "REPs Verified", sub: "Qualifications & insurance checked" },
+  { icon: ShieldCheck, title: "REPs Verified", sub: "Qualifications & insurance check" },
   { icon: Star, title: "Reviewed & Rated", sub: "Real client feedback" },
   { icon: Trophy, title: "Ongoing Standards", sub: "Committed to CPD & excellence" },
   { icon: Users, title: "Trusted Worldwide", sub: "In-person & online" },
