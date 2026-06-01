@@ -59,6 +59,7 @@ import { Route as AdminMembershipsRouteImport } from './routes/admin_.membership
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -310,6 +311,12 @@ const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => DashboardClientsRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -362,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -414,6 +422,7 @@ export interface FileRoutesByTo {
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -467,6 +476,7 @@ export interface FileRoutesById {
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -521,6 +531,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/pro/$slug'
     | '/dashboard/clients/$slug'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -625,6 +637,7 @@ export interface FileRouteTypes {
     | '/portal_/today'
     | '/pro/$slug'
     | '/dashboard_/clients/$slug'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -677,6 +690,7 @@ export interface RootRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1031,6 +1045,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardClientsSlugRouteImport
       parentRoute: typeof DashboardClientsRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1095,6 +1116,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
