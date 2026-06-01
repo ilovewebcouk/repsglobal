@@ -42,6 +42,18 @@ export const createClientInvite = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
 
+    // Fetch pro display name + optional trading name for the email
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    const { data: pro } = await supabase
+      .from("professionals")
+      .select("trading_name")
+      .eq("id", userId)
+      .maybeSingle();
+
     const origin =
       process.env.PUBLIC_SITE_URL ?? "https://repsglobal.lovable.app";
     const acceptUrl = `${origin}/accept-invite?token=${token}`;
@@ -49,6 +61,9 @@ export const createClientInvite = createServerFn({ method: "POST" })
     return {
       invite: { id: invite.id, email: invite.email, expires_at: invite.expires_at },
       acceptUrl,
+      professional_name: (profile?.full_name as string | null) ?? "Your coach",
+      trading_name: (pro?.trading_name as string | null) ?? null,
+      client_name: (invite.full_name as string | null) ?? null,
     };
   });
 
