@@ -1,78 +1,60 @@
-# Plan: REPs Resources Hub (Phase 1)
+# Doc update pass — sync specs + add build status
 
-A full blog architecture positioned as **Resources** — a professional fitness industry resource centre, not a casual blog. Static content only; CMS comes later.
+Two parallel workstreams over the `docs/` folder. No code/route changes.
 
-## Routes
+## 1. Sync existing specs (doc-sync skill)
 
-```text
-/resources              -> hub / index with category filters + article grid
-/resources/$slug        -> individual article page
-```
+Run the `doc-sync-source-of-truth` audit across `docs/**/*.md`, root `*.md`, and `.lovable/plan.md`. Apply the standard replacement matrix:
 
-Add **Resources** link to the public header nav (between "Find a professional" and "Pricing", or wherever it fits the existing nav order) and to the footer under a Resources column.
+- `#F28C38` → `#FF7A00`, `#D87322` → `#E96F00` / `#CC6200`
+- Banned radii (`14/20/28/32px`, `rounded-xl/2xl/3xl`) → 9-step scale (6/8/10/12/16/18/22/24/999)
+- Archived mock-up filenames → `reps_fullpage_*_v1.png` (the 6 locked names)
+- "REPs UK" → "REPs" (outside legacy/migration context)
+- Gold/yellow rating stars → brand orange
+- Button shadow guidance → "flat — `shadow-none` only"
 
-## Categories
+Then reconcile **scope drift** in `03_reps_page_by_page_specification.md` and `06_reps_lovable_build_prompt_pack.md` against what actually shipped:
 
-Six fixed categories shown as filter pills on `/resources`:
+- Signup card style + removed "I am a" picker
+- Student membership removed from pricing
+- Resources hub (`/resources` + `/resources/$slug`) replaces any earlier "Blog" or "Resources" placeholder language
+- Any other contradictions surfaced by the audit (flagged, not silently rewritten)
 
-1. Find a Professional
-2. Verification & Standards
-3. Fitness Business
-4. Coaching & Client Management
-5. CPD & Education
-6. Platform Updates
+Voice and structure preserved. Replace values, not paragraphs. Anything ambiguous goes under "Remaining conflicts" in the report — not auto-resolved.
 
-Stored as a string union in `src/lib/resources.ts` (single source of truth) so cards, filters, and article pages all stay in sync.
+## 2. New file: `docs/07_phase1_build_status.md`
 
-## /resources (hub)
+Single page, grouped by surface, derived from `src/routes/` (~80 route files). Each row: route → state (Shipped / Partial / Not started) → notes.
 
-Layout follows the locked REPs public-page system:
+Sections:
 
-- **Hero band** — H1 "Resources", short subtitle ("Guidance, standards and industry insight for fitness professionals and the people who hire them."), search input (visual only, no logic in Phase 1).
-- **Category pills** — horizontal scroll on mobile, wrap on desktop. "All" + the six categories. Active pill uses brand orange.
-- **Featured article** — full-width card (radius 18px) with cover image, category tag, title, excerpt, read time, author.
-- **Article grid** — 3-column on desktop, 2 on tablet, 1 on mobile. Cards at radius 18px (result/featured card token). Each card: cover image, category tag, H3 title, 2-line excerpt, meta row (read time · date).
-- **CTA strip** — orange band: "Looking for a verified professional?" → `/find-a-professional`.
+- **Public marketing** — `/`, `/about`, `/how-it-works`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/professions/$profession`, `/specialisms`, `/standards`, `/cpd`, `/business-tools`, `/help`, `/faq`, `/contact`, `/complaints`, `/press`, `/careers`, `/reviews`, `/terms`, `/privacy`, `/cookies`
+- **Resources** — `/resources`, `/resources/$slug`
+- **Professional profile** — `/pro/$slug`, `/pro/$slug/enquire`
+- **Auth** — `/signup`, `/login`, `/forgot-password`, `/reset-password`, `/verify`, `/verify-email`, `/accept-invite`, `/unsubscribe`
+- **Professional dashboard** — every `dashboard_.*` route
+- **Client portal** — every `portal_.*` route
+- **Admin** — every `admin_.*` route
 
-## /resources/$slug (article)
+Plus three short closing sections:
 
-- Breadcrumb: Resources › {Category} › {Title}
-- Article header: category tag, H1, author + date + read time
-- Hero image (radius 24px)
-- Long-form body (prose styles, semantic tokens)
-- Author bio card (radius 16px) at the foot
-- "Related articles" — 3 cards from the same category
-- Same CTA strip as the hub
+- **Phase 1 deferred** — auth wiring, RLS, DB, payments, bookings, AI, live maps, real search/filter logic, BD migration (per the locked Phase 1 scope)
+- **Known visual debt** — any open items the compliance audit currently flags
+- **Phase 2 candidates** — Resources CMS, real search, etc.
 
-Article bodies are hardcoded JSX in Phase 1 (rendered from a static `articles` array). No MDX, no CMS.
+Status is judged by what each route file actually renders (static high-fidelity vs placeholder vs missing), not by feature completeness — consistent with Phase 1 = static screens only.
 
-## Sample articles (3)
+## 3. Index update
 
-Pick one each from three different categories so the design shows variety:
+Add a one-liner to `docs/00_README.md` pointing to `07_phase1_build_status.md` so it's discoverable.
 
-1. **"How REPs verifies a fitness professional"** — Verification & Standards
-2. **"Choosing the right personal trainer: what to look for"** — Find a Professional
-3. **"5 ways to grow your PT business in 2026"** — Fitness Business
+## Out of scope (explicit)
 
-Each ~400–600 words of realistic placeholder copy (not lorem ipsum).
+- No route additions, deletions, renames
+- No component edits
+- No memory file changes (Core rules already match the locked system)
+- No new specs invented — gaps surface as "Remaining conflicts" in the report, not new docs
 
-## SEO
+## Deliverable
 
-- Per-route `head()` on `/resources` (title, description, og:*, canonical).
-- Per-route `head()` on `/resources/$slug` derived from the loaded article (title, excerpt, og:image = hero image, og:type "article", Article JSON-LD with headline/image/datePublished/author).
-- Add both routes to `src/routes/sitemap[.]xml.ts` — `/resources` static, plus one entry per article slug from the same source the route reads.
-
-## Visual rules (REPs compliance)
-
-- Brand orange via `bg-brand-orange` / `text-brand-orange` tokens only — no hex in components.
-- Radii: cards 18px, hero image 24px, pills full, inputs 12px, buttons 10px (flat — no shadow).
-- Stars / accents in brand orange, never gold.
-- Reuse existing public-page header, footer, and section spacing from the locked mock-ups.
-
-## Out of scope (Phase 2)
-
-- CMS / Supabase-backed articles
-- Real search & filtering logic
-- Newsletter signup wiring
-- Comments, reactions, view counts
-- Author pages
+Doc-sync change report in the standard 5-section format (Documents checked / updated / replacements / remaining conflicts / confirmation), plus a link to the new `07_phase1_build_status.md`.
