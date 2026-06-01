@@ -272,7 +272,6 @@ function ResourcesMenu({ onItemClick }: { onItemClick: () => void }) {
               <li key={t.category}>
                 <Link
                   to="/resources"
-                  search={{ category: t.category }}
                   onClick={onItemClick}
                   className="block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal hover:bg-reps-warm-white hover:text-reps-orange"
                 >
