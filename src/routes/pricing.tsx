@@ -225,8 +225,12 @@ const FAQ = [
     a: "Yes. Founding member pricing is locked for the lifetime of your subscription — but it's only available before public launch and to a limited number of professionals.",
   },
   {
+    q: "Can I switch between monthly and annual?",
+    a: "Yes, anytime from your dashboard. Annual saves you 2 months versus monthly.",
+  },
+  {
     q: "Can I cancel anytime?",
-    a: "Yes. Plans are monthly (or annual for Verified) and you can downgrade or cancel from your dashboard at any time.",
+    a: "Yes. Plans are monthly or annual and you can downgrade or cancel from your dashboard at any time.",
   },
 ];
 
