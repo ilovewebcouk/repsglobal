@@ -195,7 +195,7 @@ function SignupPage() {
     setAccountTypeIdx(initialIdx);
   }, [initialIdx]);
 
-  const planLabel = search.tier ? PLAN_LABELS[search.tier] : null;
+  const planLabel: string | null = search.tier ? PLAN_LABELS[search.tier] ?? null : null;
   const wantsCheckout =
     search.next === "checkout" &&
     !!search.tier &&
