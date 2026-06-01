@@ -86,13 +86,15 @@ const ACCOUNT_TYPES = [
     title: "Business / Facility",
     sub: "Gym, Studio, Club",
   },
-  {
-    id: "student",
-    icon: GraduationCap,
-    title: "Student",
-    sub: "Studying Fitness",
-  },
 ];
+
+// Map a pricing-page tier to the right account-type card
+const TIER_TO_ACCOUNT_TYPE: Record<string, "pro" | "biz"> = {
+  verified: "pro",
+  pro: "pro",
+  business: "biz",
+  studio: "biz",
+};
 
 const STATS = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
