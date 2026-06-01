@@ -33,6 +33,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
+import { Route as PortalProfileRouteImport } from './routes/portal_.profile'
 import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
@@ -188,6 +189,11 @@ const PortalTodayRoute = PortalTodayRouteImport.update({
 const PortalProgrammeRoute = PortalProgrammeRouteImport.update({
   id: '/portal_/programme',
   path: '/portal/programme',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalProfileRoute = PortalProfileRouteImport.update({
+  id: '/portal_/profile',
+  path: '/portal/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalNutritionRoute = PortalNutritionRouteImport.update({
@@ -427,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
+  '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -489,6 +496,7 @@ export interface FileRoutesByTo {
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
+  '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -552,6 +560,7 @@ export interface FileRoutesById {
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
   '/portal_/nutrition': typeof PortalNutritionRoute
+  '/portal_/profile': typeof PortalProfileRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRoute
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
+    | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
@@ -678,6 +688,7 @@ export interface FileRouteTypes {
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
+    | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
     | '/pro/$slug'
@@ -740,6 +751,7 @@ export interface FileRouteTypes {
     | '/portal_/check-ins'
     | '/portal_/messages'
     | '/portal_/nutrition'
+    | '/portal_/profile'
     | '/portal_/programme'
     | '/portal_/today'
     | '/pro/$slug'
@@ -803,6 +815,7 @@ export interface RootRouteChildren {
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNutritionRoute: typeof PortalNutritionRoute
+  PortalProfileRoute: typeof PortalProfileRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRoute
@@ -980,6 +993,13 @@ declare module '@tanstack/react-router' {
       path: '/portal/programme'
       fullPath: '/portal/programme'
       preLoaderRoute: typeof PortalProgrammeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal_/profile': {
+      id: '/portal_/profile'
+      path: '/portal/profile'
+      fullPath: '/portal/profile'
+      preLoaderRoute: typeof PortalProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal_/nutrition': {
@@ -1301,6 +1321,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
   PortalNutritionRoute: PortalNutritionRoute,
+  PortalProfileRoute: PortalProfileRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRoute,
