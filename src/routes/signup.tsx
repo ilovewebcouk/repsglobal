@@ -505,54 +505,72 @@ function SignupPage() {
             </div>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              {planLabel && (
-                <div className="flex items-start gap-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft px-3 py-2.5 text-[12px] text-reps-charcoal">
-                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                  <span>
-                    You're signing up for{" "}
-                    <strong className="font-semibold">{planLabel}</strong>
-                    {search.period ? ` (${search.period})` : ""}. We'll take
-                    you to checkout right after you create your account.
-                  </span>
+              {planSummary && (
+                <div className="overflow-hidden rounded-[18px] border border-reps-orange/40 bg-reps-warm-white shadow-[0_8px_24px_-12px_rgba(232,93,58,0.35)]">
+                  {planSummary.founding && (
+                    <div className="flex items-center justify-center gap-1.5 bg-reps-orange px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white">
+                      <Sparkles className="h-3 w-3" />
+                      Founding member pricing
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                          You're signing up for
+                        </div>
+                        <div className="mt-0.5 font-display text-[18px] font-bold leading-tight text-reps-charcoal">
+                          {planSummary.name}
+                        </div>
+                        <div className="mt-0.5 text-[12px] text-reps-muted-light">
+                          {planSummary.tagline}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {planSummary.was && (
+                          <div className="text-[11px] text-reps-muted-light line-through">
+                            {planSummary.was}
+                          </div>
+                        )}
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-display text-[24px] font-bold leading-none text-reps-charcoal">
+                            {planSummary.price}
+                          </span>
+                          <span className="text-[12px] text-reps-muted-light">
+                            {planSummary.unit}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-reps-muted-light">
+                          {planSummary.meta}
+                        </div>
+                      </div>
+                    </div>
+
+                    <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-reps-stone pt-3">
+                      {planSummary.highlights.map((h) => (
+                        <li
+                          key={h}
+                          className="flex items-start gap-1.5 text-[12px] text-reps-charcoal"
+                        >
+                          <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-3 flex items-center gap-1.5 text-[11px] text-reps-muted-light">
+                      <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
+                      Continue to secure checkout after creating your account.
+                      {" "}
+                      <Link to="/pricing" className="text-reps-orange hover:underline">
+                        Change plan
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Account type */}
-              <div>
-                <label className="text-[13px] font-semibold text-reps-charcoal">
-                  I am a
-                </label>
-                <div className="mt-2 grid grid-cols-2 gap-2">
 
-                  {ACCOUNT_TYPES.map((t, i) => {
-                    const selected = i === accountTypeIdx;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setAccountTypeIdx(i)}
-                        className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-2 py-3 text-center transition-colors ${
-                          selected
-                            ? "border-reps-orange bg-reps-orange-soft"
-                            : "border-reps-stone bg-reps-warm-white hover:border-reps-orange/40"
-                        }`}
-                      >
-                        <t.icon
-                          className={`h-4 w-4 ${
-                            selected ? "text-reps-orange" : "text-reps-muted-light"
-                          }`}
-                        />
-                        <span className="text-[12px] font-semibold leading-tight text-reps-charcoal">
-                          {t.title}
-                        </span>
-                        <span className="text-[10px] leading-tight text-reps-muted-light">
-                          {t.sub}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
 
               {/* Full name */}
               <Field label="Full name">
