@@ -68,6 +68,7 @@ import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
+import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
@@ -370,6 +371,11 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProSlugRoute,
+} as any)
 const ProSlugEnquireRoute = ProSlugEnquireRouteImport.update({
   id: '/enquire',
   path: '/enquire',
@@ -467,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/': typeof ProSlugIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -529,11 +536,11 @@ export interface FileRoutesByTo {
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
-  '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug': typeof ProSlugIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -602,6 +609,7 @@ export interface FileRoutesById {
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/': typeof ProSlugIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -671,6 +679,7 @@ export interface FileRouteTypes {
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug/'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -733,11 +742,11 @@ export interface FileRouteTypes {
     | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
-    | '/pro/$slug'
     | '/professions/$profession'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -805,6 +814,7 @@ export interface FileRouteTypes {
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug/'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1291,6 +1301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$slug/': {
+      id: '/pro/$slug/'
+      path: '/'
+      fullPath: '/pro/$slug/'
+      preLoaderRoute: typeof ProSlugIndexRouteImport
+      parentRoute: typeof ProSlugRoute
+    }
     '/pro/$slug/enquire': {
       id: '/pro/$slug/enquire'
       path: '/enquire'
@@ -1349,10 +1366,12 @@ const DashboardClientsRouteWithChildren =
 
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
+  ProSlugIndexRoute: typeof ProSlugIndexRoute
 }
 
 const ProSlugRouteChildren: ProSlugRouteChildren = {
   ProSlugEnquireRoute: ProSlugEnquireRoute,
+  ProSlugIndexRoute: ProSlugIndexRoute,
 }
 
 const ProSlugRouteWithChildren =
