@@ -262,7 +262,11 @@ function InviteClientDialog({ onClose }: { onClose: () => void }) {
         ) : (
           <div className="space-y-3">
             <div className="rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft p-3 text-[12.5px] text-reps-orange">
-              Invite created. Share this secure link with your client (email auto-send coming soon).
+              {emailStatus === "sent"
+                ? `Invite emailed to ${email}. The link below is a fallback you can share directly.`
+                : emailStatus === "failed"
+                  ? "Invite created — but the email didn't send. Share the secure link below instead."
+                  : "Invite created. Share this secure link with your client."}
             </div>
             <div className="flex items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2.5">
               <code className="flex-1 truncate text-[12px] text-white/80">{link}</code>
