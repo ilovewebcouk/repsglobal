@@ -265,14 +265,6 @@ function SignupPage() {
   const search = Route.useSearch();
   const startCheckout = useServerFn(createCheckoutSession);
 
-  // Pre-select account type based on the tier they picked on /pricing
-  const initialIdx = useMemo(() => {
-    const want = search.tier ? TIER_TO_ACCOUNT_TYPE[search.tier] : undefined;
-    const idx = ACCOUNT_TYPES.findIndex((t) => t.id === want);
-    return idx >= 0 ? idx : 0;
-  }, [search.tier]);
-
-  const [accountTypeIdx, setAccountTypeIdx] = useState(initialIdx);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -282,14 +274,13 @@ function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  useEffect(() => {
-    setAccountTypeIdx(initialIdx);
-  }, [initialIdx]);
-
-  const planLabel: string | null =
-    search.tier && search.tier in PLAN_LABELS
-      ? PLAN_LABELS[search.tier as keyof typeof PLAN_LABELS]
+  const planSummary: PlanSummary | null =
+    search.tier && search.period && search.tier in PLAN_SUMMARIES
+      ? PLAN_SUMMARIES[search.tier as NonNullable<SignupSearch["tier"]>][
+          search.period as NonNullable<SignupSearch["period"]>
+        ]
       : null;
+
   const wantsCheckout =
     search.next === "checkout" && !!search.tier && !!search.period;
 
