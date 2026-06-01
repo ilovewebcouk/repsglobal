@@ -14,11 +14,14 @@ import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
+import { Route as SpecialismsRouteImport } from './routes/specialisms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ReviewsRouteImport } from './routes/reviews'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PressRouteImport } from './routes/press'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -28,8 +31,12 @@ import { Route as ForProfessionalsRouteImport } from './routes/for-professionals
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
+import { Route as CareersRouteImport } from './routes/careers'
+import { Route as BusinessToolsRouteImport } from './routes/business-tools'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
@@ -104,6 +111,11 @@ const StandardsRoute = StandardsRouteImport.update({
   path: '/standards',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpecialismsRoute = SpecialismsRouteImport.update({
+  id: '/specialisms',
+  path: '/specialisms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -112,6 +124,11 @@ const SignupRoute = SignupRouteImport.update({
 const ReviewsRoute = ReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -127,6 +144,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PressRoute = PressRouteImport.update({
+  id: '/press',
+  path: '/press',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -174,6 +196,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CpdRoute = CpdRouteImport.update({
+  id: '/cpd',
+  path: '/cpd',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
@@ -182,6 +209,21 @@ const CookiesRoute = CookiesRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareersRoute = CareersRouteImport.update({
+  id: '/careers',
+  path: '/careers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessToolsRoute = BusinessToolsRouteImport.update({
+  id: '/business-tools',
+  path: '/business-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -433,8 +475,12 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/business-tools': typeof BusinessToolsRoute
+  '/careers': typeof CareersRoute
+  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -444,11 +490,14 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
+  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -504,8 +553,12 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/business-tools': typeof BusinessToolsRoute
+  '/careers': typeof CareersRoute
+  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -515,11 +568,14 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
+  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -575,8 +631,12 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/business-tools': typeof BusinessToolsRoute
+  '/careers': typeof CareersRoute
+  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -586,11 +646,14 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
+  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -648,8 +711,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/business-tools'
+    | '/careers'
+    | '/complaints'
     | '/contact'
     | '/cookies'
+    | '/cpd'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -659,11 +726,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/login'
     | '/portal'
+    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/reviews'
     | '/signup'
+    | '/specialisms'
     | '/standards'
     | '/terms'
     | '/unsubscribe'
@@ -719,8 +789,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/business-tools'
+    | '/careers'
+    | '/complaints'
     | '/contact'
     | '/cookies'
+    | '/cpd'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -730,11 +804,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/login'
     | '/portal'
+    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/reviews'
     | '/signup'
+    | '/specialisms'
     | '/standards'
     | '/terms'
     | '/unsubscribe'
@@ -789,8 +866,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/business-tools'
+    | '/careers'
+    | '/complaints'
     | '/contact'
     | '/cookies'
+    | '/cpd'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -800,11 +881,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/login'
     | '/portal'
+    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/reviews'
     | '/signup'
+    | '/specialisms'
     | '/standards'
     | '/terms'
     | '/unsubscribe'
@@ -861,8 +945,12 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
+  BusinessToolsRoute: typeof BusinessToolsRoute
+  CareersRoute: typeof CareersRoute
+  ComplaintsRoute: typeof ComplaintsRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
+  CpdRoute: typeof CpdRoute
   DashboardRoute: typeof DashboardRoute
   FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
@@ -872,11 +960,14 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
+  PressRoute: typeof PressRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ResourcesRoute: typeof ResourcesRoute
   ReviewsRoute: typeof ReviewsRoute
   SignupRoute: typeof SignupRoute
+  SpecialismsRoute: typeof SpecialismsRoute
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -962,6 +1053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StandardsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/specialisms': {
+      id: '/specialisms'
+      path: '/specialisms'
+      fullPath: '/specialisms'
+      preLoaderRoute: typeof SpecialismsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -974,6 +1072,13 @@ declare module '@tanstack/react-router' {
       path: '/reviews'
       fullPath: '/reviews'
       preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -995,6 +1100,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/press': {
+      id: '/press'
+      path: '/press'
+      fullPath: '/press'
+      preLoaderRoute: typeof PressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -1060,6 +1172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cpd': {
+      id: '/cpd'
+      path: '/cpd'
+      fullPath: '/cpd'
+      preLoaderRoute: typeof CpdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies': {
       id: '/cookies'
       path: '/cookies'
@@ -1072,6 +1191,27 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/careers': {
+      id: '/careers'
+      path: '/careers'
+      fullPath: '/careers'
+      preLoaderRoute: typeof CareersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business-tools': {
+      id: '/business-tools'
+      path: '/business-tools'
+      fullPath: '/business-tools'
+      preLoaderRoute: typeof BusinessToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1442,8 +1582,12 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
+  BusinessToolsRoute: BusinessToolsRoute,
+  CareersRoute: CareersRoute,
+  ComplaintsRoute: ComplaintsRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
+  CpdRoute: CpdRoute,
   DashboardRoute: DashboardRoute,
   FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
@@ -1453,11 +1597,14 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
+  PressRoute: PressRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ResourcesRoute: ResourcesRoute,
   ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,
+  SpecialismsRoute: SpecialismsRoute,
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
