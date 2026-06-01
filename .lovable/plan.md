@@ -1,60 +1,64 @@
-# Doc update pass — sync specs + add build status
 
-Two parallel workstreams over the `docs/` folder. No code/route changes.
+# Public header navigation wiring
 
-## 1. Sync existing specs (doc-sync skill)
+Single file touched: `src/components/public/PublicHeader.tsx`. No new routes, no design-system changes, no footer changes.
 
-Run the `doc-sync-source-of-truth` audit across `docs/**/*.md`, root `*.md`, and `.lovable/plan.md`. Apply the standard replacement matrix:
+## 1. Desktop header (lg and up) — unchanged from previously approved plan
 
-- `#F28C38` → `#FF7A00`, `#D87322` → `#E96F00` / `#CC6200`
-- Banned radii (`14/20/28/32px`, `rounded-xl/2xl/3xl`) → 9-step scale (6/8/10/12/16/18/22/24/999)
-- Archived mock-up filenames → `reps_fullpage_*_v1.png` (the 6 locked names)
-- "REPs UK" → "REPs" (outside legacy/migration context)
-- Gold/yellow rating stars → brand orange
-- Button shadow guidance → "flat — `shadow-none` only"
+5 top-level nav items, using shadcn `DropdownMenu` styled to match the approved REPs mock-ups (`bg-reps-ink`, `rounded-[22px]`, `shadow-lg shadow-black/20`, `text-[14px] text-white/85`, hover/focus `bg-white/5 text-reps-orange`).
 
-Then reconcile **scope drift** in `03_reps_page_by_page_specification.md` and `06_reps_lovable_build_prompt_pack.md` against what actually shipped:
+| Nav item | Type | Route | Dropdown children (existing routes only) |
+|---|---|---|---|
+| Find a Professional | dropdown | `/find-a-professional` | `/specialisms`, `/cpd` |
+| How REPs Works | direct link | `/how-it-works` | — |
+| For Professionals | direct link | `/for-professionals` | — |
+| Resources | dropdown | `/resources` | `/resources/$slug` ×3 articles, `/faq`, `/help`, `/business-tools` |
+| About REPs | dropdown | `/about` | `/standards`, `/verify`, `/reviews`, `/press`, `/careers`, `/contact` |
 
-- Signup card style + removed "I am a" picker
-- Student membership removed from pricing
-- Resources hub (`/resources` + `/resources/$slug`) replaces any earlier "Blog" or "Resources" placeholder language
-- Any other contradictions surfaced by the audit (flagged, not silently rewritten)
+Right side: **Log in** → `/login` (fixes current `/signup` bug), **Join REPs** → `/signup`. Active states via `Link activeProps={{ className: "text-reps-orange" }} activeOptions={{ exact: false }}`.
 
-Voice and structure preserved. Replace values, not paragraphs. Anything ambiguous goes under "Remaining conflicts" in the report — not auto-resolved.
+Logo, container, height, fonts, button shapes, gaps, colours: **untouched**.
 
-## 2. New file: `docs/07_phase1_build_status.md`
+## 2. Mobile header (below lg) — new
 
-Single page, grouped by surface, derived from `src/routes/` (~80 route files). Each row: route → state (Shipped / Partial / Not started) → notes.
+Replace the current "logo + invisible nav + Join REPs" layout with:
 
-Sections:
+- **Left:** REPs logo (unchanged)
+- **Right:** `Join REPs` orange CTA (kept visible from `sm:` up; hidden on the very smallest widths if it would crowd the hamburger), then a **hamburger icon button** (`lucide-react` `Menu`, `size="icon"` shadcn Button variant `ghost`, `aria-label="Open menu"`, `rounded-[10px]`, min 44×44 tap target)
 
-- **Public marketing** — `/`, `/about`, `/how-it-works`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/professions/$profession`, `/specialisms`, `/standards`, `/cpd`, `/business-tools`, `/help`, `/faq`, `/contact`, `/complaints`, `/press`, `/careers`, `/reviews`, `/terms`, `/privacy`, `/cookies`
-- **Resources** — `/resources`, `/resources/$slug`
-- **Professional profile** — `/pro/$slug`, `/pro/$slug/enquire`
-- **Auth** — `/signup`, `/login`, `/forgot-password`, `/reset-password`, `/verify`, `/verify-email`, `/accept-invite`, `/unsubscribe`
-- **Professional dashboard** — every `dashboard_.*` route
-- **Client portal** — every `portal_.*` route
-- **Admin** — every `admin_.*` route
+Hamburger is **always** visible below `lg`.
 
-Plus three short closing sections:
+## 3. Mobile drawer
 
-- **Phase 1 deferred** — auth wiring, RLS, DB, payments, bookings, AI, live maps, real search/filter logic, BD migration (per the locked Phase 1 scope)
-- **Known visual debt** — any open items the compliance audit currently flags
-- **Phase 2 candidates** — Resources CMS, real search, etc.
+Built with shadcn `Sheet` (`side="right"`, `w-full sm:max-w-sm`) so we get focus trap, ESC-to-close, and aria semantics for free. Styled to match the approved dark header:
 
-Status is judged by what each route file actually renders (static high-fidelity vs placeholder vs missing), not by feature completeness — consistent with Phase 1 = static screens only.
+- `bg-reps-ink text-white`, no rounded corners on the panel itself (full-bleed), inner content uses the REPs radius system
+- **Top bar:** REPs logo (left) + close button (`X` icon, ghost, `aria-label="Close menu"`, `rounded-[10px]`, 44×44) on the right
+- **Nav list:** the 5 top-level items, full-width tap rows, `text-[18px] font-medium text-white`, `py-4`, divider `border-white/10`, active row gets `text-reps-orange`
+- **Dropdown items become accordions:** shadcn `Accordion type="single" collapsible` for Find a Professional / Resources / About REPs. Closed by default; chevron rotates on open. Child links indented, `text-[15px] text-white/80`, `rounded-[10px]` hover `bg-white/5`. Same routes as the desktop dropdowns above — nothing new.
+- **Footer of drawer (sticky bottom, `border-t border-white/10`, `p-4`, `space-y-3`):**
+  - `Log in` → `/login` — secondary outline button, `rounded-[10px]`, full width
+  - `Join REPs` → `/signup` — primary orange `#FF7A00` (`bg-reps-orange`) button, `rounded-[10px]`, full width
 
-## 3. Index update
+## 4. Behaviour
 
-Add a one-liner to `docs/00_README.md` pointing to `07_phase1_build_status.md` so it's discoverable.
+- Drawer `open` state held locally in `PublicHeader` (`useState`)
+- Every `Link` inside the drawer calls `setOpen(false)` on click so navigation closes the menu
+- Sheet handles ESC, overlay click, and focus return to the hamburger trigger
+- Keyboard: hamburger and close are real `<button>`s; accordion triggers and links are all natively focusable; tab order = top→bottom
+- No scroll lock work needed — Sheet handles body scroll lock
+- Drawer hidden at `lg:` and up via the Sheet trigger living inside a `lg:hidden` wrapper; desktop nav stays in a `hidden lg:flex` wrapper. No desktop header changes.
 
-## Out of scope (explicit)
+## 5. Skipped / out of scope
 
-- No route additions, deletions, renames
-- No component edits
-- No memory file changes (Core rules already match the locked system)
-- No new specs invented — gaps surface as "Remaining conflicts" in the report, not new docs
+- No new routes created. Every link points at an existing file in `src/routes/`.
+- No CMS, auth logic, payments, DB changes, design-system edits, or footer edits.
+- No changes to logo, colours, fonts, or the approved desktop layout.
 
-## Deliverable
+## Post-implementation deliverable
 
-Doc-sync change report in the standard 5-section format (Documents checked / updated / replacements / remaining conflicts / confirmation), plus a link to the new `07_phase1_build_status.md`.
+After build I will post:
+1. Every header nav item + its route
+2. Every dropdown / accordion child + its route
+3. Mobile drawer Log in / Join REPs targets
+4. Confirmation that no proposed link was skipped (all routes exist)
