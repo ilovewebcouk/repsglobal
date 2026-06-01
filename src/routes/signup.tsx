@@ -425,12 +425,25 @@ function SignupPage() {
             </div>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              {planLabel && (
+                <div className="flex items-start gap-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft px-3 py-2.5 text-[12px] text-reps-charcoal">
+                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>
+                    You're signing up for{" "}
+                    <strong className="font-semibold">{planLabel}</strong>
+                    {search.period ? ` (${search.period})` : ""}. We'll take
+                    you to checkout right after you create your account.
+                  </span>
+                </div>
+              )}
+
               {/* Account type */}
               <div>
                 <label className="text-[13px] font-semibold text-reps-charcoal">
                   I am a
                 </label>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2">
+
                   {ACCOUNT_TYPES.map((t, i) => {
                     const selected = i === accountTypeIdx;
                     return (
