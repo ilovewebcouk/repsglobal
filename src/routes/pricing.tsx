@@ -1,9 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { Check, Minus, Sparkles, Star, Users, Building2, ShieldCheck, Eye, LayoutGrid } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { createCheckoutSession } from "@/lib/billing/billing.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
