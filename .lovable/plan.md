@@ -1,20 +1,34 @@
-# Fix enquire-page avatar radius
+## Problem
 
-## Why
-The compliance audit flagged `rounded-[14px]` on the pro headshot in `src/routes/pro.$slug.enquire.tsx:305`. There is no "avatar radius" token in `src/styles.css` — the project convention (verified across ~20 files: search results, professional profile, dashboards, login, ProShell, ClientShell) is that **human headshots are always `rounded-full`**. The `14px` value is a one-off outlier, not a missing token.
+Navigating to `/pro/james-wilson/enquire` renders the **profile page** (`James Carter`) instead of the enquiry form. The route file `src/routes/pro.$slug.enquire.tsx` exists and is registered in `routeTree.gen.ts`, but it never renders.
 
-## Change
-One line in `src/routes/pro.$slug.enquire.tsx` (line 305):
+**Root cause:** In TanStack Router, when a route has children (here `pro.$slug.enquire`), the parent route (`pro.$slug.tsx`) becomes a layout. A layout must render `<Outlet />` for its children to appear. Today `pro.$slug.tsx` is a self-contained profile page with no `<Outlet />`, so it always wins and the enquire route is invisible.
 
-- Before: `className="h-16 w-16 rounded-[14px] object-cover"`
-- After:  `className="h-16 w-16 rounded-full object-cover"`
+## Fix — split `pro.$slug` into layout + index
 
-This makes the pro's face in the enquire-page sidebar match the same face on their profile card, in search results, and in the header — consistent identity treatment everywhere.
+Standard TanStack pattern: keep the parent as a pure layout, move the profile content to the `index` child.
 
-## Out of scope
-- No new token added — round avatars don't need one.
-- No sweep of other files — they're already `rounded-full`.
-- No other audit fixes (SEO absolute URLs, `bg-reps-orange-soft` swap) — you said the pages are good and we're moving to nav wiring next.
+1. **Rename** `src/routes/pro.$slug.tsx` → `src/routes/pro.$slug.index.tsx`
+   - No code changes inside; only update the `createFileRoute` path string from `"/pro/$slug"` to `"/pro/$slug/"`.
+   - URL stays `/pro/james-wilson` — `index` routes render at the parent path.
 
-## Verify
-Re-run `bash /tmp/audit.sh` — should exit 0.
+2. **Create** new `src/routes/pro.$slug.tsx` as a 5-line layout:
+   ```tsx
+   import { createFileRoute, Outlet } from "@tanstack/react-router";
+   export const Route = createFileRoute("/pro/$slug")({
+     component: () => <Outlet />,
+   });
+   ```
+
+3. Vite plugin auto-regenerates `routeTree.gen.ts` on save — no manual edits there.
+
+## Verification
+
+After the change, in the browser:
+- `/pro/james-wilson` → profile page (unchanged)
+- `/pro/james-wilson/enquire` → 3-step enquiry form with sidebar
+- "Enquire Now" / "Send Enquiry" buttons on the profile continue to land on the form
+
+## Scope
+
+Two files touched. No styling, no business-logic, no schema changes. Phase 1 lock is preserved — the profile page itself is byte-identical apart from its route-string suffix.

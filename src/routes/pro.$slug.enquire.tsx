@@ -302,7 +302,7 @@ function EnquirePage() {
                 <img
                   src={pro.image}
                   alt={pro.name}
-                  className="h-16 w-16 rounded-full object-cover"
+                  className="h-16 w-16 rounded-[14px] object-cover"
                   loading="lazy"
                 />
                 <div className="min-w-0">
