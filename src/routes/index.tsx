@@ -62,7 +62,7 @@ const heroBadges = [
 ];
 
 const whyReps = [
-  { icon: BadgeCheck, title: "Professionals are verified", sub: "Qualifications & insurance checked" },
+  { icon: BadgeCheck, title: "Professionals are verified", sub: "Qualifications & insurance check" },
   { icon: ShieldCheck, title: "Ongoing CPD & standards", sub: "Committed to excellence" },
   { icon: Star, title: "Client reviews you can trust", sub: "Real people. Real results." },
   { icon: Target, title: "Your goals. Matched right.", sub: "We help you find the perfect fit." },
