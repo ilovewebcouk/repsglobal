@@ -13,6 +13,7 @@ import {
   Loader2,
   Mail,
   ShieldCheck,
+  Sparkles,
   Star,
   TrendingUp,
   User,
