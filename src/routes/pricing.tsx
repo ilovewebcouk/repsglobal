@@ -279,8 +279,44 @@ function PricingPage() {
       {/* Plan cards */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          {/* Monthly / Annual toggle */}
+          <div className="mb-10 flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel p-1">
+              {(["monthly", "annual"] as Billing[]).map((b) => {
+                const active = billing === b;
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setBilling(b)}
+                    className={
+                      active
+                        ? "flex h-9 items-center gap-2 rounded-full bg-reps-orange px-5 text-[13px] font-semibold text-white"
+                        : "flex h-9 items-center gap-2 rounded-full px-5 text-[13px] font-semibold text-white/65 hover:text-white"
+                    }
+                  >
+                    {b === "monthly" ? "Monthly" : "Annual"}
+                    {b === "annual" && (
+                      <span
+                        className={
+                          active
+                            ? "rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+                            : "rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-reps-orange"
+                        }
+                      >
+                        Save 2 months
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((p) => (
+            {PLANS.map((p) => {
+              const view = p.pricing[billing];
+              return (
               <div
                 key={p.tier}
                 className={
@@ -299,14 +335,14 @@ function PricingPage() {
                 <p className="mt-1 text-[13px] text-white/55">{p.desc}</p>
 
                 <div className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  {p.priceWas && (
-                    <span className="text-[16px] font-medium text-white/35 line-through">{p.priceWas}</span>
+                  {view.was && (
+                    <span className="text-[16px] font-medium text-white/35 line-through">{view.was}</span>
                   )}
-                  <span className="font-display text-[38px] font-bold text-white">{p.price}</span>
-                  <span className="text-[12px] text-white/55">{p.period}</span>
+                  <span className="font-display text-[38px] font-bold text-white">{view.price}</span>
+                  <span className="text-[12px] text-white/55">{view.period}</span>
                 </div>
-                {p.secondaryPrice && (
-                  <div className="mt-1 text-[12px] text-white/55">{p.secondaryPrice}</div>
+                {view.meta && (
+                  <div className="mt-1 text-[12px] text-white/55">{view.meta}</div>
                 )}
                 {p.founding && (
                   <div className="mt-3">
@@ -338,7 +374,8 @@ function PricingPage() {
                   ))}
                 </ul>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Teams & organisations strip */}
@@ -352,9 +389,12 @@ function PricingPage() {
                 <h3 className="mt-2 font-display text-[22px] font-bold text-white">Studio</h3>
                 <p className="mt-1 text-[13px] text-white/55">Teams, gyms and multi-coach businesses.</p>
                 <div className="mt-4 flex items-baseline gap-2">
-                  <span className="font-display text-[28px] font-bold text-white">£149</span>
-                  <span className="text-[12px] text-white/55">per month</span>
+                  <span className="font-display text-[28px] font-bold text-white">{STUDIO_PRICING[billing].price}</span>
+                  <span className="text-[12px] text-white/55">{STUDIO_PRICING[billing].period}</span>
                 </div>
+                {STUDIO_PRICING[billing].meta && (
+                  <div className="mt-1 text-[12px] text-white/55">{STUDIO_PRICING[billing].meta}</div>
+                )}
                 <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1.5 text-[13px] text-white/75 sm:grid-cols-2">
                   {["Multi-coach roles", "Organisation profile", "Shared clients", "Locations", "Reporting"].map((f) => (
                     <li key={f} className="flex items-center gap-2">
