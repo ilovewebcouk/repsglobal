@@ -6,7 +6,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
 
-export const Route = createFileRoute("/resources")({
+export const Route = createFileRoute("/resources/")({
   head: () => ({
     meta: [
       { title: "Resources — REPs" },
