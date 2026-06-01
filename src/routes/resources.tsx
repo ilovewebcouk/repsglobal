@@ -1,24 +1,25 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Users, Briefcase, BadgeCheck, Megaphone, BookOpen } from "lucide-react";
+import { ArrowRight, Search, Sparkles } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGym from "@/assets/hero-gym-bg.jpg";
+import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
 
 export const Route = createFileRoute("/resources")({
   head: () => ({
     meta: [
-      { title: "REPs Resources — Guides for Clients & Fitness Professionals" },
+      { title: "Resources — REPs" },
       {
         name: "description",
         content:
-          "Plain-English guides for people looking for a trainer, and growth playbooks for REPs-verified professionals. Plus verification explainers and platform updates.",
+          "Guidance, standards and industry insight for fitness professionals and the people who hire them.",
       },
-      { property: "og:title", content: "REPs Resources" },
+      { property: "og:title", content: "Resources — REPs" },
       {
         property: "og:description",
         content:
-          "Guides for clients, growth playbooks for pros, verification explainers and platform updates.",
+          "Guidance, standards and industry insight for fitness professionals and the people who hire them.",
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/resources" },
     ],
@@ -27,132 +28,181 @@ export const Route = createFileRoute("/resources")({
   component: ResourcesPage,
 });
 
-const HUBS = [
-  {
-    icon: Users,
-    badge: "For the public",
-    title: "Finding the right professional",
-    body: "How to choose a personal trainer, what verification actually means, and how to spot a quality coach before you book.",
-  },
-  {
-    icon: Briefcase,
-    badge: "For professionals",
-    title: "Grow your fitness business",
-    body: "Win more clients, run better check-ins, structure programmes and convert enquiries — written by working coaches.",
-  },
-  {
-    icon: BadgeCheck,
-    badge: "Verification & standards",
-    title: "How REPs keeps the bar high",
-    body: "Behind the badge — what we check, how we audit and how complaints are handled.",
-  },
-  {
-    icon: Megaphone,
-    badge: "Platform updates",
-    title: "What's new on REPs",
-    body: "Product changelogs, new tools for pros and improvements to the public directory.",
-  },
-];
-
-const FEATURED = [
-  { tag: "For the public", title: "How to choose the right personal trainer" },
-  { tag: "For the public", title: "What does a REPs Verified Professional mean?" },
-  { tag: "For the public", title: "Online coaching vs in-person personal training" },
-  { tag: "For professionals", title: "How to convert enquiries into paying clients" },
-  { tag: "For professionals", title: "How to run better weekly client check-ins" },
-  { tag: "Verification", title: "Why verified profiles build more trust" },
-];
+type Filter = "All" | ResourceCategory;
 
 function ResourcesPage() {
+  const [filter, setFilter] = useState<Filter>("All");
+  const [query, setQuery] = useState("");
+
+  const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
+
+  const visible = useMemo(() => {
+    const rest = RESOURCE_ARTICLES.filter((a) => a.slug !== featured.slug);
+    return rest.filter((a) => {
+      if (filter !== "All" && a.category !== filter) return false;
+      if (query.trim()) {
+        const q = query.toLowerCase();
+        if (!a.title.toLowerCase().includes(q) && !a.excerpt.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [filter, query, featured.slug]);
+
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
-        <img src={heroGym} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-32">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/30">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Resources
           </span>
-          <h1 className="mt-5 max-w-[860px] font-display text-[44px] font-bold leading-tight text-white lg:text-[60px]">
-            Plain-English guides for <span className="text-reps-orange">both sides</span> of the
-            marketplace.
+          <h1 className="mt-5 max-w-[820px] font-display text-[44px] font-bold leading-tight text-white lg:text-[56px]">
+            Resources
           </h1>
-          <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
-            For clients: how to find and choose a trainer you can actually trust. For
-            professionals: how to grow your business and stand out on REPs.
+          <p className="mt-4 max-w-[640px] text-[16px] leading-relaxed text-white/70">
+            Guidance, standards and industry insight for fitness professionals and the people who hire them.
           </p>
+
+          <div className="relative mt-8 max-w-[520px]">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search resources"
+              className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-4 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
+            />
+          </div>
         </div>
       </section>
 
+      {/* Category filter pills */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
-          <div className="max-w-[720px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Browse by hub</span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Four resource hubs.
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            {HUBS.map((h) => (
-              <div key={h.title} className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <h.icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                    {h.badge}
-                  </span>
-                </div>
-                <h3 className="mt-4 font-display text-[20px] font-bold text-white">{h.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/65">{h.body}</p>
-              </div>
-            ))}
+        <div className="mx-auto max-w-[1240px] px-6 py-6 lg:px-10">
+          <div className="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap">
+            {(["All", ...RESOURCE_CATEGORIES] as Filter[]).map((c) => {
+              const active = filter === c;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setFilter(c)}
+                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${
+                    active
+                      ? "border-reps-orange bg-reps-orange text-white"
+                      : "border-reps-border bg-reps-panel text-white/70 hover:text-white"
+                  }`}
+                >
+                  {c}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
+      {/* Featured article */}
+      {filter === "All" && !query && (
+        <section className="border-b border-reps-border">
+          <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              Featured
+            </span>
+            <Link
+              to="/resources/$slug"
+              params={{ slug: featured.slug }}
+              className="mt-4 grid overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange lg:grid-cols-2"
+            >
+              <div className="aspect-[16/10] w-full overflow-hidden bg-reps-ink lg:aspect-auto">
+                <img src={featured.cover} alt="" className="h-full w-full object-cover" />
+              </div>
+              <div className="flex flex-col justify-center p-8 lg:p-10">
+                <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+                  {featured.category}
+                </span>
+                <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[34px]">
+                  {featured.title}
+                </h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-white/70">{featured.excerpt}</p>
+                <div className="mt-5 flex items-center gap-3 text-[12px] text-white/55">
+                  <span>{featured.author}</span>
+                  <span>·</span>
+                  <span>{featured.readTime}</span>
+                  <span>·</span>
+                  <span>{featured.dateLabel}</span>
+                </div>
+                <span className="mt-6 inline-flex items-center gap-2 text-[14px] font-semibold text-reps-orange">
+                  Read article <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Article grid */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
-          <div className="max-w-[720px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Coming soon</span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Featured guides we're writing first.
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          {visible.length === 0 ? (
+            <p className="text-[14px] text-white/60">No articles match this filter yet.</p>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {visible.map((a) => (
+                <Link
+                  key={a.slug}
+                  to="/resources/$slug"
+                  params={{ slug: a.slug }}
+                  className="group flex flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange"
+                >
+                  <div className="aspect-[16/10] w-full overflow-hidden bg-reps-ink">
+                    <img
+                      src={a.cover}
+                      alt=""
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-6">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                      {a.category}
+                    </span>
+                    <h3 className="mt-3 font-display text-[18px] font-bold leading-snug text-white">
+                      {a.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-white/65">
+                      {a.excerpt}
+                    </p>
+                    <div className="mt-auto flex items-center gap-2 pt-5 text-[12px] text-white/50">
+                      <span>{a.readTime}</span>
+                      <span>·</span>
+                      <span>{a.dateLabel}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA strip */}
+      <section className="bg-reps-orange">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+          <div>
+            <h2 className="font-display text-[26px] font-bold leading-tight text-white lg:text-[30px]">
+              Looking for a verified professional?
             </h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-white/65">
-              The REPs Resources library launches alongside the platform. Here's the lineup
-              going live first — bookmark this page or check back soon.
+            <p className="mt-2 text-[15px] text-white/85">
+              Browse REPs-verified personal trainers, coaches and instructors in your area.
             </p>
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURED.map((f) => (
-              <div key={f.title} className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
-                <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                  <BookOpen className="h-3.5 w-3.5" /> {f.tag}
-                </div>
-                <h3 className="mt-3 font-display text-[16px] font-bold leading-snug text-white">
-                  {f.title}
-                </h3>
-                <span className="mt-3 inline-block text-[12px] text-white/50">Coming soon</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
-            >
-              Find a professional <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white hover:bg-white/10"
-            >
-              Join REPs
-            </Link>
-          </div>
+          <Link
+            to="/find-a-professional"
+            className="inline-flex h-12 items-center gap-2 self-start rounded-[10px] bg-white px-6 text-[14px] font-semibold text-reps-orange hover:bg-white/90 lg:self-auto"
+          >
+            Find a professional <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
