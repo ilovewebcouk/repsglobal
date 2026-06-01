@@ -200,10 +200,7 @@ function SignupPage() {
       ? PLAN_LABELS[search.tier as keyof typeof PLAN_LABELS]
       : null;
   const wantsCheckout =
-    search.next === "checkout" &&
-    !!search.tier &&
-    search.tier !== "verified" && // verified can be added; checkout supports verified/pro/business/studio
-    !!search.period;
+    search.next === "checkout" && !!search.tier && !!search.period;
 
   // After we have a session, route to Stripe Checkout or fall back to dashboard
   const continueAfterAuth = async (userId: string) => {
