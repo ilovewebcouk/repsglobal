@@ -454,8 +454,8 @@ function PricingPage() {
               </thead>
               <tbody>
                 {COMPARE_GROUPS.map((group) => (
-                  <>
-                    <tr key={`g-${group.title}`} className="bg-reps-panel-soft/60">
+                  <Fragment key={`g-${group.title}`}>
+                    <tr className="bg-reps-panel-soft/60">
                       <td
                         colSpan={5}
                         className="px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white/55"
@@ -480,7 +480,7 @@ function PricingPage() {
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
