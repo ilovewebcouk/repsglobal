@@ -238,6 +238,7 @@ function Cell({ value, dim = false }: { value: CellValue; dim?: boolean }) {
 
 function PricingPage() {
   const [activeTier, setActiveTier] = useState<TierKey>("pro");
+  const [billing, setBilling] = useState<Billing>("annual");
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
