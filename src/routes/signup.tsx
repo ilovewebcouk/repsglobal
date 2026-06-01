@@ -19,7 +19,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { supabase } from "@/integrations/supabase/client";
