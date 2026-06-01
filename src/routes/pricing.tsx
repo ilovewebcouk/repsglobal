@@ -51,6 +51,7 @@ type PlanCard = {
 const PLANS: PlanCard[] = [
   {
     tier: "Free Profile",
+    tierKey: "free",
     desc: "Get listed. Get found.",
     cta: "Create free profile",
     ctaHref: "/signup",
@@ -67,6 +68,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Verified",
+    tierKey: "verified",
     desc: "Monetise your professional trust.",
     cta: "Get verified",
     ctaHref: "/signup",
@@ -84,6 +86,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Pro",
+    tierKey: "pro",
     desc: "Run your full coaching practice.",
     cta: "Start Founding Pro",
     ctaHref: "/signup",
@@ -106,6 +109,7 @@ const PLANS: PlanCard[] = [
   },
   {
     tier: "Business",
+    tierKey: "business",
     desc: "Scale online and hybrid coaching.",
     cta: "Start Founding Business",
     ctaHref: "/signup",
