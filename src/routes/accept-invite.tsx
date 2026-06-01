@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, ShieldCheck, Mail } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { Loader2, ShieldCheck, Mail, Check } from "lucide-react";
+import { useMemo, useState, type FormEvent } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { acceptInvite, lookupInvite } from "@/lib/invites.functions";
+import { lookupInviteByToken, completeInviteSignup } from "@/lib/roster.functions";
 
 export const Route = createFileRoute("/accept-invite")({
   head: () => ({
@@ -18,16 +18,26 @@ export const Route = createFileRoute("/accept-invite")({
   component: AcceptInvitePage,
 });
 
+function passwordScore(pw: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
+  let s = 0;
+  if (pw.length >= 10) s++;
+  if (pw.length >= 14) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  if (/[0-9]/.test(pw) && /[A-Za-z]/.test(pw)) s++;
+  const label = ["Too short", "Weak", "Fair", "Good", "Strong"][s] ?? "Weak";
+  return { score: Math.min(s, 4) as 0 | 1 | 2 | 3 | 4, label };
+}
+
 function AcceptInvitePage() {
   const { token } = Route.useSearch();
   const navigate = useNavigate();
-  const lookup = useServerFn(lookupInvite);
-  const accept = useServerFn(acceptInvite);
+  const lookup = useServerFn(lookupInviteByToken);
+  const complete = useServerFn(completeInviteSignup);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["invite", token],
+    queryKey: ["invite-lookup", token],
     queryFn: () => lookup({ data: { token } }),
-    enabled: !!token,
+    enabled: !!token && token.length >= 16,
     retry: false,
   });
 
@@ -37,49 +47,38 @@ function AcceptInvitePage() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const invite = data?.invite ?? null;
+  const meter = useMemo(() => passwordScore(password), [password]);
+  const passwordValid =
+    password.length >= 10 && /[^A-Za-z]/.test(password);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!invite) return;
+    if (!invite || !passwordValid) return;
     setSubmitting(true);
     setFormError(null);
     try {
-      // 1. Create account
-      const { error: signErr } = await supabase.auth.signUp({
-        email: invite.email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/portal/today`,
-          data: {
-            full_name: fullName || invite.full_name || invite.email,
-            signup_kind: "client",
-          },
+      await complete({
+        data: {
+          token,
+          password,
+          fullName: fullName.trim() || undefined,
         },
       });
-      if (signErr && !signErr.message.toLowerCase().includes("already")) {
-        throw signErr;
-      }
-
-      // 2. If existing user, sign in
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        const { error: signInErr } = await supabase.auth.signInWithPassword({
-          email: invite.email,
-          password,
-        });
-        if (signInErr) throw signInErr;
-      }
-
-      // 3. Accept invite via authenticated RPC
-      await accept({ data: { token } });
-
-      navigate({ to: "/portal/today" });
+      // Sign in to establish session
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: invite.email,
+        password,
+      });
+      if (signInErr) throw signInErr;
+      navigate({ to: "/portal" });
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Could not accept invite");
+      setFormError(err instanceof Error ? err.message : "Could not activate your account");
     } finally {
       setSubmitting(false);
     }
   }
+
+  const meterColor = ["bg-rose-500", "bg-rose-400", "bg-amber-400", "bg-lime-400", "bg-emerald-500"][meter.score];
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
@@ -97,9 +96,7 @@ function AcceptInvitePage() {
             </div>
           </div>
 
-          {!token && (
-            <p className="text-sm text-white/70">No invite token provided.</p>
-          )}
+          {!token && <p className="text-sm text-white/70">No invite token provided.</p>}
 
           {token && isLoading && (
             <div className="flex items-center gap-2 text-sm text-white/70">
@@ -109,6 +106,10 @@ function AcceptInvitePage() {
 
           {token && error && (
             <p className="text-sm text-rose-400">Could not load invite.</p>
+          )}
+
+          {data && !invite && (
+            <p className="text-sm text-rose-400">Invite not found.</p>
           )}
 
           {invite && invite.status !== "pending" && (
@@ -162,21 +163,45 @@ function AcceptInvitePage() {
                 </label>
                 <input
                   type="password"
-                  minLength={8}
+                  minLength={10}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="h-11 w-full rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[14px] text-white focus:border-reps-orange focus:outline-none"
                 />
+                {password && (
+                  <div className="mt-2">
+                    <div className="flex h-1.5 gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-full flex-1 rounded-full ${
+                            i < meter.score ? meterColor : "bg-white/10"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between text-[11px]">
+                      <span className="text-white/55">{meter.label}</span>
+                      <span className={passwordValid ? "text-emerald-400" : "text-white/40"}>
+                        {passwordValid ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Check className="h-3 w-3" /> 10+ chars with a number or symbol
+                          </span>
+                        ) : (
+                          "Min 10 chars · include a number or symbol"
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {formError && (
-                <p className="text-xs text-rose-400">{formError}</p>
-              )}
+              {formError && <p className="text-xs text-rose-400">{formError}</p>}
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !passwordValid}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
