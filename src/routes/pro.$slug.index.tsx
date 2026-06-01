@@ -199,7 +199,7 @@ const RATING_DIST = [
 /* Route                                                              */
 /* ------------------------------------------------------------------ */
 
-export const Route = createFileRoute("/pro/$slug")({
+export const Route = createFileRoute("/pro/$slug/")({
   head: ({ params }) => {
     const pro = PROS[params.slug] ?? PROS["james-carter"];
     const title = `${pro.name} — ${pro.role} | REPs`;
