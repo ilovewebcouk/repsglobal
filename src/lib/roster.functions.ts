@@ -509,23 +509,26 @@ export const listRoster = createServerFn({ method: "GET" })
       (invs ?? []).forEach((i) => invitesById.set(i.id, i));
     }
 
+    type InviteStatus = "none" | "pending" | "accepted" | "expired" | "revoked";
+    type RosterStatus = "prospect" | "confirmed" | "active" | "archived";
+
     return {
       rows: (data ?? []).map((r) => {
         const inv = r.invite_id ? invitesById.get(r.invite_id) : null;
-        let inviteStatus: "none" | "pending" | "accepted" | "expired" | "revoked" = "none";
+        let inviteStatus: InviteStatus = "none";
         if (inv) {
           if (inv.status === "pending" && new Date(inv.expires_at).getTime() < Date.now()) {
-            inviteStatus = "expired";
+            inviteStatus = "expired" as InviteStatus;
           } else {
-            inviteStatus = inv.status as typeof inviteStatus;
+            inviteStatus = inv.status as InviteStatus;
           }
         }
         return {
           id: r.id,
           email: r.email,
           full_name: r.full_name,
-          status: r.status as "prospect" | "confirmed" | "active" | "archived",
-          inviteStatus,
+          status: r.status as RosterStatus,
+          inviteStatus: inviteStatus as InviteStatus,
           inviteSentAt: inv?.created_at ?? null,
           confirmedAt: r.confirmed_at,
           activatedAt: r.activated_at,
