@@ -19,6 +19,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
@@ -124,6 +125,11 @@ const PortalRoute = PortalRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -423,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
@@ -491,6 +498,7 @@ export interface FileRoutesByTo {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
@@ -559,6 +567,7 @@ export interface FileRoutesById {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
@@ -629,6 +638,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/how-it-works'
     | '/login'
     | '/portal'
     | '/pricing'
@@ -697,6 +707,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/how-it-works'
     | '/login'
     | '/portal'
     | '/pricing'
@@ -764,6 +775,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/how-it-works'
     | '/login'
     | '/portal'
     | '/pricing'
@@ -833,6 +845,7 @@ export interface RootRouteChildren {
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
@@ -956,6 +969,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -1390,6 +1410,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRoute,
+  HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
