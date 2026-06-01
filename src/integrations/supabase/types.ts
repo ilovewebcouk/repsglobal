@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      bd_migration: {
+        Row: {
+          bd_member_id: string
+          bd_plan: string | null
+          bd_price_pence: number | null
+          bd_renewal_date: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          full_name: string | null
+          id: string
+          processed_at: string | null
+          rep_subscription_id: string | null
+          rep_user_id: string | null
+          status: Database["public"]["Enums"]["bd_migration_status"]
+          stripe_customer_id: string | null
+          stripe_payment_method_id: string | null
+          target_billing_period:
+            | Database["public"]["Enums"]["billing_period"]
+            | null
+          target_price_id: string | null
+          target_tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+        }
+        Insert: {
+          bd_member_id: string
+          bd_plan?: string | null
+          bd_price_pence?: number | null
+          bd_renewal_date?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          processed_at?: string | null
+          rep_subscription_id?: string | null
+          rep_user_id?: string | null
+          status?: Database["public"]["Enums"]["bd_migration_status"]
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
+          target_billing_period?:
+            | Database["public"]["Enums"]["billing_period"]
+            | null
+          target_price_id?: string | null
+          target_tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Update: {
+          bd_member_id?: string
+          bd_plan?: string | null
+          bd_price_pence?: number | null
+          bd_renewal_date?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          processed_at?: string | null
+          rep_subscription_id?: string | null
+          rep_user_id?: string | null
+          status?: Database["public"]["Enums"]["bd_migration_status"]
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
+          target_billing_period?:
+            | Database["public"]["Enums"]["billing_period"]
+            | null
+          target_price_id?: string | null
+          target_tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bd_migration_rep_subscription_id_fkey"
+            columns: ["rep_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_invites: {
         Row: {
           accepted_at: string | null
@@ -320,9 +400,49 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          stripe_customer_id: string | null
+          stripe_event_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           bio: string | null
+          cert_uploaded_at: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -340,9 +460,12 @@ export type Database = {
           trading_name: string | null
           updated_at: string
           verification: Database["public"]["Enums"]["verification_status"]
+          verification_grace_until: string | null
+          verification_status: Database["public"]["Enums"]["verification_state"]
         }
         Insert: {
           bio?: string | null
+          cert_uploaded_at?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -360,9 +483,12 @@ export type Database = {
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
+          verification_grace_until?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_state"]
         }
         Update: {
           bio?: string | null
+          cert_uploaded_at?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -380,6 +506,8 @@ export type Database = {
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
+          verification_grace_until?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_state"]
         }
         Relationships: []
       }
@@ -404,6 +532,60 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          billing_period: Database["public"]["Enums"]["billing_period"] | null
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          id: string
+          is_founding: boolean
+          metadata: Json | null
+          migrated_from_bd: boolean
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: Database["public"]["Enums"]["billing_period"] | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          is_founding?: boolean
+          metadata?: Json | null
+          migrated_from_bd?: boolean
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: Database["public"]["Enums"]["billing_period"] | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          is_founding?: boolean
+          metadata?: Json | null
+          migrated_from_bd?: boolean
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -508,6 +690,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "professional" | "client"
+      bd_migration_status:
+        | "pending"
+        | "account_created"
+        | "subscription_created"
+        | "failed"
+        | "skipped"
+      billing_period: "monthly" | "annual"
       coach_client_status: "active" | "paused" | "ended"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
       invite_trigger_reason:
@@ -519,6 +708,17 @@ export type Database = {
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
       sex_at_birth: "female" | "male" | "prefer_not_to_say"
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "unpaid"
+        | "incomplete"
+        | "incomplete_expired"
+        | "paused"
+      subscription_tier: "free" | "pro" | "verified" | "studio"
+      verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
     }
     CompositeTypes: {
@@ -648,6 +848,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "professional", "client"],
+      bd_migration_status: [
+        "pending",
+        "account_created",
+        "subscription_created",
+        "failed",
+        "skipped",
+      ],
+      billing_period: ["monthly", "annual"],
       coach_client_status: ["active", "paused", "ended"],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       invite_trigger_reason: [
@@ -660,6 +868,18 @@ export const Constants = {
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
       roster_status: ["prospect", "confirmed", "active", "archived"],
       sex_at_birth: ["female", "male", "prefer_not_to_say"],
+      subscription_status: [
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "unpaid",
+        "incomplete",
+        "incomplete_expired",
+        "paused",
+      ],
+      subscription_tier: ["free", "pro", "verified", "studio"],
+      verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
     },
   },
