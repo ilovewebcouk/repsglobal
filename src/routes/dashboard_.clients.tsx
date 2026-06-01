@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Check, Copy, Loader2, Mail, Plus, RefreshCw, Search, ShieldCheck, Upload, X, Zap } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,8 +13,15 @@ import {
   listRoster,
   resendInvite,
 } from "@/lib/roster.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard_/clients")({
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/login", search: { redirect: location.href } });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Clients — REPs Professional Dashboard" },
