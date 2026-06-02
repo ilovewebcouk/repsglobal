@@ -54,14 +54,6 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const goalChips = [
-  "Fat loss",
-  "Strength",
-  "Mobility",
-  "Pre/post-natal",
-  "Rehab",
-  "Sport-specific",
-];
 
 
 
