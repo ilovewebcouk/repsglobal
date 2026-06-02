@@ -261,53 +261,8 @@ function HomePage() {
               </div>
             </div>
 
-            {/* Right: floating pro-card stack (desktop only) */}
-            <div className="relative hidden h-[540px] lg:block" aria-hidden>
-              {heroProStack.map((p, i) => {
-                const positions = [
-                  "right-24 top-0 -rotate-[6deg] z-10",
-                  "right-0 top-[150px] rotate-[3deg] z-20",
-                  "right-32 top-[320px] -rotate-[2deg] z-10",
-                ];
-                return (
-                  <div
-                    key={p.name}
-                    className={`absolute w-[280px] overflow-hidden rounded-[18px] border border-white/10 bg-reps-panel/95 text-white backdrop-blur transition-transform hover:z-30 hover:-translate-y-1 hover:rotate-0 ${positions[i]}`}
-                    style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.55)" }}
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img
-                        src={p.image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="eager"
-                      />
-                      <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/40 backdrop-blur">
-                        <BadgeCheck className="h-3 w-3" aria-hidden />
-                        Verified
-                      </span>
-                    </div>
-                    <div className="space-y-1.5 px-4 pb-4 pt-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-display text-[15px] font-bold leading-tight text-white">
-                          {p.name}
-                        </h3>
-                        <span className="inline-flex items-center gap-1 text-[12px] text-reps-orange">
-                          <Star className="h-3 w-3 fill-reps-orange" aria-hidden />
-                          <span className="font-semibold text-white">{p.rating.toFixed(1)}</span>
-                          <span className="text-white/55">({p.reviews})</span>
-                        </span>
-                      </div>
-                      <div className="text-[12px] text-white/65">
-                        {p.role} · {p.city}
-                      </div>
-                      <div className="pt-1 text-[12px] font-semibold text-white">{p.price}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+            {/* Right column intentionally empty — lets the editorial coaching portrait breathe */}
+            <div aria-hidden />
         </div>
       </section>
 
