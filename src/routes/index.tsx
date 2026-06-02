@@ -229,40 +229,30 @@ function HomePage() {
                 ))}
               </div>
 
-              {/* Popular searches */}
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
-                <span className="font-medium text-white/55">Popular:</span>
-                {popularSearches.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="font-medium text-reps-orange transition-colors hover:text-white"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
-              {/* Trust strip */}
-              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-white/65">
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" aria-hidden />
-                  <strong className="font-semibold text-white">4.9</strong> average
-                </span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span><strong className="font-semibold text-white">120+</strong> countries</span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
-                  Qualifications &amp; insurance checked
-                </span>
-              </div>
             </div>
 
-            {/* Right column intentionally empty — lets the editorial coaching portrait breathe */}
-            <div aria-hidden />
+            {/* Right: verified-pro avatar cluster, anchored to the bottom so it sits beside the search bar */}
+            <div className="hidden lg:flex lg:h-full lg:flex-col lg:items-start lg:justify-end lg:pb-2">
+              <div className="flex items-center -space-x-3">
+                {[proJames, proSophie, proDaniel, proLaura].map((src, i) => (
+                  <span
+                    key={i}
+                    className="inline-block size-11 overflow-hidden rounded-full ring-2 ring-reps-black"
+                  >
+                    <img src={src} alt="" className="h-full w-full object-cover" />
+                  </span>
+                ))}
+                <span className="inline-flex h-11 items-center justify-center rounded-full bg-reps-orange px-3 text-[12px] font-semibold text-white ring-2 ring-reps-black">
+                  +25k
+                </span>
+              </div>
+              <p className="mt-4 text-[14px] text-white/80">
+                <Star className="mr-1.5 inline h-3.5 w-3.5 fill-reps-orange text-reps-orange align-[-2px]" aria-hidden />
+                <strong className="font-semibold text-white">4.9</strong>
+                <span className="mx-2 text-white/40">·</span>
+                <strong className="font-semibold text-white">50,000+</strong> verified reviews
+              </p>
+            </div>
           </div>
         </div>
       </section>
