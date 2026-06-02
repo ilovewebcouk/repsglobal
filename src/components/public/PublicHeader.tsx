@@ -296,25 +296,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
 
-              <Link
-                to="/for-professionals"
-                hash="pricing"
-                className="hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
-              >
-                Pricing
-              </Link>
-
-              <Link
-                to="/for-professionals"
-                className={cn(
-                  "hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium transition-colors lg:inline-flex",
-                  active.pros
-                    ? "text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white",
-                )}
-              >
-                Become a Pro
-              </Link>
 
               {user ? (
                 <UserMenu user={user} onSignOut={signOut} />
