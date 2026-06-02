@@ -142,8 +142,8 @@ function HomePage() {
       if (raf) return;
       raf = window.requestAnimationFrame(() => {
         raf = 0;
-        const y = Math.min(window.scrollY, 600) * 0.15;
-        img.style.setProperty("--py", `${y}px`);
+        const y = Math.min(window.scrollY, 600) * 0.06;
+        img.style.setProperty("--py", `-${y}px`);
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
