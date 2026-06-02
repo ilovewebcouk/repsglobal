@@ -1,12 +1,22 @@
 import * as React from "react";
 import { Check, Minus } from "lucide-react";
+import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
+import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
+import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
 type Cell =
   | { kind: "yes"; note?: string }
   | { kind: "partial"; note: string }
   | { kind: "no"; note?: string };
 
-const COLS = ["REPs", "Trainerize", "MyPTHub", "PT Distinction"] as const;
+type Col = { label: string; logo?: string; logoHeight?: number };
+
+const COLS: readonly Col[] = [
+  { label: "REPs" },
+  { label: "Trainerize", logo: trainerizeLogo.url, logoHeight: 22 },
+  { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 24 },
+  { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 20 },
+] as const;
 
 type Row = { feature: string; cells: [Cell, Cell, Cell, Cell] };
 type Group = { label: string; rows: Row[] };
@@ -186,13 +196,22 @@ export function CompetitorCompare() {
               </th>
               {COLS.map((c, i) => (
                 <th
-                  key={c}
+                  key={c.label}
                   scope="col"
                   className={`px-5 py-4 text-[13px] font-display font-bold ${
                     i === 0 ? "bg-reps-orange-soft text-reps-orange" : "text-white/80"
                   }`}
                 >
-                  {c}
+                  {c.logo ? (
+                    <img
+                      src={c.logo}
+                      alt={c.label}
+                      style={{ height: c.logoHeight ?? 22 }}
+                      className="w-auto"
+                    />
+                  ) : (
+                    c.label
+                  )}
                 </th>
               ))}
             </tr>
@@ -248,17 +267,26 @@ export function CompetitorCompare() {
             <ul className="mt-3 space-y-2">
               {COLS.map((c, i) => (
                 <li
-                  key={c}
+                  key={c.label}
                   className={`flex items-start gap-2 rounded-[10px] px-3 py-2 ${
                     i === 0 ? "bg-reps-orange-soft" : "bg-reps-ink/40"
                   }`}
                 >
                   <span
-                    className={`min-w-[88px] text-[11px] font-semibold uppercase tracking-wider ${
+                    className={`flex min-w-[88px] items-center text-[11px] font-semibold uppercase tracking-wider ${
                       i === 0 ? "text-reps-orange" : "text-white/55"
                     }`}
                   >
-                    {c}
+                    {c.logo ? (
+                      <img
+                        src={c.logo}
+                        alt={c.label}
+                        style={{ height: 14 }}
+                        className="w-auto"
+                      />
+                    ) : (
+                      c.label
+                    )}
                   </span>
                   <CellIcon cell={row.cells[i]} highlight={i === 0} />
                 </li>
