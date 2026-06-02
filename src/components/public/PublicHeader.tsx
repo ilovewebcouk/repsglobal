@@ -395,13 +395,16 @@ function CompactSearchPill({
     <button
       type="button"
       onClick={onClick}
-      className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-[999px] border border-white/20 bg-white/[0.04] pl-3 pr-4 text-[13px] text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
+      className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-[999px] border border-white/20 bg-white/[0.04] pl-3 pr-2 text-[13px] text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:inline-flex"
     >
       <Search className="h-4 w-4 text-reps-orange" aria-hidden />
       <span>Search professionals</span>
       <span aria-hidden className="h-3 w-px bg-white/20" />
       <MapPin className="h-3.5 w-3.5" aria-hidden />
       <span className="font-medium text-white">{city}</span>
+      <kbd className="ml-1 inline-flex h-6 items-center gap-0.5 rounded-[6px] border border-white/15 bg-white/[0.06] px-1.5 font-sans text-[11px] font-semibold text-white/70">
+        ⌘K
+      </kbd>
     </button>
   );
 }
