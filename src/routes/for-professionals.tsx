@@ -388,7 +388,7 @@ function ForProsPage() {
                         </Link>
                       ))}
                     </div>
-                    <BrowserFrame>{GROUP_VISUAL[group.key]}</BrowserFrame>
+                    <MockupPlaceholder label={GROUP_VISUAL[group.key].label} />
                   </div>
                 </div>
               );
