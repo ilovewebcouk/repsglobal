@@ -192,7 +192,7 @@ function HomePage() {
                   <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
                   <input
                     type="text"
-                    placeholder="Search professionals  ⌘K"
+                    placeholder="Try 'pilates near me' or 'strength coach London'"
                     aria-label="What do you want to train?"
                     className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
                   />
@@ -212,52 +212,31 @@ function HomePage() {
                   className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 >
                   <Search className="h-4 w-4" aria-hidden />
-                  Find Professionals
+                  Find my coach
                 </button>
               </form>
 
-              {/* Goal chips */}
-              <div className="mt-5 flex flex-wrap gap-2">
-                {goalChips.map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    className="inline-flex h-9 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-
-              {/* Popular searches */}
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
-                <span className="font-medium text-white/55">Popular:</span>
+              {/* Intent pills — merged from goals + popular searches into one row */}
+              <div className="mt-6 flex flex-wrap gap-2">
                 {popularSearches.map((s) => (
                   <button
                     key={s}
                     type="button"
-                    className="font-medium text-reps-orange transition-colors hover:text-white"
+                    className="inline-flex h-9 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   >
                     {s}
                   </button>
                 ))}
               </div>
 
-              {/* Trust strip */}
-              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-white/65">
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" aria-hidden />
-                  <strong className="font-semibold text-white">4.9</strong> average
-                </span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span><strong className="font-semibold text-white">120+</strong> countries</span>
-                <span aria-hidden className="h-3 w-px bg-white/15" />
-                <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
-                  Qualifications &amp; insurance checked
-                </span>
+              {/* Single bold trust line */}
+              <div className="mt-7 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-white/80">
+                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" aria-hidden />
+                <strong className="font-semibold text-white">4.9</strong>
+                <span>from 50,000 reviews</span>
+                <span aria-hidden className="mx-1 h-1 w-1 rounded-full bg-white/30" />
+                <strong className="font-semibold text-white">25,000</strong>
+                <span>verified pros worldwide</span>
               </div>
             </div>
 
