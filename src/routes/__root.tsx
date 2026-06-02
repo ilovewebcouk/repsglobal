@@ -152,7 +152,9 @@ function RootComponent() {
         Skip to content
       </a>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div id="main-content" tabIndex={-1} className="outline-none">
+        <Outlet />
+      </div>
     </QueryClientProvider>
   );
 }
