@@ -49,6 +49,7 @@ import {
   TOP_PROFESSIONS,
   TRAIN_GOALS,
 } from "./nav-config";
+import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 
 type Variant = "transparent" | "solid";
@@ -88,6 +89,7 @@ function useActive() {
       pathname.startsWith("/verify") ||
       pathname.startsWith("/help"),
     howItWorks: pathname.startsWith("/how-it-works"),
+    features: pathname.startsWith("/features"),
     pros: pathname.startsWith("/for-professionals"),
   };
 }
@@ -238,6 +240,20 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   </NavigationMenu.Trigger>
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <FindMenu />
+                  </NavigationMenu.Content>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Trigger className={triggerClass(active.features)}>
+                    Features
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+                    />
+                    <ActiveDot show={active.features} />
+                  </NavigationMenu.Trigger>
+                  <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
+                    <FeaturesMenu />
                   </NavigationMenu.Content>
                 </NavigationMenu.Item>
 
