@@ -242,6 +242,15 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link to="/how-it-works" className={cn(triggerClass(active.howItWorks), "px-0")}>
+                      How it works
+                      <ActiveDot show={active.howItWorks} />
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
                   <NavigationMenu.Trigger className={triggerClass(active.resources)}>
                     Resources
                     <ChevronDown
