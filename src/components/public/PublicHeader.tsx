@@ -308,7 +308,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     Log in
                   </Link>
                   <Link
-                    to="/signup"
+                    to="/for-professionals"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
                     Join REPs
