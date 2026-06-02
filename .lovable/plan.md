@@ -1,44 +1,95 @@
-# Mobile + Tablet Hero — Typography-Led, No Background Image
+## Goal
 
-## Decision
+Two parallel workstreams, both static (Phase 1 — no auth/DB/payments changes):
 
-Drop the background image on mobile and tablet. Keep desktop's full-bleed trainer hero exactly as it is now. Mobile and tablet get a solid `reps-black` hero where typography and the search card do the work.
+1. **Pro funnel rewire** — make `/for-professionals` the single canonical landing page for the entire professional journey; retire `/pricing` as a destination; surface Pricing in header nav.
+2. **Homepage v2** — build a new world-class flagship homepage at a side route for review, leaving the current `/` untouched until approved.
 
-## What changes
+---
 
-All edits in `src/routes/index.tsx`, hero section only (roughly lines 138–180). Nothing below the hero changes.
+## Workstream 1 — Pro funnel rewire
 
-1. **Remove the mobile/tablet image block entirely** (current lines 142–152 — the `lg:hidden` div with `heroCoachingMobile`, the three scrim layers, and the flat `bg/20` wash).
-2. **Keep the desktop image block** (`hidden lg:block`) unchanged — desktop hero stays exactly as-is.
-3. **Add a subtle ambient layer for mobile/tablet only** so the solid black doesn't feel flat:
-   - A soft orange radial glow anchored bottom-left behind the search card (`radial-gradient` using `reps-orange` at ~8% opacity, fading to transparent) — gives the search card a quiet halo without reading as decoration.
-   - A faint top-to-bottom ink wash (`reps-ink` → `reps-black`) so the header chrome has a hair of separation.
-   - Both are `lg:hidden` so desktop is untouched.
-4. **Tighten hero vertical rhythm on mobile/tablet** — with no image to fill space, reduce `pb-16` slightly and let the headline breathe. Keep `pt-[140px]` to clear the fixed header.
-5. **Remove now-unused imports**: `heroCoachingMobileAsset` import and the `heroCoachingMobile` const at the top of the file.
-6. **Delete the mobile hero asset**: `src/assets/hero-coaching-mobile.jpg.asset.json` — no longer referenced anywhere. (The `lovable-assets delete` call also removes it from CDN.)
+### 1a. Rebuild `/for-professionals` as the hub
+Replace the current short page with a deep, scannable landing page in this order:
 
-## What stays exactly the same
+1. **Hero** — keep current trainer-image hero, tighten copy, add anchor CTAs ("See plans" → `#pricing`, "Join REPs" → `/signup`).
+2. **Trust strip** — "25,000+ verified pros · 4.8★ · Verified register since 2009" + small logo/credential row.
+3. **The pitch** — 3-up value props (Get discovered / Take bookings / Run your practice) with short body + image vignettes.
+4. **Feature deep-dive** — current 6 features expanded with sub-bullets; group into Visibility, Operations, Growth.
+5. **How it works** — current 3-step block, polished.
+6. **Testimonials** — current testimonial + 1–2 more in a carousel/grid.
+7. **Pricing (`id="pricing"`)** — full plan card grid + monthly/annual toggle + founding banner, lifted from `/pricing`. Shared component so there is no duplicated content.
+8. **Compare plans** — full feature matrix, lifted from `/pricing`.
+9. **FAQ** — lifted from `/pricing`.
+10. **Final CTA band** — "Join 25,000+ verified pros" → `/signup`.
 
-- Desktop hero (image, radial scrim, horizontal fade, positioning) — untouched.
-- Headline copy, font, sizing, colour.
-- Sub-headline.
-- Search card markup, styling, radius, blur, orange button.
-- Goal chips row.
-- Trust row (avatars + "Trusted by 25,000+ clients worldwide" + rating).
-- Header (`PublicHeader variant="transparent"`) — already works on solid black.
-- Everything below the hero (stats, specialisms, featured pros, CTA band, footer).
+To avoid duplicated content, extract the pricing UI from `src/routes/pricing.tsx` into shared components in `src/components/pricing/` (`PricingPlans`, `PricingCompare`, `PricingFAQ`, `FoundingBanner`) and consume them in `/for-professionals`.
 
-## Why this is the right call
+### 1b. Retire `/pricing` as a destination
+- Change `src/routes/pricing.tsx` to a `beforeLoad` redirect to `/for-professionals#pricing` (TanStack `redirect({ to: '/for-professionals', hash: 'pricing' })`).
+- Update all internal links (`PublicHeader`, `PublicFooter`, homepage CTA band, `/for-professionals` "See pricing", any signup deep-links) to point at `/for-professionals` or `/for-professionals#pricing`.
+- Keep the route file so old bookmarks/SEO don't 404.
+- The shared `PricingPlans` component keeps the existing checkout server-fn wiring (`createCheckoutSession`, signup deep-link with `tier`/`period`) intact — no billing logic changes.
 
-- The search card *is* the product on a marketplace — on a solid black surface it reads as the hero action, not decoration over a photo.
-- Eliminates the mobile/tablet asset mismatch with desktop (different image, different framing).
-- Faster mobile paint, no scrim-vs-subject fight, headline is unmissable.
-- Consistent with how Whoop, Strava, and Nike Run Club treat mobile hero surfaces.
+### 1c. Header nav
+- Add `Pricing` link to `PublicHeader` (desktop + mobile), pointing at `/for-professionals#pricing`.
+- Keep `Become a Pro` as the top-level link to `/for-professionals`.
+- Update active-state matcher so both highlight under the pro section.
 
-## Verification
+### 1d. CTA routing audit
+Every "join / become a pro / pricing" CTA on every public page should land on one of:
+- `/for-professionals` (top of funnel)
+- `/for-professionals#pricing` (plan selection)
+- `/signup` (only when a specific plan is already chosen)
 
-After the edit I'll screenshot at:
-- 390×844 (mobile) — confirm solid black hero, headline crisp, search card prominent, orange glow subtle behind it, smooth hand-off into stats section.
-- 768×1024 (tablet) — same treatment scales cleanly, no awkward empty space.
-- 1318×1019 (desktop) — confirm trainer hero is byte-for-byte unchanged.
+---
+
+## Workstream 2 — Homepage v2 (review build)
+
+Build the new homepage at **`/home-v2`** (new route) so it can be reviewed side-by-side with the live `/`. Nothing on `/` changes until v2 is approved; then we swap.
+
+Sections, in order:
+
+1. **Hero** — keep the locked desktop/mobile hero we just finalised (no changes).
+2. **Logo / press / credential strip** — thin band under the hero: "As featured in… / Recognised by…" — placeholder marks if no real logos yet, designed so it's obvious they're placeholders.
+3. **Social proof rail** — 4-up: rating, verified pros count, sessions booked, countries — promoted from the current stats strip with stronger typography and motion on scroll.
+4. **"Find your coach in 3 steps"** — reworked from current "How REPs works", more visual, paired with a screenshot/illustration.
+5. **Explore by specialism** — keep, tighten icon treatment, add subtle hover lift.
+6. **Featured professionals** — keep grid, add a real horizontal scroller on mobile with snap.
+7. **Outcomes / results** — new section: 2–3 short client outcome cards ("Down 12kg in 6 months with James", etc.) with portrait + quote. This is the missing emotional layer.
+8. **Why trust REPs** — keep, tighten copy, swap to icon-led 2x2 with more whitespace.
+9. **Editorial moment** — full-bleed image quote ("The world's register of verified fitness professionals") to give the page a magazine beat.
+10. **Pro CTA band** — keep existing image, repoint CTA at `/for-professionals` (not `/signup`).
+11. **Final closer** — short "Find. Trust. Train. Transform." closer with two CTAs: "Find a coach" / "Become a pro".
+
+Visual rhythm rules: respect locked radius system (16/18/22/24px), use only `src/styles.css` tokens, no `rounded-xl/2xl/3xl`, no hardcoded colors. All new components live under `src/components/home-v2/` so they're easy to delete if v2 is rejected.
+
+### Review flow
+- Ship `/home-v2` and link to it from `/` only via a temporary banner visible to me when reviewing (or just by URL — your call).
+- Once approved, swap: move v2 content into `src/routes/index.tsx`, retire `/home-v2`.
+
+---
+
+## Out of scope for this plan
+- No auth, DB, payments, or search-logic changes.
+- No edits to the locked `/pro/$slug` profile page.
+- No new image generation in this step — placeholder marks where new photography is needed (outcomes section, press logos). We'll generate assets in a follow-up once layout is approved.
+
+---
+
+## Technical notes
+
+- **Shared pricing components**: `src/components/pricing/{PricingPlans,PricingCompare,PricingFAQ,FoundingBanner}.tsx`. The `createCheckoutSession` server-fn call and the signup deep-link with `{ tier, period, next: 'checkout' }` move into `PricingPlans` unchanged.
+- **Redirect**: in `src/routes/pricing.tsx`, replace the component with `beforeLoad: () => { throw redirect({ to: '/for-professionals', hash: 'pricing' }); }`.
+- **Anchor scroll**: rely on TanStack Router's built-in hash scroll; no custom JS.
+- **Header active state**: update the matcher in `PublicHeader.tsx:91` so `/for-professionals` is the only path that needs to match (drop `/pricing` since it now redirects).
+- **Route files**: `src/routes/home-v2.tsx` for v2; new components under `src/components/home-v2/` and `src/components/pricing/`.
+
+---
+
+## Suggested order of execution
+
+1. Extract shared pricing components, point `/pricing` route → redirect, repoint all CTAs, add Pricing to header. (Funnel is correct before anything else.)
+2. Rebuild `/for-professionals` consuming the shared pricing components.
+3. Build `/home-v2` for review.
+4. After v2 approval, swap v2 → `/`.

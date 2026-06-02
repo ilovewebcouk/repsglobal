@@ -88,7 +88,7 @@ function useActive() {
       pathname.startsWith("/standards") ||
       pathname.startsWith("/verify") ||
       pathname.startsWith("/help"),
-    pros: pathname.startsWith("/for-professionals") || pathname.startsWith("/pricing"),
+    pros: pathname.startsWith("/for-professionals"),
   };
 }
 
@@ -295,6 +295,14 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               )}
 
 
+
+              <Link
+                to="/for-professionals"
+                hash="pricing"
+                className="hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
+              >
+                Pricing
+              </Link>
 
               <Link
                 to="/for-professionals"
@@ -1130,6 +1138,18 @@ function MobileDrawer({
             <span className="flex items-center gap-2">
               <User className="h-4 w-4" aria-hidden />
               Become a Pro
+            </span>
+          </Link>
+
+          <Link
+            to="/for-professionals"
+            hash="pricing"
+            onClick={onNavigate}
+            className={cn(mobileLinkClass(false), "mt-1")}
+          >
+            <span className="flex items-center gap-2">
+              <User className="h-4 w-4" aria-hidden />
+              Pricing
             </span>
           </Link>
         </Accordion>

@@ -585,10 +585,10 @@ function HomePage() {
                 </ul>
 
                 <Link
-                  to="/signup"
-                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                  to="/for-professionals"
+                  className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
                 >
-                  Join REPs today
+                  Become a REPs Pro
                 </Link>
               </div>
             </div>
