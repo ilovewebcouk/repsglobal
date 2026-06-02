@@ -254,7 +254,11 @@ function HomePage() {
                   {[proJames, proSophie, proDaniel, proLaura].map((src, i) => (
                     <span
                       key={i}
-                      className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black"
+                      style={{
+                        animationDelay: `${400 + i * 90}ms`,
+                        animationFillMode: "both",
+                      }}
+                      className="inline-block size-10 overflow-hidden rounded-full opacity-0 ring-2 ring-reps-black animate-fade-in motion-reduce:animate-none motion-reduce:opacity-100"
                     >
                       <img src={src} alt="" className="h-full w-full object-cover" />
                     </span>
