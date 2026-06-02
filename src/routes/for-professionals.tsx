@@ -21,17 +21,7 @@ import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { PricingCompare } from "@/components/pricing/PricingCompare";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
-import { BrowserFrame } from "@/components/mockups/BrowserFrame";
-import {
-  BookingsMockup,
-  ClientsCrmMockup,
-  DashboardMockup,
-  InsightsMockup,
-  LeadsMockup,
-  PaymentsMockup,
-  ProfileMockup,
-  ProgrammesMockup,
-} from "@/components/mockups/PlatformMockups";
+import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
 import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
