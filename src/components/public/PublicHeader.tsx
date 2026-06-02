@@ -211,9 +211,9 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </span>
               </Link>
 
-              <span aria-hidden className="hidden h-6 w-px bg-white/15 lg:block" />
+              <span aria-hidden className={cn("hidden h-6 w-px bg-white/15", !expanded && "lg:block")} />
 
-              <LocationPin city={city} onChange={setCity} className="hidden lg:inline-flex" />
+              <LocationPin city={city} onChange={setCity} className={cn("hidden", !expanded && "lg:inline-flex")} />
             </div>
 
             <NavigationMenu.Root
