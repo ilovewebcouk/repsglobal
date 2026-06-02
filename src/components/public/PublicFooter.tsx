@@ -18,10 +18,10 @@ const cols: { title: string; links: FooterLink[] }[] = [
     title: "For Professionals",
     links: [
       { label: "Join REPs", to: "/for-professionals" },
+      { label: "Features", to: "/features" },
       { label: "Pricing", to: "/pricing" },
       { label: "Dashboard", to: "/dashboard" },
       { label: "CPD & Education", to: "/cpd" },
-      { label: "Business Tools", to: "/business-tools" },
     ],
   },
   {
