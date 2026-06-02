@@ -57,6 +57,7 @@ function walkRoutes(dir, prefix = "") {
       .replace(/_\./g, "/") // admin_.cpd -> admin/cpd
       .replace(/\./g, "/");
     if (path === "index") path = "";
+    path = path.replace(/\/index$/, ""); // resources/index -> resources
     out.push(("/" + (prefix.replace(/^\//, "") + "/" + path)).replace(/\/+/g, "/").replace(/\/$/, "") || "/");
   }
   return out;
