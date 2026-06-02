@@ -42,13 +42,19 @@ import pressGq from "@/assets/press/gq.svg.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "REPs v2 (preview) — Find. Trust. Train. Transform." },
+      { title: "REPs — Find. Trust. Train. Transform." },
       {
         name: "description",
         content:
-          "Preview of the next REPs homepage. Verified fitness professionals you can trust.",
+          "REPs connects you with verified fitness professionals you can trust to help you reach your goals.",
       },
-      { name: "robots", content: "noindex,nofollow" },
+      { property: "og:title", content: "REPs — Find. Trust. Train. Transform." },
+      {
+        property: "og:description",
+        content:
+          "Search verified personal trainers, Pilates instructors, nutritionists and coaches.",
+      },
+      { property: "og:url", content: "/" },
     ],
   }),
   component: HomeV2,
