@@ -4,7 +4,6 @@ import {
   Apple,
   ArrowRight,
   Award,
-  BadgeCheck,
   Calendar,
   ChevronLeft,
   ChevronRight,
