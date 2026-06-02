@@ -32,6 +32,12 @@ import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
+import pressMensHealth from "@/assets/press/mens-health.svg.asset.json";
+import pressWomensFitness from "@/assets/press/womens-fitness.svg.asset.json";
+import pressRunnersWorld from "@/assets/press/runners-world.svg.asset.json";
+import pressBbcSport from "@/assets/press/bbc-sport.svg.asset.json";
+import pressTheTimes from "@/assets/press/the-times.svg.asset.json";
+import pressGq from "@/assets/press/gq.svg.asset.json";
 
 export const Route = createFileRoute("/home-v2")({
   head: () => ({
@@ -50,13 +56,13 @@ export const Route = createFileRoute("/home-v2")({
 
 const goalChips = ["Fat loss", "Strength", "Mobility", "Pre/post-natal", "Rehab", "Sport-specific"];
 
-const PRESS = [
-  "Men's Health",
-  "Women's Fitness",
-  "Runner's World",
-  "BBC Sport",
-  "The Times",
-  "GQ",
+const PRESS: { name: string; src: string; height: number }[] = [
+  { name: "Men's Health", src: pressMensHealth.url, height: 18 },
+  { name: "Women's Fitness", src: pressWomensFitness.url, height: 16 },
+  { name: "Runner's World", src: pressRunnersWorld.url, height: 17 },
+  { name: "BBC Sport", src: pressBbcSport.url, height: 26 },
+  { name: "The Times", src: pressTheTimes.url, height: 24 },
+  { name: "GQ", src: pressGq.url, height: 30 },
 ];
 
 const stats = [
@@ -264,13 +270,15 @@ function HomeV2() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               As featured in
             </span>
-            {PRESS.map((name) => (
-              <span
-                key={name}
-                className="font-display text-[15px] font-semibold tracking-tight text-reps-charcoal/55 transition-colors hover:text-reps-charcoal"
-              >
-                {name}
-              </span>
+            {PRESS.map((logo) => (
+              <img
+                key={logo.name}
+                src={logo.src}
+                alt={logo.name}
+                style={{ height: logo.height }}
+                className="w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
+                loading="lazy"
+              />
             ))}
           </div>
         </div>
