@@ -128,30 +128,7 @@ const featuredPros = [
 
 
 function HomePage() {
-  const heroImgRef = useRef<HTMLImageElement>(null);
 
-  // Subtle parallax on the hero portrait — drifts up as user scrolls into the next section.
-  // Respects prefers-reduced-motion.
-  useEffect(() => {
-    const img = heroImgRef.current;
-    if (!img) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = window.requestAnimationFrame(() => {
-        raf = 0;
-        const y = Math.min(window.scrollY, 600) * 0.06;
-        img.style.setProperty("--py", `-${y}px`);
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-reps-ivory">
