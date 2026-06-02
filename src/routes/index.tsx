@@ -3,6 +3,7 @@ import {
   Activity,
   Apple,
   Award,
+  BadgeCheck,
   Calendar,
   Check,
   ChevronLeft,
