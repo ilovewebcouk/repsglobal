@@ -283,23 +283,35 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ PRESS STRIP ============ */}
+      {/* ============ PRESS STRIP (marquee) ============ */}
       <section className="border-y border-reps-stone bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+        <div className="mx-auto max-w-[1320px] px-6 py-7 lg:px-10">
+          <div className="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
+            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-muted-light">
               As featured in
             </span>
-            {PRESS.map((logo) => (
-              <img
-                key={logo.name}
-                src={logo.src}
-                alt={logo.name}
-                style={{ height: logo.height }}
-                className="w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-                loading="lazy"
-              />
-            ))}
+            <div
+              className="relative w-full overflow-hidden"
+              style={{
+                maskImage:
+                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+                WebkitMaskImage:
+                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+              }}
+            >
+              <div className="animate-marquee flex w-max items-center gap-14">
+                {[...PRESS, ...PRESS].map((logo, i) => (
+                  <img
+                    key={`${logo.name}-${i}`}
+                    src={logo.src}
+                    alt={logo.name}
+                    style={{ height: logo.height }}
+                    className="w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
