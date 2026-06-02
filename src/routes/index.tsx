@@ -25,8 +25,6 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroCoaching from "@/assets/hero-coaching-moment.jpg";
-import heroCoachingMobileAsset from "@/assets/hero-coaching-mobile.jpg.asset.json";
-const heroCoachingMobile = heroCoachingMobileAsset.url;
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -136,22 +134,21 @@ function HomePage() {
 
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: separate mobile + desktop image strategies */}
+        {/* Background: solid black on mobile/tablet with subtle ambient wash; full-bleed trainer on desktop */}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          {/* Mobile/tablet: portrait cinematic hero with layered scrim */}
+          {/* Mobile/tablet: typography-led, no photo. Faint ink wash + orange glow behind search card. */}
           <div className="absolute inset-0 lg:hidden">
-            <img
-              src={heroCoachingMobile}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover object-center"
+            <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/60 via-reps-black to-reps-black" />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 75% 45% at 20% 75%, rgba(255,107,0,0.10) 0%, rgba(255,107,0,0.04) 40%, rgba(255,107,0,0) 70%)",
+              }}
             />
-            {/* Layered scrim: base ramp, bottom dissolve, mood wash */}
-            <div className="absolute inset-0 bg-gradient-to-b from-reps-black/80 via-reps-black/40 to-reps-black opacity-90" />
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-reps-black via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-black/20" />
           </div>
 
-          {/* Desktop: original composited hero with parallax + right-side fade */}
+          {/* Desktop: original composited hero with right-side fade */}
           <div className="absolute inset-0 hidden lg:block">
             <img
               src={heroCoaching}
@@ -176,6 +173,7 @@ function HomePage() {
             />
           </div>
         </div>
+
 
 
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
