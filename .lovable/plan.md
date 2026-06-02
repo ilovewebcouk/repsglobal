@@ -1,104 +1,126 @@
-# World-class header rebuild
 
-Scope: a full visual rebuild of `PublicHeader` to match best-in-class two-sided fitness marketplaces (Airbnb, ClassPass, Thumbtack, Booking). Visual only — no new routes, no real auth, no real search logic. Mockup-lock override approved by user.
+# Hero rebuild + header decongestion
 
-## What changes
+Two coordinated changes so the homepage has **one** search (the hero owns it) and the header stops competing with everything around it.
 
-### 1. New header anatomy (desktop ≥ lg)
+Phase 1 rules still apply: static screens only, no auth, no real search logic, no new routes, no DB.
+
+---
+
+## 1. Header changes (`PublicHeader.tsx`)
+
+### At rest on `/` (transparent state)
+Remove from the right cluster:
+- Hero-state inline "What/Where" search pill — gone entirely. Hero owns search.
+- ⌘K visible chip — gone. Move "⌘K" hint into the hero search field placeholder. Global keyboard shortcut still triggers `HeaderCommandPalette`.
+- ♥ Saved icon — hidden when logged out.
+
+Right cluster becomes 4 items:
+**Verified pill · Become a Pro (text link) · Log in (text link) · Join REPs (orange button)**
+
+### Scrolled / subpage (solid state)
+Compact "Search professionals" pill **appears in the header only after 96px scroll** or on any non-`/` route. Right cluster becomes 5:
+**Search pill · Verified (icon-only, tooltip "All pros verified") · Become a Pro · Log in · Join REPs**
+
+### Logged in (mock via `localStorage.reps.mockUser`)
+**Verified · Become a Pro · Avatar dropdown** (Bookings · Messages · Saved · Settings · Sign out). No separate Saved icon.
+
+### Mobile (<lg)
+No changes from current build: compact search icon + hamburger. Drawer unchanged.
+
+---
+
+## 2. Hero rebuild (`src/routes/index.tsx` hero section only)
+
+### Layout
+Two-column hero, image right, content left — but image becomes a **floating pro-card stack**, not a single portrait.
 
 ```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ [REPs]   [📍 London ▾] │ Train ▾  Find a Pro ▾  Resources ▾  │ ✓ Verified  │
-│                                                                              │
-│         ┌─────────────────────────────────────────────────────┐              │
-│         │ 🔍 What do you want to train?  ·  Where?  ·  [Search]│  ♡  ⌘K  │ Become a Pro │ ⎵ Avatar │
-│         └─────────────────────────────────────────────────────┘              │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Headline: Find. Trust. Train. Transform.                   │
+│  Sub: The world's register of verified fitness pros.        │
+│       Real qualifications, real reviews, real results.      │
+│                                                             │
+│  ┌──────────────────────────────────────────────┐  ┌─────┐  │
+│  │ What ▾   │ Where 📍 │ [ Find Pros ]         │  │Card1│  │
+│  └──────────────────────────────────────────────┘  └─────┘  │
+│  Goal chips: Fat loss · Strength · Mobility ·       ┌─────┐ │
+│              Pre/post-natal · Rehab · Sport         │Card2│ │
+│                                                     └─────┘ │
+│  Popular: Personal Trainer · Pilates · Nutritionist ┌─────┐ │
+│           Strength · Pre & Postnatal · Online       │Card3│ │
+│                                                     └─────┘ │
+│  ★ 4.9 · 12,400 verified pros · 40 countries · Insured     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Two-row layout at rest on `/`, collapses to a single compact row (search becomes a pill button) once scrolled past 96px or on every non-home route.
+### Search bar (the only search on the page at rest)
+Two fields + button in one rounded panel (radius 22, `bg-reps-ink/60` + blur, brand-orange border on focus):
+1. **What** — input + lucide `Search`, placeholder `"Search professionals  ⌘K"`, autocomplete is stubbed (static suggestions from `nav-config.ts`).
+2. **Where** — input + `MapPin`, placeholder `"London"`, prefilled from location pin's `localStorage`, with "Detect location" button (stub — just sets "Near me").
+3. **Find Professionals** button (orange, radius 12, no shadow).
 
-### 2. New top-level IA (5 items, user-job-led)
+Below the bar: **6 goal chips** (pills, radius full, `border-reps-stone`, hover → brand-orange border). Tapping a chip pre-fills `What` with the goal. No navigation in Phase 1.
 
-| Old | New |
-|---|---|
-| Find a Professional ▾ | **Train ▾** (by goal: Weight loss, Strength, Mobility, Pre/post-natal, Rehab, Sport-specific) |
-| How REPs Works | **Find a Pro ▾** (by profession + by city — current mega-menu, redesigned with featured pro card + city image) |
-| For Professionals | **Resources ▾** (articles + Standards + Verification explainer) |
-| Resources ▾ | (folded into above) |
-| About REPs ▾ | **Footer-only** (About, Standards, Complaints move to footer) |
+Below chips: **Popular searches** row (existing, unchanged copy).
 
-A small **✓ Verified** trust pill sits to the right of the nav, links to `/verify`.
+### Trust strip (replaces the "Why REPs?" glass card AND the inline 3-icon row)
+Single inline line under the popular searches:
+> ★ 4.9 average · 12,400 verified pros · 40 countries · Insurance & qualifications checked
 
-### 3. Inline search (visual, no logic)
+Use existing `text-reps-muted` token + brand-orange star. One row. No card.
 
-- Two-field pill: "What" combobox (profession + goals, static suggestions) + "Where" combobox (cities, "Use my location"). Submit → navigates to `/find-a-professional` with query params (no server-side filtering yet).
-- ⌘K opens a shadcn `Command` palette over the page (recents, popular pros, popular cities, quick links). Visual only — items are static.
+### Pro-card stack (right column)
+Three overlapping cards, fanned with `rotate-[-3deg]` / `rotate-[2deg]` / `rotate-[-1deg]` and staggered Y offsets. Each card:
+- 18px radius, `bg-reps-surface`, `border-reps-stone`
+- 16:10 photo
+- Name + Verified tick
+- Specialism · City
+- ★ 4.9 (24)
+- "from £45 / session" or "Online"
 
-### 4. Location pin
+3 static pros (mock data in a local `featuredPros` const — names, photos, specialism, city, rating, price). Photos: use existing `src/assets/` headshots; if missing, generate 3 portraits in a follow-up.
 
-- Left of the nav: `📍 London ▾` shadcn `Popover` with city list + "Detect location" button. Persists to `localStorage`. Affects label only in Phase 1.
+Subtle parallax on scroll (`translateY` based on scrollY, respects `prefers-reduced-motion`). No real interactions in Phase 1.
 
-### 5. Two-sided CTA split
+### Removed from current hero
+- "Why REPs?" glass card (right column) — deleted.
+- Inline 3-icon trust row ("REPs Verified / Reviewed & Rated / Trusted Worldwide") — replaced by the single trust line.
+- Bottom-of-hero "I'm looking for / Near / Training type / Find Professionals" panel — deleted (replaced by the new search bar at the top).
+- Header inline What/Where search at rest — deleted (covered in Header section).
 
-- Far right cluster: `♡ Saved` (icon, links to `/find-a-professional` stub), `⌘K` button, **Become a Pro** (ghost link → `/for-professionals`), **Join / Log in** (primary).
-- When `localStorage.repsMockUser` is set (dev toggle, not real auth), swap **Join/Log in** for `Avatar ▾` dropdown: Bookings, Saved, Messages, Settings, Sign out. Pure UI shell — no Supabase calls.
+---
 
-### 6. Mega-menu visuals
+## 3. Tokens, primitives, scope
 
-- **Train**: 6 goal tiles with icon + 1-line outcome ("Lose body fat", "Get stronger"…).
-- **Find a Pro**: two columns (Top professions / Top cities) + a featured pro card (avatar, name, rating, "View profile") + a city hero image card.
-- **Resources**: topics + 3 featured article cards with thumbnail.
+**Tokens used:** `--brand-orange`, `--brand-orange-hover`, `--reps-ink`, `--reps-surface`, `--reps-stone`, `--reps-muted`. Radii: 10 (button), 12 (input), 18 (pro card), 22 (search panel), full (pills). No new tokens.
 
-All panels use REPs tokens (radius 18/22, brand-orange accents, `--reps-stone` borders, no banned radii).
+**shadcn primitives:** `Input`, `Button`, `Badge`, `Popover` (Where field's "Detect location"), `Tooltip` (Verified icon-only). No new shadcn additions.
 
-### 7. Mobile (< lg)
+**Files touched:**
+- `src/components/public/PublicHeader.tsx` — strip ⌘K chip + Saved icon + at-rest inline search; gate Saved to logged-in; Verified becomes icon-only + tooltip when scrolled.
+- `src/routes/index.tsx` — replace hero section (everything above the next section) with new layout.
+- `src/components/public/HeroSearch.tsx` — **new**, the two-field search + chips + trust line.
+- `src/components/public/HeroProStack.tsx` — **new**, the 3 fanned pro cards with mock data.
+- `src/components/public/nav-config.ts` — add `featuredPros` and `popularGoals` mock arrays.
 
-- Sticky compact bar: REPs logo · `[🔍 Search professionals near London]` pill · hamburger.
-- Tap pill → full-screen `Sheet` from top with search fields, recent searches, popular goals.
-- Hamburger drawer: Account block (Join / Log in OR avatar), then Train / Find a Pro / Resources accordions, then Become a Pro, then footer links (About, Standards, Complaints, Help).
+**Out of scope (won't touch):**
+- Auth, Supabase, real search, real saved-pros persistence, geolocation, payments, AI.
+- Below-the-fold homepage sections.
+- Mockup-lock doc (this is an approved deviation; we'll log it once the user signs off the screenshots).
+- Mobile hero — keeps current single-column treatment with the new search bar stacked above a single hero portrait (no card stack on small screens).
 
-### 8. Scroll behaviour
+---
 
-- `/` only: two-row transparent → one-row solid (`bg-reps-ink/95` + blur) past 96px.
-- All other routes: one-row solid from the top.
-- Verified pill stays visible in solid state.
+## 4. Acceptance criteria
 
-### 9. Accessibility
+- `/` at rest, desktop ≥ 1280: header has 4 right-side items, no search in header, hero shows new search bar + 3 fanned pro cards + single trust line. Screenshot supplied.
+- Scroll past 96px: header gains compact search pill, Verified becomes icon-only. Screenshot supplied.
+- `/for-professionals` and any subpage: header is solid + has the compact search pill. Screenshot supplied.
+- Mobile 375: hero shows headline → search bar → goal chips → popular → trust line → single portrait below. No card stack. Screenshot supplied.
+- `⌘K` still opens the command palette globally.
+- Logged-in mock (`localStorage.reps.mockUser`): header shows avatar (containing Saved), no standalone Saved icon, no Log in / Join REPs.
+- Audit script (`bash knowledge://skill/reps-build-compliance/scripts/audit.sh`) exits 0. No banned hex, no banned radii, no button shadows.
+- Lighthouse a11y ≥ 95 on `/`.
 
-- Skip-to-content stays.
-- All triggers labelled, Radix `NavigationMenu` / `Popover` / `Command` / `Sheet` for ARIA.
-- ⌘K registered with `Cmd/Ctrl+K` global listener; respects `prefers-reduced-motion`.
-- Focus-visible rings on every chrome element.
-
-## Files touched
-
-- `src/components/public/PublicHeader.tsx` — full rewrite
-- `src/components/public/nav-config.ts` — add GOALS, refine RESOURCE_TOPICS, drop ABOUT_LINKS from header (kept for footer)
-- `src/components/public/HeaderSearch.tsx` *(new)* — inline two-field search pill
-- `src/components/public/HeaderCommandPalette.tsx` *(new)* — ⌘K Command dialog
-- `src/components/public/HeaderLocationPin.tsx` *(new)* — city Popover
-- `src/components/public/HeaderUserMenu.tsx` *(new)* — pre/post-auth right cluster (mock user via localStorage)
-- `src/components/public/mega/TrainMenu.tsx`, `FindProMenu.tsx`, `ResourcesMenu.tsx` *(new, split out of PublicHeader)*
-- `src/components/public/PublicFooter.tsx` — absorb About / Standards / Complaints links displaced from header
-- `src/styles.css` — only if a missing token is needed (no new colors; reuse existing)
-
-No new routes. No `__root.tsx` changes. No Supabase, no server functions, no migrations.
-
-## Out of scope (explicitly not built this turn)
-
-- Real auth, sessions, profile fetch
-- Real search results / filters
-- Real saved-pros persistence (icon links to find page only)
-- Geolocation API beyond a stubbed "Detect location" button that just sets the label
-- Footer redesign beyond adding the displaced About/Standards/Complaints links
-- Updating `src/mockups/` images or the mockup-lock doc — I'll note in chat that the home mockup's header is now intentionally superseded; you decide later whether to re-shoot the mockup.
-
-## Acceptance
-
-- REPs Build Compliance audit passes (tokens, radii, no banned hex, no button shadows).
-- Desktop screenshots at 1366 and 1920: two-row at rest on `/`, one-row solid scrolled and on `/for-professionals`.
-- Mobile screenshot at 375: compact search pill + drawer.
-- ⌘K opens/closes; Esc dismisses; focus returns to trigger.
-- No hydration warnings in console.
-- Lighthouse a11y on `/` ≥ 95.
+Approve and I'll build it.
