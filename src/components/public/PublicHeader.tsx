@@ -267,10 +267,10 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             <div className="flex items-center gap-2">
               <Link
                 to="/verify"
-                className="hidden h-9 items-center gap-1.5 rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] xl:inline-flex"
+                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] 2xl:inline-flex"
               >
                 <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
-                All professionals verified
+                All pros verified
               </Link>
 
               <CompactSearchPill
@@ -283,7 +283,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 type="button"
                 onClick={() => setCmdOpen(true)}
                 aria-label="Open command palette"
-                className="hidden h-10 items-center gap-1 rounded-[10px] border border-white/20 px-2 text-[11px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:inline-flex"
+                className="hidden h-10 items-center gap-1 whitespace-nowrap rounded-[10px] border border-white/20 px-2 text-[11px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
               >
                 <CommandIcon className="h-3.5 w-3.5" aria-hidden />K
               </button>
@@ -291,7 +291,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               <Link
                 to="/find-a-professional"
                 aria-label="Saved professionals"
-                className="hidden h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:inline-flex"
+                className="hidden h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
               >
                 <Heart className="h-4 w-4" aria-hidden />
               </Link>
@@ -299,7 +299,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               <Link
                 to="/for-professionals"
                 className={cn(
-                  "hidden h-10 items-center rounded-[10px] px-4 text-[13px] font-medium transition-colors lg:inline-flex",
+                  "hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium transition-colors xl:inline-flex",
                   active.pros
                     ? "text-white"
                     : "text-white/80 hover:bg-white/10 hover:text-white",
@@ -314,13 +314,13 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 <>
                   <Link
                     to="/login"
-                    className="hidden h-10 items-center rounded-[10px] border border-white/25 px-5 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
+                    className="hidden h-10 items-center whitespace-nowrap rounded-[10px] border border-white/25 px-4 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
                   >
                     Log in
                   </Link>
                   <Link
                     to="/signup"
-                    className="hidden h-10 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
+                    className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
                     Join REPs
                   </Link>
