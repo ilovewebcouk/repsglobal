@@ -227,26 +227,28 @@ function HomePage() {
               ))}
             </div>
 
-            {/* Four-pillar trust strip */}
-            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-white/75">
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" aria-hidden />
-                <span><strong className="font-semibold text-white">4.9</strong> average rating</span>
-              </div>
-              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
-              <div className="flex items-center gap-2">
-                <BadgeCheck className="h-4 w-4 text-reps-gold" aria-hidden />
-                <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
-              </div>
-              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-white/70" aria-hidden />
-                <span><strong className="font-semibold text-white">120+</strong> countries</span>
-              </div>
-              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-reps-green" aria-hidden />
-                <span>Qualifications &amp; insurance checked</span>
+            {/* Four-pillar trust strip — contained chip, 2x2 on mobile, single row on lg+ */}
+            <div className="mt-7 sm:mt-8 inline-flex max-w-full rounded-[16px] border border-white/10 bg-reps-ink/55 px-4 py-3 backdrop-blur-md lg:rounded-full lg:px-5 lg:py-2.5">
+              <div className="grid w-full grid-cols-2 gap-x-5 gap-y-2 text-[12.5px] text-white/85 lg:flex lg:items-center lg:gap-5 lg:text-[13px]">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 shrink-0 fill-reps-orange text-reps-orange" aria-hidden />
+                  <span><strong className="font-semibold text-white">4.9</strong> average rating</span>
+                </div>
+                <span aria-hidden className="hidden h-3 w-px bg-white/15 lg:block" />
+                <div className="flex items-center gap-2">
+                  <BadgeCheck className="h-4 w-4 shrink-0 text-reps-gold" aria-hidden />
+                  <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
+                </div>
+                <span aria-hidden className="hidden h-3 w-px bg-white/15 lg:block" />
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 shrink-0 text-white/70" aria-hidden />
+                  <span><strong className="font-semibold text-white">120+</strong> countries</span>
+                </div>
+                <span aria-hidden className="hidden h-3 w-px bg-white/15 lg:block" />
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-reps-green" aria-hidden />
+                  <span>Qualifications &amp; insurance checked</span>
+                </div>
               </div>
             </div>
           </div>
