@@ -26,6 +26,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoachingMobile from "@/assets/hero-coaching-mobile.jpg";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
