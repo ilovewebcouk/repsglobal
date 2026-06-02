@@ -670,30 +670,3 @@ function HomePage() {
   );
 }
 
-function SearchField({
-  label,
-  placeholder,
-  icon: Icon,
-  isSelect = false,
-}: {
-  label: string;
-  placeholder: string;
-  icon: React.ComponentType<{ className?: string }>;
-  isSelect?: boolean;
-}) {
-  return (
-    <label className="group flex flex-col gap-1 rounded-[12px] border border-white/8 bg-reps-ink/60 px-4 py-3 transition-colors hover:border-white/15">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-white/55">
-        {label}
-      </span>
-      <div className="flex items-center gap-2">
-        <input
-          readOnly={isSelect}
-          placeholder={placeholder}
-          className="w-full bg-transparent text-[14px] font-medium text-white placeholder:text-white/40 focus:outline-none"
-        />
-        <Icon className="h-4 w-4 shrink-0 text-white/45" />
-      </div>
-    </label>
-  );
-}
