@@ -324,7 +324,7 @@ function ForProsPage() {
                   i % 2 === 1 ? "lg:[&>div:first-child]:order-2" : ""
                 }`}
               >
-                <BrowserFrame>{s.visual}</BrowserFrame>
+                <MockupPlaceholder label={s.label} />
                 <div>
                   <h3 className="font-display text-[24px] font-bold text-white lg:text-[30px]">
                     {s.title}
