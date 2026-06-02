@@ -211,9 +211,9 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </span>
               </Link>
 
-              <span aria-hidden className={cn("hidden h-6 w-px bg-white/15", !expanded && "lg:block")} />
+              <span aria-hidden className="hidden h-6 w-px bg-white/15 lg:block" />
 
-              <LocationPin city={city} onChange={setCity} className={cn("hidden", !expanded && "lg:inline-flex")} />
+              <LocationPin city={city} onChange={setCity} className="hidden lg:inline-flex" />
             </div>
 
             <NavigationMenu.Root
@@ -268,7 +268,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             <div className="flex items-center gap-2">
               <Link
                 to="/verify"
-                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] lg:inline-flex"
+                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] 2xl:inline-flex"
               >
                 <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
                 All pros verified
@@ -295,7 +295,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               <Link
                 to="/for-professionals"
                 className={cn(
-                  "hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium transition-colors lg:inline-flex",
+                  "hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium transition-colors xl:inline-flex",
                   active.pros
                     ? "text-white"
                     : "text-white/80 hover:bg-white/10 hover:text-white",
@@ -395,16 +395,13 @@ function CompactSearchPill({
     <button
       type="button"
       onClick={onClick}
-      className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-[999px] border border-white/20 bg-white/[0.04] pl-3 pr-2 text-[13px] text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:inline-flex"
+      className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-[999px] border border-white/20 bg-white/[0.04] pl-3 pr-4 text-[13px] text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
     >
       <Search className="h-4 w-4 text-reps-orange" aria-hidden />
       <span>Search professionals</span>
       <span aria-hidden className="h-3 w-px bg-white/20" />
       <MapPin className="h-3.5 w-3.5" aria-hidden />
       <span className="font-medium text-white">{city}</span>
-      <kbd className="ml-1 inline-flex h-6 items-center gap-0.5 rounded-[6px] border border-white/15 bg-white/[0.06] px-1.5 font-sans text-[11px] font-semibold text-white/70">
-        ⌘K
-      </kbd>
     </button>
   );
 }

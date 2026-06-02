@@ -223,17 +223,3 @@
     letter-spacing: -0.01em;
   }
 }
-
-/* Hero background — slow Ken Burns drift, respects reduced motion. */
-@keyframes hero-kenburns {
-  0%   { transform: scale(1.05) translate3d(0, 0, 0); }
-  100% { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
-}
-.animate-hero-kenburns {
-  animation: hero-kenburns 18s ease-in-out infinite alternate;
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-hero-kenburns { animation: none; }
-}
-
