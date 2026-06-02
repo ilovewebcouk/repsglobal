@@ -34,20 +34,14 @@ import proLaura from "@/assets/pro-laura.jpg";
 export const Route = createFileRoute("/home-legacy")({
   head: () => ({
     meta: [
-      { title: "REPs — Find. Trust. Train. Transform." },
+      { title: "REPs (legacy homepage)" },
       {
         name: "description",
-        content:
-          "REPs connects you with verified fitness professionals you can trust to help you reach your goals.",
+        content: "Legacy REPs homepage kept for reference.",
       },
-      { property: "og:title", content: "REPs — Find. Trust. Train. Transform." },
-      {
-        property: "og:description",
-        content:
-          "Search verified personal trainers, Pilates instructors, nutritionists and coaches.",
-      },
-      { property: "og:url", content: "/" },
+      { name: "robots", content: "noindex,nofollow" },
     ],
+  }),
     links: [{ rel: "canonical", href: "/" }],
   }),
   component: HomePage,
