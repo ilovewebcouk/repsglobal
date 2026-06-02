@@ -130,110 +130,125 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
-      <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: single composited hero image with slow Ken Burns and gradient overlays for copy legibility */}
-        <div className="absolute inset-0 -z-10">
+      <section className="relative isolate overflow-hidden bg-reps-ink text-white">
+        {/* Mobile: full-bleed image with bottom ramp for legibility */}
+        <div className="absolute inset-0 -z-10 lg:hidden">
           <img
             src={heroCoaching}
             alt=""
-            className="animate-hero-kenburns h-full w-full object-cover [object-position:70%_center]"
+            className="h-full w-full object-cover [object-position:60%_center]"
           />
-          {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
-            className="absolute inset-0 lg:hidden"
+            className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
+                "linear-gradient(to bottom, rgba(11,13,16,0.65) 0%, rgba(11,13,16,0.45) 35%, rgba(11,13,16,0.92) 80%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: solid behind copy column, fading clear by ~55% so the portrait dominates the right half */}
+        </div>
+
+        {/* Desktop: editorial portrait pinned to the right half */}
+        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[58%] lg:block xl:w-[55%]">
+          <img
+            src={heroCoaching}
+            alt=""
+            className="h-full w-full object-cover [object-position:50%_center]"
+          />
+          {/* Soft left feather so the portrait dissolves into the dark canvas */}
           <div
-            className="absolute inset-0 hidden lg:block"
+            className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 22%, rgba(11,13,16,0.55) 38%, rgba(11,13,16,0.1) 55%, rgba(11,13,16,0) 70%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.85) 18%, rgba(11,13,16,0.15) 42%, rgba(11,13,16,0) 60%)",
             }}
           />
-          {/* Subtle bottom fade so the search panel sits on a denser ground */}
-          <div className="absolute inset-x-0 bottom-0 hidden h-[180px] bg-gradient-to-t from-reps-black to-transparent lg:block" />
+          {/* Bottom seam to ink so it never bleeds into the ivory stats strip */}
+          <div className="absolute inset-x-0 bottom-0 h-[160px] bg-gradient-to-t from-reps-ink to-transparent" />
         </div>
 
         <PublicHeader variant="transparent" />
 
-        <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
-          <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
-            {/* Left: headline + search + chips + trust */}
-            <div>
-              <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
-                Find. Trust. Train.
-                <br />
-                Transform.
-              </h1>
+        <div className="mx-auto max-w-[1320px] px-6 pb-20 pt-[140px] lg:px-10 lg:pb-28 lg:pt-[160px]">
+          <div className="max-w-[680px]">
+            <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
+              Find. Trust. Train.
+              <br />
+              Transform.
+            </h1>
 
-              <p className="mt-5 max-w-[520px] text-[17px] leading-relaxed text-white/75">
-                The world's register of verified fitness professionals. Real qualifications, real
-                reviews, real results.
-              </p>
+            <p className="mt-5 max-w-[520px] text-[17px] leading-relaxed text-white/80">
+              The world's register of verified fitness professionals. Real qualifications, real
+              reviews, real results.
+            </p>
 
-              {/* Hero search bar */}
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+            {/* Hero search bar */}
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/70 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+            >
+              <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
+                <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
+                <input
+                  type="text"
+                  placeholder="Try 'pilates near me' or 'strength coach London'"
+                  aria-label="What do you want to train?"
+                  className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+                />
+              </label>
+              <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
+              <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[200px]">
+                <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
+                <input
+                  type="text"
+                  placeholder="London"
+                  aria-label="Where?"
+                  className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+                />
+              </label>
+              <button
+                type="submit"
+                className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               >
-                <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
-                  <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
-                  <input
-                    type="text"
-                    placeholder="Try 'pilates near me' or 'strength coach London'"
-                    aria-label="What do you want to train?"
-                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-                  />
-                </label>
-                <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
-                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[200px]">
-                  <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
-                  <input
-                    type="text"
-                    placeholder="London"
-                    aria-label="Where?"
-                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-                  />
-                </label>
+                <Search className="h-4 w-4" aria-hidden />
+                Find my coach
+              </button>
+            </form>
+
+            {/* Popular searches — single row on lg+ */}
+            <div className="mt-6 flex flex-wrap gap-2 lg:flex-nowrap">
+              {popularSearches.map((s) => (
                 <button
-                  type="submit"
-                  className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                  key={s}
+                  type="button"
+                  className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                 >
-                  <Search className="h-4 w-4" aria-hidden />
-                  Find my coach
+                  {s}
                 </button>
-              </form>
-
-              {/* Intent pills — merged from goals + popular searches into one row */}
-              <div className="mt-6 flex flex-wrap gap-2">
-                {popularSearches.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="inline-flex h-9 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
-              {/* Single bold trust line */}
-              <div className="mt-7 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-white/80">
-                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" aria-hidden />
-                <strong className="font-semibold text-white">4.9</strong>
-                <span>from 50,000 reviews</span>
-                <span aria-hidden className="mx-1 h-1 w-1 rounded-full bg-white/30" />
-                <strong className="font-semibold text-white">25,000</strong>
-                <span>verified pros worldwide</span>
-              </div>
+              ))}
             </div>
 
-            {/* Right column intentionally empty — lets the editorial coaching portrait breathe */}
-            <div aria-hidden />
+            {/* Four-pillar trust strip */}
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-white/75">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" aria-hidden />
+                <span><strong className="font-semibold text-white">4.9</strong> average rating</span>
+              </div>
+              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="h-4 w-4 text-reps-gold" aria-hidden />
+                <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
+              </div>
+              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-white/70" aria-hidden />
+                <span><strong className="font-semibold text-white">120+</strong> countries</span>
+              </div>
+              <span aria-hidden className="hidden h-3 w-px bg-white/15 sm:block" />
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-reps-green" aria-hidden />
+                <span>Qualifications &amp; insurance checked</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
