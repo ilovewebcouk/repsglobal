@@ -146,29 +146,7 @@ function HomeV2() {
       {/* ============ HERO (locked) ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          {/* Mobile / tablet: full-bleed image, top-anchored, dark gradient ramp from bottom for legibility */}
-          <div className="absolute inset-0 lg:hidden">
-            <img
-              src={heroCoaching}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[70%_30%] sm:object-[65%_28%]"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to top, #0B0D10 0%, rgba(11,13,16,0.92) 28%, rgba(11,13,16,0.7) 50%, rgba(11,13,16,0.45) 75%, rgba(11,13,16,0.3) 100%)",
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(ellipse 80% 50% at 20% 80%, rgba(255,107,0,0.10) 0%, rgba(255,107,0,0.04) 45%, rgba(255,107,0,0) 75%)",
-              }}
-            />
-          </div>
-          {/* Desktop: image anchored right, dark wash on the left so the copy column stays readable */}
+          {/* Desktop: image anchored right, dark wash on the left so the copy column stays readable. Mobile/tablet: solid black, no image. */}
           <div className="absolute inset-0 hidden lg:block">
             <img
               src={heroCoaching}
@@ -197,15 +175,8 @@ function HomeV2() {
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
             <div>
-              <span
-                className="animate-rise-in inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80 backdrop-blur"
-                style={{ animationDelay: "40ms" }}
-              >
-                <BadgeCheck className="h-3 w-3 text-reps-orange" />
-                The global standard for fitness — since 2009
-              </span>
               <h1
-                className="animate-rise-in mt-5 font-display text-[56px] font-bold leading-[0.92] tracking-[-0.035em] text-white sm:text-[72px] lg:text-[88px]"
+                className="animate-rise-in font-display text-[56px] font-bold leading-[0.92] tracking-[-0.035em] text-white sm:text-[72px] lg:text-[88px]"
                 style={{ animationDelay: "120ms" }}
               >
                 Find a coach
