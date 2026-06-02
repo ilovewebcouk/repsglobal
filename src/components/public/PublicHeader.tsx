@@ -362,14 +362,10 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             </div>
           </div>
 
-          {/* Row 2 — inline search (home, at rest, desktop only) */}
-          {expanded && (
-            <div className="hidden pb-5 lg:block">
-              <InlineSearch city={city} />
-            </div>
-          )}
+          </div>
         </div>
       </header>
+
 
       <HeaderCommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
