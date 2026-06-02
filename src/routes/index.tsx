@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
