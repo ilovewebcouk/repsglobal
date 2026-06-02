@@ -181,8 +181,8 @@ function HomePage() {
               ref={heroImgRef}
               src={heroCoaching}
               alt=""
-              style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
-              className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
+              style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.18)" }}
+              className="absolute inset-0 h-full w-full origin-bottom object-cover object-[center_30%] will-change-transform"
             />
             <div
               className="absolute inset-0"
