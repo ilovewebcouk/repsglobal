@@ -24,6 +24,7 @@ import { Route as PressRouteImport } from './routes/press'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as HomeV2RouteImport } from './routes/home-v2'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
@@ -161,6 +162,11 @@ const LoginRoute = LoginRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeV2Route = HomeV2RouteImport.update({
+  id: '/home-v2',
+  path: '/home-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -499,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/home-v2': typeof HomeV2Route
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
@@ -579,6 +586,7 @@ export interface FileRoutesByTo {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/home-v2': typeof HomeV2Route
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
@@ -659,6 +667,7 @@ export interface FileRoutesById {
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
+  '/home-v2': typeof HomeV2Route
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
@@ -741,6 +750,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/home-v2'
     | '/how-it-works'
     | '/login'
     | '/portal'
@@ -821,6 +831,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/home-v2'
     | '/how-it-works'
     | '/login'
     | '/portal'
@@ -900,6 +911,7 @@ export interface FileRouteTypes {
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
+    | '/home-v2'
     | '/how-it-works'
     | '/login'
     | '/portal'
@@ -981,6 +993,7 @@ export interface RootRouteChildren {
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRoute
+  HomeV2Route: typeof HomeV2Route
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
@@ -1147,6 +1160,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home-v2': {
+      id: '/home-v2'
+      path: '/home-v2'
+      fullPath: '/home-v2'
+      preLoaderRoute: typeof HomeV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -1634,6 +1654,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRoute,
+  HomeV2Route: HomeV2Route,
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
