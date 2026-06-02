@@ -843,7 +843,7 @@ function MobileSearchSheet({
               value={what}
               onChange={(e) => setWhat(e.target.value)}
               placeholder={`Search in ${city}…`}
-              className="w-full bg-transparent text-[14px] font-medium text-white placeholder:text-white/55 focus:outline-none"
+              className="w-full bg-transparent text-[16px] font-medium text-white placeholder:text-white/55 focus:outline-none"
             />
           </form>
           <SheetClose asChild>
