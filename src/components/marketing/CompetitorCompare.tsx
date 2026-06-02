@@ -196,13 +196,22 @@ export function CompetitorCompare() {
               </th>
               {COLS.map((c, i) => (
                 <th
-                  key={c}
+                  key={c.label}
                   scope="col"
                   className={`px-5 py-4 text-[13px] font-display font-bold ${
                     i === 0 ? "bg-reps-orange-soft text-reps-orange" : "text-white/80"
                   }`}
                 >
-                  {c}
+                  {c.logo ? (
+                    <img
+                      src={c.logo}
+                      alt={c.label}
+                      style={{ height: c.logoHeight ?? 22 }}
+                      className="w-auto"
+                    />
+                  ) : (
+                    c.label
+                  )}
                 </th>
               ))}
             </tr>
