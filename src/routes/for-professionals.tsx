@@ -93,10 +93,10 @@ const PITCH = [
   },
 ];
 
-const GROUP_VISUAL: Record<string, React.ReactNode> = {
-  visibility: <ProfileMockup />,
-  operations: <BookingsMockup />,
-  growth: <InsightsMockup />,
+const GROUP_VISUAL: Record<string, { label: string }> = {
+  visibility: { label: "Professional profile" },
+  operations: { label: "Bookings calendar" },
+  growth: { label: "Insights dashboard" },
 };
 
 const SHOWCASE = [
@@ -104,19 +104,19 @@ const SHOWCASE = [
     slug: "bookings" as const,
     title: "Bookings & calendar",
     body: "Two-way sync, deposits, reminders. No more no-shows.",
-    visual: <BookingsMockup />,
+    label: "Bookings",
   },
   {
     slug: "clients" as const,
     title: "Clients CRM",
     body: "One record per client — sessions, notes, payments, programmes.",
-    visual: <ClientsCrmMockup />,
+    label: "Clients CRM",
   },
   {
     slug: "payments" as const,
     title: "Payments",
     body: "Stripe payouts, subscriptions, VAT-ready invoicing.",
-    visual: <PaymentsMockup />,
+    label: "Payments",
   },
 ];
 
