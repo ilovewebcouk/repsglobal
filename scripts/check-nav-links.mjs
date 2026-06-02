@@ -39,6 +39,9 @@ const ORPHAN_ALLOWLIST = new Set([
   "/in/$location", "/professions/$profession",
   "/resources", "/resources/$slug",
   "/email", "/lovable",
+  "/business-tools", // redirects to /features
+  "/features/$slug", // dynamic, surfaced via mega-menu
+
 ]);
 
 function walkRoutes(dir, prefix = "") {
