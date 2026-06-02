@@ -63,35 +63,6 @@ const goalChips = [
   "Sport-specific",
 ];
 
-const heroProStack = [
-  {
-    name: "James Carter",
-    role: "Personal Trainer",
-    city: "London",
-    rating: 5.0,
-    reviews: 128,
-    price: "from £55 / session",
-    image: proJames,
-  },
-  {
-    name: "Sophie Williams",
-    role: "Pilates Instructor",
-    city: "Manchester",
-    rating: 5.0,
-    reviews: 96,
-    price: "from £45 / session",
-    image: proSophie,
-  },
-  {
-    name: "Daniel Roberts",
-    role: "Strength Coach",
-    city: "Birmingham",
-    rating: 4.9,
-    reviews: 74,
-    price: "from £60 / session",
-    image: proDaniel,
-  },
-];
 
 
 
