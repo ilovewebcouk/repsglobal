@@ -1111,28 +1111,6 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
-          <Link
-            to="/for-professionals"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(active.pros), "mt-2")}
-          >
-            <span className="flex items-center gap-2">
-              <User className="h-4 w-4" aria-hidden />
-              Become a Pro
-            </span>
-          </Link>
-
-          <Link
-            to="/for-professionals"
-            hash="pricing"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(false), "mt-1")}
-          >
-            <span className="flex items-center gap-2">
-              <User className="h-4 w-4" aria-hidden />
-              Pricing
-            </span>
-          </Link>
         </Accordion>
 
         <div className="mt-6 border-t border-reps-border pt-4">
