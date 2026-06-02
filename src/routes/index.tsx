@@ -263,6 +263,7 @@ function HomePage() {
 
             {/* Right column intentionally empty — lets the editorial coaching portrait breathe */}
             <div aria-hidden />
+          </div>
         </div>
       </section>
 
