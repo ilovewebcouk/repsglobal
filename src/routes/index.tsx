@@ -211,7 +211,7 @@ function HomePage() {
                   <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
                   <input
                     type="text"
-                    placeholder="Search coaches, goals, locations"
+                    placeholder="Search coaches, goals, specialisms"
                     aria-label="What do you want to train?"
                     className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
                   />
