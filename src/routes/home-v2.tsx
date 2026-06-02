@@ -146,16 +146,29 @@ function HomeV2() {
       {/* ============ HERO (locked) ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          {/* Mobile / tablet: full-bleed image, top-anchored, dark gradient ramp from bottom for legibility */}
           <div className="absolute inset-0 lg:hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/60 via-reps-black to-reps-black" />
+            <img
+              src={heroCoaching}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-[70%_30%] sm:object-[65%_28%]"
+            />
             <div
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  "radial-gradient(ellipse 75% 45% at 20% 75%, rgba(255,107,0,0.10) 0%, rgba(255,107,0,0.04) 40%, rgba(255,107,0,0) 70%)",
+                  "linear-gradient(to top, #0B0D10 0%, rgba(11,13,16,0.92) 28%, rgba(11,13,16,0.7) 50%, rgba(11,13,16,0.45) 75%, rgba(11,13,16,0.3) 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 80% 50% at 20% 80%, rgba(255,107,0,0.10) 0%, rgba(255,107,0,0.04) 45%, rgba(255,107,0,0) 75%)",
               }}
             />
           </div>
+          {/* Desktop: image anchored right, dark wash on the left so the copy column stays readable */}
           <div className="absolute inset-0 hidden lg:block">
             <img
               src={heroCoaching}
@@ -179,6 +192,7 @@ function HomeV2() {
             />
           </div>
         </div>
+
 
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
