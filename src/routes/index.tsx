@@ -167,7 +167,13 @@ function HomePage() {
                   "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
               }}
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px] bg-gradient-to-t from-reps-black via-reps-black/85 to-transparent" />
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 70% 55% at 20% 100%, rgba(11,13,16,0.95) 0%, rgba(11,13,16,0.7) 35%, rgba(11,13,16,0.25) 60%, rgba(11,13,16,0) 80%)",
+              }}
+            />
           </div>
         </div>
 
