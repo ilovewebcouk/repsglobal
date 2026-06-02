@@ -1,5 +1,29 @@
 // Centralised nav config for PublicHeader mega-menus.
-// Top professions + locations are static for Phase 1.
+// Goals / professions / locations / topics are static for Phase 1.
+
+import {
+  Flame,
+  Dumbbell,
+  Activity,
+  Baby,
+  HeartPulse,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
+
+export const TRAIN_GOALS: {
+  slug: string;
+  label: string;
+  outcome: string;
+  icon: LucideIcon;
+}[] = [
+  { slug: "fat-loss", label: "Lose body fat", outcome: "Sustainable cuts, no crash plans", icon: Flame },
+  { slug: "strength", label: "Get stronger", outcome: "Programmed lifting + progression", icon: Dumbbell },
+  { slug: "mobility", label: "Move better", outcome: "Mobility, posture, longevity", icon: Activity },
+  { slug: "pre-post-natal", label: "Pre & post-natal", outcome: "Safe coaching through pregnancy", icon: Baby },
+  { slug: "rehab", label: "Return from injury", outcome: "Rehab-aware coaches", icon: HeartPulse },
+  { slug: "sport", label: "Sport-specific", outcome: "Performance for your sport", icon: Trophy },
+];
 
 export const TOP_PROFESSIONS: { slug: string; label: string }[] = [
   { slug: "personal-trainer", label: "Personal Trainer" },
@@ -19,6 +43,7 @@ export const TOP_LOCATIONS: { slug: string; label: string }[] = [
   { slug: "bristol", label: "Bristol" },
 ];
 
+// Kept for footer use; no longer surfaced in header nav.
 export const ABOUT_LINKS = [
   { to: "/about", label: "About REPs", sub: "Who we are and what we stand for" },
   { to: "/standards", label: "Our Standards", sub: "The bar every professional clears" },
@@ -31,4 +56,10 @@ export const RESOURCE_TOPICS: { category: string; label: string }[] = [
   { category: "Find a Professional", label: "Find a Professional" },
   { category: "Fitness Business", label: "Fitness Business" },
   { category: "Verification & Standards", label: "Verification & Standards" },
+];
+
+export const RESOURCE_QUICK_LINKS = [
+  { to: "/standards" as const, label: "Our Standards" },
+  { to: "/verify" as const, label: "How verification works" },
+  { to: "/help" as const, label: "Help Centre" },
 ];
