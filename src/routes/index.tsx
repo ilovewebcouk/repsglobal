@@ -6,7 +6,7 @@ import {
   BadgeCheck,
   Calendar,
   Check,
-  ChevronDown,
+  Check,
   ChevronLeft,
   ChevronRight,
   Dumbbell,
