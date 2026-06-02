@@ -3,7 +3,6 @@ import {
   Activity,
   Apple,
   Award,
-  BadgeCheck,
   Calendar,
   Check,
   ChevronLeft,
@@ -19,7 +18,6 @@ import {
   Star,
   Stethoscope,
   Target,
-  
   Users,
 } from "lucide-react";
 
