@@ -150,7 +150,8 @@ function useCmdK(onOpen: () => void) {
 /* ---------------- style helpers ---------------- */
 
 const triggerBase =
-  "group inline-flex items-center gap-1 rounded-[6px] text-[14px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink";
+  "group inline-flex items-center gap-1 whitespace-nowrap rounded-[6px] text-[14px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink";
+
 
 function triggerClass(active: boolean) {
   return cn(
