@@ -87,6 +87,7 @@ function useActive() {
       pathname.startsWith("/standards") ||
       pathname.startsWith("/verify") ||
       pathname.startsWith("/help"),
+    howItWorks: pathname.startsWith("/how-it-works"),
     pros: pathname.startsWith("/for-professionals"),
   };
 }
