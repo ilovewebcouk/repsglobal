@@ -249,9 +249,7 @@ function ForProsPage() {
           </div>
 
           <div className="lg:pl-4">
-            <BrowserFrame>
-              <DashboardMockup />
-            </BrowserFrame>
+            <MockupPlaceholder label="Dashboard" />
           </div>
         </div>
       </section>
