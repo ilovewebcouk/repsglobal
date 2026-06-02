@@ -183,19 +183,33 @@ function HomeV2() {
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
             <div>
-              <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
-                Find. Trust. Train.
+              <span
+                className="animate-rise-in inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80 backdrop-blur"
+                style={{ animationDelay: "40ms" }}
+              >
+                <BadgeCheck className="h-3 w-3 text-reps-orange" />
+                The global standard for fitness — since 2009
+              </span>
+              <h1
+                className="animate-rise-in mt-5 font-display text-[56px] font-bold leading-[0.92] tracking-[-0.035em] text-white sm:text-[72px] lg:text-[88px]"
+                style={{ animationDelay: "120ms" }}
+              >
+                Find a coach
                 <br />
-                Transform.
+                <span className="text-reps-orange">worth trusting.</span>
               </h1>
-              <p className="mt-5 max-w-[520px] text-[17px] leading-relaxed text-white/75">
-                The world's register of verified fitness professionals. Real qualifications, real
-                reviews, real results.
+              <p
+                className="animate-rise-in mt-6 max-w-[520px] text-[18px] font-light leading-relaxed text-white/75"
+                style={{ animationDelay: "220ms" }}
+              >
+                25,000+ verified fitness professionals. Real qualifications. Real reviews.
+                <span className="text-white"> Real results — in 30 seconds.</span>
               </p>
 
               <form
                 onSubmit={(e) => e.preventDefault()}
-                className="mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+                className="animate-rise-in mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+                style={{ animationDelay: "320ms" }}
               >
                 <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
                   <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
@@ -218,14 +232,17 @@ function HomeV2() {
                 </label>
                 <button
                   type="submit"
-                  className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                  className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.6)] transition-all hover:bg-reps-orange-dark hover:shadow-[0_14px_38px_-10px_rgba(255,122,0,0.7)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 >
                   <Search className="h-4 w-4" aria-hidden />
                   Find your coach
                 </button>
               </form>
 
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div
+                className="animate-rise-in mt-5 flex flex-wrap gap-2"
+                style={{ animationDelay: "420ms" }}
+              >
                 {goalChips.map((g) => (
                   <button
                     key={g}
@@ -237,7 +254,10 @@ function HomeV2() {
                 ))}
               </div>
 
-              <div className="mt-7 flex items-center gap-4">
+              <div
+                className="animate-rise-in mt-7 flex items-center gap-4"
+                style={{ animationDelay: "520ms" }}
+              >
                 <div className="flex items-center -space-x-3">
                   {[proJames, proSophie, proDaniel, proLaura].map((src, i) => (
                     <span key={i} className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black">
