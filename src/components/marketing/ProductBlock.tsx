@@ -10,8 +10,8 @@ export interface ProductBlockProps {
   body: string;
   bullets: string[];
   imageLabel: string;
-  ctaLabel: string;
-  ctaSlug: FeatureLink["slug"];
+  ctaLabel?: string;
+  ctaSlug?: FeatureLink["slug"];
   reverse?: boolean;
 }
 
@@ -27,7 +27,7 @@ export function ProductBlock({
 }: ProductBlockProps) {
   return (
     <div
-      className={`grid items-center gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-14 ${
+      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-12 ${
         reverse ? "lg:[&>div:first-child]:order-2" : ""
       }`}
     >
@@ -48,13 +48,15 @@ export function ProductBlock({
             </li>
           ))}
         </ul>
-        <Link
-          to="/features/$slug"
-          params={{ slug: ctaSlug }}
-          className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
-        >
-          {ctaLabel} <ArrowRight className="h-4 w-4" />
-        </Link>
+        {ctaSlug && ctaLabel && (
+          <Link
+            to="/features/$slug"
+            params={{ slug: ctaSlug }}
+            className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
+          >
+            {ctaLabel} <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
       </div>
     </div>
   );

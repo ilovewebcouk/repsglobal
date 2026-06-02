@@ -1,100 +1,79 @@
-## Goal
+## What's wrong right now
 
-Rewrite `/for-professionals` to be a true category-defining page. Two-act narrative — **Act 1: the Register** (trust + clients), **Act 2: the Operating System** (run the practice). Cinematic full-bleed hero, no placeholder mockups in the hero, and a real side-by-side comparison naming Trainerize, MyPTHub and PT Distinction.
+1. **Uneven Act 2 columns** — `ProductBlock` uses `lg:grid-cols-[1.25fr_1fr]`, so the image side is wider than the text side. Fix to a true 50/50 grid (`lg:grid-cols-2`) with consistent gutter, so every block reads as a clean two-column pairing.
+2. **Act 2 is too thin** — only 3 product blocks (Bookings, Clients/Programmes/Check-ins lumped, Portal/Messaging lumped). The actual product surface in `src/routes/dashboard_.*` is much bigger: Leads, Bookings, Calendar, Payments, Clients (CRM), Programs, **Nutrition**, **Check-ins**, Messages, Reviews, **CPD**, **Community**, **Content**, **Reports/Business (AI)**. The page hides the breadth.
+3. **AI is buried** — the +24% block is fine but doesn't say what the AI actually *does*: writes programmes, drafts nutrition plans, summarises check-ins, prioritises leads, surfaces at-risk clients, writes follow-ups. That's the moat versus Trainerize/MyPTHub/PT Distinction.
+4. **"One app replaces X" story missing** — nothing visually says REPs replaces Trainerize + Calendly + Stripe + MyFitnessPal + Mailchimp + a CRM. That's the punchline.
+5. **Competitor table is too narrow** — 8 rows, mostly about the directory. Needs rows for AI programme builder, AI nutrition, AI check-in summaries, automated follow-ups, nutrition tracking, CPD/insurance, community, content scheduling — the things competitors literally don't have.
 
-## Final page order (top to bottom)
+## The plan
 
-1. **Cinematic hero** — full-bleed trainer photo + dark gradient. No product tile. Headline reframed to lead with the register/operating-system promise. Two CTAs + trust pill row.
-2. **Press strip** — unchanged.
-3. **Two-act intro** — split-screen "Act 1 · Get clients" / "Act 2 · Run your practice". One sentence each. Sets the spine for the rest of the page.
-4. **ACT 1 — The Register** *(new section, this is the moat)*
-   - Big editorial headline: "The industry register since 2009. The only platform clients actively search."
-   - 3-column proof: 25,000+ verified pros / Verified credentials, insurance & CPD / Public directory that delivers enquiries.
-   - Single hero image: the public directory search results screen (placeholder block sized like a real screenshot, neutral — no fake browser chrome). Caption: "This is where the public lands."
-5. **Verified credential strip** — gold-accented row: Qualifications verified · Insurance on file · CPD tracked · Reviews on the record. Explains the trust layer no SaaS competitor has.
-6. **ACT 2 — The Operating System** *(replaces current "See the platform" + "Feature pillars")*
-   - Editorial headline: "When clients arrive, REPs runs the rest."
-   - Three deep-dive blocks (alternating left/right), each a real product story not a feature card:
-     a. **Bookings & payments** — kill no-shows, Stripe payouts, deposits, recurring memberships.
-     b. **Clients, programmes & check-ins** — one record per client, programme builder with video library, weekly check-ins and progress photos. (This is the Trainerize-killer block.)
-     c. **Client portal & messaging** — branded portal for clients, focused inbox separate from personal phone.
-   - Each block: large product image area (placeholder for now, sized like a real screenshot), 1-line eyebrow, 1-sentence headline, 1 paragraph, 3 bullets, link to the feature deep-dive page.
-7. **Growth layer** — single block for Insights & AI ("the next move to grow this month"). One quote, big number ("+24% revenue YoY").
-8. **Comparison table** *(new — direct competitor section)*
-   - Headline: "REPs vs the coaching apps."
-   - 4-column table: REPs · Trainerize · MyPTHub · PT Distinction.
-   - ~8 rows: Public directory that brings clients · Industry-recognised credential · Verified register since 2009 · Bookings + Stripe payments · Programme builder + video library · Client portal · CPD tracking · Insurance on file.
-   - REPs column has check marks across the board; competitors have a mix of dashes and partial checks, with short truthful captions ("brings own clients only", "no public directory", etc.).
-   - Disclaimer line: "Comparisons reflect publicly available info at time of writing."
-9. **Earnings calculator** — keep, lightly trimmed copy to fit the new narrative.
-10. **"Get started in 3 steps"** — keep, copy unchanged.
-11. **Testimonials** — keep, copy unchanged.
-12. **Pricing** (`FoundingBanner` + `PricingPlans`) — keep.
-13. **Why priced this way** — keep, retitle to "A ladder, not a paywall."
-14. **Compare plans** (`PricingCompare`) — keep.
-15. **FAQ** — keep.
-16. **Final CTA + demo form** — keep.
-17. **Sticky CTA** — keep.
+### A. Fix the column rhythm (small, mechanical)
 
-The current "Pitch 3-up", "See the platform" showcase, and "Feature pillars" sections are **deleted** — their content is absorbed into the new Act 1 / Act 2 / Comparison structure.
+- `src/components/marketing/ProductBlock.tsx`: change grid to `lg:grid-cols-2` with `lg:gap-12`. Keep alternating reverse. Make `ctaSlug` optional (`ctaSlug?:`) so blocks that don't map to an existing `/features/$slug` page can still render without a broken link — render the link only when `ctaSlug` is provided.
 
-## Components & files
+### B. Expand Act 2 into a proper product tour
 
-### New components
-- `src/components/marketing/CompetitorCompare.tsx` — the 4-column comparison table. Self-contained, data-driven from a `ROWS` array. Mobile: collapses to stacked per-row cards.
-- `src/components/marketing/ActIntro.tsx` — small reusable split heading used by both Act 1 and Act 2.
-- `src/components/marketing/ProductBlock.tsx` — the alternating image/text deep-dive block used 3× in Act 2.
-- `src/components/marketing/RegisterProof.tsx` — Act 1's 3-column proof + verified credential strip.
+Replace the 3 ProductBlocks with a richer sequence that mirrors the full dashboard surface. Each is the same overline → H2 → 1 paragraph → 3-4 bullets → optional deep-dive link pattern the user likes:
 
-### Updated components
-- `src/components/mockups/MockupPlaceholder.tsx` — simplify to a clean neutral block sized for product screenshots (no faux browser chrome, no fake sidebar). It's clearly a "screenshot coming" frame, not a fake UI. Keeps the door open to drop real screenshots in later by swapping the inner element. Single export, same prop shape (`label`, `aspect`, `className`) so we don't break feature-page imports.
+1. **Lead pipeline** — every enquiry from your profile, Instagram, website lands in one pipeline; AI scores and replies first-draft. *→ /features/leads*
+2. **Bookings, calendar & payments** — deposits, Stripe payouts, recurring memberships, two-way calendar sync. Replaces Calendly + Stripe + invoicing. *→ /features/bookings*
+3. **Clients CRM** — one record per client: sessions, notes, payments, programmes, photos, messages, on one timeline. *→ /features/clients*
+4. **AI Programme Builder** — describe the client and AI drafts a 12-week programme with video demos; you tweak and publish. Trainerize makes you build it block by block. *→ /features/programmes*
+5. **Nutrition planning (MyFitnessPal, replaced)** — built-in food database, macro targets, AI meal plans, client logging from the portal. Kills the MyFitnessPal handoff. *(new block, no deep-dive link)*
+6. **Check-ins & progress** — weekly forms, photos, measurements, AI summary card: "Maya is plateauing — drop volume 10%, push protein." *→ /features/check-ins*
+7. **Messaging & autopilot follow-ups** — focused inbox separate from your phone, AI drafts replies, automated win-back/check-in nudges; quiet hours that actually stick. *→ /features/messaging*
+8. **Insights & the Monday move** — revenue, retention, churn risk, the single highest-leverage action this week. *→ /features/insights*
 
-### Files edited
-- `src/routes/for-professionals.tsx` — rebuild around the new section order, swap hero to full-bleed (no right-side mockup), import the four new components, delete the dead `SHOWCASE`, `GROUP_VISUAL`, and `PITCH` arrays.
+These are the spine of Act 2. Each is a real block (not a feature grid card), full width with alternating image side, even 50/50 columns.
 
-### Files untouched
-- `src/routes/features.$slug.tsx`, `src/routes/features.index.tsx`, `src/components/features/*`, `src/components/mockups/PlatformMockups.tsx`, `BrowserFrame.tsx` — all stay.
-- Pricing, footer, header, nav — untouched.
+### C. New "One app, six tools retired" strip
 
-## Copy direction (what the page actually says)
+A single horizontal section between Act 2 intro and the deep dives. Wordmark-style chips with strike-throughs:
 
-**Hero**
-- Eyebrow: "For professionals"
-- H1: "The register the industry trusts. The platform that runs your practice."
-- Sub: "REPs has been the UK's fitness professional register since 2009. Now it's also the operating system you run your business on — bookings, clients, programmes, payments and insights. One platform. One credential."
-- CTAs: "Create free profile" + "See plans"
+```text
+REPs replaces: Trainerize · Calendly · Stripe Billing · MyFitnessPal · Mailchimp · a CRM
+```
 
-**Act 1 — The Register**
-- Eyebrow: "Act 1 · Get clients"
-- H2: "The industry register since 2009. The only platform clients actively search."
-- Body: "Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software *and* clients — because the public already lands here when they're looking for a trusted pro."
+Editorial, dark panel, brand-orange accent on "REPs replaces". Gives the eye a beat and primes the deep dives.
 
-**Verified credential strip**
-- 4 inline items with check icons: Qualifications verified · Insurance on file · CPD tracked · Reviews on the record.
+### D. Lift the AI block out of the +24% panel
 
-**Act 2 — The Operating System**
-- Eyebrow: "Act 2 · Run your practice"
-- H2: "When clients arrive, REPs runs the rest."
-- Sub: "Bookings, payments, clients, programmes, check-ins, messaging and growth — in one place built for fitness, not generic SaaS."
+Promote AI to its own headline section after the deep dives (before the competitor table):
 
-**Comparison table**
-- H2: "REPs vs the coaching apps."
-- Sub: "Most coaching apps assume you already have clients. REPs is the only one that brings them too."
+- Eyebrow: **AI · Your business on autopilot**
+- H2: **An AI coach for your coaching business.**
+- 6 capability tiles (icon + 1-line each):
+  - AI programme writer
+  - AI nutrition planner
+  - AI check-in summariser
+  - AI lead prioritiser & first-draft reply
+  - AI client risk alerts
+  - AI Monday "next move" card
+- Keep the +24% revenue stat + Marcus quote as the supporting proof column on the right.
 
-## Technical detail
+### E. Beef up `CompetitorCompare`
 
-- All colours via existing `reps-*` tokens; no hardcoded hex.
-- Radius: cards 16/18, panels 22, hero corners stay square (full-bleed).
-- Hero photo: existing `@/assets/hero-trainer.jpg`, opacity raised slightly (~0.35) so the figure reads, plus stronger bottom gradient to keep text readable.
-- Comparison table uses `<table>` semantics with `scope="col"` headers for accessibility; competitor columns get muted text colour, REPs column gets a subtle orange tint background.
-- No new dependencies. No animation libraries — keep existing `animate-fade-in` / `animate-rise-in` utilities.
-- No router/route changes. No data, no auth, no backend touched.
-- Verify after build: page renders without console errors, hero has no placeholder tile, all internal `/features/$slug` links resolve, sticky CTA still works.
+Keep the 4-column layout (REPs / Trainerize / MyPTHub / PT Distinction). Expand rows from 8 to ~16, grouped under three subheads — **Get clients**, **Run your practice**, **Grow with AI** — so the table tells the same Act 1 / Act 2 / Growth story. New rows:
 
-## Out of scope
+- Get clients: public directory, industry credential, verified qualifications & insurance, CPD on profile, reviews on public record
+- Run your practice: bookings & Stripe, programme builder + video library, **nutrition planning**, weekly check-ins with photos, branded client portal, focused inbox + quiet hours, automated follow-ups
+- Grow with AI: AI programme writer, AI nutrition planner, AI check-in summariser, AI lead reply, AI "next move" card
 
-- No real screenshots yet (placeholder frames stay, just cleaner).
-- No animation overhaul.
-- No changes to `/features` hub, feature deep-dive pages, pricing data, nav, or footer.
-- No copy changes to the testimonial, FAQ, or earnings calculator beyond the small trim noted.
-- No competitor logo usage — names only in the comparison table.
+Trainerize/MyPTHub/PT Distinction get honest assessments — most cells are "—" or "Partial" on the AI rows, because none of them ship this. That's the point.
+
+### F. Keep everything else as-is
+
+Hero, press strip, two-act intro cards, register proof, earnings calculator, testimonials, pricing, founding banner, FAQ — untouched in this pass. We've already iterated those.
+
+## Files touched
+
+- `src/components/marketing/ProductBlock.tsx` — even 50/50 grid; make `ctaSlug` optional; render link conditionally.
+- `src/components/marketing/CompetitorCompare.tsx` — expand rows, add grouped subheads.
+- `src/components/marketing/ReplacesStrip.tsx` *(new, small)* — the "REPs replaces" line.
+- `src/components/marketing/AICapabilities.tsx` *(new)* — the AI section with 6 tiles + +24% proof.
+- `src/routes/for-professionals.tsx` — replace the 3 ProductBlocks with the 8 above, drop the standalone +24% growth section (folds into AICapabilities), insert ReplacesStrip between the Act 2 intro and the deep dives.
+
+## Scope guardrail
+
+Phase 1, presentation only. No new routes, no new feature pages, no AI APIs wired — every claim is descriptive marketing copy on the static page. The two "no deep-dive link" blocks (Nutrition, Replaces strip) deliberately don't link out yet because there's no `/features/nutrition` page; we can add one in a later pass if you want.
