@@ -272,7 +272,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             <div className="flex items-center gap-2">
               <Link
                 to="/verify"
-                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] 2xl:inline-flex"
+                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] lg:inline-flex"
               >
                 <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
                 All pros verified
