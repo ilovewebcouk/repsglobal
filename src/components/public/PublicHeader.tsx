@@ -405,58 +405,6 @@ function CompactSearchPill({
   );
 }
 
-/* ---------------- inline search (home hero) ---------------- */
-
-function InlineSearch({ city }: { city: string }) {
-  const navigate = useNavigate();
-  const [what, setWhat] = useState("");
-  const [where, setWhere] = useState(city);
-
-  useEffect(() => {
-    setWhere(city);
-  }, [city]);
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate({ to: "/find-a-professional" });
-  };
-
-  return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto flex max-w-[760px] items-center gap-2 rounded-[999px] border border-white/15 bg-white/[0.06] p-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur"
-    >
-      <label className="flex flex-1 items-center gap-2 rounded-[999px] px-4 py-2 transition-colors focus-within:bg-white/5">
-        <Search className="h-4 w-4 text-reps-orange" aria-hidden />
-        <span className="sr-only">What do you want to train?</span>
-        <input
-          value={what}
-          onChange={(e) => setWhat(e.target.value)}
-          placeholder="What do you want to train? e.g. strength, mobility…"
-          className="w-full bg-transparent text-[14px] font-medium text-white placeholder:text-white/55 focus:outline-none"
-        />
-      </label>
-      <span aria-hidden className="h-6 w-px bg-white/15" />
-      <label className="flex w-[200px] items-center gap-2 rounded-[999px] px-4 py-2 transition-colors focus-within:bg-white/5">
-        <MapPin className="h-4 w-4 text-white/70" aria-hidden />
-        <span className="sr-only">Where?</span>
-        <input
-          value={where}
-          onChange={(e) => setWhere(e.target.value)}
-          placeholder="Where?"
-          className="w-full bg-transparent text-[14px] font-medium text-white placeholder:text-white/55 focus:outline-none"
-        />
-      </label>
-      <button
-        type="submit"
-        className="inline-flex h-11 items-center gap-2 rounded-[999px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-      >
-        <Search className="h-4 w-4" aria-hidden />
-        Search
-      </button>
-    </form>
-  );
-}
 
 /* ---------------- location pin ---------------- */
 
