@@ -125,14 +125,6 @@ const featuredPros = [
   },
 ];
 
-const popularSearches = [
-  "Personal Trainer",
-  "Pilates Instructor",
-  "Nutritionist",
-  "Strength Coach",
-  "Pre & Postnatal",
-  "Online Coaching",
-];
 
 function HomePage() {
   return (
