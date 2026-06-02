@@ -21,17 +21,7 @@ import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { PricingCompare } from "@/components/pricing/PricingCompare";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
-import { BrowserFrame } from "@/components/mockups/BrowserFrame";
-import {
-  BookingsMockup,
-  ClientsCrmMockup,
-  DashboardMockup,
-  InsightsMockup,
-  LeadsMockup,
-  PaymentsMockup,
-  ProfileMockup,
-  ProgrammesMockup,
-} from "@/components/mockups/PlatformMockups";
+import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
 import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
@@ -103,10 +93,10 @@ const PITCH = [
   },
 ];
 
-const GROUP_VISUAL: Record<string, React.ReactNode> = {
-  visibility: <ProfileMockup />,
-  operations: <BookingsMockup />,
-  growth: <InsightsMockup />,
+const GROUP_VISUAL: Record<string, { label: string }> = {
+  visibility: { label: "Professional profile" },
+  operations: { label: "Bookings calendar" },
+  growth: { label: "Insights dashboard" },
 };
 
 const SHOWCASE = [
@@ -114,19 +104,19 @@ const SHOWCASE = [
     slug: "bookings" as const,
     title: "Bookings & calendar",
     body: "Two-way sync, deposits, reminders. No more no-shows.",
-    visual: <BookingsMockup />,
+    label: "Bookings",
   },
   {
     slug: "clients" as const,
     title: "Clients CRM",
     body: "One record per client — sessions, notes, payments, programmes.",
-    visual: <ClientsCrmMockup />,
+    label: "Clients CRM",
   },
   {
     slug: "payments" as const,
     title: "Payments",
     body: "Stripe payouts, subscriptions, VAT-ready invoicing.",
-    visual: <PaymentsMockup />,
+    label: "Payments",
   },
 ];
 
@@ -259,9 +249,7 @@ function ForProsPage() {
           </div>
 
           <div className="lg:pl-4">
-            <BrowserFrame>
-              <DashboardMockup />
-            </BrowserFrame>
+            <MockupPlaceholder label="Dashboard" />
           </div>
         </div>
       </section>
@@ -336,7 +324,7 @@ function ForProsPage() {
                   i % 2 === 1 ? "lg:[&>div:first-child]:order-2" : ""
                 }`}
               >
-                <BrowserFrame>{s.visual}</BrowserFrame>
+                <MockupPlaceholder label={s.label} />
                 <div>
                   <h3 className="font-display text-[24px] font-bold text-white lg:text-[30px]">
                     {s.title}
@@ -400,7 +388,7 @@ function ForProsPage() {
                         </Link>
                       ))}
                     </div>
-                    <BrowserFrame>{GROUP_VISUAL[group.key]}</BrowserFrame>
+                    <MockupPlaceholder label={GROUP_VISUAL[group.key].label} />
                   </div>
                 </div>
               );
