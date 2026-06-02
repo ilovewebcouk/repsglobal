@@ -361,10 +361,9 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               </Sheet>
             </div>
           </div>
-
-          </div>
         </div>
       </header>
+
 
 
       <HeaderCommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
