@@ -231,7 +231,7 @@ function HomePage() {
                   className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 >
                   <Search className="h-4 w-4" aria-hidden />
-                  Find Professionals
+                  Find your coach
                 </button>
               </form>
 
