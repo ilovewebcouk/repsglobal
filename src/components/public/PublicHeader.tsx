@@ -133,18 +133,6 @@ function useMockUser() {
   return { user, signOut };
 }
 
-function useCmdK(onOpen: () => void) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        onOpen();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onOpen]);
-}
 
 /* ---------------- style helpers ---------------- */
 
@@ -179,12 +167,12 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   const isSolid = useIsSolid(variant);
   const active = useActive();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [cmdOpen, setCmdOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  
+  
   const { city, setCity } = useLocationPin();
   const { user, signOut } = useMockUser();
 
-  useCmdK(() => setCmdOpen(true));
+  
 
   // Two-row expanded layout only on home, at rest, on desktop.
   const expanded = active.isHome && !isSolid;
@@ -269,19 +257,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             </NavigationMenu.Root>
 
             <div className="flex items-center gap-2">
-              <Link
-                to="/verify"
-                className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-[999px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-white transition-colors hover:border-reps-orange hover:bg-[rgba(255,122,0,0.18)] lg:inline-flex"
-              >
-                <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
-                All pros verified
-              </Link>
 
-              <CompactSearchPill
-                expanded={expanded}
-                city={city}
-                onClick={() => setCmdOpen(true)}
-              />
 
               {user && (
                 <Link
@@ -315,15 +291,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </>
               )}
 
-              {/* Mobile: search pill + hamburger */}
-              <button
-                type="button"
-                onClick={() => setMobileSearchOpen(true)}
-                aria-label="Search professionals"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:hidden"
-              >
-                <Search className="h-4 w-4" aria-hidden />
-              </button>
 
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
@@ -359,14 +326,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
 
-      <HeaderCommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
-
-      <MobileSearchSheet
-        open={mobileSearchOpen}
-        onOpenChange={setMobileSearchOpen}
-        city={city}
-        onChangeCity={setCity}
-      />
     </>
   );
 }
