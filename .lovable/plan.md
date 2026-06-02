@@ -1,15 +1,21 @@
-### 1. Remove v2 preview banner
-In `src/routes/index.tsx`, delete the fixed "Homepage v2 preview" badge block (the `<div className="fixed left-1/2 top-[88px] z-40 ...">` containing `<Sparkles /> Homepage v2 preview`). Remove `Sparkles` from the `lucide-react` import if it's no longer used elsewhere in the file.
+### 1. Add "How it works" to the top header
 
-### 2. Mobile menu — restore a direct path to Find a Professional
-In `src/components/public/PublicHeader.tsx` `MobileDrawer`, the "Find a Pro" accordion currently only links to `/professions/$profession` and `/in/$location` sub-pages. Add a "Browse all professionals" link at the very top of that accordion's content, going to `/find-a-professional`, styled with `mobileSubLinkClass` and separated from the "Top professions" / "Top cities" sub-lists with a subtle divider. ("Train by goal" already links there, but this surfaces it as the obvious entry point.)
+`src/components/public/PublicHeader.tsx`:
 
-### 3. QA mobile + tablet hero above the fold
-Open `/` in the browser at 390×844 (mobile) and 820×1180 (tablet). Screenshot and verify:
-- Headline + search form visible above the fold
-- "Find your coach" button not clipped
-- Goal chips wrap cleanly, no horizontal scroll
-- Solid black background (no image) on both
-Only adjust hero top padding / headline scale if something actually clips. Report findings.
+- **Desktop nav**: insert a new `<Link to="/how-it-works">How it works</Link>` between "Find a Pro" and "Resources", using the same `menuItemClass` as its siblings.
+- **Mobile drawer** (`MobileDrawer`): insert a flat (non-accordion) link "How it works" → `/how-it-works` between the "Find a Pro" and "Resources" accordion items, styled with `mobileLinkClass(active)`.
+- Extend the `active` map to include `howItWorks: pathname.startsWith("/how-it-works")` so the link gets active styling on `/how-it-works`.
+
+### 2. Surface the orphaned `/faq` page
+
+`src/components/public/PublicFooter.tsx`:
+
+- Add `{ label: "FAQ", to: "/faq" }` to the **For Members** column, after "Help Centre".
+
+### 3. Out of scope (intentional)
+
+- Pricing stays footer-only.
+- `/verify` route exists — no change needed.
+- `/unsubscribe` stays out of nav (email-only).
 
 No other files change.

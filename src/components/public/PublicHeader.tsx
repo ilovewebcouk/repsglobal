@@ -87,6 +87,7 @@ function useActive() {
       pathname.startsWith("/standards") ||
       pathname.startsWith("/verify") ||
       pathname.startsWith("/help"),
+    howItWorks: pathname.startsWith("/how-it-works"),
     pros: pathname.startsWith("/for-professionals"),
   };
 }
@@ -238,6 +239,15 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <FindMenu />
                   </NavigationMenu.Content>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link to="/how-it-works" className={cn(triggerClass(active.howItWorks), "px-0")}>
+                      How it works
+                      <ActiveDot show={active.howItWorks} />
+                    </Link>
+                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
@@ -899,6 +909,14 @@ function MobileDrawer({
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          <Link
+            to="/how-it-works"
+            onClick={onNavigate}
+            className={cn(mobileLinkClass(active.howItWorks), "block")}
+          >
+            How it works
+          </Link>
 
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
