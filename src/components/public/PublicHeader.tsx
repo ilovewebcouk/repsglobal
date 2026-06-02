@@ -910,6 +910,14 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
+          <Link
+            to="/how-it-works"
+            onClick={onNavigate}
+            className={cn(mobileLinkClass(active.howItWorks), "block")}
+          >
+            How it works
+          </Link>
+
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
               className={cn(
