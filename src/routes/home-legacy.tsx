@@ -42,8 +42,6 @@ export const Route = createFileRoute("/home-legacy")({
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
-    links: [{ rel: "canonical", href: "/" }],
-  }),
   component: HomePage,
 });
 
