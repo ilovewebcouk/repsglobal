@@ -296,25 +296,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
 
-              <Link
-                to="/for-professionals"
-                hash="pricing"
-                className="hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
-              >
-                Pricing
-              </Link>
-
-              <Link
-                to="/for-professionals"
-                className={cn(
-                  "hidden h-10 items-center whitespace-nowrap rounded-[10px] px-3 text-[13px] font-medium transition-colors lg:inline-flex",
-                  active.pros
-                    ? "text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white",
-                )}
-              >
-                Become a Pro
-              </Link>
 
               {user ? (
                 <UserMenu user={user} onSignOut={signOut} />
@@ -327,7 +308,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     Log in
                   </Link>
                   <Link
-                    to="/signup"
+                    to="/for-professionals"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
                     Join REPs
@@ -990,7 +971,7 @@ function MobileDrawer({
               Log in
             </Link>
             <Link
-              to="/signup"
+              to="/for-professionals"
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] bg-reps-orange px-3 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
             >
@@ -1130,28 +1111,6 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
-          <Link
-            to="/for-professionals"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(active.pros), "mt-2")}
-          >
-            <span className="flex items-center gap-2">
-              <User className="h-4 w-4" aria-hidden />
-              Become a Pro
-            </span>
-          </Link>
-
-          <Link
-            to="/for-professionals"
-            hash="pricing"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(false), "mt-1")}
-          >
-            <span className="flex items-center gap-2">
-              <User className="h-4 w-4" aria-hidden />
-              Pricing
-            </span>
-          </Link>
         </Accordion>
 
         <div className="mt-6 border-t border-reps-border pt-4">
