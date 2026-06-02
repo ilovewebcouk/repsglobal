@@ -154,16 +154,18 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-reps-ivory">
+      <PublicHeader variant="transparent" />
+
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
-        <div className="absolute inset-0 -z-10">
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <img
             ref={heroImgRef}
             src={heroCoaching}
             alt=""
             style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
-            className="h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
+            className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
@@ -184,8 +186,6 @@ function HomePage() {
           {/* Bottom fade — full width, tall enough to dissolve the portrait into solid black before the ivory stats strip */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px] bg-gradient-to-t from-reps-black via-reps-black/85 to-transparent" />
         </div>
-
-        <PublicHeader variant="transparent" />
 
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
