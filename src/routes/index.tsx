@@ -26,6 +26,8 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoachingMobileAsset from "@/assets/hero-coaching-mobile.jpg.asset.json";
+const heroCoachingMobile = heroCoachingMobileAsset.url;
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -158,34 +160,41 @@ function HomePage() {
 
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
+        {/* Background: separate mobile + desktop image strategies */}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <img
-            ref={heroImgRef}
-            src={heroCoaching}
-            alt=""
-            style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
-            className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
-          />
-          {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
-          <div
-            className="absolute inset-0 lg:hidden"
-            style={{
-              backgroundImage:
-                "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
-            }}
-          />
-          {/* Desktop: solid behind copy column, fading clear to the right so the gym/trainers come through */}
-          <div
-            className="absolute inset-0 hidden lg:block"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
-            }}
-          />
-          {/* Bottom fade — full width, tall enough to dissolve the portrait into solid black before the ivory stats strip */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px] bg-gradient-to-t from-reps-black via-reps-black/85 to-transparent" />
+          {/* Mobile/tablet: portrait cinematic hero with layered scrim */}
+          <div className="absolute inset-0 lg:hidden">
+            <img
+              src={heroCoachingMobile}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            {/* Layered scrim: base ramp, bottom dissolve, mood wash */}
+            <div className="absolute inset-0 bg-gradient-to-b from-reps-black/80 via-reps-black/40 to-reps-black opacity-90" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-reps-black via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-black/20" />
+          </div>
+
+          {/* Desktop: original composited hero with parallax + right-side fade */}
+          <div className="absolute inset-0 hidden lg:block">
+            <img
+              ref={heroImgRef}
+              src={heroCoaching}
+              alt=""
+              style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
+              className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
+              }}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px] bg-gradient-to-t from-reps-black via-reps-black/85 to-transparent" />
+          </div>
         </div>
+
 
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">

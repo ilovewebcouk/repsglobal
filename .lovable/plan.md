@@ -1,20 +1,32 @@
 ## Goal
-Prevent iOS Safari from zooming the viewport when the user taps the mobile search input opened from the header magnifying glass.
+Replace the empty black mobile hero with a cinematic portrait-oriented training photo + layered scrim, matching the approved "Cinematic vignette" direction. Desktop hero stays untouched.
 
-## Root cause
-iOS Safari auto-zooms into any focused `<input>` with a computed `font-size` below 16px. The mobile search sheet input in `src/components/public/PublicHeader.tsx` (line ~849) uses `text-[14px]`, which trips this behavior.
+## What's already done
+- Generated `src/assets/hero-coaching-mobile.jpg` — moody portrait of a trainer with rim lighting, lower third naturally falls to black so the search card sits clean over it.
 
-## Change
-In `src/components/public/PublicHeader.tsx`, update the mobile search sheet input className:
+## Changes to `src/routes/index.tsx`
 
-- Replace `text-[14px]` with `text-[16px]` on that single input.
-- Leave all other inputs and the desktop/scrolled search pill untouched.
+1. **Import the new asset** (line 28):
+   ```ts
+   import heroCoachingMobile from "@/assets/hero-coaching-mobile.jpg";
+   ```
 
-That is the entire code change — one class swap, scoped to the mobile sheet.
+2. **Restructure the hero background block (lines 162–188)** so mobile and desktop each get their own dedicated image + scrim, instead of a single desktop-cropped image with a mobile gradient bolted on:
 
-## Why not the other options
-- The `font-size: 16px` + `transform: scale()` trick keeps the 14px look but mis-aligns caret/placeholder and complicates focus styling. Not worth it for a 2px difference.
-- Doing nothing is acceptable but the zoom is noticeable on first tap and feels unpolished.
+   - **Mobile (`< lg`):** render `<img src={heroCoachingMobile}>` full-bleed, `object-cover object-center`, then layer the v2 three-stop scrim:
+     - `bg-gradient-to-b from-reps-black/80 via-reps-black/40 to-reps-black opacity-90`
+     - bottom-half `bg-gradient-to-t from-reps-black via-transparent to-transparent`
+     - flat `bg-black/20` mood layer
+   - **Desktop (`lg+`):** keep the existing `heroCoaching` image, parallax, right-side fade, and bottom dissolve exactly as they are — wrap them in a `hidden lg:block` container.
+
+3. **Parallax ref:** keep the existing `heroImgRef` bound to the *desktop* image only. The mobile image stays static (matches the prototype; no parallax surprises on iOS).
+
+4. **No changes** to: headline, body copy, search form, goal chips, social proof row, header, footer, or any below-hero section.
 
 ## Verification
-Reload `/` on the mobile preview (390×844), tap the header magnifying glass, tap into the input — viewport should no longer zoom. Desktop header search pill is unaffected.
+- Take mobile screenshot at 390×844 — confirm: photo visible behind headline, headline white and crisp, search card legible, orange CTA punchy, no banding at the card's top edge.
+- Take desktop screenshot at 1366×768 — confirm pixel-identical to current desktop hero (parallax still works, right-side trainer cluster still visible).
+- Verify no horizontal scroll on mobile.
+
+## Out of scope
+Header chrome, search behavior, copy, tag pill set, trust line, any other section. This is hero background only.
