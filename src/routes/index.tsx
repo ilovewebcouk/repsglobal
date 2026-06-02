@@ -139,12 +139,12 @@ function HomePage() {
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
+        {/* Background: single composited hero image with slow Ken Burns and gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
           <img
             src={heroCoaching}
             alt=""
-            className="h-full w-full origin-right scale-110 object-cover object-center translate-x-[18%]"
+            className="animate-hero-kenburns h-full w-full object-cover [object-position:70%_center]"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
@@ -154,12 +154,12 @@ function HomePage() {
                 "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 75%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: solid behind copy column, fading clear to the right so the gym/trainers come through */}
+          {/* Desktop: solid behind copy column, fading clear by ~55% so the portrait dominates the right half */}
           <div
             className="absolute inset-0 hidden lg:block"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 22%, rgba(11,13,16,0.55) 38%, rgba(11,13,16,0.1) 55%, rgba(11,13,16,0) 70%)",
             }}
           />
           {/* Subtle bottom fade so the search panel sits on a denser ground */}
