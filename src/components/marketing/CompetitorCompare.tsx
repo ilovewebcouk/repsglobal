@@ -267,17 +267,26 @@ export function CompetitorCompare() {
             <ul className="mt-3 space-y-2">
               {COLS.map((c, i) => (
                 <li
-                  key={c}
+                  key={c.label}
                   className={`flex items-start gap-2 rounded-[10px] px-3 py-2 ${
                     i === 0 ? "bg-reps-orange-soft" : "bg-reps-ink/40"
                   }`}
                 >
                   <span
-                    className={`min-w-[88px] text-[11px] font-semibold uppercase tracking-wider ${
+                    className={`flex min-w-[88px] items-center text-[11px] font-semibold uppercase tracking-wider ${
                       i === 0 ? "text-reps-orange" : "text-white/55"
                     }`}
                   >
-                    {c}
+                    {c.logo ? (
+                      <img
+                        src={c.logo}
+                        alt={c.label}
+                        style={{ height: 14 }}
+                        className="w-auto"
+                      />
+                    ) : (
+                      c.label
+                    )}
                   </span>
                   <CellIcon cell={row.cells[i]} highlight={i === 0} />
                 </li>
