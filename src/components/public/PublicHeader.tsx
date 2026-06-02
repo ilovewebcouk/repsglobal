@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import {
   ChevronDown,
   Menu,
-  Search,
   X,
   MapPin,
   ShieldCheck,
@@ -50,7 +49,7 @@ import {
   TOP_PROFESSIONS,
   TRAIN_GOALS,
 } from "./nav-config";
-import { HeaderCommandPalette } from "./HeaderCommandPalette";
+
 
 type Variant = "transparent" | "solid";
 
