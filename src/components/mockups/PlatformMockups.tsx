@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 /**
  * Reusable, presentation-only platform mockups.
  * Pure Tailwind + REPs tokens — no real data, no images required.
@@ -194,11 +195,8 @@ export function BookingsMockup() {
             </div>
           ))}
           {Array.from({ length: 6 }).map((_, row) => (
-            <>
-              <div
-                key={`t-${row}`}
-                className="flex items-start justify-end bg-reps-panel pr-1 pt-0.5 font-mono text-[9px] text-white/40"
-              >
+            <Fragment key={row}>
+              <div className="flex items-start justify-end bg-reps-panel pr-1 pt-0.5 font-mono text-[9px] text-white/40">
                 {7 + row * 2}:00
               </div>
               {days.map((_, day) => {
@@ -217,7 +215,7 @@ export function BookingsMockup() {
                   </div>
                 );
               })}
-            </>
+            </Fragment>
           ))}
         </div>
       </div>
