@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { RESOURCE_ARTICLES } from "@/lib/resources";
+import { cn } from "@/lib/utils";
 import {
   ABOUT_LINKS,
   RESOURCE_TOPICS,
@@ -11,42 +12,14 @@ import {
 
 type Variant = "transparent" | "solid";
 
-type DropdownKey = "find" | "resources" | "about";
-
 const triggerClass =
-  "flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white focus:outline-none";
+  "group inline-flex items-center gap-1 text-[14px] font-medium text-white/85 transition-colors hover:text-white focus:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink rounded-[6px] data-[state=open]:text-white";
 
 export function PublicHeader({ variant = "transparent" }: { variant?: Variant }) {
   const wrapperClass =
     variant === "transparent"
       ? "absolute inset-x-0 top-0 z-30 bg-transparent"
       : "sticky top-0 z-30 bg-reps-ink border-b border-reps-border";
-
-  const [open, setOpen] = useState<DropdownKey | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const scheduleClose = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpen(null), 120);
-  };
-  const cancelClose = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-  const openMenu = (key: DropdownKey) => {
-    cancelClose();
-    setOpen(key);
-  };
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
 
   return (
     <header className={wrapperClass}>
@@ -62,44 +35,68 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          <NavTrigger
-            label="Find a Professional"
-            isOpen={open === "find"}
-            onEnter={() => openMenu("find")}
-            onLeave={scheduleClose}
-          >
-            <FindMenu onItemClick={() => setOpen(null)} />
-          </NavTrigger>
+        <NavigationMenu.Root
+          delayDuration={120}
+          skipDelayDuration={200}
+          className="relative hidden lg:block"
+        >
+          <NavigationMenu.List className="flex items-center gap-7">
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className={triggerClass}>
+                Find a Professional
+                <ChevronDown
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                />
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
+                <FindMenu />
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
 
-          <Link to="/how-it-works" className={triggerClass}>
-            How REPs Works
-          </Link>
+            <NavigationMenu.Item>
+              <NavigationMenu.Link asChild>
+                <Link to="/how-it-works" className={triggerClass}>
+                  How REPs Works
+                </Link>
+              </NavigationMenu.Link>
+            </NavigationMenu.Item>
 
-          <Link to="/for-professionals" className={triggerClass}>
-            For Professionals
-          </Link>
+            <NavigationMenu.Item>
+              <NavigationMenu.Link asChild>
+                <Link to="/for-professionals" className={triggerClass}>
+                  For Professionals
+                </Link>
+              </NavigationMenu.Link>
+            </NavigationMenu.Item>
 
-          <NavTrigger
-            label="Resources"
-            href="/resources"
-            isOpen={open === "resources"}
-            onEnter={() => openMenu("resources")}
-            onLeave={scheduleClose}
-          >
-            <ResourcesMenu onItemClick={() => setOpen(null)} />
-          </NavTrigger>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className={triggerClass}>
+                Resources
+                <ChevronDown
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                />
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
+                <ResourcesMenu />
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
 
-          <NavTrigger
-            label="About REPs"
-            href="/about"
-            isOpen={open === "about"}
-            onEnter={() => openMenu("about")}
-            onLeave={scheduleClose}
-          >
-            <AboutMenu onItemClick={() => setOpen(null)} />
-          </NavTrigger>
-        </nav>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className={triggerClass}>
+                About REPs
+                <ChevronDown
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                />
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
+                <AboutMenu />
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+          </NavigationMenu.List>
+        </NavigationMenu.Root>
 
         <div className="flex items-center gap-2">
           <Link
@@ -120,64 +117,29 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   );
 }
 
-function NavTrigger({
-  label,
-  href,
-  isOpen,
-  onEnter,
-  onLeave,
+function PanelShell({
+  width,
   children,
 }: {
-  label: string;
-  href?: string;
-  isOpen: boolean;
-  onEnter: () => void;
-  onLeave: () => void;
+  width: string;
   children: React.ReactNode;
 }) {
-  const Trigger = href ? (
-    <Link to={href} className={triggerClass} onFocus={onEnter}>
-      {label}
-      <ChevronDown className="h-3.5 w-3.5 opacity-70" />
-    </Link>
-  ) : (
-    <button type="button" className={triggerClass} onFocus={onEnter}>
-      {label}
-      <ChevronDown className="h-3.5 w-3.5 opacity-70" />
-    </button>
-  );
-
   return (
     <div
-      className="relative"
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-    >
-      {Trigger}
-      {isOpen && (
-        <div
-          className="absolute left-1/2 top-full z-40 -translate-x-1/2 pt-3"
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
-        >
-          {children}
-        </div>
+      className={cn(
+        width,
+        "rounded-[18px] border border-reps-stone bg-white p-6 text-reps-charcoal shadow-lg",
       )}
-    </div>
-  );
-}
-
-function PanelShell({ width, children }: { width: string; children: React.ReactNode }) {
-  return (
-    <div
-      className={`${width} rounded-[18px] border border-reps-stone bg-white p-6 text-reps-charcoal`}
     >
       {children}
     </div>
   );
 }
 
-function FindMenu({ onItemClick }: { onItemClick: () => void }) {
+const menuItemClass =
+  "block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal transition-colors hover:bg-reps-warm-white hover:text-reps-orange focus:bg-reps-warm-white focus:text-reps-orange focus:outline-none";
+
+function FindMenu() {
   return (
     <PanelShell width="w-[640px]">
       <div className="grid grid-cols-2 gap-8">
@@ -185,17 +147,18 @@ function FindMenu({ onItemClick }: { onItemClick: () => void }) {
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
             Top professions
           </h4>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 flex flex-col gap-2">
             {TOP_PROFESSIONS.map((p) => (
               <li key={p.slug}>
-                <Link
-                  to="/professions/$profession"
-                  params={{ profession: p.slug }}
-                  onClick={onItemClick}
-                  className="block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal hover:bg-reps-warm-white hover:text-reps-orange"
-                >
-                  {p.label}
-                </Link>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    to="/professions/$profession"
+                    params={{ profession: p.slug }}
+                    className={menuItemClass}
+                  >
+                    {p.label}
+                  </Link>
+                </NavigationMenu.Link>
               </li>
             ))}
           </ul>
@@ -204,53 +167,56 @@ function FindMenu({ onItemClick }: { onItemClick: () => void }) {
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
             Top locations
           </h4>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 flex flex-col gap-2">
             {TOP_LOCATIONS.map((l) => (
               <li key={l.slug}>
-                <Link
-                  to="/in/$location"
-                  params={{ location: l.slug }}
-                  onClick={onItemClick}
-                  className="block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal hover:bg-reps-warm-white hover:text-reps-orange"
-                >
-                  {l.label}
-                </Link>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    to="/in/$location"
+                    params={{ location: l.slug }}
+                    className={menuItemClass}
+                  >
+                    {l.label}
+                  </Link>
+                </NavigationMenu.Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
       <div className="mt-5 border-t border-reps-stone pt-4">
-        <Link
-          to="/find-a-professional"
-          onClick={onItemClick}
-          className="text-[13px] font-semibold text-reps-orange hover:underline"
-        >
-          Browse all professionals →
-        </Link>
+        <NavigationMenu.Link asChild>
+          <Link
+            to="/find-a-professional"
+            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
+          >
+            Browse all professionals →
+          </Link>
+        </NavigationMenu.Link>
       </div>
     </PanelShell>
   );
 }
 
-function AboutMenu({ onItemClick }: { onItemClick: () => void }) {
+function AboutMenu() {
   return (
     <PanelShell width="w-[320px]">
-      <ul className="space-y-1">
+      <ul className="flex flex-col gap-1">
         {ABOUT_LINKS.map((item) => (
           <li key={item.to}>
-            <Link
-              to={item.to}
-              onClick={onItemClick}
-              className="block rounded-[10px] px-3 py-2 hover:bg-reps-warm-white"
-            >
-              <span className="block text-[14px] font-semibold text-reps-charcoal">
-                {item.label}
-              </span>
-              <span className="mt-0.5 block text-[12px] text-reps-charcoal/65">
-                {item.sub}
-              </span>
-            </Link>
+            <NavigationMenu.Link asChild>
+              <Link
+                to={item.to}
+                className="block rounded-[10px] px-3 py-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+              >
+                <span className="block text-[14px] font-semibold text-reps-charcoal">
+                  {item.label}
+                </span>
+                <span className="mt-0.5 block text-[12px] text-reps-charcoal/65">
+                  {item.sub}
+                </span>
+              </Link>
+            </NavigationMenu.Link>
           </li>
         ))}
       </ul>
@@ -258,7 +224,7 @@ function AboutMenu({ onItemClick }: { onItemClick: () => void }) {
   );
 }
 
-function ResourcesMenu({ onItemClick }: { onItemClick: () => void }) {
+function ResourcesMenu() {
   const featured = RESOURCE_ARTICLES.slice(0, 3);
   return (
     <PanelShell width="w-[640px]">
@@ -267,16 +233,14 @@ function ResourcesMenu({ onItemClick }: { onItemClick: () => void }) {
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
             Browse by topic
           </h4>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 flex flex-col gap-2">
             {RESOURCE_TOPICS.map((t) => (
               <li key={t.category}>
-                <Link
-                  to="/resources"
-                  onClick={onItemClick}
-                  className="block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal hover:bg-reps-warm-white hover:text-reps-orange"
-                >
-                  {t.label}
-                </Link>
+                <NavigationMenu.Link asChild>
+                  <Link to="/resources" className={menuItemClass}>
+                    {t.label}
+                  </Link>
+                </NavigationMenu.Link>
               </li>
             ))}
           </ul>
@@ -285,35 +249,37 @@ function ResourcesMenu({ onItemClick }: { onItemClick: () => void }) {
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
             Featured articles
           </h4>
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-3 flex flex-col gap-3">
             {featured.map((a) => (
               <li key={a.slug}>
-                <Link
-                  to="/resources/$slug"
-                  params={{ slug: a.slug }}
-                  onClick={onItemClick}
-                  className="block rounded-[8px] px-2 py-1 hover:bg-reps-warm-white"
-                >
-                  <span className="block text-[13px] font-semibold leading-snug text-reps-charcoal hover:text-reps-orange">
-                    {a.title}
-                  </span>
-                  <span className="mt-0.5 block text-[11px] text-reps-charcoal/60">
-                    {a.category} · {a.readTime}
-                  </span>
-                </Link>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    to="/resources/$slug"
+                    params={{ slug: a.slug }}
+                    className="block rounded-[8px] px-2 py-1 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+                  >
+                    <span className="block text-[13px] font-semibold leading-snug text-reps-charcoal hover:text-reps-orange">
+                      {a.title}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-reps-charcoal/60">
+                      {a.category} · {a.readTime}
+                    </span>
+                  </Link>
+                </NavigationMenu.Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
       <div className="mt-5 border-t border-reps-stone pt-4">
-        <Link
-          to="/resources"
-          onClick={onItemClick}
-          className="text-[13px] font-semibold text-reps-orange hover:underline"
-        >
-          All articles →
-        </Link>
+        <NavigationMenu.Link asChild>
+          <Link
+            to="/resources"
+            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
+          >
+            All articles →
+          </Link>
+        </NavigationMenu.Link>
       </div>
     </PanelShell>
   );
