@@ -198,9 +198,9 @@ function HomePage() {
 
         <PublicHeader variant="transparent" />
 
-        <div className="mx-auto max-w-[1320px] px-6 pb-12 pt-[140px] lg:px-10 lg:pb-16 lg:pt-[160px]">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_minmax(0,300px)] lg:items-start lg:gap-16">
-            {/* Left: headline + badges */}
+        <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
+          <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
+            {/* Left: headline + search + chips + trust */}
             <div>
               <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
                 Find. Trust. Train.
@@ -208,102 +208,139 @@ function HomePage() {
                 Transform.
               </h1>
 
-              <p className="mt-6 max-w-[520px] text-[17px] leading-relaxed text-white/75">
-                REPs connects you with verified fitness professionals you can trust to help you
-                reach your goals.
+              <p className="mt-5 max-w-[520px] text-[17px] leading-relaxed text-white/75">
+                The world's register of verified fitness professionals. Real qualifications, real
+                reviews, real results.
               </p>
 
-              <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
-                {heroBadges.map((b) => (
-                  <li key={b.title} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
-                      <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none">
-                        <path
-                          d="M2 6.5 5 9l5-6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    <div>
-                      <div className="text-[15px] font-semibold text-white">{b.title}</div>
-                      <div className="text-[13px] text-white/60">{b.sub}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              {/* Hero search bar */}
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+              >
+                <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
+                  <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
+                  <input
+                    type="text"
+                    placeholder="Search professionals  ⌘K"
+                    aria-label="What do you want to train?"
+                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+                  />
+                </label>
+                <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
+                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[200px]">
+                  <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
+                  <input
+                    type="text"
+                    placeholder="London"
+                    aria-label="Where?"
+                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                >
+                  <Search className="h-4 w-4" aria-hidden />
+                  Find Professionals
+                </button>
+              </form>
 
-            {/* Right: Why REPs card */}
-            <aside className="rounded-[22px] border border-white/10 bg-reps-panel/85 p-6 backdrop-blur-md lg:justify-self-end lg:p-6">
-              <div className="flex items-center gap-2 border-b border-white/10 pb-4">
-                <ShieldCheck className="h-4 w-4 text-reps-gold" />
-                <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
-                  Why REPs?
+              {/* Goal chips */}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {goalChips.map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    className="inline-flex h-9 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+
+              {/* Popular searches */}
+              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
+                <span className="font-medium text-white/55">Popular:</span>
+                {popularSearches.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="font-medium text-reps-orange transition-colors hover:text-white"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {/* Trust strip */}
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-white/65">
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" aria-hidden />
+                  <strong className="font-semibold text-white">4.9</strong> average
+                </span>
+                <span aria-hidden className="h-3 w-px bg-white/15" />
+                <span><strong className="font-semibold text-white">25,000+</strong> verified pros</span>
+                <span aria-hidden className="h-3 w-px bg-white/15" />
+                <span><strong className="font-semibold text-white">120+</strong> countries</span>
+                <span aria-hidden className="h-3 w-px bg-white/15" />
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
+                  Qualifications &amp; insurance checked
                 </span>
               </div>
-              <ul className="mt-5 space-y-5">
-                {whyReps.map((w) => (
-                  <li key={w.title} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-reps-orange">
-                      <w.icon className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <div className="text-[14px] font-semibold text-white">{w.title}</div>
-                      <div className="text-[13px] text-white/55">{w.sub}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                className="mt-6 w-full rounded-[10px] border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-white/5"
-              >
-                Learn more about REPs
-              </button>
-            </aside>
-          </div>
-
-          {/* Search panel */}
-          <div className="mt-12 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
-              <SearchField
-                label="I'm looking for"
-                placeholder="e.g. Personal Trainer"
-                icon={UserRound}
-              />
-              <SearchField label="Near" placeholder="Enter location or postcode" icon={MapPin} />
-              <SearchField
-                label="Training type"
-                placeholder="In-person, Online or Both"
-                icon={ChevronDown}
-                isSelect
-              />
-              <button
-                type="button"
-                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
-              >
-                <Search className="h-4 w-4" />
-                Find Professionals
-              </button>
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-3 pb-2 pt-4 text-[13px]">
-              <span className="font-medium text-white/55">Popular searches:</span>
-              {popularSearches.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className="font-medium text-reps-orange transition-colors hover:text-white"
-                >
-                  {s}
-                </button>
-              ))}
+
+            {/* Right: floating pro-card stack (desktop only) */}
+            <div className="relative hidden h-[540px] lg:block" aria-hidden>
+              {heroProStack.map((p, i) => {
+                const positions = [
+                  "right-24 top-0 -rotate-[6deg] z-10",
+                  "right-0 top-[150px] rotate-[3deg] z-20",
+                  "right-32 top-[320px] -rotate-[2deg] z-10",
+                ];
+                return (
+                  <div
+                    key={p.name}
+                    className={`absolute w-[280px] overflow-hidden rounded-[18px] border border-white/10 bg-reps-panel/95 text-white backdrop-blur transition-transform hover:z-30 hover:-translate-y-1 hover:rotate-0 ${positions[i]}`}
+                    style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.55)" }}
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <img
+                        src={p.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="eager"
+                      />
+                      <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/40 backdrop-blur">
+                        <BadgeCheck className="h-3 w-3" aria-hidden />
+                        Verified
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 px-4 pb-4 pt-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-display text-[15px] font-bold leading-tight text-white">
+                          {p.name}
+                        </h3>
+                        <span className="inline-flex items-center gap-1 text-[12px] text-reps-orange">
+                          <Star className="h-3 w-3 fill-reps-orange" aria-hidden />
+                          <span className="font-semibold text-white">{p.rating.toFixed(1)}</span>
+                          <span className="text-white/55">({p.reviews})</span>
+                        </span>
+                      </div>
+                      <div className="text-[12px] text-white/65">
+                        {p.role} · {p.city}
+                      </div>
+                      <div className="pt-1 text-[12px] font-semibold text-white">{p.price}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
+
 
       {/* ============ STATS STRIP ============ */}
       <section className="bg-reps-ivory">
