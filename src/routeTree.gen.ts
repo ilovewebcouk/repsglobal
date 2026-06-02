@@ -42,6 +42,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
@@ -52,6 +53,7 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
+import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
@@ -254,6 +256,11 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   path: '/resources/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeaturesIndexRoute = FeaturesIndexRouteImport.update({
+  id: '/features/',
+  path: '/features/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
   path: '/resources/$slug',
@@ -302,6 +309,11 @@ const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
 const InLocationRoute = InLocationRouteImport.update({
   id: '/in/$location',
   path: '/in/$location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
+  id: '/features/$slug',
+  path: '/features/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -549,6 +561,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -559,6 +572,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/features/': typeof FeaturesIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -630,6 +644,7 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -639,6 +654,7 @@ export interface FileRoutesByTo {
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/features': typeof FeaturesIndexRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -711,6 +727,7 @@ export interface FileRoutesById {
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -721,6 +738,7 @@ export interface FileRoutesById {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/features/': typeof FeaturesIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -794,6 +812,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/features/$slug'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -804,6 +823,7 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/features/'
     | '/resources/'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -875,6 +895,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/settings'
     | '/email/unsubscribe'
+    | '/features/$slug'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -884,6 +905,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/features'
     | '/resources'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -955,6 +977,7 @@ export interface FileRouteTypes {
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
     | '/email/unsubscribe'
+    | '/features/$slug'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -965,6 +988,7 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/features/'
     | '/resources/'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
@@ -1037,6 +1061,7 @@ export interface RootRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  FeaturesSlugRoute: typeof FeaturesSlugRoute
   InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
@@ -1047,6 +1072,7 @@ export interface RootRouteChildren {
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
+  FeaturesIndexRoute: typeof FeaturesIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1288,6 +1314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/features/': {
+      id: '/features/'
+      path: '/features'
+      fullPath: '/features/'
+      preLoaderRoute: typeof FeaturesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources/$slug': {
       id: '/resources/$slug'
       path: '/resources/$slug'
@@ -1356,6 +1389,13 @@ declare module '@tanstack/react-router' {
       path: '/in/$location'
       fullPath: '/in/$location'
       preLoaderRoute: typeof InLocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/$slug': {
+      id: '/features/$slug'
+      path: '/features/$slug'
+      fullPath: '/features/$slug'
+      preLoaderRoute: typeof FeaturesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -1698,6 +1738,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  FeaturesSlugRoute: FeaturesSlugRoute,
   InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
@@ -1708,6 +1749,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
+  FeaturesIndexRoute: FeaturesIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,

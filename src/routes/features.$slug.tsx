@@ -41,6 +41,6 @@ export const Route = createFileRoute("/features/$slug")({
 
 function FeatureRoute() {
   const { feature } = Route.useLoaderData();
-  const content = FEATURE_CONTENT[feature.slug];
-  return <FeaturePageLayout slug={feature.slug} {...content} />;
+  const content = FEATURE_CONTENT[feature.slug as FeatureLink["slug"]];
+  return <FeaturePageLayout slug={feature.slug as FeatureLink["slug"]} {...content} />;
 }
