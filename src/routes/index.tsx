@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
@@ -126,6 +127,31 @@ const featuredPros = [
 
 
 function HomePage() {
+  const heroImgRef = useRef<HTMLImageElement>(null);
+
+  // Subtle parallax on the hero portrait — drifts up as user scrolls into the next section.
+  // Respects prefers-reduced-motion.
+  useEffect(() => {
+    const img = heroImgRef.current;
+    if (!img) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        const y = Math.min(window.scrollY, 600) * 0.15;
+        img.style.setProperty("--py", `${y}px`);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
@@ -133,9 +159,11 @@ function HomePage() {
         {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
           <img
+            ref={heroImgRef}
             src={heroCoaching}
             alt=""
-            className="h-full w-full origin-right scale-110 object-cover object-center translate-x-[28%]"
+            style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
+            className="h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
@@ -183,7 +211,7 @@ function HomePage() {
                   <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
                   <input
                     type="text"
-                    placeholder="Search professionals  ⌘K"
+                    placeholder="Search professionals, locations, specialisms"
                     aria-label="What do you want to train?"
                     className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
                   />
@@ -203,7 +231,7 @@ function HomePage() {
                   className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 >
                   <Search className="h-4 w-4" aria-hidden />
-                  Find Professionals
+                  Find your coach
                 </button>
               </form>
 
@@ -226,7 +254,11 @@ function HomePage() {
                   {[proJames, proSophie, proDaniel, proLaura].map((src, i) => (
                     <span
                       key={i}
-                      className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black"
+                      style={{
+                        animationDelay: `${400 + i * 90}ms`,
+                        animationFillMode: "both",
+                      }}
+                      className="inline-block size-10 overflow-hidden rounded-full opacity-0 ring-2 ring-reps-black animate-fade-in motion-reduce:animate-none motion-reduce:opacity-100"
                     >
                       <img src={src} alt="" className="h-full w-full object-cover" />
                     </span>
