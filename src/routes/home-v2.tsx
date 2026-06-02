@@ -182,7 +182,7 @@ function HomeV2() {
 
         <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-[140px] lg:px-10 lg:pb-24 lg:pt-[160px]">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
-            <div className="animate-fade-in">
+            <div>
               <h1 className="font-display text-[52px] font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-[64px] lg:text-[72px]">
                 Find. Trust. Train.
                 <br />
@@ -263,36 +263,23 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ PRESS STRIP (marquee) ============ */}
+      {/* ============ PRESS STRIP ============ */}
       <section className="border-y border-reps-stone bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
-            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               As featured in
             </span>
-            <div
-              className="group relative w-full overflow-hidden"
-              style={{
-                maskImage:
-                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-              }}
-            >
-              <div className="flex w-max animate-marquee items-center gap-x-14 group-hover:[animation-play-state:paused]">
-                {[...PRESS, ...PRESS].map((logo, i) => (
-                  <img
-                    key={`${logo.name}-${i}`}
-                    src={logo.src}
-                    alt={i < PRESS.length ? logo.name : ""}
-                    aria-hidden={i >= PRESS.length}
-                    style={{ height: logo.height }}
-                    className="w-auto shrink-0 opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            </div>
+            {PRESS.map((logo) => (
+              <img
+                key={logo.name}
+                src={logo.src}
+                alt={logo.name}
+                style={{ height: logo.height }}
+                className="w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
+                loading="lazy"
+              />
+            ))}
           </div>
         </div>
       </section>

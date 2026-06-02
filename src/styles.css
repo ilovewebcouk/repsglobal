@@ -232,12 +232,3 @@
 @utility animate-fade-in {
   animation: fade-in 500ms ease-out forwards;
 }
-
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-@utility animate-marquee {
-  animation: marquee 40s linear infinite;
-}
