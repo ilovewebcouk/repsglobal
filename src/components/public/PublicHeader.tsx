@@ -849,6 +849,15 @@ function MobileDrawer({
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <div className="flex flex-col gap-3 px-1">
+                <Link
+                  to="/find-a-professional"
+                  onClick={onNavigate}
+                  className={cn(mobileSubLinkClass, "font-semibold text-white")}
+                >
+                  Browse all professionals
+                </Link>
+                <div className="border-t border-reps-border" />
+
                 <div>
                   <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
                     Top professions
