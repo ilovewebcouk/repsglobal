@@ -27,6 +27,7 @@ const PRIVATE_PREFIXES = [
   "/login", "/signup", "/logout", "/forgot-password", "/reset-password",
   "/verify-email", "/accept-invite", "/unsubscribe",
   "/in/", "/professions/", "/resources/", // dynamic / programmatic
+  "/email", "/lovable", // internal email infra / lovable routes
 ];
 
 // Routes intentionally not in nav (allowlist).
