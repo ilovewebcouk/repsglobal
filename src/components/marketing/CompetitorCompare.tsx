@@ -1,12 +1,22 @@
 import * as React from "react";
 import { Check, Minus } from "lucide-react";
+import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
+import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
+import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
 type Cell =
   | { kind: "yes"; note?: string }
   | { kind: "partial"; note: string }
   | { kind: "no"; note?: string };
 
-const COLS = ["REPs", "Trainerize", "MyPTHub", "PT Distinction"] as const;
+type Col = { label: string; logo?: string; logoHeight?: number };
+
+const COLS: readonly Col[] = [
+  { label: "REPs" },
+  { label: "Trainerize", logo: trainerizeLogo.url, logoHeight: 22 },
+  { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 24 },
+  { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 20 },
+] as const;
 
 type Row = { feature: string; cells: [Cell, Cell, Cell, Cell] };
 type Group = { label: string; rows: Row[] };
