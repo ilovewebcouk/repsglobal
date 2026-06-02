@@ -142,12 +142,7 @@ function HomeV2() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
 
-      {/* Preview banner */}
-      <div className="fixed left-1/2 top-[88px] z-40 -translate-x-1/2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange backdrop-blur">
-          <Sparkles className="h-3 w-3" /> Homepage v2 preview
-        </span>
-      </div>
+
 
       {/* ============ HERO (locked) ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
