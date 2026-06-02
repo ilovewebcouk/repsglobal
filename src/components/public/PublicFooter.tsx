@@ -11,6 +11,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "Specialisms", to: "/specialisms" },
       { label: "Reviews", to: "/reviews" },
       { label: "Help Centre", to: "/help" },
+      { label: "FAQ", to: "/faq" },
     ],
   },
   {
