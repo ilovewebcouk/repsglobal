@@ -9,7 +9,7 @@ import {
   MapPin,
   ShieldCheck,
   Heart,
-  Command as CommandIcon,
+  
   Crosshair,
   User,
   LogOut,
