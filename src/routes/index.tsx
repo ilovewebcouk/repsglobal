@@ -127,6 +127,31 @@ const featuredPros = [
 
 
 function HomePage() {
+  const heroImgRef = useRef<HTMLImageElement>(null);
+
+  // Subtle parallax on the hero portrait — drifts up as user scrolls into the next section.
+  // Respects prefers-reduced-motion.
+  useEffect(() => {
+    const img = heroImgRef.current;
+    if (!img) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        const y = Math.min(window.scrollY, 600) * 0.15;
+        img.style.setProperty("--py", `${y}px`);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
@@ -134,9 +159,11 @@ function HomePage() {
         {/* Background: single composited hero image (gym + trainers) with gradient overlays for copy legibility */}
         <div className="absolute inset-0 -z-10">
           <img
+            ref={heroImgRef}
             src={heroCoaching}
             alt=""
-            className="h-full w-full origin-right scale-110 object-cover object-center translate-x-[28%]"
+            style={{ transform: "translate3d(22%, var(--py, 0px), 0) scale(1.05)" }}
+            className="h-full w-full origin-right object-cover object-[center_25%] will-change-transform"
           />
           {/* Mobile/tablet: bottom ramp keeps headline readable while top stays clear */}
           <div
