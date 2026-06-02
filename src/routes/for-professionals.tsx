@@ -22,6 +22,8 @@ import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
 import { ActIntro } from "@/components/marketing/ActIntro";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ProductBlock } from "@/components/marketing/ProductBlock";
+import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+import { AICapabilities } from "@/components/marketing/AICapabilities";
 import { CompetitorCompare } from "@/components/marketing/CompetitorCompare";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
@@ -303,96 +305,143 @@ function ForProsPage() {
             kicker="Run your practice"
             eyebrow="The Operating System"
             title="When clients arrive, REPs runs the rest."
-            body="One platform replaces six. Built for fitness, not generic SaaS — and every workflow is wired into the same client record."
+            body="One platform replaces six. Built for fitness, not generic SaaS — every booking, payment, programme, meal plan, check-in, message and follow-up wired into the same client record."
           />
+
+          <div className="mt-10">
+            <ReplacesStrip />
+          </div>
 
           <div className="mt-16 space-y-20">
             <ProductBlock
-              eyebrow="Bookings & payments"
-              title="Kill no-shows. Get paid on time."
-              body="Two-way calendar sync, deposits at booking, automatic reminders, Stripe payouts and recurring memberships — without juggling Calendly, Stripe and an invoicing app."
+              eyebrow="Lead pipeline"
+              title="Every enquiry, captured and answered."
+              body="Profile enquiries, Instagram DMs, website forms and referrals all land in one structured pipeline — qualified, scored, and replied to with an AI-drafted first message before the lead goes cold."
               bullets={[
-                "Deposits collected at booking, no-shows drop to near zero",
-                "Recurring memberships and packages with one Stripe connection",
-                "Two-way Google / Apple calendar sync",
+                "One inbox: profile, IG, website, referrals — no more lost DMs",
+                "AI scores intent and drafts a personalised first reply",
+                "Auto-nudge when a hot lead has been waiting more than 4 hours",
+                "Response-time stats per coach so nothing slips",
               ]}
-              imageLabel="Bookings & calendar"
+              imageLabel="Lead pipeline"
+              ctaLabel="Explore the lead pipeline"
+              ctaSlug="leads"
+            />
+
+            <ProductBlock
+              reverse
+              eyebrow="Bookings, calendar & payments"
+              title="Kill no-shows. Get paid on time. Retire three apps."
+              body="Two-way calendar sync, deposits at booking, automatic reminders, Stripe payouts and recurring memberships — without juggling Calendly, Stripe and an invoicing tool."
+              bullets={[
+                "Deposits collected at booking — no-shows drop to near zero",
+                "Recurring memberships and packages with one Stripe connection",
+                "Two-way Google / Apple / Outlook calendar sync",
+                "Failed-payment retries and dunning handled automatically",
+              ]}
+              imageLabel="Bookings, calendar & payments"
               ctaLabel="Explore bookings & payments"
               ctaSlug="bookings"
             />
 
             <ProductBlock
-              reverse
-              eyebrow="Clients, programmes & check-ins"
+              eyebrow="Clients CRM"
               title="One record per client. Everything else attached."
-              body="Sessions, notes, payments, programmes, weekly check-ins and progress photos — all on one timeline. The Trainerize-class coaching app, with a public-facing profile and a credential attached."
+              body="Sessions, notes, payments, programmes, check-ins, messages and progress photos — all on one timeline. The Trainerize-class coaching record with a public-facing profile and a verified credential attached."
               bullets={[
-                "Programme builder with video exercise library",
-                "Weekly check-in forms, photos and measurements on a tidy timeline",
+                "Every session, payment, message and photo on a single timeline",
                 "Adherence and retention surfaced — not buried in a CSV",
+                "Tags, segments and saved views for cohorts you actually use",
+                "Client notes that don't live in your Notes app",
               ]}
-              imageLabel="Client record & programme builder"
+              imageLabel="Client record & timeline"
               ctaLabel="Explore the client CRM"
               ctaSlug="clients"
             />
 
             <ProductBlock
-              eyebrow="Client portal & messaging"
-              title="A branded space for your clients. A focused inbox for you."
-              body="Clients get a clean portal for today's session, their programme, nutrition and check-ins. You get a focused inbox separate from your personal phone — with quiet hours that actually stick."
+              reverse
+              eyebrow="AI programme builder"
+              title="Describe the client. Get a 12-week plan in seconds."
+              body="Trainerize makes you build a programme block by block. REPs writes the first draft from a one-line brief — goals, kit, history, frequency — with the right exercises, sets and video demos. You tweak. You publish."
               bullets={[
-                "Branded portal — web and mobile, no app store wrestling",
-                "Inbox separate from WhatsApp, with quiet hours and templates",
-                "Clients see exactly what they need today — and nothing else",
+                "AI-drafted 4 / 8 / 12-week plans with full video library",
+                "Swap any exercise for a regression, progression or equipment alternative",
+                "Auto-progressive overload across the block",
+                "Push live to the client portal in one tap",
               ]}
-              imageLabel="Client portal & inbox"
-              ctaLabel="Explore the client portal"
+              imageLabel="AI programme builder"
+              ctaLabel="Explore programmes"
+              ctaSlug="programmes"
+            />
+
+            <ProductBlock
+              eyebrow="Nutrition — MyFitnessPal, retired"
+              title="Macros, meal plans and food logging in one app."
+              body="Built-in food database, AI-generated meal plans from goals and preferences, client logging from the portal. No more sending clients to a third-party tracker and hoping they stick with it."
+              bullets={[
+                "AI meal plans from calorie target, allergies and food preferences",
+                "Food database built in — clients log from their phone, not MyFitnessPal",
+                "Adherence and macro accuracy on the client timeline",
+                "Recipe library and shopping lists clients actually use",
+              ]}
+              imageLabel="Nutrition planner & food log"
+            />
+
+            <ProductBlock
+              reverse
+              eyebrow="Check-ins & progress"
+              title="Weekly check-ins your clients actually fill in."
+              body="Custom forms, photos, measurements and habit streaks — submitted from the portal, summarised by AI on your side. The summariser tells you the headline, the change to make, and which clients need a human reply this week."
+              bullets={[
+                "Custom check-in forms per programme or cohort",
+                "AI summary: 'Maya is plateauing — drop volume 10%, push protein.'",
+                "Progress photo galleries with side-by-side compare",
+                "Streaks, missed weeks and at-risk flags surfaced automatically",
+              ]}
+              imageLabel="Weekly check-ins & AI summary"
+              ctaLabel="Explore check-ins"
+              ctaSlug="check-ins"
+            />
+
+            <ProductBlock
+              eyebrow="Messaging & autopilot follow-ups"
+              title="A focused inbox. Follow-ups that send themselves."
+              body="A coaching inbox separate from your personal phone — with templates, AI-drafted replies, quiet hours that actually stick, and an automation layer that handles the 'I haven't heard from you in 2 weeks' messages you never get round to sending."
+              bullets={[
+                "AI drafts replies in your voice — approve and send",
+                "Win-back, check-in nudge and renewal flows on autopilot",
+                "Quiet hours and DND that hold the line at 8pm",
+                "Branded client portal — web and mobile, no app store wrestling",
+              ]}
+              imageLabel="Inbox, automations & portal"
+              ctaLabel="Explore messaging"
               ctaSlug="messaging"
+            />
+
+            <ProductBlock
+              reverse
+              eyebrow="Insights & the Monday move"
+              title="The single move to grow this month."
+              body="Revenue, retention, churn risk, package mix and the one highest-leverage action this week — surfaced as a Monday-morning card. Not a dashboard you have to read. A coach for your business."
+              bullets={[
+                "Monthly recurring revenue, retention and churn at a glance",
+                "Cohort-level adherence and renewal forecasting",
+                "The Monday 'next move' card — one action, ranked by impact",
+                "Annual review pack you can show your accountant",
+              ]}
+              imageLabel="Business insights & Monday move"
+              ctaLabel="Explore insights & AI"
+              ctaSlug="insights"
             />
           </div>
         </div>
       </section>
 
-      {/* ============ GROWTH LAYER ============ */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
-          <div className="grid items-center gap-10 lg:grid-cols-[1fr_1fr]">
-            <div>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                Growth · Insights & AI
-              </span>
-              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-                The next move to grow this month.
-              </h2>
-              <p className="mt-3 max-w-[520px] text-[15px] text-white/70">
-                A Monday-morning card tells you the single highest-leverage action this week —
-                which clients are drifting, which package is converting, which day to open up
-                for new bookings. Not a dashboard you have to read. A coach for your business.
-              </p>
-              <Link
-                to="/features/$slug"
-                params={{ slug: "insights" }}
-                className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
-              >
-                Explore insights & AI <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="rounded-[22px] border border-reps-border bg-reps-panel p-8">
-              <div className="font-display text-[56px] font-bold leading-none text-reps-orange">
-                +24%
-              </div>
-              <div className="mt-2 text-[13px] font-semibold uppercase tracking-wider text-white/70">
-                Average revenue YoY
-              </div>
-              <p className="mt-5 text-[15px] leading-relaxed text-white/85">
-                "The Monday 'next move' card is like having a business coach on tap. Single
-                best feature."
-              </p>
-              <div className="mt-4 text-[12px] text-white/55">
-                Marcus Bell · Online Coach · Leeds
-              </div>
-            </div>
-          </div>
+      {/* ============ AI CAPABILITIES ============ */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10">
+          <AICapabilities />
         </div>
       </section>
 
