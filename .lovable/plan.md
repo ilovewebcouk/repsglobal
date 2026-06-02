@@ -1,18 +1,20 @@
-## Remove 3 fanned pro cards from hero
+## Problem
+The hero search input currently uses placeholder text `"Search professionals, locations, specialisms"` (44 characters). At smaller laptop widths and before the `sm:` breakpoint, the input width compresses and the placeholder is heavily truncated, hurting readability.
 
-### Goal
-Replace the right-column 3-card stack with a single editorial coaching portrait, keeping the search, chips, and trust strip untouched.
+## Proposed Change
+Replace the placeholder with a shorter, clearer alternative that fits comfortably within the available input space at all hero widths.
 
-### Approach
-The hero background already uses `heroCoaching` as a full-bleed image with a left-to-right gradient overlay. The 3 fanned cards sit in a 440px right column blocking part of that image. Removing them lets the existing coaching portrait breathe while the left column keeps all current content.
+### Option A (recommended)
+`"Search coaches, goals, locations"` — 32 characters, preserves the three-category structure, uses the friendlier "coaches" over "professionals", and fits within the first input even at the narrowest widths before the search bar switches to a row layout.
 
-### Changes
-1. **Remove the 3-card stack** (lines ~293-338) — delete the `heroProStack.map()` block and the surrounding right-column container.
-2. **Clean up dead data** — remove the `heroProStack` array and unused `proJames` / `proSophie` / `proDaniel` imports.
-3. **Fix runtime error** — the duplicate `Check` import (already declared) is a separate syntax bug that will be fixed in the same pass.
+### Option B
+`"Search by goal or location"` — 26 characters, action-oriented and very compact.
 
-### What stays exactly the same
-- Headline, sub-headline, search bar, goal chips, popular searches, trust strip
-- Background image + gradient overlays
-- Two-column grid layout (right column simply becomes empty, showing the background)
-- All other page sections below the hero
+### Option C
+`"Find your coach or goal"` — 23 characters, shortest and most conversational.
+
+## Implementation
+Single-line edit in `src/routes/index.tsx` line 214. No other files touched.
+
+---
+Which option do you prefer? Or suggest your own wording and I will implement it.
