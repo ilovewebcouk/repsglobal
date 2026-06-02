@@ -668,6 +668,69 @@ function ResourcesMenu() {
   );
 }
 
+function FeaturesMenu() {
+  return (
+    <PanelShell width="w-[820px]">
+      <div className="grid grid-cols-3 gap-6">
+        {FEATURE_GROUPS.map((g) => {
+          const items = FEATURES.filter((f) => f.group === g.key);
+          return (
+            <div key={g.key}>
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+                {g.label}
+              </h4>
+              <ul className="mt-3 flex flex-col gap-2">
+                {items.map((f) => (
+                  <li key={f.slug}>
+                    <NavigationMenu.Link asChild>
+                      <Link
+                        to="/features/$slug"
+                        params={{ slug: f.slug }}
+                        className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+                      >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
+                          <f.icon className="h-4 w-4" />
+                        </span>
+                        <span className="flex flex-col">
+                          <span className="text-[13px] font-semibold leading-tight text-reps-charcoal group-hover/feat:text-reps-orange">
+                            {f.label}
+                          </span>
+                          <span className="mt-0.5 text-[11px] leading-snug text-reps-charcoal/60">
+                            {f.oneLiner}
+                          </span>
+                        </span>
+                      </Link>
+                    </NavigationMenu.Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-5 flex items-center justify-between border-t border-reps-stone pt-4">
+        <NavigationMenu.Link asChild>
+          <Link
+            to="/features"
+            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
+          >
+            All features →
+          </Link>
+        </NavigationMenu.Link>
+        <NavigationMenu.Link asChild>
+          <Link
+            to="/for-professionals"
+            className="text-[13px] font-medium text-reps-charcoal/70 hover:text-reps-orange"
+          >
+            For Professionals overview
+          </Link>
+        </NavigationMenu.Link>
+      </div>
+    </PanelShell>
+  );
+}
+
+
 /* ---------------- user menu (mock auth shell) ---------------- */
 
 function UserMenu({
@@ -926,6 +989,42 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
+          <AccordionItem value="features" className="border-0">
+            <AccordionTrigger
+              className={cn(
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                active.features ? "text-white" : "text-white/85 hover:text-white",
+              )}
+            >
+              Features
+            </AccordionTrigger>
+            <AccordionContent className="pb-2">
+              <ul className="flex flex-col px-1">
+                <li>
+                  <Link
+                    to="/features"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "font-semibold text-white")}
+                  >
+                    All features
+                  </Link>
+                </li>
+                {FEATURES.map((f) => (
+                  <li key={f.slug}>
+                    <Link
+                      to="/features/$slug"
+                      params={{ slug: f.slug }}
+                      onClick={onNavigate}
+                      className={mobileSubLinkClass}
+                    >
+                      {f.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+
           <Link
             to="/how-it-works"
             onClick={onNavigate}
@@ -933,6 +1032,7 @@ function MobileDrawer({
           >
             How it works
           </Link>
+
 
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
