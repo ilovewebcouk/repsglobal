@@ -19,7 +19,7 @@ import {
   Star,
   Stethoscope,
   Target,
-  UserRound,
+  
   Users,
 } from "lucide-react";
 
