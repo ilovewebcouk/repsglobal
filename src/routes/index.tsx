@@ -55,18 +55,46 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const heroBadges = [
-  { title: "REPs Verified", sub: "Qualified & insured" },
-  { title: "Reviewed & Rated", sub: "Real client feedback" },
-  { title: "Trusted Worldwide", sub: "In-person & online" },
+const goalChips = [
+  "Fat loss",
+  "Strength",
+  "Mobility",
+  "Pre/post-natal",
+  "Rehab",
+  "Sport-specific",
 ];
 
-const whyReps = [
-  { icon: BadgeCheck, title: "Professionals are verified", sub: "Qualifications & insurance check" },
-  { icon: ShieldCheck, title: "Ongoing CPD & standards", sub: "Committed to excellence" },
-  { icon: Star, title: "Client reviews you can trust", sub: "Real people. Real results." },
-  { icon: Target, title: "Your goals. Matched right.", sub: "We help you find the perfect fit." },
+const heroProStack = [
+  {
+    name: "James Carter",
+    role: "Personal Trainer",
+    city: "London",
+    rating: 5.0,
+    reviews: 128,
+    price: "from £55 / session",
+    image: proJames,
+  },
+  {
+    name: "Sophie Williams",
+    role: "Pilates Instructor",
+    city: "Manchester",
+    rating: 5.0,
+    reviews: 96,
+    price: "from £45 / session",
+    image: proSophie,
+  },
+  {
+    name: "Daniel Roberts",
+    role: "Strength Coach",
+    city: "Birmingham",
+    rating: 4.9,
+    reviews: 74,
+    price: "from £60 / session",
+    image: proDaniel,
+  },
 ];
+
+
 
 const stats = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
