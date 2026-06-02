@@ -1,82 +1,53 @@
-## Goal
+## Owning the previous turn
 
-Make every nav link in `PublicHeader` and `PublicFooter` actually navigate, and replace the three header `<button>` items with full mega-menu dropdowns on hover/focus. Phase 1 visuals only — no new routes, no backend.
+I edited files in the last turn because that turn was tagged build mode in my instructions. You're now in plan mode, so nothing below will be touched until you approve. I also should have screenshotted the result before saying "done". That's on me.
 
-## 1. Confirmed nav inventory (Q&A result)
+## What I just verified in the preview
 
-**Header (left → right)**
-- Logo → `/`
-- Find a Professional ▾ (mega-menu)
-- How REPs Works → `/how-it-works`
-- For Professionals → `/for-professionals`
-- Resources ▾ (mega-menu)
-- About REPs ▾ (mega-menu)
-- Log in → `/login` *(currently points at `/signup` — fix)*
-- Join REPs → `/signup`
+Screens I captured at the current build:
 
-**Footer columns** — current targets are correct, just confirming:
-- For Members: `/find-a-professional`, `/how-it-works`, `/specialisms`, `/reviews`, `/help`
-- For Professionals: `/for-professionals`, `/pricing`, `/dashboard`, `/cpd`, `/business-tools`
-- Company: `/about`, `/standards`, `/verify`, `/resources`, `/careers`, `/press`
-- Legal: `/terms`, `/privacy`, `/cookies`, `/complaints`, `/contact`
+- Desktop home at 1366: header transparent over hero, search icon + Log in + Join REPs visible, mega-menus intact, logo unchanged.
+- Desktop /for-professionals scrolled ~800px: header swaps to solid REPs dark with border, brand-orange active dot under "For Professionals". Working as specified.
+- Mobile /for-professionals at 375: logo + hamburger only. Spec said "Join REPs may remain visible only if spacing allows" — currently it hides below the `sm` breakpoint (640px), which is why the bar looks bare. This is in-spec but may not be what you wanted visually.
+- Mobile drawer open: REPs logo, close, Search professionals row, accordion sections for Find / Resources / About, flat links for How / For Professionals, Log in + orange Join REPs pinned to the footer. Active row highlighted.
 
-All footer destinations already exist as routes — only fix is the header "Log in" bug.
+So functionally everything is wired. Two things still need addressing before I call this good.
 
-## 2. Mega-menu structure
+## Real bug: hydration mismatch
 
-### Find a Professional ▾ (Browse by profession + location)
-Two-column panel + footer CTA.
-- **Column 1 — Top professions** (links to `/professions/$profession`):
-  Personal Trainer, Pilates Instructor, Yoga Teacher, Nutritionist, Strength Coach, Online Coach
-- **Column 2 — Top locations** (links to `/in/$location`):
-  London, Manchester, Birmingham, Edinburgh, Glasgow, Bristol
-- Footer row: "Browse all professionals →" → `/find-a-professional`
+The runtime log shows:
 
-### About REPs ▾ (Trust & standards focus)
-Single column of links with short subtitles:
-- About REPs → `/about`
-- Our Standards → `/standards`
-- Verification → `/verify`
-- Reviews → `/reviews`
-- Complaints → `/complaints`
+```text
+Hydration failed because the server rendered HTML didn't match the client.
++ <a href="#main-content" ...>
+- <Suspense>
+```
 
-### Resources ▾ (Hub + categories)
-Two-column panel.
-- **Column 1 — Browse by topic** (filtered hub links, e.g. `/resources?category=find-a-professional`):
-  Find a Professional, Fitness Business, Verification & Standards
-- **Column 2 — Featured articles** (3 latest from `src/lib/resources.ts`, each → `/resources/$slug`)
-- Footer row: "All articles →" → `/resources`
+Cause: I put the skip-to-content `<a>` inside `RootComponent` (the client tree), but TanStack's SSR shell renders `RootShell` first. The mismatch makes React discard and re-render that subtree on first paint — which on a slow first load looks like a flash / layout pop. That alone could read as "looks fucked" on the first visit.
 
-Note: category filter on `/resources` will read `?category=` via search params; if the hub doesn't yet support it, links degrade gracefully to the hub. (No new logic required for Phase 1 — the dropdown link still navigates.)
+Fix (one file, ~5 lines): move the skip link into `RootShell` directly inside `<body>`, above `{children}`. That makes the SSR HTML and client HTML identical, hydration succeeds, no flash. The `#main-content` wrapper around `<Outlet />` stays where it is.
 
-## 3. Component changes
+## Need from you: which screen is broken
 
-### `src/components/public/PublicHeader.tsx`
-- Replace the static `navItems` array with typed nav config including dropdown contents.
-- Replace `<button>` placeholders with a `NavDropdown` subcomponent:
-  - Trigger: same chrome as today (white/85 text, chevron, hover → white).
-  - Panel: absolutely positioned under the header, centered to trigger, opens on hover + focus, closes on mouse-leave + Escape + blur outside.
-  - Built with `@radix-ui/react-navigation-menu` (already pulled in by `src/components/ui/navigation-menu.tsx`) so we get keyboard + a11y for free; styled with REPs tokens.
-- Panel styling: `bg-white text-reps-charcoal rounded-[18px]` (card radius), `border border-reps-stone`, no shadow drama — flat per token rules. Width ~640px for two-column panels, ~320px for the single-column About panel.
-- Fix `Log in` `to="/signup"` → `to="/login"`.
-- Top-level direct links (How REPs Works, For Professionals) become real `<Link>` with the same hover treatment.
+Before I touch anything else, can you tell me which of these I'm looking for? A screenshot would settle it instantly:
 
-### `src/components/public/PublicFooter.tsx`
-- No structural changes — all `<Link>`s already point to live routes. Audit pass only: confirm every `to` resolves, no edits expected.
+1. First-paint flash on any page (that's the hydration bug above — fix lands it).
+2. The bare mobile header at narrow widths (logo + hamburger only, no Join REPs / Log in). If yes, I'll show Join REPs from the smallest breakpoint up and only collapse it into the hamburger menu below ~360px.
+3. A specific page where the now-`fixed` transparent header overlaps content it didn't used to overlap (I changed `absolute` → `fixed` so the header could stay during scroll for the solid-swap). If yes, I'll keep `absolute` until the scroll threshold, then promote to `fixed`+solid via a sentinel, so unsolved pages behave exactly like before.
+4. Something on a desktop page I haven't looked at — point me at the route and I'll screenshot it.
 
-### New file: `src/components/public/nav-config.ts`
-Single source of truth for top professions, top locations, and About/Resources panel link lists. Header imports from here so future edits are one-touch.
+## Plan once you confirm
 
-## 4. Out of scope (Phase 1 guardrail)
-- No new routes, no auth wiring, no real category-filter logic on `/resources`.
-- No mobile drawer redesign in this pass (current header is `hidden lg:flex` for nav; mobile will keep the existing CTA-only state, tracked as visual debt in `docs/07_phase1_build_status.md`).
-- No design-system token changes.
+Step 1 (always, regardless of answer): move skip link into `RootShell` to kill the hydration mismatch. No other changes in that edit.
 
-## 5. Verification
-- Click every header link + dropdown item → lands on the expected route.
-- Hover + keyboard (Tab/Enter/Escape) open and close each mega-menu.
-- Click every footer link → lands on the expected route.
-- Run `reps-build-compliance` audit (no banned hex, no banned radii, no button shadows).
+Step 2 (conditional, based on which of 1–4 above):
 
-## 6. Doc update
-- Append a one-liner to `docs/07_phase1_build_status.md` "Known visual debt" noting the mobile mega-menu is deferred.
+- If (2): keep hamburger always present; show compact Join REPs CTA from 360px+; keep Log in inside the drawer only.
+- If (3): swap header positioning to `absolute` at top, `fixed` only after the scroll threshold (state already exists in `useIsSolid`); no visual changes at rest.
+- If (4): targeted fix on the specific route — described before any code lands.
+
+Step 3: re-screenshot desktop home, desktop scrolled, mobile collapsed, mobile drawer open, and send them back to you in the reply. No "done" without screenshots this time.
+
+## Out of scope (still deferred)
+
+No new routes, no auth, no real search, no DB, no logo/colour/typography/radius/spacing changes, no mega-menu content rework, no command palette.
