@@ -130,32 +130,40 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
       {/* ============ HERO ============ */}
-      <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* Background: hero portrait anchored hard-right so the subject is never covered by copy */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
+      <section className="relative isolate overflow-hidden bg-reps-ink text-white">
+        {/* Mobile: full-bleed image with bottom ramp for legibility */}
+        <div className="absolute inset-0 -z-10 lg:hidden">
           <img
             src={heroCoaching}
             alt=""
-            className="h-full w-full object-cover [object-position:90%_center] lg:[object-position:78%_center]"
+            className="h-full w-full object-cover [object-position:60%_center]"
           />
-          {/* Mobile/tablet: bottom ramp keeps headline readable */}
           <div
-            className="absolute inset-0 lg:hidden"
+            className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(to bottom, rgba(11,13,16,0.65) 0%, rgba(11,13,16,0.45) 35%, rgba(11,13,16,0.9) 78%, #0B0D10 100%)",
+                "linear-gradient(to bottom, rgba(11,13,16,0.65) 0%, rgba(11,13,16,0.45) 35%, rgba(11,13,16,0.92) 80%, #0B0D10 100%)",
             }}
           />
-          {/* Desktop: solid dark behind copy column out to ~45%, then a clean fade so the portrait owns the right half */}
+        </div>
+
+        {/* Desktop: editorial portrait pinned to the right half */}
+        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[58%] lg:block xl:w-[55%]">
+          <img
+            src={heroCoaching}
+            alt=""
+            className="h-full w-full object-cover [object-position:50%_center]"
+          />
+          {/* Soft left feather so the portrait dissolves into the dark canvas */}
           <div
-            className="absolute inset-0 hidden lg:block"
+            className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(to right, #0B0D10 0%, #0B0D10 38%, rgba(11,13,16,0.85) 50%, rgba(11,13,16,0.3) 62%, rgba(11,13,16,0) 75%)",
+                "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.85) 18%, rgba(11,13,16,0.15) 42%, rgba(11,13,16,0) 60%)",
             }}
           />
-          {/* Bottom seam to black so nothing bleeds into the ivory stats strip below */}
-          <div className="absolute inset-x-0 bottom-0 h-[140px] bg-gradient-to-t from-reps-black to-transparent" />
+          {/* Bottom seam to ink so it never bleeds into the ivory stats strip */}
+          <div className="absolute inset-x-0 bottom-0 h-[160px] bg-gradient-to-t from-reps-ink to-transparent" />
         </div>
 
         <PublicHeader variant="transparent" />
