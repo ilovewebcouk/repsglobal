@@ -1,12 +1,15 @@
-### Changes to `src/routes/home-v2.tsx`
+### 1. Remove v2 preview banner
+In `src/routes/index.tsx`, delete the fixed "Homepage v2 preview" badge block (the `<div className="fixed left-1/2 top-[88px] z-40 ...">` containing `<Sparkles /> Homepage v2 preview`). Remove `Sparkles` from the `lucide-react` import if it's no longer used elsewhere in the file.
 
-1. **Remove the "The global standard for fitness — since 2009" badge** from the hero (and its `BadgeCheck` icon wrapper). Drop the `BadgeCheck` import if unused elsewhere.
+### 2. Mobile menu — restore a direct path to Find a Professional
+In `src/components/public/PublicHeader.tsx` `MobileDrawer`, the "Find a Pro" accordion currently only links to `/professions/$profession` and `/in/$location` sub-pages. Add a "Browse all professionals" link at the very top of that accordion's content, going to `/find-a-professional`, styled with `mobileSubLinkClass` and separated from the "Top professions" / "Top cities" sub-lists with a subtle divider. ("Train by goal" already links there, but this surfaces it as the obvious entry point.)
 
-2. **Mobile/tablet hero → solid black** (matching the original `/` home):
-   - Remove the `lg:hidden` full-bleed lifestyle image block and its gradient/radial overlays.
-   - Keep the existing `hidden lg:block` desktop image (right-anchored photo + left wash) exactly as is.
-   - Background falls back to the existing dark `#0B0D10` section color.
+### 3. QA mobile + tablet hero above the fold
+Open `/` in the browser at 390×844 (mobile) and 820×1180 (tablet). Screenshot and verify:
+- Headline + search form visible above the fold
+- "Find your coach" button not clipped
+- Goal chips wrap cleanly, no horizontal scroll
+- Solid black background (no image) on both
+Only adjust hero top padding / headline scale if something actually clips. Report findings.
 
-3. **Verify** with screenshots at 375px, 820px, and 1318px viewports.
-
-No other sections, copy, or animations change.
+No other files change.
