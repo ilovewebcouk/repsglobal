@@ -403,9 +403,6 @@ function CompactSearchPill({
     >
       <Search className="h-4 w-4 text-reps-orange" aria-hidden />
       <span>Search professionals</span>
-      <span aria-hidden className="h-3 w-px bg-white/20" />
-      <MapPin className="h-3.5 w-3.5" aria-hidden />
-      <span className="font-medium text-white">{city}</span>
       <span
         aria-hidden
         className="ml-1 inline-flex h-6 items-center rounded-[6px] bg-white/10 px-1.5 font-mono text-[11px] font-medium text-white/70"
