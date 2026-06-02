@@ -179,7 +179,6 @@ function HomeV2() {
                 className="animate-rise-in font-display text-[56px] font-bold leading-[0.92] tracking-[-0.035em] text-white sm:text-[72px] lg:text-[88px]"
                 style={{ animationDelay: "120ms" }}
               >
-
                 Find a coach
                 <br />
                 <span className="text-reps-orange">worth trusting.</span>
