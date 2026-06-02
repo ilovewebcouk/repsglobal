@@ -330,35 +330,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   );
 }
 
-/* ---------------- compact pill (scrolled state) ---------------- */
-
-function CompactSearchPill({
-  expanded,
-  city,
-  onClick,
-}: {
-  expanded: boolean;
-  city: string;
-  onClick: () => void;
-}) {
-  if (expanded) return null;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-[999px] border border-white/20 bg-white/[0.04] pl-3 pr-1.5 text-[13px] text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink lg:inline-flex"
-    >
-      <Search className="h-4 w-4 text-reps-orange" aria-hidden />
-      <span>Search professionals</span>
-      <span
-        aria-hidden
-        className="ml-1 inline-flex h-6 items-center rounded-[6px] bg-white/10 px-1.5 font-mono text-[11px] font-medium text-white/70"
-      >
-        ⌘K
-      </span>
-    </button>
-  );
-}
 
 
 /* ---------------- location pin ---------------- */
@@ -752,103 +723,6 @@ function UserMenu({
   );
 }
 
-/* ---------------- mobile search sheet ---------------- */
-
-function MobileSearchSheet({
-  open,
-  onOpenChange,
-  city,
-  onChangeCity,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  city: string;
-  onChangeCity: (next: string) => void;
-}) {
-  const navigate = useNavigate();
-  const [what, setWhat] = useState("");
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onOpenChange(false);
-    navigate({ to: "/find-a-professional" });
-  };
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="top"
-        className="border-b border-reps-border bg-reps-ink p-0 text-white [&>button]:hidden"
-      >
-        <SheetTitle className="sr-only">Search professionals</SheetTitle>
-        <SheetDescription className="sr-only">
-          Search by goal, profession or city.
-        </SheetDescription>
-        <div className="flex items-center gap-3 border-b border-reps-border px-5 py-4">
-          <form onSubmit={submit} className="flex flex-1 items-center gap-2 rounded-[999px] border border-white/15 bg-white/[0.06] px-4 py-2">
-            <Search className="h-4 w-4 text-reps-orange" aria-hidden />
-            <input
-              autoFocus
-              value={what}
-              onChange={(e) => setWhat(e.target.value)}
-              placeholder={`Search in ${city}…`}
-              className="w-full bg-transparent text-[16px] font-medium text-white placeholder:text-white/55 focus:outline-none"
-            />
-          </form>
-          <SheetClose asChild>
-            <button
-              type="button"
-              aria-label="Close search"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-          </SheetClose>
-        </div>
-
-        <div className="px-5 py-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            Popular goals
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {TRAIN_GOALS.map((g) => (
-              <Link
-                key={g.slug}
-                to="/find-a-professional"
-                onClick={() => onOpenChange(false)}
-                className="inline-flex h-9 items-center rounded-[999px] border border-white/15 bg-white/[0.04] px-3 text-[12px] font-medium text-white/85 transition-colors hover:bg-white/10"
-              >
-                {g.label}
-              </Link>
-            ))}
-          </div>
-
-          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            Popular cities
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {TOP_LOCATIONS.map((l) => (
-              <button
-                key={l.slug}
-                type="button"
-                onClick={() => {
-                  onChangeCity(l.label);
-                }}
-                className={cn(
-                  "inline-flex h-9 items-center gap-1.5 rounded-[999px] border px-3 text-[12px] font-medium transition-colors",
-                  city === l.label
-                    ? "border-reps-orange-border bg-reps-orange-soft text-white"
-                    : "border-white/15 bg-white/[0.04] text-white/85 hover:bg-white/10",
-                )}
-              >
-                <MapPin className="h-3 w-3" aria-hidden />
-                {l.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
 
 /* ---------------- mobile drawer ---------------- */
 
@@ -940,30 +814,7 @@ function MobileDrawer({
       )}
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <Link
-          to="/find-a-professional"
-          onClick={onNavigate}
-          className={cn(mobileLinkBase, "mb-2 bg-white/[0.04] text-white hover:bg-white/[0.08]")}
-        >
-          <span className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-reps-orange" aria-hidden />
-            Search in {city}
-          </span>
-        </Link>
 
-        <Link
-          to="/verify"
-          onClick={onNavigate}
-          className={cn(
-            mobileLinkBase,
-            "mb-3 border border-reps-orange-border bg-reps-orange-soft text-white",
-          )}
-        >
-          <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-reps-orange" aria-hidden />
-            All professionals verified
-          </span>
-        </Link>
 
         <Accordion type="multiple" className="space-y-1">
           <AccordionItem value="train" className="border-0">
