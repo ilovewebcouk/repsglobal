@@ -20,18 +20,17 @@ export const DATA_VERIFIED_DATE = "3 June 2026";
 
 /**
  * REPs tier ladder — single source of truth for cost-comparison copy.
- * REPs has 4 tiers; whatever tier you choose, every feature in that tier is
+ * REPs has 3 tiers; whatever tier you choose, every feature in that tier is
  * included. The hook is "no paid add-ons inside any tier", not "one flat plan".
  */
 export const REPS_TIER_REFERENCE = {
   tiers: [
-    { name: "Free", price: "Free", note: "Claimable public listing" },
     { name: "Verified", price: "£99/yr", note: "Verified badge, reviews, enquiries" },
-    { name: "Pro", price: "£29/mo", note: "Full operating system for your practice" },
-    { name: "Business", price: "£59/mo", note: "Multi-trainer, advanced ops" },
+    { name: "Pro", price: "£59/mo", note: "Full operating system, AI across the platform" },
+    { name: "Studio", price: "£149/mo", note: "Multi-coach teams, locations, reporting" },
   ],
   summary:
-    "REPs has 4 tiers (Free / Verified £99/yr / Pro £29/mo / Business £59/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
+    "REPs has 3 tiers (Verified £99/yr / Pro £59/mo / Studio £149/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
 } as const;
 
 export type PricingTier = {
@@ -399,11 +398,11 @@ export const REPS_SIDE = {
   tiers: [
     {
       name: "REPs Pro",
-      price: "£29/mo",
+      price: "£59/mo",
       clientCap: "Unlimited",
     },
   ] satisfies PricingTier[],
-  freeTrial: "Free tier · founding pricing locked for early paid members",
+  freeTrial: "Founding pricing on Pro locked for early members before public launch",
   transactionFees: "No add-on stack inside any tier",
   bestFor:
     "UK personal trainers who want to be found, verified, and run the whole practice in one place.",

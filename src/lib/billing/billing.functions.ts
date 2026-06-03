@@ -8,7 +8,7 @@ import { getStripe } from "./stripe.server";
 import { PRICES, type BillingPeriod, type BillingTier, lookupTierByPriceId } from "./prices";
 
 const checkoutInput = z.object({
-  tier: z.enum(["verified", "pro", "business", "studio"]),
+  tier: z.enum(["verified", "pro", "studio"]),
   period: z.enum(["monthly", "annual"]),
 });
 
