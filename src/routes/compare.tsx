@@ -9,7 +9,7 @@ import { COMPETITOR_LIST } from "@/data/competitor-data";
 const URL = "https://repsglobal.lovable.app/compare";
 const TITLE = "Personal Trainer Software UK — REPs vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-  "Compare REPs with Trainerize, MyPTHub and PT Distinction. The UK personal trainer software that combines a verified public register, full operations, coaching delivery and AI in a 3-tier ladder (Verified, Pro, Studio) — every feature in your tier is included, no paid add-ons.";
+  "Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. UK personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
