@@ -19,12 +19,9 @@ import {
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PLANS } from "@/components/pricing/pricing-data";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
