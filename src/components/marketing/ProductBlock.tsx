@@ -53,7 +53,8 @@ export function ProductBlock({
         {ctaLabel && (ctaHref || ctaSlug) && (
           ctaHref ? (
             <Link
-              to={ctaHref as string}
+              // @ts-expect-error — ctaHref is a runtime-known route string
+              to={ctaHref}
               className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
             >
               {ctaLabel} <ArrowRight className="h-4 w-4" />
