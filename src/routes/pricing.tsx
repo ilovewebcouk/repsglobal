@@ -6,6 +6,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
+import { PricingCompare } from "@/components/pricing/PricingCompare";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -61,27 +62,47 @@ function PricingPage() {
         </div>
       </section>
 
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
+          <PricingFAQ />
+        </div>
+      </section>
+
       <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <div className="mx-auto max-w-[760px] text-center">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              Plan-by-plan
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              Every feature, every REPs tier.
+            </h2>
+            <p className="mx-auto mt-3 max-w-[560px] text-[14px] text-white/65">
+              Visibility, operations, coaching, REPs AI, growth and admin — side by side
+              across Free, Verified, Pro, Business and Studio.
+            </p>
+          </div>
+          <div className="mt-10">
+            <PricingCompare />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1240px] px-6 py-14 text-center lg:px-10">
           <h2 className="font-display text-[24px] font-bold text-white">
-            Want the full plan-by-plan breakdown?
+            Looking at other coaching platforms?
           </h2>
-          <p className="mx-auto mt-2 max-w-[520px] text-[14px] text-white/65">
-            Every feature in every tier, side by side — visibility, operations, coaching,
-            REPs AI, growth and admin.
+          <p className="mx-auto mt-2 max-w-[560px] text-[14px] text-white/65">
+            See how REPs compares to Trainerize, MyPTHub and PT Distinction — feature by
+            feature.
           </p>
           <Link
             to="/compare"
             className="mt-6 inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
           >
-            Compare every plan <ArrowRight className="h-4 w-4" />
+            Compare REPs with other platforms <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
-      </section>
-
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
-          <PricingFAQ />
         </div>
       </section>
 

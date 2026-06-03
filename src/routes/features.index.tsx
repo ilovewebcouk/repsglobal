@@ -121,7 +121,7 @@ function FeaturesHubPage() {
                 to="/compare"
                 className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
               >
-                Compare plans
+                Compare platforms
               </Link>
             </div>
           </div>
