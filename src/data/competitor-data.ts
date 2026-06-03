@@ -186,7 +186,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "How much does Trainerize actually cost with add-ons?",
-        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) — whatever tier you pick, every feature in that tier is included.",
+        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
       },
       {
         q: "What's the best Trainerize alternative for UK personal trainers?",
@@ -194,7 +194,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
       },
       {
         q: "Does Trainerize include AI?",
@@ -281,7 +281,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Is MyPTHub's pricing transparent?",
-        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) where every feature inside your chosen tier is included.",
+        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
       },
       {
         q: "Does MyPTHub include AI?",

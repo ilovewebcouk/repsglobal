@@ -82,10 +82,10 @@ function ComparePage() {
           </h1>
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
-            your own clients to — then top up with paid add-ons. REPs is the
-            verified public register, plus operations, coaching and AI across a
-            3-tier ladder (Verified, Pro, Studio) — every feature in your chosen
-            tier is included.
+            your own clients to — then top up with paid add-ons. REPs Pro is
+            £59/mo founding (was £79/mo) and includes the full software platform
+            on the verified public register — no paid add-on stack, no per-client
+            charges.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
