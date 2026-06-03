@@ -8,7 +8,7 @@ const TITLE = "MyPTHub Alternative — REPs vs MyPTHub for UK PTs (2026)";
 const DESC =
   "Honest comparison of REPs and MyPTHub for UK personal trainers. Pricing, client limits, hidden add-ons (branded app, Check-Ins AI, extra trainers) and full feature parity.";
 
-export const Route = createFileRoute("/compare/reps-vs-mypthub")({
+export const Route = createFileRoute("/compare_/reps-vs-mypthub")({
   head: () => ({
     meta: [
       { title: TITLE },

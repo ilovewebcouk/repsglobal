@@ -78,9 +78,9 @@ import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
 import { Route as DashboardBusinessRouteImport } from './routes/dashboard_.business'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
-import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare.reps-vs-trainerize'
-import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare.reps-vs-pt-distinction'
-import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare.reps-vs-mypthub'
+import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.reps-vs-trainerize'
+import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
+import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -446,20 +446,20 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRepsVsTrainerizeRoute = CompareRepsVsTrainerizeRouteImport.update({
-  id: '/reps-vs-trainerize',
-  path: '/reps-vs-trainerize',
-  getParentRoute: () => CompareRoute,
+  id: '/compare_/reps-vs-trainerize',
+  path: '/compare/reps-vs-trainerize',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRepsVsPtDistinctionRoute =
   CompareRepsVsPtDistinctionRouteImport.update({
-    id: '/reps-vs-pt-distinction',
-    path: '/reps-vs-pt-distinction',
-    getParentRoute: () => CompareRoute,
+    id: '/compare_/reps-vs-pt-distinction',
+    path: '/compare/reps-vs-pt-distinction',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const CompareRepsVsMypthubRoute = CompareRepsVsMypthubRouteImport.update({
-  id: '/reps-vs-mypthub',
-  path: '/reps-vs-mypthub',
-  getParentRoute: () => CompareRoute,
+  id: '/compare_/reps-vs-mypthub',
+  path: '/compare/reps-vs-mypthub',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
@@ -562,7 +562,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
-  '/compare': typeof CompareRouteWithChildren
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -654,7 +654,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
-  '/compare': typeof CompareRouteWithChildren
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -746,7 +746,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
-  '/compare': typeof CompareRouteWithChildren
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -783,9 +783,9 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
-  '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
-  '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
-  '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
+  '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
+  '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
+  '/compare_/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
   '/dashboard_/bookings': typeof DashboardBookingsRoute
   '/dashboard_/business': typeof DashboardBusinessRoute
   '/dashboard_/calendar': typeof DashboardCalendarRoute
@@ -1060,9 +1060,9 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/verification'
-    | '/compare/reps-vs-mypthub'
-    | '/compare/reps-vs-pt-distinction'
-    | '/compare/reps-vs-trainerize'
+    | '/compare_/reps-vs-mypthub'
+    | '/compare_/reps-vs-pt-distinction'
+    | '/compare_/reps-vs-trainerize'
     | '/dashboard_/bookings'
     | '/dashboard_/business'
     | '/dashboard_/calendar'
@@ -1116,7 +1116,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BusinessToolsRoute: typeof BusinessToolsRoute
   CareersRoute: typeof CareersRoute
-  CompareRoute: typeof CompareRouteWithChildren
+  CompareRoute: typeof CompareRoute
   ComplaintsRoute: typeof ComplaintsRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -1153,6 +1153,9 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
+  CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
+  CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
+  CompareRepsVsTrainerizeRoute: typeof CompareRepsVsTrainerizeRoute
   DashboardBookingsRoute: typeof DashboardBookingsRoute
   DashboardBusinessRoute: typeof DashboardBusinessRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
@@ -1681,26 +1684,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/compare/reps-vs-trainerize': {
-      id: '/compare/reps-vs-trainerize'
-      path: '/reps-vs-trainerize'
+    '/compare_/reps-vs-trainerize': {
+      id: '/compare_/reps-vs-trainerize'
+      path: '/compare/reps-vs-trainerize'
       fullPath: '/compare/reps-vs-trainerize'
       preLoaderRoute: typeof CompareRepsVsTrainerizeRouteImport
-      parentRoute: typeof CompareRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/compare/reps-vs-pt-distinction': {
-      id: '/compare/reps-vs-pt-distinction'
-      path: '/reps-vs-pt-distinction'
+    '/compare_/reps-vs-pt-distinction': {
+      id: '/compare_/reps-vs-pt-distinction'
+      path: '/compare/reps-vs-pt-distinction'
       fullPath: '/compare/reps-vs-pt-distinction'
       preLoaderRoute: typeof CompareRepsVsPtDistinctionRouteImport
-      parentRoute: typeof CompareRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/compare/reps-vs-mypthub': {
-      id: '/compare/reps-vs-mypthub'
-      path: '/reps-vs-mypthub'
+    '/compare_/reps-vs-mypthub': {
+      id: '/compare_/reps-vs-mypthub'
+      path: '/compare/reps-vs-mypthub'
       fullPath: '/compare/reps-vs-mypthub'
       preLoaderRoute: typeof CompareRepsVsMypthubRouteImport
-      parentRoute: typeof CompareRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin_/verification': {
       id: '/admin_/verification'
@@ -1831,21 +1834,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CompareRouteChildren {
-  CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
-  CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
-  CompareRepsVsTrainerizeRoute: typeof CompareRepsVsTrainerizeRoute
-}
-
-const CompareRouteChildren: CompareRouteChildren = {
-  CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
-  CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
-  CompareRepsVsTrainerizeRoute: CompareRepsVsTrainerizeRoute,
-}
-
-const CompareRouteWithChildren =
-  CompareRoute._addFileChildren(CompareRouteChildren)
-
 interface DashboardClientsRouteChildren {
   DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
@@ -1877,7 +1865,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BusinessToolsRoute: BusinessToolsRoute,
   CareersRoute: CareersRoute,
-  CompareRoute: CompareRouteWithChildren,
+  CompareRoute: CompareRoute,
   ComplaintsRoute: ComplaintsRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
@@ -1914,6 +1902,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
+  CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
+  CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
+  CompareRepsVsTrainerizeRoute: CompareRepsVsTrainerizeRoute,
   DashboardBookingsRoute: DashboardBookingsRoute,
   DashboardBusinessRoute: DashboardBusinessRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
