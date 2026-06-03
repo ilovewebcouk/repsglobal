@@ -12,6 +12,7 @@ export interface ProductBlockProps {
   imageLabel: string;
   ctaLabel?: string;
   ctaSlug?: FeatureLink["slug"];
+  ctaHref?: string;
   reverse?: boolean;
 }
 
