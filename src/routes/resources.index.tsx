@@ -100,6 +100,32 @@ function ResourcesPage() {
       {/* Category filter pills */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1240px] px-6 py-6 lg:px-10">
+          <div className="relative mt-8 max-w-[520px]">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title, topic or author"
+              className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-11 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/60 hover:bg-reps-panel hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Category filter pills + sort */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap">
             {(["All", ...RESOURCE_CATEGORIES] as Filter[]).map((c) => {
               const active = filter === c;
@@ -114,6 +140,36 @@ function ResourcesPage() {
                       : "border-reps-border bg-reps-panel text-white/70 hover:text-white"
                   }`}
                 >
+                  {c}
+                  <span className={`ml-2 text-[11px] ${active ? "text-white/80" : "text-white/45"}`}>
+                    {counts[c] ?? 0}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2 lg:shrink-0">
+            <label htmlFor="resources-sort" className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
+              Sort
+            </label>
+            <select
+              id="resources-sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortMode)}
+              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[13px] font-semibold text-white focus:border-reps-orange focus:outline-none"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="az">A–Z</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Skip pill row close */}
+      {false && (
+        <button
+          type="button"
                   {c}
                 </button>
               );
