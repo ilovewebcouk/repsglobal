@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Search, Sparkles, X } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
+
+type SortMode = "newest" | "oldest" | "az";
 
 export const Route = createFileRoute("/resources/")({
   head: () => ({
@@ -33,20 +35,37 @@ type Filter = "All" | ResourceCategory;
 function ResourcesPage() {
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortMode>("newest");
 
   const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
+  const isFiltering = filter !== "All" || query.trim().length > 0;
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { All: RESOURCE_ARTICLES.length };
+    for (const cat of RESOURCE_CATEGORIES) c[cat] = 0;
+    for (const a of RESOURCE_ARTICLES) c[a.category] = (c[a.category] ?? 0) + 1;
+    return c;
+  }, []);
 
   const visible = useMemo(() => {
-    const rest = RESOURCE_ARTICLES.filter((a) => a.slug !== featured.slug);
-    return rest.filter((a) => {
+    const pool = isFiltering ? RESOURCE_ARTICLES : RESOURCE_ARTICLES.filter((a) => a.slug !== featured.slug);
+    const q = query.trim().toLowerCase();
+    const filtered = pool.filter((a) => {
       if (filter !== "All" && a.category !== filter) return false;
-      if (query.trim()) {
-        const q = query.toLowerCase();
-        if (!a.title.toLowerCase().includes(q) && !a.excerpt.toLowerCase().includes(q)) return false;
-      }
-      return true;
+      if (!q) return true;
+      return (
+        a.title.toLowerCase().includes(q) ||
+        a.excerpt.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q) ||
+        a.author.toLowerCase().includes(q)
+      );
     });
-  }, [filter, query, featured.slug]);
+    const sorted = [...filtered];
+    if (sort === "newest") sorted.sort((a, b) => b.date.localeCompare(a.date));
+    else if (sort === "oldest") sorted.sort((a, b) => a.date.localeCompare(b.date));
+    else sorted.sort((a, b) => a.title.localeCompare(b.title));
+    return sorted;
+  }, [filter, query, sort, isFiltering, featured.slug]);
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
@@ -71,16 +90,26 @@ function ResourcesPage() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search resources"
-              className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-4 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
+              placeholder="Search by title, topic or author"
+              className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-11 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
             />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/60 hover:bg-reps-panel hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Category filter pills */}
+      {/* Category filter pills + sort */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-6 lg:px-10">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap">
             {(["All", ...RESOURCE_CATEGORIES] as Filter[]).map((c) => {
               const active = filter === c;
@@ -96,15 +125,34 @@ function ResourcesPage() {
                   }`}
                 >
                   {c}
+                  <span className={`ml-2 text-[11px] ${active ? "text-white/80" : "text-white/45"}`}>
+                    {counts[c] ?? 0}
+                  </span>
                 </button>
               );
             })}
           </div>
+          <div className="flex items-center gap-2 lg:shrink-0">
+            <label htmlFor="resources-sort" className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
+              Sort
+            </label>
+            <select
+              id="resources-sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortMode)}
+              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[13px] font-semibold text-white focus:border-reps-orange focus:outline-none"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="az">A–Z</option>
+            </select>
+          </div>
         </div>
       </section>
 
+
       {/* Featured article */}
-      {filter === "All" && !query && (
+      {!isFiltering && (
         <section className="border-b border-reps-border">
           <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -145,6 +193,25 @@ function ResourcesPage() {
       {/* Article grid */}
       <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <div className="mb-6 flex items-center justify-between text-[13px] text-white/60">
+            <span>
+              {visible.length} {visible.length === 1 ? "article" : "articles"}
+              {filter !== "All" ? <> in <span className="text-white">{filter}</span></> : null}
+              {query.trim() ? <> matching “<span className="text-white">{query.trim()}</span>”</> : null}
+            </span>
+            {isFiltering && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter("All");
+                  setQuery("");
+                }}
+                className="text-[13px] font-semibold text-reps-orange hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
           {visible.length === 0 ? (
             <p className="text-[14px] text-white/60">No articles match this filter yet.</p>
           ) : (
