@@ -119,8 +119,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     transactionFees: "Stripe Integrated Payments sold as a paid add-on",
     tiers: [
       { name: "Basic", price: "Free", clientCap: "1 client" },
-      { name: "Grow / Individual Trainer", price: "$10/mo", clientCap: "Up to 2-15 clients" },
-      { name: "Pro / Small Business", price: "$79/mo", clientCap: "Up to 30-100 clients" },
+      { name: "Grow", price: "$9/mo", clientCap: "Up to 2 clients" },
+      { name: "Pro (slider)", price: "$23/mo+", clientCap: "5 to 200 clients (slider; price scales)" },
       { name: "Studio Plus", price: "$248/mo", clientCap: "Up to 500-1,000 clients per location" },
     ],
     addOns: [
