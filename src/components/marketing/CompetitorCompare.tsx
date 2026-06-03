@@ -238,7 +238,7 @@ export function CompetitorCompare() {
                     className={[
                       "px-4 py-4 text-[13px] font-display font-bold md:px-5",
                       i === 0
-                        ? "sticky left-[140px] z-40 w-[110px] min-w-[110px] bg-reps-orange-soft text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:shadow-none"
+                        ? "sticky left-[140px] z-40 w-[110px] min-w-[110px] bg-reps-orange-tint text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:bg-reps-orange-soft lg:shadow-none"
                         : "min-w-[150px] text-white/80 md:min-w-[170px]",
                     ].join(" ")}
                   >
@@ -264,7 +264,9 @@ export function CompetitorCompare() {
                       colSpan={5}
                       className="bg-reps-ink px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange md:px-5"
                     >
-                      {group.label}
+                      <span className="sticky left-4 md:left-5 lg:static">
+                        {group.label}
+                      </span>
                     </td>
                   </tr>
                   {group.rows.map((row) => (
@@ -281,7 +283,7 @@ export function CompetitorCompare() {
                           className={[
                             "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
                             ci === 0
-                              ? "sticky left-[140px] z-10 bg-reps-orange-soft/90 shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
+                              ? "sticky left-[140px] z-10 bg-reps-orange-tint shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
                               : "bg-reps-panel/20",
                           ].join(" ")}
                         >
