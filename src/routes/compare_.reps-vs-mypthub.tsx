@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
-import mypthubHero from "@/assets/compare/reps-vs-mypthub-hero.jpg";
+import mypthubCover from "@/assets/compare/reps-vs-mypthub-cover.png";
 
 const URL = "https://repsglobal.lovable.app/compare/reps-vs-mypthub";
 const TITLE = "MyPTHub Alternative — REPs vs MyPTHub for UK PTs (2026)";
@@ -16,11 +16,11 @@ export const Route = createFileRoute("/compare_/reps-vs-mypthub")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
       { property: "og:url", content: URL },
-      { property: "og:image", content: mypthubHero },
+      { property: "og:image", content: mypthubCover },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
-      { name: "twitter:image", content: mypthubHero },
+      { name: "twitter:image", content: mypthubCover },
     ],
     links: [{ rel: "canonical", href: URL }],
   }),
