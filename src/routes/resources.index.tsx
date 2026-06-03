@@ -47,19 +47,20 @@ function ResourcesPage() {
   const navigate = useNavigate({ from: "/resources" });
   const { q: query, category: filter, sort } = Route.useSearch();
 
+  type SearchState = z.infer<typeof searchSchema>;
   const setFilter = (next: Filter) =>
     navigate({
-      search: (prev) => ({ ...prev, category: next === "All" ? undefined : next }),
+      search: (prev: SearchState) => ({ ...prev, category: next === "All" ? undefined : next }),
       replace: true,
     });
   const setQuery = (next: string) =>
     navigate({
-      search: (prev) => ({ ...prev, q: next ? next : undefined }),
+      search: (prev: SearchState) => ({ ...prev, q: next ? next : undefined }),
       replace: true,
     });
   const setSort = (next: SortMode) =>
     navigate({
-      search: (prev) => ({ ...prev, sort: next === "newest" ? undefined : next }),
+      search: (prev: SearchState) => ({ ...prev, sort: next === "newest" ? undefined : next }),
       replace: true,
     });
   const clearFilters = () => navigate({ search: () => ({}), replace: true });
