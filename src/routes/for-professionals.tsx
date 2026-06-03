@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
 import { ProductBlock } from "@/components/marketing/ProductBlock";
