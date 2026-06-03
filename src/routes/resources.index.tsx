@@ -193,6 +193,25 @@ function ResourcesPage() {
       {/* Article grid */}
       <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <div className="mb-6 flex items-center justify-between text-[13px] text-white/60">
+            <span>
+              {visible.length} {visible.length === 1 ? "article" : "articles"}
+              {filter !== "All" ? <> in <span className="text-white">{filter}</span></> : null}
+              {query.trim() ? <> matching “<span className="text-white">{query.trim()}</span>”</> : null}
+            </span>
+            {isFiltering && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter("All");
+                  setQuery("");
+                }}
+                className="text-[13px] font-semibold text-reps-orange hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
           {visible.length === 0 ? (
             <p className="text-[14px] text-white/60">No articles match this filter yet.</p>
           ) : (
