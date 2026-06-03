@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { ArrowRight, Search, Sparkles, X } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -7,8 +9,18 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
 
 type SortMode = "newest" | "oldest" | "az";
+type Filter = "All" | ResourceCategory;
+
+const FILTER_VALUES = ["All", ...RESOURCE_CATEGORIES] as const;
+
+const searchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  category: fallback(z.enum(FILTER_VALUES), "All").default("All"),
+  sort: fallback(z.enum(["newest", "oldest", "az"]), "newest").default("newest"),
+});
 
 export const Route = createFileRoute("/resources/")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "Resources — Personal Trainer & Fitness Coach Guides UK | REPs" },
@@ -31,12 +43,26 @@ export const Route = createFileRoute("/resources/")({
   component: ResourcesPage,
 });
 
-type Filter = "All" | ResourceCategory;
-
 function ResourcesPage() {
-  const [filter, setFilter] = useState<Filter>("All");
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortMode>("newest");
+  const navigate = useNavigate({ from: "/resources" });
+  const { q: query, category: filter, sort } = Route.useSearch();
+
+  const setFilter = (next: Filter) =>
+    navigate({
+      search: (prev) => ({ ...prev, category: next === "All" ? undefined : next }),
+      replace: true,
+    });
+  const setQuery = (next: string) =>
+    navigate({
+      search: (prev) => ({ ...prev, q: next ? next : undefined }),
+      replace: true,
+    });
+  const setSort = (next: SortMode) =>
+    navigate({
+      search: (prev) => ({ ...prev, sort: next === "newest" ? undefined : next }),
+      replace: true,
+    });
+  const clearFilters = () => navigate({ search: () => ({}), replace: true });
 
   const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
   const isFiltering = filter !== "All" || query.trim().length > 0;
