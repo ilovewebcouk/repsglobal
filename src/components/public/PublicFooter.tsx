@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 
 type FooterLink = { label: string; to: string };
 

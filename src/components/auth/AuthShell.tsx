@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 
 export function AuthShell({
   topRight,

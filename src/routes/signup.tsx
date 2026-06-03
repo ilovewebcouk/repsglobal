@@ -22,6 +22,7 @@ import {
 import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
