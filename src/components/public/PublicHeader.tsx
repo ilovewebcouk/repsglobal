@@ -657,63 +657,101 @@ function ResourcesMenu() {
   );
 }
 
-function FeaturesMenu() {
+function ForProsMenu() {
   return (
-    <PanelShell width="w-[820px]">
-      <div className="grid grid-cols-3 gap-6">
-        {FEATURE_GROUPS.map((g) => {
-          const items = FEATURES.filter((f) => f.group === g.key);
-          return (
-            <div key={g.key}>
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-                {g.label}
-              </h4>
-              <ul className="mt-3 flex flex-col gap-2">
-                {items.map((f) => (
-                  <li key={f.slug}>
-                    <NavigationMenu.Link asChild>
-                      <Link
-                        to="/features/$slug"
-                        params={{ slug: f.slug }}
-                        className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
-                      >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
-                          <f.icon className="h-4 w-4" />
-                        </span>
-                        <span className="flex flex-col">
-                          <span className="text-[13px] font-semibold leading-tight text-reps-charcoal group-hover/feat:text-reps-orange">
-                            {f.label}
-                          </span>
-                          <span className="mt-0.5 text-[11px] leading-snug text-reps-charcoal/60">
-                            {f.oneLiner}
-                          </span>
-                        </span>
-                      </Link>
-                    </NavigationMenu.Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-5 flex items-center justify-between border-t border-reps-stone pt-4">
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/features"
-            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
-          >
-            All features →
-          </Link>
-        </NavigationMenu.Link>
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/for-professionals"
-            className="text-[13px] font-medium text-reps-charcoal/70 hover:text-reps-orange"
-          >
-            For Professionals overview
-          </Link>
-        </NavigationMenu.Link>
+    <PanelShell width="w-[640px]">
+      <div className="grid grid-cols-2 gap-8">
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+            Overview
+          </h4>
+          <ul className="mt-3 flex flex-col gap-1">
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/for-professionals" className={menuItemClass}>
+                  For Professionals overview
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/features" className={menuItemClass}>
+                  All features
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/pricing" className={menuItemClass}>
+                  Pricing
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/compare" className={menuItemClass}>
+                  Compare plans
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link
+                  to="/signup"
+                  className={cn(menuItemClass, "font-semibold text-reps-orange")}
+                >
+                  Join REPs →
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+            Platform pillars
+          </h4>
+          <ul className="mt-3 flex flex-col gap-1">
+            {FEATURE_GROUPS.map((g) => (
+              <li key={g.key}>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    to={
+                      g.key === "visibility"
+                        ? "/features/visibility"
+                        : g.key === "operations"
+                          ? "/features/operations"
+                          : g.key === "coaching"
+                            ? "/features/coaching"
+                            : g.key === "ai"
+                              ? "/features/ai"
+                              : "/features/growth"
+                    }
+                    className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+                  >
+                    <span
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]",
+                        g.highlight
+                          ? "bg-reps-orange text-white"
+                          : "bg-reps-orange-soft text-reps-orange",
+                      )}
+                    >
+                      <g.icon className="h-4 w-4" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-[13px] font-semibold leading-tight text-reps-charcoal group-hover/feat:text-reps-orange">
+                        {g.label}
+                      </span>
+                      <span className="mt-0.5 text-[11px] leading-snug text-reps-charcoal/60">
+                        {g.desc}
+                      </span>
+                    </span>
+                  </Link>
+                </NavigationMenu.Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </PanelShell>
   );
