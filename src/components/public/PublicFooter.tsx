@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import repsFooterLockup from "@/assets/logos/reps-footer-lockup.svg.asset.json";
 
 type FooterLink = { label: string; to: string };
 
