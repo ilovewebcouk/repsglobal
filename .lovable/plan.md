@@ -80,3 +80,7 @@ For each `/compare/reps-vs-*` page, walk the rendered sections in order and chec
 - All scraping done from `code--exec` in build mode; snapshot stored at `/tmp/competitor-snapshot.json` (not in repo).
 - If a competitor pricing page is JS-heavy, add `waitFor: 2000` to the scrape.
 - Diff + patch happens via small surgical `code--line_replace` edits on `competitor-data.ts` and `competitor-editorial.ts`. No file rewrites.
+
+## Phase 5 — Snapshot note
+
+- 2026-06-03: Firecrawl re-verified trainerize.com/pricing + ptdistinction.com/pricing. Updated Trainerize add-on prices (Nutrition $20/$45, Stripe $10, Video $10, Branded App $169 one-time, Business $25). Sharpened PT Distinction per-client framing with 12-week math. PT Distinction tier prices and caps unchanged (Basic $19.90/3, Pro $59.90/25, Master $89.90/50).
