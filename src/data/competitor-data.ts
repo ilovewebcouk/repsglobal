@@ -356,7 +356,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       ],
     },
     whenCompetitorIsRight:
-      "PT Distinction is one of the most feature-rich coaching apps on the market — AI Program Builder, Smart Meal Planner, and AI Assistant are included from the $19.90 Basic tier. If your client roster is stable, fits cleanly inside a tier, and you don't need a public register, it's a strong product.",
+      "PT Distinction is one of the most feature-rich coaching apps on the market — AI Program Builder, Smart Meal Planner, and AI Assistant are included from the $19.90 Basic tier. The caveat is the per-client meter: every client above the cap costs $6/mo (Basic), $2.40/mo (Pro) or $1.60/mo (Master). A standard 12-week client on Basic adds ~$18 of extra recurring spend; three of them above the cap effectively eats most of a month of REPs Pro. If your roster is small, stable, and sits inside a single tier cap — and you don't need a public register — it's a strong product.",
     faqs: [
       {
         q: "How does PT Distinction's per-client pricing work?",
