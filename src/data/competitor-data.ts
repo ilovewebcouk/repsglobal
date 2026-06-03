@@ -12,10 +12,6 @@ import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
 import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
 import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
-import trainerizeHero from "@/assets/compare/reps-vs-trainerize-hero.jpg";
-import mypthubHero from "@/assets/compare/reps-vs-mypthub-hero.jpg";
-import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg";
-
 export const DATA_VERIFIED_DATE = "3 June 2026";
 
 /**
@@ -56,8 +52,6 @@ export type Competitor = {
   logo: string;
   /** Default rendered logo height in px so different SVG aspect ratios optically match. */
   logoHeight: number;
-  /** Per-page hero image (also used as og:image / twitter:image). */
-  hero: string;
   /** Public pricing page (cited in the footnote on every comparison page). */
   pricingUrl: string;
   /** One-line characterisation used in cards and TL;DRs. */
