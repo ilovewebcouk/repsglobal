@@ -88,13 +88,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </p>
             </div>
             <div className="relative">
-              <img
-                src={c.hero}
-                alt={`REPs vs ${c.name}`}
-                width={1600}
-                height={900}
-                className="w-full rounded-[24px] border border-reps-border"
-              />
+              <VsHeroCard competitor={c} />
             </div>
           </div>
         </div>
