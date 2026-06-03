@@ -194,7 +194,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $9/mo (Grow, up to 2 clients). REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
       },
       {
         q: "Does Trainerize include AI?",
