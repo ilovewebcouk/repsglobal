@@ -1,86 +1,30 @@
-## Goal
+## Problem
 
-Verify our competitor data is current via Firecrawl, patch any drift, then audit each of the three `/compare/reps-vs-*` pages section-by-section. Output is **(a)** safe in-place data/copy patches and **(b)** a separate structural-issues triage list for you to decide on.
+On `/compare`, the new `PlansLimitsSummary` rows don't line up. The REPs row puts the "Recommended" pill inline next to the "REPs Pro" label, which pushes the Entry / Clients / Paid add-ons columns to the right. Competitor rows (logo only in column 1) start those columns further left, so nothing vertically aligns.
 
-## Phase 1 — Firecrawl scrape (internal evidence only)
+## Fix
 
-Scrape **public pricing pages only** for each competitor. Never publish raw HTML or vendor screenshots — memory rule.
+Make every row share the same column grid, and move the Recommended pill out of the flow.
 
-| Competitor | Target pages |
-|---|---|
-| Trainerize | `/pricing` (+ `/features` if pricing references add-ons there) |
-| MyPTHub | `/pricing` |
-| PT Distinction | `/pricing` |
+### Layout change in `src/components/marketing/PlansLimitsSummary.tsx`
 
-For each, extract via Firecrawl `scrape` (formats: `markdown`, plus a `json` extraction with a fixed schema) and capture:
+- Replace the `flex` rows with a CSS grid that all rows share, so column edges align across REPs + 3 competitor rows. Single source of truth for column widths.
+  - Mobile (`< md`): stacked (grid collapses to one column per row, as today).
+  - `md+`: `grid-cols-[180px_110px_140px_120px_1fr]` for: brand · Entry · Clients · Paid add-ons · trailing CTA. (Widths tuned to current content; final values picked during implementation to fit longest values like "Unlimited" and "$9/mo for 2".)
+- First column holds the REPs wordmark or the competitor logo only. No pill inline.
+- Move the "Recommended" pill to a small absolute badge in the top-right corner of the REPs row, so it does not consume grid space. On mobile it stays inline above the brand label (since the row stacks anyway).
+- Keep the orange-tint background and green emphasis on REPs values unchanged.
+- Keep the row a `<Link>` for competitors and a plain `<div>` for the REPs row (REPs already links to `/pricing` via the trailing CTA).
 
-- Entry tier name + monthly price + client cap
-- Top tier name + monthly price + client cap
-- Free trial length
-- Transaction / booking / payment fees (and whether Stripe is "included" or surcharged)
-- Named paid add-ons + cost (branded app, Check-Ins AI, Meal Planner, AI Program Builder, extra trainers, Stripe Payments, etc.)
-- Annual discount if shown
+### What stays the same
 
-Output: a single internal `/tmp/competitor-snapshot.json` (not committed). I'll diff it against `src/data/competitor-data.ts`.
-
-## Phase 2 — Reconcile `src/data/competitor-data.ts`
-
-For each of the three competitors, surgically patch only fields that drifted:
-
-- `tiers[].price` / `tiers[].clientCap`
-- `freeTrial`
-- `transactionFees`
-- `addOns[]` (add new, remove discontinued, update costs)
-- Bump `DATA_VERIFIED_DATE` to today.
-
-If a field is unchanged, leave it untouched (no churn). `REPS_SIDE` already locked to Pro — not touched.
-
-## Phase 3 — Editorial reconciliation `src/data/competitor-editorial.ts`
-
-For each competitor:
-- Re-check every numeric claim in `scenarios[].competitorCost`, `costStory`, and FAQs against the new snapshot.
-- Update only drifted numbers. Preserve Pro-only framing (memory rule).
-- Keep negations like "REPs does not charge a booking commission" untouched.
-
-## Phase 4 — Per-page audit (Trainerize, MyPTHub, PT Distinction)
-
-For each `/compare/reps-vs-*` page, walk the rendered sections in order and check against an audit checklist:
-
-1. Hero — Pro framing, no banned phrases, correct competitor name
-2. `PlansLimitsStrip` — entry/top prices match scrape, add-on list ≤4 highest-impact, Verified aside present
-3. Feature matrix (`FEATURE_GROUPS`) — cells still defensible vs scraped feature lists
-4. `CostCalculator` — `pickRepsTier` returns Pro for every client count, competitor cost math matches new prices
-5. Scenarios — three scenarios per competitor, all `repsCost` = `REPs Pro £59/mo`
-6. FAQs — Pro-only, no Free/Studio framing, founding price referenced
-7. `VerdictScorecard` — weighting still honest with the new data
-8. Methodology link + "Last checked" date visible
-9. Banned-phrase sweep (memory list) — every match either negation or unrelated numeric
-
-**Output split:**
-
-- **Patches I'll apply directly**: factual corrections (price, add-on cost, trial length), Pro-framing tightening, banned-phrase fixes, "Last checked" date bump.
-- **Structural triage list (no edits)**: anything bigger — e.g. "Trainerize scorecard over-weights AI", "PT Distinction scenario 3 no longer realistic", "feature-matrix row X is now misleading after their Nov update". You decide which to action in a follow-up.
-
-## Phase 5 — Memory + skills lock
-
-- Update `mem://content/comparison-rules.md` only if Phase 4 surfaces a new durable rule.
-- Add a one-line dated note to `.lovable/plan.md` recording the snapshot date.
+- Same data sources (`COMPETITOR_LIST`, `HREF_BY_SLUG`).
+- Same content per row (Entry / Clients / Paid add-ons + Compare CTA).
+- Footnote unchanged.
+- `PlansLimitsStrip` on the `/compare/reps-vs-*` pages untouched.
 
 ## Out of scope
 
-- `pricing-data.ts`, `/pricing`, `PricingPlans`, `PricingCompare`, `FoundingBanner` — already locked correct.
-- Stripe, billing functions, auth, DB, AI, design tokens, nav, footer, homepage.
-- `/comparison-methodology` and `/faq` copy (already aligned).
-- No new components, no layout/visual changes — Phase 1 visual lock holds.
-- No publishing of raw scraped HTML or vendor screenshots anywhere in the codebase.
-
-## Technical notes
-
-- Firecrawl connector is now linked (`FIRECRAWL_API_KEY` available). Calls go through the connector gateway at `https://connector-gateway.lovable.dev/firecrawl/v2/scrape` with `Authorization: Bearer $LOVABLE_API_KEY` + `X-Connection-Api-Key: $FIRECRAWL_API_KEY`.
-- All scraping done from `code--exec` in build mode; snapshot stored at `/tmp/competitor-snapshot.json` (not in repo).
-- If a competitor pricing page is JS-heavy, add `waitFor: 2000` to the scrape.
-- Diff + patch happens via small surgical `code--line_replace` edits on `competitor-data.ts` and `competitor-editorial.ts`. No file rewrites.
-
-## Phase 5 — Snapshot note
-
-- 2026-06-03: Firecrawl re-verified trainerize.com/pricing + ptdistinction.com/pricing. Updated Trainerize add-on prices (Nutrition $20/$45, Stripe $10, Video $10, Branded App $169 one-time, Business $25). Sharpened PT Distinction per-client framing with 12-week math. PT Distinction tier prices and caps unchanged (Basic $19.90/3, Pro $59.90/25, Master $89.90/50).
+- No changes to `/compare/reps-vs-*` pages, competitor data, editorial copy, or the feature matrix.
+- No new components beyond the existing `PlansLimitsSummary` file.
+- No design-token or radius changes.
