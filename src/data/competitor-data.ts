@@ -104,7 +104,6 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     name: "Trainerize",
     logo: trainerizeLogo.url,
     logoHeight: 28,
-    hero: trainerizeHero,
     pricingUrl: "https://www.trainerize.com/pricing",
     bestFor:
       "Coaches who already have a full client roster and just need a delivery app.",
