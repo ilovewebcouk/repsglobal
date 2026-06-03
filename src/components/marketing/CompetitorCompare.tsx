@@ -38,7 +38,7 @@ export function CompetitorCompare() {
         </p>
       </div>
 
-      {/* Plans & limits summary — compact row per platform, links into each vs-page */}
+      {/* Plans & limits summary — hidden for now; REPs unlimited model reads as more expensive vs competitor entry tiers
       <div className="mt-10">
         <h3 className="font-display text-[18px] font-semibold text-white/85">
           Plans &amp; limits at a glance
@@ -52,6 +52,7 @@ export function CompetitorCompare() {
         </div>
         <PlansLimitsSummaryFootnote />
       </div>
+      */}
 
       {/* Mobile/tablet swipe hint — placed above the feature table */}
       <div className="mt-12 flex items-center gap-2 text-[12px] font-medium text-white/55 lg:hidden">
