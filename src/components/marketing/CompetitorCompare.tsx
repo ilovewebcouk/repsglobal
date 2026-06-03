@@ -338,11 +338,13 @@ function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
   if (cell.kind === "yes") {
     return (
       <div className="flex items-start gap-2">
-        <Check
-          className={`mt-0.5 h-4 w-4 shrink-0 ${
+        <span
+          className={`shrink-0 text-[13px] font-semibold ${
             highlight ? "text-reps-orange" : "text-reps-green"
           }`}
-        />
+        >
+          Yes
+        </span>
         {cell.note && <span className="text-white/70">{cell.note}</span>}
       </div>
     );
@@ -350,14 +352,18 @@ function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
   if (cell.kind === "partial") {
     return (
       <div className="flex items-start gap-2">
-        <span className="mt-1 h-1.5 w-3 shrink-0 rounded-full bg-reps-gold" />
+        <span className="shrink-0 text-[13px] font-semibold text-reps-gold">
+          Partial
+        </span>
         <span className="text-white/65">{cell.note}</span>
       </div>
     );
   }
   return (
     <div className="flex items-start gap-2">
-      <Minus className="mt-0.5 h-4 w-4 shrink-0 text-white/35" />
+      <span className="shrink-0 text-[13px] font-semibold text-white/35">
+        No
+      </span>
       {cell.note && <span className="text-white/45">{cell.note}</span>}
     </div>
   );
