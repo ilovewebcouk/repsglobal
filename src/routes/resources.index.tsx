@@ -196,8 +196,19 @@ function ResourcesPage() {
           <div className="mb-6 flex items-center justify-between text-[13px] text-white/60">
             <span>
               {visible.length} {visible.length === 1 ? "article" : "articles"}
-              {filter !== "All" ? <> in <span className="text-white">{filter}</span></> : null}
-              {query.trim() ? <> matching “<span className="text-white">{query.trim()}</span>”</> : null}
+              {filter !== "All" && (
+                <>
+                  {" in "}
+                  <span className="text-white">{filter}</span>
+                </>
+              )}
+              {query.trim() && (
+                <>
+                  {" matching \u201C"}
+                  <span className="text-white">{query.trim()}</span>
+                  {"\u201D"}
+                </>
+              )}
             </span>
             {isFiltering && (
               <button
