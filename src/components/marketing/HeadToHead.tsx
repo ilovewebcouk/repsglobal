@@ -271,11 +271,16 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
           <div className="grid gap-4 md:grid-cols-2">
             {others.map((s) => {
               const o = COMPETITORS[s];
+              const href =
+                s === "trainerize"
+                  ? "/compare/reps-vs-trainerize"
+                  : s === "mypthub"
+                    ? "/compare/reps-vs-mypthub"
+                    : "/compare/reps-vs-pt-distinction";
               return (
                 <Link
                   key={s}
-                  to="/compare/$slug"
-                  params={{ slug: `reps-vs-${s}` }}
+                  to={href}
                   className="group rounded-[18px] border border-reps-border bg-reps-panel p-6 transition hover:border-reps-orange/40 hover:bg-reps-panel-soft"
                 >
                   <div className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
