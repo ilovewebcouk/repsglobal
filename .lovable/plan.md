@@ -1,56 +1,38 @@
-# Connect repsuk.org to the Lovable app (staging first)
+# Set up Lovable Emails on `notify.repsuk.org`
 
-## Approach
+Goal: send auth + app (transactional) emails from `notify@repsuk.org` (visible From may appear as `@repsuk.org`), without touching your live Brilliant Directories MX records on the root domain.
 
-Keep your current Brilliant Directories site live on `repsuk.org` untouched. Point a new `staging.repsuk.org` subdomain at this Lovable app so you can:
+## How it works
 
-- Use the app on a real branded URL
-- Set up branded email (e.g. `notify@repsuk.org`) without touching the live site
-- Later, when ready to launch, swap the root domain over and retire the staging subdomain
+Lovable delegates a subdomain (`notify.repsuk.org`) to Lovable nameservers via `NS` records in Cloudflare. Lovable then manages SPF / DKIM / MX inside that subdomain only. Your root `repsuk.org` inbox + Brilliant Directories DNS stay untouched.
 
 ## Steps
 
-### 1. Publish the app
-Lovable requires the project to be published before any custom domain (including a subdomain) can be attached. I'll prompt you to click Publish — backend stays the same, just makes the app available at a public URL.
+1. **Open email setup dialog** — you click "Set up email domain", enter `notify.repsuk.org`, and Lovable shows the exact `NS` records to add.
+2. **Add NS records in Cloudflare** — for host `notify`, set to Lovable's nameservers (e.g. `ns3.lovable.cloud`, `ns4.lovable.cloud`). DNS-only (grey cloud) — NS records cannot be proxied.
+3. **Wait for DNS verification** — usually minutes, can take up to 72h. You can monitor in Cloud → Emails. Scaffolding below does not need to wait.
+4. **Provision email infrastructure** — creates the send queue, suppression list, unsubscribe tokens, send log, and the queue processor cron. One-time, fully automated.
+5. **Scaffold auth email templates** — branded versions of signup confirmation, password reset, magic link, invite, email change, reauthentication. Styled to REPs tokens (orange brand, locked radii, white body bg). Replaces default Lovable auth emails once DNS verifies.
+6. **Scaffold app (transactional) email infrastructure** — creates the send route, preview route, unsubscribe API + branded unsubscribe page, and a sample template registry. From this point any app trigger (contact form, booking confirmation, lead notification, client invite, etc.) can send via one helper.
+7. **Wire `client-invite` template to live infra** — your code already has `src/lib/email-templates/client-invite.tsx` and a `sendTransactionalEmailServer` helper currently pointing at a placeholder `notify.dogboss.io`. I'll switch `SITE_NAME` / `SENDER_DOMAIN` / `FROM_DOMAIN` in `src/lib/email/send.server.ts` (and the matching constants in `src/routes/lovable/email/transactional/send.ts`) to `repsglobal` + `notify.repsuk.org`, so existing invite sends go out branded as `notify@repsuk.org` (display: `REPs <noreply@repsuk.org>`).
 
-### 2. Add `staging.repsuk.org` as a custom domain
-In **Project Settings → Domains → Connect Domain**, enter `staging.repsuk.org`. Lovable will show DNS records to add.
+## What gets sent from where
 
-Because your DNS is on **Cloudflare**, in the Connect Domain dialog I'll tell you to expand **Advanced** and tick **"Domain uses Cloudflare or a similar proxy"** — this switches the setup from A-record to **CNAME-based** verification, which is the only thing that works reliably behind Cloudflare's proxy.
+- **Auth emails** → from `noreply@notify.repsuk.org`, displayed as `REPs <noreply@repsuk.org>`
+- **App emails** (invites, confirmations, notifications) → same sender
+- **Reply-to** → can be set to `hello@repsuk.org` or similar if you want replies to land in your existing inbox
 
-### 3. Add the records in Cloudflare
-You'll add (Lovable shows the exact values):
-- A `CNAME` for `staging` → Lovable's target host
-- A `TXT` record `_lovable` for ownership verification
-- Set the `staging` CNAME to **DNS only** (grey cloud) during verification — you can re-enable the orange proxy after SSL is issued, if you want
+## What I need from you to proceed
 
-Your existing `repsuk.org` A records and MX/email records stay exactly as they are — Brilliant Directories keeps serving the live site.
+1. Confirm sending subdomain is **`notify.repsuk.org`** (and visible address `notify@repsuk.org`).
+2. Confirm display name should be **"REPs"**.
+3. (Optional) Confirm reply-to address — leave blank to use the sending address.
 
-### 4. Set up email on a delegated subdomain
-For branded email I'll use Lovable Emails, which delegates a **sending subdomain** (e.g. `notify.repsuk.org`) to Lovable nameservers via `NS` records in Cloudflare. Lovable then manages SPF/DKIM/MX inside that subdomain.
-
-Important: this only affects `notify.repsuk.org`. Your root `repsuk.org` MX records (the inbox you currently receive mail on) are **not touched**. Emails will send as `something@notify.repsuk.org` — if you'd rather they appear as `@repsuk.org`, that's possible too but needs more care around your existing SPF/DMARC on the root; happy to do that variant if you prefer.
-
-### 5. Later: cutover to the root domain
-When you're ready to launch:
-1. Add `repsuk.org` and `www.repsuk.org` as custom domains on the Lovable project (same Cloudflare CNAME flow)
-2. In Cloudflare, repoint the root A/CNAME away from Brilliant Directories to Lovable's target
-3. Mark `repsuk.org` as **Primary** in Lovable so `www` and `staging` redirect to it
-4. Remove `staging.repsuk.org` from the project once you're happy
-
-Data migration from Brilliant Directories (exporting member/listing data into this app's database) is a separate workstream — we'll plan that when you're closer to cutover.
-
-## What I need from you to start
-
-1. Confirm you want to **publish the app now** (required before any domain can attach)
-2. Confirm the staging subdomain should be **`staging.repsuk.org`** (or pick another, e.g. `app.repsuk.org`, `beta.repsuk.org`)
-3. Confirm the email sending subdomain should be **`notify.repsuk.org`** (or pick another, e.g. `mail.`, `send.`, `hello.`)
-
-Once you confirm, I'll walk you through Publish → Connect Domain → Cloudflare records → email setup in order, one step at a time.
+Once you confirm, I'll open the email setup dialog and walk through Cloudflare NS records, then run infra setup + auth + app scaffolding in sequence.
 
 ## Technical notes
 
-- Cloudflare requires CNAME-flattening / proxy-mode setup on Lovable's side — do not use the default A-record (`185.158.133.1`) flow; it can fail SSL issuance when Cloudflare proxies the record.
-- NS delegation for the email subdomain means a third-party email provider cannot also verify on the same subdomain — if you later want e.g. Mailchimp on `notify.repsuk.org`, you'd need a different subdomain.
-- SSL is auto-provisioned by Lovable once DNS verifies; can take a few minutes to a few hours.
-- No code changes are needed for any of this — it's all DNS + project settings.
+- NS delegation means no other email service (Mailchimp, Resend, SendGrid) can verify on `notify.repsuk.org` while it's delegated to Lovable — use a different subdomain if you ever need that.
+- Root `repsuk.org` MX records (your current inbox + Brilliant Directories) are not touched.
+- DMARC on the root: if you have a strict `p=reject` DMARC on `repsuk.org`, sends from a delegated subdomain still align via DKIM, so this is normally fine. If your DMARC is custom I'll review it before sending.
+- No code changes are needed for steps 1–6. Step 7 edits `src/lib/email/send.server.ts` and `src/routes/lovable/email/transactional/send.ts` only.
