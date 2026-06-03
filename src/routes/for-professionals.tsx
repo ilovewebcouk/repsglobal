@@ -228,8 +228,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "And behind every screen, an operating layer. 14 AI capabilities working across programmes, check-ins, leads, risk and growth — drafting work, scoring intent, flagging churn, ranking the single move that pays this week. You stay the coach.",
     bullets: [
       "AI Programme Writer — 12-week plan from one brief",
-      "AI Check-in Summariser — six reviews into one card",
-      "AI Lead Scoring + reply drafts",
+      "AI Check-in Summariser — a stack of reviews into one card",
       "AI Client Risk Alerts — who's about to ghost",
       "Weekly Next Move — the action that pays this week",
     ],
