@@ -120,7 +120,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
     eyebrow: "Verified profile",
     title: "Become the obvious choice in your area.",
     body:
-      "REPs has been the UK's verified register since 2009 — and the public still searches it first. Your profile shows the badge, the qualifications, the insurance, the reviews. Trust, decided before they message you.",
+      "Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the UK's verified fitness register since 2009.",
     bullets: [
       "Verified badge backed by a 16-year register",
       "Qualifications, insurance and CPD shown live",
