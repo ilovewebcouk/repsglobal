@@ -241,10 +241,7 @@ function ResourcesPage() {
             {isFiltering && (
               <button
                 type="button"
-                onClick={() => {
-                  setFilter("All");
-                  setQuery("");
-                }}
+                onClick={clearFilters}
                 className="text-[13px] font-semibold text-reps-orange hover:underline"
               >
                 Clear filters
