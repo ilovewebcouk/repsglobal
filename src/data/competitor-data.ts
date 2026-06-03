@@ -217,8 +217,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     transactionFees: "Included in base tiers",
     tiers: [
       { name: "Starter", price: "$25/mo", clientCap: "3 clients" },
-      { name: "Premium", price: "$59/mo ($29.50 annual)", clientCap: "Unlimited clients" },
-      { name: "Ultimate", price: "$215/mo ($195 annual)", clientCap: "Unlimited + 5 extra trainers" },
+      { name: "Premium", price: "$59/mo", clientCap: "Unlimited clients" },
+      { name: "Ultimate", price: "$215/mo", clientCap: "Unlimited + 5 extra trainers" },
     ],
     addOns: [
       { name: "Custom Branded App (iOS & Android)", cost: "$95 one-time" },
