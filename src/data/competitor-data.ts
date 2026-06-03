@@ -201,7 +201,6 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     name: "MyPTHub",
     logo: mypthubLogo.url,
     logoHeight: 30,
-    hero: mypthubHero,
     pricingUrl: "https://www.mypthub.net/pricing",
     bestFor:
       "Coaches who want an all-in-one app and are happy to add the branded-app and AI add-ons later.",
@@ -296,7 +295,6 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     name: "PT Distinction",
     logo: ptDistinctionLogo.url,
     logoHeight: 24,
-    hero: ptDistinctionHero,
     pricingUrl: "https://www.ptdistinction.com/pricing",
     bestFor: "Coaches who love a deep feature set and don't mind paying per extra client.",
     currency: "$",
