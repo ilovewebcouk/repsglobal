@@ -919,7 +919,7 @@ function MobileDrawer({
               Log in
             </Link>
             <Link
-              to="/for-professionals"
+              to="/signup"
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] bg-reps-orange px-3 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
             >
