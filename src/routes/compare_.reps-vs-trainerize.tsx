@@ -8,7 +8,7 @@ const TITLE = "Trainerize Alternative for UK Trainers — REPs vs Trainerize (20
 const DESC =
   "Honest comparison of REPs and Trainerize for UK personal trainers. Pricing, client limits, hidden add-ons (Stripe Payments, nutrition, branded app) and feature parity, side-by-side.";
 
-export const Route = createFileRoute("/compare/reps-vs-trainerize")({
+export const Route = createFileRoute("/compare_/reps-vs-trainerize")({
   head: () => ({
     meta: [
       { title: TITLE },
