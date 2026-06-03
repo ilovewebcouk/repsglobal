@@ -150,7 +150,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
     eyebrow: "Client records",
     title: "One record. The whole client.",
     body:
-      "Goals, programme, last check-in, next session, lifetime value, outstanding invoice — on one screen. The CRM Trainerize doesn't have, wired to the coaching tools MyPTHub doesn't have.",
+      "Goals, programme, last check-in, next session, lifetime value, outstanding invoice — on one screen. The CRM the coaching apps don't have, wired to the coaching tools the CRMs don't have.",
     bullets: [
       "Full client record with adherence and progress",
       "Programme and nutrition snapshot at the top",
