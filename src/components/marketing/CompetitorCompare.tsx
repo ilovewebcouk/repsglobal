@@ -29,7 +29,7 @@ export function CompetitorCompare() {
           The honest comparison
         </span>
         <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-          REPs vs every other coaching app.
+          REPs vs leading coaching apps.
         </h2>
         <p className="mt-3 max-w-[640px] text-[15px] text-white/65">
           Trainerize, MyPTHub and PT Distinction give you software — and a list of
