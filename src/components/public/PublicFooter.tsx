@@ -23,6 +23,10 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "Pricing", to: "/pricing" },
       { label: "Dashboard", to: "/dashboard" },
       { label: "CPD & Education", to: "/cpd" },
+      { label: "REPs vs Trainerize", to: "/compare/reps-vs-trainerize" },
+      { label: "REPs vs MyPTHub", to: "/compare/reps-vs-mypthub" },
+      { label: "REPs vs PT Distinction", to: "/compare/reps-vs-pt-distinction" },
+      { label: "Compare all platforms", to: "/compare" },
     ],
   },
   {
