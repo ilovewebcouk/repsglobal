@@ -10,16 +10,22 @@ import {
 /**
  * Compact plans & limits summary for the /compare hub.
  *
- * One row per competitor: logo · entry price · client cap · paid add-on count,
- * each linking into its `/compare/reps-vs-*` page. Replaces the heavier
- * `PlansLimitsStrip` on the hub; the strip still lives on each vs-page.
+ * Shared grid across all rows so the Entry / Clients / Paid add-ons columns
+ * line up across REPs + competitors. The "Recommended" pill sits as an
+ * absolute corner badge on the REPs row so it never consumes grid space.
  */
 
-const HREF_BY_SLUG: Record<Competitor["slug"], "/compare/reps-vs-trainerize" | "/compare/reps-vs-mypthub" | "/compare/reps-vs-pt-distinction"> = {
-  "trainerize": "/compare/reps-vs-trainerize",
-  "mypthub": "/compare/reps-vs-mypthub",
+const HREF_BY_SLUG: Record<
+  Competitor["slug"],
+  "/compare/reps-vs-trainerize" | "/compare/reps-vs-mypthub" | "/compare/reps-vs-pt-distinction"
+> = {
+  trainerize: "/compare/reps-vs-trainerize",
+  mypthub: "/compare/reps-vs-mypthub",
   "pt-distinction": "/compare/reps-vs-pt-distinction",
 };
+
+const ROW_GRID =
+  "grid grid-cols-1 gap-3 md:grid-cols-[180px_120px_160px_130px_1fr] md:items-center md:gap-6";
 
 export function PlansLimitsSummary({
   competitors = COMPETITOR_LIST,
@@ -29,23 +35,25 @@ export function PlansLimitsSummary({
   return (
     <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel/40">
       {/* REPs reference row */}
-      <div className="flex flex-col gap-3 border-b border-reps-border bg-reps-orange/10 px-5 py-4 md:flex-row md:items-center md:gap-6">
-        <div className="flex min-w-[140px] items-center gap-2">
-          <span className="font-display text-[15px] font-bold text-white">REPs Pro</span>
-          <span className="rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
-            Recommended
-          </span>
-        </div>
-        <SummaryFact label="Entry" value="£59/mo" emphasis />
-        <SummaryFact label="Clients" value="Unlimited" emphasis />
-        <SummaryFact label="Paid add-ons" value="None" emphasis />
-        <div className="md:ml-auto">
-          <Link
-            to="/pricing"
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-reps-orange hover:underline"
-          >
-            See REPs plans <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+      <div className="relative border-b border-reps-border bg-reps-orange/10 px-5 py-4 pr-5 md:pr-32">
+        <span className="absolute right-4 top-4 inline-flex h-6 items-center rounded-full bg-reps-orange px-2.5 text-[10px] font-semibold uppercase tracking-wider text-white">
+          Recommended
+        </span>
+        <div className={ROW_GRID}>
+          <div className="flex min-w-0 items-center">
+            <span className="font-display text-[15px] font-bold text-white">REPs Pro</span>
+          </div>
+          <SummaryFact label="Entry" value="£59/mo" emphasis />
+          <SummaryFact label="Clients" value="Unlimited" emphasis />
+          <SummaryFact label="Paid add-ons" value="None" emphasis />
+          <div className="md:justify-self-end">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-reps-orange hover:underline"
+            >
+              See REPs plans <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -57,9 +65,9 @@ export function PlansLimitsSummary({
             <li key={c.slug}>
               <Link
                 to={HREF_BY_SLUG[c.slug]}
-                className="group flex flex-col gap-3 px-5 py-4 transition hover:bg-reps-panel md:flex-row md:items-center md:gap-6"
+                className={`group px-5 py-4 transition hover:bg-reps-panel ${ROW_GRID}`}
               >
-                <div className="flex min-w-[140px] items-center">
+                <div className="flex min-w-0 items-center">
                   <img
                     src={c.logo}
                     alt={c.name}
@@ -69,12 +77,8 @@ export function PlansLimitsSummary({
                 </div>
                 <SummaryFact label="Entry" value={entry.price} />
                 <SummaryFact label="Clients" value={entry.clientCap} />
-                <SummaryFact
-                  label="Paid add-ons"
-                  value={`${c.addOns.length}+`}
-                  tone="bad"
-                />
-                <div className="md:ml-auto">
+                <SummaryFact label="Paid add-ons" value={`${c.addOns.length}+`} />
+                <div className="md:justify-self-end">
                   <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-white/70 group-hover:text-reps-orange">
                     Compare
                     <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
@@ -93,21 +97,18 @@ function SummaryFact({
   label,
   value,
   emphasis,
-  tone,
 }: {
   label: string;
   value: string;
   emphasis?: boolean;
-  tone?: "bad";
 }) {
   return (
-    <div className="min-w-[110px]">
+    <div className="min-w-0">
       <div className="text-[10px] uppercase tracking-wider text-white/45">{label}</div>
       <div
-        className={[
-          "mt-0.5 text-[13px] font-semibold",
-          emphasis ? "text-reps-green" : tone === "bad" ? "text-white/85" : "text-white/85",
-        ].join(" ")}
+        className={`mt-0.5 text-[13px] font-semibold ${
+          emphasis ? "text-reps-green" : "text-white/85"
+        }`}
       >
         {value}
       </div>
