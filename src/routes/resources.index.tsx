@@ -35,20 +35,37 @@ type Filter = "All" | ResourceCategory;
 function ResourcesPage() {
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortMode>("newest");
 
   const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
+  const isFiltering = filter !== "All" || query.trim().length > 0;
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { All: RESOURCE_ARTICLES.length };
+    for (const cat of RESOURCE_CATEGORIES) c[cat] = 0;
+    for (const a of RESOURCE_ARTICLES) c[a.category] = (c[a.category] ?? 0) + 1;
+    return c;
+  }, []);
 
   const visible = useMemo(() => {
-    const rest = RESOURCE_ARTICLES.filter((a) => a.slug !== featured.slug);
-    return rest.filter((a) => {
+    const pool = isFiltering ? RESOURCE_ARTICLES : RESOURCE_ARTICLES.filter((a) => a.slug !== featured.slug);
+    const q = query.trim().toLowerCase();
+    const filtered = pool.filter((a) => {
       if (filter !== "All" && a.category !== filter) return false;
-      if (query.trim()) {
-        const q = query.toLowerCase();
-        if (!a.title.toLowerCase().includes(q) && !a.excerpt.toLowerCase().includes(q)) return false;
-      }
-      return true;
+      if (!q) return true;
+      return (
+        a.title.toLowerCase().includes(q) ||
+        a.excerpt.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q) ||
+        a.author.toLowerCase().includes(q)
+      );
     });
-  }, [filter, query, featured.slug]);
+    const sorted = [...filtered];
+    if (sort === "newest") sorted.sort((a, b) => b.date.localeCompare(a.date));
+    else if (sort === "oldest") sorted.sort((a, b) => a.date.localeCompare(b.date));
+    else sorted.sort((a, b) => a.title.localeCompare(b.title));
+    return sorted;
+  }, [filter, query, sort, isFiltering, featured.slug]);
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
