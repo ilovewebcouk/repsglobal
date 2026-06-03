@@ -1,0 +1,33 @@
+import { cn } from "@/lib/utils";
+
+type RepsWordmarkProps = {
+  className?: string;
+  title?: string;
+};
+
+/**
+ * REPs wordmark — Inter ExtraBold (28pt, 25 tracking) converted to outlined SVG paths.
+ * Paths generated from the Inter ExtraBold TTF (UPEM 2048) with Illustrator's
+ * 25/1000 em tracking baked into per-glyph X offsets.
+ * Inherits colour from `currentColor`, so set text colour via Tailwind (e.g. text-white).
+ * Width is derived from the viewBox; size by setting a height class.
+ */
+export function RepsWordmark({ className, title = "REPs" }: RepsWordmarkProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="116 -1490 5087.6 1511"
+      fill="currentColor"
+      role="img"
+      aria-label={title}
+      className={cn("h-5 w-auto select-none", className)}
+    >
+      <g transform="scale(1 -1)">
+        <path transform="translate(0 0)" d="M116 0V1490H726Q894 1490 1016.0 1429.5Q1138 1369 1203.5 1258.0Q1269 1147 1269 995Q1269 842 1202.0 733.5Q1135 625 1011.0 569.0Q887 513 716 513H327V792H652Q735 792 790.5 814.0Q846 836 874.5 881.0Q903 926 903 995Q903 1065 874.5 1111.0Q846 1157 790.0 1180.5Q734 1204 651 1204H469V0ZM934 0 571 681H949L1321 0Z" />
+        <path transform="translate(1407.2 0)" d="M116 0V1490H1150V1202H469V894H1096V612H469V288H1149V0Z" />
+        <path transform="translate(2707.4 0)" d="M116 0V1490H726Q894 1490 1016.0 1425.0Q1138 1360 1203.5 1244.0Q1269 1128 1269 975Q1269 821 1202.0 707.0Q1135 593 1011.0 529.0Q887 465 716 465H338V744H652Q735 744 791.0 773.0Q847 802 875.0 854.0Q903 906 903 975Q903 1045 875.0 1096.5Q847 1148 790.5 1176.0Q734 1204 651 1204H469V0Z" />
+        <path transform="translate(4093.6 0)" d="M586 -21Q443 -21 333.0 19.5Q223 60 154.0 136.5Q85 213 65 320L389 371Q410 298 460.0 261.0Q510 224 599 224Q672 224 714.0 249.5Q756 275 756 317Q756 356 722.5 379.5Q689 403 619 417L424 455Q258 487 175.5 567.5Q93 648 93 777Q93 889 153.5 968.0Q214 1047 324.5 1089.5Q435 1132 585 1132Q725 1132 828.5 1094.5Q932 1057 995.5 987.5Q1059 918 1078 822L770 773Q755 829 708.5 860.5Q662 892 591 892Q528 892 484.5 866.5Q441 841 441 798Q441 764 468.0 738.5Q495 713 567 699L781 659Q947 627 1028.5 553.0Q1110 479 1110 357Q1110 242 1042.5 157.0Q975 72 857.0 25.5Q739 -21 586 -21Z" />
+      </g>
+    </svg>
+  );
+}
