@@ -15,6 +15,7 @@ import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -129,6 +130,11 @@ const StandardsRoute = StandardsRouteImport.update({
 const SpecialismsRoute = SpecialismsRouteImport.update({
   id: '/specialisms',
   path: '/specialisms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -590,6 +596,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
@@ -683,6 +690,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
@@ -776,6 +784,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
@@ -871,6 +880,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/signup'
+    | '/sitemap.xml'
     | '/specialisms'
     | '/standards'
     | '/terms'
@@ -964,6 +974,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/signup'
+    | '/sitemap.xml'
     | '/specialisms'
     | '/standards'
     | '/terms'
@@ -1056,6 +1067,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/signup'
+    | '/sitemap.xml'
     | '/specialisms'
     | '/standards'
     | '/terms'
@@ -1150,6 +1162,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReviewsRoute: typeof ReviewsRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
@@ -1254,6 +1267,13 @@ declare module '@tanstack/react-router' {
       path: '/specialisms'
       fullPath: '/specialisms'
       preLoaderRoute: typeof SpecialismsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -1907,6 +1927,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,

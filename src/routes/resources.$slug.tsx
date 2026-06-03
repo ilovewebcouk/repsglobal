@@ -14,7 +14,9 @@ export const Route = createFileRoute("/resources/$slug")({
   head: ({ params, loaderData }) => {
     const article = loaderData?.article;
     if (!article) return { meta: [{ title: "Resource not found — REPs" }] };
-    const url = `https://repsglobal.lovable.app/resources/${params.slug}`;
+    const baseUrl = "https://staging.repsuk.org";
+    const url = `${baseUrl}/resources/${params.slug}`;
+    const imageUrl = article.cover.startsWith("http") ? article.cover : `${baseUrl}${article.cover}`;
     return {
       meta: [
         { title: `${article.title} — REPs Resources` },
@@ -23,7 +25,11 @@ export const Route = createFileRoute("/resources/$slug")({
         { property: "og:description", content: article.excerpt },
         { property: "og:url", content: url },
         { property: "og:type", content: "article" },
-        { property: "og:image", content: article.cover },
+        { property: "og:image", content: imageUrl },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: article.title },
+        { name: "twitter:description", content: article.excerpt },
+        { name: "twitter:image", content: imageUrl },
         { property: "article:published_time", content: article.date },
         { property: "article:author", content: article.author },
         { property: "article:section", content: article.category },
@@ -37,10 +43,29 @@ export const Route = createFileRoute("/resources/$slug")({
             "@type": "Article",
             headline: article.title,
             description: article.excerpt,
-            image: article.cover,
+            image: [imageUrl],
             datePublished: article.date,
+            dateModified: article.date,
             author: { "@type": "Person", name: article.author },
+            publisher: {
+              "@type": "Organization",
+              name: "REPs",
+              url: baseUrl,
+            },
+            mainEntityOfPage: { "@type": "WebPage", "@id": url },
             articleSection: article.category,
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Resources", item: `${baseUrl}/resources` },
+              { "@type": "ListItem", position: 2, name: article.category, item: `${baseUrl}/resources?category=${encodeURIComponent(article.category)}` },
+              { "@type": "ListItem", position: 3, name: article.title, item: url },
+            ],
           }),
         },
       ],
@@ -134,7 +159,7 @@ function ArticlePage() {
         {/* Hero image */}
         <div className="mx-auto mt-10 max-w-[1080px] px-6 lg:px-10">
           <div className="aspect-[16/9] w-full overflow-hidden rounded-[24px] border border-reps-border bg-reps-panel">
-            <img src={article.cover} alt="" className="h-full w-full object-cover" />
+            <img src={article.cover} alt={article.title} className="h-full w-full object-cover" loading="eager" decoding="async" />
           </div>
         </div>
 
@@ -174,7 +199,9 @@ function ArticlePage() {
                   <div className="aspect-[16/10] w-full overflow-hidden bg-reps-ink">
                     <img
                       src={a.cover}
-                      alt=""
+                      alt={a.title}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>

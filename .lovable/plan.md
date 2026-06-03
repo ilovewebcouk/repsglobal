@@ -1,78 +1,56 @@
-# Bulk out `/resources` with world-class articles + bespoke imagery
 
-Goal: take `/resources` from 3 articles to **18 total** (15 new), each with its **own bespoke cover image** generated for it. World-class editorial bar, magazine-quality look.
+## QA verdict on Resources today
 
-## Editorial bar (applied to every new article)
+Filtering and library UX are already in a good state after the last pass: full-text search (title/excerpt/category/author), category pills with live counts, sort dropdown (Newest / Oldest / A–Z), result count, and a Clear-filters shortcut. The article template has breadcrumb, hero, structured body renderer, author bio, related-articles grid, and CTA strip. So nothing is broken — but there are real gaps to fix before Google can do its job.
 
-- One clear job per article — answers a single question a real reader has typed into Google.
-- Specific, not generic — names, numbers, frameworks, scripts the reader can use today.
-- First-person REPs authority — written from a register/standards body.
-- Structure: hook (50–80 words) → 2–4 H2 sections → actionable bulleted list → pull quote.
-- Length: 6–9 min read (~900–1,400 words).
-- Reuses existing `ResourceArticle` shape — no schema changes.
+## What's worth adding (UX)
 
-## Article slate (15 new)
+1. **URL-synced filters.** Mirror `?q=…&category=…&sort=…` into the URL via TanStack search params. Makes filtered views shareable and bookmarkable, and gives Google distinct deep-link targets for category pages.
+2. **Author filter chip** (optional, low effort). Sophie / James / Dr Priya / Mark — useful as the library grows past 68.
+3. **Pagination / "Load more" at 24 per page.** 68 cards × 50 KB images = a heavy initial paint. Add `loading="lazy"` and `decoding="async"` on all cover `<img>` tags and chunk the grid.
+4. **"/" keyboard shortcut** to focus the search input (matches the existing command palette pattern).
+5. **Empty-state polish.** Replace the bare "No articles match this filter yet." with a small Empty component + "Clear filters" CTA.
 
-**Find a Professional (3 new)**
-1. Online vs in-person coaching: which actually gets you results?
-2. Red flags when hiring a personal trainer (and how to spot them in 60 seconds)
-3. How much should a personal trainer cost in the UK in 2026?
+## What's worth fixing (SEO — biggest impact)
 
-**Verification & Standards (2 new)**
-4. What "REPs Verified" actually means — and what it doesn't
-5. How to make a complaint about a fitness professional
+This is where we're leaving the most on the table.
 
-**Fitness Business (3 new)**
-6. How to price a 12-week coaching programme
-7. Turning a free consultation into a paying client: a 20-minute script
-8. Cancellation policies that protect your time without losing clients
+1. **No `sitemap.xml`.** Without it Google has to discover all 68 article URLs by crawling. Add `src/routes/sitemap[.]xml.ts` that emits every public route plus one `<url>` per article (derived from `RESOURCE_ARTICLES`).
+2. **No `robots.txt`.** Add `public/robots.txt` with `User-agent: * / Allow: /` and a `Sitemap:` directive.
+3. **Wrong canonical domain.** `resources.$slug.tsx` and `resources.index.tsx` hard-code `repsglobal.lovable.app`. Per project rules these should point at `https://staging.repsuk.org`. Wrong canonical actively suppresses ranking.
+4. **`<img alt="">` is empty on every cover.** Use `article.title` as alt text on article hero and listing cards. Empty alts on meaningful imagery hurt both SEO and a11y.
+5. **Add `BreadcrumbList` JSON-LD** on article pages (Resources › Category › Title). Enables breadcrumb rich results in Google.
+6. **Strengthen `Article` schema:** add `mainEntityOfPage`, `publisher` (Organization), `dateModified`, `image` as array.
+7. **Add `og:image` + canonical on `/resources` index** (currently missing og:image; canonical is on root which TanStack concatenates — move it leaf-only).
+8. **`/resources` `head()` SEO copy.** Title is fine; tighten meta description to include "personal trainer", "fitness coach", "UK" keyphrases.
+9. **Per-category landing pages** (Phase 2, but flag it): `/resources/category/$slug` would let each of the 6 categories rank on its own.
 
-**Coaching & Client Management (3 new)**
-9. The first 30 days with a new client: a week-by-week playbook
-10. How to handle a client who isn't getting results
-11. Writing programmes that clients actually follow
+## Semrush pass
 
-**CPD & Education (2 new)**
-12. Choosing a Level 4 specialism: a decision framework
-13. Free vs paid CPD in 2026: where the real value is
+Once the canonical domain is fixed and the sitemap is live, run two read-only checks against `staging.repsuk.org`:
 
-**Platform Updates (2 new)**
-14. What's new on REPs — Q2 2026
-15. The REPs roadmap: what we're building next
+- `domain_analysis` — baseline: estimated traffic, total ranking keywords, top organic terms (UK database).
+- `keyword_research` on 3–4 anchor terms surfaced in the library: *"personal trainer cost uk"*, *"how to find a personal trainer"*, *"reps verified"*, *"online personal trainer uk"*. Confirms the article slugs we've written line up with real search demand.
 
-## Bespoke imagery (this is the change you asked for)
+If the user wants ongoing rank tracking / weekly visibility deltas / paid-search insight wired into the dashboard, that's a connector job (Semrush OAuth) — out of scope for this turn, but worth flagging.
 
-- **One unique cover per new article** — 15 new images, generated, not reused.
-- Generated via `imagegen` at **standard** quality (good fidelity for editorial covers, not premium — premium is reserved for typography-heavy work which these are not).
-- **Format**: 16:9 landscape, saved as `.jpg` to `src/assets/resources/{slug}.jpg`.
-- **Visual system (cohesive, REPs-branded, magazine-quality):**
-  - Editorial photography style — natural light, real moments, documentary feel. No stock-photo cheese, no AI clichés (no "person looking thoughtfully into the distance with a coffee").
-  - **Accent palette pulls in REPs brand orange** as a small environmental detail (a kit bag, a wall sign, a barbell collar) rather than a colour wash — keeps covers feeling on-brand without screaming it.
-  - **Real UK gym/clinic/outdoor environments** appropriate to the article's subject (e.g. complaint article = quiet office desk with paperwork; pricing article = clean planner + laptop on a wooden desk; verification article = clipboard and certification documents; CPD article = textbook, notes, fitness equipment in soft focus).
-  - **No on-image text, no logos, no faces of identifiable people** (avoid likeness/IP risk; favour hands, equipment, environments, over-the-shoulder shots).
-  - Consistent lens feel across the set: ~35–50mm equivalent, shallow depth of field, warm neutral grade.
-- **Per-article prompts** are derived from the article's specific subject (the platform updates article gets a clean desk + notebook with abstract REPs colour cue; the pricing article gets a planner + pen + laptop, etc.) — I'll generate them inline rather than enumerate all 15 prompts here.
-- **Cost note**: 15 standard-tier images is meaningful generation cost. If you want to cap that, say so and I'll trim (e.g. 8 new articles with new images + 7 articles that share carefully curated reused covers).
+## Out of scope
 
-## Authors / voices
+- Building actual `/resources/category/$slug` routes (separate task).
+- Wiring the Semrush connector for in-app tracking (separate task, needs user consent).
+- Touching the article body content itself.
 
-- **Sophie Marshall** — consumer guides (1, 2, 3)
-- **The REPs Standards Team** — standards/complaints (4, 5, 14, 15)
-- **James Carter** — business growth (6, 7, 8)
-- **New: Dr. Priya Shah, Head of Coaching Practice** — coaching craft (9, 10, 11)
-- **New: Mark Ellis, Head of CPD & Education** — CPD (12, 13)
+## Technical details
 
-## Implementation order
+- **New file:** `src/routes/sitemap[.]xml.ts` — server route, iterates `RESOURCE_ARTICLES`, sets `BASE_URL = "https://staging.repsuk.org"`, includes top-level public routes (`/`, `/about`, `/standards`, `/verify`, `/find-a-professional`, `/resources`, `/compare`, `/pricing`, `/faq`, `/help`, etc.).
+- **New file:** `public/robots.txt` with `Sitemap: https://staging.repsuk.org/sitemap.xml`.
+- **Edit `src/routes/resources.$slug.tsx`:** swap `repsglobal.lovable.app` → `staging.repsuk.org`; add `BreadcrumbList` JSON-LD via `scripts[]`; expand `Article` schema; set `alt={article.title}` on hero `<img>`.
+- **Edit `src/routes/resources.index.tsx`:** swap domain in og:url; move canonical here (it's currently fine on this route, just confirm `__root.tsx` has no canonical); sync `filter`/`query`/`sort` to search params with `validateSearch` + `zodValidator`; add `loading="lazy"` on grid `<img>`; replace empty-state with `Empty` (shadcn) component; add focus-on-"/" handler.
+- **Edit `src/routes/__root.tsx`:** confirm no `<link rel="canonical">` is set (per `head-meta` rules canonical lives leaf-only because TanStack concatenates `links`).
 
-1. Generate 15 cover images in parallel batches (5 at a time) into `src/assets/resources/`.
-2. Add all 15 articles to `RESOURCE_ARTICLES` in `src/lib/resources.ts`, each importing its bespoke cover.
-3. Dates spaced Mar 2026 → Jun 2026 so the index feels actively maintained.
-4. No route or component changes — existing `/resources` index and `/resources/$slug` template render them.
+## Order of work
 
-## Confirm before I start
-
-1. **15 new articles + 15 new covers** — proceed as-is, or reduce volume?
-2. **New authors** — OK to add Dr. Priya Shah and Mark Ellis as REPs editorial personas?
-3. **Platform Updates (#14, #15)** — OK to write these against Phase 1 mock-up surfaces only (not real shipped features)?
-
-Reply with confirmations or tweaks and I'll run image generation, then write all 15 articles in one pass.
+1. SEO domain + sitemap + robots + image alts + breadcrumb JSON-LD  (the high-impact organic-search work)
+2. URL-synced filters + lazy loading + pagination
+3. Empty-state + "/" shortcut polish
+4. Run the Semrush baseline + keyword check and report findings

@@ -11,21 +11,22 @@ type SortMode = "newest" | "oldest" | "az";
 export const Route = createFileRoute("/resources/")({
   head: () => ({
     meta: [
-      { title: "Resources — REPs" },
+      { title: "Resources — Personal Trainer & Fitness Coach Guides UK | REPs" },
       {
         name: "description",
         content:
-          "Guidance, standards and industry insight for fitness professionals and the people who hire them.",
+          "Practical UK guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
       },
-      { property: "og:title", content: "Resources — REPs" },
+      { property: "og:title", content: "Resources — Personal Trainer & Fitness Coach Guides UK | REPs" },
       {
         property: "og:description",
         content:
-          "Guidance, standards and industry insight for fitness professionals and the people who hire them.",
+          "Practical UK guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
       },
-      { property: "og:url", content: "https://repsglobal.lovable.app/resources" },
+      { property: "og:url", content: "https://staging.repsuk.org/resources" },
+      { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/resources" }],
+    links: [{ rel: "canonical", href: "https://staging.repsuk.org/resources" }],
   }),
   component: ResourcesPage,
 });
@@ -164,7 +165,7 @@ function ResourcesPage() {
               className="mt-4 grid overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange lg:grid-cols-2"
             >
               <div className="aspect-[16/10] w-full overflow-hidden bg-reps-ink lg:aspect-auto">
-                <img src={featured.cover} alt="" className="h-full w-full object-cover" />
+                <img src={featured.cover} alt={featured.title} loading="eager" decoding="async" className="h-full w-full object-cover" />
               </div>
               <div className="flex flex-col justify-center p-8 lg:p-10">
                 <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -237,7 +238,9 @@ function ResourcesPage() {
                   <div className="aspect-[16/10] w-full overflow-hidden bg-reps-ink">
                     <img
                       src={a.cover}
-                      alt=""
+                      alt={a.title}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
