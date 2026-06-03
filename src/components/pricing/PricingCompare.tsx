@@ -1,19 +1,18 @@
 import { Fragment, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, Minus } from "lucide-react";
 
 import { COMPARE_GROUPS, TIER_META, type CellValue, type TierKey } from "./pricing-data";
 
 function Cell({ value, dim = false }: { value: CellValue; dim?: boolean }) {
   if (value === true) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
-        <Check className="h-3 w-3" />
+      <span className="text-[13px] font-semibold text-reps-orange">
+        Yes
       </span>
     );
   }
   if (value === false) {
-    return <Minus className="h-3.5 w-3.5 text-white/25" />;
+    return <span className="text-[13px] font-semibold text-white/25">No</span>;
   }
   return <span className={`text-[13px] ${dim ? "text-white/55" : "text-white/80"}`}>{value}</span>;
 }
