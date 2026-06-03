@@ -122,7 +122,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         detail: "10 clients, needs payments + nutrition guidance + a place to be found",
         clientCount: 10,
         repsCost: "REPs Pro £59/mo",
-        competitorCost: "≈ $43/mo (Pro slider ~10 clients + Payments + Nutrition add-ons)",
+        competitorCost: "≈ $53/mo (Pro slider ~10 clients + $10 Stripe Payments + $20 Nutrition)",
         winner: "reps",
         summary: "Trainerize's slider may look cheaper on paper at this size, but REPs Pro is a single bill with payments, nutrition, AI and a verified public profile on the register included. Discoverability from day one is the wedge.",
       },
