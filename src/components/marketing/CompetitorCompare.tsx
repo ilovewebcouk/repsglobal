@@ -273,7 +273,7 @@ export function CompetitorCompare() {
                     </td>
                   </tr>
                   {group.rows.map((row) => (
-                    <tr key={row.feature} className="border-t border-reps-border/40">
+                    <tr key={row.feature} className="[&>*]:border-t [&>*]:border-reps-border/40">
                       <th
                         scope="row"
                         className="sticky left-0 z-10 bg-reps-panel px-4 py-4 text-left text-[13px] font-semibold text-white/90 shadow-[1px_0_0_0_var(--reps-border)] md:px-5 md:text-[13.5px] lg:bg-reps-panel/30 lg:shadow-none"
