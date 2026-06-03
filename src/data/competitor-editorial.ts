@@ -237,7 +237,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         repsCost: "REPs Studio £149/mo + verified profile per trainer",
         competitorCost: "≈ $99/mo (Premium + AI + branded app + extra trainer)",
         winner: "reps",
-        summary: "Per-trainer charges and the AI add-on stack up. With REPs Business, each trainer has their own verified public profile and the platform stays a single tier bill.",
+        summary: "Per-trainer charges and the AI add-on stack up. With REPs Studio, each trainer has their own verified public profile and the platform stays a single tier bill.",
       },
     ],
     scorecard: [
@@ -362,7 +362,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Does PT Distinction include AI?", a: "Yes — AI Program Builder, Smart Meal Planner and AI Assistant are included on the Basic tier. REPs ships AI across more surfaces (lead scoring, content, churn risk, weekly growth cards) and includes them inside the tier." },
       { q: "Best PT Distinction alternative in the UK?", a: "REPs is the UK-built alternative that combines public discovery, verified credential, operations, coaching delivery and AI in one platform — without per-client charges inside the tier." },
       { q: "Does PT Distinction have transaction fees?", a: "No separate platform fee on payments. Standard payment-processor fees still apply through Stripe. REPs is the same — no platform commission on payments, and no booking commission either." },
-      { q: "Are extra trainers really free on PT Distinction?", a: "Yes — adding more trainer logins is genuinely free, which is unusual in this category. REPs Business gives every trainer their own verified register profile inside the tier." },
+      { q: "Are extra trainers really free on PT Distinction?", a: "Yes — adding more trainer logins is genuinely free, which is unusual in this category. REPs Studio gives every trainer their own verified register profile inside the tier." },
       { q: "Can I migrate from PT Distinction to REPs?", a: "Yes. Export your CSV, import to REPs, run in parallel for a week, then cancel. See the 5-step migration guide above. No add-ons to unwind on the PT Distinction side." },
       { q: "Does PT Distinction have a free trial?", a: "Yes — a full 1-month free trial on every plan. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch." },
     ],
