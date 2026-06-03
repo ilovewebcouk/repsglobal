@@ -132,10 +132,9 @@ type RepsTier = { label: string; price: string; unit: "mo" | "yr" };
 
 /** Map client count to the REPs tier that fits at this scale. */
 function pickRepsTier(clients: number): RepsTier {
-  if (clients <= 1) return { label: "Free", price: "£0", unit: "mo" };
   if (clients <= 5) return { label: "Verified", price: "£99", unit: "yr" };
-  if (clients <= 50) return { label: "Pro", price: "£29", unit: "mo" };
-  return { label: "Business", price: "£59", unit: "mo" };
+  if (clients <= 50) return { label: "Pro", price: "£59", unit: "mo" };
+  return { label: "Studio", price: "£149", unit: "mo" };
 }
 
 /** Per-competitor monthly-cost rules. */

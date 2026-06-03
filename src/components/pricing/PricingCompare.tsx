@@ -77,7 +77,7 @@ export function PricingCompare() {
             {COMPARE_GROUPS.map((group) => (
               <Fragment key={`g-${group.title}`}>
                 <tr className="bg-reps-panel-soft/60">
-                  <td colSpan={5} className="px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white/55">
+                  <td colSpan={4} className="px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white/55">
                     {group.title}
                   </td>
                 </tr>
@@ -86,7 +86,6 @@ export function PricingCompare() {
                     <td className="px-6 py-3 text-[14px] text-white/80">{row.label}</td>
                     <td className="px-4 py-3 text-center"><Cell value={row.verified} /></td>
                     <td className="border-x border-reps-orange/30 bg-reps-orange-soft/20 px-4 py-3 text-center"><Cell value={row.pro} /></td>
-                    <td className="px-4 py-3 text-center"><Cell value={row.business} /></td>
                     <td className="px-4 py-3 text-center"><Cell value={row.studio} /></td>
                   </tr>
                 ))}
