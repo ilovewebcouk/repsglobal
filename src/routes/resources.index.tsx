@@ -90,22 +90,6 @@ function ResourcesPage() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search resources"
-              className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-4 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Category filter pills */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-6 lg:px-10">
-          <div className="relative mt-8 max-w-[520px]">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by title, topic or author"
               className="h-12 w-full rounded-[12px] border border-reps-border bg-reps-panel pl-11 pr-11 text-[14px] text-white placeholder:text-white/40 focus:border-reps-orange focus:outline-none"
             />
@@ -166,17 +150,6 @@ function ResourcesPage() {
         </div>
       </section>
 
-      {/* Skip pill row close */}
-      {false && (
-        <button
-          type="button"
-                  {c}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Featured article */}
       {filter === "All" && !query && (
