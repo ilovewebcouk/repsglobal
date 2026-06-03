@@ -7,5 +7,5 @@ export const Route = createFileRoute("/business-tools")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <Navigate to="/features" replace />,
+  component: () => <Navigate to="/for-professionals" replace />,
 });
