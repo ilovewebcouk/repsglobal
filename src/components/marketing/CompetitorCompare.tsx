@@ -226,7 +226,7 @@ export function CompetitorCompare() {
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           <table className="w-full min-w-[720px] border-separate border-spacing-0 text-left lg:min-w-0">
-            <thead className="sticky top-[72px] z-30">
+            <thead className="sticky top-[72px] z-20">
               <tr className="bg-reps-panel">
                 <th
                   scope="col"
