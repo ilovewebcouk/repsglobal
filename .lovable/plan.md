@@ -1,37 +1,47 @@
-## 1. Header-style REPs wordmark in the feature-by-feature table
+# Add 30-day free trial to REPs Pro
 
-`src/components/marketing/CompetitorCompare.tsx`: replace the plain `"REPs"` text in the first column header (`COLS[0]`) with the existing `<RepsWordmark>` component at `h-[22px] text-white`, matching the header. Other three columns continue to render competitor `<img>` logos at current sizes so visual weight stays balanced.
+Pro tier gets a **30-day free trial**. Stripe handles the trial via `trial_period_days: 30` at checkout — card is captured during normal Stripe signup, but we do **not** mention "card required" anywhere in marketing copy. Verified and Studio are unchanged. Founding pricing claim is kept.
 
-## 2. Tier wordmarks (Verified / Pro / Studio) from the uploaded SVGs
+## Public wording (locked)
+Short, everywhere: **"30-day free trial"**
 
-The three uploads are inline white-fill outlined paths. Treat them as brand assets, not data — copy them into the repo so they tree-shake and inherit `currentColor`.
+No mentions of "card required", "no card needed", "free for 30 days then auto-bills", or any other qualifier. Stripe's own checkout page already discloses the card and trial terms at the point of payment, which is where that belongs.
 
-- Copy and normalise each into `src/assets/brand/` as `reps-verified.svg`, `reps-pro.svg`, `reps-studio.svg`. Strip the embedded `<style>` + `.cls-1` class and set `fill="currentColor"` on the root.
-- Create `src/components/brand/RepsTierWordmark.tsx` exposing `<RepsTierWordmark tier="verified" | "pro" | "studio" className="..." />`. Renders the chosen SVG inline so it inherits text colour via Tailwind. `aria-label="REPs {Tier}"`.
-- `src/components/marketing/PlansLimitsSummary.tsx`: replace the `"REPs Pro"` text span in the recommended row with `<RepsTierWordmark tier="pro" className="h-[18px] text-white" />`.
-- Verified + Studio components are built in this pass but not yet placed — they slot in when we wire the pricing page tier headers / vs-pages in a follow-up (or now, if you want).
+## Marketing / copy changes
 
-## 3. Q&A pass — `/compare` and the three `/compare/reps-vs-*` siblings
+### 1. Pricing cards (`src/components/pricing/pricing-data.ts`)
+Pro tier only:
+- Append `" · 30-day free trial"` to the `meta` string on both `monthly` and `annual` pricing views.
+- Change CTA from `"Start Founding Pro"` → `"Start free trial"` (keep `ctaHref: "/signup"`).
+- Add a new lead feature bullet at the top of Pro features: **"30-day free trial"**.
 
-Read-only audit, no code changes. Output is a written report per page covering:
+### 2. Pricing FAQ (`src/components/pricing/pricing-data.ts`, `FAQ` array)
+Insert one new Q&A near the top:
+- **Q:** "Is there a free trial?"
+- **A:** "Yes — Pro includes a 30-day free trial. You can cancel anytime during the trial from your dashboard. Verified and Studio don't currently include a trial."
 
-- **Content accuracy vs locked rules**: no "15%", no "booking fee", no "flat plan", REPs = 3-tier ladder, "publicly available" not "legally scraped", correct prices (£99 / £59 founding / £149), methodology link + "Last checked" present.
-- **Cross-page consistency**: Trainerize / MyPTHub / PT Distinction add-on counts, client caps and entry prices match between `competitor-data.ts`, `PlansLimitsSummary`, `CompetitorCompare` feature matrix and each vs-page.
-- **Copy quality**: headlines, sub-decks, CTA wording, tone, duplication between hub and vs-pages.
-- **Visual / layout** at 1318px and mobile: sticky table behaviour, head-to-head card grid, hero spacing, header/footer rhythm.
-- **SEO**: title <60, meta <160, single H1, og:image on vs-pages, canonical correct.
-- **Links**: internal links resolve, methodology link present on every vs-page, "Last checked" date wired from `DATA_VERIFIED_DATE`.
+### 3. Pricing route meta (`src/routes/pricing.tsx`)
+Tighten description and include trial; stay under 160 chars and avoid banned phrases:
+- New: `"Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack."`
 
-Findings grouped per page as Must-fix · Should-fix · Nice-to-have, each with a concrete proposed change. No edits made in this step — once reviewed, we pick which fixes to ship.
+### 4. Founding banner (`src/components/pricing/FoundingBanner.tsx`)
+Append one short clause: **"Includes a 30-day free trial."** Primary line (founding £59/mo lock-in) stays.
 
-## Order once approved
+### 5. Comparison data (`src/data/competitor-data.ts`)
+Update `repsPro.freeTrial` so the REPs card on `/compare` and every `/compare/reps-vs-*` page surfaces the trial:
+- Old: `"Founding pricing on Pro locked for early members before public launch"`
+- New: `"30-day free trial · founding pricing locked for early members"`
 
-1. Wordmark swap in feature table.
-2. Tier wordmark component + Pro swap in plans summary.
-3. Q&A audit report delivered as a chat message; then triage fixes.
+### 6. Comparison editorial FAQs (`src/data/competitor-editorial.ts`)
+The two existing "free trial" answers currently imply REPs has none. Update the REPs framing inside each:
+- **MyPTHub** answer: append `" REPs Pro also includes a 30-day free trial."`
+- **PT Distinction** answer: append `" REPs Pro also includes a 30-day free trial."`
+- Trainerize: no existing trial Q&A — leave alone.
 
-## Out of scope
+## Out of scope (this plan is copy/data only)
+- Wiring `trial_period_days: 30` into `createCheckoutSession` (`src/lib/billing/billing.functions.ts`) and the Pro price in `src/lib/billing/prices.ts`. This is the Stripe-side change that actually delivers the trial. **Recommend doing it in a small follow-up plan** so the marketing copy and the checkout behaviour land together — flag this back to you before shipping the copy alone.
+- Trial-expiry emails, dunning, in-app trial countdown UI.
+- Any change to Verified or Studio.
 
-- Pricing-page tier card swap to the new tier wordmarks (follow-up once component is signed off).
-- Footer / auth wordmark changes (already done previously).
-- Data, RLS, server-fn or routing work — visuals + copy only.
+## Banned-phrase check
+No "15%", "booking fee/commission", "flat plan", "Stripe included/surcharge", "card required". Clean.
