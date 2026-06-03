@@ -103,16 +103,18 @@ export function CostCalculator({ c }: { c: Competitor }) {
               <span className="text-[14px] font-normal text-white/45">/{repsTier.unit}</span>
             </div>
             <p className="mt-3 text-[12.5px] text-white/70">
-              Every feature in the {repsTier.label} tier is included — register
-              listing, the operating system, programmes, nutrition, AI across
-              the platform. No paid add-ons sitting on top.
+              Every feature in this comparison is included in REPs Pro —
+              directory profile, verification, CRM, bookings, payments,
+              programmes, check-ins, nutrition, client portal and REPs AI. No
+              paid add-on stack, no per-client charges.
             </p>
             <p className="mt-2 text-[11px] text-white/45">
-              See the full 3-tier ladder on{" "}
+              Verified (£99/yr) is a separate public register listing, not
+              coaching software. See{" "}
               <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">
                 /pricing
               </a>
-              .
+              {" "}for the full ladder.
             </p>
           </div>
         </div>
@@ -130,11 +132,9 @@ type Computed = {
 
 type RepsTier = { label: string; price: string; unit: "mo" | "yr" };
 
-/** Map client count to the REPs tier that fits at this scale. */
-function pickRepsTier(clients: number): RepsTier {
-  if (clients <= 5) return { label: "Verified", price: "£99", unit: "yr" };
-  if (clients <= 50) return { label: "Pro", price: "£59", unit: "mo" };
-  return { label: "Studio", price: "£149", unit: "mo" };
+/** REPs Pro is the like-for-like software comparison on every /compare page. */
+function pickRepsTier(_clients: number): RepsTier {
+  return { label: "Pro", price: "£59", unit: "mo" };
 }
 
 /** Per-competitor monthly-cost rules. */

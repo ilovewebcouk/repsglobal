@@ -19,18 +19,17 @@ import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg"
 export const DATA_VERIFIED_DATE = "3 June 2026";
 
 /**
- * REPs tier ladder — single source of truth for cost-comparison copy.
- * REPs has 3 tiers; whatever tier you choose, every feature in that tier is
- * included. The hook is "no paid add-ons inside any tier", not "one flat plan".
+ * REPs Pro reference — single source of truth for /compare/reps-vs-* copy.
+ * On comparison pages we compare REPs Pro (the full software platform) only.
+ * Verified is a public register listing, not coaching software, and appears
+ * at most as a one-line aside. The full 3-tier ladder lives on /pricing.
  */
 export const REPS_TIER_REFERENCE = {
   tiers: [
-    { name: "Verified", price: "£99/yr", note: "Verified badge, reviews, enquiries" },
-    { name: "Pro", price: "£59/mo", note: "Full operating system, AI across the platform" },
-    { name: "Studio", price: "£149/mo", note: "Multi-coach teams, locations, reporting" },
+    { name: "Pro", price: "£59/mo", note: "Full software platform, founding pricing locked for life (was £79/mo)" },
   ],
   summary:
-    "REPs has 3 tiers (Verified £99/yr / Pro £59/mo / Studio £149/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
+    "REPs Pro is £59/mo (founding, was £79/mo) and includes the full software platform — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack or per-client charges.",
 } as const;
 
 export type PricingTier = {

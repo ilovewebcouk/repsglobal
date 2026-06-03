@@ -166,7 +166,7 @@ function ForProsPage() {
                 to="/signup"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                Create free profile <ArrowRight className="h-4 w-4" />
+                Get verified <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/features"
