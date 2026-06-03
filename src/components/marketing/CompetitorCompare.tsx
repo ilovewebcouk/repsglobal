@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Minus } from "lucide-react";
+import { Check, ChevronsRight, Minus } from "lucide-react";
 import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
 import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
 import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
