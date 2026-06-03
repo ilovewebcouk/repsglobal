@@ -188,7 +188,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "AI Programme Writer — drafted from a brief",
     ],
     imageLabel: "Programme builder mockup — screenshot coming",
-    ctaLabel: "Explore Coaching",
+    ctaLabel: "See the builder",
     ctaHref: "/features/coaching",
   },
   {
