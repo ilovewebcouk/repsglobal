@@ -152,7 +152,7 @@ function ResourcesPage() {
 
 
       {/* Featured article */}
-      {filter === "All" && !query && (
+      {!isFiltering && (
         <section className="border-b border-reps-border">
           <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
