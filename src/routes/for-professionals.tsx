@@ -393,28 +393,19 @@ function ForProsPage() {
           </div>
 
           <div className="mt-16 space-y-20 lg:mt-20 lg:space-y-28">
-            {FEATURE_GROUPS.map((g, i) => {
-              const copy = PILLAR_COPY[g.key];
-              const bullets =
-                g.key === "ai"
-                  ? AI_BULLETS
-                  : (copy.bulletSlugs ?? [])
-                      .map((slug) => FEATURES.find((f) => f.slug === slug)?.label)
-                      .filter((x): x is string => Boolean(x));
-              return (
-                <ProductBlock
-                  key={g.key}
-                  eyebrow={g.label}
-                  title={copy.title}
-                  body={copy.body}
-                  bullets={bullets}
-                  imageLabel={`${g.label} mockup`}
-                  ctaLabel={`Explore ${g.label}`}
-                  ctaHref={PILLAR_ROUTES[g.key]}
-                  reverse={i % 2 === 1}
-                />
-              );
-            })}
+            {SECTION_BLOCKS.map((b, i) => (
+              <ProductBlock
+                key={`${b.eyebrow}-${b.title}`}
+                eyebrow={b.eyebrow}
+                title={b.title}
+                body={b.body}
+                bullets={b.bullets}
+                imageLabel={b.imageLabel}
+                ctaLabel={b.ctaLabel}
+                ctaHref={b.ctaHref}
+                reverse={i % 2 === 1}
+              />
+            ))}
           </div>
         </div>
       </section>
