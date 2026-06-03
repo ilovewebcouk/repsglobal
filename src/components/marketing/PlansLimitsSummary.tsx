@@ -6,6 +6,7 @@ import {
   DATA_VERIFIED_DATE,
   type Competitor,
 } from "@/data/competitor-data";
+import { RepsTierWordmark } from "@/components/brand/RepsTierWordmark";
 
 /**
  * Compact plans & limits summary for the /compare hub.
