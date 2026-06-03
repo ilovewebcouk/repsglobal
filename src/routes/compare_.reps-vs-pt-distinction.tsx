@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
-import ptDistinctionCover from "@/assets/compare/reps-vs-pt-distinction-cover.png";
+import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg";
 
 const URL = "https://repsglobal.lovable.app/compare/reps-vs-pt-distinction";
 const TITLE = "PT Distinction Alternative — REPs vs PT Distinction (2026)";
@@ -16,11 +16,11 @@ export const Route = createFileRoute("/compare_/reps-vs-pt-distinction")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
       { property: "og:url", content: URL },
-      { property: "og:image", content: ptDistinctionCover },
+      { property: "og:image", content: ptDistinctionHero },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
-      { name: "twitter:image", content: ptDistinctionCover },
+      { name: "twitter:image", content: ptDistinctionHero },
     ],
     links: [{ rel: "canonical", href: URL }],
   }),

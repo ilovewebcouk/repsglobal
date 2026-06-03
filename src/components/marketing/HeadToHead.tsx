@@ -12,7 +12,6 @@ import { ScenarioCards } from "@/components/marketing/ScenarioCards";
 import { VerdictScorecard } from "@/components/marketing/VerdictScorecard";
 import { MigrationChecklist } from "@/components/marketing/MigrationChecklist";
 import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
-import { VsHeroCard } from "@/components/marketing/VsHeroCard";
 
 import {
   COMPETITORS,
@@ -88,7 +87,13 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </p>
             </div>
             <div className="relative">
-              <VsHeroCard competitor={c} />
+              <img
+                src={c.hero}
+                alt={`REPs vs ${c.name}`}
+                width={1600}
+                height={900}
+                className="w-full rounded-[24px] border border-reps-border"
+              />
             </div>
           </div>
         </div>
