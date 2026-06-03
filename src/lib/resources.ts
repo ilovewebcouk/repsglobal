@@ -1103,7 +1103,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         cite: "REPs Standards Charter",
       },
     ],
-  },,
+  },
   {
     slug: "how-to-vet-a-personal-trainer-in-30-minutes",
     title: "How to vet a personal trainer in 30 minutes",
