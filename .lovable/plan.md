@@ -1,46 +1,95 @@
-# Restore 50/50 pillar sections on /for-professionals
+# Rebuild /for-professionals as a 9-section 50/50 narrative
 
-The screenshot confirms what we lost — a vertical stack of two-column blocks (mockup on one side, overline + H2 + body + bullets on the other), alternating sides. We'll rebuild that rhythm on `/for-professionals` using the existing `ProductBlock` component, which already renders exactly that layout.
+Replace the current 5-pillar `ProductBlock` stack with **9 alternating 50/50 sections (A–I)** with world-class copy. Keep `MockupPlaceholder` placeholders ("…mockup — screenshot coming") — no new mock-up components, no generated images. Tighten the AI band. Audit the pricing preview. **Leave the final CTA exactly as it is.**
 
-## What changes
+## 1. Replace pillar loop with `SECTION_BLOCKS` (9 entries) in `src/routes/for-professionals.tsx`
 
-In `src/routes/for-professionals.tsx`, the **Act 2 — Platform Pillars** section currently ends in a five-up grid of small pillar cards. Replace that grid with **five stacked 50/50 sections**, one per pillar, alternating sides:
+Drives nine `ProductBlock`s, alternating `reverse` by index. Each: `{ eyebrow, title, body, bullets[], imageLabel, ctaLabel, ctaHref }`. Final copy (verbatim):
 
-1. **Visibility** — mockup left
-2. **Operations** — mockup right
-3. **Coaching** — mockup left
-4. **REPs AI** — mockup right
-5. **Growth** — mockup left
+- **A. Visibility** → `/features/visibility` — Eyebrow `VISIBILITY`
+  - H2: **Be found. Be trusted. Be booked.**
+  - Body: Your REPs profile is built to convert. Clients see exactly who you are, what you deliver, and the proof behind it — before they ever message you.
+  - Bullets: Verified professional profile · Qualifications, insurance and CPD on display · Reviews on the public record · Found by location and specialism
+  - Placeholder: `Profile + directory mockup — screenshot coming`
 
-Each block uses `ProductBlock` with:
-- **Eyebrow**: pillar name (e.g. "Visibility")
-- **H2**: short benefit headline derived from the group's `desc` in `feature-config.ts`
-- **Body**: 2–3 lines on what the pillar covers
-- **Bullets**: 3 top features for that pillar, pulled from `FEATURES.filter(f => f.group === key)` (uses each feature's `label`, so bullets stay in sync with feature config)
-- **CTA**: "Explore {pillar} →" linking to `/features/{visibility|operations|coaching|ai|growth}`
-- **Mockup**: `MockupPlaceholder` with a labelled frame (real screenshots later)
+- **B. Leads CRM** → `/features/operations` — Eyebrow `OPERATIONS`
+  - H2: **Turn enquiries into paying clients.**
+  - Body: Every enquiry lands in one pipeline — source, value, follow-up date, priority — so nothing slips and nobody goes cold.
+  - Bullets: Lead pipeline with stages · Enquiry source tracking · Follow-up reminders · AI lead scoring and reply drafts
+  - Placeholder: `Leads pipeline mockup — screenshot coming`
 
-Everything else on the page stays:
-- Hero (legibility fix is a separate follow-up, per your note)
-- Press strip
-- Act 1 — The register
-- `ReplacesStrip` (kept above the new 50/50 stack as the intro to Act 2)
-- AI operating layer band
-- Pricing preview, final CTA, sticky CTA, footer
+- **C. Client management** → `/features/coaching` — Eyebrow `COACHING`
+  - H2: **Know every client at a glance.**
+  - Body: Goals, progress, programmes, bookings, payments, notes and check-ins on one professional record. Open a client, see the whole story.
+  - Bullets: Full client profiles · Adherence and progress summary · Programme and nutrition snapshot · Notes, payments and bookings in one place
+  - Placeholder: `Client record mockup — screenshot coming`
 
-The five small pillar link-cards are removed — the 50/50 sections now do that job with much more substance.
+- **D. Bookings, calendar and payments** → `/features/operations` — Eyebrow `OPERATIONS`
+  - H2: **Run your schedule and your revenue from one place.**
+  - Body: 1-to-1s, consultations, online check-ins, classes, invoices and payment status — without tab-switching between four tools.
+  - Bullets: Calendar and booking view · Availability and session types · Payment status and revenue tracking · Per-client payment history
+  - Placeholder: `Bookings + payments mockup — screenshot coming`
+
+- **E. Programme builder** → `/features/coaching` — Eyebrow `COACHING`
+  - H2: **Build serious programmes without the spreadsheet chaos.**
+  - Body: Weeks, workouts, sets, reps, rest and RPE — assembled in a clean professional builder and assigned to clients in a click.
+  - Bullets: Week-by-week programme structure · Workout and exercise builder · Curated exercise library · One-click client assignment
+  - Placeholder: `Programme builder mockup — screenshot coming`
+
+- **F. Check-ins, nutrition and progress** → `/features/coaching` — Eyebrow `COACHING`
+  - H2: **Review check-ins in minutes, not evenings.**
+  - Body: Adherence, sleep, stress, training, nutrition, measurements and progress photos — surfaced in a single review screen with an AI summary you can edit.
+  - Bullets: Weekly check-in reviews · Nutrition targets and tracking · Progress metrics and photos · AI-drafted coach responses
+  - Placeholder: `Check-in review mockup — screenshot coming`
+
+- **G. Client portal** → `/features/coaching` — Eyebrow `COACHING`
+  - H2: **Give every client a properly professional experience.**
+  - Body: Clients get their own portal — programme, check-ins, nutrition, bookings, payments and messages — branded around you, not a third-party app.
+  - Bullets: Personal client dashboard · Assigned programme and today's session · One-tap check-in submission · Payment and booking history
+  - Placeholder: `Client portal mockup — screenshot coming`
+
+- **H. REPs AI Operating System** → `/features/ai` — Eyebrow `REPS AI`
+  - H2: **AI that tells you what to do next.**
+  - Body: Not a chatbot bolted on the side. REPs AI runs across programmes, check-ins, leads, client risk and weekly growth — so your next move is always obvious.
+  - Bullets: AI Programme Writer · AI Check-in Summariser · AI Lead Scoring · AI Client Risk Alerts · Weekly Next Move growth cards
+  - Placeholder: `AI Business Command Centre mockup — screenshot coming`
+
+- **I. Growth and business insights** → `/features/growth` — Eyebrow `GROWTH`
+  - H2: **See what's working. See where to grow next.**
+  - Body: Revenue, retention, enquiries, profile performance and adherence trends — with weekly prompts on what to act on first.
+  - Bullets: Revenue and retention insights · Profile and lead analytics · Client adherence trends · Content Studio and growth prompts
+  - Placeholder: `Insights + growth mockup — screenshot coming`
+
+Wrapper: `space-y-20 lg:space-y-28` inside the existing Act 2 `<section>`, after `ReplacesStrip`. Existing hero, press strip, Act 1, pricing preview, final CTA and sticky CTA stay.
+
+## 2. Tighten the AI layer band
+
+Keep "The AI layer behind your fitness business" section but reduce overlap with section H. Slim the intro to one line ("Six places REPs AI shows up across your day.") and ensure the cards are exactly six: **Programmes · Check-ins · Leads · Next Move · Risk · Content**. Trim if there are currently more.
+
+## 3. Pricing preview audit
+
+Page already uses `PLANS` (Verified / Pro / Studio — correct). Verify on this route:
+- Only Verified, Pro, Studio render (no Free Profile card).
+- No instances of "15%", "booking fee", "booking commission", "one flat plan", "flat plan", "Stripe included".
+- Remove any found.
+
+## 4. Final CTA
+
+**Untouched.** No copy or button changes.
 
 ## Out of scope
-- Hero background image legibility (handle next)
-- Any changes to `/features` or the `/features/*` group pages
-- Real screenshots — placeholders only (Phase 1 lock)
 
-## Technical notes
-- `ProductBlock` currently links via `ctaSlug` to `/features/$slug`. Add an optional `ctaHref?: string` prop so we can link to pillar URLs like `/features/visibility`. Falls back to existing `ctaSlug` behaviour — no breaking changes.
-- Pillar copy lives inline in `for-professionals.tsx` as a small `PILLAR_BLOCKS` array — no new data file.
-- Wrap the five blocks in `space-y-20 lg:space-y-28` inside the existing Act 2 `<section>`, after `ReplacesStrip`.
-- Radii / tokens: `ProductBlock` and `MockupPlaceholder` already use approved tokens (`rounded-[18px]`, `text-reps-orange`, etc.).
+- New mock-up components (`ProfileMockup`, `LeadsMockup`, etc.) — keep placeholders only this pass.
+- Hero background legibility fix.
+- `/features/*` pages.
+- Any data/auth/DB work.
 
 ## Files touched
-- `src/routes/for-professionals.tsx` — replace pillar grid with `<ProductBlock />` stack; add `PILLAR_BLOCKS`
-- `src/components/marketing/ProductBlock.tsx` — add optional `ctaHref` prop
+
+- `src/routes/for-professionals.tsx` — only file. Swap 5-block loop for 9-block `SECTION_BLOCKS`; tighten AI band cards; verify pricing preview clean.
+
+## Compliance
+
+- Brand orange via `text-reps-orange` tokens only.
+- Radii: cards `rounded-[18px]`, buttons `rounded-[10px]` — already in `ProductBlock`.
+- No banned radii / phrases introduced. Always "REPs".
