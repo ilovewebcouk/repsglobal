@@ -264,7 +264,9 @@ export function CompetitorCompare() {
                       colSpan={5}
                       className="bg-reps-ink px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange md:px-5"
                     >
-                      {group.label}
+                      <span className="sticky left-4 md:left-5 lg:static">
+                        {group.label}
+                      </span>
                     </td>
                   </tr>
                   {group.rows.map((row) => (
