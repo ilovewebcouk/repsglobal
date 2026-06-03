@@ -1,6 +1,5 @@
 import { Fragment, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, Minus } from "lucide-react";
 
 import { COMPARE_GROUPS, TIER_META, type CellValue, type TierKey } from "./pricing-data";
 
