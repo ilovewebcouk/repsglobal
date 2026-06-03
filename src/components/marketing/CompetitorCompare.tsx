@@ -219,88 +219,9 @@ export function CompetitorCompare() {
         Swipe to compare other platforms
       </div>
 
-      {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
-      <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
-        <div
-          className="overflow-x-auto [overflow-y:clip] lg:overflow-visible"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          <table className="w-full min-w-[720px] border-separate border-spacing-0 text-left lg:min-w-0">
-            <thead className="sticky top-[72px] z-20">
-              <tr className="bg-reps-panel">
-                <th
-                  scope="col"
-                  className="sticky left-0 z-20 w-[140px] min-w-[140px] bg-reps-panel px-4 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50 shadow-[1px_0_0_0_var(--reps-border)] md:w-[220px] md:min-w-[220px] md:px-5 lg:w-[32%] lg:shadow-none"
-                >
-                  Feature
-                </th>
-                {COLS.map((c, i) => (
-                  <th
-                    key={c.label}
-                    scope="col"
-                    className={[
-                      "px-4 py-4 text-[13px] font-display font-bold md:px-5",
-                      i === 0
-                        ? "sticky left-[140px] z-20 w-[110px] min-w-[110px] bg-reps-orange-tint text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:bg-reps-orange-soft lg:shadow-none"
-                        : "min-w-[150px] text-white/80 md:min-w-[170px]",
-                    ].join(" ")}
-                  >
-                    {c.logo ? (
-                      <img
-                        src={c.logo}
-                        alt={c.label}
-                        style={{ height: c.logoHeight ?? 22 }}
-                        className="w-auto"
-                      />
-                    ) : (
-                      c.label
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {GROUPS.map((group) => (
-                <React.Fragment key={group.label}>
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="bg-reps-ink px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange md:px-5"
-                    >
-                      <span className="sticky left-4 md:left-5 lg:static">
-                        {group.label}
-                      </span>
-                    </td>
-                  </tr>
-                  {group.rows.map((row) => (
-                    <tr key={row.feature} className="[&>*]:border-t [&>*]:border-reps-border/40">
-                      <th
-                        scope="row"
-                        className="sticky left-0 z-10 bg-reps-panel px-4 py-4 text-left text-[13px] font-semibold text-white/90 shadow-[1px_0_0_0_var(--reps-border)] md:px-5 md:text-[13.5px] lg:bg-reps-panel/30 lg:shadow-none"
-                      >
-                        {row.feature}
-                      </th>
-                      {row.cells.map((cell, ci) => (
-                        <td
-                          key={ci}
-                          className={[
-                            "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
-                            ci === 0
-                              ? "sticky left-[140px] z-10 bg-reps-orange-tint shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
-                              : "bg-reps-panel/20",
-                          ].join(" ")}
-                        >
-                          <CellIcon cell={cell} highlight={ci === 0} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, sticky header row on all breakpoints via JS-synced ghost */}
+      <StickyCompareTable />
+
 
 
 
@@ -334,6 +255,144 @@ function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
     <div className="flex items-start gap-2">
       <Minus className="mt-0.5 h-4 w-4 shrink-0 text-white/35" />
       {cell.note && <span className="text-white/45">{cell.note}</span>}
+    </div>
+  );
+}
+
+function SharedCols() {
+  // table-layout: fixed + explicit col widths guarantee header and body tables
+  // align column-for-column at every breakpoint.
+  return (
+    <colgroup>
+      <col className="w-[140px] md:w-[220px] lg:w-[28%]" />
+      <col className="w-[110px] md:w-[150px] lg:w-[18%]" />
+      <col className="w-[150px] md:w-[170px] lg:w-[18%]" />
+      <col className="w-[150px] md:w-[170px] lg:w-[18%]" />
+      <col className="w-[150px] md:w-[170px] lg:w-[18%]" />
+    </colgroup>
+  );
+}
+
+function StickyCompareTable() {
+  const headerScrollRef = React.useRef<HTMLDivElement>(null);
+  const bodyScrollRef = React.useRef<HTMLDivElement>(null);
+
+  const onBodyScroll = React.useCallback(() => {
+    const h = headerScrollRef.current;
+    const b = bodyScrollRef.current;
+    if (h && b) h.scrollLeft = b.scrollLeft;
+  }, []);
+
+  return (
+    <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
+      {/* Sticky ghost header — pins to page viewport because the outer wrapper
+          uses overflow:clip (does not create a scroll container). Its own
+          overflow-x is hidden; we mirror the body's scrollLeft via JS. */}
+      <div
+        ref={headerScrollRef}
+        className="sticky top-[72px] z-20 overflow-hidden bg-reps-panel"
+        aria-hidden="true"
+      >
+        <table className="w-full min-w-[700px] table-fixed border-separate border-spacing-0 text-left lg:min-w-0">
+          <SharedCols />
+          <thead>
+            <tr className="bg-reps-panel">
+              <th
+                scope="col"
+                className="px-4 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50 md:px-5"
+              >
+                Feature
+              </th>
+              {COLS.map((c, i) => (
+                <th
+                  key={c.label}
+                  scope="col"
+                  className={[
+                    "px-4 py-4 text-[13px] font-display font-bold md:px-5",
+                    i === 0
+                      ? "bg-reps-orange-tint text-reps-orange lg:bg-reps-orange-soft"
+                      : "text-white/80",
+                  ].join(" ")}
+                >
+                  {c.logo ? (
+                    <img
+                      src={c.logo}
+                      alt={c.label}
+                      style={{ height: c.logoHeight ?? 22 }}
+                      className="w-auto"
+                    />
+                  ) : (
+                    c.label
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      {/* Body table — horizontally scrollable on mobile/tablet, full width on desktop. */}
+      <div
+        ref={bodyScrollRef}
+        onScroll={onBodyScroll}
+        className="overflow-x-auto [overflow-y:clip] lg:overflow-visible"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <table className="w-full min-w-[700px] table-fixed border-separate border-spacing-0 text-left lg:min-w-0">
+          <SharedCols />
+          {/* Visually-hidden header for accessibility & layout parity (kept in DOM
+              so screen readers reach a <thead> inside the data table). */}
+          <thead className="sr-only">
+            <tr>
+              <th scope="col">Feature</th>
+              {COLS.map((c) => (
+                <th key={c.label} scope="col">
+                  {c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {GROUPS.map((group) => (
+              <React.Fragment key={group.label}>
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="bg-reps-ink px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange md:px-5"
+                  >
+                    <span className="sticky left-4 md:left-5 lg:static">
+                      {group.label}
+                    </span>
+                  </td>
+                </tr>
+                {group.rows.map((row) => (
+                  <tr key={row.feature} className="[&>*]:border-t [&>*]:border-reps-border/40">
+                    <th
+                      scope="row"
+                      className="sticky left-0 z-10 bg-reps-panel px-4 py-4 text-left text-[13px] font-semibold text-white/90 shadow-[1px_0_0_0_var(--reps-border)] md:px-5 md:text-[13.5px] lg:bg-reps-panel/30 lg:shadow-none"
+                    >
+                      {row.feature}
+                    </th>
+                    {row.cells.map((cell, ci) => (
+                      <td
+                        key={ci}
+                        className={[
+                          "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
+                          ci === 0
+                            ? "sticky left-[140px] z-10 bg-reps-orange-tint shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
+                            : "bg-reps-panel/20",
+                        ].join(" ")}
+                      >
+                        <CellIcon cell={cell} highlight={ci === 0} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
