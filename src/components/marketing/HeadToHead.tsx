@@ -10,6 +10,7 @@ import { UiSideBySide } from "@/components/marketing/UiSideBySide";
 import { ScenarioCards } from "@/components/marketing/ScenarioCards";
 import { VerdictScorecard } from "@/components/marketing/VerdictScorecard";
 import { MigrationChecklist } from "@/components/marketing/MigrationChecklist";
+import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
 
 import {
   COMPETITORS,
@@ -80,8 +81,8 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                 </Link>
               </div>
               <p className="mt-4 text-[12px] text-white/45">
-                Pricing verified {DATA_VERIFIED_DATE} from {c.name}&apos;s public
-                pricing page.
+                Last checked {DATA_VERIFIED_DATE} — based on publicly available
+                information from {c.name}&apos;s pricing page.
               </p>
             </div>
             <div className="relative">
@@ -250,6 +251,8 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </table>
             </div>
           </div>
+
+          <MethodologyNotice vendorName={c.name} vendorPricingUrl={c.pricingUrl} />
         </div>
       </section>
 
