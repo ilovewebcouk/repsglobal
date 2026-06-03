@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 
 type FooterLink = { label: string; to: string };
 
