@@ -23,8 +23,9 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PLANS } from "@/components/pricing/pricing-data";
-import { FEATURE_GROUPS } from "@/components/features/feature-config";
+import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
