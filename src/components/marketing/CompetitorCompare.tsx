@@ -283,8 +283,8 @@ export function CompetitorCompare() {
                           className={[
                             "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
                             ci === 0
-                              ? "sticky left-[140px] z-10 bg-reps-orange-soft/90 shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
-                              : "bg-reps-panel/20",
+                              ? "sticky left-[140px] z-10 bg-reps-orange-tint shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
+                              : "bg-reps-ink",
                           ].join(" ")}
                         >
                           <CellIcon cell={cell} highlight={ci === 0} />
