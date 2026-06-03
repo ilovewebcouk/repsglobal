@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import repsFooterLockup from "@/assets/logos/reps-footer-lockup.svg.asset.json";
 
 type FooterLink = { label: string; to: string };
 
@@ -55,13 +54,16 @@ export function PublicFooter() {
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
-            <Link to="/" aria-label="REPs home" className="inline-flex items-center">
-              <img
-                src={repsFooterLockup.url}
-                alt="REPs — The Register of Exercise Professionals"
-                className="h-7 w-auto"
-              />
-            </Link>
+            <div className="flex items-center gap-3">
+              <span className="font-display text-[28px] font-bold tracking-tight text-white">
+                REPs
+              </span>
+              <span className="border-l border-white/15 pl-3 text-[11px] leading-tight text-white/60">
+                The Register of
+                <br />
+                Exercise Professionals
+              </span>
+            </div>
             <p className="mt-5 max-w-[320px] text-[14px] leading-relaxed text-reps-muted">
               The global professional standard for fitness. Verified credentials, public reviews
               and a trusted directory of exercise professionals.

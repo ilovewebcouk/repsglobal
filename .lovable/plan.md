@@ -1,33 +1,30 @@
-## Swap text wordmark for SVG logos in header & footer
+## Problem
 
-Replace the text "REPs" wordmark in the public header (desktop + mobile drawer) and the "REPs | The Register of Exercise Professionals" text block in the public footer with the two uploaded SVG logos.
+On `/compare`, the new `PlansLimitsSummary` rows don't line up. The REPs row puts the "Recommended" pill inline next to the "REPs Pro" label, which pushes the Entry / Clients / Paid add-ons columns to the right. Competitor rows (logo only in column 1) start those columns further left, so nothing vertically aligns.
 
-### Assets
+## Fix
 
-Upload both SVGs to Lovable Assets (CDN) and import the `.asset.json` pointers — keeps SVGs out of the repo and avoids inlining ~64 lines of path data.
+Make every row share the same column grid, and move the Recommended pill out of the flow.
 
-- `user-uploads://logo_white.svg` → `src/assets/logos/reps-wordmark-white.svg.asset.json` (used in header)
-- `user-uploads://footer_logo.svg` → `src/assets/logos/reps-footer-lockup.svg.asset.json` (used in footer)
+### Layout change in `src/components/marketing/PlansLimitsSummary.tsx`
 
-Native viewBox sizes:
-- `logo_white.svg` — 83 × 22 (REPs wordmark only)
-- `footer_logo.svg` — 221 × 30 (REPs + divider + "The Register of Exercise Professionals")
+- Replace the `flex` rows with a CSS grid that all rows share, so column edges align across REPs + 3 competitor rows. Single source of truth for column widths.
+  - Mobile (`< md`): stacked (grid collapses to one column per row, as today).
+  - `md+`: `grid-cols-[180px_110px_140px_120px_1fr]` for: brand · Entry · Clients · Paid add-ons · trailing CTA. (Widths tuned to current content; final values picked during implementation to fit longest values like "Unlimited" and "$9/mo for 2".)
+- First column holds the REPs wordmark or the competitor logo only. No pill inline.
+- Move the "Recommended" pill to a small absolute badge in the top-right corner of the REPs row, so it does not consume grid space. On mobile it stays inline above the brand label (since the row stacks anyway).
+- Keep the orange-tint background and green emphasis on REPs values unchanged.
+- Keep the row a `<Link>` for competitors and a plain `<div>` for the REPs row (REPs already links to `/pricing` via the trailing CTA).
 
-### Header changes — `src/components/public/PublicHeader.tsx`
+### What stays the same
 
-1. Desktop logo (~line 197–201): replace the `<span>REPs</span>` with `<img src={repsWordmark.url} alt="REPs" className="h-7 w-auto" />` (height ≈ 28px to match current 30px text optical weight).
-2. Mobile drawer logo (~line 836–840): same swap at `h-6` (~24px) to match the smaller drawer header.
-3. Keep the surrounding `<Link to="/" aria-label="REPs home">` and flex layout untouched. Drop the now-unused `font-display`/`text-[30px]` span classes.
+- Same data sources (`COMPETITOR_LIST`, `HREF_BY_SLUG`).
+- Same content per row (Entry / Clients / Paid add-ons + Compare CTA).
+- Footnote unchanged.
+- `PlansLimitsStrip` on the `/compare/reps-vs-*` pages untouched.
 
-### Footer changes — `src/components/public/PublicFooter.tsx`
+## Out of scope
 
-1. Replace the entire flex block at lines 57–66 (the "REPs" span + divider + "The Register of / Exercise Professionals" subtitle) with a single `<img src={repsFooterLockup.url} alt="REPs — The Register of Exercise Professionals" className="h-7 w-auto" />` (≈28px tall; native artwork is 30px so this preserves proportions).
-2. Wrap it in the existing `<Link to="/" aria-label="REPs home">` pattern for consistency with the header (currently the footer wordmark isn't a link — we'll make it one since it's now a logo).
-3. Leave the descriptive paragraph below (`"The global professional standard for fitness…"`) and the legal line at line 95 (`"© … REPs. The Register of Exercise Professionals."`) unchanged.
-
-### Out of scope
-
-- No changes to nav copy that mentions "REPs" as text (menu items, CTAs, body copy).
-- No changes to the favicon, OG images, or any other surface.
-- No changes to colors, spacing, or other header/footer layout.
-- No new design tokens.
+- No changes to `/compare/reps-vs-*` pages, competitor data, editorial copy, or the feature matrix.
+- No new components beyond the existing `PlansLimitsSummary` file.
+- No design-token or radius changes.
