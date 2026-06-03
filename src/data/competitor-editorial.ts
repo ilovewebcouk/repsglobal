@@ -122,7 +122,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         detail: "10 clients, needs payments + nutrition guidance + a place to be found",
         clientCount: 10,
         repsCost: "REPs Pro £59/mo",
-        competitorCost: "≈ $43/mo (Pro slider ~10 clients + Payments + Nutrition add-ons)",
+        competitorCost: "≈ $53/mo (Pro slider ~10 clients + $10 Stripe Payments + $20 Nutrition)",
         winner: "reps",
         summary: "Trainerize's slider may look cheaper on paper at this size, but REPs Pro is a single bill with payments, nutrition, AI and a verified public profile on the register included. Discoverability from day one is the wedge.",
       },
@@ -131,7 +131,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         detail: "30 clients, branded experience, taking weekly check-ins seriously",
         clientCount: 30,
         repsCost: "REPs Pro £59/mo",
-        competitorCost: "≈ $118/mo (Pro slider ~30 + Payments + Nutrition + Branded App)",
+        competitorCost: "≈ $118/mo (Pro slider ~30 + $10 Payments + $45 Nutrition + $14 Branded App amortised)",
         winner: "reps",
         summary: "This is the sweet spot. The Trainerize add-on stack adds up fast at 30 clients, on top of the slider creeping up. REPs Pro ships the same capability — branded, paid-in, nutrition, AI — for £59/mo flat, with no bolt-on bill.",
       },
@@ -290,10 +290,10 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         VERIFIED_ASIDE,
     ],
     costStory: [
-      "Credit where due: PT Distinction's add-on bill is the simplest of the three platforms on this page. There's no separate branded-app fee, no AI add-on, no payments add-on. Extra trainers are genuinely free. The base tier already includes the AI Program Builder, Smart Meal Planner and AI Assistant.",
-      "The wedge is the per-client charge. On Basic ($19.90/mo), every client beyond the third costs $6/month. A coach with 10 clients pays $19.90 + 7 × $6 = $61.90. A coach with 30 clients on Basic pays $19.90 + 27 × $6 = $181.90. The natural move is to upgrade — but Pro ($59.90) caps at 25 and then charges $2.40 per extra, and Master ($89.90) caps at 50 and charges $1.60.",
-      "It's a fair model in the sense that you only pay for the clients you actually have. But it means every time you sign a new client, you do mental arithmetic. And it means the platform's incentive — and your incentive — are slightly misaligned.",
-      "REPs Pro doesn't add a per-client fee. Whether you have 5 clients or 500 on REPs Pro, the price is £59/mo. Use the calculator below to see exactly where the lines cross.",
+      "Credit where due: PT Distinction's add-on bill is the simplest of the three platforms on this page. There's no separate branded-app fee, no AI add-on, no payments add-on. Extra trainers are genuinely free. The base tier already includes the AI Program Builder, Smart Meal Planner and AI Assistant — that's a real strength.",
+      "The wedge is the per-client meter. Every client above the tier cap is a recurring monthly charge: $6 on Basic, $2.40 on Pro, $1.60 on Master. Think about what that means for a 12-week coaching block — the shortest serious package most coaches sell. A 12-week client above the Basic cap costs an extra $18 on top of the tier ($6 × 3 months). Three of those clients above the cap is $54 of pure per-client surcharge per quarter — nearly the entire monthly price of REPs Pro, before you've added a fourth.",
+      "Scale it up and the curve gets steeper. A coach with 10 clients on Basic pays $19.90 + 7 × $6 = $61.90/mo. A coach with 30 clients on Basic pays $19.90 + 27 × $6 = $181.90/mo. The natural move is to upgrade — but Pro ($59.90) caps at 25 then charges $2.40 per extra, and Master ($89.90) caps at 50 then charges $1.60. There is no tier on PT Distinction where adding the next client is free.",
+      "REPs Pro doesn't add a per-client fee. Whether you have 5 clients or 500, the price is £59/mo. The platform's incentive and your incentive point the same way: sign more clients. Use the calculator below to see exactly where the lines cross.",
     ],
     dayInTheLife: [
       {
