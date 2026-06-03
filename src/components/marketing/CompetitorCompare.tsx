@@ -89,7 +89,9 @@ export function CompetitorCompare() {
                         : "min-w-[150px] text-white/80 md:min-w-[170px]",
                     ].join(" ")}
                   >
-                    {c.logo ? (
+                    {i === 0 ? (
+                      <RepsWordmark className="h-[22px] text-reps-orange lg:text-reps-orange" />
+                    ) : c.logo ? (
                       <img
                         src={c.logo}
                         alt={c.label}
