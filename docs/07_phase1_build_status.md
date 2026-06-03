@@ -1,6 +1,6 @@
 # 07 — Phase 1 Build Status
 
-> **Snapshot date:** 3 June 2026
+> **Snapshot date:** 3 June 2026 (IA split + AI pillar promotion)
 > **Scope reminder:** Phase 1 = static high-fidelity screens only. No auth wiring, RLS, DB writes, payments, bookings, AI, live maps, real search/filter logic, or BD migration. Visuals must reference the six locked mock-ups in `src/mockups/reps_fullpage_*_v1.png`.
 
 Status legend:
