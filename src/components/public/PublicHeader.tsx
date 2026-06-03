@@ -47,9 +47,8 @@ import {
   RESOURCE_QUICK_LINKS,
   TOP_LOCATIONS,
   TOP_PROFESSIONS,
-  TRAIN_GOALS,
 } from "./nav-config";
-import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
+import { FEATURE_GROUPS } from "@/components/features/feature-config";
 
 
 type Variant = "transparent" | "solid";
@@ -217,21 +216,8 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             >
               <NavigationMenu.List className="flex items-center gap-7">
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(false)}>
-                    Train
-                    <ChevronDown
-                      aria-hidden="true"
-                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
-                    />
-                  </NavigationMenu.Trigger>
-                  <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <TrainMenu />
-                  </NavigationMenu.Content>
-                </NavigationMenu.Item>
-
-                <NavigationMenu.Item>
                   <NavigationMenu.Trigger className={triggerClass(active.find)}>
-                    Find a Pro
+                    Find a Professional
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
@@ -244,26 +230,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.features)}>
-                    Features
+                  <NavigationMenu.Trigger className={triggerClass(active.pros || active.features)}>
+                    For Professionals
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
                     />
-                    <ActiveDot show={active.features} />
+                    <ActiveDot show={active.pros || active.features} />
                   </NavigationMenu.Trigger>
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <FeaturesMenu />
+                    <ForProsMenu />
                   </NavigationMenu.Content>
-                </NavigationMenu.Item>
-
-                <NavigationMenu.Item>
-                  <NavigationMenu.Link asChild>
-                    <Link to="/how-it-works" className={cn(triggerClass(active.howItWorks), "px-0")}>
-                      How it works
-                      <ActiveDot show={active.howItWorks} />
-                    </Link>
-                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
@@ -278,6 +255,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <ResourcesMenu />
                   </NavigationMenu.Content>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/about"
+                      className={cn(triggerClass(false), "px-0")}
+                    >
+                      About REPs
+                    </Link>
+                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
               </NavigationMenu.List>
             </NavigationMenu.Root>
@@ -309,7 +297,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     Log in
                   </Link>
                   <Link
-                    to="/for-professionals"
+                    to="/signup"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
                     Join REPs
@@ -457,47 +445,6 @@ function PanelShell({
 const menuItemClass =
   "block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal transition-colors hover:bg-reps-warm-white hover:text-reps-orange focus:bg-reps-warm-white focus:text-reps-orange focus:outline-none";
 
-function TrainMenu() {
-  return (
-    <PanelShell width="w-[680px]">
-      <div className="grid grid-cols-2 gap-3">
-        {TRAIN_GOALS.map((g) => {
-          const Icon = g.icon;
-          return (
-            <NavigationMenu.Link asChild key={g.slug}>
-              <Link
-                to="/find-a-professional"
-                className="group/tile flex items-start gap-3 rounded-[16px] border border-reps-stone bg-reps-warm-white p-3 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.04)] focus:outline-none focus:border-reps-orange-border focus:bg-[rgba(255,122,0,0.04)]"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <span className="flex flex-col">
-                  <span className="text-[14px] font-semibold text-reps-charcoal group-hover/tile:text-reps-orange">
-                    {g.label}
-                  </span>
-                  <span className="mt-0.5 text-[12px] text-reps-charcoal/65">
-                    {g.outcome}
-                  </span>
-                </span>
-              </Link>
-            </NavigationMenu.Link>
-          );
-        })}
-      </div>
-      <div className="mt-5 border-t border-reps-stone pt-4">
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/find-a-professional"
-            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
-          >
-            Browse all goals →
-          </Link>
-        </NavigationMenu.Link>
-      </div>
-    </PanelShell>
-  );
-}
 
 function FindMenu() {
   const featured = RESOURCE_ARTICLES[0];
@@ -668,63 +615,101 @@ function ResourcesMenu() {
   );
 }
 
-function FeaturesMenu() {
+function ForProsMenu() {
   return (
-    <PanelShell width="w-[820px]">
-      <div className="grid grid-cols-3 gap-6">
-        {FEATURE_GROUPS.map((g) => {
-          const items = FEATURES.filter((f) => f.group === g.key);
-          return (
-            <div key={g.key}>
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-                {g.label}
-              </h4>
-              <ul className="mt-3 flex flex-col gap-2">
-                {items.map((f) => (
-                  <li key={f.slug}>
-                    <NavigationMenu.Link asChild>
-                      <Link
-                        to="/features/$slug"
-                        params={{ slug: f.slug }}
-                        className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
-                      >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
-                          <f.icon className="h-4 w-4" />
-                        </span>
-                        <span className="flex flex-col">
-                          <span className="text-[13px] font-semibold leading-tight text-reps-charcoal group-hover/feat:text-reps-orange">
-                            {f.label}
-                          </span>
-                          <span className="mt-0.5 text-[11px] leading-snug text-reps-charcoal/60">
-                            {f.oneLiner}
-                          </span>
-                        </span>
-                      </Link>
-                    </NavigationMenu.Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-5 flex items-center justify-between border-t border-reps-stone pt-4">
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/features"
-            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
-          >
-            All features →
-          </Link>
-        </NavigationMenu.Link>
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/for-professionals"
-            className="text-[13px] font-medium text-reps-charcoal/70 hover:text-reps-orange"
-          >
-            For Professionals overview
-          </Link>
-        </NavigationMenu.Link>
+    <PanelShell width="w-[640px]">
+      <div className="grid grid-cols-2 gap-8">
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+            Overview
+          </h4>
+          <ul className="mt-3 flex flex-col gap-1">
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/for-professionals" className={menuItemClass}>
+                  For Professionals overview
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/features" className={menuItemClass}>
+                  All features
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/pricing" className={menuItemClass}>
+                  Pricing
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link to="/compare" className={menuItemClass}>
+                  Compare plans
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+            <li>
+              <NavigationMenu.Link asChild>
+                <Link
+                  to="/signup"
+                  className={cn(menuItemClass, "font-semibold text-reps-orange")}
+                >
+                  Join REPs →
+                </Link>
+              </NavigationMenu.Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+            Platform pillars
+          </h4>
+          <ul className="mt-3 flex flex-col gap-1">
+            {FEATURE_GROUPS.map((g) => (
+              <li key={g.key}>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    to={
+                      g.key === "visibility"
+                        ? "/features/visibility"
+                        : g.key === "operations"
+                          ? "/features/operations"
+                          : g.key === "coaching"
+                            ? "/features/coaching"
+                            : g.key === "ai"
+                              ? "/features/ai"
+                              : "/features/growth"
+                    }
+                    className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+                  >
+                    <span
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]",
+                        g.highlight
+                          ? "bg-reps-orange text-white"
+                          : "bg-reps-orange-soft text-reps-orange",
+                      )}
+                    >
+                      <g.icon className="h-4 w-4" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-[13px] font-semibold leading-tight text-reps-charcoal group-hover/feat:text-reps-orange">
+                        {g.label}
+                      </span>
+                      <span className="mt-0.5 text-[11px] leading-snug text-reps-charcoal/60">
+                        {g.desc}
+                      </span>
+                    </span>
+                  </Link>
+                </NavigationMenu.Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </PanelShell>
   );
@@ -892,7 +877,7 @@ function MobileDrawer({
               Log in
             </Link>
             <Link
-              to="/for-professionals"
+              to="/signup"
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] bg-reps-orange px-3 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
             >
@@ -906,27 +891,6 @@ function MobileDrawer({
 
 
         <Accordion type="multiple" className="space-y-1">
-          <AccordionItem value="train" className="border-0">
-            <AccordionTrigger className="rounded-[10px] px-3 py-3 text-[15px] font-medium text-white/85 hover:text-white hover:no-underline">
-              Train by goal
-            </AccordionTrigger>
-            <AccordionContent className="pb-2">
-              <ul className="flex flex-col px-1">
-                {TRAIN_GOALS.map((g) => (
-                  <li key={g.slug}>
-                    <Link
-                      to="/find-a-professional"
-                      onClick={onNavigate}
-                      className={mobileSubLinkClass}
-                    >
-                      {g.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-
           <AccordionItem value="find" className="border-0">
             <AccordionTrigger
               className={cn(
@@ -934,7 +898,7 @@ function MobileDrawer({
                 active.find ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
-              Find a Pro
+              Find a Professional
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <div className="flex flex-col gap-3 px-1">
@@ -989,50 +953,82 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="features" className="border-0">
+          <AccordionItem value="pros" className="border-0">
             <AccordionTrigger
               className={cn(
                 "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
-                active.features ? "text-white" : "text-white/85 hover:text-white",
+                active.pros || active.features ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
-              Features
+              For Professionals
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <ul className="flex flex-col px-1">
                 <li>
                   <Link
-                    to="/features"
+                    to="/for-professionals"
                     onClick={onNavigate}
                     className={cn(mobileSubLinkClass, "font-semibold text-white")}
                   >
+                    Overview
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features" onClick={onNavigate} className={mobileSubLinkClass}>
                     All features
                   </Link>
                 </li>
-                {FEATURES.map((f) => (
-                  <li key={f.slug}>
-                    <Link
-                      to="/features/$slug"
-                      params={{ slug: f.slug }}
-                      onClick={onNavigate}
-                      className={mobileSubLinkClass}
-                    >
-                      {f.label}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link to="/features/visibility" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Visibility
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/operations" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Operations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/coaching" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Coaching
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/features/ai"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "text-reps-orange")}
+                  >
+                    REPs AI
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/growth" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Growth
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/pricing" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/compare" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Compare plans
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/signup"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "font-semibold text-reps-orange")}
+                  >
+                    Join REPs →
+                  </Link>
+                </li>
               </ul>
             </AccordionContent>
           </AccordionItem>
-
-          <Link
-            to="/how-it-works"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(active.howItWorks), "block")}
-          >
-            How it works
-          </Link>
-
 
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
@@ -1063,6 +1059,13 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
+          <Link
+            to="/about"
+            onClick={onNavigate}
+            className={cn(mobileLinkClass(false), "block")}
+          >
+            About REPs
+          </Link>
         </Accordion>
 
         <div className="mt-6 border-t border-reps-border pt-4">

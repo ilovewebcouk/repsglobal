@@ -1,6 +1,6 @@
 # 07 — Phase 1 Build Status
 
-> **Snapshot date:** 3 June 2026
+> **Snapshot date:** 3 June 2026 (IA split + AI pillar promotion)
 > **Scope reminder:** Phase 1 = static high-fidelity screens only. No auth wiring, RLS, DB writes, payments, bookings, AI, live maps, real search/filter logic, or BD migration. Visuals must reference the six locked mock-ups in `src/mockups/reps_fullpage_*_v1.png`.
 
 Status legend:
@@ -18,10 +18,16 @@ Status legend:
 | `/` | Shipped | Locked homepage hero + search panel + marketplace blocks. |
 | `/about` | Shipped | |
 | `/how-it-works` | Shipped | |
-| `/for-professionals` | Shipped (rebuilt) | Two-act narrative: Act 1 (the register) via `RegisterProof` + `ActIntro`, Act 2 (the operating system) via 8 `ProductBlock` stories covering Leads, Bookings & Payments, Clients CRM, AI Programme Builder, Nutrition (replaces MyFitnessPal), Check-ins, Messaging, Insights. Plus `ReplacesStrip` (six apps REPs replaces), `AICapabilities` tiles, and `CompetitorCompare` table with real Trainerize / MyPTHub / PT Distinction logos (`src/assets/logos/*.svg.asset.json`). |
-| `/features` | Shipped | Hub page listing the 9 feature deep-dives from `feature-config.ts`, grouped by Visibility / Operations / Growth. |
-| `/features/$slug` | Shipped | Per-feature deep-dive pages driven by `feature-config.ts` + `feature-content.tsx` via `FeaturePageLayout`. |
-| `/pricing` | Shipped | Founding Business + tiered plans. **Student tier removed** from Phase 1. |
+| `/for-professionals` | Shipped (rebuilt — slim sales landing) | Repositioned around the AI operating system. Sections: cinematic hero ("Not just software. An AI operating system for fitness professionals."), press strip, Act 1 (`RegisterProof`), Act 2 platform pillars (`ReplacesStrip` + 5 pillar tiles linking to `/features/{pillar}` with AI emphasised), AI Operating Layer section (6 narrative cards), pricing preview (3 condensed tier cards + CTAs to `/compare` / `/pricing` / `/features`), final CTA, sticky CTA. Full `ProductBlock` × 8, full pricing table and full competitor table moved off this page. |
+| `/features` | Shipped (rebuilt) | 5-pillar hub: Visibility, Operations, Coaching, REPs AI (highlighted, orange-accented), Growth. Each pillar links to its `/features/{pillar}` deep-dive. AI pillar shows top 6 of 14 capabilities + "See all 14" CTA. |
+| `/features/visibility` | Shipped | Pillar deep-dive via shared `FeatureGroupLayout` (hero + `BrowserFrame` mock-up + feature grid + cross-links). |
+| `/features/operations` | Shipped | Pillar deep-dive via `FeatureGroupLayout`. |
+| `/features/coaching` | Shipped | Pillar deep-dive via `FeatureGroupLayout`. |
+| `/features/ai` | Shipped | REPs AI Operating System deep-dive: 6-card narrative ("AI layer behind your fitness business"), full 14-item AI capability grid from `AI_FEATURES`, mini comparison table vs Trainerize / My PT Hub / PT Distinction / Kahunas, CTA to `/compare`. |
+| `/features/growth` | Shipped | Pillar deep-dive via `FeatureGroupLayout`. |
+| `/features/$slug` | Shipped | Per-feature deep-dives (9 slugs) driven by `feature-config.ts` + `feature-content.tsx` via `FeaturePageLayout`. |
+| `/pricing` | Shipped (rebuilt as dedicated buying page) | `FoundingBanner` + hero + `PricingPlans` + cross-link to `/compare` + `PricingFAQ` + final CTA. No longer a redirect to `/for-professionals#pricing`. |
+| `/compare` | Shipped (new) | Dedicated plan-by-plan comparison: hero + `FoundingBanner` + full `PricingCompare` (with expanded `COMPARE_GROUPS` covering Billing, Visibility & trust, Business operations, Coaching delivery, REPs AI (14 rows), Growth & scale, Admin & support). |
 | `/find-a-professional` | Shipped | Static directory results, no real search logic (deferred). |
 | `/in/$location` | Shipped | Location landing pages, static data. |
 | `/professions/$profession` | Shipped | Profession landing pages, static data. |
@@ -136,14 +142,20 @@ The following are explicitly out of scope until Phase 1 visuals are signed off:
 - Live maps / geocoding
 - Real search and filter logic on `/find-a-professional`, `/in/$location`, `/professions/$profession`
 - BD (REPsUK.org) data migration
+- `/compare/$competitor` per-competitor comparison routes (Trainerize, My PT Hub, PT Distinction, Kahunas, Everfit)
+- Per-AI-feature deep-dive routes (the 14 `AI_FEATURES` roll up under `/features/ai` only)
+- Promoting Features to a top-level public-header item (currently lives inside the For Professionals dropdown by design)
 
-## 9. Known visual debt
+## 9. Navigation (public header)
+
+Top-level public nav (`PublicHeader`): **Find a Professional · For Professionals · Resources · About REPs**, with right-side actions Log in · Join REPs (→ `/signup`). The **For Professionals** dropdown is the professional-side gateway and contains: Overview (`/for-professionals`), All features (`/features`), the 5 pillar pages (`/features/visibility`, `/features/operations`, `/features/coaching`, `/features/ai`, `/features/growth`), Pricing, Compare plans, Join REPs. Mobile drawer mirrors the same structure as a "For Professionals" accordion. Train-by-goal and How it works are no longer top-level items.
+
+## 10. Known visual debt
 
 - `/terms` and `/privacy` — legal copy still placeholder via `LegalShell`. Awaiting final wording before promoting to Shipped.
-- Mobile mega-menu for `PublicHeader` is deferred — header dropdowns are desktop (`lg:`) only; mobile keeps the CTA-only state until a drawer pass.
 - Final compliance audit (`reps-build-compliance` skill) should be re-run before sign-off to catch any drift in hex/radius/shadow rules across recently edited files.
 
-## 10. Phase 2 candidates
+## 11. Phase 2 candidates
 
 - Resources CMS (currently static articles in `src/lib/resources.ts`).
 - Real directory search + filters backed by the database.

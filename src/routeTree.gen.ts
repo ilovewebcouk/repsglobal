@@ -35,6 +35,7 @@ import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as BusinessToolsRouteImport } from './routes/business-tools'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -53,6 +54,11 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
+import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
+import { Route as FeaturesOperationsRouteImport } from './routes/features.operations'
+import { Route as FeaturesGrowthRouteImport } from './routes/features.growth'
+import { Route as FeaturesCoachingRouteImport } from './routes/features.coaching'
+import { Route as FeaturesAiRouteImport } from './routes/features.ai'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
@@ -221,6 +227,11 @@ const ComplaintsRoute = ComplaintsRouteImport.update({
   path: '/complaints',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersRoute = CareersRouteImport.update({
   id: '/careers',
   path: '/careers',
@@ -309,6 +320,31 @@ const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
 const InLocationRoute = InLocationRouteImport.update({
   id: '/in/$location',
   path: '/in/$location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesVisibilityRoute = FeaturesVisibilityRouteImport.update({
+  id: '/features/visibility',
+  path: '/features/visibility',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesOperationsRoute = FeaturesOperationsRouteImport.update({
+  id: '/features/operations',
+  path: '/features/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesGrowthRoute = FeaturesGrowthRouteImport.update({
+  id: '/features/growth',
+  path: '/features/growth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesCoachingRoute = FeaturesCoachingRouteImport.update({
+  id: '/features/coaching',
+  path: '/features/coaching',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesAiRoute = FeaturesAiRouteImport.update({
+  id: '/features/ai',
+  path: '/features/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
@@ -507,6 +543,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -562,6 +599,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/features/ai': typeof FeaturesAiRoute
+  '/features/coaching': typeof FeaturesCoachingRoute
+  '/features/growth': typeof FeaturesGrowthRoute
+  '/features/operations': typeof FeaturesOperationsRoute
+  '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -590,6 +632,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -645,6 +688,11 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/features/ai': typeof FeaturesAiRoute
+  '/features/coaching': typeof FeaturesCoachingRoute
+  '/features/growth': typeof FeaturesGrowthRoute
+  '/features/operations': typeof FeaturesOperationsRoute
+  '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -673,6 +721,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
+  '/compare': typeof CompareRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -728,6 +777,11 @@ export interface FileRoutesById {
   '/dashboard_/settings': typeof DashboardSettingsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/features/ai': typeof FeaturesAiRoute
+  '/features/coaching': typeof FeaturesCoachingRoute
+  '/features/growth': typeof FeaturesGrowthRoute
+  '/features/operations': typeof FeaturesOperationsRoute
+  '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -758,6 +812,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/business-tools'
     | '/careers'
+    | '/compare'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -813,6 +868,11 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/email/unsubscribe'
     | '/features/$slug'
+    | '/features/ai'
+    | '/features/coaching'
+    | '/features/growth'
+    | '/features/operations'
+    | '/features/visibility'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -841,6 +901,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/business-tools'
     | '/careers'
+    | '/compare'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -896,6 +957,11 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/email/unsubscribe'
     | '/features/$slug'
+    | '/features/ai'
+    | '/features/coaching'
+    | '/features/growth'
+    | '/features/operations'
+    | '/features/visibility'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -923,6 +989,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/business-tools'
     | '/careers'
+    | '/compare'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -978,6 +1045,11 @@ export interface FileRouteTypes {
     | '/dashboard_/settings'
     | '/email/unsubscribe'
     | '/features/$slug'
+    | '/features/ai'
+    | '/features/coaching'
+    | '/features/growth'
+    | '/features/operations'
+    | '/features/visibility'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -1007,6 +1079,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BusinessToolsRoute: typeof BusinessToolsRoute
   CareersRoute: typeof CareersRoute
+  CompareRoute: typeof CompareRoute
   ComplaintsRoute: typeof ComplaintsRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -1062,6 +1135,11 @@ export interface RootRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
+  FeaturesAiRoute: typeof FeaturesAiRoute
+  FeaturesCoachingRoute: typeof FeaturesCoachingRoute
+  FeaturesGrowthRoute: typeof FeaturesGrowthRoute
+  FeaturesOperationsRoute: typeof FeaturesOperationsRoute
+  FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
   InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
@@ -1265,6 +1343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComplaintsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers': {
       id: '/careers'
       path: '/careers'
@@ -1389,6 +1474,41 @@ declare module '@tanstack/react-router' {
       path: '/in/$location'
       fullPath: '/in/$location'
       preLoaderRoute: typeof InLocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/visibility': {
+      id: '/features/visibility'
+      path: '/features/visibility'
+      fullPath: '/features/visibility'
+      preLoaderRoute: typeof FeaturesVisibilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/operations': {
+      id: '/features/operations'
+      path: '/features/operations'
+      fullPath: '/features/operations'
+      preLoaderRoute: typeof FeaturesOperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/growth': {
+      id: '/features/growth'
+      path: '/features/growth'
+      fullPath: '/features/growth'
+      preLoaderRoute: typeof FeaturesGrowthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/coaching': {
+      id: '/features/coaching'
+      path: '/features/coaching'
+      fullPath: '/features/coaching'
+      preLoaderRoute: typeof FeaturesCoachingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/ai': {
+      id: '/features/ai'
+      path: '/features/ai'
+      fullPath: '/features/ai'
+      preLoaderRoute: typeof FeaturesAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/$slug': {
@@ -1684,6 +1804,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BusinessToolsRoute: BusinessToolsRoute,
   CareersRoute: CareersRoute,
+  CompareRoute: CompareRoute,
   ComplaintsRoute: ComplaintsRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
@@ -1739,6 +1860,11 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
+  FeaturesAiRoute: FeaturesAiRoute,
+  FeaturesCoachingRoute: FeaturesCoachingRoute,
+  FeaturesGrowthRoute: FeaturesGrowthRoute,
+  FeaturesOperationsRoute: FeaturesOperationsRoute,
+  FeaturesVisibilityRoute: FeaturesVisibilityRoute,
   InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,

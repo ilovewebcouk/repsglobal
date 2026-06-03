@@ -583,8 +583,7 @@ function HomeV2() {
                     Become a REPs Pro <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    to="/for-professionals"
-                    hash="pricing"
+                    to="/pricing"
                     className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
                   >
                     See plans
