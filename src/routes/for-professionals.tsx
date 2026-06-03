@@ -25,7 +25,6 @@ import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
 import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PLANS } from "@/components/pricing/pricing-data";
-import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
