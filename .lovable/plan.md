@@ -1,62 +1,82 @@
-## Why
+## Goal
 
-`/compare/reps-vs-*` pages currently treat Verified (£99/yr) as a comparable software tier against Trainerize / MyPTHub / PT Distinction. Verified is a public register listing, not coaching software. The fair like-for-like is **REPs Pro £59/mo** (founding) only.
+Verify our competitor data is current via Firecrawl, patch any drift, then audit each of the three `/compare/reps-vs-*` pages section-by-section. Output is **(a)** safe in-place data/copy patches and **(b)** a separate structural-issues triage list for you to decide on.
 
-`/pricing` and `src/components/pricing/pricing-data.ts` are already correct against your spec — verified line by line:
+## Phase 1 — Firecrawl scrape (internal evidence only)
 
-- Verified: £12/mo, £8.25/mo annual (£99/yr, 2 months free) ✓
-- Pro: £59/mo (was £79) founding, £49/mo annual (was £66, £590/yr) ✓
-- Studio: £149/mo, £124/mo annual (£1,490/yr) ✓
-- No "Free profile" card in `PLANS` ✓
+Scrape **public pricing pages only** for each competitor. Never publish raw HTML or vendor screenshots — memory rule.
 
-So this is a **competitor-pages copy + Free-profile CTA cleanup** task. No `pricing-data.ts` changes needed.
+| Competitor | Target pages |
+|---|---|
+| Trainerize | `/pricing` (+ `/features` if pricing references add-ons there) |
+| MyPTHub | `/pricing` |
+| PT Distinction | `/pricing` |
 
-## Changes
+For each, extract via Firecrawl `scrape` (formats: `markdown`, plus a `json` extraction with a fixed schema) and capture:
 
-### 1. `src/components/marketing/PlansLimitsStrip.tsx` (REPs card on every /compare/* page)
-- Headline becomes **`£59/mo` · REPs Pro** with a sub-line "Unlimited clients · Founding pricing (was £79/mo)".
-- Body block stays the same wording about no paid add-ons / per-client charges, but anchored to Pro: *"Every feature listed here is included in Pro — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack."*
-- Add one quiet aside line at the bottom of the REPs card: *"Verified (£99/yr) is a separate public register listing, not coaching software, and is not included in this comparison. See [/pricing](/pricing) for the full ladder."*
+- Entry tier name + monthly price + client cap
+- Top tier name + monthly price + client cap
+- Free trial length
+- Transaction / booking / payment fees (and whether Stripe is "included" or surcharged)
+- Named paid add-ons + cost (branded app, Check-Ins AI, Meal Planner, AI Program Builder, extra trainers, Stripe Payments, etc.)
+- Annual discount if shown
 
-### 2. `src/components/marketing/CostCalculator.tsx`
-- `pickRepsTier()` collapses to a single branch: always returns `{ label: "Pro", price: "£59", unit: "mo" }`.
-- Remove the `≤5 → Verified` and `>50 → Studio` branches. `RepsTier.unit` type kept (`"mo" | "yr"`) so we don't touch consumers, but only `"mo"` is ever returned.
+Output: a single internal `/tmp/competitor-snapshot.json` (not committed). I'll diff it against `src/data/competitor-data.ts`.
 
-### 3. `src/data/competitor-editorial.ts`
-- `REPS_TIER_LADDER_LINE` is replaced by `REPS_PRO_LINE`:
-  *"REPs Pro is £59/mo (founding, was £79/mo) and includes the full software platform — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack or per-client charges."*
-- For **each** competitor (`trainerize`, `mypthub`, `pt-distinction`):
-  - **scenarios[]** — every `repsCost` becomes `REPs Pro £59/mo`. Scenario summaries rewritten so they read honestly at each client count (small roster: acknowledge competitor entry tier may be cheaper but lacks discoverability + AI; sweet-spot: REPs wins; large/multi-trainer: drop Studio framing, compare Pro at the same scale — Trainerize Studio Plus scenario keeps competitor win, but framed as "if you're an ABC multi-location facility, stay; otherwise Pro covers the same individual coach needs").
-  - **intro / costStory** — remove "3-tier ladder · Verified £99/yr / Pro £59/mo / Studio £149/mo" recitations. Replace with one tight Pro-focused paragraph using the new `REPS_PRO_LINE`. Add the same one-line Verified aside (matching the strip wording).
-  - **FAQs** — rewrite "Does X have a free plan / trial?" and similar to reference Pro only. Keep the founding-Pro note. Keep negations like "REPs does not charge a booking commission" (those negations are explicitly allowed by the memory rules).
-- The framing-rule comment block at the top of the file is updated to: *"Comparison pages compare REPs Pro (£59/mo, founding) only. Verified and Studio are mentioned at most as a one-line aside."*
+## Phase 2 — Reconcile `src/data/competitor-data.ts`
 
-### 4. `src/data/competitor-data.ts`
-- `REPS_TIER_REFERENCE.summary` rewritten to the Pro-only line above. (The `tiers` array stays — `/pricing` doesn't consume this file, but the array is still useful internally; we just stop using it on /compare pages.)
-- `REPS_SIDE.whatsIncluded` already reads from `REPS_TIER_REFERENCE.summary`, so it updates automatically.
-- Confirm `REPS_SIDE.tiers` is already `[{ name: "REPs Pro", price: "£59/mo", clientCap: "Unlimited" }]` — it is. No change.
+For each of the three competitors, surgically patch only fields that drifted:
 
-### 5. "Free profile" CTA cleanup (you said it's not an active plan)
-Replace the user-facing "free profile" copy on the three places it leaks into pricing/CTA framing — these are marketing CTAs, not the public pricing cards (which already don't have it):
-- `src/components/features/FeaturePageLayout.tsx` line 254 — "Free profile in minutes…" → "Start with Verified or Pro — Founding pricing locked for life on Pro before public launch."
-- `src/components/features/FeatureGroupLayout.tsx` line 133 — same swap.
-- `src/routes/features.index.tsx` line 110 — same swap.
-- `src/routes/for-professionals.tsx` line 169 — CTA button "Create free profile" → "Get verified".
+- `tiers[].price` / `tiers[].clientCap`
+- `freeTrial`
+- `transactionFees`
+- `addOns[]` (add new, remove discontinued, update costs)
+- Bump `DATA_VERIFIED_DATE` to today.
 
-### 6. Banned-phrase sweep (confirmation)
-Already audited. The only matches are:
-- Negations / disclaimers ("REPs does **not** charge a booking commission") — allowed by memory.
-- Comment-only references in `competitor-editorial.ts` and `competitor-data.ts` framing notes — being rewritten in this same change.
-- Unrelated numerics ("+15%" adherence chart in dashboard, "15% rehab" client-mix label) — not pricing claims, left alone.
+If a field is unchanged, leave it untouched (no churn). `REPS_SIDE` already locked to Pro — not touched.
 
-### 7. Memory update
-- `mem://content/comparison-rules.md` adds: *"On `/compare/reps-vs-*` pages, compare REPs Pro (£59/mo founding) head-to-head only. Verified appears as a one-line aside ('separate public register listing, not coaching software'). Studio only appears on pages that explicitly discuss teams/studios. The Free profile is not an active pricing plan and must not appear in CTAs as if it were."*
+## Phase 3 — Editorial reconciliation `src/data/competitor-editorial.ts`
 
-## Out of scope (untouched)
+For each competitor:
+- Re-check every numeric claim in `scenarios[].competitorCost`, `costStory`, and FAQs against the new snapshot.
+- Update only drifted numbers. Preserve Pro-only framing (memory rule).
+- Keep negations like "REPs does not charge a booking commission" untouched.
 
-- `pricing-data.ts`, `/pricing`, `PricingPlans.tsx`, `PricingCompare.tsx`, `FoundingBanner.tsx` — already correct.
-- `src/lib/billing/prices.ts`, Stripe webhook, `billing.functions.ts` — backend untouched.
-- Auth, DB, Supabase, AI functionality.
-- Visual tokens (`styles.css`), nav (`PublicHeader`, `nav-config`), footer (`PublicFooter`), homepage (`index.tsx`).
-- `/comparison-methodology` and `/faq` — already aligned.
-- Free/unclaimed profiles in the directory data model — those stay; only the **CTA framing** that treats Free as a sign-up plan is removed.
+## Phase 4 — Per-page audit (Trainerize, MyPTHub, PT Distinction)
+
+For each `/compare/reps-vs-*` page, walk the rendered sections in order and check against an audit checklist:
+
+1. Hero — Pro framing, no banned phrases, correct competitor name
+2. `PlansLimitsStrip` — entry/top prices match scrape, add-on list ≤4 highest-impact, Verified aside present
+3. Feature matrix (`FEATURE_GROUPS`) — cells still defensible vs scraped feature lists
+4. `CostCalculator` — `pickRepsTier` returns Pro for every client count, competitor cost math matches new prices
+5. Scenarios — three scenarios per competitor, all `repsCost` = `REPs Pro £59/mo`
+6. FAQs — Pro-only, no Free/Studio framing, founding price referenced
+7. `VerdictScorecard` — weighting still honest with the new data
+8. Methodology link + "Last checked" date visible
+9. Banned-phrase sweep (memory list) — every match either negation or unrelated numeric
+
+**Output split:**
+
+- **Patches I'll apply directly**: factual corrections (price, add-on cost, trial length), Pro-framing tightening, banned-phrase fixes, "Last checked" date bump.
+- **Structural triage list (no edits)**: anything bigger — e.g. "Trainerize scorecard over-weights AI", "PT Distinction scenario 3 no longer realistic", "feature-matrix row X is now misleading after their Nov update". You decide which to action in a follow-up.
+
+## Phase 5 — Memory + skills lock
+
+- Update `mem://content/comparison-rules.md` only if Phase 4 surfaces a new durable rule.
+- Add a one-line dated note to `.lovable/plan.md` recording the snapshot date.
+
+## Out of scope
+
+- `pricing-data.ts`, `/pricing`, `PricingPlans`, `PricingCompare`, `FoundingBanner` — already locked correct.
+- Stripe, billing functions, auth, DB, AI, design tokens, nav, footer, homepage.
+- `/comparison-methodology` and `/faq` copy (already aligned).
+- No new components, no layout/visual changes — Phase 1 visual lock holds.
+- No publishing of raw scraped HTML or vendor screenshots anywhere in the codebase.
+
+## Technical notes
+
+- Firecrawl connector is now linked (`FIRECRAWL_API_KEY` available). Calls go through the connector gateway at `https://connector-gateway.lovable.dev/firecrawl/v2/scrape` with `Authorization: Bearer $LOVABLE_API_KEY` + `X-Connection-Api-Key: $FIRECRAWL_API_KEY`.
+- All scraping done from `code--exec` in build mode; snapshot stored at `/tmp/competitor-snapshot.json` (not in repo).
+- If a competitor pricing page is JS-heavy, add `waitFor: 2000` to the scrape.
+- Diff + patch happens via small surgical `code--line_replace` edits on `competitor-data.ts` and `competitor-editorial.ts`. No file rewrites.
