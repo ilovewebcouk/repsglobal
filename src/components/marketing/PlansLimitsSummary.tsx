@@ -43,9 +43,11 @@ export function PlansLimitsSummary({
           <div className="flex min-w-0 items-center">
             <span className="font-display text-[15px] font-bold text-white">REPs Pro</span>
           </div>
-          <SummaryFact label="Entry" value="£59/mo" emphasis />
-          <SummaryFact label="Clients" value="Unlimited" emphasis />
-          <SummaryFact label="Paid add-ons" value="None" emphasis />
+          <div className="grid grid-cols-3 gap-3 md:contents">
+            <SummaryFact label="Entry" value="£59/mo" emphasis />
+            <SummaryFact label="Clients" value="Unlimited" emphasis />
+            <SummaryFact label="Paid add-ons" value="None" emphasis />
+          </div>
           <div className="md:justify-self-end">
             <Link
               to="/pricing"
@@ -75,9 +77,11 @@ export function PlansLimitsSummary({
                     className="w-auto opacity-90"
                   />
                 </div>
-                <SummaryFact label="Entry" value={entry.price} />
-                <SummaryFact label="Clients" value={entry.clientCap} />
-                <SummaryFact label="Paid add-ons" value={`${c.addOns.length}+`} />
+                <div className="grid grid-cols-3 gap-3 md:contents">
+                  <SummaryFact label="Entry" value={entry.price} />
+                  <SummaryFact label="Clients" value={entry.clientCap} />
+                  <SummaryFact label="Paid add-ons" value={`${c.addOns.length}+`} />
+                </div>
                 <div className="md:justify-self-end">
                   <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-white/70 group-hover:text-reps-orange">
                     Compare
