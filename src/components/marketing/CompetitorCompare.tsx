@@ -195,7 +195,7 @@ const GROUPS: Group[] = [
   },
 ];
 
-const ALL_ROWS = GROUPS.flatMap((g) => g.rows);
+
 
 export function CompetitorCompare() {
   return (
