@@ -130,7 +130,7 @@ function AIGroupPage() {
                 className="flex h-full flex-col rounded-[16px] border border-reps-border bg-reps-panel p-5"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <f.icon className="h-4.5 w-4.5" />
+                  <f.icon className="h-5 w-5" />
                 </span>
                 <h3 className="mt-3 font-display text-[15px] font-bold text-white">
                   {f.label}
