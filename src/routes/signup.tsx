@@ -31,7 +31,7 @@ import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
 
 type SignupSearch = {
-  tier?: "verified" | "pro" | "business" | "studio";
+  tier?: "verified" | "pro" | "studio";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
@@ -72,45 +72,23 @@ const PLAN_SUMMARIES: Record<
   pro: {
     monthly: {
       name: "Founding Pro",
-      tagline: "Run your full coaching practice.",
-      price: "£29",
-      was: "£39",
-      unit: "/month",
-      meta: "Billed monthly",
-      founding: true,
-      highlights: ["Everything in Verified", "Leads CRM", "Client management", "Bookings & calendar"],
-    },
-    annual: {
-      name: "Founding Pro",
-      tagline: "Run your full coaching practice.",
-      price: "£24",
-      was: "£32",
-      unit: "/month",
-      meta: "£290 billed yearly · 2 months free",
-      founding: true,
-      highlights: ["Everything in Verified", "Leads CRM", "Client management", "Bookings & calendar"],
-    },
-  },
-  business: {
-    monthly: {
-      name: "Founding Business",
-      tagline: "Scale online and hybrid coaching.",
+      tagline: "Run and scale your whole coaching practice.",
       price: "£59",
       was: "£79",
       unit: "/month",
       meta: "Billed monthly",
       founding: true,
-      highlights: ["Everything in Pro", "AI insights", "Automations", "Content studio"],
+      highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
     annual: {
-      name: "Founding Business",
-      tagline: "Scale online and hybrid coaching.",
+      name: "Founding Pro",
+      tagline: "Run and scale your whole coaching practice.",
       price: "£49",
       was: "£66",
       unit: "/month",
       meta: "£590 billed yearly · 2 months free",
       founding: true,
-      highlights: ["Everything in Pro", "AI insights", "Automations", "Content studio"],
+      highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
   },
   studio: {
@@ -120,7 +98,7 @@ const PLAN_SUMMARIES: Record<
       price: "£149",
       unit: "/month",
       meta: "Billed monthly",
-      highlights: ["Everything in Business", "Multi-coach roles", "Multiple locations", "5 coach seats"],
+      highlights: ["Everything in Pro", "Multi-coach roles", "Multiple locations", "5 coach seats"],
     },
     annual: {
       name: "Studio",
@@ -128,7 +106,7 @@ const PLAN_SUMMARIES: Record<
       price: "£124",
       unit: "/month",
       meta: "£1,490 billed yearly · 2 months free",
-      highlights: ["Everything in Business", "Multi-coach roles", "Multiple locations", "5 coach seats"],
+      highlights: ["Everything in Pro", "Multi-coach roles", "Multiple locations", "5 coach seats"],
     },
   },
 };
@@ -140,7 +118,7 @@ export const Route = createFileRoute("/signup")({
     const period = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
     return {
-      tier: ["verified", "pro", "business", "studio"].includes(tier as string) ? tier : undefined,
+      tier: ["verified", "pro", "studio"].includes(tier as string) ? tier : undefined,
       period: ["monthly", "annual"].includes(period as string) ? period : undefined,
       next: next === "checkout" ? "checkout" : undefined,
     };

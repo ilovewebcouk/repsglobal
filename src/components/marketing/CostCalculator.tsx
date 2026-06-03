@@ -108,7 +108,7 @@ export function CostCalculator({ c }: { c: Competitor }) {
               the platform. No paid add-ons sitting on top.
             </p>
             <p className="mt-2 text-[11px] text-white/45">
-              See the full 4-tier ladder on{" "}
+              See the full 3-tier ladder on{" "}
               <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">
                 /pricing
               </a>

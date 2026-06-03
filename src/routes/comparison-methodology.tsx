@@ -104,10 +104,10 @@ function MethodologyPage() {
               <Link to="/pricing" className="text-reps-orange underline underline-offset-2 hover:text-white">
                 pricing page
               </Link>
-              . REPs has a 4-tier ladder (Free, Verified, Pro, Business). When
-              we say a feature is &quot;included in your tier&quot;, we mean
-              it&apos;s included on the REPs tier shown next to the claim — not
-              that REPs ships a single universal plan.
+              . REPs has a 3-tier ladder (Verified, Pro, Studio). When we say a
+              feature is &quot;included in your tier&quot;, we mean it&apos;s
+              included on the REPs tier shown next to the claim — not that
+              REPs ships a single universal plan.
             </p>
           </div>
         </div>
@@ -170,7 +170,7 @@ function MethodologyPage() {
               </li>
               <li>
                 We don&apos;t treat REPs as a single flat plan in comparison
-                copy. REPs has a 4-tier ladder, and any &quot;everything
+                copy. REPs has a 3-tier ladder, and any &quot;everything
                 included&quot; framing always means &quot;inside your chosen
                 REPs tier&quot;.
               </li>
