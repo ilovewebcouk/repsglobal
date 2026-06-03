@@ -1,34 +1,29 @@
 ## Goal
-Replace the footer's lockup (REPs wordmark + vertical divider + two-line descriptor) with a single combined outlined-path SVG. No font dependency, single colour-controllable element via `currentColor` so it can sit on any background.
+Replace the "REPs" wordmark in the public header with a true vector SVG built from Inter ExtraBold (weight 800), matching the Illustrator artwork: 28 pt size, 42 pt line-height, 25 tracking. Header only for now — footer / auth / other wordmarks stay on the current Inter Tight bold treatment until a follow-up pass.
 
-## Output
-A new `<RepsLockup />` component at `src/components/brand/RepsLockup.tsx` rendering one inline `<svg>` containing:
-- The existing Inter ExtraBold "REPs" outlines (reuse the four `<path>`s from `RepsWordmark`).
-- A 1-px vertical divider line (drawn as a `<line>`, opacity ~0.15 to match the current `white/15`).
-- "The Register of" / "Exercise Professionals" set in Inter Regular weight 400, both lines converted to outlined paths, opacity ~0.6 to match `white/60`.
+## Approach
 
-All elements use `fill="currentColor"` (and the divider `stroke="currentColor"` + low opacity), so a single `text-white` class on the SVG tints the whole lockup.
+1. **Generate the outlined SVG locally**, not by hand.
+   - Use `fonttools` (`pyftsubset` + a small Python script with `fontTools.pens.svgPathPen`) against the actual Inter ExtraBold TTF (downloaded once from rsms/inter or Google Fonts) so the glyphs `R`, `E`, `P`, `s` are mathematically identical to the Illustrator output.
+   - Bake Illustrator's metrics into the SVG `viewBox`:
+     - Letter advance widths from the font's `hmtx` table at 28 pt.
+     - Tracking 25 → +25/1000 em = +0.7 pt extra advance after every glyph except the last.
+     - Line-height 42 pt only affects vertical box; for a single-line wordmark it just sets the SVG height so the visual baseline sits where Illustrator placed it.
+   - Output a single optimised path-based SVG (`currentColor` fill, no embedded font), saved as `src/assets/brand/reps-wordmark.svg`.
 
-## How the SVG is generated
-Same toolchain as the wordmark:
-1. Download Inter Regular TTF from Google Fonts CDN to `/tmp/`.
-2. Python script (`/tmp/make_lockup.py`) using `fontTools`:
-   - Reuse the wordmark glyph extraction (R, E, P, s at Inter ExtraBold, UPEM 2048, +25/1000 tracking).
-   - Extract glyph paths for "The Register of" and "Exercise Professionals" at Inter Regular, default tracking, set to match the existing 11 px line at the 28 px wordmark cap height — so the descriptor x-height visually mirrors today's footer.
-   - Compose into one viewBox: wordmark on the left, 12-unit gap, vertical divider, 12-unit gap, two descriptor lines stacked with leading matching today's `leading-tight`.
-   - Vertically centre the divider + descriptor block on the wordmark's cap height.
-3. Save outlined SVG to `src/assets/brand/reps-lockup.svg` (kept for reference) AND inline the resulting `viewBox` + paths into `RepsLockup.tsx` so `currentColor` works without an SVG loader.
+2. **Create a `<RepsWordmark />` component** at `src/components/brand/RepsWordmark.tsx` that imports the SVG as a React component (via `?react` or inline JSX) and accepts `className` so colour comes from Tailwind (`text-white` in the dark header). Default render uses `currentColor` and scales by height — width is derived from the viewBox so the Illustrator proportions are preserved at any size.
 
-## Footer swap
-Edit `src/components/public/PublicFooter.tsx` lines ~30–41:
-- Replace the entire `<div className="flex items-center gap-3">…</div>` containing the `<span>REPs</span>` and the descriptor `<span>` with `<RepsLockup className="h-7 text-white" />` (height chosen to roughly match the current ~28 px wordmark; will fine-tune after first render).
-- Leave the paragraph beneath ("The global professional standard for fitness…") untouched.
+3. **Swap the two header instances** in `src/components/public/PublicHeader.tsx`:
+   - Desktop header logo around line 197–201 — replace the `<span class="font-display …">REPs</span>` with `<RepsWordmark className="h-7 text-white" />` (height chosen to visually match the current 30 px cap height; will fine-tune after first render).
+   - Mobile sheet header logo around line 836–839 — same swap, slightly smaller (`h-6`).
+   - Keep the `Link to="/"` wrapper, `aria-label="REPs home"`, and the divider/LocationPin layout untouched.
 
-## Out of scope
-- AuthShell wordmark, signup card wordmark, and any other REPs chrome — still on Inter Tight, untouched until you ask.
-- Header lockup — already swapped in the previous turn, not re-touched.
+4. **Do NOT touch**: footer wordmark, auth shell wordmark, signup card wordmark, any in-body prose mentioning "REPs", the Google Fonts `<link>` (no need to load weight 800 since the SVG is outlined), or the `--font-display` token.
 
 ## QA
-- View the rendered SVG against the current footer at 1318 px and at mobile width; confirm wordmark cap height, divider opacity, descriptor weight and line spacing read like the current footer (only the wordmark itself should look heavier — that's the ExtraBold upgrade).
-- Confirm no new font weight requests in the network tab (descriptor is outlined, so Inter 400 is not newly loaded for this purpose).
-- Confirm the lockup tints correctly when `text-white` is swapped for `text-reps-charcoal`, so it's reusable on light surfaces later.
+- Visually compare against the existing wordmark at 1318 px viewport (current preview) and at the mobile breakpoint, confirming cap height, weight, and spacing read as the Illustrator version.
+- Confirm the SVG inherits `text-white` (and would flip with `text-reps-charcoal` on a light surface) so future light-header use is free.
+- Confirm no new font weight requests appear in the network tab.
+
+## Out of scope (next pass)
+Footer wordmark, AuthShell wordmark, and any other `REPs` chrome — will be swapped to `<RepsWordmark />` once you've signed off on the header rendering.
