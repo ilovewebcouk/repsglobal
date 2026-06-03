@@ -648,7 +648,7 @@ function ForProsMenu() {
             <li>
               <NavigationMenu.Link asChild>
                 <Link to="/compare" className={menuItemClass}>
-                  Compare plans
+                  Compare platforms
                 </Link>
               </NavigationMenu.Link>
             </li>
@@ -1014,7 +1014,7 @@ function MobileDrawer({
                 </li>
                 <li>
                   <Link to="/compare" onClick={onNavigate} className={mobileSubLinkClass}>
-                    Compare plans
+                    Compare platforms
                   </Link>
                 </li>
                 <li>
