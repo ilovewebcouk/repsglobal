@@ -134,6 +134,7 @@
   --reps-orange-hover: #E96F00;
   --reps-orange-dark: #CC6200;
   --reps-orange-soft: rgba(255, 122, 0, 0.12);
+  --reps-orange-tint: #1A130C; /* solid blend of orange-soft over reps-ink, for sticky cells */
   --reps-orange-border: rgba(255, 122, 0, 0.35);
   --reps-gold: #D9B66F;
   --reps-green: #3CCB7F;
