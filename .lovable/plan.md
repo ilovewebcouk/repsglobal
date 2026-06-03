@@ -1,32 +1,37 @@
 ## Goal
 
-Keep the header row (Feature · REPs · Trainerize · MyPTHub · PT Distinction) visible at the top of the viewport while the user scrolls down through the compare table, on mobile, tablet, and desktop.
+Make sure no part of the compare table ever paints on top of `PublicHeader` during scroll.
 
-## Why it isn't working today
+## Root cause
 
-The `<thead>` already has `sticky top-0 z-30`, but the scrolling wrapper around the table is `overflow-x-auto`. Per CSS, `overflow-x: auto` with default `overflow-y: visible` is promoted to `overflow-y: auto`, which makes that wrapper the sticky scrollport. The wrapper isn't tall enough to scroll vertically, so the sticky never triggers — it just sits at the top of the table and scrolls away with the rows.
+`PublicHeader` sits at `z-30`. The table currently uses:
 
-`PublicHeader` (variant `solid`) is itself `sticky top-0` and 72px tall, so the table header needs to pin *below* it, not under it.
+- `<thead>` → `z-30`
+- sticky header `<th>` cells (Feature + REPs) → `z-40`
+- sticky body cells → `z-10`
 
-## Changes (single file: `src/components/marketing/CompetitorCompare.tsx`)
+The two `z-40` header cells are higher than the public header. With the header's semi-transparent `bg-reps-ink/95 backdrop-blur` and sub-pixel rounding during scroll, those cells visibly bleed through where they meet at y = 72.
 
-1. **Stop the wrapper from being a vertical scrollport.** Change the scrolling wrapper from `overflow-x-auto` to `overflow-x-auto [overflow-y:clip]`. `overflow-y: clip` preserves the horizontal scroll on mobile/tablet but does NOT create a vertical scroll context, so a sticky element inside it pins to the page viewport. On desktop the wrapper is already `lg:overflow-visible`, which is unaffected.
+## Fix (single file: `src/components/marketing/CompetitorCompare.tsx`)
 
-2. **Pin the header row under `PublicHeader`.** Change the `<thead>` class from `sticky top-0 z-30` to `sticky top-[72px] z-30` so the logos sit flush under the 72px solid public header.
+Re-tier the table's stacking so the whole table stays *below* `PublicHeader` while preserving the intra-table order (sticky header above sticky body cells, sticky cells above non-sticky cells).
 
-3. **Keep z-index stack correct.** Already fine: header row `z-30`, sticky header cells `z-40`, body sticky cells `z-10`. No change.
+| Element | Current | New |
+|---|---|---|
+| `<thead>` wrapper | `z-30` | `z-20` |
+| Sticky `<th>` (Feature column, header row) | `z-40` | `z-20` |
+| Sticky `<th>` (REPs column, header row) | `z-40` | `z-20` |
+| Sticky `<th>` (Feature column, body rows) | `z-10` | unchanged |
+| Sticky `<td>` (REPs column, body rows) | `z-10` | unchanged |
 
-4. **Header row backgrounds stay opaque.** Already fine: `<tr className="bg-reps-panel">` is solid, REPs `<th>` uses `bg-reps-orange-tint` / `lg:bg-reps-orange-soft`, Feature `<th>` uses `bg-reps-panel`. Nothing translucent in the header row, so rows scrolling underneath won't bleed through.
+Result: `PublicHeader (z-30)` > `table sticky thead cells (z-20)` > `table sticky tbody cells (z-10)` > non-sticky cells (auto). No more bleed-through under the header.
 
 ## Out of scope
 
-- No copy, row, column, icon, or data changes.
-- No change to the existing sticky left columns (Feature + REPs) or to the group header pinning.
+- No layout, color, copy, row, column, or sticky-position changes.
 - No change to `PublicHeader`, `compare.tsx`, or `styles.css`.
 
 ## QA after change
 
-- Mobile (390): scroll down — logos pin under the orange header. Scroll horizontally — logos move with the columns, REPs column stays on the left, Feature column stays leftmost.
-- Tablet (768): same.
-- Desktop (1280+): scroll down — logos pin under the header. No horizontal scroll involved.
-- Scroll past the bottom of the table — header unpins and scrolls away with the rest of the section (because the outer rounded container clips it).
+- Mobile (390) + tablet (768): scroll down past the table — pinned logo row sits cleanly under `PublicHeader`, no bleed-through during scroll. Scroll horizontally — sticky Feature + REPs columns still float above the other columns inside the table.
+- Desktop (1280+): scroll down — pinned logo row sits cleanly under `PublicHeader`.
