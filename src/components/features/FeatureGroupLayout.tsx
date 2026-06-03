@@ -113,24 +113,7 @@ export function FeatureGroupLayout({ groupKey, visual, children }: Props) {
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {otherGroups.map((g) => (
-              <Link
-                key={g.key}
-                to={`/features/${g.key}` as "/features/visibility"}
-                className="group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-5 transition-colors hover:border-reps-orange-border"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <g.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-3 font-display text-[16px] font-bold text-white group-hover:text-reps-orange">
-                  {g.label}
-                </h3>
-                <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-white/60">
-                  {g.desc}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
-                  Explore <ArrowRight className="h-3 w-3" />
-                </span>
-              </Link>
+              <GroupTile key={g.key} group={g} />
             ))}
           </div>
         </div>
