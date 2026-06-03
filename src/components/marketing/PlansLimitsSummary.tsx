@@ -42,7 +42,7 @@ export function PlansLimitsSummary({
         </span>
         <div className={ROW_GRID}>
           <div className="flex min-w-0 items-center">
-            <RepsTierWordmark tier="pro" className="h-[18px] text-white" />
+            <RepsTierWordmark tier="pro" className="h-[13px] text-white" />
           </div>
           <div className="grid grid-cols-3 gap-3 md:contents">
             <SummaryFact label="Entry" value="£59/mo" emphasis />
