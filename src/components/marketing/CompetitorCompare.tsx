@@ -4,10 +4,11 @@ import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
 import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
 import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
-type Cell =
-  | { kind: "yes"; note?: string }
-  | { kind: "partial"; note: string }
-  | { kind: "no"; note?: string };
+import { FEATURE_GROUPS, type Cell } from "@/data/feature-matrix";
+import {
+  PlansLimitsStrip,
+  PlansLimitsFootnote,
+} from "@/components/marketing/PlansLimitsStrip";
 
 type Col = { label: string; logo?: string; logoHeight?: number };
 
@@ -17,185 +18,6 @@ const COLS: readonly Col[] = [
   { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 24 },
   { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 20 },
 ] as const;
-
-type Row = { feature: string; cells: [Cell, Cell, Cell, Cell] };
-type Group = { label: string; rows: Row[] };
-
-const GROUPS: Group[] = [
-  {
-    label: "Visibility · Get discovered",
-    rows: [
-      {
-        feature: "Found by clients searching the public register",
-        cells: [
-          { kind: "yes", note: "Searched by the public daily" },
-          { kind: "no", note: "Bring your own clients" },
-          { kind: "no", note: "Bring your own clients" },
-          { kind: "no", note: "Bring your own clients" },
-        ],
-      },
-      {
-        feature: "Industry-recognised REPs credential",
-        cells: [
-          { kind: "yes", note: "REPs verified since 2009" },
-          { kind: "no" },
-          { kind: "no" },
-          { kind: "no" },
-        ],
-      },
-      {
-        feature: "Verified qualifications & insurance",
-        cells: [
-          { kind: "yes", note: "Checked by humans" },
-          { kind: "no", note: "Self-declared" },
-          { kind: "no", note: "Self-declared" },
-          { kind: "no", note: "Self-declared" },
-        ],
-      },
-      {
-        feature: "CPD tracked on profile",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "Reviews on the public record",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-    ],
-  },
-  {
-    label: "Operations · Run your practice",
-    rows: [
-      {
-        feature: "Lead pipeline (profile, IG, website)",
-        cells: [
-          { kind: "yes" },
-          { kind: "partial", note: "Basic CRM" },
-          { kind: "partial", note: "Basic CRM" },
-          { kind: "partial", note: "Basic CRM" },
-        ],
-      },
-      {
-        feature: "Bookings + deposits + Stripe payouts",
-        cells: [
-          { kind: "yes", note: "Deposits, subs, payouts" },
-          { kind: "partial", note: "Payments only" },
-          { kind: "yes" },
-          { kind: "partial", note: "Add-on" },
-        ],
-      },
-      {
-        feature: "Clients CRM (one record per client)",
-        cells: [
-          { kind: "yes" },
-          { kind: "partial", note: "Basic" },
-          { kind: "partial", note: "Basic" },
-          { kind: "partial", note: "Basic" },
-        ],
-      },
-      {
-        feature: "Focused inbox + quiet hours",
-        cells: [
-          { kind: "yes" },
-          { kind: "partial", note: "Chat only" },
-          { kind: "partial", note: "Chat only" },
-          { kind: "partial", note: "Chat only" },
-        ],
-      },
-    ],
-  },
-  {
-    label: "Coaching · Deliver the work",
-    rows: [
-      {
-        feature: "Programme builder + video library",
-        cells: [{ kind: "yes" }, { kind: "yes" }, { kind: "yes" }, { kind: "yes" }],
-      },
-      {
-        feature: "Nutrition planning + food database",
-        cells: [
-          { kind: "yes", note: "Replaces MyFitnessPal" },
-          { kind: "partial", note: "Macros only" },
-          { kind: "partial", note: "Macros only" },
-          { kind: "partial", note: "Macros only" },
-        ],
-      },
-      {
-        feature: "Weekly check-ins with photos & metrics",
-        cells: [{ kind: "yes" }, { kind: "yes" }, { kind: "yes" }, { kind: "yes" }],
-      },
-      {
-        feature: "Branded client portal (web + mobile)",
-        cells: [
-          { kind: "yes" },
-          { kind: "yes", note: "Trainerize-branded" },
-          { kind: "partial", note: "Web portal" },
-          { kind: "yes" },
-        ],
-      },
-    ],
-  },
-  {
-    label: "REPs AI · The operating layer",
-    rows: [
-      {
-        feature: "AI Business Command Centre",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "Weekly 'next move' growth card",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI programme writer",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI nutrition planner",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI check-in summariser",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI lead scoring + reply drafts",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI client risk & plateau alerts",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "AI content studio (posts, captions, lead magnets)",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-    ],
-  },
-  {
-    label: "Growth · Compound the practice",
-    rows: [
-      {
-        feature: "Revenue & retention insights",
-        cells: [
-          { kind: "yes" },
-          { kind: "partial", note: "Basic reports" },
-          { kind: "partial", note: "Basic reports" },
-          { kind: "partial", note: "Basic reports" },
-        ],
-      },
-      {
-        feature: "Automated client follow-ups & win-backs",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-      {
-        feature: "Renewal forecasting & churn risk",
-        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
-      },
-    ],
-  },
-];
-
-
 
 export function CompetitorCompare() {
   return (
@@ -208,19 +30,38 @@ export function CompetitorCompare() {
           REPs vs every other coaching app.
         </h2>
         <p className="mt-3 max-w-[640px] text-[15px] text-white/65">
-          Trainerize, MyPTHub and PT Distinction give you software. REPs brings clients,
-          replaces six other apps and ships the AI layer none of them have.
+          Trainerize, MyPTHub and PT Distinction give you software — and a list of
+          paid add-ons. REPs brings clients, replaces six other apps and ships
+          everything (AI included) in one flat plan. No extras, ever.
         </p>
       </div>
 
-      {/* Mobile/tablet swipe hint — placed above the table so it's seen before scrolling */}
-      <div className="mt-8 flex items-center gap-2 text-[12px] font-medium text-white/55 lg:hidden">
+      {/* Plans & limits strip — pricing + add-on transparency above the feature table */}
+      <div className="mt-10">
+        <h3 className="font-display text-[18px] font-semibold text-white/85">
+          Plans &amp; limits at a glance
+        </h3>
+        <p className="mt-1 text-[13px] text-white/55">
+          Entry tier, top tier, and what they actually charge extra for.
+        </p>
+        <div className="mt-5">
+          <PlansLimitsStrip />
+        </div>
+        <PlansLimitsFootnote />
+      </div>
+
+      {/* Mobile/tablet swipe hint — placed above the feature table */}
+      <div className="mt-12 flex items-center gap-2 text-[12px] font-medium text-white/55 lg:hidden">
         <ChevronsRight className="h-4 w-4 text-reps-orange" aria-hidden />
         Swipe to compare other platforms
       </div>
 
+      <h3 className="mt-12 font-display text-[18px] font-semibold text-white/85 lg:mt-16">
+        Feature-by-feature
+      </h3>
+
       {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
-      <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
+      <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-5">
         <div
           className="overflow-x-auto [overflow-y:clip] lg:overflow-visible"
           style={{ WebkitOverflowScrolling: "touch" }}
@@ -260,7 +101,7 @@ export function CompetitorCompare() {
               </tr>
             </thead>
             <tbody>
-              {GROUPS.map((group) => (
+              {FEATURE_GROUPS.map((group) => (
                 <React.Fragment key={group.label}>
                   <tr>
                     <td
@@ -302,9 +143,6 @@ export function CompetitorCompare() {
         </div>
       </div>
 
-
-
-
       <p className="mt-4 text-[11px] text-white/40">
         Comparisons reflect publicly available product information at time of writing.
         Trainerize, MyPTHub, PT Distinction and MyFitnessPal are trademarks of their
@@ -314,7 +152,7 @@ export function CompetitorCompare() {
   );
 }
 
-function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
+export function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
   if (cell.kind === "yes") {
     return (
       <div className="flex items-start gap-2">
