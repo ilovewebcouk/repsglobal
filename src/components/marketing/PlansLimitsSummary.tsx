@@ -43,9 +43,11 @@ export function PlansLimitsSummary({
           <div className="flex min-w-0 items-center">
             <span className="font-display text-[15px] font-bold text-white">REPs Pro</span>
           </div>
-          <SummaryFact label="Entry" value="£59/mo" emphasis />
-          <SummaryFact label="Clients" value="Unlimited" emphasis />
-          <SummaryFact label="Paid add-ons" value="None" emphasis />
+          <div className="grid grid-cols-3 gap-3 md:contents">
+            <SummaryFact label="Entry" value="£59/mo" emphasis />
+            <SummaryFact label="Clients" value="Unlimited" emphasis />
+            <SummaryFact label="Paid add-ons" value="None" emphasis />
+          </div>
           <div className="md:justify-self-end">
             <Link
               to="/pricing"
