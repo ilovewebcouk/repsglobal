@@ -12,6 +12,7 @@ import { ScenarioCards } from "@/components/marketing/ScenarioCards";
 import { VerdictScorecard } from "@/components/marketing/VerdictScorecard";
 import { MigrationChecklist } from "@/components/marketing/MigrationChecklist";
 import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
+import { VsHeroCard } from "@/components/marketing/VsHeroCard";
 
 import {
   COMPETITORS,
