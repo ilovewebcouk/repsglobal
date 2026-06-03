@@ -8,8 +8,7 @@ export function FoundingBanner() {
           <Star className="h-3 w-3 fill-reps-orange" /> Founding members
         </span>
         <span>
-          Lock in <span className="font-semibold text-white">£29/mo Pro</span> or{" "}
-          <span className="font-semibold text-white">£59/mo Business</span> before public launch.
+          Lock in <span className="font-semibold text-white">£59/mo Pro</span> before public launch.
         </span>
       </div>
       <span className="text-[12px] text-white/55">Limited spots · price locked for life</span>

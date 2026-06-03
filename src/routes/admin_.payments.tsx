@@ -17,7 +17,7 @@ export const Route = createFileRoute("/admin_/payments")({
 
 const KPIS = [
   { label: "Gross volume (MTD)", value: "£284,910", delta: "+12.6%", icon: BadgePoundSterling },
-  { label: "Net revenue", value: "£42,736", delta: "Take rate 15%", icon: Wallet },
+  { label: "Net revenue", value: "£42,736", delta: "MTD", icon: Wallet },
   { label: "Subscriptions", value: "4,066", delta: "+148 this month", icon: CreditCard },
   { label: "Refunds (30d)", value: "£3,210", delta: "1.1% of volume", icon: RefreshCw },
 ];

@@ -5,8 +5,8 @@
  * tight and the long prose easy to edit independently. Each editorial block
  * is hand-written per competitor — no templated mad-libs.
  *
- * Framing rule: REPs has a 4-tier ladder (Free / Verified £99/yr / Pro £29/mo
- * / Business £59/mo). Whatever tier you pick, every feature in that tier is
+ * Framing rule: REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo /
+ * Studio £149/mo). Whatever tier you pick, every feature in that tier is
  * included. We attack competitors on paid add-ons stacked on top of one base
  * plan — never describe REPs as "one flat plan / flat price".
  */
@@ -64,13 +64,13 @@ export type Editorial = {
 };
 
 const REPS_TIER_LADDER_LINE =
-  "REPs has 4 tiers (Free / Verified £99/yr / Pro £29/mo / Business £59/mo) and every feature in your chosen tier is included.";
+  "REPs has 3 tiers (Verified £99/yr / Pro £59/mo / Studio £149/mo) and every feature in your chosen tier is included.";
 
 export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
   trainerize: {
     verdictBullets: [
       "REPs is a verified public register — Trainerize is private software you bring your own clients to.",
-      "REPs has a 4-tier ladder where every feature in your tier is included; Trainerize is a base tier plus payments, branded app, nutrition and video as paid add-ons.",
+      "REPs has a 3-tier ladder where every feature in your tier is included; Trainerize is a base tier plus payments, branded app, nutrition and video as paid add-ons.",
       "Pick Trainerize if you're a multi-location studio already on Studio Plus. Pick REPs for everyone else in the UK.",
     ],
     intro: [
@@ -84,7 +84,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
     costStory: [
       "Trainerize's headline pricing is misleading on purpose. The Grow tier is $10/month, which looks competitive — until you realise that on Grow you cannot take card payments without buying the Stripe Integrated Payments add-on, you cannot offer a properly branded app to your clients without the Custom Branded App add-on, and the Smart Meal Planner sits inside the Advanced Nutrition Coaching add-on. Each of those is normal-coach-needs-day-one, not edge-case.",
       "A working example. A coach with 30 clients moves to the Pro / Small Business tier at $79/month. Add payments, add nutrition, add the branded app — typical lands around $148/month. Add video coaching for premium clients and you're past $165. None of that is hidden — it's all on the pricing page if you click through every link — but the sticker is $79.",
-      "REPs has a 4-tier ladder instead. Free, Verified £99/year, Pro £29/month, Business £59/month. Pick the tier that fits your stage. Whatever tier you choose, every feature in that tier is included — your public REPs-verified profile, the operating system to run your practice, programmes, nutrition, AI across the platform. You don't assemble it from add-ons on top of a single base plan.",
+      "REPs has a 3-tier ladder instead. Verified £99/year, Pro £59/month, Studio £149/month. Pick the tier that fits your stage. Whatever tier you choose, every feature in that tier is included — your public REPs-verified profile, the operating system to run your practice, programmes, nutrition, AI across the platform. You don't assemble it from add-ons on top of a single base plan.",
       "Use the calculator below to see the curve. The further you scale on Trainerize, the more add-ons get loaded onto a single base tier. The further you scale on REPs, the more you get for the tier you're already paying for.",
     ],
     dayInTheLife: [
@@ -116,7 +116,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Solo PT, just starting online",
         detail: "10 clients, needs payments + nutrition guidance + a place to be found",
         clientCount: 10,
-        repsCost: "Free or Verified (£99/yr) tier",
+        repsCost: "Verified (£99/yr) tier",
         competitorCost: "≈ $30/mo (Grow + Payments + Nutrition add-ons)",
         winner: "reps",
         summary: "REPs wins on discoverability — Trainerize gives you a delivery app but no way to be found. Costs are close at this stage but the REPs tier is one bill, not a base plan + two add-ons on top.",
@@ -125,7 +125,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Online coach scaling up",
         detail: "30 clients, branded experience, taking weekly check-ins seriously",
         clientCount: 30,
-        repsCost: "REPs Pro £29/mo",
+        repsCost: "REPs Pro £59/mo",
         competitorCost: "≈ $148/mo (Pro + Payments + Nutrition + Branded App)",
         winner: "reps",
         summary: "This is the sweet spot for REPs. The Trainerize add-on stack adds up fast at 30 clients. REPs ships the same capability — branded, paid-in, nutrition, AI — inside the Pro tier, with no bolt-on bill.",
@@ -134,7 +134,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Multi-trainer studio",
         detail: "200+ clients across 3 trainers, deep gym-management integrations",
         clientCount: 200,
-        repsCost: "REPs Business £59/mo + verified profile per trainer",
+        repsCost: "REPs Studio £149/mo + verified profile per trainer",
         competitorCost: "$248/mo Studio Plus (branded app included)",
         winner: "competitor",
         summary: "If you're already in the ABC ecosystem (Glofox, Mindbody) and need deep gym-management integration, Studio Plus is a serious product. REPs is built around the individual verified trainer, not the multi-location facility.",
@@ -160,7 +160,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Is Trainerize available in the UK?", a: "Yes — Trainerize works globally. Pricing is in USD and payment add-ons go through Stripe. REPs is UK-built around the public REPs register, which Trainerize doesn't offer." },
       { q: "How much does Trainerize actually cost with add-ons?", a: "The listed tier ($10–$248/mo) is the base. A coach with 30 clients who needs payments, nutrition and a branded app typically lands at ≈ $148/mo once add-ons are added. " + REPS_TIER_LADDER_LINE },
       { q: "What's the best Trainerize alternative for UK personal trainers?", a: "If you want to be found by clients searching the public register, get verified, and avoid the stack of payments + nutrition + AI add-ons, REPs is built specifically for UK PTs. MyPTHub and PT Distinction are also alternatives if discoverability isn't a priority." },
-      { q: "Does Trainerize have a free plan?", a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs has a Free tier and founding pricing locked for early Pro and Business members until public launch." },
+      { q: "Does Trainerize have a free plan?", a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch." },
       { q: "Does Trainerize include AI?", a: "Trainerize has an AI Workout Builder and some automated messaging. REPs ships AI through the whole platform: programme drafts, nutrition planning, check-in summaries, lead scoring, content drafting, churn-risk alerts — included inside the REPs tier." },
       { q: "Can I migrate from Trainerize to REPs without losing my clients?", a: "Yes. Export your client list as CSV, import to REPs, run both in parallel for a week while clients accept invites, then cancel Trainerize. We've documented the full 5-step migration above." },
       { q: "Is Trainerize good for studios?", a: "Genuinely yes. Studio Plus is built for multi-location facilities and integrates with the ABC Fitness ecosystem (Glofox, Mindbody). If you're a multi-trainer studio already on ABC, stay. REPs is built around the individual verified trainer." },
@@ -171,7 +171,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
   mypthub: {
     verdictBullets: [
       "REPs is the verified public register clients search — MyPTHub is private coaching software.",
-      "REPs has a 4-tier ladder where every feature in your tier is included; MyPTHub charges $95 for a branded app, $12/mo for Check-Ins AI, $10/mo per extra trainer, $19/mo for Zapier — on top of a single base plan.",
+      "REPs has a 3-tier ladder where every feature in your tier is included; MyPTHub charges $95 for a branded app, $12/mo for Check-Ins AI, $10/mo per extra trainer, $19/mo for Zapier — on top of a single base plan.",
       "Pick MyPTHub if you've got a full roster and just want the cheapest entry-level coaching app. Pick REPs if discoverability and AI matter.",
     ],
     intro: [
@@ -184,7 +184,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
     costStory: [
       "MyPTHub deserves some credit here: their headline pricing is much cleaner than Trainerize's. The Premium tier at $59/month gives you unlimited clients with payments and nutrition included in the base. If you genuinely don't need a branded app, don't need AI, and don't need automation, $59 is a fair price for what you get.",
       "The wedge is everywhere else. The custom-branded app — the thing your clients actually open every day, with your logo on the home screen — is a $95 one-time payment per platform on top of your subscription. Their AI feature, Check-Ins AI, is a $12/month add-on. Want a second trainer in the account? $10/month per seat. Want Zapier so leads from your website land automatically? $19/month.",
-      "A coach with 20 clients who wants the branded app, the AI module, and Zapier — none of those are unreasonable things to want — lands at roughly $90/month. A coach with 40 clients running two trainers is around $99/month. REPs covers all of that inside the Pro (£29/mo) or Business (£59/mo) tier — with the public register on the front.",
+      "A coach with 20 clients who wants the branded app, the AI module, and Zapier — none of those are unreasonable things to want — lands at roughly $90/month. A coach with 40 clients running two trainers is around $99/month. REPs covers all of that inside the Pro (£59/mo) or Studio (£149/mo) tier — with the public register on the front.",
       "The calculator below shows the curve. MyPTHub stays competitive on the base tier; the moment you reach for the add-ons that make a serious modern practice work, REPs pulls ahead.",
     ],
     dayInTheLife: [
@@ -216,7 +216,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Solo PT on a tight budget",
         detail: "3 clients, no branded app, no AI — just delivery",
         clientCount: 3,
-        repsCost: "Free or Verified (£99/yr) tier",
+        repsCost: "Verified (£99/yr) tier",
         competitorCost: "$25/mo Starter",
         winner: "tie",
         summary: "If you're brand new, on the Starter plan, and don't care about being found yet, MyPTHub's $25/mo is hard to beat on price alone. REPs wins if you want a public profile from day one.",
@@ -225,7 +225,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Established online coach",
         detail: "20 clients, wants a branded app, AI check-ins, and automated lead capture",
         clientCount: 20,
-        repsCost: "REPs Pro £29/mo",
+        repsCost: "REPs Pro £59/mo",
         competitorCost: "≈ $90/mo (Premium + Check-Ins AI + Zapier + amortised branded app)",
         winner: "reps",
         summary: "This is where MyPTHub's add-on bill catches up. REPs ships the same capability — branded, AI check-ins, automation — inside the Pro tier, and adds public discoverability on top.",
@@ -234,10 +234,10 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Two-trainer practice",
         detail: "40 clients across 2 trainers with full add-on stack",
         clientCount: 40,
-        repsCost: "REPs Business £59/mo + verified profile per trainer",
+        repsCost: "REPs Studio £149/mo + verified profile per trainer",
         competitorCost: "≈ $99/mo (Premium + AI + branded app + extra trainer)",
         winner: "reps",
-        summary: "Per-trainer charges and the AI add-on stack up. With REPs Business, each trainer has their own verified public profile and the platform stays a single tier bill.",
+        summary: "Per-trainer charges and the AI add-on stack up. With REPs Studio, each trainer has their own verified public profile and the platform stays a single tier bill.",
       },
     ],
     scorecard: [
@@ -264,7 +264,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Does MyPTHub charge per client?", a: "No — Premium ($59/mo) and above are unlimited clients. Starter is capped at 3. The cost creeps in via the add-on stack rather than per-client charges." },
       { q: "Is MyPTHub good for new trainers?", a: "Yes — the $25/mo Starter is one of the cheapest entry tiers on the market and the app is genuinely easy to learn. The trade-off is no public-facing register, so you still need to drive your own leads." },
       { q: "Can I migrate from MyPTHub to REPs?", a: "Yes. Export your client CSV, import to REPs, run both in parallel for a week, then cancel MyPTHub. See the 5-step migration guide above." },
-      { q: "Does MyPTHub have a free trial?", a: "30-day free trial, no card required — generous and fair. REPs has a Free tier and founding pricing locked for early paid members until public launch." },
+      { q: "Does MyPTHub have a free trial?", a: "30-day free trial, no card required — generous and fair. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch." },
     ],
   },
 
@@ -316,7 +316,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Small specialist roster",
         detail: "10 clients on Basic, deep coaching app needed",
         clientCount: 10,
-        repsCost: "REPs Pro £29/mo",
+        repsCost: "REPs Pro £59/mo",
         competitorCost: "$61.90/mo (Basic + 7 × $6 extra-client fee)",
         winner: "reps",
         summary: "The Basic tier's $19.90 sticker is misleading at this client count. Seven extra clients at $6 each pushes it past $60/mo. REPs Pro is one tier price, with a public profile included.",
@@ -325,7 +325,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Online coach at Pro cap",
         detail: "25 clients, sitting exactly at the Pro tier cap",
         clientCount: 25,
-        repsCost: "REPs Pro £29/mo",
+        repsCost: "REPs Pro £59/mo",
         competitorCost: "$59.90/mo Pro (at cap, no extras)",
         winner: "competitor",
         summary: "If your roster is stable and fits cleanly inside the Pro cap, $59.90 for a feature-dense app is competitive. Pick PT Distinction if discoverability isn't the bottleneck.",
@@ -334,7 +334,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         persona: "Scaling above the Pro cap",
         detail: "50 clients on Pro tier",
         clientCount: 50,
-        repsCost: "REPs Pro £29/mo (no per-client fee)",
+        repsCost: "REPs Pro £59/mo (no per-client fee)",
         competitorCost: "$119.90/mo (Pro + 25 × $2.40)",
         winner: "reps",
         summary: "Above the cap, the per-client charge bites again. The REPs tier price doesn't move, plus your verified register profile keeps bringing in new enquiries instead of just managing the ones you already have.",
@@ -362,9 +362,9 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Does PT Distinction include AI?", a: "Yes — AI Program Builder, Smart Meal Planner and AI Assistant are included on the Basic tier. REPs ships AI across more surfaces (lead scoring, content, churn risk, weekly growth cards) and includes them inside the tier." },
       { q: "Best PT Distinction alternative in the UK?", a: "REPs is the UK-built alternative that combines public discovery, verified credential, operations, coaching delivery and AI in one platform — without per-client charges inside the tier." },
       { q: "Does PT Distinction have transaction fees?", a: "No separate platform fee on payments. Standard payment-processor fees still apply through Stripe. REPs is the same — no platform commission on payments, and no booking commission either." },
-      { q: "Are extra trainers really free on PT Distinction?", a: "Yes — adding more trainer logins is genuinely free, which is unusual in this category. REPs Business gives every trainer their own verified register profile inside the tier." },
+      { q: "Are extra trainers really free on PT Distinction?", a: "Yes — adding more trainer logins is genuinely free, which is unusual in this category. REPs Studio gives every trainer their own verified register profile inside the tier." },
       { q: "Can I migrate from PT Distinction to REPs?", a: "Yes. Export your CSV, import to REPs, run in parallel for a week, then cancel. See the 5-step migration guide above. No add-ons to unwind on the PT Distinction side." },
-      { q: "Does PT Distinction have a free trial?", a: "Yes — a full 1-month free trial on every plan. REPs has a Free tier and founding pricing locked for early paid members until public launch." },
+      { q: "Does PT Distinction have a free trial?", a: "Yes — a full 1-month free trial on every plan. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch." },
     ],
   },
 };

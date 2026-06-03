@@ -1,8 +1,10 @@
-// Price IDs for REPs platform billing (Phase 1).
-// Pro and Business use FOUNDING prices — locked-for-life pricing for early members.
-// Standard (post-launch) prices for Pro/Business will be added later when founding closes.
+// Price IDs for REPs platform billing.
+// REPs 3-tier ladder: Verified / Pro / Studio.
+// The current "Pro" tier mirrors what was previously sold as "Business" —
+// same Stripe price IDs, same Founding lock, same £59/mo · £590/yr pricing.
+// Studio is unchanged. Verified is unchanged. The old £29 Pro tier is retired.
 
-export type BillingTier = "verified" | "pro" | "business" | "studio";
+export type BillingTier = "verified" | "pro" | "studio";
 export type BillingPeriod = "monthly" | "annual";
 
 export type PriceEntry = {
@@ -17,11 +19,8 @@ export const PRICES: Record<BillingTier, Record<BillingPeriod, PriceEntry>> = {
     monthly: { priceId: "price_1TdV6TAP31Yc4cJjEb6A132P", amountPence: 1200, founding: false, display: "£12/mo" },
     annual: { priceId: "price_1TdV6YAP31Yc4cJjmHWXm2rW", amountPence: 9900, founding: false, display: "£99/yr" },
   },
+  // Pro reuses the Stripe price IDs previously assigned to the Business tier.
   pro: {
-    monthly: { priceId: "price_1TdV6ZAP31Yc4cJj9ljfT0ip", amountPence: 2900, founding: true, display: "£29/mo (Founding)" },
-    annual: { priceId: "price_1TdV6bAP31Yc4cJjwwoUmzmW", amountPence: 29000, founding: true, display: "£290/yr (Founding)" },
-  },
-  business: {
     monthly: { priceId: "price_1TdV6cAP31Yc4cJjgGZ8bzTX", amountPence: 5900, founding: true, display: "£59/mo (Founding)" },
     annual: { priceId: "price_1TdV6dAP31Yc4cJjXlLH0Q92", amountPence: 59000, founding: true, display: "£590/yr (Founding)" },
   },

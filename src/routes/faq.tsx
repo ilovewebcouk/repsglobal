@@ -26,7 +26,7 @@ export const Route = createFileRoute("/faq")({
             {
               "@type": "Question",
               name: "How much does REPs cost for professionals?",
-              acceptedAnswer: { "@type": "Answer", text: "Foundation is free, Pro is £29/month and Elite is £79/month." },
+              acceptedAnswer: { "@type": "Answer", text: "REPs has 3 tiers: Verified £99/year, Pro £59/month and Studio £149/month. Every feature in your chosen tier is included." },
             },
           ],
         }),
@@ -50,7 +50,7 @@ const GROUPS: { audience: string; items: { q: string; a: string }[] }[] = [
     audience: "For professionals",
     items: [
       { q: "How do I get verified?", a: "Upload your qualifications, insurance and DBS in your dashboard. Most submissions are reviewed within 3 working days." },
-      { q: "What tier should I start on?", a: "Foundation is free and great for getting listed. Pro and Elite unlock booking tools, AI assistance and richer profile features." },
+      { q: "What tier should I start on?", a: "Verified (£99/year) gets you the verified badge, reviews and enquiries. Pro (£59/month) adds the full operating system — bookings, CRM, programmes, advanced nutrition and check-ins, plus AI across the platform. Studio (£149/month) is for multi-coach teams." },
       { q: "How do payouts work?", a: "Connect your Stripe account from settings. Payouts arrive in your bank account 2 working days after the session." },
       { q: "Can I import data from Brilliant Directories?", a: "Yes — during the migration window we'll move your profile, reviews and credentials across automatically." },
     ],
@@ -58,9 +58,9 @@ const GROUPS: { audience: string; items: { q: string; a: string }[] }[] = [
   {
     audience: "Billing & subscriptions",
     items: [
-      { q: "How much does REPs cost?", a: "Foundation is free. Pro is £29/month or £290/year. Elite is £79/month or £790/year. All tiers can be cancelled any time." },
-      { q: "Are there platform fees on bookings?", a: "Pro tier charges a 7% platform fee on bookings; Elite charges 4%. Foundation listings don't include the booking widget." },
-      { q: "Do you offer student or NHS rates?", a: "Yes — verified students and NHS-affiliated practitioners receive 50% off the Pro tier. Email billing@repsglobal.com with proof." },
+      { q: "How much does REPs cost?", a: "Verified is £99/year. Pro is £59/month or £590/year. Studio is £149/month or £1,490/year. Every feature in your chosen tier is included. All tiers can be cancelled any time." },
+      { q: "Does REPs take a commission on bookings?", a: "No. REPs does not take a commission on bookings. You pay for your tier and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use." },
+      { q: "Do you offer student or NHS rates?", a: "Yes — verified students and NHS-affiliated practitioners receive a discount on Pro. Email billing@repsglobal.com with proof." },
       { q: "How do I cancel my subscription?", a: "Go to Settings → Billing → Manage subscription. Your tier remains active until the end of the paid period." },
     ],
   },

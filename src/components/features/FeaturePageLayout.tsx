@@ -207,7 +207,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
             <ul className="mt-5 space-y-2">
               {PLANS.map((p) => {
                 const included = feature.includedIn.includes(
-                  p.tierKey as "verified" | "pro" | "business",
+                  p.tierKey as "verified" | "pro" | "studio",
                 );
                 return (
                   <li

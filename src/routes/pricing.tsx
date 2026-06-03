@@ -11,16 +11,16 @@ import { PricingCompare } from "@/components/pricing/PricingCompare";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Free, Verified, Pro, Business · REPs" },
+      { title: "Pricing — Verified, Pro, Studio · REPs" },
       {
         name: "description",
         content:
-          "Free profile forever. Verified £99/yr. Founding Pro from £24/mo and Founding Business from £49/mo — locked for life before public launch.",
+          "Verified £99/yr. Founding Pro from £49/mo (£59/mo billed monthly). Studio £149/mo. Pick a tier — every feature in that tier is included. No add-on stack.",
       },
       { property: "og:title", content: "REPs pricing" },
       {
         property: "og:description",
-        content: "Free to list. Verified to be trusted. Pro and Business to run your practice.",
+        content: "Verified to be trusted. Pro to run your practice. Studio to scale your team.",
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/pricing" },
     ],
@@ -45,13 +45,14 @@ function PricingPage() {
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Pricing
           </span>
           <h1 className="mx-auto mt-5 max-w-[820px] font-display text-[40px] font-bold leading-tight text-white lg:text-[56px]">
-            Free to list. Verified to be trusted.
+            Verified to be trusted.
             <br />
-            <span className="text-reps-orange">Pro to run your business.</span>
+            <span className="text-reps-orange">Pro to run your practice. Studio to scale.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-relaxed text-white/70">
             REPs isn't another coaching app. It's a public register, a trust layer and an
-            AI operating system — priced so every professional can start free and grow.
+            AI operating system — priced as a clear 3-tier ladder. Pick the tier that fits,
+            and every feature in that tier is included.
           </p>
         </div>
       </section>
@@ -73,7 +74,7 @@ function PricingPage() {
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[14px] text-white/65">
               Visibility, operations, coaching, REPs AI, growth and admin — side by side
-              across Free, Verified, Pro, Business and Studio.
+              across Verified, Pro and Studio.
             </p>
           </div>
           <div className="mt-10">

@@ -37,10 +37,10 @@ function RepsCard() {
       <p className="mt-1 text-[12.5px] text-white/60">{REPS_SIDE.bestFor}</p>
 
       <div className="mt-5 flex items-baseline gap-2">
-        <span className="font-display text-[28px] font-bold text-white">4-tier ladder</span>
+        <span className="font-display text-[28px] font-bold text-white">3-tier ladder</span>
       </div>
       <p className="text-[12.5px] text-white/55">
-        Free · Verified £99/yr · Pro £29/mo · Business £59/mo
+        Verified £99/yr · Pro £59/mo · Studio £149/mo
       </p>
 
       <div className="mt-5 rounded-[14px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">

@@ -32,7 +32,7 @@ export function CompetitorCompare() {
         </h2>
         <p className="mt-3 max-w-[640px] text-[15px] text-white/65">
           Trainerize, MyPTHub and PT Distinction give you software — and a list of
-          paid add-ons. REPs has a 4-tier ladder where every feature in your
+          paid add-ons. REPs has a 3-tier ladder where every feature in your
           chosen tier is included — no paid add-ons sitting on top of any plan.
         </p>
       </div>

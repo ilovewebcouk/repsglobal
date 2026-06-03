@@ -127,7 +127,7 @@ function useScrolledPast(threshold: number) {
 function ForProsPage() {
   const showStickyCta = useScrolledPast(680);
   const previewPlans = PLANS.filter((p) =>
-    ["free", "pro", "business"].includes(p.tierKey),
+    ["verified", "pro", "studio"].includes(p.tierKey),
   );
 
   return (

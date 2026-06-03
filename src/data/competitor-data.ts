@@ -20,18 +20,17 @@ export const DATA_VERIFIED_DATE = "3 June 2026";
 
 /**
  * REPs tier ladder — single source of truth for cost-comparison copy.
- * REPs has 4 tiers; whatever tier you choose, every feature in that tier is
+ * REPs has 3 tiers; whatever tier you choose, every feature in that tier is
  * included. The hook is "no paid add-ons inside any tier", not "one flat plan".
  */
 export const REPS_TIER_REFERENCE = {
   tiers: [
-    { name: "Free", price: "Free", note: "Claimable public listing" },
     { name: "Verified", price: "£99/yr", note: "Verified badge, reviews, enquiries" },
-    { name: "Pro", price: "£29/mo", note: "Full operating system for your practice" },
-    { name: "Business", price: "£59/mo", note: "Multi-trainer, advanced ops" },
+    { name: "Pro", price: "£59/mo", note: "Full operating system, AI across the platform" },
+    { name: "Studio", price: "£149/mo", note: "Multi-coach teams, locations, reporting" },
   ],
   summary:
-    "REPs has 4 tiers (Free / Verified £99/yr / Pro £29/mo / Business £59/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
+    "REPs has 3 tiers (Verified £99/yr / Pro £59/mo / Studio £149/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
 } as const;
 
 export type PricingTier = {
@@ -188,7 +187,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "How much does Trainerize actually cost with add-ons?",
-        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs has a 4-tier ladder (Free / Verified £99/yr / Pro £29/mo / Business £59/mo) — whatever tier you pick, every feature in that tier is included.",
+        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) — whatever tier you pick, every feature in that tier is included.",
       },
       {
         q: "What's the best Trainerize alternative for UK personal trainers?",
@@ -196,7 +195,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs has a Free tier and founding pricing locked for early Pro / Business members until public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs runs on a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) with founding pricing on Pro locked for early members until public launch.",
       },
       {
         q: "Does Trainerize include AI?",
@@ -283,7 +282,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Is MyPTHub's pricing transparent?",
-        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs has a 4-tier ladder where every feature inside your chosen tier is included.",
+        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo) where every feature inside your chosen tier is included.",
       },
       {
         q: "Does MyPTHub include AI?",
@@ -399,11 +398,11 @@ export const REPS_SIDE = {
   tiers: [
     {
       name: "REPs Pro",
-      price: "£29/mo",
+      price: "£59/mo",
       clientCap: "Unlimited",
     },
   ] satisfies PricingTier[],
-  freeTrial: "Free tier · founding pricing locked for early paid members",
+  freeTrial: "Founding pricing on Pro locked for early members before public launch",
   transactionFees: "No add-on stack inside any tier",
   bestFor:
     "UK personal trainers who want to be found, verified, and run the whole practice in one place.",
