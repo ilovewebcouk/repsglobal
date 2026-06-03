@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Search, Sparkles, X } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
+
+type SortMode = "newest" | "oldest" | "az";
 
 export const Route = createFileRoute("/resources/")({
   head: () => ({
