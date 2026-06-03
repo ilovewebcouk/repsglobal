@@ -114,6 +114,51 @@ const PILLAR_ROUTES = {
   growth: "/features/growth",
 } as const;
 
+type PillarKey = keyof typeof PILLAR_ROUTES;
+
+const PILLAR_COPY: Record<
+  PillarKey,
+  { title: string; body: string; bulletSlugs?: string[] }
+> = {
+  visibility: {
+    title: "Be found. Be trusted. Be booked.",
+    body:
+      "Your verified REPs profile is the one place the public already searches for a trusted pro. Reviews on the record, qualifications checked — built to convert browsers into clients.",
+    bulletSlugs: ["profile-and-reviews"],
+  },
+  operations: {
+    title: "Run your whole practice in one place.",
+    body:
+      "Bookings, payments, leads, CRM and messaging — replaces Calendly, Stripe, Mailchimp and a CRM with one tool built for fitness. Every client, every session, every payment in one record.",
+    bulletSlugs: ["bookings", "payments", "leads"],
+  },
+  coaching: {
+    title: "Programmes, nutrition, check-ins — built for coaches.",
+    body:
+      "The Trainerize-class coaching stack, wired into the same client record as your bookings and payments. Deliver programmes with video demos and read progress at a glance.",
+    bulletSlugs: ["programmes", "check-ins", "clients"],
+  },
+  ai: {
+    title: "Not just AI features. An AI operating layer.",
+    body:
+      "Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
+  },
+  growth: {
+    title: "The one move to grow this month.",
+    body:
+      "Revenue, retention, churn risk and renewal forecasting — surfaced as a Monday-morning card, not a dashboard you have to read. Compound the practice you've built.",
+    bulletSlugs: ["insights"],
+  },
+};
+
+const AI_BULLETS = [
+  "AI Programme Writer — 12-week plans in seconds",
+  "AI Check-in Summariser — six check-ins read for you",
+  "Weekly Next Move — the single highest-leverage action",
+];
+
+
+
 function useScrolledPast(threshold: number) {
   const [past, setPast] = useState(false);
   useEffect(() => {
