@@ -6,6 +6,7 @@ import {
   DATA_VERIFIED_DATE,
   type Competitor,
 } from "@/data/competitor-data";
+import { RepsTierWordmark } from "@/components/brand/RepsTierWordmark";
 
 /**
  * Compact plans & limits summary for the /compare hub.
@@ -41,7 +42,7 @@ export function PlansLimitsSummary({
         </span>
         <div className={ROW_GRID}>
           <div className="flex min-w-0 items-center">
-            <span className="font-display text-[15px] font-bold text-white">REPs Pro</span>
+            <RepsTierWordmark tier="pro" className="h-[18px] text-white" />
           </div>
           <div className="grid grid-cols-3 gap-3 md:contents">
             <SummaryFact label="Entry" value="£59/mo" emphasis />
