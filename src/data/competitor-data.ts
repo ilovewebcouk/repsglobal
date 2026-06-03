@@ -401,7 +401,7 @@ export const REPS_SIDE = {
       clientCap: "Unlimited",
     },
   ] satisfies PricingTier[],
-  freeTrial: "Founding pricing on Pro locked for early members before public launch",
+  freeTrial: "30-day free trial · founding pricing locked for early members",
   transactionFees: "No add-on stack inside any tier",
   bestFor:
     "UK personal trainers who want to be found, verified, and run the whole practice in one place.",

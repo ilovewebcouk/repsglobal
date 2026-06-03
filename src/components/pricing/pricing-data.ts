@@ -46,11 +46,12 @@ export const PLANS: PlanCard[] = [
     tier: "Pro",
     tierKey: "pro",
     desc: "Run and scale your whole coaching practice.",
-    cta: "Start Founding Pro",
+    cta: "Start free trial",
     ctaHref: "/signup",
     founding: true,
     featured: true,
     features: [
+      "30-day free trial",
       "Everything in Verified",
       "Leads CRM & client management",
       "Bookings, calendar & payments",
@@ -61,8 +62,8 @@ export const PLANS: PlanCard[] = [
       "Enhanced directory placement",
     ],
     pricing: {
-      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly" },
-      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free" },
+      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly · 30-day free trial" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free · 30-day free trial" },
     },
   },
   {
@@ -181,6 +182,10 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 };
 
 export const FAQ: { q: string; a: string }[] = [
+  {
+    q: "Is there a free trial?",
+    a: "Yes — Pro includes a 30-day free trial. You can cancel anytime during the trial from your dashboard. Verified and Studio don't currently include a trial.",
+  },
   {
     q: "What's the difference between Verified and Pro?",
     a: "Verified is about trust and visibility — credentials, reviews, enhanced directory profile. Pro adds the full operating system to run your practice: bookings, CRM, programmes, advanced nutrition and check-ins, messaging, automations and AI across the platform.",
