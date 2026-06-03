@@ -266,9 +266,8 @@ function useScrolledPast(threshold: number) {
 
 function ForProsPage() {
   const showStickyCta = useScrolledPast(680);
-  const previewPlans = PLANS.filter((p) =>
-    ["verified", "pro", "studio"].includes(p.tierKey),
-  );
+
+
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
