@@ -55,9 +55,7 @@ export function PublicFooter() {
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
             <div className="flex items-center gap-3">
-              <span className="font-display text-[28px] font-bold tracking-tight text-white">
-                REPs
-              </span>
+              <RepsWordmark className="h-[20px] text-white" />
               <span className="border-l border-white/15 pl-3 text-[11px] leading-tight text-white/60">
                 The Register of
                 <br />
