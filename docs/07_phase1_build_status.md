@@ -155,7 +155,7 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 - `/terms` and `/privacy` — legal copy still placeholder via `LegalShell`. Awaiting final wording before promoting to Shipped.
 - Final compliance audit (`reps-build-compliance` skill) should be re-run before sign-off to catch any drift in hex/radius/shadow rules across recently edited files.
 
-## 10. Phase 2 candidates
+## 11. Phase 2 candidates
 
 - Resources CMS (currently static articles in `src/lib/resources.ts`).
 - Real directory search + filters backed by the database.
