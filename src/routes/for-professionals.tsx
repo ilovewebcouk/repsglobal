@@ -472,7 +472,7 @@ function ForProsPage() {
               <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Pricing
             </span>
             <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-              Free to list. Verified to be trusted.
+              Verified to be trusted.
               <br />
               Pro to run your business.
             </h2>
