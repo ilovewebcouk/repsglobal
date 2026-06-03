@@ -232,7 +232,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                       scope="col"
                       className="bg-reps-orange-soft px-4 py-4 text-[13px] font-display font-bold text-reps-orange md:px-5"
                     >
-                      <RepsWordmark className="h-[22px] text-reps-orange" />
+                      <RepsWordmark className="h-[15px] text-reps-orange" />
                     </th>
                     <th scope="col" className="px-4 py-4 md:px-5">
                       <img

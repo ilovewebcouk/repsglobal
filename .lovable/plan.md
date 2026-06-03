@@ -1,47 +1,34 @@
-# Add 30-day free trial to REPs Pro
+# Right-size the REPs wordmark on /compare
 
-Pro tier gets a **30-day free trial**. Stripe handles the trial via `trial_period_days: 30` at checkout — card is captured during normal Stripe signup, but we do **not** mention "card required" anywhere in marketing copy. Verified and Studio are unchanged. Founding pricing claim is kept.
+The current `<RepsWordmark>` sizing on `/compare` uses the height of the competitor *lockups* (icon + wordmark). But competitor logos are icon-heavy: the actual wordmark glyph inside "TRAINERIZE", "mypthub", "PTDistinction" only occupies roughly 60% of that height. The icon takes the rest. REPs is a pure wordmark with no icon, so at the same pixel height it reads ~50–70% larger than the competitor wordmarks beside it.
 
-## Public wording (locked)
-Short, everywhere: **"30-day free trial"**
+Fix is to scale REPs to match competitor *wordmark glyph* cap-height, not lockup height.
 
-No mentions of "card required", "no card needed", "free for 30 days then auto-bills", or any other qualifier. Stripe's own checkout page already discloses the card and trial terms at the point of payment, which is where that belongs.
+## Changes
 
-## Marketing / copy changes
+### 1. `src/components/marketing/PlansLimitsSummary.tsx` (line 45)
+REPs Pro row inside "Plans & limits at a glance":
+- Was: `<RepsTierWordmark tier="pro" className="h-[18px] text-white" />`
+- New: `<RepsTierWordmark tier="pro" className="h-[13px] text-white" />`
 
-### 1. Pricing cards (`src/components/pricing/pricing-data.ts`)
-Pro tier only:
-- Append `" · 30-day free trial"` to the `meta` string on both `monthly` and `annual` pricing views.
-- Change CTA from `"Start Founding Pro"` → `"Start free trial"` (keep `ctaHref: "/signup"`).
-- Add a new lead feature bullet at the top of Pro features: **"30-day free trial"**.
+Matches the visible cap-height of the "mypthub" / "PTDistinction" wordmark glyphs in the competitor rows below (logoHeight 20–24 lockups → ~13px wordmark text).
 
-### 2. Pricing FAQ (`src/components/pricing/pricing-data.ts`, `FAQ` array)
-Insert one new Q&A near the top:
-- **Q:** "Is there a free trial?"
-- **A:** "Yes — Pro includes a 30-day free trial. You can cancel anytime during the trial from your dashboard. Verified and Studio don't currently include a trial."
+### 2. `src/components/marketing/CompetitorCompare.tsx` (line 93)
+Feature-by-feature table REPS column header:
+- Was: `<RepsWordmark className="h-[22px] text-reps-orange lg:text-reps-orange" />`
+- New: `<RepsWordmark className="h-[15px] text-reps-orange lg:text-reps-orange" />`
 
-### 3. Pricing route meta (`src/routes/pricing.tsx`)
-Tighten description and include trial; stay under 160 chars and avoid banned phrases:
-- New: `"Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack."`
+The column header row sets competitor logos at h=20–24; the actual wordmark text inside those is ~14–15px. 15px aligns REPS with that.
 
-### 4. Founding banner (`src/components/pricing/FoundingBanner.tsx`)
-Append one short clause: **"Includes a 30-day free trial."** Primary line (founding £59/mo lock-in) stays.
+### 3. `src/components/marketing/HeadToHead.tsx` (line 235)
+Same component used on each `/compare/reps-vs-*` page header — applies the same correction:
+- Was: `<RepsWordmark className="h-[22px] text-reps-orange" />`
+- New: `<RepsWordmark className="h-[15px] text-reps-orange" />`
 
-### 5. Comparison data (`src/data/competitor-data.ts`)
-Update `repsPro.freeTrial` so the REPs card on `/compare` and every `/compare/reps-vs-*` page surfaces the trial:
-- Old: `"Founding pricing on Pro locked for early members before public launch"`
-- New: `"30-day free trial · founding pricing locked for early members"`
+## Verification
+After the edit I'll re-screenshot `/compare` and zoom into both the Plans & limits row and the Feature-by-feature header so we can confirm REPs visually balances against TRAINERIZE / mypthub / PTDistinction wordmark text — not their lockup height.
 
-### 6. Comparison editorial FAQs (`src/data/competitor-editorial.ts`)
-The two existing "free trial" answers currently imply REPs has none. Update the REPs framing inside each:
-- **MyPTHub** answer: append `" REPs Pro also includes a 30-day free trial."`
-- **PT Distinction** answer: append `" REPs Pro also includes a 30-day free trial."`
-- Trainerize: no existing trial Q&A — leave alone.
-
-## Out of scope (this plan is copy/data only)
-- Wiring `trial_period_days: 30` into `createCheckoutSession` (`src/lib/billing/billing.functions.ts`) and the Pro price in `src/lib/billing/prices.ts`. This is the Stripe-side change that actually delivers the trial. **Recommend doing it in a small follow-up plan** so the marketing copy and the checkout behaviour land together — flag this back to you before shipping the copy alone.
-- Trial-expiry emails, dunning, in-app trial countdown UI.
-- Any change to Verified or Studio.
-
-## Banned-phrase check
-No "15%", "booking fee/commission", "flat plan", "Stripe included/surcharge", "card required". Clean.
+## Out of scope
+- Header / footer / auth wordmark sizes (correct as-is — those don't sit beside competitor lockups).
+- Pricing-page Pro card or other Verified/Studio wordmark placements.
+- Replacing competitor `<img>` logos.
