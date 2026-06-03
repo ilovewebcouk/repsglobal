@@ -133,27 +133,27 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     workedExample: [
       {
         label: "Grow + payments + nutrition add-ons",
-        clients: 10,
-        base: 10,
+        clients: 2,
+        base: 9,
         addOnsApplied: [
           { name: "Stripe Payments add-on", cost: 10 },
           { name: "Advanced Nutrition Coaching", cost: 10 },
         ],
-        total: 30,
+        total: 29,
       },
       {
-        label: "Pro + 3 typical add-ons",
+        label: "Pro slider (~30 clients) + 3 typical add-ons",
         clients: 30,
-        base: 79,
+        base: 49,
         addOnsApplied: [
           { name: "Stripe Payments add-on", cost: 10 },
           { name: "Advanced Nutrition Coaching", cost: 10 },
           { name: "Branded App add-on", cost: 49 },
         ],
-        total: 148,
+        total: 118,
       },
       {
-        label: "Pro + 4 add-ons (full stack)",
+        label: "Pro slider (~75 clients) + 4 add-ons (full stack)",
         clients: 75,
         base: 79,
         addOnsApplied: [
