@@ -186,7 +186,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "How much does Trainerize actually cost with add-ons?",
-        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
+        a: "The listed tier ($9-$248/mo) is the base — and the Pro tier uses a client-count slider, so a coach with ~30 clients lands around $49/mo before add-ons. Once a serious coach turns on payments, nutrition coaching and a branded app, the all-in usually lands well above $100/mo. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
       },
       {
         q: "What's the best Trainerize alternative for UK personal trainers?",
