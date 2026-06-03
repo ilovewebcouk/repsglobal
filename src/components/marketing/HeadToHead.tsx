@@ -406,6 +406,14 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </Link>
             </div>
           </div>
+
+          <div className="mt-10">
+            <MethodologyNotice
+              variant="card"
+              vendorName={c.name}
+              vendorPricingUrl={c.pricingUrl}
+            />
+          </div>
         </div>
       </section>
 

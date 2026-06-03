@@ -42,6 +42,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "Privacy Policy", to: "/privacy" },
       { label: "Cookies", to: "/cookies" },
       { label: "Complaints", to: "/complaints" },
+      { label: "Comparison methodology", to: "/comparison-methodology" },
       { label: "Contact", to: "/contact" },
     ],
   },
