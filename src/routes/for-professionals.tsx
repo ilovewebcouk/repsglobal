@@ -105,55 +105,153 @@ const AI_NARRATIVE = [
   },
 ];
 
-const PILLAR_ROUTES = {
-  visibility: "/features/visibility",
-  operations: "/features/operations",
-  coaching: "/features/coaching",
-  ai: "/features/ai",
-  growth: "/features/growth",
-} as const;
-
-type PillarKey = keyof typeof PILLAR_ROUTES;
-
-const PILLAR_COPY: Record<
-  PillarKey,
-  { title: string; body: string; bulletSlugs?: string[] }
-> = {
-  visibility: {
-    title: "Be found. Be trusted. Be booked.",
-    body:
-      "Your verified REPs profile is the one place the public already searches for a trusted pro. Reviews on the record, qualifications checked — built to convert browsers into clients.",
-    bulletSlugs: ["profile-and-reviews"],
-  },
-  operations: {
-    title: "Run your whole practice in one place.",
-    body:
-      "Bookings, payments, leads, CRM and messaging — replaces Calendly, Stripe, Mailchimp and a CRM with one tool built for fitness. Every client, every session, every payment in one record.",
-    bulletSlugs: ["bookings", "payments", "leads"],
-  },
-  coaching: {
-    title: "Programmes, nutrition, check-ins — built for coaches.",
-    body:
-      "The Trainerize-class coaching stack, wired into the same client record as your bookings and payments. Deliver programmes with video demos and read progress at a glance.",
-    bulletSlugs: ["programmes", "check-ins", "clients"],
-  },
-  ai: {
-    title: "Not just AI features. An AI operating layer.",
-    body:
-      "Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
-  },
-  growth: {
-    title: "The one move to grow this month.",
-    body:
-      "Revenue, retention, churn risk and renewal forecasting — surfaced as a Monday-morning card, not a dashboard you have to read. Compound the practice you've built.",
-    bulletSlugs: ["insights"],
-  },
+type SectionBlock = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  imageLabel: string;
+  ctaLabel: string;
+  ctaHref: string;
 };
 
-const AI_BULLETS = [
-  "AI Programme Writer — 12-week plans in seconds",
-  "AI Check-in Summariser — six check-ins read for you",
-  "Weekly Next Move — the single highest-leverage action",
+const SECTION_BLOCKS: SectionBlock[] = [
+  {
+    eyebrow: "Visibility",
+    title: "Be found. Be trusted. Be booked.",
+    body:
+      "Your REPs profile is built to convert. Clients see exactly who you are, what you deliver, and the proof behind it — before they ever message you.",
+    bullets: [
+      "Verified professional profile",
+      "Qualifications, insurance and CPD on display",
+      "Reviews on the public record",
+      "Found by location and specialism",
+    ],
+    imageLabel: "Profile + directory mockup — screenshot coming",
+    ctaLabel: "Explore Visibility",
+    ctaHref: "/features/visibility",
+  },
+  {
+    eyebrow: "Operations",
+    title: "Turn enquiries into paying clients.",
+    body:
+      "Every enquiry lands in one pipeline — source, value, follow-up date, priority — so nothing slips and nobody goes cold.",
+    bullets: [
+      "Lead pipeline with stages",
+      "Enquiry source tracking",
+      "Follow-up reminders",
+      "AI lead scoring and reply drafts",
+    ],
+    imageLabel: "Leads pipeline mockup — screenshot coming",
+    ctaLabel: "Explore Operations",
+    ctaHref: "/features/operations",
+  },
+  {
+    eyebrow: "Coaching",
+    title: "Know every client at a glance.",
+    body:
+      "Goals, progress, programmes, bookings, payments, notes and check-ins on one professional record. Open a client, see the whole story.",
+    bullets: [
+      "Full client profiles",
+      "Adherence and progress summary",
+      "Programme and nutrition snapshot",
+      "Notes, payments and bookings in one place",
+    ],
+    imageLabel: "Client record mockup — screenshot coming",
+    ctaLabel: "Explore Coaching",
+    ctaHref: "/features/coaching",
+  },
+  {
+    eyebrow: "Operations",
+    title: "Run your schedule and your revenue from one place.",
+    body:
+      "1-to-1s, consultations, online check-ins, classes, invoices and payment status — without tab-switching between four tools.",
+    bullets: [
+      "Calendar and booking view",
+      "Availability and session types",
+      "Payment status and revenue tracking",
+      "Per-client payment history",
+    ],
+    imageLabel: "Bookings + payments mockup — screenshot coming",
+    ctaLabel: "Explore Operations",
+    ctaHref: "/features/operations",
+  },
+  {
+    eyebrow: "Coaching",
+    title: "Build serious programmes without the spreadsheet chaos.",
+    body:
+      "Weeks, workouts, sets, reps, rest and RPE — assembled in a clean professional builder and assigned to clients in a click.",
+    bullets: [
+      "Week-by-week programme structure",
+      "Workout and exercise builder",
+      "Curated exercise library",
+      "One-click client assignment",
+    ],
+    imageLabel: "Programme builder mockup — screenshot coming",
+    ctaLabel: "Explore Coaching",
+    ctaHref: "/features/coaching",
+  },
+  {
+    eyebrow: "Coaching",
+    title: "Review check-ins in minutes, not evenings.",
+    body:
+      "Adherence, sleep, stress, training, nutrition, measurements and progress photos — surfaced in a single review screen with an AI summary you can edit.",
+    bullets: [
+      "Weekly check-in reviews",
+      "Nutrition targets and tracking",
+      "Progress metrics and photos",
+      "AI-drafted coach responses",
+    ],
+    imageLabel: "Check-in review mockup — screenshot coming",
+    ctaLabel: "Explore Coaching",
+    ctaHref: "/features/coaching",
+  },
+  {
+    eyebrow: "Coaching",
+    title: "Give every client a properly professional experience.",
+    body:
+      "Clients get their own portal — programme, check-ins, nutrition, bookings, payments and messages — branded around you, not a third-party app.",
+    bullets: [
+      "Personal client dashboard",
+      "Assigned programme and today's session",
+      "One-tap check-in submission",
+      "Payment and booking history",
+    ],
+    imageLabel: "Client portal mockup — screenshot coming",
+    ctaLabel: "Explore Client Portal",
+    ctaHref: "/features/coaching",
+  },
+  {
+    eyebrow: "REPs AI",
+    title: "AI that tells you what to do next.",
+    body:
+      "Not a chatbot bolted on the side. REPs AI runs across programmes, check-ins, leads, client risk and weekly growth — so your next move is always obvious.",
+    bullets: [
+      "AI Programme Writer",
+      "AI Check-in Summariser",
+      "AI Lead Scoring",
+      "AI Client Risk Alerts",
+      "Weekly Next Move growth cards",
+    ],
+    imageLabel: "AI Business Command Centre mockup — screenshot coming",
+    ctaLabel: "Explore REPs AI",
+    ctaHref: "/features/ai",
+  },
+  {
+    eyebrow: "Growth",
+    title: "See what's working. See where to grow next.",
+    body:
+      "Revenue, retention, enquiries, profile performance and adherence trends — with weekly prompts on what to act on first.",
+    bullets: [
+      "Revenue and retention insights",
+      "Profile and lead analytics",
+      "Client adherence trends",
+      "Content Studio and growth prompts",
+    ],
+    imageLabel: "Insights + growth mockup — screenshot coming",
+    ctaLabel: "Explore Growth",
+    ctaHref: "/features/growth",
+  },
 ];
 
 
