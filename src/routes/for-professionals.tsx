@@ -135,7 +135,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
     eyebrow: "Leads CRM",
     title: "Stop losing the clients you've already won.",
     body:
-      "Most coaches lose 4 in 10 enquiries to a slow reply. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply for you.",
+      "Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab.",
     bullets: [
       "Pipeline stages from enquiry to booked consult",
       "Source tracking — know which channel pays",
@@ -143,7 +143,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "AI lead scoring and reply drafts ready to send",
     ],
     imageLabel: "Leads pipeline mockup — screenshot coming",
-    ctaLabel: "Explore Operations",
+    ctaLabel: "See the pipeline",
     ctaHref: "/features/operations",
   },
   {
