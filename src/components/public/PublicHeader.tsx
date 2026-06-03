@@ -24,6 +24,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import repsWordmark from "@/assets/logos/reps-wordmark-white.svg.asset.json";
 import {
   Accordion,
   AccordionItem,
@@ -195,10 +196,9 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
           <div className="flex h-[72px] items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-3" aria-label="REPs home">
-                <span className="font-display text-[30px] font-bold leading-none tracking-tight text-white">
-                  REPs
-                </span>
+                <img src={repsWordmark.url} alt="REPs" className="h-7 w-auto" />
               </Link>
+
 
               <span aria-hidden className="hidden h-6 w-px bg-white/15 lg:block" />
 
@@ -834,9 +834,7 @@ function MobileDrawer({
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
         <Link to="/" onClick={onNavigate} className="flex items-center gap-2" aria-label="REPs home">
-          <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-            REPs
-          </span>
+          <img src={repsWordmark.url} alt="REPs" className="h-6 w-auto" />
         </Link>
         <SheetClose asChild>
           <button
