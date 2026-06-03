@@ -241,7 +241,7 @@ export function CompetitorCompare() {
                     className={[
                       "px-4 py-4 text-[13px] font-display font-bold md:px-5",
                       i === 0
-                        ? "sticky left-[140px] z-40 w-[110px] min-w-[110px] bg-reps-orange-tint text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:bg-reps-orange-soft lg:shadow-none"
+                        ? "sticky left-[140px] z-20 w-[110px] min-w-[110px] bg-reps-orange-tint text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:bg-reps-orange-soft lg:shadow-none"
                         : "min-w-[150px] text-white/80 md:min-w-[170px]",
                     ].join(" ")}
                   >
