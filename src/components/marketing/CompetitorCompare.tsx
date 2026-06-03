@@ -220,7 +220,7 @@ export function CompetitorCompare() {
       </div>
 
       {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
-      <div className="mt-3 [overflow:clip] rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
+      <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
         <div
           className="overflow-x-auto [overflow-y:clip] lg:overflow-visible"
           style={{ WebkitOverflowScrolling: "touch" }}
