@@ -9,7 +9,7 @@ import { COMPETITOR_LIST } from "@/data/competitor-data";
 const URL = "https://repsglobal.lovable.app/compare";
 const TITLE = "Personal Trainer Software UK — REPs vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-  "Compare REPs with Trainerize, MyPTHub and PT Distinction. The UK personal trainer software that combines a verified public register, full operations, coaching delivery and AI in a 3-tier ladder (Verified, Pro, Studio) — every feature in your tier is included, no paid add-ons.";
+  "Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. UK personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -82,10 +82,10 @@ function ComparePage() {
           </h1>
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
-            your own clients to — then top up with paid add-ons. REPs is the
-            verified public register, plus operations, coaching and AI across a
-            3-tier ladder (Verified, Pro, Studio) — every feature in your chosen
-            tier is included.
+            your own clients to — then top up with paid add-ons. REPs Pro is
+            £59/mo founding (was £79/mo) and includes the full software platform
+            on the verified public register — no paid add-on stack, no per-client
+            charges.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link

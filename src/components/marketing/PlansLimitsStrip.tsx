@@ -33,24 +33,26 @@ function RepsCard() {
       <div className="absolute right-4 top-4 inline-flex h-6 items-center rounded-full bg-reps-orange px-2.5 text-[10px] font-semibold uppercase tracking-wider text-white">
         Recommended
       </div>
-      <h3 className="font-display text-[20px] font-bold text-white">REPs</h3>
+      <h3 className="font-display text-[20px] font-bold text-white">REPs Pro</h3>
       <p className="mt-1 text-[12.5px] text-white/60">{REPS_SIDE.bestFor}</p>
 
       <div className="mt-5 flex items-baseline gap-2">
-        <span className="font-display text-[28px] font-bold text-white">3-tier ladder</span>
+        <span className="font-display text-[28px] font-bold text-white">£59</span>
+        <span className="text-[13px] text-white/55">/mo</span>
+        <span className="text-[12px] text-white/40 line-through">£79</span>
       </div>
       <p className="text-[12.5px] text-white/55">
-        Verified £99/yr · Pro £59/mo · Studio £149/mo
+        Unlimited clients · Founding pricing locked for life
       </p>
 
       <div className="mt-5 rounded-[14px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-          <Check className="h-3.5 w-3.5" /> What&apos;s included in your tier
+          <Check className="h-3.5 w-3.5" /> Everything in this comparison is included in Pro
         </div>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">
-          Listings, verification, bookings, programmes, nutrition, AI and the
-          operating system to run your practice — included in the tier you pick.
-          No paid add-ons, no per-client charges, no per-extra-trainer fee.
+          Directory profile, verification, CRM, bookings, payments, programmes,
+          check-ins, nutrition, client portal and REPs AI. No paid add-on stack,
+          no per-client charges, no per-extra-trainer fee.
         </p>
       </div>
 
@@ -58,6 +60,13 @@ function RepsCard() {
         <Fact label="Booking commission" value="None" tone="good" />
         <Fact label="Add-on stack" value="None" tone="good" />
       </div>
+
+      <p className="mt-3 text-[11px] leading-relaxed text-white/45">
+        Verified (£99/yr) is a separate public register listing, not coaching
+        software, and is not included in this comparison. See{" "}
+        <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">/pricing</a>{" "}
+        for the full ladder.
+      </p>
     </div>
   );
 }
