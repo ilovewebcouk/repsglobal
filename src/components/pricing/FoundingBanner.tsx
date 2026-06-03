@@ -11,7 +11,7 @@ export function FoundingBanner() {
           Lock in <span className="font-semibold text-white">£59/mo Pro</span> before public launch.
         </span>
       </div>
-      <span className="text-[12px] text-white/55">Limited spots · price locked for life</span>
+      <span className="text-[12px] text-white/55">Limited spots · price locked for life · includes a 30-day free trial</span>
     </div>
   );
 }

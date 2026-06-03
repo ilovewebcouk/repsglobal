@@ -15,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "Verified £99/yr. Founding Pro from £49/mo (£59/mo billed monthly). Studio £149/mo. Pick a tier — every feature in that tier is included. No add-on stack.",
+          "Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack.",
       },
       { property: "og:title", content: "REPs pricing" },
       {

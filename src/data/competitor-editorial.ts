@@ -271,7 +271,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Does MyPTHub charge per client?", a: "No — Premium ($59/mo) and above are unlimited clients. Starter is capped at 3. The cost creeps in via the add-on stack rather than per-client charges." },
       { q: "Is MyPTHub good for new trainers?", a: "Yes — the $25/mo Starter is one of the cheapest entry tiers on the market and the app is genuinely easy to learn. The trade-off is no public-facing register, so you still need to drive your own leads." },
       { q: "Can I migrate from MyPTHub to REPs?", a: "Yes. Export your client CSV, import to REPs, run both in parallel for a week, then cancel MyPTHub. See the 5-step migration guide above." },
-      { q: "Does MyPTHub have a free trial?", a: "30-day free trial, no card required — generous and fair. REPs Pro is £59/mo founding (was £79/mo), with the full software platform included." },
+      { q: "Does MyPTHub have a free trial?", a: "30-day free trial, no card required — generous and fair. REPs Pro also includes a 30-day free trial, and is £59/mo founding (was £79/mo), with the full software platform included." },
     ],
   },
 
@@ -371,7 +371,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
       { q: "Does PT Distinction have transaction fees?", a: "No separate platform fee on payments. Standard payment-processor fees still apply through Stripe. REPs is the same — no platform commission on payments, and no commission on bookings either." },
       { q: "Are extra trainers really free on PT Distinction?", a: "Yes — adding more trainer logins is genuinely free, which is unusual in this category. On REPs, multi-coach setups can run as separate Pro seats; ask us about Studio if you need shared clients and reporting across coaches." },
       { q: "Can I migrate from PT Distinction to REPs?", a: "Yes. Export your CSV, import to REPs, run in parallel for a week, then cancel. See the 5-step migration guide above. No add-ons to unwind on the PT Distinction side." },
-      { q: "Does PT Distinction have a free trial?", a: "Yes — a full 1-month free trial on every plan. REPs Pro is £59/mo founding (was £79/mo), with the full software platform included." },
+      { q: "Does PT Distinction have a free trial?", a: "Yes — a full 1-month free trial on every plan. REPs Pro also includes a 30-day free trial, and is £59/mo founding (was £79/mo), with the full software platform included." },
     ],
   },
 };
