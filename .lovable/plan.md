@@ -1,34 +1,22 @@
-# Right-size the REPs wordmark on /compare
-
-The current `<RepsWordmark>` sizing on `/compare` uses the height of the competitor *lockups* (icon + wordmark). But competitor logos are icon-heavy: the actual wordmark glyph inside "TRAINERIZE", "mypthub", "PTDistinction" only occupies roughly 60% of that height. The icon takes the rest. REPs is a pure wordmark with no icon, so at the same pixel height it reads ~50–70% larger than the competitor wordmarks beside it.
-
-Fix is to scale REPs to match competitor *wordmark glyph* cap-height, not lockup height.
+## Summary
+Add the three head-to-head comparison pages plus a hub link to the **For Professionals** column in the public footer, so comparison content is one click away without bloating the header nav.
 
 ## Changes
 
-### 1. `src/components/marketing/PlansLimitsSummary.tsx` (line 45)
-REPs Pro row inside "Plans & limits at a glance":
-- Was: `<RepsTierWordmark tier="pro" className="h-[18px] text-white" />`
-- New: `<RepsTierWordmark tier="pro" className="h-[13px] text-white" />`
+### `src/components/public/PublicFooter.tsx`
+In the "For Professionals" `links` array, insert four new entries after the existing five items:
 
-Matches the visible cap-height of the "mypthub" / "PTDistinction" wordmark glyphs in the competitor rows below (logoHeight 20–24 lockups → ~13px wordmark text).
+1. `REPs vs Trainerize` → `/compare/reps-vs-trainerize`
+2. `REPs vs MyPTHub` → `/compare/reps-vs-mypthub`
+3. `REPs vs PT Distinction` → `/compare/reps-vs-pt-distinction`
+4. `Compare all platforms` → `/compare`
 
-### 2. `src/components/marketing/CompetitorCompare.tsx` (line 93)
-Feature-by-feature table REPS column header:
-- Was: `<RepsWordmark className="h-[22px] text-reps-orange lg:text-reps-orange" />`
-- New: `<RepsWordmark className="h-[15px] text-reps-orange lg:text-reps-orange" />`
-
-The column header row sets competitor logos at h=20–24; the actual wordmark text inside those is ~14–15px. 15px aligns REPS with that.
-
-### 3. `src/components/marketing/HeadToHead.tsx` (line 235)
-Same component used on each `/compare/reps-vs-*` page header — applies the same correction:
-- Was: `<RepsWordmark className="h-[22px] text-reps-orange" />`
-- New: `<RepsWordmark className="h-[15px] text-reps-orange" />`
+These routes already exist in `src/routes/compare_*.tsx` and `src/routes/compare.tsx`. No new routes, components, or nav-config changes are required.
 
 ## Verification
-After the edit I'll re-screenshot `/compare` and zoom into both the Plans & limits row and the Feature-by-feature header so we can confirm REPs visually balances against TRAINERIZE / mypthub / PTDistinction wordmark text — not their lockup height.
+- Run `node scripts/check-nav-links.mjs` to confirm the comparison routes are no longer flagged as orphans.
+- Verify each link resolves to its existing route file in `src/routes/`.
 
-## Out of scope
-- Header / footer / auth wordmark sizes (correct as-is — those don't sit beside competitor lockups).
-- Pricing-page Pro card or other Verified/Studio wordmark placements.
-- Replacing competitor `<img>` logos.
+## Technical Details
+- Footer column uses a simple `links.map(...)` loop — adding items is a single array edit.
+- No design-token or styling changes; the existing `text-[14px] text-reps-muted hover:text-white` link style applies automatically.
