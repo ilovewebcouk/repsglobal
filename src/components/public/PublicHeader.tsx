@@ -446,47 +446,6 @@ function PanelShell({
 const menuItemClass =
   "block rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal transition-colors hover:bg-reps-warm-white hover:text-reps-orange focus:bg-reps-warm-white focus:text-reps-orange focus:outline-none";
 
-function TrainMenu() {
-  return (
-    <PanelShell width="w-[680px]">
-      <div className="grid grid-cols-2 gap-3">
-        {TRAIN_GOALS.map((g) => {
-          const Icon = g.icon;
-          return (
-            <NavigationMenu.Link asChild key={g.slug}>
-              <Link
-                to="/find-a-professional"
-                className="group/tile flex items-start gap-3 rounded-[16px] border border-reps-stone bg-reps-warm-white p-3 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.04)] focus:outline-none focus:border-reps-orange-border focus:bg-[rgba(255,122,0,0.04)]"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <span className="flex flex-col">
-                  <span className="text-[14px] font-semibold text-reps-charcoal group-hover/tile:text-reps-orange">
-                    {g.label}
-                  </span>
-                  <span className="mt-0.5 text-[12px] text-reps-charcoal/65">
-                    {g.outcome}
-                  </span>
-                </span>
-              </Link>
-            </NavigationMenu.Link>
-          );
-        })}
-      </div>
-      <div className="mt-5 border-t border-reps-stone pt-4">
-        <NavigationMenu.Link asChild>
-          <Link
-            to="/find-a-professional"
-            className="text-[13px] font-semibold text-reps-orange hover:underline focus:underline focus:outline-none"
-          >
-            Browse all goals →
-          </Link>
-        </NavigationMenu.Link>
-      </div>
-    </PanelShell>
-  );
-}
 
 function FindMenu() {
   const featured = RESOURCE_ARTICLES[0];
