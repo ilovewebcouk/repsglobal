@@ -6,9 +6,9 @@ import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
 import { FEATURE_GROUPS, type Cell } from "@/data/feature-matrix";
 import {
-  PlansLimitsStrip,
-  PlansLimitsFootnote,
-} from "@/components/marketing/PlansLimitsStrip";
+  PlansLimitsSummary,
+  PlansLimitsSummaryFootnote,
+} from "@/components/marketing/PlansLimitsSummary";
 import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
 
 type Col = { label: string; logo?: string; logoHeight?: number };
@@ -37,18 +37,19 @@ export function CompetitorCompare() {
         </p>
       </div>
 
-      {/* Plans & limits strip — pricing + add-on transparency above the feature table */}
+      {/* Plans & limits summary — compact row per platform, links into each vs-page */}
       <div className="mt-10">
         <h3 className="font-display text-[18px] font-semibold text-white/85">
           Plans &amp; limits at a glance
         </h3>
         <p className="mt-1 text-[13px] text-white/55">
-          Entry tier, top tier, and what they actually charge extra for.
+          Entry price, client cap and paid add-on count. Tap a row for the full
+          head-to-head.
         </p>
         <div className="mt-5">
-          <PlansLimitsStrip />
+          <PlansLimitsSummary />
         </div>
-        <PlansLimitsFootnote />
+        <PlansLimitsSummaryFootnote />
       </div>
 
       {/* Mobile/tablet swipe hint — placed above the feature table */}
