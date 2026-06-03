@@ -120,7 +120,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
     eyebrow: "Verified profile",
     title: "Become the obvious choice in your area.",
     body:
-      "REPs has been the UK's verified register since 2009 — and the public still searches it first. Your profile shows the badge, the qualifications, the insurance, the reviews. Trust, decided before they message you.",
+      "Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the UK's verified fitness register since 2009.",
     bullets: [
       "Verified badge backed by a 16-year register",
       "Qualifications, insurance and CPD shown live",
@@ -128,14 +128,14 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "Indexed by location, specialism and price band",
     ],
     imageLabel: "Profile + directory mockup — screenshot coming",
-    ctaLabel: "Explore Visibility",
+    ctaLabel: "See the profile",
     ctaHref: "/features/visibility",
   },
   {
     eyebrow: "Leads CRM",
     title: "Stop losing the clients you've already won.",
     body:
-      "Most coaches lose 4 in 10 enquiries to a slow reply. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply for you.",
+      "Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab.",
     bullets: [
       "Pipeline stages from enquiry to booked consult",
       "Source tracking — know which channel pays",
@@ -143,14 +143,14 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "AI lead scoring and reply drafts ready to send",
     ],
     imageLabel: "Leads pipeline mockup — screenshot coming",
-    ctaLabel: "Explore Operations",
+    ctaLabel: "See the pipeline",
     ctaHref: "/features/operations",
   },
   {
     eyebrow: "Client records",
     title: "One record. The whole client.",
     body:
-      "Goals, programme, last check-in, next session, lifetime value, outstanding invoice — on one screen. The CRM Trainerize doesn't have, wired to the coaching tools MyPTHub doesn't have.",
+      "Goals, programme, last check-in, next session, lifetime value, outstanding invoice — on one screen. The CRM the coaching apps don't have, wired to the coaching tools the CRMs don't have.",
     bullets: [
       "Full client record with adherence and progress",
       "Programme and nutrition snapshot at the top",
@@ -188,14 +188,14 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "AI Programme Writer — drafted from a brief",
     ],
     imageLabel: "Programme builder mockup — screenshot coming",
-    ctaLabel: "Explore Coaching",
+    ctaLabel: "See the builder",
     ctaHref: "/features/coaching",
   },
   {
     eyebrow: "Check-ins",
     title: "Reclaim your Sunday evenings.",
     body:
-      "Six check-ins, read for you. Adherence, sleep, stress, training, nutrition, measurements and photos summarised into one card per client — with a reply already drafted in your tone of voice.",
+      "Check-ins, read for you. Adherence, sleep, stress, training, nutrition, measurements and photos summarised into one card per client — with a reply already drafted in your tone of voice.",
     bullets: [
       "Single-screen check-in review per client",
       "AI Check-in Summariser — headline, change, ask",
@@ -228,8 +228,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "And behind every screen, an operating layer. 14 AI capabilities working across programmes, check-ins, leads, risk and growth — drafting work, scoring intent, flagging churn, ranking the single move that pays this week. You stay the coach.",
     bullets: [
       "AI Programme Writer — 12-week plan from one brief",
-      "AI Check-in Summariser — six reviews into one card",
-      "AI Lead Scoring + reply drafts",
+      "AI Check-in Summariser — a stack of reviews into one card",
       "AI Client Risk Alerts — who's about to ghost",
       "Weekly Next Move — the action that pays this week",
     ],
