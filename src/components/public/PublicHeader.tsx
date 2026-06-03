@@ -47,9 +47,8 @@ import {
   RESOURCE_QUICK_LINKS,
   TOP_LOCATIONS,
   TOP_PROFESSIONS,
-  TRAIN_GOALS,
 } from "./nav-config";
-import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
+import { FEATURE_GROUPS } from "@/components/features/feature-config";
 
 
 type Variant = "transparent" | "solid";
