@@ -62,12 +62,6 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
-          <PricingFAQ />
-        </div>
-      </section>
-
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
           <div className="mx-auto max-w-[760px] text-center">
@@ -85,6 +79,12 @@ function PricingPage() {
           <div className="mt-10">
             <PricingCompare />
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
+          <PricingFAQ />
         </div>
       </section>
 
