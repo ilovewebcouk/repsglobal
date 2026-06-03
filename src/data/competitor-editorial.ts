@@ -131,7 +131,7 @@ export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
         detail: "30 clients, branded experience, taking weekly check-ins seriously",
         clientCount: 30,
         repsCost: "REPs Pro £59/mo",
-        competitorCost: "≈ $118/mo (Pro slider ~30 + Payments + Nutrition + Branded App)",
+        competitorCost: "≈ $118/mo (Pro slider ~30 + $10 Payments + $45 Nutrition + $14 Branded App amortised)",
         winner: "reps",
         summary: "This is the sweet spot. The Trainerize add-on stack adds up fast at 30 clients, on top of the slider creeping up. REPs Pro ships the same capability — branded, paid-in, nutrition, AI — for £59/mo flat, with no bolt-on bill.",
       },
