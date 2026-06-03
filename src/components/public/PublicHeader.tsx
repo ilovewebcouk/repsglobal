@@ -933,27 +933,6 @@ function MobileDrawer({
 
 
         <Accordion type="multiple" className="space-y-1">
-          <AccordionItem value="train" className="border-0">
-            <AccordionTrigger className="rounded-[10px] px-3 py-3 text-[15px] font-medium text-white/85 hover:text-white hover:no-underline">
-              Train by goal
-            </AccordionTrigger>
-            <AccordionContent className="pb-2">
-              <ul className="flex flex-col px-1">
-                {TRAIN_GOALS.map((g) => (
-                  <li key={g.slug}>
-                    <Link
-                      to="/find-a-professional"
-                      onClick={onNavigate}
-                      className={mobileSubLinkClass}
-                    >
-                      {g.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-
           <AccordionItem value="find" className="border-0">
             <AccordionTrigger
               className={cn(
@@ -961,7 +940,7 @@ function MobileDrawer({
                 active.find ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
-              Find a Pro
+              Find a Professional
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <div className="flex flex-col gap-3 px-1">
@@ -1016,50 +995,82 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="features" className="border-0">
+          <AccordionItem value="pros" className="border-0">
             <AccordionTrigger
               className={cn(
                 "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
-                active.features ? "text-white" : "text-white/85 hover:text-white",
+                active.pros || active.features ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
-              Features
+              For Professionals
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <ul className="flex flex-col px-1">
                 <li>
                   <Link
-                    to="/features"
+                    to="/for-professionals"
                     onClick={onNavigate}
                     className={cn(mobileSubLinkClass, "font-semibold text-white")}
                   >
+                    Overview
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features" onClick={onNavigate} className={mobileSubLinkClass}>
                     All features
                   </Link>
                 </li>
-                {FEATURES.map((f) => (
-                  <li key={f.slug}>
-                    <Link
-                      to="/features/$slug"
-                      params={{ slug: f.slug }}
-                      onClick={onNavigate}
-                      className={mobileSubLinkClass}
-                    >
-                      {f.label}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link to="/features/visibility" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Visibility
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/operations" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Operations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/coaching" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Coaching
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/features/ai"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "text-reps-orange")}
+                  >
+                    REPs AI
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/growth" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Growth
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/pricing" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/compare" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Compare plans
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/signup"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "font-semibold text-reps-orange")}
+                  >
+                    Join REPs →
+                  </Link>
+                </li>
               </ul>
             </AccordionContent>
           </AccordionItem>
-
-          <Link
-            to="/how-it-works"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(active.howItWorks), "block")}
-          >
-            How it works
-          </Link>
-
 
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
@@ -1090,6 +1101,13 @@ function MobileDrawer({
             </AccordionContent>
           </AccordionItem>
 
+          <Link
+            to="/about"
+            onClick={onNavigate}
+            className={cn(mobileLinkClass(false), "block")}
+          >
+            About REPs
+          </Link>
         </Accordion>
 
         <div className="mt-6 border-t border-reps-border pt-4">
