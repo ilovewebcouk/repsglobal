@@ -1,37 +1,31 @@
-## Goal
+## What's actually broken
 
-Make sure no part of the compare table ever paints on top of `PublicHeader` during scroll.
+**Sticky thead doesn't pin on any breakpoint.** Per the CSS spec, `overflow: hidden` makes an element a *scroll container*, even when no scrollbar is visible. A `position: sticky` descendant pins relative to its nearest scroll container, not the viewport. The outer wrapper around the table currently uses `overflow-hidden` (to clip the rounded corners), so the thead's "scrollport" is that wrapper. The wrapper isn't tall enough to scroll vertically, so the thead never sticks — it just scrolls away with the body rows.
 
-## Root cause
+**The "extra row" perception.** `PublicHeader` is `bg-reps-ink/95 backdrop-blur` (translucent). When body rows scroll under it, you see them faintly through the blur — that looks like a partial row peeking out below the header. Once the sticky thead actually pins under the header, it will sit between the body rows and the header and fully cover that ghost.
 
-`PublicHeader` sits at `z-30`. The table currently uses:
-
-- `<thead>` → `z-30`
-- sticky header `<th>` cells (Feature + REPs) → `z-40`
-- sticky body cells → `z-10`
-
-The two `z-40` header cells are higher than the public header. With the header's semi-transparent `bg-reps-ink/95 backdrop-blur` and sub-pixel rounding during scroll, those cells visibly bleed through where they meet at y = 72.
+**The previous z-index pass was correct** (PublicHeader z-30 > thead z-20 > body sticky cells z-10) — but it doesn't matter while sticky isn't pinning at all. After this fix the z-index is what stops bleed-through during scroll.
 
 ## Fix (single file: `src/components/marketing/CompetitorCompare.tsx`)
 
-Re-tier the table's stacking so the whole table stays *below* `PublicHeader` while preserving the intra-table order (sticky header above sticky body cells, sticky cells above non-sticky cells).
+1. **Outer wrapper:** change `overflow-hidden` → `[overflow:clip]`. `overflow: clip` still clips children to the padding box (so the rounded corners keep working), but does NOT create a scroll container. Sticky descendants then pin to the page viewport.
 
-| Element | Current | New |
-|---|---|---|
-| `<thead>` wrapper | `z-30` | `z-20` |
-| Sticky `<th>` (Feature column, header row) | `z-40` | `z-20` |
-| Sticky `<th>` (REPs column, header row) | `z-40` | `z-20` |
-| Sticky `<th>` (Feature column, body rows) | `z-10` | unchanged |
-| Sticky `<td>` (REPs column, body rows) | `z-10` | unchanged |
+2. **Inner wrapper:** keep `overflow-x-auto [overflow-y:clip] lg:overflow-visible` as-is. `[overflow-y:clip]` is needed to stop CSS from promoting `overflow-y: visible` → `auto` when `overflow-x: auto` is set, which would otherwise re-create a vertical scrollport on mobile/tablet. On desktop `lg:overflow-visible` overrides both axes.
 
-Result: `PublicHeader (z-30)` > `table sticky thead cells (z-20)` > `table sticky tbody cells (z-10)` > non-sticky cells (auto). No more bleed-through under the header.
+3. **No other changes.** thead `sticky top-[72px] z-20`, sticky header cells z-20, sticky body cells z-10 all stay — they're correct once the sticky pin actually works.
 
-## Out of scope
+## Browser support note
 
-- No layout, color, copy, row, column, or sticky-position changes.
-- No change to `PublicHeader`, `compare.tsx`, or `styles.css`.
+`overflow: clip` is supported in Chrome 90+, Firefox 81+, Safari 16+ (Sep 2022). All in scope for this site.
 
 ## QA after change
 
-- Mobile (390) + tablet (768): scroll down past the table — pinned logo row sits cleanly under `PublicHeader`, no bleed-through during scroll. Scroll horizontally — sticky Feature + REPs columns still float above the other columns inside the table.
-- Desktop (1280+): scroll down — pinned logo row sits cleanly under `PublicHeader`.
+- **Desktop (1318):** scroll down past the table — logo row pins flush under `PublicHeader`, no row peeks through.
+- **Tablet (768):** same vertical pinning. Scroll horizontally — Feature + REPs columns still float above the other columns inside the table.
+- **Mobile (390):** same as tablet.
+- Scroll past the bottom of the table — the sticky thead unpins and scrolls away cleanly (because the outer `[overflow:clip]` wrapper still clips it at the bottom edge of the table).
+
+## Out of scope
+
+- No copy, row, column, color, or layout changes.
+- No change to `PublicHeader`, `compare.tsx`, or `styles.css`.
