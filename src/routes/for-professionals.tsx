@@ -195,7 +195,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
     eyebrow: "Check-ins",
     title: "Reclaim your Sunday evenings.",
     body:
-      "Six check-ins, read for you. Adherence, sleep, stress, training, nutrition, measurements and photos summarised into one card per client — with a reply already drafted in your tone of voice.",
+      "Check-ins, read for you. Adherence, sleep, stress, training, nutrition, measurements and photos summarised into one card per client — with a reply already drafted in your tone of voice.",
     bullets: [
       "Single-screen check-in review per client",
       "AI Check-in Summariser — headline, change, ask",
