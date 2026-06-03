@@ -128,7 +128,7 @@ const SECTION_BLOCKS: SectionBlock[] = [
       "Indexed by location, specialism and price band",
     ],
     imageLabel: "Profile + directory mockup — screenshot coming",
-    ctaLabel: "Explore Visibility",
+    ctaLabel: "See the profile",
     ctaHref: "/features/visibility",
   },
   {
