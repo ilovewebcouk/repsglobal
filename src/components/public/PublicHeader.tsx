@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RESOURCE_ARTICLES } from "@/lib/resources";
 import { cn } from "@/lib/utils";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import {
   RESOURCE_TOPICS,
   RESOURCE_QUICK_LINKS,
