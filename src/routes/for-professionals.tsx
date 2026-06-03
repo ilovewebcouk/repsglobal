@@ -422,9 +422,7 @@ function ForProsPage() {
                 The AI layer behind your fitness business.
               </h2>
               <p className="mt-4 max-w-[640px] text-[15.5px] leading-relaxed text-white/75">
-                Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on
-                it — programmes, check-ins, leads, risk, content and the single move to grow
-                this month. You stay the coach. The admin runs itself.
+                Six places REPs AI shows up across your day.
               </p>
             </div>
             <div className="rounded-[22px] border border-reps-orange-border bg-reps-orange-soft p-7">
