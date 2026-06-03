@@ -1,77 +1,62 @@
-# Tier restructure: Verified / Pro / Studio
+## Why
 
-Collapse the ladder from **Free / Verified / Pro / Business / Studio** down to **Verified / Pro / Studio**, where the new **Pro** is the current **Business** (price, features, Founding lock — same Stripe price IDs).
+`/compare/reps-vs-*` pages currently treat Verified (£99/yr) as a comparable software tier against Trainerize / MyPTHub / PT Distinction. Verified is a public register listing, not coaching software. The fair like-for-like is **REPs Pro £59/mo** (founding) only.
 
-## Final ladder
+`/pricing` and `src/components/pricing/pricing-data.ts` are already correct against your spec — verified line by line:
 
-| Tier | Price | Stripe price IDs |
-|---|---|---|
-| Verified | £12/mo · £99/yr | unchanged |
-| **Pro (new)** | £59/mo · £590/yr · Founding locked-for-life | current `business` IDs reused |
-| Studio | £149/mo · £1,490/yr | unchanged |
+- Verified: £12/mo, £8.25/mo annual (£99/yr, 2 months free) ✓
+- Pro: £59/mo (was £79) founding, £49/mo annual (was £66, £590/yr) ✓
+- Studio: £149/mo, £124/mo annual (£1,490/yr) ✓
+- No "Free profile" card in `PLANS` ✓
 
-Free tier and the old £29/mo Pro tier are removed entirely (no live subscribers in Phase 1).
+So this is a **competitor-pages copy + Free-profile CTA cleanup** task. No `pricing-data.ts` changes needed.
 
 ## Changes
 
-### 1. Billing source of truth
-`src/lib/billing/prices.ts`
-- Drop the `pro` block (the £29 one).
-- Rename current `business` → `pro` (keep the same `priceId`s and amounts: £59/mo, £590/yr, founding `true`, display "£59/mo (Founding)" / "£590/yr (Founding)").
-- Update `BillingTier` to `"verified" | "pro" | "studio"`.
-- Update header comment.
+### 1. `src/components/marketing/PlansLimitsStrip.tsx` (REPs card on every /compare/* page)
+- Headline becomes **`£59/mo` · REPs Pro** with a sub-line "Unlimited clients · Founding pricing (was £79/mo)".
+- Body block stays the same wording about no paid add-ons / per-client charges, but anchored to Pro: *"Every feature listed here is included in Pro — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack."*
+- Add one quiet aside line at the bottom of the REPs card: *"Verified (£99/yr) is a separate public register listing, not coaching software, and is not included in this comparison. See [/pricing](/pricing) for the full ladder."*
 
-### 2. Pricing data
-`src/components/pricing/pricing-data.ts`
-- `PlanTierKey` → `"verified" | "pro" | "studio"`. Remove the `free` and old `pro` entries from `PLANS`.
-- New `pro` entry = current Business content (desc, features, CTAs) with prices £59/mo · £49/mo annual (£590/yr) and `was`/founding flags preserved.
-- Add a `studio` entry in `PLANS` (so the 3-up grid renders consistently) using existing `STUDIO_PRICING`. Decide if `STUDIO_PRICING` stays as a separate export or folds into `PLANS` — fold it in for simplicity.
-- `TierKey` → `"verified" | "pro" | "studio"`. Rebuild every `PricingCompare` row: drop the `business` column; the new `pro` column takes whatever `business` had (since features roll up); drop the legacy `pro` (£29) column entirely.
-- `TIER_META`: `verified £99/yr`, `pro £59/mo`, `studio £149/mo`.
-- FAQ rewrites:
-  - Drop "Is REPs really free to join?" (no Free tier).
-  - Rewrite Verified-vs-Pro question to reference the new Pro feature set.
-  - Update the booking-fee answer's tier list to `(Verified / Pro / Studio)`.
+### 2. `src/components/marketing/CostCalculator.tsx`
+- `pickRepsTier()` collapses to a single branch: always returns `{ label: "Pro", price: "£59", unit: "mo" }`.
+- Remove the `≤5 → Verified` and `>50 → Studio` branches. `RepsTier.unit` type kept (`"mo" | "yr"`) so we don't touch consumers, but only `"mo"` is ever returned.
 
-### 3. Pricing page UI
-`src/components/pricing/PricingPlans.tsx`
-- Render 3 cards (Verified / Pro / Studio). Remove the separate Studio side-card pattern if `STUDIO_PRICING` is folded into `PLANS`. Highlight Pro as "Most popular".
-- `src/components/pricing/PricingCompare.tsx`: `activeTier` default `"pro"`; remove Business column; column headers from updated `TIER_META`.
-- `src/components/pricing/FoundingBanner.tsx`: one founding line — "Lock in **£59/mo Pro** before public launch."
-- `src/components/pricing/PricingFAQ.tsx`: audit copy for "Free" / "Business" references.
-- `src/routes/pricing.tsx`: hero subhead + the "Every feature, every REPs tier" caption — remove "Free" and "Business" from the list; update meta description ("Verified £99/yr, Founding Pro from £49/mo, Studio £149/mo — locked for life before public launch.").
+### 3. `src/data/competitor-editorial.ts`
+- `REPS_TIER_LADDER_LINE` is replaced by `REPS_PRO_LINE`:
+  *"REPs Pro is £59/mo (founding, was £79/mo) and includes the full software platform — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack or per-client charges."*
+- For **each** competitor (`trainerize`, `mypthub`, `pt-distinction`):
+  - **scenarios[]** — every `repsCost` becomes `REPs Pro £59/mo`. Scenario summaries rewritten so they read honestly at each client count (small roster: acknowledge competitor entry tier may be cheaper but lacks discoverability + AI; sweet-spot: REPs wins; large/multi-trainer: drop Studio framing, compare Pro at the same scale — Trainerize Studio Plus scenario keeps competitor win, but framed as "if you're an ABC multi-location facility, stay; otherwise Pro covers the same individual coach needs").
+  - **intro / costStory** — remove "3-tier ladder · Verified £99/yr / Pro £59/mo / Studio £149/mo" recitations. Replace with one tight Pro-focused paragraph using the new `REPS_PRO_LINE`. Add the same one-line Verified aside (matching the strip wording).
+  - **FAQs** — rewrite "Does X have a free plan / trial?" and similar to reference Pro only. Keep the founding-Pro note. Keep negations like "REPs does not charge a booking commission" (those negations are explicitly allowed by the memory rules).
+- The framing-rule comment block at the top of the file is updated to: *"Comparison pages compare REPs Pro (£59/mo, founding) only. Verified and Studio are mentioned at most as a one-line aside."*
 
-### 4. Compare hub + REPs-vs-* pages
-`src/data/competitor-data.ts`
-- `REPS_TIER_REFERENCE` / `REPS_GLOBAL.tiers`: 3 entries (Verified / Pro / Studio) with new prices.
-- `REPS_GLOBAL` summary line, FAQ answers, scenario "best for" lines, `REPS_SIDE` "REPs Pro £29/mo" → "REPs Pro £59/mo", and the `freeTrial` line ("Founding pricing locked for early Pro members").
+### 4. `src/data/competitor-data.ts`
+- `REPS_TIER_REFERENCE.summary` rewritten to the Pro-only line above. (The `tiers` array stays — `/pricing` doesn't consume this file, but the array is still useful internally; we just stop using it on /compare pages.)
+- `REPS_SIDE.whatsIncluded` already reads from `REPS_TIER_REFERENCE.summary`, so it updates automatically.
+- Confirm `REPS_SIDE.tiers` is already `[{ name: "REPs Pro", price: "£59/mo", clientCap: "Unlimited" }]` — it is. No change.
 
-`src/data/competitor-editorial.ts`
-- Sweep for "Free / Verified £99/yr / Pro £29/mo / Business £59/mo" intros and rewrite to "Verified £99/yr / Pro £59/mo / Studio £149/mo". Update any "REPs cost" cells in day-in-the-life tables.
+### 5. "Free profile" CTA cleanup (you said it's not an active plan)
+Replace the user-facing "free profile" copy on the three places it leaks into pricing/CTA framing — these are marketing CTAs, not the public pricing cards (which already don't have it):
+- `src/components/features/FeaturePageLayout.tsx` line 254 — "Free profile in minutes…" → "Start with Verified or Pro — Founding pricing locked for life on Pro before public launch."
+- `src/components/features/FeatureGroupLayout.tsx` line 133 — same swap.
+- `src/routes/features.index.tsx` line 110 — same swap.
+- `src/routes/for-professionals.tsx` line 169 — CTA button "Create free profile" → "Get verified".
 
-`src/components/marketing/PlansLimitsStrip.tsx`
-- `RepsCard`: headline "3-tier ladder" + line "Verified £99/yr · Pro £59/mo · Studio £149/mo".
+### 6. Banned-phrase sweep (confirmation)
+Already audited. The only matches are:
+- Negations / disclaimers ("REPs does **not** charge a booking commission") — allowed by memory.
+- Comment-only references in `competitor-editorial.ts` and `competitor-data.ts` framing notes — being rewritten in this same change.
+- Unrelated numerics ("+15%" adherence chart in dashboard, "15% rehab" client-mix label) — not pricing claims, left alone.
 
-`src/components/marketing/CostCalculator.tsx`
-- `pickRepsTier(clients)`: drop the Free branch; ≤5 → Verified, ≤50 → Pro (£59/mo), >50 → Studio (£149/mo). Update card copy from "the Pro tier" wording where it implies £29.
+### 7. Memory update
+- `mem://content/comparison-rules.md` adds: *"On `/compare/reps-vs-*` pages, compare REPs Pro (£59/mo founding) head-to-head only. Verified appears as a one-line aside ('separate public register listing, not coaching software'). Studio only appears on pages that explicitly discuss teams/studios. The Free profile is not an active pricing plan and must not appear in CTAs as if it were."*
 
-`src/components/marketing/HeadToHead.tsx`, `HiddenAddOns.tsx`, `CompetitorCompare.tsx`
-- Audit hero bullets, intro copy, and any "your REPs tier" references that name specific tier prices.
+## Out of scope (untouched)
 
-`src/data/feature-matrix.ts`
-- Re-check "From Pro tier" notes — they still read correctly under the new Pro since the new Pro is a superset.
-
-### 5. Memory + docs
-- Update `mem://index.md` Core rule: change "4-tier ladder (Free / Verified £99/yr / Pro £29/mo / Business £59/mo)" → "3-tier ladder (Verified £99/yr / Pro £59/mo / Studio £149/mo)".
-- Update `mem://content/comparison-rules.md` likewise.
-- `docs/01_reps_master_product_scope.md` and any other doc that lists the tier ladder — sweep and update.
-
-### 6. Sanity sweep
-After edits, grep the project for: `£29`, `Business £`, `business"` (in tier contexts), `tierKey: "free"`, `BillingTier`, `"business"` (as a tier key) to make sure no stale references remain. Typecheck must pass since `PlanTierKey` / `TierKey` / `BillingTier` all narrow.
-
-## Out of scope
-
-- No changes to Stripe in the dashboard (price IDs are reused as-is).
-- No migration logic for old £29 Pro subscribers (none exist).
-- No changes to the comparison methodology page, scorecards, or scenario cards beyond price/tier-name swaps.
-- No new components.
+- `pricing-data.ts`, `/pricing`, `PricingPlans.tsx`, `PricingCompare.tsx`, `FoundingBanner.tsx` — already correct.
+- `src/lib/billing/prices.ts`, Stripe webhook, `billing.functions.ts` — backend untouched.
+- Auth, DB, Supabase, AI functionality.
+- Visual tokens (`styles.css`), nav (`PublicHeader`, `nav-config`), footer (`PublicFooter`), homepage (`index.tsx`).
+- `/comparison-methodology` and `/faq` — already aligned.
+- Free/unclaimed profiles in the directory data model — those stay; only the **CTA framing** that treats Free as a sign-up plan is removed.
