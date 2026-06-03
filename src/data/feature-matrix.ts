@@ -200,19 +200,19 @@ export const FEATURE_GROUPS: Group[] = [
     label: "Pricing · What you actually pay",
     rows: [
       {
-        feature: "One flat plan, everything included",
+        feature: "Every feature included in your tier — no paid add-ons",
         cells: [
-          { kind: "yes", note: "No add-ons, ever" },
+          { kind: "yes", note: "No add-on stack" },
           { kind: "no", note: "5 paid add-ons" },
           { kind: "no", note: "5 paid add-ons" },
           { kind: "partial", note: "Per-client charges" },
         ],
       },
       {
-        feature: "No transaction or payment-processing fee",
+        feature: "No platform commission on bookings",
         cells: [
-          { kind: "yes" },
-          { kind: "no", note: "Stripe Payments is add-on" },
+          { kind: "yes", note: "REPs takes no booking commission" },
+          { kind: "partial", note: "Stripe Payments is an add-on" },
           { kind: "yes" },
           { kind: "yes" },
         ],

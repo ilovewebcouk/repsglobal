@@ -213,8 +213,8 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Upload your qualifications, insurance and any CPD. Our team reviews within 24 hours. You'll see a Verified badge on your profile once approved.",
   },
   {
-    q: "What does REPs take per booking?",
-    a: "On Pro and above, REPs takes 15% of each booking made through the platform. Stripe fees are included.",
+    q: "Does REPs take a commission on bookings?",
+    a: "No. REPs does not charge a booking commission or per-booking fee. You pay for your tier (Free / Verified / Pro / Business) and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use.",
   },
   {
     q: "Will founding pricing stay forever?",

@@ -1,9 +1,9 @@
 /**
  * Competitor data — single source of truth for /compare and /compare/reps-vs-* pages.
  *
- * Pricing, client limits, and add-ons were sourced live from each vendor's public
- * pricing page using Firecrawl on the verification date below. Re-run the scrape
- * (see chat history for the script) when prices shift.
+ * Pricing, client limits, and add-ons were sourced from each vendor's publicly
+ * available pricing page on the verification date below. See
+ * /comparison-methodology for the full process.
  *
  * Last verified: 2026-06-03
  */
@@ -17,6 +17,22 @@ import mypthubHero from "@/assets/compare/reps-vs-mypthub-hero.jpg";
 import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg";
 
 export const DATA_VERIFIED_DATE = "3 June 2026";
+
+/**
+ * REPs tier ladder — single source of truth for cost-comparison copy.
+ * REPs has 4 tiers; whatever tier you choose, every feature in that tier is
+ * included. The hook is "no paid add-ons inside any tier", not "one flat plan".
+ */
+export const REPS_TIER_REFERENCE = {
+  tiers: [
+    { name: "Free", price: "Free", note: "Claimable public listing" },
+    { name: "Verified", price: "£99/yr", note: "Verified badge, reviews, enquiries" },
+    { name: "Pro", price: "£29/mo", note: "Full operating system for your practice" },
+    { name: "Business", price: "£59/mo", note: "Multi-trainer, advanced ops" },
+  ],
+  summary:
+    "REPs has 4 tiers (Free / Verified £99/yr / Pro £29/mo / Business £59/mo). Pick the tier that fits — every feature in that tier is included. No paid add-ons, no per-client charges, no per-extra-trainer fee, no branded-app upsell, no AI module add-on.",
+} as const;
 
 export type PricingTier = {
   name: string;
@@ -63,9 +79,9 @@ export type Competitor = {
 
   /**
    * Hidden-add-ons worked example. We project monthly cost at three client tiers
-   * to make the difference concrete. REPs is always one flat price — these are
-   * the competitor's totals at each client count, all-in with the most common
-   * add-ons a serious coach actually needs.
+   * to make the difference concrete vs the REPs tier ladder — each row shows
+   * what the competitor's base tier plus the add-ons a serious coach actually
+   * needs comes to at that client count.
    */
   workedExample: {
     /** Tier or plan the customer is on at this client count. */
@@ -90,9 +106,6 @@ export type Competitor = {
   faqs: { q: string; a: string }[];
 };
 
-const REPS_TIER_NOTE =
-  "REPs is one flat plan. Everything included — listings, verification, bookings, payments, programmes, nutrition, AI. No paid add-ons, no per-client charges, no add-on stack.";
-
 export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
   trainerize: {
     slug: "trainerize",
@@ -114,7 +127,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     ],
     addOns: [
       { name: "Custom Branded App", cost: "Paid add-on", note: "Free only on Studio Plus" },
-      { name: "Stripe Integrated Payments", cost: "Paid add-on", note: "Yes — you pay extra to take card payments" },
+      { name: "Stripe Integrated Payments", cost: "Paid add-on", note: "Sold as a paid add-on on lower tiers" },
       { name: "Advanced Nutrition Coaching", cost: "Paid add-on", note: "Smart Meal Planner is not included by default" },
       { name: "Video Coaching", cost: "Paid add-on", note: "Live & on-demand sessions sold separately" },
       { name: "Business Add-on", cost: "Paid add-on", note: "Scheduling, products, referrals" },
@@ -157,8 +170,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     tldr: {
       repsWins: [
         "You want a public profile clients can find — REPs is the verified register, Trainerize is private software.",
-        "You want one flat price with everything included — no Stripe Payments add-on, no branded app upsell, no nutrition add-on.",
-        "You want REPs verification and AI as the operating system, not as a feature bolted on top.",
+        "You want a REPs tier where every feature is included, instead of a base plan plus a stack of paid add-ons (branded app, payments, nutrition, video).",
+        "You want REPs verification and AI as the operating system, not as features bolted on top.",
       ],
       competitorWins: [
         "You're a studio or franchise with hundreds of members and you've already standardised on ABC Trainerize.",
@@ -171,19 +184,19 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     faqs: [
       {
         q: "Is Trainerize available in the UK?",
-        a: "Yes — Trainerize is a North American product but works globally. Pricing is in USD and payment add-ons go through Stripe. REPs is built in the UK around the public REPs register, which Trainerize doesn't offer.",
+        a: "Yes — Trainerize is a North American product but works globally. Pricing is in USD. REPs is built in the UK around the public REPs register, which Trainerize doesn't offer.",
       },
       {
         q: "How much does Trainerize actually cost with add-ons?",
-        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs includes all of that in one flat plan.",
+        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs has a 4-tier ladder (Free / Verified £99/yr / Pro £29/mo / Business £59/mo) — whatever tier you pick, every feature in that tier is included.",
       },
       {
         q: "What's the best Trainerize alternative for UK personal trainers?",
-        a: "If you want to be found by clients searching the public register, get verified, and replace the stack of payments + nutrition + AI add-ons with one platform, REPs is built specifically for UK PTs. If you only need a workout app, MyPTHub and PT Distinction are also alternatives.",
+        a: "If you want to be found by clients searching the public register, get verified, and avoid the stack of payments + nutrition + AI add-ons sitting on top of one base plan, REPs is built specifically for UK PTs. If you only need a workout app, MyPTHub and PT Distinction are also alternatives.",
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs has a founding-pricing tier that's free for early members until public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs has a Free tier and founding pricing locked for early Pro / Business members until public launch.",
       },
       {
         q: "Does Trainerize include AI?",
@@ -252,8 +265,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     tldr: {
       repsWins: [
         "You want clients to find you — REPs is the verified public register, MyPTHub is a private app you bring your own clients to.",
-        "You want their AI ($12/mo Check-Ins AI add-on) as the operating layer, not a one-off feature add-on.",
-        "You don't want to pay extra for a branded app, extra trainers, or Zapier — REPs includes everything.",
+        "You want AI as the operating layer inside your tier, not a $12/mo Check-Ins AI add-on bolted on top.",
+        "You don't want to pay extra for a branded app, extra trainers, or Zapier — every feature in your REPs tier is included.",
       ],
       competitorWins: [
         "You already have a full client list and just need the delivery app.",
@@ -270,19 +283,19 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Is MyPTHub's pricing transparent?",
-        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs is one flat price, everything included.",
+        a: "The headline pricing is — but the branded app ($95 one-time), Check-Ins AI ($12/mo), additional trainers ($10/mo each), and Zapier ($19/mo) are all add-ons. A coach using all of them ends up north of $90/mo. REPs has a 4-tier ladder where every feature inside your chosen tier is included.",
       },
       {
         q: "Does MyPTHub include AI?",
-        a: "Their Check-Ins AI is a paid $12/mo add-on. REPs ships AI through the whole platform — programmes, nutrition, check-ins, leads, content, risk alerts — included in the base plan.",
+        a: "Their Check-Ins AI is a paid $12/mo add-on. REPs ships AI through the whole platform — programmes, nutrition, check-ins, leads, content, risk alerts — included inside the tier.",
       },
       {
         q: "Best MyPTHub alternative for UK trainers?",
-        a: "If you want to be found by clients, get REPs verified, and replace the stack of paid add-ons with one platform, REPs is built for UK PTs. Other alternatives include Trainerize and PT Distinction.",
+        a: "If you want to be found by clients, get REPs verified, and avoid the stack of paid add-ons, REPs is built for UK PTs. Other alternatives include Trainerize and PT Distinction.",
       },
       {
         q: "Does MyPTHub charge per client?",
-        a: "No — Premium (£59/mo) and above are unlimited clients. The Starter tier is capped at 3. The cost creeps in via the add-on stack rather than per-client charges.",
+        a: "No — Premium ($59/mo) and above are unlimited clients. The Starter tier is capped at 3. The cost creeps in via the add-on stack rather than per-client charges.",
       },
     ],
   },
@@ -297,7 +310,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     bestFor: "Coaches who love a deep feature set and don't mind paying per extra client.",
     currency: "$",
     freeTrial: "1-month free trial on all plans",
-    transactionFees: "None — payments included",
+    transactionFees: "Payments included on base tiers",
     tiers: [
       { name: "Basic", price: "$19.90/mo", clientCap: "3 clients (then $6/mo each)" },
       { name: "Pro", price: "$59.90/mo", clientCap: "25 clients (then $2.40/mo each)" },
@@ -335,7 +348,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     tldr: {
       repsWins: [
         "You want a public register listing — REPs is where clients search, PT Distinction is private software.",
-        "You don't want to do mental arithmetic on per-client charges every time you sign a client.",
+        "You don't want to do mental arithmetic on per-client charges every time you sign a client — REPs tiers don't add a per-client fee inside the tier.",
         "You want AI as the operating system across the whole platform, plus REPs verification.",
       ],
       competitorWins: [
@@ -349,7 +362,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     faqs: [
       {
         q: "How does PT Distinction's per-client pricing work?",
-        a: "Each tier includes a client cap (3 on Basic, 25 on Pro, 50 on Master). Beyond that you pay per extra client — $6, $2.40 or $1.60/mo depending on tier. A coach with 50 clients on Pro pays $59.90 + 25 × $2.40 = $119.90/mo. REPs is one flat price regardless of client count.",
+        a: "Each tier includes a client cap (3 on Basic, 25 on Pro, 50 on Master). Beyond that you pay per extra client — $6, $2.40 or $1.60/mo depending on tier. A coach with 50 clients on Pro pays $59.90 + 25 × $2.40 = $119.90/mo. REPs tiers don't add a per-client fee inside the tier.",
       },
       {
         q: "REPs vs PT Distinction — which is better for UK PTs?",
@@ -357,15 +370,15 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does PT Distinction include AI?",
-        a: "Yes — AI Program Builder, Smart Meal Planner and AI Assistant are included on the Basic tier. REPs ships AI across more surfaces (lead scoring, content, churn risk, weekly growth cards), and it's all included on the flat plan.",
+        a: "Yes — AI Program Builder, Smart Meal Planner and AI Assistant are included on the Basic tier. REPs ships AI across more surfaces (lead scoring, content, churn risk, weekly growth cards), and it's all included inside the tier.",
       },
       {
         q: "Best PT Distinction alternative in the UK?",
-        a: "REPs is the UK-built alternative that combines public discovery, verified credential, operations, coaching delivery and AI in one platform — without per-client charges.",
+        a: "REPs is the UK-built alternative that combines public discovery, verified credential, operations, coaching delivery and AI in one platform — without per-client charges inside the tier.",
       },
       {
         q: "Does PT Distinction have transaction fees?",
-        a: "No — payments are included with no platform fee. REPs is the same: payments included, no per-transaction fee.",
+        a: "PT Distinction doesn't charge a platform fee on payments. Standard payment-processor fees still apply through Stripe.",
       },
     ],
   },
@@ -379,21 +392,23 @@ export const COMPETITOR_LIST: Competitor[] = [
 
 /**
  * REPs equivalent for the side-by-side strip and head-to-head pricing card.
- * One flat plan, everything included. The contrast IS the marketing.
+ * Tier-based ladder, with every feature inside the chosen tier included.
  */
 export const REPS_SIDE = {
   name: "REPs",
   tiers: [
     {
       name: "REPs Pro",
-      price: "One flat plan",
+      price: "£29/mo",
       clientCap: "Unlimited",
     },
   ] satisfies PricingTier[],
-  freeTrial: "Free for founding members until public launch",
-  transactionFees: "None",
+  freeTrial: "Free tier · founding pricing locked for early paid members",
+  transactionFees: "No add-on stack inside any tier",
   bestFor:
     "UK personal trainers who want to be found, verified, and run the whole practice in one place.",
-  whatsIncluded: REPS_TIER_NOTE,
-  addOns: [{ name: "Nothing", cost: "Everything is in the base plan" }] satisfies AddOn[],
+  whatsIncluded: REPS_TIER_REFERENCE.summary,
+  addOns: [
+    { name: "No paid add-ons inside any tier", cost: "Pick the tier that fits" },
+  ] satisfies AddOn[],
 };
