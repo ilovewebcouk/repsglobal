@@ -1,9 +1,118 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-// /pricing is retired as a destination. /for-professionals is the canonical
-// pro journey, with the pricing section anchored at #pricing.
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { FoundingBanner } from "@/components/pricing/FoundingBanner";
+import { PricingPlans } from "@/components/pricing/PricingPlans";
+import { PricingFAQ } from "@/components/pricing/PricingFAQ";
+
 export const Route = createFileRoute("/pricing")({
-  beforeLoad: () => {
-    throw redirect({ to: "/for-professionals", hash: "pricing" });
-  },
+  head: () => ({
+    meta: [
+      { title: "Pricing — Free, Verified, Pro, Business · REPs" },
+      {
+        name: "description",
+        content:
+          "Free profile forever. Verified £99/yr. Founding Pro from £24/mo and Founding Business from £49/mo — locked for life before public launch.",
+      },
+      { property: "og:title", content: "REPs pricing" },
+      {
+        property: "og:description",
+        content: "Free to list. Verified to be trusted. Pro and Business to run your practice.",
+      },
+      { property: "og:url", content: "https://repsglobal.lovable.app/pricing" },
+    ],
+    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/pricing" }],
+  }),
+  component: PricingPage,
 });
+
+function PricingPage() {
+  return (
+    <div className="min-h-screen bg-reps-ink text-reps-text">
+      <PublicHeader variant="solid" />
+
+      <section className="border-b border-reps-border bg-reps-panel/40">
+        <FoundingBanner />
+      </section>
+
+      <section className="relative overflow-hidden border-b border-reps-border">
+        <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
+        <div className="relative mx-auto max-w-[1240px] px-6 py-16 text-center lg:px-10 lg:py-20">
+          <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
+            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Pricing
+          </span>
+          <h1 className="mx-auto mt-5 max-w-[820px] font-display text-[40px] font-bold leading-tight text-white lg:text-[56px]">
+            Free to list. Verified to be trusted.
+            <br />
+            <span className="text-reps-orange">Pro to run your business.</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-relaxed text-white/70">
+            REPs isn't another coaching app. It's a public register, a trust layer and an
+            AI operating system — priced so every professional can start free and grow.
+          </p>
+        </div>
+      </section>
+
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <PricingPlans />
+        </div>
+      </section>
+
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-14 text-center lg:px-10">
+          <h2 className="font-display text-[24px] font-bold text-white">
+            Want the full plan-by-plan breakdown?
+          </h2>
+          <p className="mx-auto mt-2 max-w-[520px] text-[14px] text-white/65">
+            Every feature in every tier, side by side — visibility, operations, coaching,
+            REPs AI, growth and admin.
+          </p>
+          <Link
+            to="/compare"
+            className="mt-6 inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+          >
+            Compare every plan <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
+          <PricingFAQ />
+        </div>
+      </section>
+
+      <section>
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
+            <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Join 25,000+ verified pros.
+            </h2>
+            <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
+              Founding pricing is locked for life — but only available before public launch.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/signup"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+              >
+                Join REPs <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/for-professionals"
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
+              >
+                For Professionals overview
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <PublicFooter />
+    </div>
+  );
+}
