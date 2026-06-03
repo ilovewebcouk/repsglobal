@@ -37,25 +37,25 @@ function RepsCard() {
       <p className="mt-1 text-[12.5px] text-white/60">{REPS_SIDE.bestFor}</p>
 
       <div className="mt-5 flex items-baseline gap-2">
-        <span className="font-display text-[28px] font-bold text-white">One plan</span>
+        <span className="font-display text-[28px] font-bold text-white">4-tier ladder</span>
       </div>
       <p className="text-[12.5px] text-white/55">
-        {REPS_SIDE.tiers[0].clientCap} clients · {REPS_SIDE.freeTrial}
+        Free · Verified £99/yr · Pro £29/mo · Business £59/mo
       </p>
 
       <div className="mt-5 rounded-[14px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-          <Check className="h-3.5 w-3.5" /> What&apos;s included
+          <Check className="h-3.5 w-3.5" /> What&apos;s included in your tier
         </div>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">
-          Everything. Listings, verification, bookings, payments, programmes,
-          nutrition, AI, branded experience — all in one base plan. No add-ons,
-          no per-client charges, no transaction fees.
+          Listings, verification, bookings, programmes, nutrition, AI and the
+          operating system to run your practice — included in the tier you pick.
+          No paid add-ons, no per-client charges, no per-extra-trainer fee.
         </p>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 text-[12px]">
-        <Fact label="Transaction fee" value="None" tone="good" />
+        <Fact label="Booking commission" value="None" tone="good" />
         <Fact label="Add-on stack" value="None" tone="good" />
       </div>
     </div>

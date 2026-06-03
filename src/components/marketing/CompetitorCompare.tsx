@@ -9,6 +9,7 @@ import {
   PlansLimitsStrip,
   PlansLimitsFootnote,
 } from "@/components/marketing/PlansLimitsStrip";
+import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
 
 type Col = { label: string; logo?: string; logoHeight?: number };
 
@@ -148,6 +149,8 @@ export function CompetitorCompare() {
         Trainerize, MyPTHub, PT Distinction and MyFitnessPal are trademarks of their
         respective owners.
       </p>
+
+      <MethodologyNotice />
     </div>
   );
 }
