@@ -5,8 +5,8 @@
  * tight and the long prose easy to edit independently. Each editorial block
  * is hand-written per competitor — no templated mad-libs.
  *
- * Framing rule: REPs has a 4-tier ladder (Free / Verified £99/yr / Pro £29/mo
- * / Business £59/mo). Whatever tier you pick, every feature in that tier is
+ * Framing rule: REPs has a 3-tier ladder (Verified £99/yr / Pro £59/mo /
+ * Studio £149/mo). Whatever tier you pick, every feature in that tier is
  * included. We attack competitors on paid add-ons stacked on top of one base
  * plan — never describe REPs as "one flat plan / flat price".
  */
@@ -64,7 +64,7 @@ export type Editorial = {
 };
 
 const REPS_TIER_LADDER_LINE =
-  "REPs has 4 tiers (Free / Verified £99/yr / Pro £29/mo / Business £59/mo) and every feature in your chosen tier is included.";
+  "REPs has 3 tiers (Verified £99/yr / Pro £59/mo / Studio £149/mo) and every feature in your chosen tier is included.";
 
 export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
   trainerize: {
