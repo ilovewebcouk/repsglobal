@@ -23,10 +23,10 @@ type Group = { label: string; rows: Row[] };
 
 const GROUPS: Group[] = [
   {
-    label: "Act 1 · Get clients",
+    label: "Visibility · Get discovered",
     rows: [
       {
-        feature: "Public directory that brings you clients",
+        feature: "Found by clients searching the public register",
         cells: [
           { kind: "yes", note: "Searched by the public daily" },
           { kind: "no", note: "Bring your own clients" },
@@ -35,7 +35,7 @@ const GROUPS: Group[] = [
         ],
       },
       {
-        feature: "Industry-recognised credential",
+        feature: "Industry-recognised REPs credential",
         cells: [
           { kind: "yes", note: "REPs verified since 2009" },
           { kind: "no" },
@@ -63,7 +63,7 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    label: "Act 2 · Run your practice",
+    label: "Operations · Run your practice",
     rows: [
       {
         feature: "Lead pipeline (profile, IG, website)",
@@ -84,6 +84,29 @@ const GROUPS: Group[] = [
         ],
       },
       {
+        feature: "Clients CRM (one record per client)",
+        cells: [
+          { kind: "yes" },
+          { kind: "partial", note: "Basic" },
+          { kind: "partial", note: "Basic" },
+          { kind: "partial", note: "Basic" },
+        ],
+      },
+      {
+        feature: "Focused inbox + quiet hours",
+        cells: [
+          { kind: "yes" },
+          { kind: "partial", note: "Chat only" },
+          { kind: "partial", note: "Chat only" },
+          { kind: "partial", note: "Chat only" },
+        ],
+      },
+    ],
+  },
+  {
+    label: "Coaching · Deliver the work",
+    rows: [
+      {
         feature: "Programme builder + video library",
         cells: [{ kind: "yes" }, { kind: "yes" }, { kind: "yes" }, { kind: "yes" }],
       },
@@ -98,12 +121,7 @@ const GROUPS: Group[] = [
       },
       {
         feature: "Weekly check-ins with photos & metrics",
-        cells: [
-          { kind: "yes" },
-          { kind: "yes" },
-          { kind: "yes" },
-          { kind: "yes" },
-        ],
+        cells: [{ kind: "yes" }, { kind: "yes" }, { kind: "yes" }, { kind: "yes" }],
       },
       {
         feature: "Branded client portal (web + mobile)",
@@ -114,29 +132,19 @@ const GROUPS: Group[] = [
           { kind: "yes" },
         ],
       },
-      {
-        feature: "Focused inbox + quiet hours",
-        cells: [
-          { kind: "yes" },
-          { kind: "partial", note: "Chat only" },
-          { kind: "partial", note: "Chat only" },
-          { kind: "partial", note: "Chat only" },
-        ],
-      },
-      {
-        feature: "Automated client follow-ups & win-backs",
-        cells: [
-          { kind: "yes" },
-          { kind: "no" },
-          { kind: "no" },
-          { kind: "no" },
-        ],
-      },
     ],
   },
   {
-    label: "Growth · AI that runs the admin",
+    label: "REPs AI · The operating layer",
     rows: [
+      {
+        feature: "AI Business Command Centre",
+        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
+      },
+      {
+        feature: "Weekly 'next move' growth card",
+        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
+      },
       {
         feature: "AI programme writer",
         cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
@@ -150,15 +158,37 @@ const GROUPS: Group[] = [
         cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
       },
       {
-        feature: "AI lead reply + scoring",
+        feature: "AI lead scoring + reply drafts",
         cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
       },
       {
-        feature: "AI client risk alerts",
+        feature: "AI client risk & plateau alerts",
         cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
       },
       {
-        feature: "Weekly 'next move' growth card",
+        feature: "AI content studio (posts, captions, lead magnets)",
+        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
+      },
+    ],
+  },
+  {
+    label: "Growth · Compound the practice",
+    rows: [
+      {
+        feature: "Revenue & retention insights",
+        cells: [
+          { kind: "yes" },
+          { kind: "partial", note: "Basic reports" },
+          { kind: "partial", note: "Basic reports" },
+          { kind: "partial", note: "Basic reports" },
+        ],
+      },
+      {
+        feature: "Automated client follow-ups & win-backs",
+        cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
+      },
+      {
+        feature: "Renewal forecasting & churn risk",
         cells: [{ kind: "yes" }, { kind: "no" }, { kind: "no" }, { kind: "no" }],
       },
     ],
