@@ -1,17 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { HiddenAddOns } from "@/components/marketing/HiddenAddOns";
 import { CellIcon } from "@/components/marketing/CompetitorCompare";
+import { CostCalculator } from "@/components/marketing/CostCalculator";
+import { DayInTheLife } from "@/components/marketing/DayInTheLife";
+import { UiSideBySide } from "@/components/marketing/UiSideBySide";
+import { ScenarioCards } from "@/components/marketing/ScenarioCards";
+import { VerdictScorecard } from "@/components/marketing/VerdictScorecard";
+import { MigrationChecklist } from "@/components/marketing/MigrationChecklist";
 
 import {
   COMPETITORS,
-  REPS_SIDE,
   DATA_VERIFIED_DATE,
   type Competitor,
 } from "@/data/competitor-data";
+import { EDITORIAL } from "@/data/competitor-editorial";
 import {
   FEATURE_GROUPS,
   FEATURE_INDEX,
@@ -20,6 +25,7 @@ import {
 
 export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
   const c = COMPETITORS[slug];
+  const e = EDITORIAL[slug];
   const idx = FEATURE_INDEX[slug];
   const others = (Object.keys(COMPETITORS) as CompetitorSlug[]).filter((s) => s !== slug);
 
@@ -34,17 +40,31 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
-                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> REPs vs {c.name}
+                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Deep dive · REPs vs {c.name}
               </span>
               <h1 className="mt-5 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
                 REPs vs {c.name}: which is right for UK personal trainers in 2026?
               </h1>
               <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
-                {c.name} is private coaching software — you bring your own clients,
-                then pay for the features you need as add-ons. REPs is the verified
-                public register, plus the operations, coaching delivery and AI
-                layer — in one flat plan with nothing sold separately.
+                An honest, opinionated 10-minute read. Real pricing maths, a
+                workflow comparison, three real-world scenarios, a weighted
+                verdict, and a 5-step migration guide.
               </p>
+
+              <div className="mt-6 rounded-[18px] border border-reps-orange/30 bg-reps-orange/5 p-5">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                  The verdict in 30 seconds
+                </div>
+                <ul className="mt-3 space-y-2 text-[13.5px] text-white/85">
+                  {e.verdictBullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <Zap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   to="/signup"
@@ -53,14 +73,14 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to="/pricing"
+                  to="/compare"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white hover:bg-white/10"
                 >
-                  See REPs pricing
+                  See all comparisons
                 </Link>
               </div>
               <p className="mt-4 text-[12px] text-white/45">
-                Data verified {DATA_VERIFIED_DATE} from {c.name}&apos;s public
+                Pricing verified {DATA_VERIFIED_DATE} from {c.name}&apos;s public
                 pricing page.
               </p>
             </div>
@@ -77,83 +97,121 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
         </div>
       </section>
 
-      {/* TL;DR */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[760px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              The short version
-            </span>
-            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-              Pick REPs if… pick {c.name} if…
-            </h2>
-          </div>
+      {/* LONG-FORM INTRO */}
+      <Editorial
+        eyebrow={`What ${c.name} actually is`}
+        title={`The honest take on ${c.name}.`}
+        paragraphs={e.intro}
+      />
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            <TldrCard
-              kind="reps"
-              title={`Pick REPs if…`}
-              bullets={c.tldr.repsWins}
-            />
-            <TldrCard
-              kind="competitor"
-              title={`Pick ${c.name} if…`}
-              bullets={c.tldr.competitorWins}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING SIDE-BY-SIDE */}
+      {/* THE HIDDEN COST STORY + CALCULATOR */}
       <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              Pricing side-by-side
+              The real monthly cost
             </span>
             <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-              REPs vs {c.name} — what each tier costs.
+              What you actually pay on {c.name}.
             </h2>
           </div>
-
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            <PricingCard
-              name="REPs"
-              isReps
-              tagline={REPS_SIDE.bestFor}
-              tiers={REPS_SIDE.tiers}
-              freeTrial={REPS_SIDE.freeTrial}
-              fees={REPS_SIDE.transactionFees}
-              note={REPS_SIDE.whatsIncluded}
-            />
-            <PricingCard
-              name={c.name}
-              tagline={c.bestFor}
-              tiers={c.tiers}
-              freeTrial={c.freeTrial}
-              fees={c.transactionFees}
-              note={`Plus ${c.addOns.length} paid add-ons — see below.`}
-            />
+          <div className="mt-6 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <Prose paragraphs={e.costStory} />
+            <CostCalculator c={c} />
           </div>
         </div>
       </section>
 
-      {/* HIDDEN ADD-ONS — the wedge */}
+      {/* DAY IN THE LIFE */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
-          <HiddenAddOns c={c} />
+          <div className="max-w-[760px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              A day in the life
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Four jobs every PT does. How each platform handles them.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              No marketing fluff — the actual workflow. Where {c.name} needs a
+              paid add-on or a third-party app, we flag it.
+            </p>
+          </div>
+          <div className="mt-8">
+            <DayInTheLife c={c} rows={e.dayInTheLife} />
+          </div>
         </div>
       </section>
 
-      {/* FEATURE PARITY 2-COL */}
+      {/* SIDE-BY-SIDE UI */}
       <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              Feature parity
+              Side by side
             </span>
             <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-              What you get, line by line.
+              The two products, end to end.
+            </h2>
+          </div>
+          <div className="mt-8">
+            <UiSideBySide c={c} />
+          </div>
+        </div>
+      </section>
+
+      {/* SCENARIOS */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[760px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              Three real scenarios
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Who wins at your stage.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              The right answer changes with where you are in your career. Here
+              are three honest pictures.
+            </p>
+          </div>
+          <div className="mt-8">
+            <ScenarioCards c={c} scenarios={e.scenarios} />
+          </div>
+        </div>
+      </section>
+
+      {/* VERDICT SCORECARD */}
+      <section className="border-b border-reps-border bg-reps-panel/30">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[760px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              The weighted verdict
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Scored across seven criteria.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              Public discoverability is weighted highest because that&apos;s the
+              real difference between a register and a piece of private
+              software. Everything else is balanced.
+            </p>
+          </div>
+          <div className="mt-8">
+            <VerdictScorecard c={c} rows={e.scorecard} />
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE PARITY TABLE (the receipts) */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[760px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              The receipts
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Full feature parity, line by line.
             </h2>
           </div>
 
@@ -195,7 +253,14 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
         </div>
       </section>
 
-      {/* WHEN COMPETITOR IS THE RIGHT CHOICE — credibility */}
+      {/* MIGRATION GUIDE */}
+      <section className="border-b border-reps-border bg-reps-panel/30">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+          <MigrationChecklist competitorName={c.name} steps={e.migration} />
+        </div>
+      </section>
+
+      {/* WHEN COMPETITOR IS RIGHT */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-2">
@@ -249,7 +314,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
           </div>
 
           <div className="mt-8 space-y-3">
-            {c.faqs.map((f) => (
+            {e.faqs.map((f) => (
               <details
                 key={f.q}
                 className="group rounded-[16px] border border-reps-border bg-reps-panel p-5 open:bg-reps-panel-soft"
@@ -262,6 +327,23 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </details>
             ))}
           </div>
+
+          {/* JSON-LD FAQPage schema */}
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: e.faqs.map((f) => ({
+                  "@type": "Question",
+                  name: f.q,
+                  acceptedAnswer: { "@type": "Answer", text: f.a },
+                })),
+              }),
+            }}
+          />
         </div>
       </section>
 
@@ -329,107 +411,42 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
   );
 }
 
-function TldrCard({
-  kind,
+/* ---------- helpers ---------- */
+
+function Editorial({
+  eyebrow,
   title,
-  bullets,
+  paragraphs,
 }: {
-  kind: "reps" | "competitor";
+  eyebrow: string;
   title: string;
-  bullets: string[];
-}) {
-  const isReps = kind === "reps";
-  return (
-    <div
-      className={
-        isReps
-          ? "rounded-[22px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/10 to-reps-orange/[0.02] p-6 lg:p-8"
-          : "rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-8"
-      }
-    >
-      <div
-        className={`text-[12px] font-semibold uppercase tracking-wider ${
-          isReps ? "text-reps-orange" : "text-white/55"
-        }`}
-      >
-        {title}
-      </div>
-      <ul className="mt-4 space-y-3 text-[14px] text-white/85">
-        {bullets.map((b) => (
-          <li key={b} className="flex items-start gap-2.5">
-            <Check
-              className={`mt-0.5 h-4 w-4 shrink-0 ${
-                isReps ? "text-reps-orange" : "text-white/45"
-              }`}
-            />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function PricingCard({
-  name,
-  isReps,
-  tagline,
-  tiers,
-  freeTrial,
-  fees,
-  note,
-}: {
-  name: string;
-  isReps?: boolean;
-  tagline: string;
-  tiers: { name: string; price: string; clientCap: string }[];
-  freeTrial: string;
-  fees: string;
-  note: string;
+  paragraphs: string[];
 }) {
   return (
-    <div
-      className={
-        isReps
-          ? "rounded-[22px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/10 to-reps-orange/[0.02] p-6 lg:p-8"
-          : "rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-8"
-      }
-    >
-      <h3 className="font-display text-[22px] font-bold text-white">{name}</h3>
-      <p className="mt-1 text-[13px] text-white/60">{tagline}</p>
-
-      <div className="mt-5 space-y-2.5">
-        {tiers.map((t) => (
-          <div
-            key={t.name}
-            className="flex items-baseline justify-between gap-3 rounded-[12px] border border-reps-border/60 bg-reps-ink/40 px-4 py-3"
-          >
-            <div>
-              <div className="text-[13px] font-semibold text-white">{t.name}</div>
-              <div className="text-[12px] text-white/55">{t.clientCap}</div>
-            </div>
-            <div className="font-display text-[16px] font-bold text-white">
-              {t.price}
-            </div>
+    <section className="border-b border-reps-border">
+      <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="max-w-[760px]">
+          <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+            {eyebrow}
+          </span>
+          <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            {title}
+          </h2>
+          <div className="mt-6">
+            <Prose paragraphs={paragraphs} />
           </div>
-        ))}
+        </div>
       </div>
-
-      <div className="mt-5 grid grid-cols-2 gap-3 text-[12.5px]">
-        <Mini label="Free trial" value={freeTrial} />
-        <Mini label="Transaction fee" value={fees} />
-      </div>
-
-      <p className="mt-5 text-[13px] leading-relaxed text-white/65">{note}</p>
-    </div>
+    </section>
   );
 }
 
-function Mini({ label, value }: { label: string; value: string }) {
+function Prose({ paragraphs }: { paragraphs: string[] }) {
   return (
-    <div className="rounded-[10px] border border-reps-border/60 bg-reps-ink/40 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-white/45">{label}</div>
-      <div className="mt-0.5 text-[12.5px] font-medium text-white/85">{value}</div>
+    <div className="space-y-4 text-[15.5px] leading-[1.7] text-white/75">
+      {paragraphs.map((p, i) => (
+        <p key={i}>{p}</p>
+      ))}
     </div>
   );
 }
