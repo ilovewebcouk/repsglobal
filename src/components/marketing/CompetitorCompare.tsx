@@ -213,118 +213,88 @@ export function CompetitorCompare() {
         </p>
       </div>
 
-      {/* Desktop / tablet table */}
-      <div className="mt-10 hidden overflow-hidden rounded-[22px] border border-reps-border md:block">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-reps-panel/80">
-              <th
-                scope="col"
-                className="w-[32%] px-5 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50"
-              >
-                Feature
-              </th>
-              {COLS.map((c, i) => (
+      {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
+      <div className="mt-10 overflow-hidden rounded-[22px] border border-reps-border bg-reps-ink">
+        <div className="overflow-x-auto lg:overflow-visible">
+          <table className="w-full min-w-[760px] border-collapse text-left lg:min-w-0">
+            <thead>
+              <tr className="bg-reps-panel">
                 <th
-                  key={c.label}
                   scope="col"
-                  className={`px-5 py-4 text-[13px] font-display font-bold ${
-                    i === 0 ? "bg-reps-orange-soft text-reps-orange" : "text-white/80"
-                  }`}
+                  className="sticky left-0 z-20 w-[160px] min-w-[160px] bg-reps-panel px-4 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50 shadow-[1px_0_0_0_var(--reps-border)] md:w-[220px] md:min-w-[220px] md:px-5 lg:w-[32%] lg:shadow-none"
                 >
-                  {c.logo ? (
-                    <img
-                      src={c.logo}
-                      alt={c.label}
-                      style={{ height: c.logoHeight ?? 22 }}
-                      className="w-auto"
-                    />
-                  ) : (
-                    c.label
-                  )}
+                  Feature
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {GROUPS.map((group) => (
-              <React.Fragment key={group.label}>
-                <tr className="bg-reps-ink">
-                  <td
-                    colSpan={5}
-                    className="px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
-                  >
-                    {group.label}
-                  </td>
-                </tr>
-                {group.rows.map((row, ri) => (
-                  <tr
-                    key={row.feature}
-                    className={ri % 2 === 0 ? "bg-reps-panel/30" : "bg-reps-panel/10"}
-                  >
-                    <th
-                      scope="row"
-                      className="px-5 py-4 text-left text-[13.5px] font-semibold text-white/90"
-                    >
-                      {row.feature}
-                    </th>
-                    {row.cells.map((cell, ci) => (
-                      <td
-                        key={ci}
-                        className={`px-5 py-4 align-top text-[13px] ${
-                          ci === 0 ? "bg-reps-orange-soft/40" : ""
-                        }`}
-                      >
-                        <CellIcon cell={cell} highlight={ci === 0} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile: stacked per-row cards */}
-      <div className="mt-8 grid gap-4 md:hidden">
-        {ALL_ROWS.map((row) => (
-          <div
-            key={row.feature}
-            className="rounded-[16px] border border-reps-border bg-reps-panel p-4"
-          >
-            <div className="text-[13.5px] font-semibold text-white">{row.feature}</div>
-            <ul className="mt-3 space-y-2">
-              {COLS.map((c, i) => (
-                <li
-                  key={c.label}
-                  className={`flex items-start gap-2 rounded-[10px] px-3 py-2 ${
-                    i === 0 ? "bg-reps-orange-soft" : "bg-reps-ink/40"
-                  }`}
-                >
-                  <span
-                    className={`flex min-w-[88px] items-center text-[11px] font-semibold uppercase tracking-wider ${
-                      i === 0 ? "text-reps-orange" : "text-white/55"
-                    }`}
+                {COLS.map((c, i) => (
+                  <th
+                    key={c.label}
+                    scope="col"
+                    className={[
+                      "px-4 py-4 text-[13px] font-display font-bold md:px-5",
+                      i === 0
+                        ? "sticky left-[160px] z-20 w-[130px] min-w-[130px] bg-reps-orange-soft text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:shadow-none"
+                        : "min-w-[150px] text-white/80 md:min-w-[170px]",
+                    ].join(" ")}
                   >
                     {c.logo ? (
                       <img
                         src={c.logo}
                         alt={c.label}
-                        style={{ height: 14 }}
+                        style={{ height: c.logoHeight ?? 22 }}
                         className="w-auto"
                       />
                     ) : (
                       c.label
                     )}
-                  </span>
-                  <CellIcon cell={row.cells[i]} highlight={i === 0} />
-                </li>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {GROUPS.map((group) => (
+                <React.Fragment key={group.label}>
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="bg-reps-ink px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange md:px-5"
+                    >
+                      {group.label}
+                    </td>
+                  </tr>
+                  {group.rows.map((row) => (
+                    <tr key={row.feature} className="border-t border-reps-border/40">
+                      <th
+                        scope="row"
+                        className="sticky left-0 z-10 bg-reps-panel px-4 py-4 text-left text-[13px] font-semibold text-white/90 shadow-[1px_0_0_0_var(--reps-border)] md:px-5 md:text-[13.5px] lg:bg-reps-panel/30 lg:shadow-none"
+                      >
+                        {row.feature}
+                      </th>
+                      {row.cells.map((cell, ci) => (
+                        <td
+                          key={ci}
+                          className={[
+                            "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
+                            ci === 0
+                              ? "sticky left-[160px] z-10 bg-reps-orange-soft/90 shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
+                              : "bg-reps-panel/20",
+                          ].join(" ")}
+                        >
+                          <CellIcon cell={cell} highlight={ci === 0} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </React.Fragment>
               ))}
-            </ul>
-          </div>
-        ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      <p className="mt-3 text-[11px] text-white/40 lg:hidden">
+        Swipe the table to compare other platforms.
+      </p>
+
 
       <p className="mt-4 text-[11px] text-white/40">
         Comparisons reflect publicly available product information at time of writing.
