@@ -286,7 +286,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               <ul className="mt-4 space-y-3 text-[14px] text-white/80">
                 {[
                   "The public register clients already search — verified, since 2009.",
-                  "One flat plan. Payments, branded app, nutrition, AI — all included.",
+                  "Tier-based, but every feature in your tier is included. No add-on stack.",
                   "AI as the operating layer, not a $12/mo add-on.",
                   "UK-built, GDPR-first, GBP pricing, REPs credential displayed on profile.",
                 ].map((line) => (

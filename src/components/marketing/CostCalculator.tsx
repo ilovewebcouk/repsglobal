@@ -15,6 +15,7 @@ export function CostCalculator({ c }: { c: Competitor }) {
   const [clients, setClients] = useState(20);
 
   const competitorMonthly = useMemo(() => computeMonthly(c, clients), [c, clients]);
+  const repsTier = useMemo(() => pickRepsTier(clients), [clients]);
   const cur = c.currency;
 
   return (
@@ -53,8 +54,9 @@ export function CostCalculator({ c }: { c: Competitor }) {
           <p className="mt-6 text-[13px] leading-relaxed text-white/55">
             Move the slider to see how each platform&apos;s monthly bill changes
             as you grow. {c.name}&apos;s figure includes the base tier plus the
-            always-on add-ons a serious coach actually needs. REPs is one flat
-            plan — the line never moves.
+            always-on add-ons a serious coach actually needs. The REPs side
+            shows the tier you&apos;d sit on — every feature in that tier is
+            included.
           </p>
         </div>
 
@@ -92,16 +94,25 @@ export function CostCalculator({ c }: { c: Competitor }) {
           <div className="rounded-[18px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/15 to-reps-orange/[0.03] p-5">
             <div className="flex items-baseline justify-between">
               <span className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                <Sparkles className="h-3 w-3" /> REPs monthly
+                <Sparkles className="h-3 w-3" /> REPs tier
               </span>
-              <span className="text-[11px] text-white/55">Flat plan</span>
+              <span className="text-[11px] text-white/55">{repsTier.label}</span>
             </div>
             <div className="mt-2 font-display text-[40px] font-bold leading-none text-white">
-              One flat plan
+              {repsTier.price}
+              <span className="text-[14px] font-normal text-white/45">/{repsTier.unit}</span>
             </div>
             <p className="mt-3 text-[12.5px] text-white/70">
-              Everything in: register listing, payments, branded app, programmes,
-              nutrition, AI across the platform. The line never moves.
+              Every feature in the {repsTier.label} tier is included — register
+              listing, the operating system, programmes, nutrition, AI across
+              the platform. No paid add-ons sitting on top.
+            </p>
+            <p className="mt-2 text-[11px] text-white/45">
+              See the full 4-tier ladder on{" "}
+              <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">
+                /pricing
+              </a>
+              .
             </p>
           </div>
         </div>
@@ -116,6 +127,16 @@ type Computed = {
   lines: { name: string; cost: number }[];
   total: number;
 };
+
+type RepsTier = { label: string; price: string; unit: "mo" | "yr" };
+
+/** Map client count to the REPs tier that fits at this scale. */
+function pickRepsTier(clients: number): RepsTier {
+  if (clients <= 1) return { label: "Free", price: "£0", unit: "mo" };
+  if (clients <= 5) return { label: "Verified", price: "£99", unit: "yr" };
+  if (clients <= 50) return { label: "Pro", price: "£29", unit: "mo" };
+  return { label: "Business", price: "£59", unit: "mo" };
+}
 
 /** Per-competitor monthly-cost rules. */
 function computeMonthly(c: Competitor, clients: number): Computed {

@@ -4,7 +4,8 @@ import type { Competitor } from "@/data/competitor-data";
 
 /**
  * Hidden Add-Ons block — the wedge. Shows the competitor's real monthly cost
- * at three client tiers (worked example), against REPs' one flat plan.
+ * at three client tiers (worked example), against the REPs tier that fits at
+ * the same scale.
  */
 export function HiddenAddOns({ c }: { c: Competitor }) {
   return (
@@ -19,8 +20,8 @@ export function HiddenAddOns({ c }: { c: Competitor }) {
         <p className="mt-3 text-[15px] leading-relaxed text-white/65">
           The headline tier is the start. {c.name} sells {c.addOns.length} paid
           add-ons on top — things a serious coach typically needs from day one.
-          Here&apos;s the real monthly cost at three client counts, against
-          REPs&apos; one flat plan.
+          Here&apos;s the real monthly cost at three client counts, against the
+          REPs tier where every feature is already included.
         </p>
       </div>
 
@@ -57,7 +58,7 @@ export function HiddenAddOns({ c }: { c: Competitor }) {
                   <Sparkles className="h-3 w-3" /> REPs
                 </span>
                 <span className="font-display text-[15px] font-bold text-white">
-                  One plan, all-in
+                  All in your tier
                 </span>
               </div>
             </div>

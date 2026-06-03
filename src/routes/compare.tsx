@@ -9,7 +9,7 @@ import { COMPETITOR_LIST } from "@/data/competitor-data";
 const URL = "https://repsglobal.lovable.app/compare";
 const TITLE = "Personal Trainer Software UK — REPs vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-  "Compare REPs with Trainerize, MyPTHub and PT Distinction. The only UK personal trainer software that combines a verified public register, full operations, coaching delivery and AI — in one flat plan, no add-ons.";
+  "Compare REPs with Trainerize, MyPTHub and PT Distinction. The UK personal trainer software that combines a verified public register, full operations, coaching delivery and AI in a 4-tier ladder — every feature in your tier is included, no paid add-ons.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -83,8 +83,8 @@ function ComparePage() {
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
             your own clients to — then top up with paid add-ons. REPs is the
-            verified public register, plus operations, coaching and AI in one
-            flat plan with nothing sold separately.
+            verified public register, plus operations, coaching and AI across a
+            4-tier ladder — every feature in your chosen tier is included.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link

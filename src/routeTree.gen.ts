@@ -35,6 +35,7 @@ import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
+import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as BusinessToolsRouteImport } from './routes/business-tools'
@@ -228,6 +229,11 @@ const ContactRoute = ContactRouteImport.update({
 const ComplaintsRoute = ComplaintsRouteImport.update({
   id: '/complaints',
   path: '/complaints',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
+  id: '/comparison-methodology',
+  path: '/comparison-methodology',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -563,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
+  '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -655,6 +662,7 @@ export interface FileRoutesByTo {
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
+  '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -747,6 +755,7 @@ export interface FileRoutesById {
   '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
+  '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -841,6 +850,7 @@ export interface FileRouteTypes {
     | '/business-tools'
     | '/careers'
     | '/compare'
+    | '/comparison-methodology'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -933,6 +943,7 @@ export interface FileRouteTypes {
     | '/business-tools'
     | '/careers'
     | '/compare'
+    | '/comparison-methodology'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -1024,6 +1035,7 @@ export interface FileRouteTypes {
     | '/business-tools'
     | '/careers'
     | '/compare'
+    | '/comparison-methodology'
     | '/complaints'
     | '/contact'
     | '/cookies'
@@ -1117,6 +1129,7 @@ export interface RootRouteChildren {
   BusinessToolsRoute: typeof BusinessToolsRoute
   CareersRoute: typeof CareersRoute
   CompareRoute: typeof CompareRoute
+  ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ComplaintsRoute: typeof ComplaintsRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -1381,6 +1394,13 @@ declare module '@tanstack/react-router' {
       path: '/complaints'
       fullPath: '/complaints'
       preLoaderRoute: typeof ComplaintsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comparison-methodology': {
+      id: '/comparison-methodology'
+      path: '/comparison-methodology'
+      fullPath: '/comparison-methodology'
+      preLoaderRoute: typeof ComparisonMethodologyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -1866,6 +1886,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusinessToolsRoute: BusinessToolsRoute,
   CareersRoute: CareersRoute,
   CompareRoute: CompareRoute,
+  ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ComplaintsRoute: ComplaintsRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
