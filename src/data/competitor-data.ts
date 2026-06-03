@@ -119,8 +119,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     transactionFees: "Stripe Integrated Payments sold as a paid add-on",
     tiers: [
       { name: "Basic", price: "Free", clientCap: "1 client" },
-      { name: "Grow / Individual Trainer", price: "$10/mo", clientCap: "Up to 2-15 clients" },
-      { name: "Pro / Small Business", price: "$79/mo", clientCap: "Up to 30-100 clients" },
+      { name: "Grow", price: "$9/mo", clientCap: "Up to 2 clients" },
+      { name: "Pro (slider)", price: "$23/mo+", clientCap: "5 to 200 clients (slider; price scales)" },
       { name: "Studio Plus", price: "$248/mo", clientCap: "Up to 500-1,000 clients per location" },
     ],
     addOns: [
@@ -133,27 +133,27 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     workedExample: [
       {
         label: "Grow + payments + nutrition add-ons",
-        clients: 10,
-        base: 10,
+        clients: 2,
+        base: 9,
         addOnsApplied: [
           { name: "Stripe Payments add-on", cost: 10 },
           { name: "Advanced Nutrition Coaching", cost: 10 },
         ],
-        total: 30,
+        total: 29,
       },
       {
-        label: "Pro + 3 typical add-ons",
+        label: "Pro slider (~30 clients) + 3 typical add-ons",
         clients: 30,
-        base: 79,
+        base: 49,
         addOnsApplied: [
           { name: "Stripe Payments add-on", cost: 10 },
           { name: "Advanced Nutrition Coaching", cost: 10 },
           { name: "Branded App add-on", cost: 49 },
         ],
-        total: 148,
+        total: 118,
       },
       {
-        label: "Pro + 4 add-ons (full stack)",
+        label: "Pro slider (~75 clients) + 4 add-ons (full stack)",
         clients: 75,
         base: 79,
         addOnsApplied: [
@@ -186,7 +186,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "How much does Trainerize actually cost with add-ons?",
-        a: "The listed tier ($10-$248/mo) is the base. A coach with 30 clients who needs payments, nutrition coaching and a branded app typically lands at ~$148/mo once add-ons are added. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
+        a: "The listed tier ($9-$248/mo) is the base — and the Pro tier uses a client-count slider, so a coach with ~30 clients lands around $49/mo before add-ons. Once a serious coach turns on payments, nutrition coaching and a branded app, the all-in usually lands well above $100/mo. REPs Pro is £59/mo founding (was £79/mo) with the full software platform included.",
       },
       {
         q: "What's the best Trainerize alternative for UK personal trainers?",
@@ -194,7 +194,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $10/mo. REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $9/mo (Grow, up to 2 clients). REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
       },
       {
         q: "Does Trainerize include AI?",
@@ -217,8 +217,8 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
     transactionFees: "Included in base tiers",
     tiers: [
       { name: "Starter", price: "$25/mo", clientCap: "3 clients" },
-      { name: "Premium", price: "$59/mo ($29.50 annual)", clientCap: "Unlimited clients" },
-      { name: "Ultimate", price: "$215/mo ($195 annual)", clientCap: "Unlimited + 5 extra trainers" },
+      { name: "Premium", price: "$59/mo", clientCap: "Unlimited clients" },
+      { name: "Ultimate", price: "$215/mo", clientCap: "Unlimited + 5 extra trainers" },
     ],
     addOns: [
       { name: "Custom Branded App (iOS & Android)", cost: "$95 one-time" },
