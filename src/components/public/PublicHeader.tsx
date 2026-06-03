@@ -217,21 +217,8 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
             >
               <NavigationMenu.List className="flex items-center gap-7">
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(false)}>
-                    Train
-                    <ChevronDown
-                      aria-hidden="true"
-                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
-                    />
-                  </NavigationMenu.Trigger>
-                  <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <TrainMenu />
-                  </NavigationMenu.Content>
-                </NavigationMenu.Item>
-
-                <NavigationMenu.Item>
                   <NavigationMenu.Trigger className={triggerClass(active.find)}>
-                    Find a Pro
+                    Find a Professional
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
@@ -244,26 +231,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.features)}>
-                    Features
+                  <NavigationMenu.Trigger className={triggerClass(active.pros || active.features)}>
+                    For Professionals
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
                     />
-                    <ActiveDot show={active.features} />
+                    <ActiveDot show={active.pros || active.features} />
                   </NavigationMenu.Trigger>
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <FeaturesMenu />
+                    <ForProsMenu />
                   </NavigationMenu.Content>
-                </NavigationMenu.Item>
-
-                <NavigationMenu.Item>
-                  <NavigationMenu.Link asChild>
-                    <Link to="/how-it-works" className={cn(triggerClass(active.howItWorks), "px-0")}>
-                      How it works
-                      <ActiveDot show={active.howItWorks} />
-                    </Link>
-                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
@@ -278,6 +256,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <ResourcesMenu />
                   </NavigationMenu.Content>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/about"
+                      className={cn(triggerClass(false), "px-0")}
+                    >
+                      About REPs
+                    </Link>
+                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
               </NavigationMenu.List>
             </NavigationMenu.Root>
