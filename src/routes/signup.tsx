@@ -307,7 +307,7 @@ function SignupPage() {
             full_name: fullName,
             signup_kind: "professional",
             account_type:
-              search.tier === "business" || search.tier === "studio" ? "biz" : "pro",
+              search.tier === "studio" ? "biz" : "pro",
             intended_tier: search.tier ?? null,
             intended_period: search.period ?? null,
           },
