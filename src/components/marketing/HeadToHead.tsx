@@ -4,6 +4,7 @@ import { ArrowRight, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { CellIcon } from "@/components/marketing/CompetitorCompare";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { CostCalculator } from "@/components/marketing/CostCalculator";
 import { DayInTheLife } from "@/components/marketing/DayInTheLife";
 import { UiSideBySide } from "@/components/marketing/UiSideBySide";
@@ -231,7 +232,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                       scope="col"
                       className="bg-reps-orange-soft px-4 py-4 text-[13px] font-display font-bold text-reps-orange md:px-5"
                     >
-                      REPs
+                      <RepsWordmark className="h-[22px] text-reps-orange" />
                     </th>
                     <th scope="col" className="px-4 py-4 md:px-5">
                       <img
