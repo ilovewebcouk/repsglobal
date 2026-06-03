@@ -23,13 +23,6 @@ export function PricingCompare() {
 
   return (
     <div>
-      <div className="text-center">
-        <h2 className="font-display text-[32px] font-bold text-white">Compare every feature</h2>
-        <p className="mx-auto mt-3 max-w-[560px] text-[14px] text-white/65">
-          Side-by-side detail for Verified, Pro, Business and Studio. Free Profile and Enterprise sit either side.
-        </p>
-      </div>
-
       {/* Mobile tier selector */}
       <div className="-mx-6 mt-8 border-y border-reps-border bg-reps-ink/85 px-6 py-3 backdrop-blur lg:hidden">
         <div className="flex gap-2 overflow-x-auto">
