@@ -142,11 +142,17 @@ The following are explicitly out of scope until Phase 1 visuals are signed off:
 - Live maps / geocoding
 - Real search and filter logic on `/find-a-professional`, `/in/$location`, `/professions/$profession`
 - BD (REPsUK.org) data migration
+- `/compare/$competitor` per-competitor comparison routes (Trainerize, My PT Hub, PT Distinction, Kahunas, Everfit)
+- Per-AI-feature deep-dive routes (the 14 `AI_FEATURES` roll up under `/features/ai` only)
+- Promoting Features to a top-level public-header item (currently lives inside the For Professionals dropdown by design)
 
-## 9. Known visual debt
+## 9. Navigation (public header)
+
+Top-level public nav (`PublicHeader`): **Find a Professional · For Professionals · Resources · About REPs**, with right-side actions Log in · Join REPs (→ `/signup`). The **For Professionals** dropdown is the professional-side gateway and contains: Overview (`/for-professionals`), All features (`/features`), the 5 pillar pages (`/features/visibility`, `/features/operations`, `/features/coaching`, `/features/ai`, `/features/growth`), Pricing, Compare plans, Join REPs. Mobile drawer mirrors the same structure as a "For Professionals" accordion. Train-by-goal and How it works are no longer top-level items.
+
+## 10. Known visual debt
 
 - `/terms` and `/privacy` — legal copy still placeholder via `LegalShell`. Awaiting final wording before promoting to Shipped.
-- Mobile mega-menu for `PublicHeader` is deferred — header dropdowns are desktop (`lg:`) only; mobile keeps the CTA-only state until a drawer pass.
 - Final compliance audit (`reps-build-compliance` skill) should be re-run before sign-off to catch any drift in hex/radius/shadow rules across recently edited files.
 
 ## 10. Phase 2 candidates
