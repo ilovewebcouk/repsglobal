@@ -1,31 +1,99 @@
-## What's actually broken
+# Comparison hub + 3 head-to-head pages
 
-**Sticky thead doesn't pin on any breakpoint.** Per the CSS spec, `overflow: hidden` makes an element a *scroll container*, even when no scrollbar is visible. A `position: sticky` descendant pins relative to its nearest scroll container, not the viewport. The outer wrapper around the table currently uses `overflow-hidden` (to clip the rounded corners), so the thead's "scrollport" is that wrapper. The wrapper isn't tall enough to scroll vertically, so the thead never sticks — it just scrolls away with the body rows.
+## Goal
 
-**The "extra row" perception.** `PublicHeader` is `bg-reps-ink/95 backdrop-blur` (translucent). When body rows scroll under it, you see them faintly through the blur — that looks like a partial row peeking out below the header. Once the sticky thead actually pins under the header, it will sit between the body rows and the header and fully cover that ghost.
+Turn `/compare` into a credible, SEO-earning hub with three head-to-head pages (`/compare/reps-vs-trainerize`, `/compare/reps-vs-mypthub`, `/compare/reps-vs-pt-distinction`), each targeting "<competitor> alternative" / "<competitor> vs …" intent, with live-sourced pricing, client limits, and add-on costs.
 
-**The previous z-index pass was correct** (PublicHeader z-30 > thead z-20 > body sticky cells z-10) — but it doesn't matter while sticky isn't pinning at all. After this fix the z-index is what stops bleed-through during scroll.
+## The add-on angle (cuts through every page)
 
-## Fix (single file: `src/components/marketing/CompetitorCompare.tsx`)
+REPs = one price, everything included. Competitors charge extra for things trainers assume are bundled:
+- **MyPTHub**: custom branded app €95 one-time + extra trainers + white-label + Check-Ins AI = paid add-ons
+- **PT Distinction**: $6/month per extra client above 3 (a coach with 30 clients pays $19.90 + 27×$6 ≈ $182/mo)
+- **Trainerize**: branded app, premium features tiered up
 
-1. **Outer wrapper:** change `overflow-hidden` → `[overflow:clip]`. `overflow: clip` still clips children to the padding box (so the rounded corners keep working), but does NOT create a scroll container. Sticky descendants then pin to the page viewport.
+Surfaces:
+- New row in the Plans & limits strip: "What's actually included" — REPs = "Everything"; competitors = bullet list of paid add-ons
+- "Hidden add-ons" section on each head-to-head page with a worked-number example
+- Referenced in TL;DR + FAQ on each page
 
-2. **Inner wrapper:** keep `overflow-x-auto [overflow-y:clip] lg:overflow-visible` as-is. `[overflow-y:clip]` is needed to stop CSS from promoting `overflow-y: visible` → `auto` when `overflow-x: auto` is set, which would otherwise re-create a vertical scrollport on mobile/tablet. On desktop `lg:overflow-visible` overrides both axes.
+## Step 1 — Source competitor data (Firecrawl)
 
-3. **No other changes.** thead `sticky top-[72px] z-20`, sticky header cells z-20, sticky body cells z-10 all stay — they're correct once the sticky pin actually works.
+Link Firecrawl, then run a dev-only `createServerFn` that scrapes each vendor's pricing + features pages (markdown + structured JSON). Capture per tier:
+- Name, monthly + annual price, currency
+- Client cap, trainer-seat cap/cost
+- Transaction/payment fees
+- Free trial length, contract terms
+- Custom-branded app cost
+- Every paid add-on (name + cost + cadence)
+- AI features advertised
 
-## Browser support note
+Output: `src/data/competitor-data.ts` with a typed `Competitor[]` — single source of truth. Stamp "Last verified: <date>" on every page using it. Re-run manually when pricing shifts.
 
-`overflow: clip` is supported in Chrome 90+, Firefox 81+, Safari 16+ (Sep 2022). All in scope for this site.
+## Step 2 — `/compare` table updates (option B)
 
-## QA after change
+Add a **Plans & limits strip** above the existing feature table — 4 cards (REPs, Trainerize, MyPTHub, PT Distinction), each showing:
+- Starting price + currency
+- Client cap (entry tier → top tier)
+- "What's actually included" vs paid add-ons (the differentiator)
+- Custom-branded app cost
+- Free trial, transaction fee
+- One-line "best for" note
 
-- **Desktop (1318):** scroll down past the table — logo row pins flush under `PublicHeader`, no row peeks through.
-- **Tablet (768):** same vertical pinning. Scroll horizontally — Feature + REPs columns still float above the other columns inside the table.
-- **Mobile (390):** same as tablet.
-- Scroll past the bottom of the table — the sticky thead unpins and scrolls away cleanly (because the outer `[overflow:clip]` wrapper still clips it at the bottom edge of the table).
+Visual: 22px panel radius, REPs card in orange tint to match its table column below. Mobile = horizontal scroll like the table; desktop = 4-up grid. Keep the existing feature table unchanged underneath.
+
+Update footnote: "Pricing, limits and add-ons verified <date>. Source: each platform's public pricing page."
+
+Also retarget `/compare` `head()` to "personal trainer software uk" (110/mo, very easy — biggest term in scope).
+
+## Step 3 — Three head-to-head pages
+
+Routes:
+- `src/routes/compare.reps-vs-trainerize.tsx`
+- `src/routes/compare.reps-vs-mypthub.tsx`
+- `src/routes/compare.reps-vs-pt-distinction.tsx`
+
+All three render `<HeadToHeadPage competitor={...} />` from one component; content swaps via `competitor-data.ts`.
+
+Page structure:
+1. **Hero** — "REPs vs <Competitor>: which is right for UK personal trainers in 2026?" + 1-paragraph honest summary + dual-logo hero image
+2. **TL;DR card** — when REPs wins, when <competitor> wins, who each is built for
+3. **Pricing side-by-side** — REPs vs that one competitor
+4. **Hidden add-ons** — worked-number example showing real monthly cost at 10/20/30 clients
+5. **Feature parity** — `CompetitorCompare` data filtered to REPs + that competitor (2 cols)
+6. **"When <Competitor> is the right choice"** — credibility move so the page isn't a hit piece
+7. **"Why UK trainers move to REPs"** — public register, REPs credential, AI layer, replaces-6-apps
+8. **FAQ** — 4-6 Q's targeting people-also-ask phrasing
+9. **CTA**
+
+SEO per page (each `head()`):
+- `/compare/reps-vs-trainerize` — "Trainerize Alternative for UK Trainers — REPs vs Trainerize (2026)"
+- `/compare/reps-vs-mypthub` — "MyPTHub Alternative — REPs vs MyPTHub for UK PTs (2026)"
+- `/compare/reps-vs-pt-distinction` — "PT Distinction Alternative — REPs vs PT Distinction (2026)"
+- Unique `og:title`/`description`/`og:image` (the per-page hero), canonical, JSON-LD `Article` schema.
+
+## Step 4 — Hero images (one per page)
+
+`imagegen--generate_image` premium tier, 1600×900, brand-orange gradient with REPs tokens, dual-logo lockup (REPs · vs · competitor logo) + "Honest comparison for UK personal trainers". Same template across all 3 — visual consistency reinforces the series. Used as `og:image` and `twitter:image`.
+
+## Step 5 — Internal linking
+
+- `/compare` hub adds a "See head-to-head comparisons" section with 3 cards
+- Each head-to-head page cross-links to the other two + back to `/compare`
+- Add 3 new routes to `sitemap.xml`
 
 ## Out of scope
 
-- No copy, row, column, color, or layout changes.
-- No change to `PublicHeader`, `compare.tsx`, or `styles.css`.
+- No nav, footer, pricing, or homepage changes
+- No blog/CMS infra — these are evergreen comparison routes
+- No auth/DB/payments (Phase 1 lock)
+- No automated re-scrape; manual dev re-run when prices move
+
+## Technical notes
+
+- Firecrawl: server-side via `createServerFn` reading `process.env.FIRECRAWL_API_KEY`. Result baked into `src/data/competitor-data.ts` as static TS — no runtime Firecrawl calls in production.
+- New components: `src/components/marketing/PlansLimitsStrip.tsx`, `src/components/marketing/HeadToHead.tsx`, `src/components/marketing/HiddenAddOns.tsx`. Reuses existing `CompetitorCompare` with a `competitors` prop.
+- All radii per locked system; all colors via `src/styles.css` tokens.
+
+## What I need from you to start
+
+Authorise the Firecrawl connection when the picker appears.
