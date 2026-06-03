@@ -213,15 +213,21 @@ export function CompetitorCompare() {
         </p>
       </div>
 
+      {/* Mobile/tablet swipe hint — placed above the table so it's seen before scrolling */}
+      <div className="mt-8 flex items-center gap-2 text-[12px] font-medium text-white/55 lg:hidden">
+        <ChevronsRight className="h-4 w-4 text-reps-orange" aria-hidden />
+        Swipe to compare other platforms
+      </div>
+
       {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
-      <div className="mt-10 overflow-hidden rounded-[22px] border border-reps-border bg-reps-ink">
+      <div className="mt-3 overflow-hidden rounded-[22px] border border-reps-border bg-reps-ink lg:mt-10">
         <div className="overflow-x-auto lg:overflow-visible">
-          <table className="w-full min-w-[760px] border-collapse text-left lg:min-w-0">
-            <thead>
+          <table className="w-full min-w-[720px] border-collapse text-left lg:min-w-0">
+            <thead className="sticky top-0 z-30">
               <tr className="bg-reps-panel">
                 <th
                   scope="col"
-                  className="sticky left-0 z-20 w-[160px] min-w-[160px] bg-reps-panel px-4 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50 shadow-[1px_0_0_0_var(--reps-border)] md:w-[220px] md:min-w-[220px] md:px-5 lg:w-[32%] lg:shadow-none"
+                  className="sticky left-0 z-40 w-[140px] min-w-[140px] bg-reps-panel px-4 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/50 shadow-[1px_0_0_0_var(--reps-border)] md:w-[220px] md:min-w-[220px] md:px-5 lg:w-[32%] lg:shadow-none"
                 >
                   Feature
                 </th>
@@ -232,7 +238,7 @@ export function CompetitorCompare() {
                     className={[
                       "px-4 py-4 text-[13px] font-display font-bold md:px-5",
                       i === 0
-                        ? "sticky left-[160px] z-20 w-[130px] min-w-[130px] bg-reps-orange-soft text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:shadow-none"
+                        ? "sticky left-[140px] z-40 w-[110px] min-w-[110px] bg-reps-orange-soft text-reps-orange shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] md:w-[150px] md:min-w-[150px] lg:static lg:w-auto lg:min-w-0 lg:shadow-none"
                         : "min-w-[150px] text-white/80 md:min-w-[170px]",
                     ].join(" ")}
                   >
@@ -275,7 +281,7 @@ export function CompetitorCompare() {
                           className={[
                             "px-4 py-4 align-top text-[12.5px] md:px-5 md:text-[13px]",
                             ci === 0
-                              ? "sticky left-[160px] z-10 bg-reps-orange-soft/90 shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
+                              ? "sticky left-[140px] z-10 bg-reps-orange-soft/90 shadow-[1px_0_0_0_var(--reps-border),6px_0_8px_-6px_rgba(0,0,0,0.4)] md:left-[220px] lg:static lg:bg-reps-orange-soft/40 lg:shadow-none"
                               : "bg-reps-panel/20",
                           ].join(" ")}
                         >
@@ -291,9 +297,7 @@ export function CompetitorCompare() {
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] text-white/40 lg:hidden">
-        Swipe the table to compare other platforms.
-      </p>
+
 
 
       <p className="mt-4 text-[11px] text-white/40">
