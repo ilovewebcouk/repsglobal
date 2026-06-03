@@ -22,6 +22,7 @@ import {
 import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
@@ -356,9 +357,7 @@ function SignupPage() {
       <header className="relative z-30">
         <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
           <Link to="/" className="flex items-center gap-3">
-            <span className="font-display text-[34px] font-bold leading-none tracking-tight text-white">
-              REPs
-            </span>
+            <RepsWordmark className="h-[25px] text-white" />
             <span className="hidden border-l border-white/15 pl-3 text-[11px] leading-tight text-white/70 sm:block">
               The Register of
               <br />
