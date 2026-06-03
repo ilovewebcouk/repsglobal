@@ -349,12 +349,7 @@ function CellIcon({ cell, highlight }: { cell: Cell; highlight?: boolean }) {
     );
   }
   if (cell.kind === "partial") {
-    return (
-      <div className="flex items-start gap-2">
-        <span className="mt-1 h-1.5 w-3 shrink-0 rounded-full bg-reps-gold" />
-        <span className="text-white/65">{cell.note}</span>
-      </div>
-    );
+    return <span className="text-white/65">{cell.note}</span>;
   }
   return (
     <div className="flex items-start gap-2">

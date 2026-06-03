@@ -1,30 +1,11 @@
-## Pricing page: reorder sections and deduplicate heading
+## Remove partial-cell icon from CompetitorCompare
 
-### 1. Reorder sections on `/pricing`
-Swap the **PricingCompare** (plan-by-plan comparison table) and **PricingFAQ** sections so the comparison table appears **before** the FAQ.
+### Problem
+The partial-indicator `<span class="mt-1 h-1.5 w-3 shrink-0 rounded-full bg-reps-gold" />` in `CellIcon` renders as an awkward tiny oval that looks unintentional.
 
-Current order:
-- PricingPlans
-- PricingFAQ
-- PricingCompare + "Looking at other platforms?" CTA
-- Final CTA
+### Change
+In `src/components/marketing/CompetitorCompare.tsx`, update the `partial` branch of `CellIcon` so it returns only the note text — no icon.
 
-New order:
-- PricingPlans
-- PricingCompare
-- PricingFAQ
-- "Looking at other platforms?" CTA
-- Final CTA
-
-### 2. Remove duplicate heading from `PricingCompare.tsx`
-The component currently renders its own heading:
-- **"Compare every feature"** (h2, inside `PricingCompare.tsx`)
-
-The `/pricing` page already wraps the component with:
-- **"Every feature, every REPs tier."** (h2, in `pricing.tsx`)
-
-Remove the internal heading from `PricingCompare.tsx` so only the page-level heading remains. Keep the subtitle paragraph and the tier selector/table intact.
-
-### Files to touch
-- `src/routes/pricing.tsx`
-- `src/components/pricing/PricingCompare.tsx`
+### No other changes
+- No edits to `no` or `yes` branches.
+- No edits to data, layout, or other components.
