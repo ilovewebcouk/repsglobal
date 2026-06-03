@@ -12,6 +12,7 @@ export interface ProductBlockProps {
   imageLabel: string;
   ctaLabel?: string;
   ctaSlug?: FeatureLink["slug"];
+  ctaHref?: string;
   reverse?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function ProductBlock({
   imageLabel,
   ctaLabel,
   ctaSlug,
+  ctaHref,
   reverse,
 }: ProductBlockProps) {
   return (
@@ -48,14 +50,23 @@ export function ProductBlock({
             </li>
           ))}
         </ul>
-        {ctaSlug && ctaLabel && (
-          <Link
-            to="/features/$slug"
-            params={{ slug: ctaSlug }}
-            className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
-          >
-            {ctaLabel} <ArrowRight className="h-4 w-4" />
-          </Link>
+        {ctaLabel && (ctaHref || ctaSlug) && (
+          ctaHref ? (
+            <Link
+              to={ctaHref}
+              className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
+            >
+              {ctaLabel} <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <Link
+              to="/features/$slug"
+              params={{ slug: ctaSlug! }}
+              className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
+            >
+              {ctaLabel} <ArrowRight className="h-4 w-4" />
+            </Link>
+          )
         )}
       </div>
     </div>

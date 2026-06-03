@@ -23,8 +23,9 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PLANS } from "@/components/pricing/pricing-data";
-import { FEATURE_GROUPS } from "@/components/features/feature-config";
+import { FEATURES, FEATURE_GROUPS } from "@/components/features/feature-config";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
@@ -112,6 +113,51 @@ const PILLAR_ROUTES = {
   ai: "/features/ai",
   growth: "/features/growth",
 } as const;
+
+type PillarKey = keyof typeof PILLAR_ROUTES;
+
+const PILLAR_COPY: Record<
+  PillarKey,
+  { title: string; body: string; bulletSlugs?: string[] }
+> = {
+  visibility: {
+    title: "Be found. Be trusted. Be booked.",
+    body:
+      "Your verified REPs profile is the one place the public already searches for a trusted pro. Reviews on the record, qualifications checked — built to convert browsers into clients.",
+    bulletSlugs: ["profile-and-reviews"],
+  },
+  operations: {
+    title: "Run your whole practice in one place.",
+    body:
+      "Bookings, payments, leads, CRM and messaging — replaces Calendly, Stripe, Mailchimp and a CRM with one tool built for fitness. Every client, every session, every payment in one record.",
+    bulletSlugs: ["bookings", "payments", "leads"],
+  },
+  coaching: {
+    title: "Programmes, nutrition, check-ins — built for coaches.",
+    body:
+      "The Trainerize-class coaching stack, wired into the same client record as your bookings and payments. Deliver programmes with video demos and read progress at a glance.",
+    bulletSlugs: ["programmes", "check-ins", "clients"],
+  },
+  ai: {
+    title: "Not just AI features. An AI operating layer.",
+    body:
+      "Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
+  },
+  growth: {
+    title: "The one move to grow this month.",
+    body:
+      "Revenue, retention, churn risk and renewal forecasting — surfaced as a Monday-morning card, not a dashboard you have to read. Compound the practice you've built.",
+    bulletSlugs: ["insights"],
+  },
+};
+
+const AI_BULLETS = [
+  "AI Programme Writer — 12-week plans in seconds",
+  "AI Check-in Summariser — six check-ins read for you",
+  "Weekly Next Move — the single highest-leverage action",
+];
+
+
 
 function useScrolledPast(threshold: number) {
   const [past, setPast] = useState(false);
@@ -249,31 +295,29 @@ function ForProsPage() {
             <ReplacesStrip />
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-            {FEATURE_GROUPS.map((g) => (
-              <Link
-                key={g.key}
-                to={PILLAR_ROUTES[g.key]}
-                className={
-                  g.highlight
-                    ? "group flex h-full flex-col rounded-[18px] border border-reps-orange-border bg-reps-orange-soft p-6 transition-colors hover:border-reps-orange"
-                    : "group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border"
-                }
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <g.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 font-display text-[17px] font-bold text-white group-hover:text-reps-orange">
-                  {g.label}
-                </h3>
-                <p className="mt-2 flex-1 text-[13px] leading-relaxed text-white/70">
-                  {g.desc}
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-[12.5px] font-semibold text-reps-orange">
-                  Explore <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-            ))}
+          <div className="mt-16 space-y-20 lg:mt-20 lg:space-y-28">
+            {FEATURE_GROUPS.map((g, i) => {
+              const copy = PILLAR_COPY[g.key];
+              const bullets =
+                g.key === "ai"
+                  ? AI_BULLETS
+                  : (copy.bulletSlugs ?? [])
+                      .map((slug) => FEATURES.find((f) => f.slug === slug)?.label)
+                      .filter((x): x is string => Boolean(x));
+              return (
+                <ProductBlock
+                  key={g.key}
+                  eyebrow={g.label}
+                  title={copy.title}
+                  body={copy.body}
+                  bullets={bullets}
+                  imageLabel={`${g.label} mockup`}
+                  ctaLabel={`Explore ${g.label}`}
+                  ctaHref={PILLAR_ROUTES[g.key]}
+                  reverse={i % 2 === 1}
+                />
+              );
+            })}
           </div>
         </div>
       </section>
