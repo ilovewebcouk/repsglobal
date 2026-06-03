@@ -1,6 +1,6 @@
 # 07 — Phase 1 Build Status
 
-> **Snapshot date:** 1 June 2026
+> **Snapshot date:** 3 June 2026
 > **Scope reminder:** Phase 1 = static high-fidelity screens only. No auth wiring, RLS, DB writes, payments, bookings, AI, live maps, real search/filter logic, or BD migration. Visuals must reference the six locked mock-ups in `src/mockups/reps_fullpage_*_v1.png`.
 
 Status legend:
@@ -18,7 +18,9 @@ Status legend:
 | `/` | Shipped | Locked homepage hero + search panel + marketplace blocks. |
 | `/about` | Shipped | |
 | `/how-it-works` | Shipped | |
-| `/for-professionals` | Shipped | |
+| `/for-professionals` | Shipped (rebuilt) | Two-act narrative: Act 1 (the register) via `RegisterProof` + `ActIntro`, Act 2 (the operating system) via 8 `ProductBlock` stories covering Leads, Bookings & Payments, Clients CRM, AI Programme Builder, Nutrition (replaces MyFitnessPal), Check-ins, Messaging, Insights. Plus `ReplacesStrip` (six apps REPs replaces), `AICapabilities` tiles, and `CompetitorCompare` table with real Trainerize / MyPTHub / PT Distinction logos (`src/assets/logos/*.svg.asset.json`). |
+| `/features` | Shipped | Hub page listing the 9 feature deep-dives from `feature-config.ts`, grouped by Visibility / Operations / Growth. |
+| `/features/$slug` | Shipped | Per-feature deep-dive pages driven by `feature-config.ts` + `feature-content.tsx` via `FeaturePageLayout`. |
 | `/pricing` | Shipped | Founding Business + tiered plans. **Student tier removed** from Phase 1. |
 | `/find-a-professional` | Shipped | Static directory results, no real search logic (deferred). |
 | `/in/$location` | Shipped | Location landing pages, static data. |
