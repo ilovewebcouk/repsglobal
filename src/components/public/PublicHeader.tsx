@@ -24,6 +24,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import repsWordmark from "@/assets/logos/reps-wordmark-white.svg.asset.json";
 import {
   Accordion,
   AccordionItem,
