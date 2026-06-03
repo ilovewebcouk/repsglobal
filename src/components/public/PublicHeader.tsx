@@ -632,13 +632,6 @@ function ForProsMenu() {
             </li>
             <li>
               <NavigationMenu.Link asChild>
-                <Link to="/features" className={menuItemClass}>
-                  All features
-                </Link>
-              </NavigationMenu.Link>
-            </li>
-            <li>
-              <NavigationMenu.Link asChild>
                 <Link to="/pricing" className={menuItemClass}>
                   Pricing
                 </Link>
@@ -968,11 +961,6 @@ function MobileDrawer({
                     className={cn(mobileSubLinkClass, "font-semibold text-white")}
                   >
                     Overview
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/features" onClick={onNavigate} className={mobileSubLinkClass}>
-                    All features
                   </Link>
                 </li>
                 <li>
