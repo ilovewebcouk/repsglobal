@@ -71,7 +71,7 @@ export function PillarPage({
           alt={heroBgAlt}
           width={1920}
           height={1280}
-          className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
+          className="absolute inset-0 h-full w-full object-cover object-top lg:object-right-top"
         />
 
         {/* Legibility wash — lighter so the subject breathes */}
