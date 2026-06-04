@@ -164,29 +164,29 @@ function ForProsPage() {
               {/* Hairline divider — sits closer to press row to bind them together */}
               <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
 
-              {/* Press as quiet supporting row — normalised cells, no orphan */}
-              <div className="relative px-6 pb-8 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
+              {/* Press as typographic wordmark row — consistent, controlled */}
+              <div className="relative px-6 pb-9 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
                 <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
                   As featured in
                 </p>
-                <div className="mt-5 grid grid-cols-3 items-center gap-x-4 gap-y-6 sm:gap-x-8 lg:grid-cols-6 lg:gap-x-6">
-                  {PRESS.map((p) => (
-                    <Link
-                      key={p.name}
-                      to="/press"
-                      aria-label={`${p.name} — see press coverage`}
-                      className="group flex h-9 items-center justify-center"
-                    >
-                      <img
-                        src={p.url}
-                        alt={p.name}
-                        className="max-h-6 w-auto max-w-[110px] object-contain brightness-0 invert opacity-60 transition group-hover:opacity-95 lg:max-h-7 lg:max-w-[120px]"
-                        loading="lazy"
-                      />
-                    </Link>
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
+                  {PRESS.map((p, i) => (
+                    <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
+                      {i > 0 ? (
+                        <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
+                      ) : null}
+                      <Link
+                        to="/press"
+                        aria-label={`${p.name} — see press coverage`}
+                        className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/55 transition hover:text-white lg:text-[13px]"
+                      >
+                        {p.name}
+                      </Link>
+                    </span>
                   ))}
                 </div>
               </div>
+
 
             </div>
           </div>
