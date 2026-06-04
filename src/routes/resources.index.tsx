@@ -65,7 +65,7 @@ function ResourcesPage() {
     });
   const clearFilters = () => navigate({ search: () => ({}), replace: true });
 
-  const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
+  const featured = getHeroFeatured();
   const isFiltering = filter !== "All" || query.trim().length > 0;
 
   const counts = useMemo(() => {
