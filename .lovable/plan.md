@@ -1,54 +1,57 @@
 
-# Coaching pillar — match Operations/Visibility photo hero
+# AI pillar — same cinematic photo hero, fresh subject
 
-Mirror the treatment we just shipped on `/features/operations` and `/features/visibility`, with a fresh subject so the heroes stop reading as "middle-aged white guys, three in a row."
+Match the Coaching/Visibility/Operations treatment on `/features/ai` with a hero that visually says "AI in the hands of a real coach," not stock-photo robotics.
 
-## 1. Generate `src/assets/hero-coaching-bg.jpg`
+## 1. Generate `src/assets/hero-ai-bg.jpg`
 
-Premium tier, 1920×1280, same cinematic grade as the other two heroes (cool blue-grey shadows, warm tungsten highlights, dusk / golden-hour light, shallow DoF).
+Premium tier, 1920×1280, same cinematic grade as the other three heroes (cool blue-grey shadows, warm tungsten highlights, dusk light, shallow DoF, 35mm f/2 feel).
 
-**Subject — explicit diversity brief** (pick the strongest in generation; we'll regenerate if needed):
-- A Black female coach, mid-30s, demoing a kettlebell or TRX cue to a client — OR
-- A South-Asian male coach checking a client's tablet-based programme on the gym floor — OR
-- An East-Asian female strength coach spotting a barbell lift.
+**Subject — keep the diversity rotation going** (so far: white male × 2 / Black female; AI gets a different again):
+- A **South-Asian male coach, late 20s/early 30s**, on the gym floor reviewing an AI-drafted programme on a tablet — soft orange glow from the screen lighting his face. Plate-loaded rack and a defocused client behind him.
 
-**Composition:** coach anchored in the **right third** (so left two-thirds keep clean negative space for the white/orange H1 + sub + CTAs). Client(s) optional, slightly out of focus.
+**Composition:** coach anchored in the **right third** (matches `object-right` on lg), left two-thirds = clean negative space for the white/orange H1. Tablet held at chest height, angled so the screen casts a believable orange/amber ambient glow on his polo and jaw — the "AI is here, in the room" cue.
 
-**REPs branding in-shot (both, where it reads naturally):**
-- **"REPS"** wordmark (ALL CAPS, matching the site logo) on the coach's polo/T-shirt — small left-chest for this editorial framing.
-- A **"REPS"** wall mark in the gym background (frosted vinyl on glass, painted concrete, or backlit sign) — same all-caps logo, softly defocused. This is the "REPs gym" cue the user asked for, like the operations shot.
+**REPs branding (both):**
+- **"REPS"** ALL CAPS, white embroidery, small left-chest on a charcoal performance polo.
+- A defocused **"REPS"** wall mark in the background (frosted vinyl or backlit signage) — same all-caps treatment.
 
-Upload via `lovable-assets create` → write `src/assets/hero-coaching-bg.jpg.asset.json`.
+**No on-screen UI text on the tablet** (avoid model garble). Just a warm orange glow leaking from the bezel — implies the AI without trying to render a real interface.
 
-## 2. Rewrite `src/routes/features.coaching.tsx`
+Upload via `lovable-assets create` → write `src/assets/hero-ai-bg.jpg.asset.json`.
 
-Drop `ProgrammesMockup` / `visual` prop. Switch to the photo-hero branch of `FeatureGroupLayout`:
+## 2. Refactor `src/routes/features.ai.tsx`
 
-- `heroLead`: **"Not just programmes."**
-- `heroAccent`: **"The coaching stack your clients actually stick to."**
-- `heroImage`: `{ src: heroCoaching.url, alt: "REPs-verified coach delivering a session on the gym floor" }`
+Currently uses `FeatureGroupLayout` with `visual={<InsightsMockup />}` AND custom children sections. We keep the children (narrative cards, 14-item grid, mini-compare) untouched — only swap the hero.
 
-(Alternates if the user prefers a different angle — pick one in build mode:
-- "Not just workouts." / "A coaching system that keeps clients showing up."
-- "Not just an app." / "Programmes, nutrition and check-ins, wired to the client.")
+Changes:
+- Drop `InsightsMockup` import + `visual` prop.
+- Add `heroImage`, `heroLead`, `heroAccent`:
+  - `heroLead`: **"Not just AI features."**
+  - `heroAccent`: **"An AI operating layer for your whole business."**
+  - (This echoes the page's existing H2 narrative — reinforces, not duplicates.)
+- Add `{ property: "og:image", content: heroAi.url }` to meta.
 
-Press marquee comes for free — `FeatureGroupLayout` already renders `<PressMarquee />` whenever the photo-hero branch is active.
+Press marquee renders automatically (FeatureGroupLayout already gates it on the photo-hero branch).
 
 ## 3. QA
 
-Screenshot `/features/coaching`:
-- Coach visible to the right, copy column clean on the left.
-- "REPS" (all-caps) legible on the garment AND in the background.
-- Subject reads as **not** another white male — if generation drifts, regenerate (up to 2 retries) with a tighter ethnicity/gender prompt.
-- Hero grade matches operations + visibility.
+Screenshot `/features/ai`:
+- Coach visible right, copy clean left.
+- Orange screen-glow reads as AI, not "guy on phone."
+- "REPS" all-caps on polo + wall, both legible.
+- Subject is NOT a white male and NOT a Black female (rotation working).
+- Press marquee present under the hero. Narrative / grid / compare sections still intact below.
+
+If the generated image lands wrong (head crop, screen-glow not believable, REPS mis-spelled), regenerate up to 2× with tightened prompt before falling back to a different angle.
 
 ## Out of scope
 
-- AI and Growth pillars (separate turns).
-- Any layout, feature-grid, CTA, or cross-link changes — only the hero swap on coaching.
-- No copy changes elsewhere on the page.
+- Growth pillar (next turn).
+- Narrative cards, 14-item AI grid, mini-comparison table, CTA — no copy or layout changes there.
+- No changes to `FeatureGroupLayout` (already supports the photo-hero branch).
 
 ## Files touched
 
-- `src/assets/hero-coaching-bg.jpg.asset.json` — new
-- `src/routes/features.coaching.tsx` — rewritten hero block, removes `ProgrammesMockup` import
+- `src/assets/hero-ai-bg.jpg.asset.json` — new
+- `src/routes/features.ai.tsx` — hero swap + og:image, remove `InsightsMockup` import
