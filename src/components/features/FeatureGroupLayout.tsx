@@ -4,6 +4,7 @@ import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 import {
   FEATURES,
   FEATURE_GROUPS,
