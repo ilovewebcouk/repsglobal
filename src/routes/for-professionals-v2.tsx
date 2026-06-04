@@ -78,45 +78,54 @@ function ForProsV2Page() {
       <PublicHeader variant="solid" />
       <StickyCtaPill />
 
-      {/* HERO — tighter */}
+      {/* HERO — split with device cluster */}
       <section className="relative overflow-hidden border-b border-reps-border">
-        <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
+        <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/85 via-reps-ink/92 to-reps-ink" />
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(55%_55%_at_25%_30%,rgba(255,122,0,0.22),transparent_70%)]"
+          className="absolute inset-0 bg-[radial-gradient(55%_55%_at_20%_30%,rgba(255,122,0,0.22),transparent_70%)]"
         />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-32">
-          <div className="max-w-[820px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[12px] font-semibold text-white/80 backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> For professionals
-            </span>
-            <h1 className="mt-6 font-display text-[48px] font-bold leading-[1.02] text-white lg:text-[76px]">
-              Not just software.
-              <br />
-              <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
-            </h1>
-            <p className="mt-6 max-w-[640px] text-[17px] leading-relaxed text-white/75">
-              REPs has been the fitness industry's verified register since 2009. Now it's also
-              the operating system that runs your practice — programmes drafted, check-ins
-              summarised, leads scored, risks flagged, next moves ranked.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/pricing"
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
-              >
-                See pricing & join <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/compare"
-                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
-              >
-                Compare with Trainerize
-              </Link>
+        <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
+            {/* Left: copy */}
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
+              </span>
+              <h1 className="mt-6 font-display text-[44px] font-bold leading-[1.05] text-white lg:text-[64px]">
+                Not just software.
+                <br />
+                <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
+              </h1>
+              <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
+                REPs is built for fitness professionals who want to get found, win more
+                clients, deliver better coaching and grow a sustainable business. One
+                platform. Every tool. Powered by AI.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+                >
+                  Join REPs today <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/features"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
+                >
+                  Explore the platform
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: device cluster — hidden on small screens */}
+            <div className="relative hidden md:block">
+              <HeroDeviceCluster />
             </div>
           </div>
         </div>
+
         {/* Trust strip */}
         <div className="relative border-t border-reps-border/60 bg-reps-ink/60 backdrop-blur">
           <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-5 text-[12.5px] text-white/65 sm:grid-cols-4 lg:px-10">
