@@ -104,7 +104,7 @@ function ForProsPage() {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
         <div className="relative mx-auto max-w-[1320px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
+          <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             {/* Left: copy */}
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
