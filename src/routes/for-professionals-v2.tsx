@@ -29,6 +29,8 @@ import { WeekWithReps } from "@/components/marketing/WeekWithReps";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
+import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
+import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
