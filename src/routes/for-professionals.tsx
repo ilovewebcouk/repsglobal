@@ -2,19 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ArrowRight,
+  BadgeCheck,
   Brain,
+  Check,
   ClipboardCheck,
   Dumbbell,
   Eye,
   PenTool,
   ScanLine,
   Settings2,
-  
   Sparkles,
   Star,
   TrendingUp,
   Wand2,
-
+  Zap,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -107,20 +108,32 @@ function ForProsPage() {
           <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             {/* Left: copy */}
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
+              <span
+                className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
+                style={{ animationDuration: "560ms", animationFillMode: "both" }}
+              >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
               </span>
-              <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
+              <h1
+                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
+                style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+              >
                 Not just software.
                 <br />
                 <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
               </h1>
-              <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
+              <p
+                className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
+                style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+              >
                 REPs is built for fitness professionals who want to get found, win more
                 clients, deliver better coaching and grow a sustainable business. One
                 platform. Every tool. Powered by AI.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div
+                className="mt-8 flex animate-fade-in flex-wrap gap-3"
+                style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+              >
                 <Link
                   to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
@@ -134,6 +147,23 @@ function ForProsPage() {
                   Explore features
                 </Link>
               </div>
+              <ul
+                className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
+                style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+              >
+                <li className="inline-flex items-center gap-1.5">
+                  <BadgeCheck className="h-4 w-4 text-reps-orange" />
+                  Verified credentials
+                </li>
+                <li className="inline-flex items-center gap-1.5">
+                  <Zap className="h-4 w-4 text-reps-orange" />
+                  10-minute setup
+                </li>
+                <li className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-reps-orange" />
+                  Every feature included — no add-ons
+                </li>
+              </ul>
             </div>
 
             {/* Right: device cluster — hidden on small screens */}
