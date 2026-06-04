@@ -7,11 +7,22 @@ export function AiCommandCentreMock() {
     <div className="relative">
       <div
         aria-hidden
-        className="absolute -inset-8 rounded-[24px] bg-[radial-gradient(60%_50%_at_50%_30%,rgba(255,122,0,0.18),transparent_70%)] blur-xl"
+        className="absolute -inset-10 rounded-[24px] bg-[radial-gradient(60%_50%_at_50%_30%,rgba(255,122,0,0.26),transparent_70%)] blur-2xl"
       />
-      <div className="relative grid gap-4">
+      <div className="relative rounded-[22px] border border-reps-border bg-reps-panel/50 p-4 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.7)] lg:p-5">
+        {/* OS chrome strip */}
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-reps-orange shadow-[0_0_8px_rgba(255,122,0,0.8)]" />
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/70">
+              REPs AI · Live
+            </span>
+          </div>
+          <span className="text-[10.5px] text-white/40">Mon 09:14</span>
+        </div>
+        <div className="grid gap-4">
         {/* Next Move card — primary */}
-        <div className="rounded-[18px] border border-reps-orange-border bg-gradient-to-br from-reps-orange-soft to-reps-panel p-5 shadow-[0_20px_60px_-30px_rgba(255,122,0,0.5)]">
+        <div className="rounded-[18px] border border-reps-orange-border bg-gradient-to-br from-reps-orange-soft to-reps-panel p-6 shadow-[0_20px_60px_-30px_rgba(255,122,0,0.5)]">
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
             <Sparkles className="h-3.5 w-3.5" /> Next Move · Monday
           </div>
@@ -54,7 +65,9 @@ export function AiCommandCentreMock() {
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   );
 }
+

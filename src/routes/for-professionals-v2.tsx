@@ -29,6 +29,8 @@ import { WeekWithReps } from "@/components/marketing/WeekWithReps";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
+import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
+import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 
 import heroTrainer from "@/assets/hero-trainer.jpg";
 import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
@@ -152,7 +154,7 @@ function ForProsV2Page() {
 
       {/* ACT 1 — REGISTER */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Act 1 · Get clients
@@ -171,7 +173,7 @@ function ForProsV2Page() {
 
       {/* VISIBILITY SHOWCASE */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Verified profile"
             title="Become the obvious choice in your area."
@@ -192,7 +194,7 @@ function ForProsV2Page() {
 
       {/* ACT 2 — PILLARS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Act 2 · Run your practice
@@ -211,7 +213,7 @@ function ForProsV2Page() {
 
       {/* PILLAR 1 — LEADS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 1 · Leads CRM"
             title="Stop losing the clients you've already won."
@@ -232,7 +234,7 @@ function ForProsV2Page() {
 
       {/* PILLAR 2 — COACHING (TABBED) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Pillar 2 · Coaching
@@ -247,14 +249,14 @@ function ForProsV2Page() {
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
           <TestimonialFeature />
         </div>
       </section>
 
       {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 3 · Bookings & payments"
             title="Your schedule and your revenue, in one place."
@@ -276,7 +278,7 @@ function ForProsV2Page() {
 
       {/* PILLAR 4 — CLIENT PORTAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 4 · Client portal"
             title="The app your clients tell their friends about."
@@ -297,7 +299,7 @@ function ForProsV2Page() {
 
       {/* COMPARISON */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mx-auto mb-10 max-w-[680px] text-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               The honest comparison
@@ -310,20 +312,42 @@ function ForProsV2Page() {
         </div>
       </section>
 
-      {/* TRIAD TESTIMONIALS */}
+      {/* REPLACED STACK + TRIAD TESTIMONIALS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
-          <div className="mb-10 max-w-[640px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Loved by working pros
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              Coaches who replaced the stack.
-            </h2>
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+          <ReplacedStackBoard />
+          <div className="mt-14">
+            <div className="mb-8 max-w-[640px]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+                Loved by working pros
+              </span>
+              <h3 className="mt-3 font-display text-[24px] font-bold text-white lg:text-[30px]">
+                Coaches who made the switch.
+              </h3>
+            </div>
+            <TestimonialTriad />
           </div>
-          <TestimonialTriad />
         </div>
       </section>
+
+      {/* USE CASES */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="mb-10 max-w-[680px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Who it's for
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Built for every serious fitness professional.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              One platform, three ways to run a fitness business. Pick the shape that fits you.
+            </p>
+          </div>
+          <UseCaseTriad />
+        </div>
+      </section>
+
 
       {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
@@ -368,7 +392,7 @@ function ForProsV2Page() {
 
       {/* A WEEK WITH REPS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               A week with REPs
@@ -386,7 +410,7 @@ function ForProsV2Page() {
 
       {/* FAQ */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[820px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>
             <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
@@ -399,7 +423,7 @@ function ForProsV2Page() {
 
       {/* FINAL CTA */}
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 text-center lg:p-16">
             <div
               aria-hidden
