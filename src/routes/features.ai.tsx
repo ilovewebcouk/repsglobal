@@ -16,8 +16,8 @@ import {
   FeatureGroupLayout,
   AINarrativeCard,
 } from "@/components/features/FeatureGroupLayout";
-import { InsightsMockup } from "@/components/mockups/PlatformMockups";
 import { AI_FEATURES } from "@/components/features/feature-config";
+import heroAi from "@/assets/hero-ai-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/ai")({
   head: () => ({
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/features/ai")({
         property: "og:description",
         content: "Not just AI features. An AI operating layer for your fitness business.",
       },
+      { property: "og:image", content: heroAi.url },
       { property: "og:url", content: "https://repsglobal.lovable.app/features/ai" },
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/ai" }],
@@ -86,7 +87,12 @@ function AIGroupPage() {
   return (
     <FeatureGroupLayout
       groupKey="ai"
-      visual={<InsightsMockup />}
+      heroLead="Not just AI features."
+      heroAccent="An AI operating layer for your whole business."
+      heroImage={{
+        src: heroAi.url,
+        alt: "REPs-verified coach reviewing an AI-drafted programme on a tablet at a premium boutique gym at dusk",
+      }}
     >
       {/* NARRATIVE — 6 cards */}
       <section className="border-b border-reps-border">
