@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { FeatureGroupLayout } from "@/components/features/FeatureGroupLayout";
-import { InsightsMockup } from "@/components/mockups/PlatformMockups";
+import heroGrowth from "@/assets/hero-growth-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/growth")({
   head: () => ({
@@ -17,9 +17,20 @@ export const Route = createFileRoute("/features/growth")({
         property: "og:description",
         content: "The one move to grow this month — ranked by impact.",
       },
+      { property: "og:image", content: heroGrowth.url },
       { property: "og:url", content: "https://repsglobal.lovable.app/features/growth" },
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/growth" }],
   }),
-  component: () => <FeatureGroupLayout groupKey="growth" visual={<InsightsMockup />} />,
+  component: () => (
+    <FeatureGroupLayout
+      groupKey="growth"
+      heroLead="Not just a dashboard."
+      heroAccent="The single move to grow your business this month."
+      heroImage={{
+        src: heroGrowth.url,
+        alt: "REPs-verified studio owner standing in the doorway of her boutique studio at dusk",
+      }}
+    />
+  ),
 });
