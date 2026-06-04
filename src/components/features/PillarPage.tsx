@@ -89,7 +89,7 @@ export function PillarPage({
         {/* Floor seal — smooth resolve into the press marquee */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent via-reps-ink/35 to-reps-ink lg:h-32 lg:via-reps-ink/45"
         />
 
         <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
