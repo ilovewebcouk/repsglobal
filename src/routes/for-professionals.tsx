@@ -13,9 +13,8 @@ import {
   Sparkles,
   Star,
   TrendingUp,
-  Users,
   Wand2,
-  Calendar,
+
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
