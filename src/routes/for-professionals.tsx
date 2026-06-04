@@ -156,38 +156,38 @@ function ForProsPage() {
                 <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
                   Trusted since <span className="text-reps-orange">2009</span>.
                 </h2>
-                <p className="mx-auto mt-4 max-w-[560px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
-                  The register the public already searches when they&apos;re looking
-                  for a qualified fitness pro — now with the tools to run the whole practice.
+                <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
+                  The register the public already searches for a qualified fitness pro.
                 </p>
               </div>
 
-              {/* Hairline divider */}
+              {/* Hairline divider — sits closer to press row to bind them together */}
               <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
 
-              {/* Press as quiet supporting row */}
-              <div className="relative px-6 py-8 lg:px-10 lg:py-10">
-                <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">
+              {/* Press as quiet supporting row — normalised cells, no orphan */}
+              <div className="relative px-6 pb-8 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
+                <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
                   As featured in
                 </p>
-                <div className="mt-5 grid grid-cols-2 items-center justify-items-center gap-x-8 gap-y-6 sm:grid-cols-3 lg:flex lg:flex-wrap lg:justify-center lg:gap-x-12">
+                <div className="mt-5 grid grid-cols-3 items-center gap-x-4 gap-y-6 sm:gap-x-8 lg:grid-cols-6 lg:gap-x-6">
                   {PRESS.map((p) => (
                     <Link
                       key={p.name}
                       to="/press"
                       aria-label={`${p.name} — see press coverage`}
-                      className="group inline-flex items-center"
+                      className="group flex h-9 items-center justify-center"
                     >
                       <img
                         src={p.url}
                         alt={p.name}
-                        className="h-7 w-auto brightness-0 invert opacity-70 transition group-hover:opacity-100 lg:h-8"
+                        className="max-h-6 w-auto max-w-[110px] object-contain brightness-0 invert opacity-60 transition group-hover:opacity-95 lg:max-h-7 lg:max-w-[120px]"
                         loading="lazy"
                       />
                     </Link>
                   ))}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
