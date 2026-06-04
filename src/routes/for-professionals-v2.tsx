@@ -287,7 +287,7 @@ function ForProsV2Page() {
             body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
             bullets={[
               "Calendar with availability and session types",
-              "Stripe-powered payments and subscriptions — no per-booking commission, ever",
+              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
               "Live revenue, paid, pending and overdue",
               "Per-client invoice and payment history",
             ]}
