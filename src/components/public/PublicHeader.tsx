@@ -82,15 +82,31 @@ function useActive() {
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
       pathname.startsWith("/in/") ||
-      pathname.startsWith("/pro/"),
+      pathname.startsWith("/pro/") ||
+      pathname.startsWith("/how-it-works"),
     resources:
-      pathname.startsWith("/resources") ||
-      pathname.startsWith("/standards") ||
-      pathname.startsWith("/verify") ||
-      pathname.startsWith("/help"),
+      pathname === "/resources" || pathname.startsWith("/resources/"),
     howItWorks: pathname.startsWith("/how-it-works"),
     features: pathname.startsWith("/features"),
-    pros: pathname.startsWith("/for-professionals"),
+    pros:
+      pathname.startsWith("/for-professionals") ||
+      pathname.startsWith("/features") ||
+      pathname.startsWith("/pricing") ||
+      pathname.startsWith("/compare") ||
+      pathname.startsWith("/cpd") ||
+      pathname.startsWith("/specialisms") ||
+      pathname.startsWith("/signup"),
+    about:
+      pathname.startsWith("/about") ||
+      pathname.startsWith("/standards") ||
+      pathname.startsWith("/verify") ||
+      pathname.startsWith("/help") ||
+      pathname.startsWith("/faq") ||
+      pathname.startsWith("/careers") ||
+      pathname.startsWith("/press") ||
+      pathname.startsWith("/contact") ||
+      pathname.startsWith("/reviews") ||
+      pathname.startsWith("/complaints"),
   };
 }
 
