@@ -54,8 +54,11 @@ export const ABOUT_LINKS = [
 
 export const RESOURCE_TOPICS: { category: string; label: string }[] = [
   { category: "Find a Professional", label: "Find a Professional" },
-  { category: "Fitness Business", label: "Fitness Business" },
   { category: "Verification & Standards", label: "Verification & Standards" },
+  { category: "Coaching & Client Management", label: "Coaching & Clients" },
+  { category: "Fitness Business", label: "Fitness Business" },
+  { category: "CPD & Education", label: "CPD & Education" },
+  { category: "Platform Updates", label: "Platform Updates" },
 ];
 
 export const RESOURCE_QUICK_LINKS = [
