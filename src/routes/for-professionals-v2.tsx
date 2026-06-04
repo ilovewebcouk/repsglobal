@@ -232,6 +232,7 @@ function ForProsV2Page() {
               </div>
             ))}
           </div>
+        </div>
       </section>
 
       {/* PILLAR 1 — LEADS */}
