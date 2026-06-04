@@ -61,7 +61,7 @@ export const Route = createFileRoute("/for-professionals")({
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" }],
   }),
-  component: ForProsV2Page,
+  component: ForProsPage,
 });
 
 const PRESS = [
@@ -82,7 +82,7 @@ const AI_CAPS = [
   { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
 ];
 
-function ForProsV2Page() {
+function ForProsPage() {
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
