@@ -103,7 +103,7 @@ function ForProsPage() {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
-        <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
+        <div className="relative mx-auto max-w-[1320px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             {/* Left: copy */}
             <div>
@@ -151,7 +151,7 @@ function ForProsPage() {
       {/* ACT 1 — REGISTER */}
       <section className="border-b border-reps-border bg-reps-ink">
 
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Act 1 · Get clients
@@ -170,7 +170,7 @@ function ForProsPage() {
 
       {/* VISIBILITY SHOWCASE */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Verified profile"
             title="Become the obvious choice in your area."
@@ -191,7 +191,7 @@ function ForProsPage() {
 
       {/* ACT 2 — PILLARS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Act 2 · Run your practice
@@ -231,7 +231,7 @@ function ForProsPage() {
 
       {/* PILLAR 1 — LEADS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 1 · Leads CRM"
             title="Stop losing the clients you've already won."
@@ -252,7 +252,7 @@ function ForProsPage() {
 
       {/* PILLAR 2 — COACHING (TABBED) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Pillar 2 · Coaching
@@ -267,14 +267,14 @@ function ForProsPage() {
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
           <TestimonialFeature />
         </div>
       </section>
 
       {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 3 · Bookings & payments"
             title="Your schedule and your revenue, in one place."
@@ -296,7 +296,7 @@ function ForProsPage() {
 
       {/* PILLAR 4 — CLIENT PORTAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 4 · Client portal"
             title="The app your clients tell their friends about."
@@ -317,7 +317,7 @@ function ForProsPage() {
 
       {/* COMPARISON */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mx-auto mb-10 max-w-[680px] text-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               The honest comparison
@@ -332,7 +332,7 @@ function ForProsPage() {
 
       {/* REPLACED STACK + TRIAD TESTIMONIALS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ReplacedStackBoard />
           <div className="mt-14">
             <div className="mb-8 max-w-[640px]">
@@ -350,7 +350,7 @@ function ForProsPage() {
 
       {/* USE CASES */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Who it's for
@@ -373,7 +373,7 @@ function ForProsPage() {
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(55%_50%_at_75%_40%,rgba(255,122,0,0.12),transparent_70%)]"
         />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
@@ -417,7 +417,7 @@ function ForProsPage() {
 
       {/* A WEEK WITH REPS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               A week with REPs
@@ -448,7 +448,7 @@ function ForProsPage() {
 
       {/* FINAL CTA */}
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 text-center lg:p-16">
             <div
               aria-hidden

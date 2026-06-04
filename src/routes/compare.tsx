@@ -73,7 +73,7 @@ function ComparePage() {
 
       <section className="relative overflow-hidden border-b border-reps-border">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-20 text-center lg:px-10 lg:py-24">
+        <div className="relative mx-auto max-w-[1320px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Personal trainer software · UK
           </span>
@@ -105,14 +105,14 @@ function ComparePage() {
       </section>
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <CompetitorCompare />
         </div>
       </section>
 
       {/* Head-to-head cards — links into each /compare/reps-vs-* page */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Head-to-head
@@ -158,7 +158,7 @@ function ComparePage() {
       </section>
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Where REPs is different
@@ -192,7 +192,7 @@ function ComparePage() {
       </section>
 
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
               Ready to switch?

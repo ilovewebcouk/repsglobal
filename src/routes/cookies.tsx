@@ -26,7 +26,7 @@ function CookiesPage() {
     <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
       <div className="bg-reps-ink text-reps-text">
         <PublicHeader variant="solid" />
-        <div className="mx-auto max-w-[1240px] px-6 pb-14 pt-10 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-10 lg:px-10">
           <span className="inline-flex items-center rounded-full bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-orange">
             Legal
           </span>

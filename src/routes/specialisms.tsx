@@ -39,7 +39,7 @@ function SpecialismsPage() {
       <section className="relative overflow-hidden border-b border-reps-border">
         <img src={heroGym} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-32">
+        <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Specialisms
           </span>
@@ -54,7 +54,7 @@ function SpecialismsPage() {
       </section>
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {SPECIALISMS.map((s) => (
               <Link

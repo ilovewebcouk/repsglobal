@@ -96,7 +96,7 @@ function AIGroupPage() {
     >
       {/* NARRATIVE — 6 cards */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
               <Brain className="h-3.5 w-3.5" /> The AI operating layer
@@ -120,7 +120,7 @@ function AIGroupPage() {
 
       {/* 14-ITEM GRID */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[620px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Every AI capability
@@ -162,7 +162,7 @@ function AIGroupPage() {
 
       {/* MINI COMPARE */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[620px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               How REPs AI compares

@@ -108,7 +108,7 @@ function HowItWorksPage() {
       <section className="relative overflow-hidden border-b border-reps-border">
         <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-32">
+        <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> How it works
           </span>
@@ -138,7 +138,7 @@ function HowItWorksPage() {
 
       {/* Journey */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">The client journey</span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
@@ -223,7 +223,7 @@ function HowItWorksPage() {
 
       {/* Trust */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPs</span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
@@ -255,7 +255,7 @@ function HowItWorksPage() {
 
       {/* FAQ */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto grid max-w-[1240px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.4fr] lg:px-10">
+        <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.4fr] lg:px-10">
           <div>
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">FAQs</span>
             <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[34px]">
@@ -284,7 +284,7 @@ function HowItWorksPage() {
 
       {/* CTA */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <h2 className="font-display text-[32px] font-bold leading-tight text-white lg:text-[42px]">
               Ready to find your <span className="text-reps-orange">REPs pro?</span>

@@ -47,7 +47,7 @@ function HelpPage() {
     <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
       <div className="bg-reps-ink text-reps-text">
         <PublicHeader variant="solid" />
-        <div className="mx-auto max-w-[1240px] px-6 pb-16 pt-12 text-center lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-12 text-center lg:px-10">
           <span className="inline-flex items-center rounded-full bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-orange">
             <HelpCircle className="mr-1.5 h-3 w-3" /> Help centre
           </span>
@@ -73,7 +73,7 @@ function HelpPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
         <h2 className="font-display text-[24px] font-bold text-reps-charcoal">Browse by topic</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((c) => (

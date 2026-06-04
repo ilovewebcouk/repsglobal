@@ -47,7 +47,7 @@ export function FeatureGroupLayout({
 
       {/* HERO */}
       {heroImage && heroLead && heroAccent ? (
-        <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1000px]">
+        <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1440px]">
           <img
             src={heroImage.src}
             alt={heroImage.alt ?? ""}
@@ -73,7 +73,7 @@ export function FeatureGroupLayout({
             className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
           />
 
-          <div className="relative mx-auto flex w-full max-w-[1240px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
+          <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
             <div className="max-w-[640px]">
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> {group.hero.eyebrow}
@@ -111,7 +111,7 @@ export function FeatureGroupLayout({
       {!(heroImage && heroLead && heroAccent) && (
         <section className="relative overflow-hidden border-b border-reps-border">
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
-          <div className="relative mx-auto grid max-w-[1240px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-10 lg:py-24">
+          <div className="relative mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-10 lg:py-24">
             <div className="flex flex-col justify-center">
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
                 <group.icon className="h-3.5 w-3.5 text-reps-orange" />
@@ -148,7 +148,7 @@ export function FeatureGroupLayout({
       {/* FEATURE GRID */}
       {features.length > 0 && (
         <section className="border-b border-reps-border">
-          <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
             <div className="max-w-[620px]">
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
                 What's inside {group.label}
@@ -188,7 +188,7 @@ export function FeatureGroupLayout({
 
       {/* CROSS-LINKS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <h2 className="font-display text-[22px] font-bold text-white">
             Explore the rest of the platform
           </h2>
@@ -202,7 +202,7 @@ export function FeatureGroupLayout({
 
       {/* CTA */}
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
               <Sparkles className="h-3.5 w-3.5" /> Founding pricing — locked for life

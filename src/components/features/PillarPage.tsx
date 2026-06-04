@@ -65,7 +65,7 @@ export function PillarPage({
       <PublicHeader variant="solid" />
 
       {/* HERO — full-bleed moody backdrop with device cluster (mirrors /for-professionals) */}
-      <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1000px]">
+      <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1440px]">
         <img
           src={heroBgSrc}
           alt={heroBgAlt}
@@ -92,7 +92,7 @@ export function PillarPage({
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
 
-        <div className="relative mx-auto flex w-full max-w-[1240px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
+        <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
           <div className="max-w-[640px]">
             <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> {group.hero.eyebrow}
@@ -128,7 +128,7 @@ export function PillarPage({
 
       {/* ACT INTRO */}
       <section className="border-t border-reps-border/60">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
           <ActIntro
             act="Act 1"
             kicker={`Inside ${group.label}`}
@@ -141,7 +141,7 @@ export function PillarPage({
 
       {/* FEATURE BLOCKS */}
       <section className="border-t border-reps-border/60">
-        <div className="mx-auto max-w-[1240px] space-y-24 px-6 py-20 lg:space-y-32 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] space-y-24 px-6 py-20 lg:space-y-32 lg:px-10 lg:py-28">
           {features.map((f, i) => (
             <PillarFeatureBlock key={f.tag} feature={f} reverse={i % 2 === 1} />
           ))}
@@ -152,7 +152,7 @@ export function PillarPage({
 
       {/* COMPARISON */}
       <section className="border-t border-reps-border/60">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <ActIntro
             act="Act 2"
             kicker="How it stacks up"
@@ -168,7 +168,7 @@ export function PillarPage({
 
       {/* CROSS-LINKS */}
       <section className="border-t border-reps-border/60 bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <h2 className="font-display text-[24px] font-bold text-white lg:text-[28px]">
             Explore the rest of the platform
           </h2>
@@ -182,7 +182,7 @@ export function PillarPage({
 
       {/* CTA */}
       <section className="border-t border-reps-border/60">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
               <Sparkles className="h-3.5 w-3.5" /> Founding pricing — locked for life
