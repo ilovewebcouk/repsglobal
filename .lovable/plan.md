@@ -1,78 +1,71 @@
 
-# For Professionals — v2 rebuild
+# v2 hero — rebuild to match the mockup
 
-Build a brand-new route at `/for-professionals-v2` so the current page stays
-intact as a fallback. Nothing in v1 changes. Mockup placeholders stay (we
-upgrade visuals in a later pass).
+Replace the current `/for-professionals-v2` hero with a split layout that matches the uploaded mockup:
 
-## Goals
+```text
+┌──────────────────────────────────────────────┐
+│ [VERIFIED. TRUSTED. BOOKED.]                 │
+│                                              │
+│ Not just software.            ╔══════════╗   │
+│ An AI operating system for    ║ laptop   ║   │
+│ fitness professionals.        ║ /dashbrd ║──┐│
+│                               ╚══════════╝  ││
+│ Sub copy…                            ┌─────┐││
+│                                      │ ph  │││
+│ [Join REPs today] [Explore platform] │ /pt │││
+│                                      └─────┘││
+│ ✓ 25k+ pros  ✓ register …                   │
+└──────────────────────────────────────────────┘
+```
 
-1. Break the monotony of 9 identical alternating blocks.
-2. Add social proof and a comparison anchor inside the page body.
-3. Make the AI section the page's hero moment, not a footnote.
-4. Fix the hero CTA so it doesn't bounce through `/signup` → `/pricing`.
-5. Use shadcn primitives where they raise quality (Tabs, Accordion, HoverCard, Carousel, Badge, Card, Separator).
+## Layout
 
-## Page structure (top → bottom)
+- Two-column hero: copy left (max ~560px), device cluster right.
+- Eyebrow pill "VERIFIED · TRUSTED · BOOKED" above H1.
+- Keep H1 and orange second line.
+- Sub copy rewritten to match mockup: "REPs is built for fitness professionals who want to get found, win more clients, deliver better coaching and grow a sustainable business. One platform. Every tool. Powered by AI."
+- CTAs: **Join REPs today** → `/pricing` (primary), **Explore the platform** → `/features` (secondary).
+- Trust strip stays under the hero (already built).
 
-1. **Hero v2** — tighter. H1 + sub + 2 CTAs only. Trust points become a thin strip *below* the hero, not stuffed in. Background photo dimmer, more orange glow. Primary CTA → `/pricing`, secondary → "Find a Pro" anchor for clients.
-2. **Press strip** — unchanged from v1.
-3. **Proof row** — 3-up: "25,000+ verified pros", "Since 2009", "1M+ searches/yr". Plus the existing `RegisterProof` "Verified register" panel underneath.
-4. **Act 1 — Get clients (Visibility)** — keep the strong Act 1 framing, condense to ONE wide showcase block (the profile mockup) + 3 supporting bullets in a row. Not 1 of 9 in a column.
-5. **"Five pillars" intro** — eyebrow + headline + the existing `ReplacesStrip` (replaces 6 tools graphic).
-6. **Pillar 1 — Leads & CRM** — `ProductBlock` (left image, right copy).
-7. **Pillar 2 — Coaching** — *tabbed* block: 3 shadcn Tabs (Programmes / Check-ins / Client record) sharing one mockup frame. Replaces 3 separate ProductBlocks. Big rhythm change.
-8. **Testimonial card** — full-width quote card, named PT, studio, city, headshot placeholder. Breaks the rhythm.
-9. **Pillar 3 — Bookings & Payments** — `ProductBlock` reversed.
-10. **Pillar 4 — Client Portal** — `ProductBlock` with a mobile-frame placeholder instead of desktop, plus a "what your clients see" caption.
-11. **Comparison strip** — compact 4-column table: REPs / Trainerize / MyPTHub / PT Distinction with 5 rows (Public register, AI Operating System, No booking commission, UK verified since 2009, All features in tier). Links to `/compare` and `/comparison-methodology`.
-12. **Second testimonial** — different shape (3-up mini-quotes card grid).
-13. **Pillar 5 — REPs AI (hero moment)** — full-bleed dark section. Big "14 AI capabilities" headline, but the visual is a *fake AI Command Centre card stack* (Next Move card + Risk Alert card + Programme Writer card) using real REPs tokens, not just 6 generic feature cards. Keep the 6 capability cards below as a secondary grid.
-14. **"A week with REPs"** — 5-day timeline (Mon Next Move → Fri check-ins) as a horizontal scroll/Carousel. New rhythm device.
-15. **FAQ** — shadcn Accordion, 6 questions targeting PT objections (lock-in, data export, switching from Trainerize, what happens to my Stripe, do you take a cut, do my clients need an app).
-16. **Final CTA panel** — same look as v1 but tighter: "Founding pricing, locked for life" with countdown-style urgency line and two CTAs (`/pricing`, `/compare`).
-17. **PublicFooter** — unchanged.
+## Device cluster (the new bit)
 
-## Sticky elements
+A laptop frame with a phone frame floating bottom-right, overlapping.
 
-- Sticky bottom-right CTA pill ("See pricing →") appears after scrolling past hero. v1 already has the hook (`useScrolledPast`); v2 actually renders it.
+- **Laptop frame** — new component `LaptopFrame.tsx`. Notched top bar (3 dots), thin bezel, base stand bar. ~640×400 inner viewport at desktop.
+- **Phone frame** — new component `PhoneFrame.tsx`. iPhone-style notch, ~220×440 inner viewport.
+- **Content inside frames**: load real app routes via `<iframe>` with `pointer-events: none`, `scrolling="no"`, scaled with `transform: scale(0.55)` and `transform-origin: top left`, sized to fit. This keeps the visual always-true to the actual app — change `/dashboard` and the hero updates itself.
+  - Laptop iframe → `/dashboard`
+  - Phone iframe → `/portal/today`
+- Add `aria-hidden` + `tabindex="-1"` so iframes don't trap focus/screen readers.
+- Fallback: a small `Sparkles` skeleton renders behind the iframe so a slow-loading frame doesn't show a blank rectangle.
 
-## Files to create
+## Responsive
 
-- `src/routes/for-professionals-v2.tsx` — the new page.
-- `src/components/marketing/PillarTabs.tsx` — the tabbed Coaching block (shadcn Tabs).
-- `src/components/marketing/TestimonialFeature.tsx` — full-width testimonial.
-- `src/components/marketing/TestimonialTriad.tsx` — 3-up mini quotes.
-- `src/components/marketing/ComparisonStrip.tsx` — compact 4-col comparison.
-- `src/components/marketing/AiCommandCentreMock.tsx` — placeholder card-stack mock for the AI hero moment.
-- `src/components/marketing/WeekWithReps.tsx` — Mon–Fri carousel (shadcn Carousel).
-- `src/components/marketing/StickyCtaPill.tsx` — sticky bottom-right CTA.
-- `src/components/marketing/ForProsFaq.tsx` — shadcn Accordion FAQ.
+- ≥ lg: side-by-side, cluster occupies right ~52% of the hero.
+- md: cluster shrinks, stays beside copy.
+- < md: cluster hides (or stacks below copy at smaller scale). Mobile hero is text-only with CTAs — phone visitors don't need a tiny laptop render.
 
-## Files NOT touched
+## Files
 
-- `src/routes/for-professionals.tsx` (v1 stays as fallback)
-- `src/components/public/PublicHeader.tsx`, nav-config, footer
-- `src/styles.css` tokens
-- Any backend / signup / pricing logic
+- New: `src/components/marketing/LaptopFrame.tsx`
+- New: `src/components/marketing/PhoneFrame.tsx`
+- New: `src/components/marketing/HeroDeviceCluster.tsx` (assembles the two frames with the iframes inside)
+- Edit: `src/routes/for-professionals-v2.tsx` — replace the hero `<section>` only. Everything below the hero stays as built.
 
-## Linking in
+## Out of scope
 
-- Header nav stays pointing at `/for-professionals` (v1) for now.
-- We add a small "Preview the v2 page" link from v1 to v2 (top-right of v1 hero, dev-only feel) so you can A/B without changing public IA. If you'd rather not, say so and I'll skip it.
+- The rest of the page (proof row, pillars, comparison, AI section, etc.) is untouched.
+- v1 (`/for-professionals`) is untouched.
+- No token / radius / colour changes.
 
 ## Compliance
 
-- All radii from the locked 9-step scale (10 buttons, 12 inputs, 16/18 cards, 22 panels, 24 hero, full pills).
-- All orange via `bg-reps-orange*` / `text-reps-orange*` tokens — no hex in components.
-- No `rounded-xl/2xl/3xl`. No shadows on buttons.
-- No banned phrases ("booking fee", "15%", "flat plan", etc.).
-- No new routes outside `/for-professionals-v2`. No backend, auth, DB or payments work.
-- Comparison strip references `/comparison-methodology` and a "Last checked" date.
-- Hero CTA goes to `/pricing` (not `/signup`) to match the gated signup flow.
+- Frames use radius 22 (large panel) / 24 (hero) from the locked scale.
+- Buttons keep radius 10, no shadows.
+- All orange via `bg-reps-orange*` tokens — no hex.
+- No backend, no real screenshot generation, no new routes.
 
-## Out of scope (for this pass)
+## Risk to flag
 
-- Replacing the 9 grey product mockup boxes with real visuals — explicit user choice, deferred.
-- Promoting v2 to `/for-professionals` and retiring v1 — separate decision once you've reviewed v2.
-- Real testimonials with real names — placeholders only, marked as such in code comments.
+iframes of internal routes work great in the live preview but they re-render the full layout including the `PublicHeader` and other heavy components inside the laptop. That's fine for `/dashboard` (it has its own shell) but `/portal/today` may render a full app shell that looks crowded at 0.55 scale. I'll pick the route that frames best — if `/portal/today` doesn't fit cleanly I'll fall back to `/dashboard_/clients/$slug` or render a small static phone mockup.
