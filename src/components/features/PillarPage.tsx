@@ -62,7 +62,7 @@ export function PillarPage({
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
-      <PublicHeader variant="solid" />
+      <PublicHeader variant="transparent" />
 
       {/* HERO — full-bleed moody backdrop with device cluster (mirrors /for-professionals) */}
       <section className="relative overflow-hidden min-h-[560px] lg:min-h-[640px]">
@@ -71,7 +71,7 @@ export function PillarPage({
           alt={heroBgAlt}
           width={1920}
           height={1280}
-          className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
+          className="absolute inset-0 h-full w-full object-cover object-top lg:object-right-top"
         />
 
         {/* Legibility wash — lighter so the subject breathes */}
