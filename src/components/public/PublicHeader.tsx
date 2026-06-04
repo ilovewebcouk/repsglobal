@@ -1086,7 +1086,7 @@ function MobileDrawer({
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
                 active.resources ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
