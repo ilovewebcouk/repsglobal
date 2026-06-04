@@ -96,24 +96,24 @@ function ForProsPage() {
           height={1080}
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
-        {/* Legibility overlay — base wash keeps the room visible everywhere */}
-        <div className="absolute inset-0 bg-reps-ink/55" />
-        {/* Focused darken behind the copy column (left ~55%) so the headline always wins */}
+        {/* Legibility overlay — stronger base wash on mobile (copy spans full width), lighter on desktop */}
+        <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
+        {/* Mobile: centred vignette darkens the whole copy zone. Desktop: focused darken behind the left copy column only. */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
+          className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.72),transparent_75%)] lg:bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
         />
-        {/* Right-edge fade so the device cluster sits on near-solid ink */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-reps-ink/85" />
-        {/* Soft brand glow — complements the in-photo tungsten without competing */}
+        {/* Right-edge fade — only meaningful on desktop where the device cluster sits on the right */}
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-transparent to-reps-ink/85 lg:block" />
+        {/* Soft brand glow — slightly stronger and re-centred on mobile to balance the frame */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
+          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
         />
-        {/* Hero floor seal — longer, smoother resolve into Act 1 */}
+        {/* Hero floor seal — shorter on mobile (compact hero), longer on desktop (smoother resolve into Act 1) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-reps-ink/70 to-reps-ink"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
         <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
