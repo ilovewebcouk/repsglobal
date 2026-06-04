@@ -125,6 +125,13 @@ export const Route = createFileRoute("/signup")({
     };
   },
 
+  beforeLoad: ({ search }) => {
+    // REPs is paid-only — a bare /signup with no plan choice goes back to pricing.
+    if (!search.tier) {
+      throw redirect({ to: "/pricing" });
+    }
+  },
+
   head: () => ({
     meta: [
       { title: "Create Your REPs Account — Join the Professional Community" },
