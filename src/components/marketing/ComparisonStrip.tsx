@@ -44,12 +44,25 @@ export function ComparisonStrip() {
               </th>
               {COLS.map((c, i) => (
                 <th
-                  key={c}
+                  key={c.label}
                   className={`px-5 py-4 text-center text-[12.5px] font-semibold uppercase tracking-wider ${
                     i === 0 ? "text-reps-orange" : "text-white/55"
                   }`}
                 >
-                  {c}
+                  <span className="inline-flex items-center justify-center">
+                    {i === 0 ? (
+                      <RepsWordmark className="h-[14px] text-reps-orange" />
+                    ) : c.logo ? (
+                      <img
+                        src={c.logo}
+                        alt={c.label}
+                        style={{ height: c.logoHeight ?? 20 }}
+                        className="w-auto opacity-80"
+                      />
+                    ) : (
+                      c.label
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>
