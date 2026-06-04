@@ -312,20 +312,42 @@ function ForProsV2Page() {
         </div>
       </section>
 
-      {/* TRIAD TESTIMONIALS */}
+      {/* REPLACED STACK + TRIAD TESTIMONIALS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
-          <div className="mb-10 max-w-[640px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Loved by working pros
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              Coaches who replaced the stack.
-            </h2>
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+          <ReplacedStackBoard />
+          <div className="mt-14">
+            <div className="mb-8 max-w-[640px]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+                Loved by working pros
+              </span>
+              <h3 className="mt-3 font-display text-[24px] font-bold text-white lg:text-[30px]">
+                Coaches who made the switch.
+              </h3>
+            </div>
+            <TestimonialTriad />
           </div>
-          <TestimonialTriad />
         </div>
       </section>
+
+      {/* USE CASES */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="mb-10 max-w-[680px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Who it's for
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Built for every serious fitness professional.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              One platform, three ways to run a fitness business. Pick the shape that fits you.
+            </p>
+          </div>
+          <UseCaseTriad />
+        </div>
+      </section>
+
 
       {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
