@@ -102,7 +102,7 @@ function ForProsPage() {
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
               </span>
-              <h1 className="mt-6 font-display text-[44px] font-bold leading-[1.05] text-white lg:text-[64px]">
+              <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
                 Not just software.
                 <br />
                 <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
