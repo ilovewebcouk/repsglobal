@@ -44,6 +44,7 @@ export function TestimonialTriad() {
             <p className="flex-1 text-[14px] leading-relaxed text-white/85">"{q.quote}"</p>
             <div className="flex items-center gap-3 border-t border-reps-border pt-4">
               <Avatar className="size-9">
+                <AvatarImage src={q.image} alt={q.name} loading="lazy" />
                 <AvatarFallback className="bg-reps-orange-soft text-[12px] text-reps-orange">
                   {q.initials}
                 </AvatarFallback>
