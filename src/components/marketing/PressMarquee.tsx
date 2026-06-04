@@ -1,17 +1,10 @@
-import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
-import gq from "@/assets/press/gq.svg.asset.json";
-import mensHealth from "@/assets/press/mens-health.svg.asset.json";
-import runnersWorld from "@/assets/press/runners-world.svg.asset.json";
-import theTimes from "@/assets/press/the-times.svg.asset.json";
-import womensFitness from "@/assets/press/womens-fitness.svg.asset.json";
-
 const LOGOS = [
-  { name: "The Times", url: theTimes.url },
-  { name: "BBC Sport", url: bbcSport.url },
-  { name: "Men's Health", url: mensHealth.url },
-  { name: "Women's Fitness", url: womensFitness.url },
-  { name: "Runner's World", url: runnersWorld.url },
-  { name: "GQ", url: gq.url },
+  "The Times",
+  "BBC Sport",
+  "Men's Health",
+  "Women's Fitness",
+  "Runner's World",
+  "GQ",
 ];
 
 /**
@@ -36,14 +29,13 @@ export function PressMarquee() {
         }}
       >
         <div className="press-marquee-track flex w-max items-center gap-16 lg:gap-24">
-          {[...LOGOS, ...LOGOS].map((logo, i) => (
-            <img
-              key={`${logo.name}-${i}`}
-              src={logo.url}
-              alt={logo.name}
-              className="h-7 w-auto shrink-0 opacity-70 brightness-0 invert lg:h-8"
-              loading="lazy"
-            />
+          {[...LOGOS, ...LOGOS].map((name, i) => (
+            <span
+              key={`${name}-${i}`}
+              className="shrink-0 whitespace-nowrap text-[14px] font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-[15px]"
+            >
+              {name}
+            </span>
           ))}
         </div>
       </div>
