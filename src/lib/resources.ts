@@ -93,6 +93,10 @@ export interface ResourceArticle {
   readTime: string;
   cover: string;
   featured?: boolean;
+  // Optional manual pin order for the header "Featured" column.
+  // Lower number = higher priority (1 wins over 2). Ties + unset values fall back to `date` newest-first.
+  // Only meaningful when `featured: true`.
+  featuredOrder?: number;
   body: Array<
     | { type: "p"; text: string }
     | { type: "h2"; text: string }
