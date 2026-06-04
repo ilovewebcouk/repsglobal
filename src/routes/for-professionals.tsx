@@ -88,12 +88,17 @@ function ForProsPage() {
       <StickyCtaPill />
 
       {/* HERO — split with device cluster */}
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/85 via-reps-ink/92 to-reps-ink" />
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(55%_55%_at_20%_30%,rgba(255,122,0,0.22),transparent_70%)]"
+          className="absolute inset-x-0 top-0 h-[75%] bg-[radial-gradient(55%_55%_at_20%_30%,rgba(255,122,0,0.22),transparent_70%)]"
+        />
+        {/* Hero floor seal — ensures the hero ends decisively before the proof band begins */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink"
         />
         <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
@@ -134,67 +139,66 @@ function ForProsPage() {
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Proof band — single focal point: heritage anchor + press as supporting row */}
-        <div className="relative border-t border-reps-border/60 bg-reps-ink/70 backdrop-blur">
-          <div className="mx-auto max-w-[1240px] px-6 py-10 lg:px-10 lg:py-12">
-            <div className="relative overflow-hidden rounded-[22px] bg-reps-panel/40 ring-1 ring-reps-border/60">
-              {/* Centred orange glow behind heritage line */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-[38%] h-[320px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/12 blur-3xl"
-              />
+      {/* PROOF BAND — its own chapter on a lifted floor */}
+      <section className="relative bg-reps-panel-soft">
+        <div className="mx-auto max-w-[1240px] px-6 py-14 lg:px-10 lg:py-16">
+          <div className="relative overflow-hidden rounded-[22px] bg-reps-panel ring-1 ring-reps-border/60">
+            {/* Centred orange glow behind heritage line */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-[38%] h-[320px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/12 blur-3xl"
+            />
 
-              {/* Heritage anchor — the one focal point */}
-              <div className="relative px-6 pb-10 pt-12 text-center lg:px-10 lg:pb-12 lg:pt-16">
-                <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
-                  <ShieldCheck className="h-5 w-5 text-reps-orange" />
-                </div>
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-                  The UK&apos;s verified fitness register
-                </p>
-                <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
-                  Trusted since <span className="text-reps-orange">2009</span>.
-                </h2>
-                <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
-                  The register the public already searches for a qualified fitness pro.
-                </p>
+            {/* Heritage anchor — the one focal point */}
+            <div className="relative px-6 pb-10 pt-12 text-center lg:px-10 lg:pb-12 lg:pt-16">
+              <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
+                <ShieldCheck className="h-5 w-5 text-reps-orange" />
               </div>
+              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+                The UK&apos;s verified fitness register
+              </p>
+              <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
+                Trusted since <span className="text-reps-orange">2009</span>.
+              </h2>
+              <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
+                The register the public already searches for a qualified fitness pro.
+              </p>
+            </div>
 
-              {/* Hairline divider — sits closer to press row to bind them together */}
-              <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
+            {/* Hairline divider — sits closer to press row to bind them together */}
+            <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
 
-              {/* Press as typographic wordmark row — consistent, controlled */}
-              <div className="relative px-6 pb-9 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
-                <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
-                  As featured in
-                </p>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
-                  {PRESS.map((p, i) => (
-                    <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
-                      {i > 0 ? (
-                        <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
-                      ) : null}
-                      <Link
-                        to="/press"
-                        aria-label={`${p.name} — see press coverage`}
-                        className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/55 transition hover:text-white lg:text-[13px]"
-                      >
-                        {p.name}
-                      </Link>
-                    </span>
-                  ))}
-                </div>
+            {/* Press as typographic wordmark row — consistent, controlled */}
+            <div className="relative px-6 pb-9 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
+              <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
+                As featured in
+              </p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
+                {PRESS.map((p, i) => (
+                  <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
+                    {i > 0 ? (
+                      <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
+                    ) : null}
+                    <Link
+                      to="/press"
+                      aria-label={`${p.name} — see press coverage`}
+                      className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/55 transition hover:text-white lg:text-[13px]"
+                    >
+                      {p.name}
+                    </Link>
+                  </span>
+                ))}
               </div>
-
-
             </div>
           </div>
         </div>
       </section>
 
       {/* ACT 1 — REGISTER */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="border-b border-reps-border bg-reps-ink">
+
         <div className="mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
