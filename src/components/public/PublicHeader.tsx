@@ -514,7 +514,7 @@ function FindMenu() {
           <NavigationMenu.Link asChild>
             <Link
               to="/find-a-professional"
-              className="mt-3 block overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-colors hover:border-reps-orange-border focus:outline-none focus:border-reps-orange-border"
+              className="mt-3 block overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-colors hover:border-reps-orange-border focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60"
             >
               <div
                 className="h-24 w-full bg-cover bg-center"
