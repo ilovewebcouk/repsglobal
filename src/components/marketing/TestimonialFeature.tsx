@@ -19,6 +19,7 @@ export function TestimonialFeature() {
           </blockquote>
           <div className="mt-6 flex items-center gap-4">
             <Avatar className="size-12 border border-reps-border">
+              <AvatarImage src={jamesCarter} alt="James Carter" loading="lazy" />
               <AvatarFallback className="bg-reps-orange-soft text-reps-orange">JC</AvatarFallback>
             </Avatar>
             <figcaption className="text-[13px] leading-tight">
