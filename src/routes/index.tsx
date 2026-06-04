@@ -159,7 +159,7 @@ function HomeV2() {
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  "linear-gradient(to right, rgba(11,13,16,0.88) 0%, rgba(11,13,16,0.8) 42%, rgba(11,13,16,0.45) 60%, rgba(11,13,16,0) 78%), linear-gradient(to bottom, rgba(11,13,16,0) 30%, rgba(11,13,16,0.35) 100%)",
+                  "linear-gradient(to right, rgba(11,13,16,0.78) 0%, rgba(11,13,16,0.6) 32%, rgba(11,13,16,0.25) 52%, rgba(11,13,16,0) 65%), linear-gradient(to bottom, rgba(11,13,16,0) 30%, rgba(11,13,16,0.35) 100%)",
 
               }}
             />
