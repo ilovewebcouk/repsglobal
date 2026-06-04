@@ -9,7 +9,7 @@ import {
   PenTool,
   ScanLine,
   Settings2,
-  ShieldCheck,
+  
   Sparkles,
   Star,
   TrendingUp,
