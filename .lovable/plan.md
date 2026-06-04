@@ -1,34 +1,54 @@
-# Operations hero — fix composition + lock REPs-logo rule
 
-## What's wrong now
-The current `src/assets/hero-operations-bg.jpg` centres the trainer/reception, so the right-side device cluster lands directly on top of the human focal point. That weakens the "real person in a real studio" narrative the photo is meant to carry.
+# Coaching pillar — match Operations/Visibility photo hero
 
-## Changes
+Mirror the treatment we just shipped on `/features/operations` and `/features/visibility`, with a fresh subject so the heroes stop reading as "middle-aged white guys, three in a row."
 
-### 1. Re-generate the Operations hero backdrop
-Use `imagegen--generate_image` (premium tier, 1920×1280) to produce a replacement with:
-- **Composition:** trainer + reception desk anchored in the **left third** of the frame; right two-thirds = quieter studio depth (blurred equipment, warm rim-lit architecture, negative space) so the device mockup cluster lands in clean territory, not on the trainer.
-- **Wardrobe:** trainer wearing a dark T-shirt with a visible **"REPs"** wordmark on the chest. For this shot, use a **small left-chest wordmark** (premium / staff-polo feel — reads as a real partner studio, not a billboard).
-- **Same color grade / lens character as the for-pros hero:** cool blue-gray shadows, warm tungsten highlights, low key, cinematic depth of field, dusk light.
-- **Subject:** trainer reviewing the day's schedule on a tablet at the reception desk of a premium boutique studio.
+## 1. Generate `src/assets/hero-coaching-bg.jpg`
 
-Upload via `lovable-assets` to replace `src/assets/hero-operations-bg.jpg.asset.json` (overwrite the existing pointer so the import in `features.operations.tsx` keeps working unchanged).
+Premium tier, 1920×1280, same cinematic grade as the other two heroes (cool blue-grey shadows, warm tungsten highlights, dusk / golden-hour light, shallow DoF).
 
-### 2. Save the REPs-logo rule to project memory
-Add a new core memory line and a detailed memory file so every future trainer image follows the rule.
+**Subject — explicit diversity brief** (pick the strongest in generation; we'll regenerate if needed):
+- A Black female coach, mid-30s, demoing a kettlebell or TRX cue to a client — OR
+- A South-Asian male coach checking a client's tablet-based programme on the gym floor — OR
+- An East-Asian female strength coach spotting a barbell lift.
 
-- **Core line (in `mem://index.md`):** "Any generated image of a trainer/coach MUST show a visible 'REPs' wordmark on their T-shirt/polo. Choose chest placement per shot (small left-chest for premium/editorial, centred for wide team/action shots)."
-- **Detailed file (`mem://design/trainer-imagery`):** placement guidance (left-chest vs centred), color (white or brand orange on dark garments; dark on light garments), and the rule that the wordmark must read as a real embroidered/printed logo — never a floating overlay or watermark.
+**Composition:** coach anchored in the **right third** (so left two-thirds keep clean negative space for the white/orange H1 + sub + CTAs). Client(s) optional, slightly out of focus.
+
+**REPs branding in-shot (both, where it reads naturally):**
+- **"REPS"** wordmark (ALL CAPS, matching the site logo) on the coach's polo/T-shirt — small left-chest for this editorial framing.
+- A **"REPS"** wall mark in the gym background (frosted vinyl on glass, painted concrete, or backlit sign) — same all-caps logo, softly defocused. This is the "REPs gym" cue the user asked for, like the operations shot.
+
+Upload via `lovable-assets create` → write `src/assets/hero-coaching-bg.jpg.asset.json`.
+
+## 2. Rewrite `src/routes/features.coaching.tsx`
+
+Drop `ProgrammesMockup` / `visual` prop. Switch to the photo-hero branch of `FeatureGroupLayout`:
+
+- `heroLead`: **"Not just programmes."**
+- `heroAccent`: **"The coaching stack your clients actually stick to."**
+- `heroImage`: `{ src: heroCoaching.url, alt: "REPs-verified coach delivering a session on the gym floor" }`
+
+(Alternates if the user prefers a different angle — pick one in build mode:
+- "Not just workouts." / "A coaching system that keeps clients showing up."
+- "Not just an app." / "Programmes, nutrition and check-ins, wired to the client.")
+
+Press marquee comes for free — `FeatureGroupLayout` already renders `<PressMarquee />` whenever the photo-hero branch is active.
+
+## 3. QA
+
+Screenshot `/features/coaching`:
+- Coach visible to the right, copy column clean on the left.
+- "REPS" (all-caps) legible on the garment AND in the background.
+- Subject reads as **not** another white male — if generation drifts, regenerate (up to 2 retries) with a tighter ethnicity/gender prompt.
+- Hero grade matches operations + visibility.
 
 ## Out of scope
-- No changes to `PillarPage.tsx`, the device cluster position, overlays, H1, or CTAs.
-- No new pillar pages (Visibility / Coaching / AI / Growth get their own images later).
-- No changes to the for-pros hero image (existing trainer there is acceptable for now; we'll revisit when that page next gets touched).
+
+- AI and Growth pillars (separate turns).
+- Any layout, feature-grid, CTA, or cross-link changes — only the hero swap on coaching.
+- No copy changes elsewhere on the page.
 
 ## Files touched
-- `src/assets/hero-operations-bg.jpg.asset.json` — replaced (new CDN asset)
-- `mem://index.md` — append core rule
-- `mem://design/trainer-imagery` — new memory file
 
-## QA
-After upload, screenshot `/features/operations` hero and verify: (a) trainer visible to the left of the device cluster, (b) "REPs" wordmark legible on the T-shirt, (c) overall grade still matches the for-pros hero.
+- `src/assets/hero-coaching-bg.jpg.asset.json` — new
+- `src/routes/features.coaching.tsx` — rewritten hero block, removes `ProgrammesMockup` import

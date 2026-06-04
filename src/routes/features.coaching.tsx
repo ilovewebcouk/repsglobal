@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { FeatureGroupLayout } from "@/components/features/FeatureGroupLayout";
-import { ProgrammesMockup } from "@/components/mockups/PlatformMockups";
+import heroCoaching from "@/assets/hero-coaching-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/coaching")({
   head: () => ({
@@ -17,9 +17,20 @@ export const Route = createFileRoute("/features/coaching")({
         property: "og:description",
         content: "Programmes, nutrition and check-ins, built for coaches.",
       },
+      { property: "og:image", content: heroCoaching.url },
       { property: "og:url", content: "https://repsglobal.lovable.app/features/coaching" },
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/coaching" }],
   }),
-  component: () => <FeatureGroupLayout groupKey="coaching" visual={<ProgrammesMockup />} />,
+  component: () => (
+    <FeatureGroupLayout
+      groupKey="coaching"
+      heroLead="Not just programmes."
+      heroAccent="The coaching stack your clients actually stick to."
+      heroImage={{
+        src: heroCoaching.url,
+        alt: "REPs-verified coach cueing a kettlebell squat with a client at a premium boutique gym at dusk",
+      }}
+    />
+  ),
 });
