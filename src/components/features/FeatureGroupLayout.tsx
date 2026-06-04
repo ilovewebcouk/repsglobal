@@ -43,7 +43,7 @@ export function FeatureGroupLayout({
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
-      <PublicHeader variant="solid" />
+      <PublicHeader variant="transparent" />
 
       {/* HERO */}
       {heroImage && heroLead && heroAccent ? (
