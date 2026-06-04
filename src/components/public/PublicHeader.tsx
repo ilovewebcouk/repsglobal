@@ -670,6 +670,15 @@ function ForProsMenu() {
                 </Link>
               </NavigationMenu.Link>
             </li>
+            {PRO_RESOURCES.map((l) => (
+              <li key={l.to}>
+                <NavigationMenu.Link asChild>
+                  <Link to={l.to} className={menuItemClass}>
+                    {l.label}
+                  </Link>
+                </NavigationMenu.Link>
+              </li>
+            ))}
             <li>
               <NavigationMenu.Link asChild>
                 <Link
