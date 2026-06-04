@@ -1,35 +1,73 @@
-# Proof band: strip the container, commit to one dark continuum
+## Two changes in one pass
 
-## The problem
+1. **Replace the proof band** on `/for-professionals` with a fade-edged scrolling press marquee — hero → marquee → Act 1 all on `bg-reps-ink`, logos drift R→L forever, edges fade to ink via mask-image.
+2. **Fold the 2009 heritage** into the existing `/about` page as a "Since 2009" section so the heritage signal isn't lost when the proof band's headline disappears.
 
-The proof band currently sits on `bg-reps-panel-soft` (lighter) with a `bg-reps-panel` card + ring on top. Hero and Act 1 are both `bg-reps-ink` (deep dark). Result: a lighter strip with a darker card in the middle of two dark chapters — the container reads before the content, and the section looks like it belongs to a different page.
+## 1 · Press marquee on `/for-professionals`
 
-## What changes
+### What changes in `src/routes/for-professionals.tsx`
 
-In `src/routes/for-professionals.tsx`, the proof band (currently lines ~144–197):
+Proof band (currently ~lines 159–212) collapses to:
 
-1. **Section background**: `bg-reps-panel-soft` → `bg-reps-ink`. Same ink as hero and Act 1.
-2. **Remove the card entirely**: drop the `<div className="relative overflow-hidden rounded-[22px] bg-reps-panel ring-1 ring-reps-border/60">` wrapper. Content goes directly on the section.
-3. **Keep the orange radial glow** behind "Trusted since 2009." — it's the one focal anchor and it's working. Re-centre it on the section, not the (removed) card.
-4. **Keep the shield icon, eyebrow, headline, sub** exactly as-is — content is good, only the container is wrong.
-5. **Hairline divider**: keep one between the heritage block and the press row (not both top and bottom). Tighten to `border-reps-border/40` so it's a whisper, not a frame edge.
-6. **Vertical rhythm**: bump padding to `py-20 lg:py-24` so the band has confident air around it now that there's no card holding it in.
-7. **Press row weight**: bump the wordmarks from `text-white/55` → `text-white/65` and from `font-semibold` tracking `0.18em` → keep — but allow a touch more weight at hover. Without a frame they need to carry themselves.
-8. **Chapter separators**: with hero → proof band → Act 1 all on the same ink, the separation comes from spacing alone. Remove Act 1's `border-b border-reps-border` top boundary too if it now reads as a stray line (verify in screenshot first — may still need it for the bottom of Act 1).
+- **Section**: `bg-reps-ink`, `py-14 lg:py-20`. Same ink as hero + Act 1.
+- **Eyebrow** (centred, above marquee): `AS FEATURED IN`, small caps, tracked `0.18em`, `text-reps-muted`.
+- **Marquee track**: full-bleed horizontal strip, ~64px tall, edge fades on both sides.
+- **Remove**: shield icon, "TRUSTED SINCE 2009" eyebrow, "Built in 2009…" headline, heritage sub-paragraph, orange radial glow, hairline divider, current static wordmark row.
+
+### New component: `src/components/marketing/PressMarquee.tsx`
+
+Why a component: the marquee logic (duplicated track + animation + edge fades) is reusable and the route file shouldn't carry CSS gymnastics.
+
+Structure:
+
+```text
+<section> overflow-hidden, mask-image both edges
+  <div> single track, flex gap-16, w-max, animate-marquee
+    [logo, logo, logo, logo, logo, logo]   ← rendered once
+    [logo, logo, logo, logo, logo, logo]   ← rendered again (duplicate for seamless loop)
+```
+
+Logos: the six existing SVGs from `src/assets/press/` (bbc-sport, gq, mens-health, runners-world, womens-fitness, the-times). Each rendered as `<img>` at `h-7 lg:h-8 w-auto`, `opacity-70`, `brightness-0 invert` so they sit on dark cleanly (or `text-white/70` filter equivalent). No hover state, no pause — user picked continuous.
+
+Edge fade: the section uses `mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent)` so logos fade into the ink at both edges, no hard cut.
+
+Animation: reuse the existing `@utility animate-marquee` already defined in `src/styles.css` (`transform: translateX(0) → translateX(-50%)` over 38s linear infinite). The 50% translate exactly equals one duplicated set — seamless loop. No new keyframes needed.
+
+Accessibility: respect `prefers-reduced-motion` — when set, freeze the marquee (`animation: none`) so it sits as a static row. Add via a `@media (prefers-reduced-motion: reduce)` rule on the marquee class.
+
+### Verification
+
+- 1440px: hero → marquee → Act 1 reads as one continuous dark surface. Logos drift, fade in from right, fade out to left. No visible seam at loop point.
+- 390px: marquee still flows, logos legible, fade gradient still readable on narrow viewport (may need to widen fade % on mobile if it eats logos — tune after screenshot).
+- Reduced-motion: marquee freezes as a static logo row.
+
+## 2 · Heritage section on `/about`
+
+### What changes in `src/routes/about.tsx`
+
+I'll read the current file first to find the right insertion point — likely after the hero/intro and before mission or team. The section adds:
+
+- **Eyebrow**: `SINCE 2009`
+- **Headline**: "Built in 2009. Rebuilt for 2026." (or the team's preferred wording — placeholder for now, easy to swap)
+- **Sub**: 2–3 sentences on the heritage — REPs UK origin, what's carried forward, what's new under REPs Global. Pulled/adapted from the copy currently in the proof band.
+- **Optional small detail strip**: 3 micro-stats (e.g. "16 years", "Trained X professionals", "Trusted by Y") — only if the data exists in the current about page or copy doc. If not, skip and keep the section copy-only.
+
+Treatment: matches the existing About page's surface and typography — no new tokens, no new layout primitives. Just a new section block consistent with whatever's already there.
+
+### head() meta
+
+If `/about` already has `head()`, leave it alone. The heritage section is content, not a new route, so SEO surface doesn't change.
 
 ## What stays out
 
-- No new tokens.
-- No copy changes.
-- No changes to hero or Act 1 (other than the optional Act 1 border check noted above).
-- No changes to the press logos, links, or order.
+- No changes to hero or Act 1 on `/for-professionals`.
+- No new design tokens.
+- No `/history` route — folded into About per your choice.
+- No changes to press logo files, order, or count.
+- No pause-on-hover, no manual pagination — continuous scroll only.
 
-## Verification
+## Honest risks
 
-- Screenshot at 1440px: hero → proof band → Act 1 should read as one continuous dark surface with three distinct content moments separated by air and the orange glow, not by surface color.
-- Screenshot at 390px (mobile): same continuity, copy legible, press wordmarks wrap cleanly.
-- Sanity check: does the "Trusted since 2009" moment still feel like a *moment*, or does it disappear into the page? If it disappears, the fix is more vertical padding and a touch more glow intensity — not putting the card back.
-
-## Honest risk
-
-Stripping the container is the right move, but it raises the execution bar. If the padding or glow is undercooked, it'll look like the band lost its frame rather than gained confidence. I'll screenshot after and tune if needed before claiming done.
+- **Marquee seam**: if the duplicated track + 38s timing doesn't loop seamlessly at the current logo count, the join will be visible. Fix is to tune the gap or animation duration, not to add a third track copy. Will verify with a screen recording style check after build.
+- **Logo contrast on ink**: applying `brightness-0 invert` to coloured SVGs (e.g. BBC Sport red, GQ serif) flattens them to white wordmarks, which is what we want for the editorial row — but it does strip brand colour. If you want logos in their original colours, say so before I build and I'll render them as-is with a subtle `opacity-80` instead. Default = flatten to white.
+- **About page heritage section**: I haven't read `/about` yet, so the insertion point and tone-matching is a "read first, place sensibly" step. If About is already overstuffed, I'll flag before slotting in.
