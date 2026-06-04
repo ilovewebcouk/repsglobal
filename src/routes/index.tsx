@@ -26,7 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroCoaching from "@/assets/home-hero-coaching-v2.jpg.asset.json";
+import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";

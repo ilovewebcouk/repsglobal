@@ -1,75 +1,29 @@
-# Hero composition QA — fix the transforms, not the image
+# Swap homepage hero back to the original (Black coach + Latina client)
 
-## Root cause
+## What to do
 
-The hero image in `src/routes/index.tsx` (lines 151–172) applies four stacked effects tuned for the OLD image:
+Single one-line edit in `src/routes/index.tsx`:
 
-1. `transform: translate3d(22%, 0, 0)` — pushes the whole image 22% right (this is the "shifted right" you remembered).
-2. `scale(1.05)` — 5% zoom that compounds clipping at the right edge.
-3. `object-[center_25%]` — anchors to the TOP 25% of the image. The old image had subjects high up; the new one has them mid-frame with the barbell at the bottom, so this crops away the most powerful part of the shot.
-4. Two stacked dark overlays (left-to-right gradient + bottom-left radial vignette). Both were needed when the image was bright edge-to-edge. The new image already has clean black negative space on the left, so these flatten it.
+- Line 29: change the import back from `home-hero-coaching-v2.jpg.asset.json` → `home-hero-coaching.jpg.asset.json`.
 
-The image itself is correctly composed. The transforms are fighting it.
+## Bank the v2 image
 
-## What to change
+Keep `src/assets/home-hero-coaching-v2.jpg.asset.json` in the project (do NOT delete the asset or the pointer file). The asset stays on the CDN and the pointer file stays in the repo, so we can swap back to it in one line whenever you want. No other files reference it.
 
-Single file: `src/routes/index.tsx`, lines 151–172 only. No other files, no copy, no image, no layout structure.
+## QA after the swap
 
-### Before
+Live screenshot at the current viewport (1484px) to confirm:
+- Original Black coach + Latina client image is rendering.
+- The recent hero overlay/positioning fix still works correctly with this image (object-right anchor, single soft left-to-right gradient) — the original was previously composed with subjects in the right half too, so it should land cleanly without the old translate3d hacks.
 
-```tsx
-<img
-  src={heroCoaching.url}
-  alt=""
-  style={{ transform: "translate3d(22%, 0, 0) scale(1.05)" }}
-  className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%]"
-/>
-<div
-  className="absolute inset-0"
-  style={{
-    backgroundImage:
-      "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
-  }}
-/>
-<div
-  className="pointer-events-none absolute inset-0"
-  style={{
-    backgroundImage:
-      "radial-gradient(ellipse 70% 55% at 20% 100%, rgba(11,13,16,0.95) 0%, rgba(11,13,16,0.7) 35%, rgba(11,13,16,0.25) 60%, rgba(11,13,16,0) 80%)",
-  }}
-/>
-```
-
-### After
-
-```tsx
-<img
-  src={heroCoaching.url}
-  alt=""
-  className="absolute inset-0 h-full w-full object-cover object-right"
-/>
-<div
-  className="absolute inset-0"
-  style={{
-    backgroundImage:
-      "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.85) 30%, rgba(11,13,16,0.25) 55%, rgba(11,13,16,0) 75%)",
-  }}
-/>
-```
-
-Changes:
-- Drop the `translate3d` push and the `scale` zoom — the image is already composed for this frame.
-- Swap `object-[center_25%]` → `object-right` so the photo anchors to the subjects (the right half), keeping the barbell visible at the bottom.
-- Replace the two stacked overlays with ONE softer left-to-right gradient that only darkens the leftmost ~30% (where headline sits) and clears by 75%, letting the cinematic right side breathe.
-
-## QA after the change
-
-1. Live screenshot at the current viewport (1484px) — confirm headline is still readable, subjects are no longer clipping, barbell is visible at the bottom.
-2. Live screenshot at 1920px — confirm full coach is visible and nothing critical clips.
-3. Confirm mobile/tablet still show solid black (unchanged behavior — image stays `hidden lg:block`).
+If the gradient/anchor needs a small re-tune for the original image, do it as a follow-up after confirming.
 
 ## Out of scope
 
-- No changes to copy, search bar, trust strip, or anything below the hero.
-- No changes to the image asset.
-- No changes to mobile/tablet hero behavior.
+- No changes to copy, layout, or anything else on the page.
+- No image regeneration.
+- No file deletions.
+
+## Files touched
+
+- Edited: `src/routes/index.tsx` (one line)
