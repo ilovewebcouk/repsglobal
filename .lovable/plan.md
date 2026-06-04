@@ -1,56 +1,63 @@
 
-# Homepage hero — generate all four, swap the chosen one, bank the rest
+# Homepage hero v2 — elevate to "film still", not "editorial scene"
 
-You want all four hero angles produced so you can pick the homepage winner and keep the other three on the shelf for other pages (about, find-a-professional, how-it-works, etc.). The current hero structure (H1, search form, goal chips, avatar + reviews row, mobile fallback) stays exactly as-is — only the background image swaps.
+## Why the first four didn't clear the bar
 
-## Stack-wide rules every shot will follow
+All four were 35mm-at-f/2 cinematic, REPS-branded, demographically rotated — but compositionally they're documentary: two people on a gym floor, both in focus enough to read. That's editorial photography. The bar you're asking for — Nike Training Club, Apple Fitness+, Whoop, Future, Tonal — is **film still**: one iconic moment, one dramatic light source, negative space doing real compositional work, the athlete reading as elite, atmosphere (haze, breath, sweat detail) visible in the frame.
 
-- 1920×1280, premium tier, cinematic editorial.
-- Cool blue-grey shadows + warm tungsten/orange highlights. Dusk light. 35mm at f/2 feel. Shallow DoF.
-- Subject anchored in the **right two-thirds** of the frame so the existing left-edge dark-to-transparent wash + radial vignette keep the headline / search / avatars perfectly legible. Matches the current `translate3d(22%, 0, 0) scale(1.05)` and `object-[center_25%]` framing.
-- Every visible REPs garment carries the **"REPS"** ALL-CAPS wordmark (white embroidery, left-chest or centred-chest depending on shot).
-- Wherever a wall/window can carry it naturally, a defocused **"REPS"** ALL-CAPS environment mark too.
-- Diversity rotation: no two heroes share the same subject demographic. (Pillars so far: white male × 2, Black female, South-Asian male, Latina female owner.)
+## Craft upgrades applied to all four shots
 
-## The four shots
+These rules replace the previous "premium editorial" defaults:
 
-**1. The transformation moment** — `hero-home-transformation.jpg`
-Diverse female client (mid-race / mid-30s) finishing a heavy sled push on the gym floor at dusk — head down, jaw set, sweat glow, hands on the sled handles. A REPS-branded male coach (Black, late-20s, lean) softly defocused half a step behind her cueing the next rep. Both wear REPS polos. Background: industrial windows, warm orange spill, blurred plate stack. **Story:** "Find. Trust. Train. Transform." literally — the moment the platform exists to create.
+- **Single-source dramatic light.** Overhead hard tungsten, or a single low rim light slicing across the subject. Kill the soft ambient fill.
+- **Volumetric atmosphere.** Visible haze / dust / breath / steam — light beams have to be readable.
+- **Elite athlete read.** Visible sinew, sharp jaw, real exertion. Not "fit person at gym" — "athlete mid-effort."
+- **Negative space as composition.** The left two-thirds isn't just "darker depth", it's a deliberate void with a single environmental cue (light beam, window, REPS wall mark) — so the headline lands like the title card of a film.
+- **One subject reads as the hero.** When the coach is in frame, they are deeply out of focus or backlit silhouette only — supporting cast, never co-lead. Solves the "two people standing around" feel.
+- **Closer crops.** Move from full-body to tight three-quarter or chest-up. Intimacy.
+- **REPS branding stays.** All-caps wordmark on garment (rule respected). One defocused REPS environment mark where it's natural — never two competing logos.
+- **Stack-wide grade preserved.** Cool blue-grey shadows, warm tungsten/orange highlights, dusk register — same family as pillar heroes, just pushed harder.
 
-**2. The first session** — `hero-home-first-session.jpg`
-REPs coach (East-Asian female, early 30s) on the gym floor at dusk, three-quarters to camera, mid-cue gesturing toward a tablet she's holding. A new client (white male, late 30s, gym kit, listening) stands across from her. REPS wall mark behind. **Story:** "Get matched with a verified coach" — the moment you walk in for session one.
+## The four new shots
 
-**3. The confident client** — `hero-home-confident-client.jpg`
-Editorial portrait of a real-looking female client (Middle-Eastern / mid-40s, towel round neck, water bottle in hand, post-session) standing in a boutique REPs studio at dusk. Calm half-smile, direct to camera. REPS wall mark softly defocused behind. A REPS coach is barely visible, fully out of focus, in the deep background. **Story:** "This could be you." Aspirational, client-led.
+**1. The corner** — `hero-home-v2-corner.jpg`
+*Reference: boxing-corner photography, Apple Fitness+ trainer cue frames.*
+Extreme tight three-quarter back of a Black female client mid heavy back-squat lockout under a barbell — traps loaded, jaw set, beads of sweat catching a warm rim light. Just over her shoulder, almost in her ear, a REPS-polo coach (white male, late 30s, calm) leaning in to cue her breath, eyes locked on the bar path. Dramatic single overhead tungsten cone, volumetric haze, plates and rack edge falling into pitch-black depth. **Story:** "Someone in your corner." Intimacy of real coaching.
 
-**4. The crew** — `hero-home-coach-crew.jpg`
-Four REPs-branded coaches (mixed ethnicity + gender — Black female, South-Asian male, white female, East-Asian male) on the gym floor at dusk, mid-conversation, holding clipboards/tablets. REPS wall mark behind. Subject group anchored slightly right so left two-thirds stays clean. **Story:** "The network of verified pros." Coach-heavy — useful for /about, /for-professionals or /find-a-professional rather than the homepage if you ask me, but generated anyway.
+**2. The cold dawn** — `hero-home-v2-dawn.jpg`
+*Reference: Nike "Find Your Greatness", On Running brand films.*
+Cinematic wide of a single female client (East-Asian, late 20s, elite-runner build) running uphill on a wet London street at blue hour — slick tarmac, breath visible, hi-vis-free, just power and quiet. A REPS-branded coach (mixed-race male, jacket over polo, stopwatch in hand) keeps pace one stride behind her, deeply defocused. Architecture frames them: a softened Battersea / Stratford silhouette in the deep background, single warm streetlight as the only fill. Wet asphalt reflects cold sky. **Story:** "With you at the hardest hour." Aspiration without a gym.
+
+**3. The mid-rep film still** — `hero-home-v2-mid-rep.jpg`
+*Reference: Tonal launch reel, Nike commercial film stills.*
+Single hero: Latina female client (early 30s, athletic) mid-deadlift lockout, hips driving through, knurling visible on the bar, chalk dust kicking off the floor catching a single hard overhead tungsten beam. The REPS coach is a silhouette only, far deep background, watching from the rack — readable as a presence, not a face. Composition is vertical and brutal: the lift, the light, the dust. Cool blue gym depth, warm overhead spear. **Story:** "Train like you mean it." Pure performance.
+
+**4. The exhale** — `hero-home-v2-exhale.jpg`
+*Reference: Future app brand films, Whoop intimate portraiture.*
+Tight, intimate: Middle-Eastern female client sitting on a bench between sets, elbows on knees, head down, chest still rising, sweat in her hair, towel hanging. The REPS coach (South-Asian female, late 20s, polo, calm) is kneeling in front of her at the same eye level, palm out, coaching her breath through the rest interval. The coach is softly out of focus, the client is sharp. Single warm low side light. The least-photographed moment in fitness and the one that sells the brand. **Story:** "The human bit no algorithm can replace." Trust.
 
 ## Generation + delivery
 
-1. Use `imagegen--generate_image` premium, 1920×1280, four separate calls.
-2. Upload each via `lovable-assets create` → write four `.asset.json` pointers under `src/assets/`:
-   - `hero-home-transformation.jpg.asset.json`
-   - `hero-home-first-session.jpg.asset.json`
-   - `hero-home-confident-client.jpg.asset.json`
-   - `hero-home-coach-crew.jpg.asset.json`
-3. Show all four back to you in chat — you pick the winner.
-4. Once chosen, swap the homepage import in `src/routes/index.tsx`:
-   - Replace `import heroCoaching from "@/assets/hero-coaching-moment.jpg"` with the chosen pointer (`import heroHome from "@/assets/hero-home-{chosen}.jpg.asset.json"`).
-   - Use `heroHome.url` in the existing `<img src={...} />` — nothing else changes (overlay, gradient, vignette, copy, avatars, search, chips, animations all stay).
-5. The other three pointers stay banked in `src/assets/` ready for /about, /find-a-professional, /how-it-works, /for-professionals later.
+1. `imagegen--generate_image` premium, 1920×1280, four parallel calls with the prompts above (each prompt explicitly specifies single-source lighting, volumetric haze, subject hierarchy, and REPS wordmark placement — no ambiguity).
+2. Upload each via `lovable-assets create` → four new `.asset.json` pointers under `src/assets/`:
+   - `hero-home-v2-corner.jpg.asset.json`
+   - `hero-home-v2-dawn.jpg.asset.json`
+   - `hero-home-v2-mid-rep.jpg.asset.json`
+   - `hero-home-v2-exhale.jpg.asset.json`
+3. Show all four back to you in chat. You pick the winner.
+4. After your pick, swap the import in `src/routes/index.tsx` (one line) and reference `chosen.url` in the existing `<img src={...} />`. Nothing else in the hero changes.
+5. The first batch of four (`hero-home-transformation`, `-first-session`, `-confident-client`, `-coach-crew`) stays banked — they're solid editorial fits for /about, /find-a-professional, /how-it-works, /for-professionals. If you'd rather I delete them to clean up the bench, say the word.
 
 ## Out of scope
 
-- No changes to the H1, sub, search form, goal chips, avatar row, stats, press marquee, or any section below the hero.
-- No changes to mobile (stays solid black, no image — matches today).
-- No swap of `hero-coaching-moment.jpg` yet — old asset stays in repo until you confirm the winner, in case you want to A/B.
-- "As featured in" press strip — you said we *can* change that but I'll handle it in a separate turn so this one stays focused.
+- No changes to H1, sub-headline, search form, goal chips, avatar/reviews row, press marquee, or anything below the hero.
+- No mobile changes (mobile stays solid black).
+- No "as featured in" press strip changes this turn.
 
 ## Files touched
 
-- `src/assets/hero-home-transformation.jpg.asset.json` — new
-- `src/assets/hero-home-first-session.jpg.asset.json` — new
-- `src/assets/hero-home-confident-client.jpg.asset.json` — new
-- `src/assets/hero-home-coach-crew.jpg.asset.json` — new
-- `src/routes/index.tsx` — single import line + single `src` reference, AFTER you pick (handled this turn once you've chosen)
+- `src/assets/hero-home-v2-corner.jpg.asset.json` — new
+- `src/assets/hero-home-v2-dawn.jpg.asset.json` — new
+- `src/assets/hero-home-v2-mid-rep.jpg.asset.json` — new
+- `src/assets/hero-home-v2-exhale.jpg.asset.json` — new
+- `src/routes/index.tsx` — single import line + single `src` reference, AFTER you pick the winner
