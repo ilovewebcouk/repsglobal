@@ -25,8 +25,8 @@ export const Route = createFileRoute("/features/visibility")({
   component: () => (
     <FeatureGroupLayout
       groupKey="visibility"
-      heroLead="Get found by"
-      heroAccent="the right clients."
+      heroLead="Not just a listing."
+      heroAccent="The verified profile the public already trusts."
       heroImage={{
         src: heroVisibility.url,
         alt: "Verified REPs trainer standing outside a premium boutique studio at dusk",

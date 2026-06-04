@@ -4,6 +4,7 @@ import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 import {
   FEATURES,
   FEATURE_GROUPS,
@@ -102,7 +103,12 @@ export function FeatureGroupLayout({
             </div>
           </div>
         </section>
-      ) : (
+      ) : null}
+
+      {/* PRESS MARQUEE — only when running the photo-hero variant */}
+      {heroImage && heroLead && heroAccent && <PressMarquee />}
+
+      {!(heroImage && heroLead && heroAccent) && (
         <section className="relative overflow-hidden border-b border-reps-border">
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
           <div className="relative mx-auto grid max-w-[1240px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-10 lg:py-24">
