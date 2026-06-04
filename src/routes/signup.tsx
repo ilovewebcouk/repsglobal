@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Apple,
@@ -123,6 +123,13 @@ export const Route = createFileRoute("/signup")({
       period: ["monthly", "annual"].includes(period as string) ? period : undefined,
       next: next === "checkout" ? "checkout" : undefined,
     };
+  },
+
+  beforeLoad: ({ search }) => {
+    // REPs is paid-only — a bare /signup with no plan choice goes back to pricing.
+    if (!search.tier) {
+      throw redirect({ to: "/pricing" });
+    }
   },
 
   head: () => ({

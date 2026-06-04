@@ -69,7 +69,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                to="/signup"
+                to="/pricing"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
                 Start free <ArrowRight className="h-4 w-4" />
@@ -255,7 +255,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
-                to="/signup"
+                to="/pricing"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
                 Join REPs <ArrowRight className="h-4 w-4" />
