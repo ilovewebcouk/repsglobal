@@ -65,7 +65,7 @@ export function PillarPage({
       <PublicHeader variant="solid" />
 
       {/* HERO — full-bleed moody backdrop with device cluster (mirrors /for-professionals) */}
-      <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[860px]">
+      <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1000px]">
         <img
           src={heroBgSrc}
           alt={heroBgAlt}
