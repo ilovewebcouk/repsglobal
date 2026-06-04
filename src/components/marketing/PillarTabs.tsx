@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, ClipboardCheck, Dumbbell, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
+import { DeviceMockup } from "@/components/marketing/DeviceMockup";
 
 type Tab = {
   value: string;
@@ -10,7 +10,7 @@ type Tab = {
   title: string;
   body: string;
   bullets: string[];
-  imageLabel: string;
+  mockup: { device: "laptop" | "phone"; src: string; title: string };
 };
 
 const TABS: Tab[] = [
@@ -27,7 +27,7 @@ const TABS: Tab[] = [
       "One-click assignment, bulk edits across clients",
       "AI Programme Writer — drafted from a brief",
     ],
-    imageLabel: "Programme builder mockup — screenshot coming",
+    mockup: { device: "laptop", src: "/dashboard/programs", title: "Programme builder preview" },
   },
   {
     value: "checkins",
@@ -42,7 +42,7 @@ const TABS: Tab[] = [
       "Nutrition targets vs actuals with deltas",
       "Progress photos and measurements side-by-side",
     ],
-    imageLabel: "Check-in review mockup — screenshot coming",
+    mockup: { device: "laptop", src: "/dashboard/check-ins", title: "Check-in review preview" },
   },
   {
     value: "record",
@@ -57,7 +57,7 @@ const TABS: Tab[] = [
       "Notes, bookings and payments in the same view",
       "Lifetime value and renewal date surfaced",
     ],
-    imageLabel: "Client record mockup — screenshot coming",
+    mockup: { device: "laptop", src: "/dashboard/clients", title: "Client record preview" },
   },
 ];
 
@@ -79,7 +79,7 @@ export function PillarTabs() {
       {TABS.map((t) => (
         <TabsContent key={t.value} value={t.value} className="mt-0">
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
-            <MockupPlaceholder label={t.imageLabel} />
+            <DeviceMockup {...t.mockup} />
             <div>
               <h3 className="font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
                 {t.title}

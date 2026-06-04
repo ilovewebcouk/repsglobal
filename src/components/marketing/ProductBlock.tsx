@@ -43,7 +43,7 @@ export function ProductBlock({
     >
       {mockup ? (
         mockup.device === "phone" ? (
-          <div className="mx-auto w-full max-w-[280px]">
+          <div className="mx-auto w-full max-w-[220px]">
             <DeviceMockup {...mockup} />
           </div>
         ) : (
