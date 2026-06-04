@@ -32,12 +32,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
-import pressMensHealth from "@/assets/press/mens-health.svg.asset.json";
-import pressWomensFitness from "@/assets/press/womens-fitness.svg.asset.json";
-import pressRunnersWorld from "@/assets/press/runners-world.svg.asset.json";
-import pressBbcSport from "@/assets/press/bbc-sport.svg.asset.json";
-import pressTheTimes from "@/assets/press/the-times.svg.asset.json";
-import pressGq from "@/assets/press/gq.svg.asset.json";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 export const Route = createFileRoute("/")({
   head: () => ({
