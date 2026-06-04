@@ -742,6 +742,35 @@ function ForProsMenu() {
   );
 }
 
+function AboutMenu() {
+  return (
+    <PanelShell width="w-[760px]">
+      <div className="grid grid-cols-3 gap-8">
+        {ABOUT_GROUPS.map((group) => (
+          <div key={group.heading}>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+              {group.heading}
+            </h4>
+            <ul className="mt-3 flex flex-col gap-1">
+              {group.links.map((l) => (
+                <li key={l.to}>
+                  <NavigationMenu.Link asChild>
+                    <Link to={l.to} className={menuItemClass}>
+                      {l.label}
+                    </Link>
+                  </NavigationMenu.Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+
+
 
 /* ---------------- user menu (mock auth shell) ---------------- */
 
