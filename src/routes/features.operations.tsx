@@ -111,12 +111,6 @@ export const Route = createFileRoute("/features/operations")({
         src: heroOperations.url,
         alt: "Trainer reviewing the day's schedule on a tablet at a boutique studio reception desk",
       }}
-
-      heroCluster={{
-        laptopSrc: "/dashboard/calendar",
-        laptopTitle: "REPs calendar preview",
-        phoneSrc: "/portal/today",
-      }}
       features={FEATURES}
     />
   ),
