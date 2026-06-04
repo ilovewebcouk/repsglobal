@@ -33,6 +33,7 @@ export const Route = createFileRoute("/features/ai")({
         property: "og:description",
         content: "Not just AI features. An AI operating layer for your fitness business.",
       },
+      { property: "og:image", content: heroAi.url },
       { property: "og:url", content: "https://repsglobal.lovable.app/features/ai" },
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/ai" }],
