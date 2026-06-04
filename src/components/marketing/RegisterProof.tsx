@@ -41,7 +41,7 @@ export function RegisterProof() {
             <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
               <p.icon className="h-5 w-5" />
             </span>
-            <div className="mt-4 font-display text-[26px] font-bold leading-none text-white">
+            <div className="mt-4 font-display text-[20px] font-bold leading-none text-white">
               {p.stat}
             </div>
             <h3 className="mt-2 font-display text-[15px] font-bold uppercase tracking-wider text-white/90">
