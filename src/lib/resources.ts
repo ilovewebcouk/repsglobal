@@ -2990,3 +2990,31 @@ export function getRelated(slug: string, category: ResourceCategory, limit = 3):
   const others = RESOURCE_ARTICLES.filter((a) => a.slug !== slug && a.category !== category);
   return [...sameCat, ...others].slice(0, limit);
 }
+
+// --- Featured / latest helpers ---
+// Editorial contract: set `featured: true` on an article in this file and it
+// shows up in the header dropdown's Featured column and is eligible for the
+// /resources hero. Everything else flows from the `date` field (newest first).
+
+const byDateDesc = (a: ResourceArticle, b: ResourceArticle) => b.date.localeCompare(a.date);
+
+export function getFeaturedArticles(limit?: number): ResourceArticle[] {
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  if (limit === undefined) return flagged;
+  if (flagged.length >= limit) return flagged.slice(0, limit);
+  const flaggedSlugs = new Set(flagged.map((a) => a.slug));
+  const topUp = RESOURCE_ARTICLES
+    .filter((a) => !flaggedSlugs.has(a.slug))
+    .sort(byDateDesc)
+    .slice(0, limit - flagged.length);
+  return [...flagged, ...topUp];
+}
+
+export function getLatestArticles(limit: number): ResourceArticle[] {
+  return [...RESOURCE_ARTICLES].sort(byDateDesc).slice(0, limit);
+}
+
+export function getHeroFeatured(): ResourceArticle {
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  return flagged[0] ?? [...RESOURCE_ARTICLES].sort(byDateDesc)[0];
+}
