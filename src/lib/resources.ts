@@ -407,6 +407,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "19 May 2026",
     readTime: "7 min read",
     cover: coverPtCost,
+    featured: true,
     body: [
       {
         type: "p",
@@ -730,6 +731,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "17 March 2026",
     readTime: "8 min read",
     cover: coverFirst30Days,
+    featured: true,
     body: [
       {
         type: "p",
@@ -900,6 +902,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "14 April 2026",
     readTime: "7 min read",
     cover: coverLevel4,
+    featured: true,
     body: [
       {
         type: "p",
@@ -1008,6 +1011,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "2 June 2026",
     readTime: "5 min read",
     cover: coverWhatsNew,
+    featured: true,
     body: [
       {
         type: "p",
@@ -1787,6 +1791,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "29 April 2026",
     readTime: "6 min read",
     cover: coverBuildingASixFigurePtBusiness,
+    featured: true,
     body: [
       { type: "p", text: "At REPs, we regularly speak with qualified trainers who aspire to build a sustainable, highly profitable business. The modern fitness landscape is full of bold promises about reaching six figures overnight, yet the practical, daily operational reality of managing such a business is rarely discussed. Generating £100,000 in annual revenue as a solo practitioner in the UK is entirely achievable, but it requires a structured mix of client services, professional time management, and a robust understanding of your overheads rather than simply working yourself to the point of exhaustion. It is about working smarter, not just longer." },
       { type: "h2", text: "The mathematics of a hundred-thousand pound business" },
