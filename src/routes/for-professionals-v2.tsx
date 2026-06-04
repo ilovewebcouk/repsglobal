@@ -1,0 +1,427 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Brain,
+  ClipboardCheck,
+  Dumbbell,
+  PenTool,
+  ScanLine,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+  Wand2,
+  Calendar,
+} from "lucide-react";
+
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { RegisterProof } from "@/components/marketing/RegisterProof";
+import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+import { ProductBlock } from "@/components/marketing/ProductBlock";
+import { PillarTabs } from "@/components/marketing/PillarTabs";
+import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
+import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
+import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
+import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock";
+import { WeekWithReps } from "@/components/marketing/WeekWithReps";
+import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
+import { ForProsFaq } from "@/components/marketing/ForProsFaq";
+
+import heroTrainer from "@/assets/hero-trainer.jpg";
+import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
+import gq from "@/assets/press/gq.svg.asset.json";
+import mensHealth from "@/assets/press/mens-health.svg.asset.json";
+import runnersWorld from "@/assets/press/runners-world.svg.asset.json";
+import theTimes from "@/assets/press/the-times.svg.asset.json";
+import womensFitness from "@/assets/press/womens-fitness.svg.asset.json";
+
+export const Route = createFileRoute("/for-professionals-v2")({
+  head: () => ({
+    meta: [
+      { title: "For Professionals (v2) — REPs" },
+      {
+        name: "description",
+        content:
+          "The verified register the public already searches — and the AI operating system that runs the rest of your practice. v2 preview.",
+      },
+      { property: "og:title", content: "Join REPs — For Professionals (v2)" },
+      { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals-v2" },
+    ],
+    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals-v2" }],
+  }),
+  component: ForProsV2Page,
+});
+
+const PRESS = [
+  { name: "The Times", url: theTimes.url },
+  { name: "BBC Sport", url: bbcSport.url },
+  { name: "Men's Health", url: mensHealth.url },
+  { name: "Women's Fitness", url: womensFitness.url },
+  { name: "Runner's World", url: runnersWorld.url },
+  { name: "GQ", url: gq.url },
+];
+
+const AI_CAPS = [
+  { icon: Dumbbell, title: "Programmes, drafted in seconds", body: "One-line brief in, 12-week plan out — exercises, sets, video demos." },
+  { icon: ClipboardCheck, title: "Check-ins, read for you", body: "Six check-ins summarised into one card: headline, change, ask." },
+  { icon: ScanLine, title: "Leads, scored and answered", body: "Every enquiry scored on intent, first-draft reply ready to send." },
+  { icon: Sparkles, title: "Next Move, every Monday", body: "The single highest-leverage action this week — ranked by impact." },
+  { icon: AlertTriangle, title: "Risk, flagged before it churns", body: "Adherence watched — REPs tells you who's about to ghost." },
+  { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
+];
+
+function ForProsV2Page() {
+  return (
+    <div className="min-h-screen bg-reps-ink text-reps-text">
+      <PublicHeader variant="solid" />
+      <StickyCtaPill />
+
+      {/* HERO — tighter */}
+      <section className="relative overflow-hidden border-b border-reps-border">
+        <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(55%_55%_at_25%_30%,rgba(255,122,0,0.22),transparent_70%)]"
+        />
+        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-32">
+          <div className="max-w-[820px]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[12px] font-semibold text-white/80 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> For professionals
+            </span>
+            <h1 className="mt-6 font-display text-[48px] font-bold leading-[1.02] text-white lg:text-[76px]">
+              Not just software.
+              <br />
+              <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
+            </h1>
+            <p className="mt-6 max-w-[640px] text-[17px] leading-relaxed text-white/75">
+              REPs has been the fitness industry's verified register since 2009. Now it's also
+              the operating system that runs your practice — programmes drafted, check-ins
+              summarised, leads scored, risks flagged, next moves ranked.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/pricing"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+              >
+                See pricing & join <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/compare"
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
+              >
+                Compare with Trainerize
+              </Link>
+            </div>
+          </div>
+        </div>
+        {/* Trust strip */}
+        <div className="relative border-t border-reps-border/60 bg-reps-ink/60 backdrop-blur">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-5 text-[12.5px] text-white/65 sm:grid-cols-4 lg:px-10">
+            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> 25,000+ verified pros</span>
+            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> 4.8★ average rating</span>
+            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register since 2009</span>
+            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> 1M+ sessions booked</span>
+          </div>
+        </div>
+      </section>
+
+      {/* PRESS */}
+      <section className="border-b border-reps-border bg-reps-panel/30">
+        <div className="mx-auto max-w-[1240px] px-6 py-8 lg:px-10">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">As featured in</span>
+            {PRESS.map((p) => (
+              <img key={p.name} src={p.url} alt={p.name} className="h-5 brightness-0 invert opacity-80 lg:h-6" loading="lazy" />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ACT 1 — REGISTER */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="max-w-[720px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Act 1 · Get clients
+            </span>
+            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+              The register the public already searches.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{" "}
+              <em>and</em> clients — because the public already lands here when they're looking for a trusted pro.
+            </p>
+          </div>
+          <div className="mt-10"><RegisterProof /></div>
+        </div>
+      </section>
+
+      {/* VISIBILITY SHOWCASE */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <ProductBlock
+            eyebrow="Verified profile"
+            title="Become the obvious choice in your area."
+            body="Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the UK's verified register since 2009."
+            bullets={[
+              "Verified badge backed by a 16-year register",
+              "Qualifications, insurance and CPD shown live",
+              "Reviews on the public record — not screenshotted on Instagram",
+              "Indexed by location, specialism and price band",
+            ]}
+            imageLabel="Profile + directory mockup — screenshot coming"
+            ctaLabel="See the profile"
+            ctaHref="/features/visibility"
+          />
+        </div>
+      </section>
+
+      {/* ACT 2 — PILLARS */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="max-w-[720px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Act 2 · Run your practice
+            </span>
+            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+              Five pillars. One operating system.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              When clients arrive, REPs runs the rest. Built for fitness — every booking,
+              programme, check-in and message wired into the same client record.
+            </p>
+          </div>
+          <div className="mt-10"><ReplacesStrip /></div>
+        </div>
+      </section>
+
+      {/* PILLAR 1 — LEADS */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <ProductBlock
+            eyebrow="Pillar 1 · Leads CRM"
+            title="Stop losing the clients you've already won."
+            body="Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab."
+            bullets={[
+              "Pipeline stages from enquiry to booked consult",
+              "Source tracking — know which channel pays",
+              "Automated follow-up reminders, never another cold lead",
+              "AI lead scoring and reply drafts ready to send",
+            ]}
+            imageLabel="Leads pipeline mockup — screenshot coming"
+            ctaLabel="See the pipeline"
+            ctaHref="/features/operations"
+          />
+        </div>
+      </section>
+
+      {/* PILLAR 2 — COACHING (TABBED) */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="mb-10 max-w-[720px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Pillar 2 · Coaching
+            </span>
+            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
+              Programmes, check-ins and the full client record — in one tool.
+            </h2>
+          </div>
+          <PillarTabs />
+        </div>
+      </section>
+
+      {/* FEATURE TESTIMONIAL */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <TestimonialFeature />
+        </div>
+      </section>
+
+      {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <ProductBlock
+            eyebrow="Pillar 3 · Bookings & payments"
+            title="Your schedule and your revenue, in one place."
+            body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
+            bullets={[
+              "Calendar with availability and session types",
+              "Stripe-powered payments and subscriptions — no per-booking commission, ever",
+              "Live revenue, paid, pending and overdue",
+              "Per-client invoice and payment history",
+            ]}
+            imageLabel="Bookings + payments mockup — screenshot coming"
+            ctaLabel="Explore Operations"
+            ctaHref="/features/operations"
+            reverse
+          />
+        </div>
+      </section>
+
+      {/* PILLAR 4 — CLIENT PORTAL */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <ProductBlock
+            eyebrow="Pillar 4 · Client portal"
+            title="The app your clients tell their friends about."
+            body="What your clients see matters as much as what you see. A portal that looks like a premium product, not a beta. Today's session, this week's targets, next booking, last message — wherever they open it."
+            bullets={[
+              "Client dashboard on web and mobile",
+              "Programme, nutrition and check-ins in one tab each",
+              "One-tap check-in with photos and metrics",
+              "Bookings and payment history visible to the client",
+            ]}
+            imageLabel="Client portal mockup — screenshot coming"
+            ctaLabel="Explore Client Portal"
+            ctaHref="/features/coaching"
+          />
+        </div>
+      </section>
+
+      {/* COMPARISON */}
+      <section className="border-b border-reps-border bg-reps-panel/30">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="mx-auto mb-10 max-w-[680px] text-center">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              The honest comparison
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              What you actually get for your money.
+            </h2>
+          </div>
+          <ComparisonStrip />
+        </div>
+      </section>
+
+      {/* TRIAD TESTIMONIALS */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="mb-10 max-w-[640px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Loved by working pros
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              Coaches who replaced the stack.
+            </h2>
+          </div>
+          <TestimonialTriad />
+        </div>
+      </section>
+
+      {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
+      <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(55%_50%_at_75%_40%,rgba(255,122,0,0.12),transparent_70%)]"
+        />
+        <div className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
+                <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPs AI Operating System
+              </span>
+              <h2 className="mt-4 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
+                The AI layer behind your fitness business.
+              </h2>
+              <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/75">
+                Fourteen AI capabilities working across programmes, check-ins, leads, risk
+                and growth — drafting work, scoring intent, flagging churn, ranking the
+                single move that pays this week. You stay the coach.
+              </p>
+              <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-4 py-2">
+                <Brain className="h-5 w-5 text-reps-orange" />
+                <span className="font-display text-[24px] font-bold leading-none text-reps-orange">14</span>
+                <span className="text-[12.5px] text-white/80">AI capabilities, included in every paid tier</span>
+              </div>
+            </div>
+            <AiCommandCentreMock />
+          </div>
+
+          <div className="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {AI_CAPS.map((c) => (
+              <div key={c.title} className="rounded-[16px] border border-reps-border bg-reps-panel/60 p-5">
+                <c.icon className="h-5 w-5 text-reps-orange" />
+                <div className="mt-3 text-[14.5px] font-semibold text-white">{c.title}</div>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* A WEEK WITH REPS */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="mb-10 max-w-[680px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              A week with REPs
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              Monday to Friday, ranked and ready.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              The five things REPs surfaces every week so you spend your time coaching, not catching up.
+            </p>
+          </div>
+          <WeekWithReps />
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
+          <div className="mb-8">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              The straight answers.
+            </h2>
+          </div>
+          <ForProsFaq />
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section>
+        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 text-center lg:p-16">
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
+            />
+            <div className="relative">
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
+              </span>
+              <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+                Join 25,000+ verified pros.
+              </h2>
+              <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
+                Founding Pro pricing is available only before public launch.
+                Every feature in your tier is included — no paid add-ons.
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+                >
+                  See pricing & join <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/compare"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
+                >
+                  Compare with other platforms
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <PublicFooter />
+    </div>
+  );
+}
