@@ -8,6 +8,10 @@ import { MockupStage } from "@/components/marketing/MockupStage";
 import { ActIntro } from "@/components/marketing/ActIntro";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
+import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
+
+import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
+
 import {
   FEATURE_GROUPS,
   type FeatureGroupKey,
@@ -23,78 +27,116 @@ const GROUP_ROUTES = {
 } as const;
 
 export type PillarFeature = {
-  /** Eyebrow chip text (e.g. "Bookings"). */
   tag: string;
-  /** Big H2 headline for this feature. */
   title: string;
-  /** Supporting paragraph. */
   body: string;
-  /** Outcome bullets (3–5 ideal). */
   bullets: string[];
-  /** Mockup component (already styled — no wrapping needed). */
   mockup: React.ReactNode;
-  /** Optional deep-dive link to /features/$slug. */
   learnMoreSlug?: string;
 };
 
 type Props = {
   groupKey: FeatureGroupKey;
-  /** Lead mockup rendered in the hero. */
-  heroMockup: React.ReactNode;
-  /** Feature blocks rendered as alternating image/copy rows. */
+  /** Two-line H1. `lead` renders white; `accent` renders in brand orange beneath it. */
+  heroLead: string;
+  heroAccent: string;
+  /** Routes shown in the laptop + floating phone of the device cluster. */
+  heroCluster: {
+    laptopSrc: string;
+    laptopTitle?: string;
+    laptopScale?: number;
+    phoneSrc?: string | null;
+    phoneTitle?: string;
+    phoneScale?: number;
+  };
   features: PillarFeature[];
-  /** Optional extra section (e.g. AI assist strip) rendered before comparison. */
   children?: React.ReactNode;
 };
 
-export function PillarPage({ groupKey, heroMockup, features, children }: Props) {
+export function PillarPage({
+  groupKey,
+  heroLead,
+  heroAccent,
+  heroCluster,
+  features,
+  children,
+}: Props) {
   const group = groupBySlug(groupKey);
   const otherGroups = FEATURE_GROUPS.filter((g) => g.key !== groupKey);
-  const Icon = group.icon;
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      {/* HERO */}
+      {/* HERO — full-bleed moody gym backdrop with device cluster (mirrors /for-professionals) */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(70%_55%_at_50%_0%,rgba(255,122,0,0.12),transparent)]" />
-        <div className="relative mx-auto grid max-w-[1240px] gap-12 px-6 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16 lg:px-10 lg:py-28">
-          <div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
-              <Icon className="h-3.5 w-3.5 text-reps-orange" />
-              {group.hero.eyebrow}
-            </span>
-            <h1 className="mt-5 font-display text-[44px] font-bold leading-[1.05] text-white lg:text-[60px]">
-              {group.hero.title}
-            </h1>
-            <p className="mt-5 max-w-[540px] text-[17px] leading-relaxed text-white/75">
-              {group.hero.sub}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/pricing"
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
-              >
-                Start free <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/pricing"
-                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
-              >
-                See pricing
-              </Link>
+        <img
+          src={heroGym.url}
+          alt=""
+          width={1920}
+          height={1080}
+          className="absolute inset-0 h-full w-full object-cover object-left"
+        />
+        {/* Legibility overlay */}
+        <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
+        {/* Copy-zone vignette */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.72),transparent_75%)] lg:bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
+        />
+        {/* Right-edge fade */}
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-transparent to-reps-ink/85 lg:block" />
+        {/* Brand glow */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
+        />
+        {/* Floor seal — smooth resolve into the press marquee */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
+        />
+
+        <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
+            {/* Left: copy */}
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> {group.hero.eyebrow}
+              </span>
+              <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
+                {heroLead}
+                <br />
+                <span className="text-reps-orange">{heroAccent}</span>
+              </h1>
+              <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
+                {group.hero.sub}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/signup"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+                >
+                  Join REPs <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/features"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
+                >
+                  Explore features
+                </Link>
+              </div>
             </div>
-          </div>
-          <div className="lg:pl-2">
-            <MockupStage variant="laptop">
-              <BrowserFrame>{heroMockup}</BrowserFrame>
-            </MockupStage>
+
+            {/* Right: device cluster — hidden on small screens */}
+            <div className="relative hidden md:block">
+              <HeroDeviceCluster {...heroCluster} />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PRESS MARQUEE — bridges hero to feature blocks on the same ink surface */}
+      {/* PRESS MARQUEE — same ink continuum as hero + Act 1 */}
       <PressMarquee />
 
       {/* ACT INTRO */}

@@ -101,6 +101,16 @@ export const Route = createFileRoute("/features/operations")({
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/operations" }],
   }),
   component: () => (
-    <PillarPage groupKey="operations" heroMockup={<BookingsMockup />} features={FEATURES} />
+    <PillarPage
+      groupKey="operations"
+      heroLead="Not just bookings."
+      heroAccent="An operating system for your whole practice."
+      heroCluster={{
+        laptopSrc: "/dashboard/calendar",
+        laptopTitle: "REPs calendar preview",
+        phoneSrc: "/portal/today",
+      }}
+      features={FEATURES}
+    />
   ),
 });
