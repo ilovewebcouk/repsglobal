@@ -20,7 +20,7 @@ export function LegalShell({
     <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
       <div className="bg-reps-ink text-reps-text">
         <PublicHeader variant="solid" />
-        <div className="mx-auto max-w-[1240px] px-6 pb-14 pt-10 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-10 lg:px-10">
           <span className="inline-flex items-center rounded-full bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-orange">
             {eyebrow}
           </span>
@@ -34,7 +34,7 @@ export function LegalShell({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1240px] gap-12 px-6 py-16 lg:grid-cols-[260px_minmax(0,1fr)] lg:px-10">
+      <div className="mx-auto grid max-w-[1320px] gap-12 px-6 py-16 lg:grid-cols-[260px_minmax(0,1fr)] lg:px-10">
         <aside className="lg:sticky lg:top-10 lg:self-start">
           <div className="rounded-[18px] border border-reps-stone bg-white p-5">
             <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">

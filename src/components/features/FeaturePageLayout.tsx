@@ -56,7 +56,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-reps-border">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
-        <div className="relative mx-auto grid max-w-[1240px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-10 lg:py-24">
+        <div className="relative mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-10 lg:py-24">
           <div className="flex flex-col justify-center">
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
               <feature.icon className="h-3.5 w-3.5 text-reps-orange" /> {props.hero.eyebrow}
@@ -90,7 +90,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
 
       {/* THREE PILLARS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <div className="grid gap-5 md:grid-cols-3">
             {props.pillars.map((p) => (
               <div
@@ -108,7 +108,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
 
       {/* DEEP-DIVE SECTIONS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1240px] space-y-20 px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] space-y-20 px-6 py-20 lg:px-10">
           {props.sections.map((s, i) => {
             const reverse = i % 2 === 1;
             return (
@@ -178,7 +178,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
 
       {/* RELATED + PLAN AVAILABILITY */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto grid max-w-[1240px] gap-10 px-6 py-16 lg:grid-cols-[1.4fr_1fr] lg:px-10">
+        <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-16 lg:grid-cols-[1.4fr_1fr] lg:px-10">
           <div>
             <h3 className="font-display text-[20px] font-bold text-white">Works with</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -244,7 +244,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
 
       {/* CTA */}
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <Sparkles className="mx-auto h-5 w-5 text-reps-orange" />
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">

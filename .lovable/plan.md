@@ -1,65 +1,28 @@
-# Hero overlay audit — soften so it darkens the photo, doesn't replace it
+## Goal
 
-## Problem (verified from live screenshot at 1484px)
+Align every section container with the navbar/footer (`max-w-[1320px]`) and finish the pillar-page hero cap fix from the previous turn.
 
-The current overlay is too heavy in three ways:
+## Changes
 
-1. **Left half is effectively solid black.** Gradient hits 0.95 opacity at 38%, so 0 → 38% of the width is just `#0B0D10` with no photo bleed-through. You can see a visible "edge" where the photo abruptly starts at ~40% — the hero reads as a black panel next to a photo, not as one cinematic image.
-2. **Overlay runs to 88%, darkening the right side.** The photo's already moody/dark and shot with cinematic rim lighting. Stacking 0.25 opacity over the subjects washes out faces, sunset, and rim light.
-3. **Contrast is overkill.** White headline on near-pure black is ~19:1 (WCAG requires ~4.5:1). We're paying a big visual cost for contrast we don't need.
+**1. Global container bump — `max-w-[1240px]` → `max-w-[1320px]`**
 
-The headline, paragraph, and search form sit on a solid black mat instead of feeling embedded in the scene.
+Find-replace across all 25 affected files (107 total occurrences). The 40px lateral gutter (`lg:px-10`) stays untouched — it keeps headlines off the screen edge on 13–14" laptops and preserves the press-marquee fade mask. Only the inner cap changes.
 
-## What to change
+Files touched:
+- Routes (19): `about`, `careers`, `compare`, `complaints`, `contact`, `cookies`, `cpd`, `faq`, `features.ai`, `for-professionals`, `help`, `how-it-works`, `press`, `pricing`, `resources.index`, `resources.$slug`, `specialisms`, `standards`, `verify`
+- Components (6): `pricing/FoundingBanner`, `features/PillarPage`, `features/FeatureGroupLayout`, `features/FeaturePageLayout`, `legal/LegalShell`, `marketing/HeadToHead`
 
-Single edit in `src/routes/index.tsx`, lines 157–163. No layout, copy, image, or transform changes.
+**2. Raise pillar hero cap — `lg:max-h-[1000px]` → `lg:max-h-[1440px]`**
 
-### Before
-
-```tsx
-<div
-  className="absolute inset-0"
-  style={{
-    backgroundImage:
-      "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 38%, rgba(11,13,16,0.75) 52%, rgba(11,13,16,0.25) 72%, rgba(11,13,16,0) 88%)",
-  }}
-/>
-```
-
-### After
-
-```tsx
-<div
-  className="absolute inset-0"
-  style={{
-    backgroundImage:
-      "linear-gradient(to right, rgba(11,13,16,0.85) 0%, rgba(11,13,16,0.7) 35%, rgba(11,13,16,0.3) 55%, rgba(11,13,16,0) 70%)",
-  }}
-/>
-```
-
-Changes:
-- **Start at 0.85, not 1.0** — left side is a darkened version of the gym, not a black void. You'll faintly see ambient light/atmosphere bleeding through.
-- **Smoother ramp** with only 4 stops instead of 5.
-- **Falloff completes at 70%, not 88%** — right side shows the photo at full intensity (subjects, sunset, kettlebell, rim light).
-- Final contrast for the headline still ~13:1 (well above WCAG AA).
-
-## QA after the change
-
-1. Live screenshot at the current viewport (1484px) — confirm:
-   - Headline, paragraph, search bar, pills, and trust strip remain clearly readable.
-   - You can see the photo subtly through the left side (darkened gym atmosphere, not solid black).
-   - The right side of the image (subjects, sunset, kettlebell) is brighter / more cinematic than before.
-   - No visible hard "edge" between black panel and photo.
-2. If the form/pills become hard to read against any subtle photo detail behind them, nudge the gradient one stop darker — but don't go back to a solid panel.
+In `src/components/features/PillarPage.tsx` and `src/components/features/FeatureGroupLayout.tsx`. This finishes the 1440p verification thread — hero now genuinely fills the viewport on 1080p, 1440p, and anything in between, while still capping ultra-tall 4K/5K monitors so the headline doesn't float in dead space.
 
 ## Out of scope
 
-- No layout changes.
-- No image swap (keep the original Black coach + Latina client image).
-- No copy changes.
-- Mobile/tablet unchanged (still solid black, image is `hidden lg:block`).
+- Navbar/footer themselves (already at 1320px — they're the reference)
+- Gutter (`lg:px-10`) — staying
+- Any full-bleed backgrounds (hero photo, dark ink, marquee) — already full-width
+- Any layout, copy, or component logic
 
-## Files touched
+## Verification after build
 
-- Edited: `src/routes/index.tsx` (one gradient string, ~7 lines)
+Spot-check 3 routes at 1484px viewport (current): pillar page (`/features/coaching`), pricing, and home — confirm the content edges line up vertically with the header's logo-left and account-right.

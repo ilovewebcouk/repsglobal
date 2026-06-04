@@ -184,7 +184,7 @@ function ArticlePage() {
       {/* Related */}
       {related.length > 0 && (
         <section className="border-t border-reps-border bg-reps-panel/30">
-          <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
             <h2 className="font-display text-[24px] font-bold text-white lg:text-[28px]">
               Related articles
             </h2>
@@ -227,7 +227,7 @@ function ArticlePage() {
 
       {/* CTA strip */}
       <section className="bg-reps-orange">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div>
             <h2 className="font-display text-[26px] font-bold leading-tight text-white lg:text-[30px]">
               Looking for a verified professional?

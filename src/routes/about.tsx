@@ -77,7 +77,7 @@ function AboutPage() {
       </section>
 
       <section className="border-b border-reps-border bg-reps-panel/40">
-        <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4 px-6 my-12 lg:px-10">
+        <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4 px-6 my-12 lg:px-10">
           {STATS.map((s) => (
             <div key={s.k} className="bg-reps-panel p-6 text-center">
               <div className="font-display text-[28px] font-bold text-white">{s.v}</div>
@@ -88,7 +88,7 @@ function AboutPage() {
       </section>
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
             <div>
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -109,7 +109,7 @@ function AboutPage() {
       </section>
 
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <h2 className="font-display text-[28px] font-bold text-white">What we stand for</h2>
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {VALUES.map((v) => (

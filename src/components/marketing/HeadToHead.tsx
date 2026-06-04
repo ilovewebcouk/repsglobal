@@ -38,7 +38,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-reps-border">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="relative mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
@@ -108,7 +108,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* THE HIDDEN COST STORY + CALCULATOR */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               The real monthly cost
@@ -126,7 +126,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* DAY IN THE LIFE */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               A day in the life
@@ -147,7 +147,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* SIDE-BY-SIDE UI */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Side by side
@@ -164,7 +164,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* SCENARIOS */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Three real scenarios
@@ -185,7 +185,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* VERDICT SCORECARD */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               The weighted verdict
@@ -207,7 +207,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* FEATURE PARITY TABLE (the receipts) */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               The receipts
@@ -259,14 +259,14 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* MIGRATION GUIDE */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <MigrationChecklist competitorName={c.name} steps={e.migration} />
         </div>
       </section>
 
       {/* WHEN COMPETITOR IS RIGHT */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-10">
               <span className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
@@ -353,7 +353,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
       {/* CROSS-LINKS + CTA */}
       <section>
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="grid gap-4 md:grid-cols-2">
             {others.map((s) => {
               const o = COMPETITORS[s];
@@ -436,7 +436,7 @@ function Editorial({
 }) {
   return (
     <section className="border-b border-reps-border">
-      <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-20">
+      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="max-w-[760px]">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             {eyebrow}

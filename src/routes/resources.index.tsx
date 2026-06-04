@@ -101,7 +101,7 @@ function ResourcesPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Resources
           </span>
@@ -137,7 +137,7 @@ function ResourcesPage() {
 
       {/* Category filter pills + sort */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap">
             {(["All", ...RESOURCE_CATEGORIES] as Filter[]).map((c) => {
               const active = filter === c;
@@ -182,7 +182,7 @@ function ResourcesPage() {
       {/* Featured article */}
       {!isFiltering && (
         <section className="border-b border-reps-border">
-          <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Featured
             </span>
@@ -220,7 +220,7 @@ function ResourcesPage() {
 
       {/* Article grid */}
       <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <div className="mb-6 flex items-center justify-between text-[13px] text-white/60">
             <span>
               {visible.length} {visible.length === 1 ? "article" : "articles"}
@@ -293,7 +293,7 @@ function ResourcesPage() {
 
       {/* CTA strip */}
       <section className="bg-reps-orange">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div>
             <h2 className="font-display text-[26px] font-bold leading-tight text-white lg:text-[30px]">
               Looking for a verified professional?
