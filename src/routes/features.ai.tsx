@@ -87,7 +87,12 @@ function AIGroupPage() {
   return (
     <FeatureGroupLayout
       groupKey="ai"
-      visual={<InsightsMockup />}
+      heroLead="Not just AI features."
+      heroAccent="An AI operating layer for your whole business."
+      heroImage={{
+        src: heroAi.url,
+        alt: "REPs-verified coach reviewing an AI-drafted programme on a tablet at a premium boutique gym at dusk",
+      }}
     >
       {/* NARRATIVE — 6 cards */}
       <section className="border-b border-reps-border">
