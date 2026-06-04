@@ -26,7 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroCoaching from "@/assets/home-hero-coaching-v2.jpg.asset.json";
+import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -152,15 +152,17 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover object-right"
+              style={{ transform: "translate3d(15%, 0, 0) scale(1.05)" }}
+              className="absolute inset-0 h-full w-full origin-right object-cover object-[center_30%]"
             />
             <div
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 35%, rgba(11,13,16,0.75) 50%, rgba(11,13,16,0.2) 70%, rgba(11,13,16,0) 85%)",
+                  "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 38%, rgba(11,13,16,0.75) 52%, rgba(11,13,16,0.25) 72%, rgba(11,13,16,0) 88%)",
               }}
             />
+
 
 
           </div>
