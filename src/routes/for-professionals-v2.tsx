@@ -458,7 +458,7 @@ function ForProsV2Page() {
                 <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Join 25,000+ verified pros.
+                Join the verified register.
               </h2>
               <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
                 Founding Pro pricing is available only before public launch.
