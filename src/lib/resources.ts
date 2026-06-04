@@ -2995,15 +2995,41 @@ export function getRelated(slug: string, category: ResourceCategory, limit = 3):
   return [...sameCat, ...others].slice(0, limit);
 }
 
-// --- Featured / latest helpers ---
-// Editorial contract: set `featured: true` on an article in this file and it
-// shows up in the header dropdown's Featured column and is eligible for the
-// /resources hero. Everything else flows from the `date` field (newest first).
+// --- Featured / latest helpers ---------------------------------------------
+//
+// EDITORIAL CONTRACT (read before touching):
+//
+// 1. To make an article eligible for the header "Featured" column and the
+//    /resources page hero, set `featured: true` on it in this file.
+// 2. To control the ORDER inside the Featured column, set `featuredOrder` to
+//    a positive integer. Lower wins (1 shows before 2). Articles without
+//    `featuredOrder` sort after pinned ones, newest `date` first.
+// 3. The /resources hero shows the single highest-priority featured article
+//    (lowest `featuredOrder`, then newest `date`). If nothing is flagged,
+//    it falls back to the newest article overall so the page never breaks.
+// 4. The "Latest" column in the header ignores `featured` entirely — it is
+//    always the newest articles by `date`.
+// 5. If fewer articles are flagged than the header asks for, the Featured
+//    column is topped up with the newest non-featured articles so the UI
+//    is never short. This is a safety net, not a substitute for curation.
+//
+// Full editor docs: see docs/08_resources_editorial.md
+// ---------------------------------------------------------------------------
 
 const byDateDesc = (a: ResourceArticle, b: ResourceArticle) => b.date.localeCompare(a.date);
 
+// Pinned (featuredOrder set) first by ascending order, then unpinned by date desc.
+const byFeaturedPriority = (a: ResourceArticle, b: ResourceArticle) => {
+  const ao = a.featuredOrder;
+  const bo = b.featuredOrder;
+  if (ao !== undefined && bo !== undefined) return ao - bo;
+  if (ao !== undefined) return -1;
+  if (bo !== undefined) return 1;
+  return byDateDesc(a, b);
+};
+
 export function getFeaturedArticles(limit?: number): ResourceArticle[] {
-  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byFeaturedPriority);
   if (limit === undefined) return flagged;
   if (flagged.length >= limit) return flagged.slice(0, limit);
   const flaggedSlugs = new Set(flagged.map((a) => a.slug));
@@ -3019,6 +3045,6 @@ export function getLatestArticles(limit: number): ResourceArticle[] {
 }
 
 export function getHeroFeatured(): ResourceArticle {
-  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byFeaturedPriority);
   return flagged[0] ?? [...RESOURCE_ARTICLES].sort(byDateDesc)[0];
 }
