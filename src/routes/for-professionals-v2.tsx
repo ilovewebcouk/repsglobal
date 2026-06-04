@@ -111,16 +111,16 @@ function ForProsV2Page() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  to="/pricing"
+                  to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs today <ArrowRight className="h-4 w-4" />
+                  Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/features"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
                 >
-                  Explore the platform
+                  Explore features
                 </Link>
               </div>
             </div>
