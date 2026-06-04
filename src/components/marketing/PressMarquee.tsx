@@ -19,24 +19,26 @@ export function PressMarquee() {
         As featured in
       </p>
 
-      <div
-        className="relative mt-8 overflow-hidden lg:mt-10"
-        style={{
-          maskImage:
-            "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-          WebkitMaskImage:
-            "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-        }}
-      >
-        <div className="press-marquee-track flex w-max items-center gap-16 lg:gap-24">
-          {[...LOGOS, ...LOGOS].map((name, i) => (
-            <span
-              key={`${name}-${i}`}
-              className="shrink-0 whitespace-nowrap text-[14px] font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-[15px]"
-            >
-              {name}
-            </span>
-          ))}
+      <div className="mx-auto mt-8 max-w-7xl px-6 lg:mt-10 lg:px-8">
+        <div
+          className="relative overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(to right, transparent, black 6%, black 94%, transparent)",
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent, black 6%, black 94%, transparent)",
+          }}
+        >
+          <div className="press-marquee-track flex w-max items-center gap-16 lg:gap-24">
+            {[...LOGOS, ...LOGOS].map((name, i) => (
+              <span
+                key={`${name}-${i}`}
+                className="shrink-0 whitespace-nowrap text-[14px] font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-[15px]"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
