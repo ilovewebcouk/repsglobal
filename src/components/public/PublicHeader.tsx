@@ -78,7 +78,6 @@ function useActive() {
   return {
     pathname,
     isHome: pathname === "/",
-    train: pathname.startsWith("/find-a-professional") && pathname.includes("goal"),
     find:
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
@@ -87,8 +86,6 @@ function useActive() {
       pathname.startsWith("/how-it-works"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),
-    howItWorks: pathname.startsWith("/how-it-works"),
-    features: pathname.startsWith("/features"),
     pros:
       pathname.startsWith("/for-professionals") ||
       pathname.startsWith("/features") ||
@@ -246,13 +243,13 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.pros || active.features)}>
+                  <NavigationMenu.Trigger className={triggerClass(active.pros)}>
                     For Professionals
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
                     />
-                    <ActiveDot show={active.pros || active.features} />
+                    <ActiveDot show={active.pros} />
                   </NavigationMenu.Trigger>
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <ForProsMenu />
@@ -517,7 +514,7 @@ function FindMenu() {
           <NavigationMenu.Link asChild>
             <Link
               to="/find-a-professional"
-              className="mt-3 block overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-colors hover:border-reps-orange-border focus:outline-none focus:border-reps-orange-border"
+              className="mt-3 block overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-colors hover:border-reps-orange-border focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60"
             >
               <div
                 className="h-24 w-full bg-cover bg-center"
@@ -871,7 +868,7 @@ function mobileLinkClass(active: boolean) {
 }
 
 const mobileSubLinkClass =
-  "block rounded-[8px] px-3 py-2 text-[14px] text-white/80 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/70";
+  "flex min-h-11 items-center rounded-[8px] px-3 py-2.5 text-[14px] text-white/80 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/70";
 
 function MobileDrawer({
   active,
@@ -948,7 +945,7 @@ function MobileDrawer({
           <AccordionItem value="find" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
                 active.find ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
@@ -1010,8 +1007,8 @@ function MobileDrawer({
           <AccordionItem value="pros" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
-                active.pros || active.features ? "text-white" : "text-white/85 hover:text-white",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
+                active.pros ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
               For Professionals
@@ -1089,7 +1086,7 @@ function MobileDrawer({
           <AccordionItem value="resources" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
                 active.resources ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
@@ -1125,7 +1122,7 @@ function MobileDrawer({
           <AccordionItem value="about" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
                 active.about ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
