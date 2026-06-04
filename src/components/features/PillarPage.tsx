@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, Sparkles, Zap } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
@@ -94,18 +94,42 @@ export function PillarPage({
 
         <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
           <div className="max-w-[640px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
+            <span
+              className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
+              style={{ animationDuration: "560ms", animationFillMode: "both" }}
+            >
               <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> {group.hero.eyebrow}
             </span>
-            <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
+            <h1
+              className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
+              style={{
+                animationDuration: "640ms",
+                animationDelay: "80ms",
+                animationFillMode: "both",
+              }}
+            >
               {heroLead}
               <br />
               <span className="text-reps-orange">{heroAccent}</span>
             </h1>
-            <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
+            <p
+              className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
+              style={{
+                animationDuration: "640ms",
+                animationDelay: "180ms",
+                animationFillMode: "both",
+              }}
+            >
               {group.hero.sub}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div
+              className="mt-8 flex animate-fade-in flex-wrap gap-3"
+              style={{
+                animationDuration: "640ms",
+                animationDelay: "260ms",
+                animationFillMode: "both",
+              }}
+            >
               <Link
                 to="/signup"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
@@ -119,6 +143,27 @@ export function PillarPage({
                 Explore features
               </Link>
             </div>
+            <ul
+              className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
+              style={{
+                animationDuration: "640ms",
+                animationDelay: "340ms",
+                animationFillMode: "both",
+              }}
+            >
+              <li className="inline-flex items-center gap-1.5">
+                <BadgeCheck className="h-4 w-4 text-reps-orange" />
+                Verified credentials
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <Zap className="h-4 w-4 text-reps-orange" />
+                10-minute setup
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-reps-orange" />
+                Every feature included — no add-ons
+              </li>
+            </ul>
           </div>
         </div>
       </section>
