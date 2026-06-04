@@ -61,8 +61,43 @@ export const RESOURCE_TOPICS: { category: string; label: string }[] = [
   { category: "Platform Updates", label: "Platform Updates" },
 ];
 
-export const RESOURCE_QUICK_LINKS = [
-  { to: "/standards" as const, label: "Our Standards" },
-  { to: "/verify" as const, label: "How verification works" },
-  { to: "/help" as const, label: "Help Centre" },
+// Editorial-only Resources dropdown — institutional links live under About REPs.
+export const RESOURCE_QUICK_LINKS: { to: "/resources"; label: string }[] = [];
+
+// For Professionals — supplementary links surfaced below pricing/compare/features.
+export const PRO_RESOURCES = [
+  { to: "/cpd" as const, label: "CPD & Education" },
+  { to: "/specialisms" as const, label: "Specialisms explained" },
+];
+
+// About REPs mega-menu — 3 columns of institutional, trust and support pages.
+export const ABOUT_GROUPS: {
+  heading: string;
+  links: { to: "/about" | "/careers" | "/press" | "/contact" | "/standards" | "/verify" | "/reviews" | "/complaints" | "/help" | "/faq"; label: string }[];
+}[] = [
+  {
+    heading: "Organisation",
+    links: [
+      { to: "/about", label: "About REPs" },
+      { to: "/careers", label: "Careers" },
+      { to: "/press", label: "Press" },
+      { to: "/contact", label: "Contact" },
+    ],
+  },
+  {
+    heading: "Standards & trust",
+    links: [
+      { to: "/standards", label: "Our Standards" },
+      { to: "/verify", label: "How verification works" },
+      { to: "/reviews", label: "Reviews" },
+      { to: "/complaints", label: "Complaints" },
+    ],
+  },
+  {
+    heading: "Support",
+    links: [
+      { to: "/help", label: "Help Centre" },
+      { to: "/faq", label: "FAQ" },
+    ],
+  },
 ];

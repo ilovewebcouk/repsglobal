@@ -45,7 +45,8 @@ import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import {
   RESOURCE_TOPICS,
-  RESOURCE_QUICK_LINKS,
+  PRO_RESOURCES,
+  ABOUT_GROUPS,
   TOP_LOCATIONS,
   TOP_PROFESSIONS,
 } from "./nav-config";
@@ -82,15 +83,31 @@ function useActive() {
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
       pathname.startsWith("/in/") ||
-      pathname.startsWith("/pro/"),
+      pathname.startsWith("/pro/") ||
+      pathname.startsWith("/how-it-works"),
     resources:
-      pathname.startsWith("/resources") ||
-      pathname.startsWith("/standards") ||
-      pathname.startsWith("/verify") ||
-      pathname.startsWith("/help"),
+      pathname === "/resources" || pathname.startsWith("/resources/"),
     howItWorks: pathname.startsWith("/how-it-works"),
     features: pathname.startsWith("/features"),
-    pros: pathname.startsWith("/for-professionals"),
+    pros:
+      pathname.startsWith("/for-professionals") ||
+      pathname.startsWith("/features") ||
+      pathname.startsWith("/pricing") ||
+      pathname.startsWith("/compare") ||
+      pathname.startsWith("/cpd") ||
+      pathname.startsWith("/specialisms") ||
+      pathname.startsWith("/signup"),
+    about:
+      pathname.startsWith("/about") ||
+      pathname.startsWith("/standards") ||
+      pathname.startsWith("/verify") ||
+      pathname.startsWith("/help") ||
+      pathname.startsWith("/faq") ||
+      pathname.startsWith("/careers") ||
+      pathname.startsWith("/press") ||
+      pathname.startsWith("/contact") ||
+      pathname.startsWith("/reviews") ||
+      pathname.startsWith("/complaints"),
   };
 }
 
@@ -257,14 +274,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
-                  <NavigationMenu.Link asChild>
-                    <Link
-                      to="/about"
-                      className={cn(triggerClass(false), "px-0")}
-                    >
-                      About REPs
-                    </Link>
-                  </NavigationMenu.Link>
+                  <NavigationMenu.Trigger className={triggerClass(active.about)}>
+                    About REPs
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+                    />
+                    <ActiveDot show={active.about} />
+                  </NavigationMenu.Trigger>
+                  <NavigationMenu.Content className="absolute right-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
+                    <AboutMenu />
+                  </NavigationMenu.Content>
                 </NavigationMenu.Item>
               </NavigationMenu.List>
             </NavigationMenu.Root>
@@ -556,21 +576,6 @@ function ResourcesMenu() {
               </li>
             ))}
           </ul>
-
-          <h4 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-            REPs explained
-          </h4>
-          <ul className="mt-3 flex flex-col gap-1">
-            {RESOURCE_QUICK_LINKS.map((l) => (
-              <li key={l.to}>
-                <NavigationMenu.Link asChild>
-                  <Link to={l.to} className={menuItemClass}>
-                    {l.label}
-                  </Link>
-                </NavigationMenu.Link>
-              </li>
-            ))}
-          </ul>
         </div>
         <ArticleColumn heading="Featured" articles={featured} />
         <ArticleColumn heading="Latest" articles={latest} />
@@ -665,6 +670,15 @@ function ForProsMenu() {
                 </Link>
               </NavigationMenu.Link>
             </li>
+            {PRO_RESOURCES.map((l) => (
+              <li key={l.to}>
+                <NavigationMenu.Link asChild>
+                  <Link to={l.to} className={menuItemClass}>
+                    {l.label}
+                  </Link>
+                </NavigationMenu.Link>
+              </li>
+            ))}
             <li>
               <NavigationMenu.Link asChild>
                 <Link
@@ -727,6 +741,35 @@ function ForProsMenu() {
     </PanelShell>
   );
 }
+
+function AboutMenu() {
+  return (
+    <PanelShell width="w-[760px]">
+      <div className="grid grid-cols-3 gap-8">
+        {ABOUT_GROUPS.map((group) => (
+          <div key={group.heading}>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+              {group.heading}
+            </h4>
+            <ul className="mt-3 flex flex-col gap-1">
+              {group.links.map((l) => (
+                <li key={l.to}>
+                  <NavigationMenu.Link asChild>
+                    <Link to={l.to} className={menuItemClass}>
+                      {l.label}
+                    </Link>
+                  </NavigationMenu.Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+
 
 
 /* ---------------- user menu (mock auth shell) ---------------- */
@@ -1023,6 +1066,13 @@ function MobileDrawer({
                     Compare platforms
                   </Link>
                 </li>
+                {PRO_RESOURCES.map((l) => (
+                  <li key={l.to}>
+                    <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
                 <li>
                   <Link
                     to="/signup"
@@ -1047,6 +1097,15 @@ function MobileDrawer({
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <ul className="flex flex-col px-1">
+                <li>
+                  <Link
+                    to="/resources"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "font-semibold text-white")}
+                  >
+                    All articles
+                  </Link>
+                </li>
                 {RESOURCE_TOPICS.map((t) => (
                   <li key={t.category}>
                     <Link
@@ -1059,37 +1118,41 @@ function MobileDrawer({
                     </Link>
                   </li>
                 ))}
-                {RESOURCE_QUICK_LINKS.map((l) => (
-                  <li key={l.to}>
-                    <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
               </ul>
             </AccordionContent>
           </AccordionItem>
 
-          <Link
-            to="/about"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(false), "block")}
-          >
-            About REPs
-          </Link>
+          <AccordionItem value="about" className="border-0">
+            <AccordionTrigger
+              className={cn(
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                active.about ? "text-white" : "text-white/85 hover:text-white",
+              )}
+            >
+              About REPs
+            </AccordionTrigger>
+            <AccordionContent className="pb-2">
+              <div className="flex flex-col gap-3 px-1">
+                {ABOUT_GROUPS.map((group) => (
+                  <div key={group.heading}>
+                    <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                      {group.heading}
+                    </p>
+                    <ul className="flex flex-col">
+                      {group.links.map((l) => (
+                        <li key={l.to}>
+                          <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                            {l.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
-
-        <div className="mt-6 border-t border-reps-border pt-4">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            Company
-          </p>
-          <ul className="flex flex-col">
-            <li><Link to="/about" onClick={onNavigate} className={mobileSubLinkClass}>About REPs</Link></li>
-            <li><Link to="/standards" onClick={onNavigate} className={mobileSubLinkClass}>Standards</Link></li>
-            <li><Link to="/complaints" onClick={onNavigate} className={mobileSubLinkClass}>Complaints</Link></li>
-            <li><Link to="/help" onClick={onNavigate} className={mobileSubLinkClass}>Help Centre</Link></li>
-          </ul>
-        </div>
       </nav>
 
       {user && (
