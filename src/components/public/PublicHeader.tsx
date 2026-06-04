@@ -78,7 +78,6 @@ function useActive() {
   return {
     pathname,
     isHome: pathname === "/",
-    train: pathname.startsWith("/find-a-professional") && pathname.includes("goal"),
     find:
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
@@ -87,8 +86,6 @@ function useActive() {
       pathname.startsWith("/how-it-works"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),
-    howItWorks: pathname.startsWith("/how-it-works"),
-    features: pathname.startsWith("/features"),
     pros:
       pathname.startsWith("/for-professionals") ||
       pathname.startsWith("/features") ||
