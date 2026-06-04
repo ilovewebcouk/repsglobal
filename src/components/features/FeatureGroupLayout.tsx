@@ -53,7 +53,7 @@ export function FeatureGroupLayout({
             alt={heroImage.alt ?? ""}
             width={1920}
             height={1280}
-            className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
+            className="absolute inset-0 h-full w-full object-cover object-top lg:object-right-top"
           />
           {/* Legibility wash */}
           <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/30" />
