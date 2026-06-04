@@ -1066,6 +1066,13 @@ function MobileDrawer({
                     Compare platforms
                   </Link>
                 </li>
+                {PRO_RESOURCES.map((l) => (
+                  <li key={l.to}>
+                    <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
                 <li>
                   <Link
                     to="/signup"
@@ -1090,6 +1097,15 @@ function MobileDrawer({
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <ul className="flex flex-col px-1">
+                <li>
+                  <Link
+                    to="/resources"
+                    onClick={onNavigate}
+                    className={cn(mobileSubLinkClass, "font-semibold text-white")}
+                  >
+                    All articles
+                  </Link>
+                </li>
                 {RESOURCE_TOPICS.map((t) => (
                   <li key={t.category}>
                     <Link
@@ -1102,37 +1118,41 @@ function MobileDrawer({
                     </Link>
                   </li>
                 ))}
-                {RESOURCE_QUICK_LINKS.map((l) => (
-                  <li key={l.to}>
-                    <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
               </ul>
             </AccordionContent>
           </AccordionItem>
 
-          <Link
-            to="/about"
-            onClick={onNavigate}
-            className={cn(mobileLinkClass(false), "block")}
-          >
-            About REPs
-          </Link>
+          <AccordionItem value="about" className="border-0">
+            <AccordionTrigger
+              className={cn(
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
+                active.about ? "text-white" : "text-white/85 hover:text-white",
+              )}
+            >
+              About REPs
+            </AccordionTrigger>
+            <AccordionContent className="pb-2">
+              <div className="flex flex-col gap-3 px-1">
+                {ABOUT_GROUPS.map((group) => (
+                  <div key={group.heading}>
+                    <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                      {group.heading}
+                    </p>
+                    <ul className="flex flex-col">
+                      {group.links.map((l) => (
+                        <li key={l.to}>
+                          <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                            {l.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
-
-        <div className="mt-6 border-t border-reps-border pt-4">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            Company
-          </p>
-          <ul className="flex flex-col">
-            <li><Link to="/about" onClick={onNavigate} className={mobileSubLinkClass}>About REPs</Link></li>
-            <li><Link to="/standards" onClick={onNavigate} className={mobileSubLinkClass}>Standards</Link></li>
-            <li><Link to="/complaints" onClick={onNavigate} className={mobileSubLinkClass}>Complaints</Link></li>
-            <li><Link to="/help" onClick={onNavigate} className={mobileSubLinkClass}>Help Centre</Link></li>
-          </ul>
-        </div>
       </nav>
 
       {user && (
