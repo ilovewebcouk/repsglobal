@@ -181,7 +181,7 @@ function ForProsPage() {
       {/* ACT 1 — REGISTER */}
       <section className="border-b border-reps-border bg-reps-ink">
 
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Act 1 · Get clients
