@@ -65,7 +65,9 @@ export function AiCommandCentreMock() {
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   );
 }
+
