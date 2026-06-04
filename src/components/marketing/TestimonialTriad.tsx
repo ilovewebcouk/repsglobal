@@ -1,6 +1,9 @@
 import { Star } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import sofiaReyes from "@/assets/testimonials/sofia-reyes.jpg";
+import marcusOkafor from "@/assets/testimonials/marcus-okafor.jpg";
+import ellaMarsh from "@/assets/testimonials/ella-marsh.jpg";
 
 // Phase 1 placeholders — replace with real, opted-in quotes before public launch.
 const QUOTES = [
@@ -8,18 +11,21 @@ const QUOTES = [
     initials: "SR",
     name: "Sofia Reyes",
     role: "Pilates Instructor · London",
+    image: sofiaReyes,
     quote: "Clients book themselves now. I haven't replied to a 'do you have space?' DM in months.",
   },
   {
     initials: "MO",
     name: "Marcus Okafor",
     role: "Online Coach · Bristol",
+    image: marcusOkafor,
     quote: "The Sunday check-in pile used to take 5 hours. REPs AI does the first pass — I just review and send.",
   },
   {
     initials: "EM",
     name: "Ella Marsh",
     role: "Studio Owner · Edinburgh",
+    image: ellaMarsh,
     quote: "We replaced six tools with one. Three coaches, one dashboard, one bill, zero finger-pointing.",
   },
 ];
