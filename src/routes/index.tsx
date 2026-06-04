@@ -26,7 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -150,7 +150,7 @@ function HomeV2() {
           {/* Desktop: image anchored right, dark wash on the left so the copy column stays readable. Mobile/tablet: solid black, no image. */}
           <div className="absolute inset-0 hidden lg:block">
             <img
-              src={heroCoaching}
+              src={heroCoaching.url}
               alt=""
               style={{ transform: "translate3d(22%, 0, 0) scale(1.05)" }}
               className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%]"
@@ -528,7 +528,7 @@ function HomeV2() {
 
       {/* ============ EDITORIAL QUOTE ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        <img src={heroCoaching} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <img src={heroCoaching.url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-black/60 via-reps-ink/85 to-reps-black" />
         <div className="relative mx-auto max-w-[960px] px-6 py-24 text-center lg:px-10 lg:py-32">
           <Quote className="mx-auto h-8 w-8 text-reps-orange" />
