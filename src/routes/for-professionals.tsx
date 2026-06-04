@@ -156,56 +156,53 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PROOF BAND — its own chapter on a lifted floor */}
-      <section className="relative bg-reps-panel-soft">
-        <div className="mx-auto max-w-[1240px] px-6 py-14 lg:px-10 lg:py-16">
-          <div className="relative overflow-hidden rounded-[22px] bg-reps-panel ring-1 ring-reps-border/60">
-            {/* Centred orange glow behind heritage line */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-[38%] h-[320px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/12 blur-3xl"
-            />
-
-            {/* Heritage anchor — the one focal point */}
-            <div className="relative px-6 pb-10 pt-12 text-center lg:px-10 lg:pb-12 lg:pt-16">
-              <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
-                <ShieldCheck className="h-5 w-5 text-reps-orange" />
-              </div>
-              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-                The UK&apos;s verified fitness register
-              </p>
-              <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
-                Trusted since <span className="text-reps-orange">2009</span>.
-              </h2>
-              <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
-                The register the public already searches for a qualified fitness pro.
-              </p>
+      {/* PROOF BAND — same ink as hero + Act 1, no container, separated by air and the orange glow */}
+      <section className="relative bg-reps-ink">
+        {/* Centred orange glow behind the heritage line — the one focal anchor */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-[42%] h-[360px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/[0.10] blur-3xl"
+        />
+        <div className="relative mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
+          {/* Heritage anchor */}
+          <div className="text-center">
+            <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
+              <ShieldCheck className="h-5 w-5 text-reps-orange" />
             </div>
+            <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+              The UK&apos;s verified fitness register
+            </p>
+            <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
+              Trusted since <span className="text-reps-orange">2009</span>.
+            </h2>
+            <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
+              The register the public already searches for a qualified fitness pro.
+            </p>
+          </div>
 
-            {/* Hairline divider — sits closer to press row to bind them together */}
-            <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
+          {/* Whisper-quiet divider between the heritage moment and the press row */}
+          <div className="mx-auto mt-14 max-w-[880px] border-t border-reps-border/40 lg:mt-16" />
 
-            {/* Press as typographic wordmark row — consistent, controlled */}
-            <div className="relative px-6 pb-9 pt-6 lg:px-10 lg:pb-10 lg:pt-7">
-              <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
-                As featured in
-              </p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
-                {PRESS.map((p, i) => (
-                  <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
-                    {i > 0 ? (
-                      <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
-                    ) : null}
-                    <Link
-                      to="/press"
-                      aria-label={`${p.name} — see press coverage`}
-                      className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/55 transition hover:text-white lg:text-[13px]"
-                    >
-                      {p.name}
-                    </Link>
-                  </span>
-                ))}
-              </div>
+          {/* Press as typographic wordmark row */}
+          <div className="pt-8 lg:pt-10">
+            <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
+              As featured in
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
+              {PRESS.map((p, i) => (
+                <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
+                  {i > 0 ? (
+                    <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
+                  ) : null}
+                  <Link
+                    to="/press"
+                    aria-label={`${p.name} — see press coverage`}
+                    className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/65 transition hover:text-white lg:text-[13px]"
+                  >
+                    {p.name}
+                  </Link>
+                </span>
+              ))}
             </div>
           </div>
         </div>
