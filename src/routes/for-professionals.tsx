@@ -96,18 +96,24 @@ function ForProsPage() {
           height={1080}
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
-        {/* Legibility overlay — darker on the right where copy + devices sit, lighter on left where the gym light naturally falls */}
-        <div className="absolute inset-0 bg-gradient-to-r from-reps-ink/55 via-reps-ink/75 to-reps-ink/90" />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/30 via-transparent to-reps-ink/60" />
+        {/* Legibility overlay — base wash keeps the room visible everywhere */}
+        <div className="absolute inset-0 bg-reps-ink/55" />
+        {/* Focused darken behind the copy column (left ~55%) so the headline always wins */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
+        />
+        {/* Right-edge fade so the device cluster sits on near-solid ink */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-reps-ink/85" />
         {/* Soft brand glow — complements the in-photo tungsten without competing */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[60%] bg-[radial-gradient(45%_50%_at_18%_25%,rgba(255,122,0,0.14),transparent_70%)]"
+          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
         />
-        {/* Hero floor seal — resolves into Act 1 */}
+        {/* Hero floor seal — longer, smoother resolve into Act 1 */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-reps-ink/70 to-reps-ink"
         />
         <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
