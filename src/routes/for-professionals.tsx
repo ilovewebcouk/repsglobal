@@ -30,13 +30,12 @@ import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock"
 import { WeekWithReps } from "@/components/marketing/WeekWithReps";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
-import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 
-import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
+import heroGym from "@/assets/hero-for-pros-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
@@ -75,70 +74,60 @@ function ForProsPage() {
       <PublicHeader variant="solid" />
       <StickyCtaPill />
 
-      {/* HERO — full-bleed moody gym backdrop with device cluster */}
-      <section className="relative overflow-hidden">
+      {/* HERO — full-bleed photo, trainer in right third, copy on the left */}
+      <section className="relative overflow-hidden min-h-[560px] lg:min-h-[640px]">
         <img
           src={heroGym.url}
           alt=""
           width={1920}
-          height={1080}
-          className="absolute inset-0 h-full w-full object-cover object-left"
+          height={1280}
+          className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
         />
-        {/* Legibility overlay — stronger base wash on mobile (copy spans full width), lighter on desktop */}
-        <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
-        {/* Mobile: centred vignette darkens the whole copy zone. Desktop: focused darken behind the left copy column only. */}
+        {/* Legibility wash — lighter so the subject breathes */}
+        <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/30" />
+        {/* Left-anchored vignette */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.72),transparent_75%)] lg:bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
+          className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.62),transparent_75%)] lg:bg-[radial-gradient(60%_90%_at_18%_55%,rgba(10,10,12,0.82),transparent_72%)]"
         />
-        {/* Right-edge fade — only meaningful on desktop where the device cluster sits on the right */}
-        <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-transparent to-reps-ink/85 lg:block" />
-        {/* Soft brand glow — slightly stronger and re-centred on mobile to balance the frame */}
+        {/* Brand glow */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
+          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.12),transparent_70%)]"
         />
-        {/* Hero floor seal — shorter on mobile (compact hero), longer on desktop (smoother resolve into Act 1) */}
+        {/* Floor seal — smooth resolve into the press marquee */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
         <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
-            {/* Left: copy */}
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
-              </span>
-              <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
-                Not just software.
-                <br />
-                <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
-              </h1>
-              <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
-                REPs is built for fitness professionals who want to get found, win more
-                clients, deliver better coaching and grow a sustainable business. One
-                platform. Every tool. Powered by AI.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/signup"
-                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
-                >
-                  Join REPs <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/features"
-                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
-                >
-                  Explore features
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: device cluster — hidden on small screens */}
-            <div className="relative hidden md:block">
-              <HeroDeviceCluster />
+          <div className="max-w-[640px]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
+            </span>
+            <h1 className="mt-6 font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]">
+              Not just software.
+              <br />
+              <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
+            </h1>
+            <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/75">
+              REPs is built for fitness professionals who want to get found, win more
+              clients, deliver better coaching and grow a sustainable business. One
+              platform. Every tool. Powered by AI.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/signup"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+              >
+                Join REPs <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/features"
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
+              >
+                Explore features
+              </Link>
             </div>
           </div>
         </div>
