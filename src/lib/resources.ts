@@ -407,6 +407,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "19 May 2026",
     readTime: "7 min read",
     cover: coverPtCost,
+    featured: true,
     body: [
       {
         type: "p",
@@ -730,6 +731,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "17 March 2026",
     readTime: "8 min read",
     cover: coverFirst30Days,
+    featured: true,
     body: [
       {
         type: "p",
@@ -900,6 +902,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "14 April 2026",
     readTime: "7 min read",
     cover: coverLevel4,
+    featured: true,
     body: [
       {
         type: "p",
@@ -1008,6 +1011,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "2 June 2026",
     readTime: "5 min read",
     cover: coverWhatsNew,
+    featured: true,
     body: [
       {
         type: "p",
@@ -1787,6 +1791,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     dateLabel: "29 April 2026",
     readTime: "6 min read",
     cover: coverBuildingASixFigurePtBusiness,
+    featured: true,
     body: [
       { type: "p", text: "At REPs, we regularly speak with qualified trainers who aspire to build a sustainable, highly profitable business. The modern fitness landscape is full of bold promises about reaching six figures overnight, yet the practical, daily operational reality of managing such a business is rarely discussed. Generating £100,000 in annual revenue as a solo practitioner in the UK is entirely achievable, but it requires a structured mix of client services, professional time management, and a robust understanding of your overheads rather than simply working yourself to the point of exhaustion. It is about working smarter, not just longer." },
       { type: "h2", text: "The mathematics of a hundred-thousand pound business" },
@@ -2984,4 +2989,32 @@ export function getRelated(slug: string, category: ResourceCategory, limit = 3):
   if (sameCat.length >= limit) return sameCat.slice(0, limit);
   const others = RESOURCE_ARTICLES.filter((a) => a.slug !== slug && a.category !== category);
   return [...sameCat, ...others].slice(0, limit);
+}
+
+// --- Featured / latest helpers ---
+// Editorial contract: set `featured: true` on an article in this file and it
+// shows up in the header dropdown's Featured column and is eligible for the
+// /resources hero. Everything else flows from the `date` field (newest first).
+
+const byDateDesc = (a: ResourceArticle, b: ResourceArticle) => b.date.localeCompare(a.date);
+
+export function getFeaturedArticles(limit?: number): ResourceArticle[] {
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  if (limit === undefined) return flagged;
+  if (flagged.length >= limit) return flagged.slice(0, limit);
+  const flaggedSlugs = new Set(flagged.map((a) => a.slug));
+  const topUp = RESOURCE_ARTICLES
+    .filter((a) => !flaggedSlugs.has(a.slug))
+    .sort(byDateDesc)
+    .slice(0, limit - flagged.length);
+  return [...flagged, ...topUp];
+}
+
+export function getLatestArticles(limit: number): ResourceArticle[] {
+  return [...RESOURCE_ARTICLES].sort(byDateDesc).slice(0, limit);
+}
+
+export function getHeroFeatured(): ResourceArticle {
+  const flagged = RESOURCE_ARTICLES.filter((a) => a.featured).sort(byDateDesc);
+  return flagged[0] ?? [...RESOURCE_ARTICLES].sort(byDateDesc)[0];
 }

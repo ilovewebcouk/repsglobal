@@ -6,7 +6,7 @@ import { ArrowRight, Search, Sparkles, X } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, type ResourceCategory } from "@/lib/resources";
+import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, getHeroFeatured, type ResourceCategory } from "@/lib/resources";
 
 type SortMode = "newest" | "oldest" | "az";
 type Filter = "All" | ResourceCategory;
@@ -65,7 +65,7 @@ function ResourcesPage() {
     });
   const clearFilters = () => navigate({ search: () => ({}), replace: true });
 
-  const featured = RESOURCE_ARTICLES.find((a) => a.featured) ?? RESOURCE_ARTICLES[0];
+  const featured = getHeroFeatured();
   const isFiltering = filter !== "All" || query.trim().length > 0;
 
   const counts = useMemo(() => {

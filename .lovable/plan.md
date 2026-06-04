@@ -1,56 +1,54 @@
+## QA verdict
 
-## QA verdict on Resources today
+The library page itself is in good shape (search, URL-synced filters, sort, 68 articles, sitemap + canonicals). The **Resources mega-menu in the header is the weak link** and the **featured system is fake**. Two concrete problems:
 
-Filtering and library UX are already in a good state after the last pass: full-text search (title/excerpt/category/author), category pills with live counts, sort dropdown (Newest / Oldest / A–Z), result count, and a Clear-filters shortcut. The article template has breadcrumb, hero, structured body renderer, author bio, related-articles grid, and CTA strip. So nothing is broken — but there are real gaps to fix before Google can do its job.
+1. **"Featured articles" in the dropdown ignores the `featured` flag.** `ResourcesMenu` in `src/components/public/PublicHeader.tsx:535` does `RESOURCE_ARTICLES.slice(0, 3)` — it just grabs the first three in array order. The `featured?: boolean` field on `ResourceArticle` exists but is only set on one article and isn't read anywhere.
+2. **"Browse by topic" links all go to `/resources`** (no category filter), even though `/resources` now accepts `?category=...`. So clicking "Fitness Business" lands you on the unfiltered library.
+3. Only **3 of 6 categories** are surfaced in the dropdown (`RESOURCE_TOPICS` in `nav-config.ts` lists Find a Professional / Fitness Business / Verification & Standards — missing Coaching & Client Management, CPD & Education, Platform Updates).
+4. The featured article on `/resources/index` itself also doesn't honour the flag in a stable way — it picks `RESOURCE_ARTICLES.find(a => a.featured) ?? RESOURCE_ARTICLES[0]`, which works but means whoever edits the data file has to remember to set exactly one flag.
 
-## What's worth adding (UX)
+## Plan
 
-1. **URL-synced filters.** Mirror `?q=…&category=…&sort=…` into the URL via TanStack search params. Makes filtered views shareable and bookmarkable, and gives Google distinct deep-link targets for category pages.
-2. **Author filter chip** (optional, low effort). Sophie / James / Dr Priya / Mark — useful as the library grows past 68.
-3. **Pagination / "Load more" at 24 per page.** 68 cards × 50 KB images = a heavy initial paint. Add `loading="lazy"` and `decoding="async"` on all cover `<img>` tags and chunk the grid.
-4. **"/" keyboard shortcut** to focus the search input (matches the existing command palette pattern).
-5. **Empty-state polish.** Replace the bare "No articles match this filter yet." with a small Empty component + "Clear filters" CTA.
+### 1. Real featured system (single source of truth)
 
-## What's worth fixing (SEO — biggest impact)
+In `src/lib/resources.ts`:
+- Keep the existing `featured?: boolean` field on `ResourceArticle`.
+- Add a derived helper `getFeaturedArticles(limit?: number)` that:
+  - returns every article with `featured: true`, sorted newest-first;
+  - if fewer than `limit` are flagged, tops up with the newest non-featured articles so the UI never shows less than requested;
+  - if `limit` is omitted, returns all flagged ones.
+- Add a second helper `getHeroFeatured()` returning the single newest `featured: true` article (used by the `/resources` index hero), with a documented fallback to the newest overall.
+- Tag **4–5 articles** as `featured: true` across different categories (currently only 1 is). Pick a mix: the existing one + one Fitness Business + one Coaching + one CPD + one Platform Updates piece so the dropdown stays varied.
 
-This is where we're leaving the most on the table.
+That gives editors a clear contract: *toggle `featured: true` in `resources.ts` and the article shows up in the header dropdown and the homepage hero rotation.* No CMS needed for Phase 1.
 
-1. **No `sitemap.xml`.** Without it Google has to discover all 68 article URLs by crawling. Add `src/routes/sitemap[.]xml.ts` that emits every public route plus one `<url>` per article (derived from `RESOURCE_ARTICLES`).
-2. **No `robots.txt`.** Add `public/robots.txt` with `User-agent: * / Allow: /` and a `Sitemap:` directive.
-3. **Wrong canonical domain.** `resources.$slug.tsx` and `resources.index.tsx` hard-code `repsglobal.lovable.app`. Per project rules these should point at `https://staging.repsuk.org`. Wrong canonical actively suppresses ranking.
-4. **`<img alt="">` is empty on every cover.** Use `article.title` as alt text on article hero and listing cards. Empty alts on meaningful imagery hurt both SEO and a11y.
-5. **Add `BreadcrumbList` JSON-LD** on article pages (Resources › Category › Title). Enables breadcrumb rich results in Google.
-6. **Strengthen `Article` schema:** add `mainEntityOfPage`, `publisher` (Organization), `dateModified`, `image` as array.
-7. **Add `og:image` + canonical on `/resources` index** (currently missing og:image; canonical is on root which TanStack concatenates — move it leaf-only).
-8. **`/resources` `head()` SEO copy.** Title is fine; tighten meta description to include "personal trainer", "fitness coach", "UK" keyphrases.
-9. **Per-category landing pages** (Phase 2, but flag it): `/resources/category/$slug` would let each of the 6 categories rank on its own.
+### 2. Rewrite `ResourcesMenu` in `PublicHeader.tsx`
 
-## Semrush pass
+- Replace `RESOURCE_ARTICLES.slice(0, 3)` with `getFeaturedArticles(3)`.
+- Make every "Browse by topic" link a real filtered URL: `<Link to="/resources" search={{ category: t.category }}>`. TanStack's typed search params already accept this because of the `validateSearch` schema we added.
+- Expand `RESOURCE_TOPICS` in `src/components/public/nav-config.ts` to all 6 categories (with a sensible order: client-facing first, then pro-facing, then Platform Updates last).
+- Add a small **"Latest" column** above (or instead of) one of the existing columns — newest 3 articles regardless of featured flag — so the dropdown surfaces fresh content automatically. Final layout: three columns instead of two — `Browse by topic` | `Featured` | `Latest`, with REPs-explained quick links collapsed under the topic column.
+- Mirror the same category links into the **mobile accordion** (`accordion item="resources"` around line 1018) so mobile users also get filtered jumps.
 
-Once the canonical domain is fixed and the sitemap is live, run two read-only checks against `staging.repsuk.org`:
+### 3. Update `/resources` index to use the helpers
 
-- `domain_analysis` — baseline: estimated traffic, total ranking keywords, top organic terms (UK database).
-- `keyword_research` on 3–4 anchor terms surfaced in the library: *"personal trainer cost uk"*, *"how to find a personal trainer"*, *"reps verified"*, *"online personal trainer uk"*. Confirms the article slugs we've written line up with real search demand.
+- `featured` in `resources.index.tsx` becomes `getHeroFeatured()` (same behaviour, but the fallback logic now lives in one place).
+- No visual change.
 
-If the user wants ongoing rank tracking / weekly visibility deltas / paid-search insight wired into the dashboard, that's a connector job (Semrush OAuth) — out of scope for this turn, but worth flagging.
+### 4. Out of scope (flag for later)
 
-## Out of scope
+- A real CMS / admin UI to toggle `featured` from the dashboard.
+- Per-category landing pages at `/resources/category/$slug` (still worth doing but it's a separate task).
+- Author landing pages.
+- Editorial scheduling (`publishedAt` in the future).
 
-- Building actual `/resources/category/$slug` routes (separate task).
-- Wiring the Semrush connector for in-app tracking (separate task, needs user consent).
-- Touching the article body content itself.
+## Files to edit
 
-## Technical details
+- `src/lib/resources.ts` — add `getFeaturedArticles` + `getHeroFeatured`; flip `featured: true` on 3–4 additional articles.
+- `src/components/public/nav-config.ts` — expand `RESOURCE_TOPICS` to all 6 categories.
+- `src/components/public/PublicHeader.tsx` — rewrite `ResourcesMenu` (3-column layout, real featured, category-filtered topic links, new "Latest" column) and mirror category links in the mobile accordion.
+- `src/routes/resources.index.tsx` — swap the inline `featured` lookup for `getHeroFeatured()`.
 
-- **New file:** `src/routes/sitemap[.]xml.ts` — server route, iterates `RESOURCE_ARTICLES`, sets `BASE_URL = "https://staging.repsuk.org"`, includes top-level public routes (`/`, `/about`, `/standards`, `/verify`, `/find-a-professional`, `/resources`, `/compare`, `/pricing`, `/faq`, `/help`, etc.).
-- **New file:** `public/robots.txt` with `Sitemap: https://staging.repsuk.org/sitemap.xml`.
-- **Edit `src/routes/resources.$slug.tsx`:** swap `repsglobal.lovable.app` → `staging.repsuk.org`; add `BreadcrumbList` JSON-LD via `scripts[]`; expand `Article` schema; set `alt={article.title}` on hero `<img>`.
-- **Edit `src/routes/resources.index.tsx`:** swap domain in og:url; move canonical here (it's currently fine on this route, just confirm `__root.tsx` has no canonical); sync `filter`/`query`/`sort` to search params with `validateSearch` + `zodValidator`; add `loading="lazy"` on grid `<img>`; replace empty-state with `Empty` (shadcn) component; add focus-on-"/" handler.
-- **Edit `src/routes/__root.tsx`:** confirm no `<link rel="canonical">` is set (per `head-meta` rules canonical lives leaf-only because TanStack concatenates `links`).
+## Answer to "are we world-class?"
 
-## Order of work
-
-1. SEO domain + sitemap + robots + image alts + breadcrumb JSON-LD  (the high-impact organic-search work)
-2. URL-synced filters + lazy loading + pagination
-3. Empty-state + "/" shortcut polish
-4. Run the Semrush baseline + keyword check and report findings
+Library page: **yes**, with the caveat that per-category landing pages would push SEO further. Header dropdown: **not yet** — after this change it will be (real featured curation, filtered topic jumps, all categories represented, auto-fresh "Latest" column, mobile parity).
