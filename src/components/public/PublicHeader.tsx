@@ -868,7 +868,7 @@ function mobileLinkClass(active: boolean) {
 }
 
 const mobileSubLinkClass =
-  "block rounded-[8px] px-3 py-2 text-[14px] text-white/80 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/70";
+  "flex min-h-11 items-center rounded-[8px] px-3 py-2.5 text-[14px] text-white/80 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/70";
 
 function MobileDrawer({
   active,
