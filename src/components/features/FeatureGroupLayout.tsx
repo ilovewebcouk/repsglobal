@@ -73,7 +73,7 @@ export function FeatureGroupLayout({
             className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
           />
 
-          <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
+          <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
             <div className="max-w-[640px]">
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur">
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> {group.hero.eyebrow}
