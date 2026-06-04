@@ -135,10 +135,10 @@ function ForProsV2Page() {
         {/* Trust strip */}
         <div className="relative border-t border-reps-border/60 bg-reps-ink/60 backdrop-blur">
           <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-5 text-[12.5px] text-white/65 sm:grid-cols-4 lg:px-10">
-            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> 25,000+ verified pros</span>
-            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> 4.8★ average rating</span>
-            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register since 2009</span>
-            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> 1M+ sessions booked</span>
+            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register heritage</span>
+            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> Built for fitness pros</span>
+            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> Reviews on the public record</span>
+            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> Bookings, payments, coaching in one</span>
           </div>
         </div>
       </section>
