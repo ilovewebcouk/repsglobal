@@ -1,41 +1,37 @@
-## Goal
+## Scope
 
-Replace the four `MockupPlaceholder` boxes inside the `ProductBlock`s on `/for-professionals-v2` with real, scaled iframe mockups of pages we already have — using the same `LaptopFrame` / `PhoneFrame` pattern the hero uses. The AI section keeps its bespoke `AiCommandCentreMock` (it isn't a placeholder).
+Two visual polish changes on `/for-professionals-v2`:
 
-## Page → mockup mapping
+1. **`ComparisonStrip.tsx` — replace column header text with logos**
+   - REPs column → `<RepsWordmark />` (already used in `CompetitorCompare`), kept in `text-reps-orange`.
+   - Trainerize / MyPTHub / PT Distinction → existing SVG logo assets at `src/assets/logos/{trainerize,mypthub,pt-distinction}.svg.asset.json`, rendered at ~20–22px height in white/80 so they read on the dark panel.
+   - Update the `COLS` array from string literals to `{ label, logo?, logoHeight? }` objects (mirroring `CompetitorCompare`), and render `<img>` for logo cols, wordmark for REPs, with `alt` set to the label for a11y.
+   - No other layout/table changes. Mobile horizontal scroll behaviour stays the same.
 
-| Section | Frame | Source route |
-|---|---|---|
-| Pillar 1 · Visibility (verified profile) | Laptop | `/pro/sarah-mitchell` (existing pro profile page) |
-| Pillar 1 · Leads CRM | Laptop | `/dashboard/leads` |
-| Pillar 3 · Bookings & payments | Laptop | `/dashboard/calendar` |
-| Pillar 4 · Client portal | Phone (centered, larger than hero phone) | `/portal/today` |
-
-If `/pro/sarah-mitchell` doesn't resolve at build time we'll fall back to `/find-a-professional`. Phone iframes scale ~0.34; laptop iframes scale ~0.5 — same as hero.
-
-## New component
-
-`src/components/marketing/DeviceMockup.tsx` — thin wrapper that takes `{ device: "laptop" | "phone", src, scale?, title }` and renders the right frame + a `ScaledFrame` inside (extracted from `HeroDeviceCluster`). Iframes stay `aria-hidden`, `tabIndex={-1}`, `pointer-events-none`, `scrolling="no"`, `loading="lazy"`.
-
-## ProductBlock change
-
-Add an optional `mockup?: { device: "laptop" | "phone"; src: string; title: string }` prop. When present, render `<DeviceMockup ... />` instead of `<MockupPlaceholder label={imageLabel} />`. `imageLabel` stays as a fallback for any block that doesn't pass `mockup` yet.
-
-## Edits
-
-1. **Create** `src/components/marketing/DeviceMockup.tsx` + extract `ScaledFrame` into it; `HeroDeviceCluster` re-imports it (no visual change to hero).
-2. **Edit** `src/components/marketing/ProductBlock.tsx` — add `mockup` prop + conditional render.
-3. **Edit** `src/routes/for-professionals-v2.tsx` — pass `mockup={{...}}` to the four `ProductBlock`s listed above. Phone block (client portal) gets a centered wrapper so the phone doesn't fill the column.
+2. **Testimonials — replace initials-only avatars with real headshot images**
+   - Generate 4 new headshots (existing `pro-james/sophie/laura/daniel.jpg` are reused heavily across the site, so make fresh ones for this surface):
+     - `src/assets/testimonials/james-carter.jpg` — male strength coach, 30s, Manchester gym backdrop (for `TestimonialFeature`)
+     - `src/assets/testimonials/sofia-reyes.jpg` — female Pilates instructor, 30s, bright studio backdrop
+     - `src/assets/testimonials/marcus-okafor.jpg` — male online coach, 30s, neutral home-office backdrop
+     - `src/assets/testimonials/ella-marsh.jpg` — female studio owner, 40s, boutique studio backdrop
+   - All photos: warm, professional, candid editorial style, soft natural light, looking toward camera, head & shoulders crop, consistent treatment so the triad reads as a set. Generated via `imagegen--generate_image` at 768×768 (square, since avatars are circular).
+   - Wire each image into an `<AvatarImage src={…} alt={name} />` inside the existing `<Avatar>` in `TestimonialFeature.tsx` and `TestimonialTriad.tsx`. Keep `<AvatarFallback>` with the initials as the loading/error fallback. No size or layout changes.
 
 ## Out of scope
 
-- v1 `for-professionals.tsx`
-- `AiCommandCentreMock` (already custom)
-- New routes, auth, or styling token changes
-- Any change to the hero cluster's visuals
+- v1 page, hero device cluster, pillar tabs, comparison page (`/compare`), or any other surface.
+- Copy edits to quotes, names, stats, or roles.
+- Adding logos anywhere outside the `ComparisonStrip` header row.
+- Migrating existing `pro-*.jpg` references elsewhere.
 
-## Risk / known limits
+## Files touched
 
-- Iframes of `/dashboard/*` and `/portal/today` may hit auth gates and render an empty / login state. If so, the laptop frame will show that page's public skeleton. Mitigation: if a route gates out, we swap to its public marketing twin (e.g. `/features/operations` for Leads) — decided per-section once we see the result.
-- Multiple iframes on one page = heavier hero. All iframes use `loading="lazy"` so only the visible ones load on first paint.
-- No design tokens or radii change. Frames already follow the locked radius system.
+- `src/components/marketing/ComparisonStrip.tsx` — header logo swap (+ logo imports).
+- `src/components/marketing/TestimonialFeature.tsx` — add `AvatarImage` with James Carter headshot.
+- `src/components/marketing/TestimonialTriad.tsx` — add `AvatarImage` for Sofia / Marcus / Ella.
+- New: `src/assets/testimonials/{james-carter,sofia-reyes,marcus-okafor,ella-marsh}.jpg`.
+
+## Risk / notes
+
+- Generated faces are synthetic stock-style; matches the existing Phase 1 placeholder pattern (real opted-in quotes/photos still need to land before public launch — leaving the existing "Phase 1 placeholder" comment in place).
+- Logos are dark-mode-friendly SVGs already used on `CompetitorCompare`, so no contrast surprises expected.
