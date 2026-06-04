@@ -1,57 +1,52 @@
 
-# AI pillar — same cinematic photo hero, fresh subject
+# Growth pillar — photo hero, fresh subject
 
-Match the Coaching/Visibility/Operations treatment on `/features/ai` with a hero that visually says "AI in the hands of a real coach," not stock-photo robotics.
+Final pillar in the set. Match Coaching/AI/Visibility/Operations.
 
-## 1. Generate `src/assets/hero-ai-bg.jpg`
+## 1. Generate `src/assets/hero-growth-bg.jpg`
 
-Premium tier, 1920×1280, same cinematic grade as the other three heroes (cool blue-grey shadows, warm tungsten highlights, dusk light, shallow DoF, 35mm f/2 feel).
+Premium tier, 1920×1280, same cinematic grade (cool blue-grey shadows, warm tungsten highlights, dusk light, shallow DoF, 35mm f/2).
 
-**Subject — keep the diversity rotation going** (so far: white male × 2 / Black female; AI gets a different again):
-- A **South-Asian male coach, late 20s/early 30s**, on the gym floor reviewing an AI-drafted programme on a tablet — soft orange glow from the screen lighting his face. Plate-loaded rack and a defocused client behind him.
+**Subject — keep the diversity rotation** (so far: white male, white male, Black female, South-Asian male):
+- A **mixed-race / Latina female studio owner, early 30s**, standing confidently in the doorway of her boutique studio at dusk, arms loosely folded or one hand on the doorframe. Reads as the "owner who just had her best month" — calm, in command, mid-conversation pause.
 
-**Composition:** coach anchored in the **right third** (matches `object-right` on lg), left two-thirds = clean negative space for the white/orange H1. Tablet held at chest height, angled so the screen casts a believable orange/amber ambient glow on his polo and jaw — the "AI is here, in the room" cue.
+**Composition:** subject anchored in the **right third**, left two-thirds = quiet street-at-dusk depth (warm shop-window glow behind her, soft bokeh of city lights, clean negative space for headline text).
 
 **REPs branding (both):**
-- **"REPS"** ALL CAPS, white embroidery, small left-chest on a charcoal performance polo.
-- A defocused **"REPS"** wall mark in the background (frosted vinyl or backlit signage) — same all-caps treatment.
+- **"REPS"** ALL CAPS, white embroidery, small left-chest on a charcoal performance polo or zip-up.
+- A defocused **"REPS"** wall mark / window decal on the studio glass behind her — frosted vinyl, ALL CAPS, softly out of focus.
 
-**No on-screen UI text on the tablet** (avoid model garble). Just a warm orange glow leaking from the bezel — implies the AI without trying to render a real interface.
+**Narrative cue:** a faint warm orange spill from the studio interior (suggests "lights on, business open, momentum") — but no on-screen UI, no chart props, no phone-in-hand. Owner, not operator.
 
-Upload via `lovable-assets create` → write `src/assets/hero-ai-bg.jpg.asset.json`.
+Upload via `lovable-assets create` → write `src/assets/hero-growth-bg.jpg.asset.json`.
 
-## 2. Refactor `src/routes/features.ai.tsx`
+## 2. Rewrite `src/routes/features.growth.tsx`
 
-Currently uses `FeatureGroupLayout` with `visual={<InsightsMockup />}` AND custom children sections. We keep the children (narrative cards, 14-item grid, mini-compare) untouched — only swap the hero.
-
-Changes:
 - Drop `InsightsMockup` import + `visual` prop.
-- Add `heroImage`, `heroLead`, `heroAccent`:
-  - `heroLead`: **"Not just AI features."**
-  - `heroAccent`: **"An AI operating layer for your whole business."**
-  - (This echoes the page's existing H2 narrative — reinforces, not duplicates.)
-- Add `{ property: "og:image", content: heroAi.url }` to meta.
+- Add `heroLead`, `heroAccent`, `heroImage`, `og:image`:
+  - `heroLead`: **"Not just a dashboard."**
+  - `heroAccent`: **"The single move to grow your business this month."**
+  - (Echoes the page's existing positioning — "Monday-morning card, not a dashboard you have to read.")
 
-Press marquee renders automatically (FeatureGroupLayout already gates it on the photo-hero branch).
+Press marquee renders automatically via `FeatureGroupLayout`.
 
 ## 3. QA
 
-Screenshot `/features/ai`:
-- Coach visible right, copy clean left.
-- Orange screen-glow reads as AI, not "guy on phone."
-- "REPS" all-caps on polo + wall, both legible.
-- Subject is NOT a white male and NOT a Black female (rotation working).
-- Press marquee present under the hero. Narrative / grid / compare sections still intact below.
+Screenshot `/features/growth`:
+- Subject visible right, copy clean left.
+- "REPS" ALL CAPS on polo + window/wall, both legible.
+- Subject is NOT a white male, Black female, or South-Asian male — rotation completes.
+- Hero grade matches the other four heroes.
+- Press marquee renders.
 
-If the generated image lands wrong (head crop, screen-glow not believable, REPS mis-spelled), regenerate up to 2× with tightened prompt before falling back to a different angle.
+Up to 2× regenerate if framing/REPS spelling drifts.
 
 ## Out of scope
 
-- Growth pillar (next turn).
-- Narrative cards, 14-item AI grid, mini-comparison table, CTA — no copy or layout changes there.
-- No changes to `FeatureGroupLayout` (already supports the photo-hero branch).
+- Any layout, copy, feature-grid, or CTA changes below the hero.
+- Other pillars (already done).
 
 ## Files touched
 
-- `src/assets/hero-ai-bg.jpg.asset.json` — new
-- `src/routes/features.ai.tsx` — hero swap + og:image, remove `InsightsMockup` import
+- `src/assets/hero-growth-bg.jpg.asset.json` — new
+- `src/routes/features.growth.tsx` — hero swap + og:image, remove `InsightsMockup` import
