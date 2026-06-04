@@ -10,7 +10,7 @@ export function TestimonialFeature() {
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(50%_60%_at_85%_20%,rgba(255,122,0,0.12),transparent_70%)]"
       />
-      <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14">
+      <div className="relative grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-14">
         <div>
           <Quote className="h-8 w-8 text-reps-orange" aria-hidden />
           <blockquote className="mt-4 font-display text-[22px] font-semibold leading-snug text-white lg:text-[28px]">
@@ -28,8 +28,7 @@ export function TestimonialFeature() {
             </figcaption>
           </div>
         </div>
-        <div className="hidden h-full w-px bg-reps-border lg:block" />
-        <dl className="grid grid-cols-3 gap-6 lg:grid-cols-1 lg:gap-5">
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
           <Stat k="+38%" v="enquiries since joining" />
           <Stat k="9 hrs" v="saved every Sunday" />
           <Stat k={<span className="inline-flex items-center gap-1">4.9<Star className="h-4 w-4 fill-reps-orange text-reps-orange" /></span>} v="REPs profile rating" />
@@ -41,9 +40,9 @@ export function TestimonialFeature() {
 
 function Stat({ k, v }: { k: React.ReactNode; v: string }) {
   return (
-    <div>
-      <dt className="font-display text-[24px] font-bold text-reps-orange lg:text-[28px]">{k}</dt>
-      <dd className="mt-1 text-[12px] text-white/60">{v}</dd>
+    <div className="rounded-[18px] border border-reps-border bg-reps-ink/60 p-5">
+      <dt className="font-display text-[26px] font-bold leading-none text-reps-orange lg:text-[30px]">{k}</dt>
+      <dd className="mt-2 text-[12px] leading-snug text-white/60">{v}</dd>
     </div>
   );
 }

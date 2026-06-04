@@ -5,11 +5,14 @@ import {
   Brain,
   ClipboardCheck,
   Dumbbell,
+  Eye,
   PenTool,
   ScanLine,
+  Settings2,
   ShieldCheck,
   Sparkles,
   Star,
+  TrendingUp,
   Users,
   Wand2,
   Calendar,
@@ -18,7 +21,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
-import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+
 import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PillarTabs } from "@/components/marketing/PillarTabs";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
@@ -207,7 +210,28 @@ function ForProsV2Page() {
               programme, check-in and message wired into the same client record.
             </p>
           </div>
-          <div className="mt-10"><ReplacesStrip /></div>
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {[
+              { icon: Eye, name: "Visibility", body: "Verified profile on the register the public already searches." },
+              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place." },
+              { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record." },
+              { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week." },
+              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time." },
+            ].map((p) => (
+              <div
+                key={p.name}
+                className="rounded-[18px] border border-reps-border bg-reps-panel/60 p-5"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <p.icon className="h-4.5 w-4.5" />
+                </span>
+                <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-wider text-white">
+                  {p.name}
+                </h3>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{p.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
