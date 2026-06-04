@@ -4,21 +4,21 @@ import { BadgeCheck, ShieldCheck, Search, GraduationCap, FileCheck, Star } from 
 const PROOFS = [
   {
     icon: BadgeCheck,
-    stat: "25,000+",
-    title: "Verified professionals",
-    body: "The largest verified register of UK fitness professionals — and growing globally.",
+    stat: "Verified",
+    title: "The register the public searches",
+    body: "REPs is the verified register UK clients already know — qualifications, insurance and CPD checked, not self-declared.",
   },
   {
     icon: ShieldCheck,
-    stat: "Since 2009",
-    title: "The industry's trust layer",
-    body: "Qualifications, insurance and CPD checked by humans — not a self-declared profile bio.",
+    stat: "Trust layer",
+    title: "Backed by a credentialed register",
+    body: "A long-standing register heritage — your badge means something the screenshot-and-bio crowd can't fake.",
   },
   {
     icon: Search,
-    stat: "1M+ searches",
-    title: "Where the public lands",
-    body: "Clients actively search REPs when they're looking for a trusted pro. You don't have to.",
+    stat: "Discoverable",
+    title: "Where clients actively land",
+    body: "Profiles are indexed by location, specialism and price band — built so clients can find you, not just scroll past you.",
   },
 ];
 
