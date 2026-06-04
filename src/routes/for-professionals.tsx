@@ -9,7 +9,7 @@ import {
   PenTool,
   ScanLine,
   Settings2,
-  ShieldCheck,
+  
   Sparkles,
   Star,
   TrendingUp,
@@ -33,14 +33,10 @@ import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
+
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
-import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
-import gq from "@/assets/press/gq.svg.asset.json";
-import mensHealth from "@/assets/press/mens-health.svg.asset.json";
-import runnersWorld from "@/assets/press/runners-world.svg.asset.json";
-import theTimes from "@/assets/press/the-times.svg.asset.json";
-import womensFitness from "@/assets/press/womens-fitness.svg.asset.json";
 
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
@@ -63,14 +59,6 @@ export const Route = createFileRoute("/for-professionals")({
   component: ForProsPage,
 });
 
-const PRESS = [
-  { name: "The Times", url: theTimes.url },
-  { name: "BBC Sport", url: bbcSport.url },
-  { name: "Men's Health", url: mensHealth.url },
-  { name: "Women's Fitness", url: womensFitness.url },
-  { name: "Runner's World", url: runnersWorld.url },
-  { name: "GQ", url: gq.url },
-];
 
 const AI_CAPS = [
   { icon: Dumbbell, title: "Programmes, drafted in seconds", body: "One-line brief in, 12-week plan out — exercises, sets, video demos." },
@@ -156,57 +144,9 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PROOF BAND — same ink as hero + Act 1, no container, separated by air and the orange glow */}
-      <section className="relative bg-reps-ink">
-        {/* Centred orange glow behind the heritage line — the one focal anchor */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[42%] h-[360px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/[0.10] blur-3xl"
-        />
-        <div className="relative mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-24">
-          {/* Heritage anchor */}
-          <div className="text-center">
-            <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
-              <ShieldCheck className="h-5 w-5 text-reps-orange" />
-            </div>
-            <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-              The UK&apos;s verified fitness register
-            </p>
-            <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
-              Trusted since <span className="text-reps-orange">2009</span>.
-            </h2>
-            <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
-              The register the public already searches for a qualified fitness pro.
-            </p>
-          </div>
+      {/* PRESS MARQUEE — continuous R→L scroll on the same ink continuum as hero + Act 1 */}
+      <PressMarquee />
 
-          {/* Whisper-quiet divider between the heritage moment and the press row */}
-          <div className="mx-auto mt-14 max-w-[880px] border-t border-reps-border/40 lg:mt-16" />
-
-          {/* Press as typographic wordmark row */}
-          <div className="pt-8 lg:pt-10">
-            <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/40">
-              As featured in
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:gap-x-7 lg:gap-x-10">
-              {PRESS.map((p, i) => (
-                <span key={p.name} className="flex items-center gap-x-5 sm:gap-x-7 lg:gap-x-10">
-                  {i > 0 ? (
-                    <span aria-hidden className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
-                  ) : null}
-                  <Link
-                    to="/press"
-                    aria-label={`${p.name} — see press coverage`}
-                    className="text-[12.5px] font-semibold uppercase tracking-[0.18em] text-white/65 transition hover:text-white lg:text-[13px]"
-                  >
-                    {p.name}
-                  </Link>
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ACT 1 — REGISTER */}
       <section className="border-b border-reps-border bg-reps-ink">
