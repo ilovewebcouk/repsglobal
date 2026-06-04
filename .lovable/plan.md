@@ -1,65 +1,57 @@
-## Honest critique — section seams blur together
+# New bespoke hero image for /for-professionals
 
-You're right to be uneasy. Looking at the hero → proof band → Act 1 transitions, three things are true:
+## What we're building
 
-### 1. The proof band is structurally inside the hero
-In the code, the proof band lives **inside** the `<section>` that wraps the hero. That section has the orange radial gradient and the trainer photo overlay, both of which bleed up through the proof band's `bg-reps-ink/70` (70% opacity → 30% see-through). So the proof band's "frame" is tinted with the hero's orange wash. It reads as "hero, continued" rather than its own chapter.
+A new photographic hero image, generated specifically for this page — not a re-crop of the existing trainer photo. Subject: **wide premium gym interior, no people**. Mood: **moody, low-key, dramatic**. Used as a **full-bleed background** behind the hero copy and device cluster.
 
-### 2. Three near-identical dark surfaces stacked
-- Hero floor: `reps-ink` + orange radial + image overlay
-- Proof band wrapper: `bg-reps-ink/70 backdrop-blur` (slightly different from hero only because of the blur)
-- Act 1: `bg-reps-panel/20` (so close to `reps-ink` you cannot tell them apart on a calibrated screen)
+## Image direction (prompt brief for generation)
 
-The only thing separating them is a `border-reps-border/60` hairline. At 1px and 60% opacity on dark-on-dark, it's basically invisible. Three sections, one apparent surface.
+- Wide architectural shot of a premium private training gym interior, shot at eye level, slight wide-angle.
+- No people in frame.
+- Equipment as quiet supporting cast: a power rack on one side, a loaded barbell on rubber flooring, a row of kettlebells, plates stacked on a tree. Not cluttered — composed and intentional, like a Nike Training Club shoot or a Equinox brand still.
+- Lighting: single warm light source from upper-left (window or pendant), deep shadows falling right. Low-key, high contrast, cinematic. Warm amber highlights, near-black shadows.
+- Palette tuned to brand: black/charcoal base, warm amber/orange highlights echoing REPs orange (no neon — natural warm tungsten).
+- Atmosphere: still, pre-session, "the floor before the work starts." Slight haze in the air to catch light.
+- Composition note: leave the **center and right-of-center darker / negative space** so headline + device cluster sit cleanly on top with no clutter behind them. Light interest concentrated in upper-left third.
+- Aspect ratio 16:9, generated at high resolution for hero use.
 
-### 3. The proof-band inner panel floats nicely, but its outer wrapper undoes the lift
-The `rounded-[22px] bg-reps-panel/40 ring-1 ring-reps-border/60` panel is good — that's the world-class part. But it's sitting on a wrapper that is barely distinguishable from the hero above and the Act 1 section below, so the lift it earns gets cancelled.
+## How it's used in the hero
 
-## What top SaaS landing pages do here
-- Linear, Vercel, Stripe: alternate "stage" and "floor" — every section sits on a distinctly toned surface, even in dark mode. The eye gets a rhythm: dark → slightly-lifted → dark → slightly-lifted. Never three of the same in a row.
-- A trust band is almost always its **own** stage, not stuck to the hero's footer. It gets its own padding, its own ground.
-- Borders are used sparingly — surface contrast does the chapter work, borders just polish the edge.
+```
+┌─────────────────────────────────────────────┐
+│  [moody gym photo, full-bleed]              │
+│   ╲ dark gradient overlay ╱                 │
+│                                             │
+│   Headline + subcopy        [laptop+phone]  │
+│   CTAs                                      │
+│                                             │
+│  [floor seal → Act 1]                       │
+└─────────────────────────────────────────────┘
+```
 
-## Proposed fix (small, surgical — no redesign)
+Changes vs current hero:
+1. Replace the current left-anchored trainer photo with the new full-bleed gym photo behind the entire hero.
+2. Overlay tuned for legibility — darker behind the copy/device columns, lighter where the gym light naturally falls so the room is still readable as a real space (not a black rectangle).
+3. Keep the existing orange radial glow (top-left) but reduce its intensity so it complements the in-photo warm light rather than competing with it.
+4. Keep the existing `bottom-0` floor seal so the hero still resolves into Act 1's solid dark.
+5. Devices get a subtle `ring-1 ring-white/10` + soft warm drop shadow so they read as floating on top of the room, not pasted on.
+6. Remove the old trainer photo asset reference from the hero (keep the file on disk for now; we can prune later).
 
-**A. Lift the proof band out of the hero section.**
-- Move the proof band `<div>` from inside the hero `<section>` to its own `<section>`.
-- This kills the orange-radial bleed-through immediately and lets the proof band stand as its own chapter.
+## Technical details
 
-**B. Seal the hero floor.**
-- Add a thin `bg-gradient-to-b from-transparent to-reps-ink` at the bottom 96px of the hero so the hero ends decisively before the proof band begins.
-- Remove the orange radial bleed in the lower 25% of the hero (clip the radial so it doesn't reach the seam).
+- New asset generated via image generation, saved to `src/assets/for-pros-hero-gym.jpg` (or `.png` if transparency ever matters — not needed here), then externalized via `lovable-assets` to a `.asset.json` pointer so the binary doesn't bloat the repo.
+- Imported in `src/routes/for-professionals.tsx` and applied as a `background-image` on the hero `<section>` (or an absolutely-positioned `<img>` with `object-cover` + `object-position: center`).
+- Gradient overlay: a layered `bg-gradient-to-r from-reps-ink via-reps-ink/70 to-reps-ink/85` + a vertical `from-transparent to-reps-ink` floor seal — both above the image, below content.
+- No new design tokens needed. No changes to Act 1, proof band, or anything below the hero in this step.
+- No copy changes. No route/data changes.
 
-**C. Give the three surfaces real, distinguishable tones.**
-- Hero: keep as is (dark + orange wash + trainer photo)
-- Proof band section: bump to a subtly lifted surface — e.g. `bg-[oklch(0.18_0.01_50)]` (or whatever the next step up from `reps-ink` is in tokens) so it reads as "lifted floor" without becoming light
-- Act 1: drop back to pure `bg-reps-ink` (remove the `bg-reps-panel/20` which adds nothing)
+## Out of scope
 
-This gives a dark → lifted → dark rhythm. Eye reads: hero, then trust beat, then Act 1.
+- Proof band restructure (separate decision — still open).
+- Any other page.
+- Any second image (e.g. behind device cluster). We'll judge from this first.
 
-**D. Replace the hairline borders with the surface change.**
-- Remove `border-t border-reps-border/60` between hero and proof band
-- Remove `border-b border-reps-border` between proof band and Act 1
-- The 1-step tonal change is the divider; the border is redundant and competes with the rounded panel inside
+## Verification
 
-**E. Optional chapter rule before Act 1 (only if surface change feels too quiet).**
-- A 1px horizontal `bg-gradient-to-r from-transparent via-reps-orange/25 to-transparent` at the very top of Act 1, max-width 120px, centred. Reads as a quiet "new chapter" signal without shouting.
-
-## What I am NOT touching
-- The hero copy and the right-side device cluster
-- The proof band's inner heritage anchor + press wordmark structure (we just approved that)
-- Act 1's content, cards, copy, "The Verified Credential" footer band
-- Header, footer, nav, routes, pricing, backend
-- Any other section's spacing or rhythm — only the hero → proof → Act 1 seams
-
-## Token discipline
-- Background tones added via `src/styles.css` if a new step is needed (I'd add at most one new `--reps-surface-1` token between `--reps-ink` and `--reps-panel`). No hex in components.
-- Keep radius (22px panel) and the proof band's existing structure intact.
-
-## Question for you
-
-Two-part:
-1. Are you happy for me to add **one** new background token (e.g. `--reps-surface-1`) to `styles.css` to give the proof band a distinct lifted-floor tone? Or would you prefer I work with the existing `--reps-ink` / `--reps-panel` pair only and use opacity tricks?
-2. Do you want the optional **orange chapter rule** before Act 1 (step E), or keep the divider work purely tonal?
-
-Once you answer, I'll implement A–D (plus E if you want it) in one pass and re-verify at desktop / tablet / mobile.
+- Take a 1440px screenshot after wiring it up. Confirm: gym is clearly visible as a real room, headline + subcopy + CTAs are fully legible, devices pop, transition into Act 1 is seamless.
+- Spot-check mobile (375px) and tablet (768px) — image should re-anchor so the lit area stays in frame and copy stays legible.
