@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { PillarPage, type PillarFeature } from "@/components/features/PillarPage";
+import heroOperations from "@/assets/hero-operations-bg.jpg.asset.json";
+
 import {
   BookingsMockup,
   ClientsCrmMockup,
@@ -105,6 +107,11 @@ export const Route = createFileRoute("/features/operations")({
       groupKey="operations"
       heroLead="Not just bookings."
       heroAccent="An operating system for your whole practice."
+      heroImage={{
+        src: heroOperations.url,
+        alt: "Trainer reviewing the day's schedule on a tablet at a boutique studio reception desk",
+      }}
+
       heroCluster={{
         laptopSrc: "/dashboard/calendar",
         laptopTitle: "REPs calendar preview",
