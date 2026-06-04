@@ -47,7 +47,7 @@ export function FeatureGroupLayout({
 
       {/* HERO */}
       {heroImage && heroLead && heroAccent ? (
-        <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1440px]">
+        <section className="relative flex overflow-hidden min-h-[640px] lg:min-h-[780px]">
           <img
             src={heroImage.src}
             alt={heroImage.alt ?? ""}
