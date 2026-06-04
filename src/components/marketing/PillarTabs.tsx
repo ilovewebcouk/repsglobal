@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, ClipboardCheck, Dumbbell, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeviceMockup } from "@/components/marketing/DeviceMockup";
+import { MockupStage } from "@/components/marketing/MockupStage";
 
 type Tab = {
   value: string;
@@ -78,8 +79,10 @@ export function PillarTabs() {
       </TabsList>
       {TABS.map((t) => (
         <TabsContent key={t.value} value={t.value} className="mt-0">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
-            <DeviceMockup {...t.mockup} />
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            <MockupStage variant={t.mockup.device}>
+              <DeviceMockup {...t.mockup} />
+            </MockupStage>
             <div>
               <h3 className="font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
                 {t.title}

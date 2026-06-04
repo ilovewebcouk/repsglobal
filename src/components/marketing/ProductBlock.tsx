@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
 import { DeviceMockup } from "@/components/marketing/DeviceMockup";
+import { MockupStage } from "@/components/marketing/MockupStage";
 import type { FeatureLink } from "@/components/features/feature-config";
 
 export interface ProductBlockProps {
@@ -37,18 +38,14 @@ export function ProductBlock({
 }: ProductBlockProps) {
   return (
     <div
-      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-12 ${
+      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-14 ${
         reverse ? "lg:[&>div:first-child]:order-2" : ""
       }`}
     >
       {mockup ? (
-        mockup.device === "phone" ? (
-          <div className="mx-auto w-full max-w-[220px]">
-            <DeviceMockup {...mockup} />
-          </div>
-        ) : (
+        <MockupStage variant={mockup.device}>
           <DeviceMockup {...mockup} />
-        )
+        </MockupStage>
       ) : (
         <MockupPlaceholder label={imageLabel} />
       )}
