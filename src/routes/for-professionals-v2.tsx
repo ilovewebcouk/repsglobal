@@ -473,16 +473,22 @@ function ForProsV2Page() {
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
-                  to="/pricing"
+                  to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  See pricing & join <ArrowRight className="h-4 w-4" />
+                  Join REPs <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
+                >
+                  See pricing
                 </Link>
                 <Link
                   to="/compare"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
                 >
-                  Compare with other platforms
+                  Compare platforms
                 </Link>
               </div>
             </div>
