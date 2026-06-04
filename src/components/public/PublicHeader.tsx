@@ -243,13 +243,13 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.pros || active.features)}>
+                  <NavigationMenu.Trigger className={triggerClass(active.pros)}>
                     For Professionals
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
                     />
-                    <ActiveDot show={active.pros || active.features} />
+                    <ActiveDot show={active.pros} />
                   </NavigationMenu.Trigger>
                   <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
                     <ForProsMenu />
