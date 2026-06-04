@@ -286,6 +286,12 @@ function ForProsPage() {
           className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_30%,rgba(255,122,0,0.18),transparent_70%)]"
         />
         <div className="relative mx-auto max-w-[1240px] px-6 py-28 lg:px-10 lg:py-36">
+          <Link
+            to="/for-professionals-v2"
+            className="absolute right-6 top-6 inline-flex items-center gap-1.5 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold text-reps-orange backdrop-blur hover:bg-reps-orange-soft/80 lg:right-10"
+          >
+            Preview v2 <ArrowRight className="h-3 w-3" />
+          </Link>
           <div className="max-w-[860px]">
             <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[12px] font-semibold text-white/80 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> For professionals

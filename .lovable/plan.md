@@ -1,49 +1,78 @@
-## Public Header QA — Polish Plan
 
-Read-only audit of `src/components/public/PublicHeader.tsx`, `nav-config.ts`, and `scripts/check-nav-links.mjs` is complete. The IA, labels, route destinations, and grouping are correct and match the approved 4-journey structure. Mobile accordion order is correct: Find → For Pros → Resources → About. No broken links. No legacy Company block. No standalone About link remains.
+# For Professionals — v2 rebuild
 
-Below are the only issues worth fixing in this pass — all visual/behavioural polish or dead code.
+Build a brand-new route at `/for-professionals-v2` so the current page stays
+intact as a fallback. Nothing in v1 changes. Mockup placeholders stay (we
+upgrade visuals in a later pass).
 
-### Findings & fixes
+## Goals
 
-**1. Active-state logic — redundant + dead branches** (`PublicHeader.tsx` 76–112)
+1. Break the monotony of 9 identical alternating blocks.
+2. Add social proof and a comparison anchor inside the page body.
+3. Make the AI section the page's hero moment, not a footnote.
+4. Fix the hero CTA so it doesn't bounce through `/signup` → `/pricing`.
+5. Use shadcn primitives where they raise quality (Tabs, Accordion, HoverCard, Carousel, Badge, Card, Separator).
 
-- `active.pros` already includes `/features`, but trigger conditions use `active.pros || active.features` in two places (desktop L249/255, mobile L1014). Collapse to `active.pros`.
-- `useActive()` returns three unused keys: `train`, `howItWorks`, `features`. Remove them.
-- Confirmed correct per spec: `resources` (only `/resources`, `/resources/*`), `about` (10 routes listed), `find` (directory/search/city/profession + `/how-it-works` + `/pro/`), `pros` (all 6 routes the user listed plus `/for-professionals` overview).
+## Page structure (top → bottom)
 
-**2. Mobile accordion chevron — low contrast on dark drawer** (`accordion.tsx` 26, used by drawer)
+1. **Hero v2** — tighter. H1 + sub + 2 CTAs only. Trust points become a thin strip *below* the hero, not stuffed in. Background photo dimmer, more orange glow. Primary CTA → `/pricing`, secondary → "Find a Pro" anchor for clients.
+2. **Press strip** — unchanged from v1.
+3. **Proof row** — 3-up: "25,000+ verified pros", "Since 2009", "1M+ searches/yr". Plus the existing `RegisterProof` "Verified register" panel underneath.
+4. **Act 1 — Get clients (Visibility)** — keep the strong Act 1 framing, condense to ONE wide showcase block (the profile mockup) + 3 supporting bullets in a row. Not 1 of 9 in a column.
+5. **"Five pillars" intro** — eyebrow + headline + the existing `ReplacesStrip` (replaces 6 tools graphic).
+6. **Pillar 1 — Leads & CRM** — `ProductBlock` (left image, right copy).
+7. **Pillar 2 — Coaching** — *tabbed* block: 3 shadcn Tabs (Programmes / Check-ins / Client record) sharing one mockup frame. Replaces 3 separate ProductBlocks. Big rhythm change.
+8. **Testimonial card** — full-width quote card, named PT, studio, city, headshot placeholder. Breaks the rhythm.
+9. **Pillar 3 — Bookings & Payments** — `ProductBlock` reversed.
+10. **Pillar 4 — Client Portal** — `ProductBlock` with a mobile-frame placeholder instead of desktop, plus a "what your clients see" caption.
+11. **Comparison strip** — compact 4-column table: REPs / Trainerize / MyPTHub / PT Distinction with 5 rows (Public register, AI Operating System, No booking commission, UK verified since 2009, All features in tier). Links to `/compare` and `/comparison-methodology`.
+12. **Second testimonial** — different shape (3-up mini-quotes card grid).
+13. **Pillar 5 — REPs AI (hero moment)** — full-bleed dark section. Big "14 AI capabilities" headline, but the visual is a *fake AI Command Centre card stack* (Next Move card + Risk Alert card + Programme Writer card) using real REPs tokens, not just 6 generic feature cards. Keep the 6 capability cards below as a secondary grid.
+14. **"A week with REPs"** — 5-day timeline (Mon Next Move → Fri check-ins) as a horizontal scroll/Carousel. New rhythm device.
+15. **FAQ** — shadcn Accordion, 6 questions targeting PT objections (lock-in, data export, switching from Trainerize, what happens to my Stripe, do you take a cut, do my clients need an app).
+16. **Final CTA panel** — same look as v1 but tighter: "Founding pricing, locked for life" with countdown-style urgency line and two CTAs (`/pricing`, `/compare`).
+17. **PublicFooter** — unchanged.
 
-The shared `AccordionTrigger` renders `ChevronDown` with `text-muted-foreground`, which is near-invisible on the `bg-reps-ink` drawer. Override per-trigger by adding `[&>svg]:text-white/60` to the four mobile `AccordionTrigger` className strings (L950, L1012, L1090, L1126). No change to the shared shadcn primitive.
+## Sticky elements
 
-**3. Mobile sub-link tap targets below 44px** (`PublicHeader.tsx` 873)
+- Sticky bottom-right CTA pill ("See pricing →") appears after scrolling past hero. v1 already has the hook (`useScrolledPast`); v2 actually renders it.
 
-`mobileSubLinkClass` uses `py-2` (~36px). Bump to `min-h-11 py-2.5` so every sub-link in all four accordion sections meets the 44×44 target.
+## Files to create
 
-**4. Featured-card focus state in Find mega-menu** (`PublicHeader.tsx` 520)
+- `src/routes/for-professionals-v2.tsx` — the new page.
+- `src/components/marketing/PillarTabs.tsx` — the tabbed Coaching block (shadcn Tabs).
+- `src/components/marketing/TestimonialFeature.tsx` — full-width testimonial.
+- `src/components/marketing/TestimonialTriad.tsx` — 3-up mini quotes.
+- `src/components/marketing/ComparisonStrip.tsx` — compact 4-col comparison.
+- `src/components/marketing/AiCommandCentreMock.tsx` — placeholder card-stack mock for the AI hero moment.
+- `src/components/marketing/WeekWithReps.tsx` — Mon–Fri carousel (shadcn Carousel).
+- `src/components/marketing/StickyCtaPill.tsx` — sticky bottom-right CTA.
+- `src/components/marketing/ForProsFaq.tsx` — shadcn Accordion FAQ.
 
-Uses `focus:border-reps-orange-border` without a ring — keyboard focus is barely visible. Replace with `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60` to match the rest of the header's focus treatment.
+## Files NOT touched
 
-**5. Stale blank lines / unused import** (`PublicHeader.tsx` 11, 55, 190–196, 361)
+- `src/routes/for-professionals.tsx` (v1 stays as fallback)
+- `src/components/public/PublicHeader.tsx`, nav-config, footer
+- `src/styles.css` tokens
+- Any backend / signup / pricing logic
 
-Blank line inside the lucide import block (L11) and several stray blank lines. Cosmetic cleanup only — no behaviour change.
+## Linking in
 
-### Verification after fix
+- Header nav stays pointing at `/for-professionals` (v1) for now.
+- We add a small "Preview the v2 page" link from v1 to v2 (top-right of v1 hero, dev-only feel) so you can A/B without changing public IA. If you'd rather not, say so and I'll skip it.
 
-- Re-run `node scripts/check-nav-links.mjs` (expect: 0 broken; existing 2 orphans `/features` and `/sitemap[/]xml` are pre-existing and not in scope — `/features` is intentionally surfaced only via the For Pros mega-menu's pillar cards which deep-link to `/features/<slug>`; `/sitemap[/]xml` is the XML route).
-- Visual check at 1280, 1024, 390 widths: confirm About mega-menu aligns right-edge without overflow, right cluster (Log in / Join REPs / hamburger) stays stable, mobile drawer accordion chevrons visible.
-- Keyboard sweep: Tab through 4 triggers → arrow keys to open → Tab through menu links → Esc to close. Radix `NavigationMenu` already handles `aria-expanded` / `aria-controls` correctly; no markup change needed.
+## Compliance
 
-### Out of scope (not changing)
+- All radii from the locked 9-step scale (10 buttons, 12 inputs, 16/18 cards, 22 panels, 24 hero, full pills).
+- All orange via `bg-reps-orange*` / `text-reps-orange*` tokens — no hex in components.
+- No `rounded-xl/2xl/3xl`. No shadows on buttons.
+- No banned phrases ("booking fee", "15%", "flat plan", etc.).
+- No new routes outside `/for-professionals-v2`. No backend, auth, DB or payments work.
+- Comparison strip references `/comparison-methodology` and a "Last checked" date.
+- Hero CTA goes to `/pricing` (not `/signup`) to match the gated signup flow.
 
-- IA, labels, routes, grouping, ordering.
-- Resources dropdown content rebuild (still parked).
-- Footer, command palette, location pin, user menu.
-- Orphan routes `/features` and `/sitemap[/]xml` (intentional).
-- Any new routes or backend work.
+## Out of scope (for this pass)
 
-### Files touched
-
-- `src/components/public/PublicHeader.tsx` (active-state cleanup, mobile chevron color, tap-target sizing, focus ring, blank-line cleanup)
-
-No other files change.
+- Replacing the 9 grey product mockup boxes with real visuals — explicit user choice, deferred.
+- Promoting v2 to `/for-professionals` and retiring v1 — separate decision once you've reviewed v2.
+- Real testimonials with real names — placeholders only, marked as such in code comments.
