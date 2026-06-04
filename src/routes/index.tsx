@@ -32,12 +32,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
-import pressMensHealth from "@/assets/press/mens-health.svg.asset.json";
-import pressWomensFitness from "@/assets/press/womens-fitness.svg.asset.json";
-import pressRunnersWorld from "@/assets/press/runners-world.svg.asset.json";
-import pressBbcSport from "@/assets/press/bbc-sport.svg.asset.json";
-import pressTheTimes from "@/assets/press/the-times.svg.asset.json";
-import pressGq from "@/assets/press/gq.svg.asset.json";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,14 +57,6 @@ export const Route = createFileRoute("/")({
 
 const goalChips = ["Fat loss", "Strength", "Mobility", "Pre/post-natal", "Rehab", "Sport-specific"];
 
-const PRESS: { name: string; src: string; height: number }[] = [
-  { name: "Men's Health", src: pressMensHealth.url, height: 18 },
-  { name: "Women's Fitness", src: pressWomensFitness.url, height: 16 },
-  { name: "Runner's World", src: pressRunnersWorld.url, height: 17 },
-  { name: "BBC Sport", src: pressBbcSport.url, height: 26 },
-  { name: "The Times", src: pressTheTimes.url, height: 24 },
-  { name: "GQ", src: pressGq.url, height: 30 },
-];
 
 const stats = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
@@ -267,38 +254,8 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ PRESS STRIP (marquee) ============ */}
-      <section className="border-y border-reps-stone bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-7 lg:px-10">
-          <div className="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
-            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-muted-light">
-              As featured in
-            </span>
-            <div
-              className="relative w-full overflow-hidden"
-              style={{
-                maskImage:
-                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-              }}
-            >
-              <div className="animate-marquee flex w-max items-center gap-14">
-                {[...PRESS, ...PRESS].map((logo, i) => (
-                  <img
-                    key={`${logo.name}-${i}`}
-                    src={logo.src}
-                    alt={logo.name}
-                    style={{ height: logo.height }}
-                    className="w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ============ PRESS STRIP — editorial wordmarks (canonical) ============ */}
+      <PressMarquee />
 
       {/* ============ SOCIAL PROOF RAIL ============ */}
       <section className="bg-reps-ivory">
