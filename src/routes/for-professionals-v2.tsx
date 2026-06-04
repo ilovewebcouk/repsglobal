@@ -111,16 +111,16 @@ function ForProsV2Page() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  to="/pricing"
+                  to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs today <ArrowRight className="h-4 w-4" />
+                  Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/features"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
                 >
-                  Explore the platform
+                  Explore features
                 </Link>
               </div>
             </div>
@@ -135,10 +135,10 @@ function ForProsV2Page() {
         {/* Trust strip */}
         <div className="relative border-t border-reps-border/60 bg-reps-ink/60 backdrop-blur">
           <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-5 text-[12.5px] text-white/65 sm:grid-cols-4 lg:px-10">
-            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> 25,000+ verified pros</span>
-            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> 4.8★ average rating</span>
-            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register since 2009</span>
-            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> 1M+ sessions booked</span>
+            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register heritage</span>
+            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> Built for fitness pros</span>
+            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> Reviews on the public record</span>
+            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> Bookings, payments, coaching in one</span>
           </div>
         </div>
       </section>
@@ -287,7 +287,7 @@ function ForProsV2Page() {
             body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
             bullets={[
               "Calendar with availability and session types",
-              "Stripe-powered payments and subscriptions — no per-booking commission, ever",
+              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
               "Live revenue, paid, pending and overdue",
               "Per-client invoice and payment history",
             ]}
@@ -389,14 +389,21 @@ function ForProsV2Page() {
                 The AI layer behind your fitness business.
               </h2>
               <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/75">
-                Fourteen AI capabilities working across programmes, check-ins, leads, risk
-                and growth — drafting work, scoring intent, flagging churn, ranking the
+                An AI layer working across programmes, check-ins, leads, risk and
+                growth — drafting work, scoring intent, flagging churn, ranking the
                 single move that pays this week. You stay the coach.
               </p>
               <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-4 py-2">
                 <Brain className="h-5 w-5 text-reps-orange" />
-                <span className="font-display text-[24px] font-bold leading-none text-reps-orange">14</span>
-                <span className="text-[12.5px] text-white/80">AI capabilities, included in every paid tier</span>
+                <span className="text-[12.5px] text-white/80">AI assistance included in every paid tier</span>
+              </div>
+              <div className="mt-6">
+                <Link
+                  to="/features/ai"
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-5 text-[13.5px] font-semibold text-reps-orange hover:bg-reps-orange-soft/80"
+                >
+                  Explore AI <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
             <AiCommandCentreMock />
@@ -458,7 +465,7 @@ function ForProsV2Page() {
                 <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Join 25,000+ verified pros.
+                Join the verified register.
               </h2>
               <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
                 Founding Pro pricing is available only before public launch.
@@ -466,16 +473,22 @@ function ForProsV2Page() {
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
-                  to="/pricing"
+                  to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  See pricing & join <ArrowRight className="h-4 w-4" />
+                  Join REPs <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
+                >
+                  See pricing
                 </Link>
                 <Link
                   to="/compare"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
                 >
-                  Compare with other platforms
+                  Compare platforms
                 </Link>
               </div>
             </div>

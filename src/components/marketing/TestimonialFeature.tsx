@@ -1,4 +1,4 @@
-import { Quote, Star } from "lucide-react";
+import { Quote } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import jamesCarter from "@/assets/testimonials/james-carter.jpg";
 
@@ -12,10 +12,16 @@ export function TestimonialFeature() {
       />
       <div className="relative grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-14">
         <div>
-          <Quote className="h-8 w-8 text-reps-orange" aria-hidden />
+          <div className="flex items-center gap-3">
+            <Quote className="h-8 w-8 text-reps-orange" aria-hidden />
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/45">
+              Sample story · for illustration
+            </span>
+          </div>
           <blockquote className="mt-4 font-display text-[22px] font-semibold leading-snug text-white lg:text-[28px]">
-            "I shut down my Trainerize, my Calendly and my spreadsheet on the same day.
-            REPs runs the lot — and the Verified badge actually fills my diary."
+            "I shut down my old programme app, my booking link and my spreadsheet
+            on the same day. REPs runs the lot — and the Verified badge actually
+            fills my diary."
           </blockquote>
           <div className="mt-6 flex items-center gap-4">
             <Avatar className="size-12 border border-reps-border">
@@ -29,9 +35,9 @@ export function TestimonialFeature() {
           </div>
         </div>
         <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-          <Stat k="+38%" v="enquiries since joining" />
-          <Stat k="9 hrs" v="saved every Sunday" />
-          <Stat k={<span className="inline-flex items-center gap-1">4.9<Star className="h-4 w-4 fill-reps-orange text-reps-orange" /></span>} v="REPs profile rating" />
+          <Stat k="More enquiries" v="from the verified register" />
+          <Stat k="Sunday back" v="check-ins drafted by AI" />
+          <Stat k="One bill" v="for the whole stack" />
         </dl>
       </div>
     </figure>
@@ -41,7 +47,7 @@ export function TestimonialFeature() {
 function Stat({ k, v }: { k: React.ReactNode; v: string }) {
   return (
     <div className="rounded-[18px] border border-reps-border bg-reps-ink/60 p-5">
-      <dt className="font-display text-[26px] font-bold leading-none text-reps-orange lg:text-[30px]">{k}</dt>
+      <dt className="font-display text-[18px] font-bold leading-tight text-reps-orange lg:text-[20px]">{k}</dt>
       <dd className="mt-2 text-[12px] leading-snug text-white/60">{v}</dd>
     </div>
   );

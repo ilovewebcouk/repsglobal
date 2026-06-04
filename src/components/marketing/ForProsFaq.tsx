@@ -11,7 +11,7 @@ const FAQ = [
   },
   {
     q: "Does REPs take a cut of my bookings or sessions?",
-    a: "No. Every feature in your tier is included — no per-booking commission, no transaction surcharge, no paid add-ons. You keep what your clients pay you.",
+    a: "No. Every feature in your tier is included — REPs takes no cut of what your clients pay you, and there are no paid add-ons. You keep your revenue.",
   },
   {
     q: "Do my clients need to download an app?",
