@@ -21,7 +21,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
-import { ReplacesStrip } from "@/components/marketing/ReplacesStrip";
+
 import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PillarTabs } from "@/components/marketing/PillarTabs";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
