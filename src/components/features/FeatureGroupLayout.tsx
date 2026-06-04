@@ -43,7 +43,7 @@ export function FeatureGroupLayout({
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
-      <PublicHeader variant="transparent" />
+      <PublicHeader variant="solid" />
 
       {/* HERO */}
       {heroImage && heroLead && heroAccent ? (
@@ -53,7 +53,7 @@ export function FeatureGroupLayout({
             alt={heroImage.alt ?? ""}
             width={1920}
             height={1280}
-            className="absolute inset-0 h-full w-full object-cover object-top lg:object-right-top"
+            className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
           />
           {/* Legibility wash */}
           <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/30" />
@@ -70,7 +70,7 @@ export function FeatureGroupLayout({
           {/* Floor seal */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent via-reps-ink/35 to-reps-ink lg:h-32 lg:via-reps-ink/45"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
           />
 
           <div className="relative mx-auto max-w-[1240px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
