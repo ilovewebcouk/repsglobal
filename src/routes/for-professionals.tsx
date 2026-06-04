@@ -46,16 +46,20 @@ import womensFitness from "@/assets/press/womens-fitness.svg.asset.json";
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
     meta: [
-      { title: "For Professionals (v2) — REPs" },
+      { title: "Not just software. An AI operating system for fitness professionals — REPs" },
       {
         name: "description",
         content:
-          "The verified register the public already searches — and the AI operating system that runs the rest of your practice. v2 preview.",
+          "REPs is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
       },
-      { property: "og:title", content: "Join REPs — For Professionals (v2)" },
-      { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals-v2" },
+      { property: "og:title", content: "Join REPs — For Professionals" },
+      {
+        property: "og:description",
+        content: "The register that brings you clients, and the AI operating system that runs your practice.",
+      },
+      { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals-v2" }],
+    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" }],
   }),
   component: ForProsV2Page,
 });
