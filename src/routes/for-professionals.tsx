@@ -136,70 +136,57 @@ function ForProsPage() {
           </div>
         </div>
 
-        {/* Proof band — heritage anchor · trust points · press */}
+        {/* Proof band — single focal point: heritage anchor + press as supporting row */}
         <div className="relative border-t border-reps-border/60 bg-reps-ink/70 backdrop-blur">
           <div className="mx-auto max-w-[1240px] px-6 py-10 lg:px-10 lg:py-12">
-            <div className="relative overflow-hidden rounded-[22px] border border-reps-border/70 bg-reps-panel/40">
-              {/* subtle orange glow behind the heritage anchor */}
+            <div className="relative overflow-hidden rounded-[22px] bg-reps-panel/40 ring-1 ring-reps-border/60">
+              {/* Centred orange glow behind heritage line */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute -left-20 top-1/2 h-[260px] w-[260px] -translate-y-1/2 rounded-full bg-reps-orange/15 blur-3xl"
+                className="pointer-events-none absolute left-1/2 top-[38%] h-[320px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-reps-orange/12 blur-3xl"
               />
-              <div className="relative grid grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-[1.05fr_1.15fr_1.4fr] lg:gap-0 lg:px-0 lg:py-0">
-                {/* Heritage anchor */}
-                <div className="flex flex-col justify-center px-2 lg:px-8 lg:py-8">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                    The UK&apos;s verified fitness register
-                  </span>
-                  <p className="mt-3 font-display text-[28px] font-bold leading-[1.05] text-white lg:text-[34px]">
-                    Trusted since <span className="text-reps-orange">2009</span>.
-                  </p>
-                  <p className="mt-2 text-[13px] leading-relaxed text-white/55">
-                    The register the public already searches for a qualified pro.
-                  </p>
-                </div>
 
-                {/* Trust points */}
-                <div className="flex flex-col justify-center gap-3 border-reps-border/60 px-2 lg:border-x lg:px-8 lg:py-8">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                    Why pros join
-                  </span>
-                  <ul className="mt-1 space-y-2.5 text-[13.5px] text-white/80">
-                    <li className="flex items-start gap-2.5">
-                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                      Verified pro badge — backed by the register
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <Star className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                      Reviews on the public record
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <Users className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                      Built for fitness, not general CRM
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                      One platform — no paid bolt-ons
-                    </li>
-                  </ul>
+              {/* Heritage anchor — the one focal point */}
+              <div className="relative px-6 pb-10 pt-12 text-center lg:px-10 lg:pb-12 lg:pt-16">
+                <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-reps-orange/40 bg-reps-orange/10">
+                  <ShieldCheck className="h-5 w-5 text-reps-orange" />
                 </div>
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+                  The UK&apos;s verified fitness register
+                </p>
+                <h2 className="mx-auto mt-3 max-w-[760px] font-display text-[28px] font-bold leading-[1.1] text-white sm:text-[34px] lg:text-[42px]">
+                  Trusted since <span className="text-reps-orange">2009</span>.
+                </h2>
+                <p className="mx-auto mt-4 max-w-[560px] text-[14px] leading-relaxed text-white/65 lg:text-[15px]">
+                  The register the public already searches when they&apos;re looking
+                  for a qualified fitness pro — now with the tools to run the whole practice.
+                </p>
+              </div>
 
-                {/* Press */}
-                <div className="flex flex-col justify-center px-2 lg:px-8 lg:py-8">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                    As featured in
-                  </span>
-                  <div className="mt-4 grid grid-cols-3 items-center gap-x-6 gap-y-5 lg:gap-x-8">
-                    {PRESS.map((p) => (
+              {/* Hairline divider */}
+              <div className="relative mx-6 border-t border-reps-border/60 lg:mx-10" />
+
+              {/* Press as quiet supporting row */}
+              <div className="relative px-6 py-8 lg:px-10 lg:py-10">
+                <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">
+                  As featured in
+                </p>
+                <div className="mt-5 grid grid-cols-2 items-center justify-items-center gap-x-8 gap-y-6 sm:grid-cols-3 lg:flex lg:flex-wrap lg:justify-center lg:gap-x-12">
+                  {PRESS.map((p) => (
+                    <Link
+                      key={p.name}
+                      to="/press"
+                      aria-label={`${p.name} — see press coverage`}
+                      className="group inline-flex items-center"
+                    >
                       <img
-                        key={p.name}
                         src={p.url}
                         alt={p.name}
-                        className="h-6 w-auto justify-self-center brightness-0 invert opacity-90 transition hover:opacity-100 lg:h-7"
+                        className="h-7 w-auto brightness-0 invert opacity-70 transition group-hover:opacity-100 lg:h-8"
                         loading="lazy"
                       />
-                    ))}
-                  </div>
+                    </Link>
+                  ))}
                 </div>
               </div>
             </div>
