@@ -1,5 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Minus } from "lucide-react";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import trainerizeLogo from "@/assets/logos/trainerize.svg.asset.json";
+import mypthubLogo from "@/assets/logos/mypthub.svg.asset.json";
+import ptDistinctionLogo from "@/assets/logos/pt-distinction.svg.asset.json";
 
 type Row = { label: string; reps: boolean; trainerize: boolean; mypthub: boolean; ptd: boolean };
 
@@ -11,7 +15,14 @@ const ROWS: Row[] = [
   { label: "Every feature in your tier included", reps: true, trainerize: false, mypthub: false, ptd: false },
 ];
 
-const COLS = ["REPs", "Trainerize", "MyPTHub", "PT Distinction"] as const;
+type Col = { label: string; logo?: string; logoHeight?: number };
+
+const COLS: readonly Col[] = [
+  { label: "REPs" },
+  { label: "Trainerize", logo: trainerizeLogo.url, logoHeight: 20 },
+  { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 22 },
+  { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 18 },
+];
 
 function Cell({ on }: { on: boolean }) {
   return on ? (
