@@ -57,14 +57,6 @@ export const Route = createFileRoute("/")({
 
 const goalChips = ["Fat loss", "Strength", "Mobility", "Pre/post-natal", "Rehab", "Sport-specific"];
 
-const PRESS: { name: string; src: string; height: number }[] = [
-  { name: "Men's Health", src: pressMensHealth.url, height: 18 },
-  { name: "Women's Fitness", src: pressWomensFitness.url, height: 16 },
-  { name: "Runner's World", src: pressRunnersWorld.url, height: 17 },
-  { name: "BBC Sport", src: pressBbcSport.url, height: 26 },
-  { name: "The Times", src: pressTheTimes.url, height: 24 },
-  { name: "GQ", src: pressGq.url, height: 30 },
-];
 
 const stats = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
