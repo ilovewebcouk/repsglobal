@@ -16,8 +16,8 @@ import {
   FeatureGroupLayout,
   AINarrativeCard,
 } from "@/components/features/FeatureGroupLayout";
-import { InsightsMockup } from "@/components/mockups/PlatformMockups";
 import { AI_FEATURES } from "@/components/features/feature-config";
+import heroAi from "@/assets/hero-ai-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/ai")({
   head: () => ({
