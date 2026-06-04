@@ -34,7 +34,7 @@ import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 
-import heroTrainer from "@/assets/hero-trainer.jpg";
+import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
 import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
 import gq from "@/assets/press/gq.svg.asset.json";
 import mensHealth from "@/assets/press/mens-health.svg.asset.json";
@@ -87,15 +87,24 @@ function ForProsPage() {
       <PublicHeader variant="solid" />
       <StickyCtaPill />
 
-      {/* HERO — split with device cluster */}
+      {/* HERO — full-bleed moody gym backdrop with device cluster */}
       <section className="relative overflow-hidden">
-        <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/85 via-reps-ink/92 to-reps-ink" />
+        <img
+          src={heroGym.url}
+          alt=""
+          width={1920}
+          height={1080}
+          className="absolute inset-0 h-full w-full object-cover object-left"
+        />
+        {/* Legibility overlay — darker on the right where copy + devices sit, lighter on left where the gym light naturally falls */}
+        <div className="absolute inset-0 bg-gradient-to-r from-reps-ink/55 via-reps-ink/75 to-reps-ink/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/30 via-transparent to-reps-ink/60" />
+        {/* Soft brand glow — complements the in-photo tungsten without competing */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[75%] bg-[radial-gradient(55%_55%_at_20%_30%,rgba(255,122,0,0.22),transparent_70%)]"
+          className="absolute inset-x-0 top-0 h-[60%] bg-[radial-gradient(45%_50%_at_18%_25%,rgba(255,122,0,0.14),transparent_70%)]"
         />
-        {/* Hero floor seal — ensures the hero ends decisively before the proof band begins */}
+        {/* Hero floor seal — resolves into Act 1 */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink"
