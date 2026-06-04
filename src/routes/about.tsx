@@ -130,7 +130,17 @@ function AboutPage() {
 
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10">
-          <h2 className="font-display text-[28px] font-bold text-white">A short history</h2>
+          <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+            Since 2009
+          </span>
+          <h2 className="mt-2 font-display text-[28px] font-bold text-white lg:text-[34px]">
+            A short history.
+          </h2>
+          <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-white/65">
+            REPs was built on the register the public has trusted since 2009 — rebuilt for a global, verified,
+            AI-powered fitness profession.
+          </p>
+
           <ol className="mt-8 space-y-6">
             {TIMELINE.map((t) => (
               <li
