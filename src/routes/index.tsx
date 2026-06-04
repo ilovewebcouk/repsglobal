@@ -152,23 +152,16 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
-              style={{ transform: "translate3d(22%, 0, 0) scale(1.05)" }}
-              className="absolute inset-0 h-full w-full origin-right object-cover object-[center_25%]"
+              className="absolute inset-0 h-full w-full object-cover object-right"
             />
             <div
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.9) 25%, rgba(11,13,16,0.55) 40%, rgba(11,13,16,0.15) 60%, rgba(11,13,16,0) 75%)",
+                  "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.85) 30%, rgba(11,13,16,0.25) 55%, rgba(11,13,16,0) 75%)",
               }}
             />
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(ellipse 70% 55% at 20% 100%, rgba(11,13,16,0.95) 0%, rgba(11,13,16,0.7) 35%, rgba(11,13,16,0.25) 60%, rgba(11,13,16,0) 80%)",
-              }}
-            />
+
           </div>
         </div>
 
