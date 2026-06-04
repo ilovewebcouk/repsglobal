@@ -1,36 +1,45 @@
 ## Goal
 
-Revert the pillar/feature-group heroes from viewport-locked sizing to content-sized min-heights. Heroes should feel dense and consistent across 13–14" laptops, 1080p, and 1440p+ monitors, with a sliver of the next section (press marquee) peeking above the fold on most desktops.
+Stop the pillar hero H1 from drifting below optical centre when the sub-copy is short (e.g. `/features/coaching`). The H1 should land at the same vertical position across every pillar — `coaching`, `operations`, `visibility`, `growth` — regardless of how many lines of body copy that page has.
+
+## Why the current behaviour is wrong
+
+The hero content column uses `justify-center` with symmetric `py-20 lg:py-24`. That centres the whole block geometrically inside the 780px hero. When the sub-paragraph is 2 lines instead of 3, the entire block — eyebrow, H1, sub, CTAs — shifts down ~30px to stay centred. Verified on screenshots: `/for-professionals` eyebrow at ~170px, `/features/coaching` eyebrow at ~225px.
+
+Optical centring for a hero headline should sit at ~42% from the top of the hero, not 50%. Anchoring from the top with a fixed offset fixes both problems (drift between pillars **and** sitting too low overall).
 
 ## Change
 
 Two files, identical edit:
 
-- `src/components/features/PillarPage.tsx` (line 68)
-- `src/components/features/FeatureGroupLayout.tsx` (line 50)
+- `src/components/features/PillarPage.tsx` — hero content wrapper (line ~80)
+- `src/components/features/FeatureGroupLayout.tsx` — hero content wrapper (matching line)
 
-Replace the hero `<section>` height classes:
+Replace:
 
 ```diff
-- min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1440px]
-+ min-h-[640px] lg:min-h-[780px]
+- <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-center px-6 py-20 lg:px-10 lg:py-24">
++ <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-start px-6 pt-24 pb-20 lg:px-10 lg:pt-[260px] lg:pb-24">
 ```
 
-That's it. No `svh`, no `max-h` cap — hero is sized by its content with a floor.
+What changes:
+- `justify-center` → `justify-start`: copy anchors from the top, so sub-copy length no longer moves the H1.
+- `lg:pt-[260px]`: lands the eyebrow at ~260px from the hero top on desktop, which puts the H1 baseline at ~42% — the same eye-line as `/for-professionals` and the optical sweet spot.
+- Mobile stays `pt-24` (96px) — appropriate for 640px hero floor; the content still reads near the top.
 
-## Why these values
-
-- **Mobile floor `640px`** — unchanged; matches what we had.
-- **Desktop floor `780px`** — fits headline + sub + dual CTA + feature pills comfortably without dead space. On a 13–14" MBP (~800px viewport) this fills the fold; on 1080p it leaves ~220px for the marquee peek; on 1440p the hero stays the same size and the page feels denser instead of stretching.
-- **No max cap needed** — the hero never grows past its content, so 4K monitors don't blow it out.
+Hero `min-h` values (`min-h-[640px] lg:min-h-[780px]`) stay the same. CTAs still finish well before the floor seal, so the marquee peek below the hero is unchanged.
 
 ## Out of scope
 
 - Hero copy, photo, CTAs, feature pills — unchanged
-- Press marquee — unchanged; it just sits naturally below the hero now
-- Any other section, route, or component
-- The 1320px container width change from the previous turn stays
+- `/for-professionals` hero — unchanged (different component, already feels right; revisit only if it starts to look inconsistent against the pillars after this lands)
+- Any other section, route, component, or token
 
 ## Verification
 
-Spot-check `/features/visibility`, `/features/coaching`, `/features/operations` at current viewport (1484×1152) — confirm hero feels intentional, marquee peeks above the fold, no awkward empty band between headline and CTA.
+After the change, screenshot at 1440×900:
+- `/features/coaching` (short sub) — eyebrow should sit at ~170–180px from viewport top (matching `/for-professionals`)
+- `/features/operations` (uses `PillarPage` with 5 feature blocks below) — same eyebrow position
+- `/features/visibility`, `/features/growth` — same eyebrow position
+
+At 375px and 768px, confirm the H1 still reads near the top of the hero with comfortable breathing room above and the CTAs don't crash into the floor-seal gradient.
