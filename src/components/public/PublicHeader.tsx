@@ -1049,7 +1049,12 @@ function MobileDrawer({
               <ul className="flex flex-col px-1">
                 {RESOURCE_TOPICS.map((t) => (
                   <li key={t.category}>
-                    <Link to="/resources" onClick={onNavigate} className={mobileSubLinkClass}>
+                    <Link
+                      to="/resources"
+                      search={{ category: t.category as ResourceCategory }}
+                      onClick={onNavigate}
+                      className={mobileSubLinkClass}
+                    >
                       {t.label}
                     </Link>
                   </li>
