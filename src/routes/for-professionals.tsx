@@ -37,12 +37,6 @@ import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
-import bbcSport from "@/assets/press/bbc-sport.svg.asset.json";
-import gq from "@/assets/press/gq.svg.asset.json";
-import mensHealth from "@/assets/press/mens-health.svg.asset.json";
-import runnersWorld from "@/assets/press/runners-world.svg.asset.json";
-import theTimes from "@/assets/press/the-times.svg.asset.json";
-import womensFitness from "@/assets/press/womens-fitness.svg.asset.json";
 
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
@@ -65,14 +59,6 @@ export const Route = createFileRoute("/for-professionals")({
   component: ForProsPage,
 });
 
-const PRESS = [
-  { name: "The Times", url: theTimes.url },
-  { name: "BBC Sport", url: bbcSport.url },
-  { name: "Men's Health", url: mensHealth.url },
-  { name: "Women's Fitness", url: womensFitness.url },
-  { name: "Runner's World", url: runnersWorld.url },
-  { name: "GQ", url: gq.url },
-];
 
 const AI_CAPS = [
   { icon: Dumbbell, title: "Programmes, drafted in seconds", body: "One-line brief in, 12-week plan out — exercises, sets, video demos." },
