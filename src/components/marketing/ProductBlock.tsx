@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
+import { DeviceMockup } from "@/components/marketing/DeviceMockup";
 import type { FeatureLink } from "@/components/features/feature-config";
 
 export interface ProductBlockProps {
@@ -14,6 +15,12 @@ export interface ProductBlockProps {
   ctaSlug?: FeatureLink["slug"];
   ctaHref?: string;
   reverse?: boolean;
+  mockup?: {
+    device: "laptop" | "phone";
+    src: string;
+    title: string;
+    scale?: number;
+  };
 }
 
 export function ProductBlock({
@@ -26,6 +33,7 @@ export function ProductBlock({
   ctaSlug,
   ctaHref,
   reverse,
+  mockup,
 }: ProductBlockProps) {
   return (
     <div
@@ -33,7 +41,17 @@ export function ProductBlock({
         reverse ? "lg:[&>div:first-child]:order-2" : ""
       }`}
     >
-      <MockupPlaceholder label={imageLabel} />
+      {mockup ? (
+        mockup.device === "phone" ? (
+          <div className="mx-auto w-full max-w-[280px]">
+            <DeviceMockup {...mockup} />
+          </div>
+        ) : (
+          <DeviceMockup {...mockup} />
+        )
+      ) : (
+        <MockupPlaceholder label={imageLabel} />
+      )}
       <div>
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {eyebrow}

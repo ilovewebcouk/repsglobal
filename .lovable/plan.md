@@ -1,71 +1,41 @@
+## Goal
 
-# v2 hero — rebuild to match the mockup
+Replace the four `MockupPlaceholder` boxes inside the `ProductBlock`s on `/for-professionals-v2` with real, scaled iframe mockups of pages we already have — using the same `LaptopFrame` / `PhoneFrame` pattern the hero uses. The AI section keeps its bespoke `AiCommandCentreMock` (it isn't a placeholder).
 
-Replace the current `/for-professionals-v2` hero with a split layout that matches the uploaded mockup:
+## Page → mockup mapping
 
-```text
-┌──────────────────────────────────────────────┐
-│ [VERIFIED. TRUSTED. BOOKED.]                 │
-│                                              │
-│ Not just software.            ╔══════════╗   │
-│ An AI operating system for    ║ laptop   ║   │
-│ fitness professionals.        ║ /dashbrd ║──┐│
-│                               ╚══════════╝  ││
-│ Sub copy…                            ┌─────┐││
-│                                      │ ph  │││
-│ [Join REPs today] [Explore platform] │ /pt │││
-│                                      └─────┘││
-│ ✓ 25k+ pros  ✓ register …                   │
-└──────────────────────────────────────────────┘
-```
+| Section | Frame | Source route |
+|---|---|---|
+| Pillar 1 · Visibility (verified profile) | Laptop | `/pro/sarah-mitchell` (existing pro profile page) |
+| Pillar 1 · Leads CRM | Laptop | `/dashboard/leads` |
+| Pillar 3 · Bookings & payments | Laptop | `/dashboard/calendar` |
+| Pillar 4 · Client portal | Phone (centered, larger than hero phone) | `/portal/today` |
 
-## Layout
+If `/pro/sarah-mitchell` doesn't resolve at build time we'll fall back to `/find-a-professional`. Phone iframes scale ~0.34; laptop iframes scale ~0.5 — same as hero.
 
-- Two-column hero: copy left (max ~560px), device cluster right.
-- Eyebrow pill "VERIFIED · TRUSTED · BOOKED" above H1.
-- Keep H1 and orange second line.
-- Sub copy rewritten to match mockup: "REPs is built for fitness professionals who want to get found, win more clients, deliver better coaching and grow a sustainable business. One platform. Every tool. Powered by AI."
-- CTAs: **Join REPs today** → `/pricing` (primary), **Explore the platform** → `/features` (secondary).
-- Trust strip stays under the hero (already built).
+## New component
 
-## Device cluster (the new bit)
+`src/components/marketing/DeviceMockup.tsx` — thin wrapper that takes `{ device: "laptop" | "phone", src, scale?, title }` and renders the right frame + a `ScaledFrame` inside (extracted from `HeroDeviceCluster`). Iframes stay `aria-hidden`, `tabIndex={-1}`, `pointer-events-none`, `scrolling="no"`, `loading="lazy"`.
 
-A laptop frame with a phone frame floating bottom-right, overlapping.
+## ProductBlock change
 
-- **Laptop frame** — new component `LaptopFrame.tsx`. Notched top bar (3 dots), thin bezel, base stand bar. ~640×400 inner viewport at desktop.
-- **Phone frame** — new component `PhoneFrame.tsx`. iPhone-style notch, ~220×440 inner viewport.
-- **Content inside frames**: load real app routes via `<iframe>` with `pointer-events: none`, `scrolling="no"`, scaled with `transform: scale(0.55)` and `transform-origin: top left`, sized to fit. This keeps the visual always-true to the actual app — change `/dashboard` and the hero updates itself.
-  - Laptop iframe → `/dashboard`
-  - Phone iframe → `/portal/today`
-- Add `aria-hidden` + `tabindex="-1"` so iframes don't trap focus/screen readers.
-- Fallback: a small `Sparkles` skeleton renders behind the iframe so a slow-loading frame doesn't show a blank rectangle.
+Add an optional `mockup?: { device: "laptop" | "phone"; src: string; title: string }` prop. When present, render `<DeviceMockup ... />` instead of `<MockupPlaceholder label={imageLabel} />`. `imageLabel` stays as a fallback for any block that doesn't pass `mockup` yet.
 
-## Responsive
+## Edits
 
-- ≥ lg: side-by-side, cluster occupies right ~52% of the hero.
-- md: cluster shrinks, stays beside copy.
-- < md: cluster hides (or stacks below copy at smaller scale). Mobile hero is text-only with CTAs — phone visitors don't need a tiny laptop render.
-
-## Files
-
-- New: `src/components/marketing/LaptopFrame.tsx`
-- New: `src/components/marketing/PhoneFrame.tsx`
-- New: `src/components/marketing/HeroDeviceCluster.tsx` (assembles the two frames with the iframes inside)
-- Edit: `src/routes/for-professionals-v2.tsx` — replace the hero `<section>` only. Everything below the hero stays as built.
+1. **Create** `src/components/marketing/DeviceMockup.tsx` + extract `ScaledFrame` into it; `HeroDeviceCluster` re-imports it (no visual change to hero).
+2. **Edit** `src/components/marketing/ProductBlock.tsx` — add `mockup` prop + conditional render.
+3. **Edit** `src/routes/for-professionals-v2.tsx` — pass `mockup={{...}}` to the four `ProductBlock`s listed above. Phone block (client portal) gets a centered wrapper so the phone doesn't fill the column.
 
 ## Out of scope
 
-- The rest of the page (proof row, pillars, comparison, AI section, etc.) is untouched.
-- v1 (`/for-professionals`) is untouched.
-- No token / radius / colour changes.
+- v1 `for-professionals.tsx`
+- `AiCommandCentreMock` (already custom)
+- New routes, auth, or styling token changes
+- Any change to the hero cluster's visuals
 
-## Compliance
+## Risk / known limits
 
-- Frames use radius 22 (large panel) / 24 (hero) from the locked scale.
-- Buttons keep radius 10, no shadows.
-- All orange via `bg-reps-orange*` tokens — no hex.
-- No backend, no real screenshot generation, no new routes.
-
-## Risk to flag
-
-iframes of internal routes work great in the live preview but they re-render the full layout including the `PublicHeader` and other heavy components inside the laptop. That's fine for `/dashboard` (it has its own shell) but `/portal/today` may render a full app shell that looks crowded at 0.55 scale. I'll pick the route that frames best — if `/portal/today` doesn't fit cleanly I'll fall back to `/dashboard_/clients/$slug` or render a small static phone mockup.
+- Iframes of `/dashboard/*` and `/portal/today` may hit auth gates and render an empty / login state. If so, the laptop frame will show that page's public skeleton. Mitigation: if a route gates out, we swap to its public marketing twin (e.g. `/features/operations` for Leads) — decided per-section once we see the result.
+- Multiple iframes on one page = heavier hero. All iframes use `loading="lazy"` so only the visible ones load on first paint.
+- No design tokens or radii change. Frames already follow the locked radius system.
