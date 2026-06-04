@@ -576,21 +576,6 @@ function ResourcesMenu() {
               </li>
             ))}
           </ul>
-
-          <h4 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-            REPs explained
-          </h4>
-          <ul className="mt-3 flex flex-col gap-1">
-            {RESOURCE_QUICK_LINKS.map((l) => (
-              <li key={l.to}>
-                <NavigationMenu.Link asChild>
-                  <Link to={l.to} className={menuItemClass}>
-                    {l.label}
-                  </Link>
-                </NavigationMenu.Link>
-              </li>
-            ))}
-          </ul>
         </div>
         <ArticleColumn heading="Featured" articles={featured} />
         <ArticleColumn heading="Latest" articles={latest} />
