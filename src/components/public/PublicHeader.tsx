@@ -532,10 +532,11 @@ function FindMenu() {
 }
 
 function ResourcesMenu() {
-  const featured = RESOURCE_ARTICLES.slice(0, 3);
+  const featured = getFeaturedArticles(3);
+  const latest = getLatestArticles(3);
   return (
-    <PanelShell width="w-[720px]">
-      <div className="grid grid-cols-[1fr_1.4fr] gap-8">
+    <PanelShell width="w-[960px]">
+      <div className="grid grid-cols-[1fr_1.3fr_1.3fr] gap-8">
         <div>
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
             Browse by topic
@@ -544,7 +545,11 @@ function ResourcesMenu() {
             {RESOURCE_TOPICS.map((t) => (
               <li key={t.category}>
                 <NavigationMenu.Link asChild>
-                  <Link to="/resources" className={menuItemClass}>
+                  <Link
+                    to="/resources"
+                    search={{ category: t.category as ResourceCategory }}
+                    className={menuItemClass}
+                  >
                     {t.label}
                   </Link>
                 </NavigationMenu.Link>
@@ -567,40 +572,13 @@ function ResourcesMenu() {
             ))}
           </ul>
         </div>
-        <div>
-          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-            Featured articles
-          </h4>
-          <ul className="mt-3 flex flex-col gap-3">
-            {featured.map((a) => (
-              <li key={a.slug}>
-                <NavigationMenu.Link asChild>
-                  <Link
-                    to="/resources/$slug"
-                    params={{ slug: a.slug }}
-                    className="flex items-start gap-3 rounded-[16px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
-                  >
-                    <span
-                      className="h-12 w-16 shrink-0 rounded-[10px] bg-cover bg-center"
-                      style={{ backgroundImage: `url(${a.cover})` }}
-                      aria-hidden
-                    />
-                    <span className="flex flex-col">
-                      <span className="text-[13px] font-semibold leading-snug text-reps-charcoal">
-                        {a.title}
-                      </span>
-                      <span className="mt-0.5 text-[11px] text-reps-charcoal/60">
-                        {a.category} · {a.readTime}
-                      </span>
-                    </span>
-                  </Link>
-                </NavigationMenu.Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ArticleColumn heading="Featured" articles={featured} />
+        <ArticleColumn heading="Latest" articles={latest} />
       </div>
-      <div className="mt-5 border-t border-reps-stone pt-4">
+      <div className="mt-5 flex items-center justify-between border-t border-reps-stone pt-4">
+        <span className="text-[11px] text-reps-charcoal/55">
+          {RESOURCE_ARTICLES.length} guides · updated weekly
+        </span>
         <NavigationMenu.Link asChild>
           <Link
             to="/resources"
@@ -611,6 +589,49 @@ function ResourcesMenu() {
         </NavigationMenu.Link>
       </div>
     </PanelShell>
+  );
+}
+
+function ArticleColumn({
+  heading,
+  articles,
+}: {
+  heading: string;
+  articles: ReturnType<typeof getFeaturedArticles>;
+}) {
+  return (
+    <div>
+      <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
+        {heading}
+      </h4>
+      <ul className="mt-3 flex flex-col gap-3">
+        {articles.map((a) => (
+          <li key={a.slug}>
+            <NavigationMenu.Link asChild>
+              <Link
+                to="/resources/$slug"
+                params={{ slug: a.slug }}
+                className="flex items-start gap-3 rounded-[16px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
+              >
+                <span
+                  className="h-12 w-16 shrink-0 rounded-[10px] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${a.cover})` }}
+                  aria-hidden
+                />
+                <span className="flex flex-col">
+                  <span className="text-[13px] font-semibold leading-snug text-reps-charcoal">
+                    {a.title}
+                  </span>
+                  <span className="mt-0.5 text-[11px] text-reps-charcoal/60">
+                    {a.category} · {a.readTime}
+                  </span>
+                </span>
+              </Link>
+            </NavigationMenu.Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
