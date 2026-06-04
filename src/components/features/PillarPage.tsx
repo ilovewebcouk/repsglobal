@@ -40,6 +40,8 @@ type Props = {
   /** Two-line H1. `lead` renders white; `accent` renders in brand orange beneath it. */
   heroLead: string;
   heroAccent: string;
+  /** Optional background image for the hero. Defaults to the for-pros gym backdrop. */
+  heroImage?: { src: string; alt?: string };
   /** Routes shown in the laptop + floating phone of the device cluster. */
   heroCluster: {
     laptopSrc: string;
@@ -53,30 +55,35 @@ type Props = {
   children?: React.ReactNode;
 };
 
+
 export function PillarPage({
   groupKey,
   heroLead,
   heroAccent,
+  heroImage,
   heroCluster,
   features,
   children,
 }: Props) {
   const group = groupBySlug(groupKey);
   const otherGroups = FEATURE_GROUPS.filter((g) => g.key !== groupKey);
+  const heroBgSrc = heroImage?.src ?? heroGym.url;
+  const heroBgAlt = heroImage?.alt ?? "";
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      {/* HERO — full-bleed moody gym backdrop with device cluster (mirrors /for-professionals) */}
+      {/* HERO — full-bleed moody backdrop with device cluster (mirrors /for-professionals) */}
       <section className="relative overflow-hidden">
         <img
-          src={heroGym.url}
-          alt=""
+          src={heroBgSrc}
+          alt={heroBgAlt}
           width={1920}
           height={1080}
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
+
         {/* Legibility overlay */}
         <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
         {/* Copy-zone vignette */}
