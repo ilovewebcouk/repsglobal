@@ -28,6 +28,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ForProfessionalsV2RouteImport } from './routes/for-professionals-v2'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -195,6 +196,11 @@ const HelpRoute = HelpRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForProfessionalsV2Route = ForProfessionalsV2RouteImport.update({
+  id: '/for-professionals-v2',
+  path: '/for-professionals-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/for-professionals-v2': typeof ForProfessionalsV2Route
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
@@ -678,6 +685,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/for-professionals-v2': typeof ForProfessionalsV2Route
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
@@ -772,6 +780,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
+  '/for-professionals-v2': typeof ForProfessionalsV2Route
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
@@ -868,6 +877,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/for-professionals-v2'
     | '/forgot-password'
     | '/help'
     | '/home-legacy'
@@ -962,6 +972,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/for-professionals-v2'
     | '/forgot-password'
     | '/help'
     | '/home-legacy'
@@ -1055,6 +1066,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
+    | '/for-professionals-v2'
     | '/forgot-password'
     | '/help'
     | '/home-legacy'
@@ -1150,6 +1162,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
+  ForProfessionalsV2Route: typeof ForProfessionalsV2Route
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRoute
   HomeLegacyRoute: typeof HomeLegacyRoute
@@ -1358,6 +1371,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-professionals-v2': {
+      id: '/for-professionals-v2'
+      path: '/for-professionals-v2'
+      fullPath: '/for-professionals-v2'
+      preLoaderRoute: typeof ForProfessionalsV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-professionals': {
@@ -1915,6 +1935,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
+  ForProfessionalsV2Route: ForProfessionalsV2Route,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRoute,
   HomeLegacyRoute: HomeLegacyRoute,
