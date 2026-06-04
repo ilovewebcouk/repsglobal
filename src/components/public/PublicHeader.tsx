@@ -1007,8 +1007,8 @@ function MobileDrawer({
           <AccordionItem value="pros" className="border-0">
             <AccordionTrigger
               className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline",
-                active.pros || active.features ? "text-white" : "text-white/85 hover:text-white",
+                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
+                active.pros ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
               For Professionals
