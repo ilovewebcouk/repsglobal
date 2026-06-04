@@ -2,11 +2,30 @@ import { LaptopFrame } from "./LaptopFrame";
 import { PhoneFrame } from "./PhoneFrame";
 import { ScaledFrame } from "./DeviceMockup";
 
+type Props = {
+  /** Route shown inside the laptop iframe. */
+  laptopSrc?: string;
+  laptopTitle?: string;
+  laptopScale?: number;
+  /** Route shown inside the floating phone iframe. Pass null to hide the phone. */
+  phoneSrc?: string | null;
+  phoneTitle?: string;
+  phoneScale?: number;
+};
+
 /**
- * Hero device cluster: laptop showing /dashboard with a phone showing
- * /portal/today floating bottom-right, framed by a soft orange glow plate.
+ * Hero device cluster: laptop showing a route with a phone showing another
+ * route floating bottom-right, framed by a soft orange glow plate.
+ * Defaults mirror /for-professionals so existing usage is unchanged.
  */
-export function HeroDeviceCluster() {
+export function HeroDeviceCluster({
+  laptopSrc = "/dashboard",
+  laptopTitle = "REPs dashboard preview",
+  laptopScale = 0.5,
+  phoneSrc = "/portal/today",
+  phoneTitle = "REPs client portal preview",
+  phoneScale = 0.32,
+}: Props = {}) {
   return (
     <div className="relative w-full">
       {/* Backdrop glow plate */}
@@ -20,14 +39,16 @@ export function HeroDeviceCluster() {
       />
 
       <LaptopFrame>
-        <ScaledFrame src="/dashboard" scale={0.5} title="REPs dashboard preview" />
+        <ScaledFrame src={laptopSrc} scale={laptopScale} title={laptopTitle} />
       </LaptopFrame>
 
-      <div className="absolute -bottom-10 right-2 w-[28%] min-w-[150px] max-w-[220px] drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] sm:-bottom-12 sm:right-4 lg:-bottom-16 lg:right-6">
-        <PhoneFrame>
-          <ScaledFrame src="/portal/today" scale={0.32} title="REPs client portal preview" />
-        </PhoneFrame>
-      </div>
+      {phoneSrc && (
+        <div className="absolute -bottom-10 right-2 w-[28%] min-w-[150px] max-w-[220px] drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] sm:-bottom-12 sm:right-4 lg:-bottom-16 lg:right-6">
+          <PhoneFrame>
+            <ScaledFrame src={phoneSrc} scale={phoneScale} title={phoneTitle} />
+          </PhoneFrame>
+        </div>
+      )}
     </div>
   );
 }
