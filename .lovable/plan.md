@@ -1,58 +1,48 @@
-# Homepage hero — new cinematic coaching shot
+# Fix the homepage hero image (composition, not style)
 
-Bring the homepage hero up to the same bar as `/features/coaching`. Same grade, same REPS branding rules, same "trainer + client in a REPS gym" energy — but a **fresh composition** so the homepage and the Coaching pillar don't share an identical photo.
+## Problem (verified from live screenshot at 1484px)
 
-## 1. Generate `src/assets/home-hero-coaching.jpg`
+The current hero image is a good photograph but it was generated for a generic 3:2 frame, not for the left-aligned hero layout it's actually used in. On the live page:
 
-Premium tier, **2400×1350** (16:9, sharper than the pillar heroes because the homepage crops aggressively on desktop and the image sits behind a full-width gradient wash).
+- The "REPS" wall sign sits directly behind the headline → muddy text zone + double branding.
+- The client's head and the coach's kettlebell-hand are clipping at the top-right and right edges of the viewport.
+- Subjects' eye-line is in the top third; the bottom third is empty floor while the search bar floats over nothing.
+- No real dark negative space on the left — the dark overlay has to do all the work, which flattens the photo.
 
-Same cinematic grade as the pillar heroes: cool blue-grey shadows, warm tungsten/amber highlights, dusk light through gym windows, shallow DoF, 35mm f/2, Men's Health / GQ editorial quality.
+## What to build
 
-**Subject — REPS trainer coaching a real client mid-set, in a REPS-branded boutique gym:**
-- **Trainer:** Black female coach, early 30s, calm authority, mid-cue — one hand lightly on the client's mid-back, the other gesturing the bar path. Charcoal performance polo with **"REPS"** ALL CAPS white embroidered wordmark on the left chest (matches site header logo).
-- **Client:** mixed-race / Latina woman, late 20s, mid-rep on a kettlebell goblet squat or trap-bar deadlift set-up — focused, working, not posing. Plain charcoal/heather training kit, no other brand marks.
-- **Environment:** premium boutech gym floor — black rubber tiles, brushed steel rig, warm tungsten downlights, a large defocused **"REPS"** frosted-vinyl wall mark on the back wall (ALL CAPS, softly out of focus, reads as gym signage not a logo overlay). Faint warm orange spill from the rig lighting.
+Regenerate ONE replacement image with composition rules tuned to the actual hero panel. No code/layout changes — only swap the asset.
 
-**Composition:** wide 16:9, subjects anchored **right of centre** with the trainer slightly forward of the client. Left third = quiet negative space (defocused gym depth, warm bokeh) so the homepage H1 / sub / CTAs sit cleanly over the left side at desktop. On mobile the image is hidden (the existing hero already drops to solid black under `lg`), so we only need to nail the desktop crop.
+### Image brief (premium tier, 16:9, 1920×1080)
 
-**Narrative cue:** "this is what a REPS session actually looks like" — coaching in progress, not a stock posed shot. No phones, no on-screen UI, no chart props.
+- **Scene**: same world as the current hero — premium REPS-branded gym at golden hour, sunset cityscape through floor-to-ceiling windows behind a power rack. Moody, cinematic, dark.
+- **Subjects (right 45–55% of frame only)**: female REPS coach actively cueing a male or female client mid-rep. Coach in a **black REPS polo with the REPS wordmark (ALL CAPS, small left-chest, embroidered)** clearly readable. Client in normal workout kit (visibly different from the coach — no athleisure-twins look).
+- **Coaching gesture must read as expertise**: hand on hip cueing hinge, or tracing bar path — NOT a vague hand-near-shoulder hover.
+- **Movement**: trainer's choice between a goblet squat cue, a Romanian deadlift hinge setup, or a kettlebell front-rack hold — whichever gives the strongest single image. Form must be textbook.
+- **Framing rules (critical)**:
+  - Subjects occupy the **right 45–55%** of the frame only.
+  - Left 45–50% is **clean dark negative space** — gym floor, shadow, soft rim of warm light — **NO "REPS" wall sign**, no signage, no bright windows on the left.
+  - Subjects' **eye-line in the lower-middle third** so the headline (top-left) and search bar (mid-left) don't fight the photo.
+  - Safe margin of ~6% on the right edge — nothing critical (hands, kettlebell, face) within that margin so common viewport widths don't clip.
+- **Lighting**: hard warm rim light from the sunset window behind subjects, soft fill from the left. More contrast than the current image — push it cinematic, not stock.
+- **Wardrobe parity**: coach reads as a pro (polo + wordmark), client reads as a client (tank/tee + shorts or leggings). Not matching outfits.
 
-Upload via `lovable-assets create` → write `src/assets/home-hero-coaching.jpg.asset.json`. Up to 2× regenerate if framing or **REPS** spelling drifts.
+### Implementation steps
 
-## 2. Wire it into `src/routes/index.tsx`
+1. Generate the new image (premium tier, 16:9, jpg) to `src/assets/home-hero-coaching-v2.jpg` via the agent-side image tool — bypasses asset CDN flow so we can iterate cheaply, then promote to `lovable-assets` once approved.
+2. QA: open the generated file, verify (a) REPS wordmark on coach's polo is readable, (b) subjects are in right half, (c) left half is clean dark negative space with no signage, (d) nothing clips within 6% right margin, (e) eye-line is lower-middle.
+3. If QA fails on any point, regenerate (max 2 retries) with sharpened brief — don't ship a "close enough" version.
+4. Swap the import in `src/routes/index.tsx` to the new asset. Leave `home-hero-coaching.jpg.asset.json` and the legacy shim in place until you confirm the new image looks right live, then delete the old asset in a follow-up.
+5. Take a live preview screenshot at 1484px (current viewport) AND at 1920px to confirm the composition holds at both widths.
 
-Surgical swap, no layout changes:
+### Out of scope
 
-- Replace the import at line 29:
-  - `import heroCoaching from "@/assets/hero-coaching-moment.jpg";`
-  - →
-  - `import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";`
-- Update the two `<img src={heroCoaching} … />` usages (lines 153 and 531) to `src={heroCoaching.url}`.
-- Leave the existing transforms, gradients, vignette, and the secondary `opacity-30` band at line 531 untouched — those are tuned to the current crop and the new image is being shot to the same composition rules.
-
-## 3. Delete the old asset
-
-Once the new hero is in place and QA'd, remove `src/assets/hero-coaching-moment.jpg` from the repo. (It was a raw binary, not an asset pointer — safe to delete; nothing else references it.)
-
-## 4. QA
-
-Screenshot `/` at desktop:
-- New hero visible behind the H1, copy column fully legible against the left wash.
-- Trainer + client read as "coaching in progress", not stock posing.
-- **"REPS"** ALL CAPS legible on the polo AND on the back wall.
-- Trainer is a Black woman (continues the diversity rotation across the pillars: white male, white male, Black female (pillar), South-Asian male, Latina female — homepage repeats Black female intentionally as the "flagship" shot).
-- Grade matches `/features/coaching` and the other pillar heroes.
-- Mobile/tablet still drops to solid black hero — no regression.
-- Secondary usage at line 531 (the band that uses the same image at 30% opacity) still reads correctly.
-
-## Out of scope
-
-- Any homepage copy, layout, CTA, or section changes below the hero.
-- Pillar heroes (already done).
-- Mobile hero treatment (intentionally stays solid black).
+- No layout/overlay changes to the hero panel itself.
+- No copy changes.
+- No changes to any other page's hero or imagery.
+- No changes to the pillars image — it's the reference standard, not a target.
 
 ## Files touched
 
-- `src/assets/home-hero-coaching.jpg.asset.json` — new
-- `src/routes/index.tsx` — swap import + two `src` references
-- `src/assets/hero-coaching-moment.jpg` — delete
+- New: `src/assets/home-hero-coaching-v2.jpg` (then `.asset.json` after approval)
+- Edited: `src/routes/index.tsx` (one import swap)
