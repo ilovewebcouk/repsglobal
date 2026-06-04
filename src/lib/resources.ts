@@ -1,5 +1,5 @@
 import ctaBand from "@/assets/cta-band.jpg";
-import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoaching from "@/assets/hero-coaching-moment";
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
 import coverOnlineVsInPerson from "@/assets/resources/online-vs-in-person-coaching.jpg";

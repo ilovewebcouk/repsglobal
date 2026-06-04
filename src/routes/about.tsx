@@ -3,7 +3,7 @@ import { Award, Globe, Heart, ShieldCheck, Sparkles, Target, Users } from "lucid
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoaching from "@/assets/hero-coaching-moment";
 import ctaBand from "@/assets/cta-band.jpg";
 
 export const Route = createFileRoute("/about")({

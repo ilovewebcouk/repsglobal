@@ -26,7 +26,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
-import heroCoaching from "@/assets/hero-coaching-moment.jpg";
+import heroCoaching from "@/assets/hero-coaching-moment";
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
