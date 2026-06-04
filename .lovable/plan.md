@@ -1,28 +1,36 @@
 ## Goal
 
-Align every section container with the navbar/footer (`max-w-[1320px]`) and finish the pillar-page hero cap fix from the previous turn.
+Revert the pillar/feature-group heroes from viewport-locked sizing to content-sized min-heights. Heroes should feel dense and consistent across 13–14" laptops, 1080p, and 1440p+ monitors, with a sliver of the next section (press marquee) peeking above the fold on most desktops.
 
-## Changes
+## Change
 
-**1. Global container bump — `max-w-[1240px]` → `max-w-[1320px]`**
+Two files, identical edit:
 
-Find-replace across all 25 affected files (107 total occurrences). The 40px lateral gutter (`lg:px-10`) stays untouched — it keeps headlines off the screen edge on 13–14" laptops and preserves the press-marquee fade mask. Only the inner cap changes.
+- `src/components/features/PillarPage.tsx` (line 68)
+- `src/components/features/FeatureGroupLayout.tsx` (line 50)
 
-Files touched:
-- Routes (19): `about`, `careers`, `compare`, `complaints`, `contact`, `cookies`, `cpd`, `faq`, `features.ai`, `for-professionals`, `help`, `how-it-works`, `press`, `pricing`, `resources.index`, `resources.$slug`, `specialisms`, `standards`, `verify`
-- Components (6): `pricing/FoundingBanner`, `features/PillarPage`, `features/FeatureGroupLayout`, `features/FeaturePageLayout`, `legal/LegalShell`, `marketing/HeadToHead`
+Replace the hero `<section>` height classes:
 
-**2. Raise pillar hero cap — `lg:max-h-[1000px]` → `lg:max-h-[1440px]`**
+```diff
+- min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:max-h-[1440px]
++ min-h-[640px] lg:min-h-[780px]
+```
 
-In `src/components/features/PillarPage.tsx` and `src/components/features/FeatureGroupLayout.tsx`. This finishes the 1440p verification thread — hero now genuinely fills the viewport on 1080p, 1440p, and anything in between, while still capping ultra-tall 4K/5K monitors so the headline doesn't float in dead space.
+That's it. No `svh`, no `max-h` cap — hero is sized by its content with a floor.
+
+## Why these values
+
+- **Mobile floor `640px`** — unchanged; matches what we had.
+- **Desktop floor `780px`** — fits headline + sub + dual CTA + feature pills comfortably without dead space. On a 13–14" MBP (~800px viewport) this fills the fold; on 1080p it leaves ~220px for the marquee peek; on 1440p the hero stays the same size and the page feels denser instead of stretching.
+- **No max cap needed** — the hero never grows past its content, so 4K monitors don't blow it out.
 
 ## Out of scope
 
-- Navbar/footer themselves (already at 1320px — they're the reference)
-- Gutter (`lg:px-10`) — staying
-- Any full-bleed backgrounds (hero photo, dark ink, marquee) — already full-width
-- Any layout, copy, or component logic
+- Hero copy, photo, CTAs, feature pills — unchanged
+- Press marquee — unchanged; it just sits naturally below the hero now
+- Any other section, route, or component
+- The 1320px container width change from the previous turn stays
 
-## Verification after build
+## Verification
 
-Spot-check 3 routes at 1484px viewport (current): pillar page (`/features/coaching`), pricing, and home — confirm the content edges line up vertically with the header's logo-left and account-right.
+Spot-check `/features/visibility`, `/features/coaching`, `/features/operations` at current viewport (1484×1152) — confirm hero feels intentional, marquee peeks above the fold, no awkward empty band between headline and CTA.
