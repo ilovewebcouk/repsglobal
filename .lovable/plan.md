@@ -1,52 +1,56 @@
 
-# Growth pillar — photo hero, fresh subject
+# Homepage hero — generate all four, swap the chosen one, bank the rest
 
-Final pillar in the set. Match Coaching/AI/Visibility/Operations.
+You want all four hero angles produced so you can pick the homepage winner and keep the other three on the shelf for other pages (about, find-a-professional, how-it-works, etc.). The current hero structure (H1, search form, goal chips, avatar + reviews row, mobile fallback) stays exactly as-is — only the background image swaps.
 
-## 1. Generate `src/assets/hero-growth-bg.jpg`
+## Stack-wide rules every shot will follow
 
-Premium tier, 1920×1280, same cinematic grade (cool blue-grey shadows, warm tungsten highlights, dusk light, shallow DoF, 35mm f/2).
+- 1920×1280, premium tier, cinematic editorial.
+- Cool blue-grey shadows + warm tungsten/orange highlights. Dusk light. 35mm at f/2 feel. Shallow DoF.
+- Subject anchored in the **right two-thirds** of the frame so the existing left-edge dark-to-transparent wash + radial vignette keep the headline / search / avatars perfectly legible. Matches the current `translate3d(22%, 0, 0) scale(1.05)` and `object-[center_25%]` framing.
+- Every visible REPs garment carries the **"REPS"** ALL-CAPS wordmark (white embroidery, left-chest or centred-chest depending on shot).
+- Wherever a wall/window can carry it naturally, a defocused **"REPS"** ALL-CAPS environment mark too.
+- Diversity rotation: no two heroes share the same subject demographic. (Pillars so far: white male × 2, Black female, South-Asian male, Latina female owner.)
 
-**Subject — keep the diversity rotation** (so far: white male, white male, Black female, South-Asian male):
-- A **mixed-race / Latina female studio owner, early 30s**, standing confidently in the doorway of her boutique studio at dusk, arms loosely folded or one hand on the doorframe. Reads as the "owner who just had her best month" — calm, in command, mid-conversation pause.
+## The four shots
 
-**Composition:** subject anchored in the **right third**, left two-thirds = quiet street-at-dusk depth (warm shop-window glow behind her, soft bokeh of city lights, clean negative space for headline text).
+**1. The transformation moment** — `hero-home-transformation.jpg`
+Diverse female client (mid-race / mid-30s) finishing a heavy sled push on the gym floor at dusk — head down, jaw set, sweat glow, hands on the sled handles. A REPS-branded male coach (Black, late-20s, lean) softly defocused half a step behind her cueing the next rep. Both wear REPS polos. Background: industrial windows, warm orange spill, blurred plate stack. **Story:** "Find. Trust. Train. Transform." literally — the moment the platform exists to create.
 
-**REPs branding (both):**
-- **"REPS"** ALL CAPS, white embroidery, small left-chest on a charcoal performance polo or zip-up.
-- A defocused **"REPS"** wall mark / window decal on the studio glass behind her — frosted vinyl, ALL CAPS, softly out of focus.
+**2. The first session** — `hero-home-first-session.jpg`
+REPs coach (East-Asian female, early 30s) on the gym floor at dusk, three-quarters to camera, mid-cue gesturing toward a tablet she's holding. A new client (white male, late 30s, gym kit, listening) stands across from her. REPS wall mark behind. **Story:** "Get matched with a verified coach" — the moment you walk in for session one.
 
-**Narrative cue:** a faint warm orange spill from the studio interior (suggests "lights on, business open, momentum") — but no on-screen UI, no chart props, no phone-in-hand. Owner, not operator.
+**3. The confident client** — `hero-home-confident-client.jpg`
+Editorial portrait of a real-looking female client (Middle-Eastern / mid-40s, towel round neck, water bottle in hand, post-session) standing in a boutique REPs studio at dusk. Calm half-smile, direct to camera. REPS wall mark softly defocused behind. A REPS coach is barely visible, fully out of focus, in the deep background. **Story:** "This could be you." Aspirational, client-led.
 
-Upload via `lovable-assets create` → write `src/assets/hero-growth-bg.jpg.asset.json`.
+**4. The crew** — `hero-home-coach-crew.jpg`
+Four REPs-branded coaches (mixed ethnicity + gender — Black female, South-Asian male, white female, East-Asian male) on the gym floor at dusk, mid-conversation, holding clipboards/tablets. REPS wall mark behind. Subject group anchored slightly right so left two-thirds stays clean. **Story:** "The network of verified pros." Coach-heavy — useful for /about, /for-professionals or /find-a-professional rather than the homepage if you ask me, but generated anyway.
 
-## 2. Rewrite `src/routes/features.growth.tsx`
+## Generation + delivery
 
-- Drop `InsightsMockup` import + `visual` prop.
-- Add `heroLead`, `heroAccent`, `heroImage`, `og:image`:
-  - `heroLead`: **"Not just a dashboard."**
-  - `heroAccent`: **"The single move to grow your business this month."**
-  - (Echoes the page's existing positioning — "Monday-morning card, not a dashboard you have to read.")
-
-Press marquee renders automatically via `FeatureGroupLayout`.
-
-## 3. QA
-
-Screenshot `/features/growth`:
-- Subject visible right, copy clean left.
-- "REPS" ALL CAPS on polo + window/wall, both legible.
-- Subject is NOT a white male, Black female, or South-Asian male — rotation completes.
-- Hero grade matches the other four heroes.
-- Press marquee renders.
-
-Up to 2× regenerate if framing/REPS spelling drifts.
+1. Use `imagegen--generate_image` premium, 1920×1280, four separate calls.
+2. Upload each via `lovable-assets create` → write four `.asset.json` pointers under `src/assets/`:
+   - `hero-home-transformation.jpg.asset.json`
+   - `hero-home-first-session.jpg.asset.json`
+   - `hero-home-confident-client.jpg.asset.json`
+   - `hero-home-coach-crew.jpg.asset.json`
+3. Show all four back to you in chat — you pick the winner.
+4. Once chosen, swap the homepage import in `src/routes/index.tsx`:
+   - Replace `import heroCoaching from "@/assets/hero-coaching-moment.jpg"` with the chosen pointer (`import heroHome from "@/assets/hero-home-{chosen}.jpg.asset.json"`).
+   - Use `heroHome.url` in the existing `<img src={...} />` — nothing else changes (overlay, gradient, vignette, copy, avatars, search, chips, animations all stay).
+5. The other three pointers stay banked in `src/assets/` ready for /about, /find-a-professional, /how-it-works, /for-professionals later.
 
 ## Out of scope
 
-- Any layout, copy, feature-grid, or CTA changes below the hero.
-- Other pillars (already done).
+- No changes to the H1, sub, search form, goal chips, avatar row, stats, press marquee, or any section below the hero.
+- No changes to mobile (stays solid black, no image — matches today).
+- No swap of `hero-coaching-moment.jpg` yet — old asset stays in repo until you confirm the winner, in case you want to A/B.
+- "As featured in" press strip — you said we *can* change that but I'll handle it in a separate turn so this one stays focused.
 
 ## Files touched
 
-- `src/assets/hero-growth-bg.jpg.asset.json` — new
-- `src/routes/features.growth.tsx` — hero swap + og:image, remove `InsightsMockup` import
+- `src/assets/hero-home-transformation.jpg.asset.json` — new
+- `src/assets/hero-home-first-session.jpg.asset.json` — new
+- `src/assets/hero-home-confident-client.jpg.asset.json` — new
+- `src/assets/hero-home-coach-crew.jpg.asset.json` — new
+- `src/routes/index.tsx` — single import line + single `src` reference, AFTER you pick (handled this turn once you've chosen)
