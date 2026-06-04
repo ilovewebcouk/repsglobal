@@ -1,5 +1,6 @@
 import { Quote, Star } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import jamesCarter from "@/assets/testimonials/james-carter.jpg";
 
 // Phase 1 placeholder testimonial — replace with real, opted-in quotes before public launch.
 export function TestimonialFeature() {
