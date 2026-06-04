@@ -313,7 +313,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     Log in
                   </Link>
                   <Link
-                    to="/signup"
+                    to="/pricing"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
                     Join REPs
@@ -679,7 +679,7 @@ function ForProsMenu() {
             <li>
               <NavigationMenu.Link asChild>
                 <Link
-                  to="/signup"
+                  to="/pricing"
                   className={cn(menuItemClass, "font-semibold text-reps-orange")}
                 >
                   Join REPs →
@@ -928,7 +928,7 @@ function MobileDrawer({
               Log in
             </Link>
             <Link
-              to="/signup"
+              to="/pricing"
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] bg-reps-orange px-3 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
             >
@@ -1072,7 +1072,7 @@ function MobileDrawer({
                 ))}
                 <li>
                   <Link
-                    to="/signup"
+                    to="/pricing"
                     onClick={onNavigate}
                     className={cn(mobileSubLinkClass, "font-semibold text-reps-orange")}
                   >
