@@ -183,6 +183,7 @@ function ForProsV2Page() {
               "Indexed by location, specialism and price band",
             ]}
             imageLabel="Profile + directory mockup — screenshot coming"
+            mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified professional profile preview" }}
             ctaLabel="See the profile"
             ctaHref="/features/visibility"
           />
@@ -222,6 +223,7 @@ function ForProsV2Page() {
               "AI lead scoring and reply drafts ready to send",
             ]}
             imageLabel="Leads pipeline mockup — screenshot coming"
+            mockup={{ device: "laptop", src: "/dashboard/leads", title: "Leads pipeline preview" }}
             ctaLabel="See the pipeline"
             ctaHref="/features/operations"
           />
@@ -264,6 +266,7 @@ function ForProsV2Page() {
               "Per-client invoice and payment history",
             ]}
             imageLabel="Bookings + payments mockup — screenshot coming"
+            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Bookings and calendar preview" }}
             ctaLabel="Explore Operations"
             ctaHref="/features/operations"
             reverse
@@ -285,6 +288,7 @@ function ForProsV2Page() {
               "Bookings and payment history visible to the client",
             ]}
             imageLabel="Client portal mockup — screenshot coming"
+            mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
             ctaLabel="Explore Client Portal"
             ctaHref="/features/coaching"
           />
