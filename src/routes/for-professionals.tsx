@@ -136,25 +136,73 @@ function ForProsPage() {
           </div>
         </div>
 
-        {/* Trust strip */}
-        <div className="relative border-t border-reps-border/60 bg-reps-ink/60 backdrop-blur">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-5 text-[12.5px] text-white/65 sm:grid-cols-4 lg:px-10">
-            <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-reps-orange" /> Verified register heritage</span>
-            <span className="flex items-center gap-2"><Users className="h-4 w-4 text-reps-orange" /> Built for fitness pros</span>
-            <span className="flex items-center gap-2"><Star className="h-4 w-4 text-reps-orange" /> Reviews on the public record</span>
-            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-reps-orange" /> Bookings, payments, coaching in one</span>
-          </div>
-        </div>
-      </section>
+        {/* Proof band — heritage anchor · trust points · press */}
+        <div className="relative border-t border-reps-border/60 bg-reps-ink/70 backdrop-blur">
+          <div className="mx-auto max-w-[1240px] px-6 py-10 lg:px-10 lg:py-12">
+            <div className="relative overflow-hidden rounded-[22px] border border-reps-border/70 bg-reps-panel/40">
+              {/* subtle orange glow behind the heritage anchor */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -left-20 top-1/2 h-[260px] w-[260px] -translate-y-1/2 rounded-full bg-reps-orange/15 blur-3xl"
+              />
+              <div className="relative grid grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-[1.05fr_1.15fr_1.4fr] lg:gap-0 lg:px-0 lg:py-0">
+                {/* Heritage anchor */}
+                <div className="flex flex-col justify-center px-2 lg:px-8 lg:py-8">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+                    The UK&apos;s verified fitness register
+                  </span>
+                  <p className="mt-3 font-display text-[28px] font-bold leading-[1.05] text-white lg:text-[34px]">
+                    Trusted since <span className="text-reps-orange">2009</span>.
+                  </p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-white/55">
+                    The register the public already searches for a qualified pro.
+                  </p>
+                </div>
 
-      {/* PRESS */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1240px] px-6 py-8 lg:px-10">
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">As featured in</span>
-            {PRESS.map((p) => (
-              <img key={p.name} src={p.url} alt={p.name} className="h-5 brightness-0 invert opacity-80 lg:h-6" loading="lazy" />
-            ))}
+                {/* Trust points */}
+                <div className="flex flex-col justify-center gap-3 border-reps-border/60 px-2 lg:border-x lg:px-8 lg:py-8">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    Why pros join
+                  </span>
+                  <ul className="mt-1 space-y-2.5 text-[13.5px] text-white/80">
+                    <li className="flex items-start gap-2.5">
+                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                      Verified pro badge — backed by the register
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <Star className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                      Reviews on the public record
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <Users className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                      Built for fitness, not general CRM
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                      One platform — no paid bolt-ons
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Press */}
+                <div className="flex flex-col justify-center px-2 lg:px-8 lg:py-8">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    As featured in
+                  </span>
+                  <div className="mt-4 grid grid-cols-3 items-center gap-x-6 gap-y-5 lg:gap-x-8">
+                    {PRESS.map((p) => (
+                      <img
+                        key={p.name}
+                        src={p.url}
+                        alt={p.name}
+                        className="h-6 w-auto justify-self-center brightness-0 invert opacity-90 transition hover:opacity-100 lg:h-7"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
