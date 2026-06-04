@@ -45,7 +45,8 @@ import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import {
   RESOURCE_TOPICS,
-  RESOURCE_QUICK_LINKS,
+  PRO_RESOURCES,
+  ABOUT_GROUPS,
   TOP_LOCATIONS,
   TOP_PROFESSIONS,
 } from "./nav-config";
