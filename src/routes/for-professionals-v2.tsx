@@ -389,14 +389,21 @@ function ForProsV2Page() {
                 The AI layer behind your fitness business.
               </h2>
               <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/75">
-                Fourteen AI capabilities working across programmes, check-ins, leads, risk
-                and growth — drafting work, scoring intent, flagging churn, ranking the
+                An AI layer working across programmes, check-ins, leads, risk and
+                growth — drafting work, scoring intent, flagging churn, ranking the
                 single move that pays this week. You stay the coach.
               </p>
               <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-4 py-2">
                 <Brain className="h-5 w-5 text-reps-orange" />
-                <span className="font-display text-[24px] font-bold leading-none text-reps-orange">14</span>
-                <span className="text-[12.5px] text-white/80">AI capabilities, included in every paid tier</span>
+                <span className="text-[12.5px] text-white/80">AI assistance included in every paid tier</span>
+              </div>
+              <div className="mt-6">
+                <Link
+                  to="/features/ai"
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-5 text-[13.5px] font-semibold text-reps-orange hover:bg-reps-orange-soft/80"
+                >
+                  Explore AI <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
             <AiCommandCentreMock />
