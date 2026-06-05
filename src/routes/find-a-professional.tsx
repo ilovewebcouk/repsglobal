@@ -421,10 +421,14 @@ function DirectoryPage() {
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
                   <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
-                    126 professionals in London
+                    {activeVenue
+                      ? `${visiblePros.length} professional${visiblePros.length === 1 ? "" : "s"} who coach at ${activeVenue.label}`
+                      : "126 professionals in London"}
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
-                    Showing 1–8 · all REPs Verified
+                    {activeVenue
+                      ? "Independent REPs-verified — not affiliated with the gym shown"
+                      : "Showing 1–8 · all REPs Verified"}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -858,6 +862,31 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
               </span>
             ))}
           </div>
+          {pro.venues.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
+              <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
+              <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
+                Trains at
+              </span>
+              {pro.venues.slice(0, 2).map((v) => {
+                const venue = VENUES.find((x) => x.slug === v.slug);
+                if (!venue) return null;
+                return (
+                  <span
+                    key={`${v.slug}-${v.branch}`}
+                    className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
+                  >
+                    {venue.label} · {v.branch}
+                  </span>
+                );
+              })}
+              {pro.venues.length > 2 && (
+                <span className="text-[11px] text-reps-muted-light">
+                  +{pro.venues.length - 2}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT actions (desktop only) */}
@@ -907,7 +936,7 @@ function EmptyResults() {
         No professionals match those filters
       </h3>
       <p className="mx-auto mt-1.5 max-w-sm text-[13px] text-reps-muted-light">
-        Try widening the distance, removing a specialism, or switching between in-person and online.
+        Try widening the distance, removing a specialism or venue, or switching between in-person and online.
       </p>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
         <button
