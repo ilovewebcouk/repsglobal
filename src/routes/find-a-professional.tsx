@@ -417,8 +417,8 @@ function DirectoryPage() {
           <p className="mt-6 font-display text-[20px] leading-snug text-white sm:text-[24px] lg:text-[30px]">
             "REPs helped me find the perfect trainer to reach my goals. The verification and
             reviews gave me complete confidence."
-
           </p>
+
           <div className="mt-7 flex items-center justify-center gap-3">
             <img
               src={proLaura}
