@@ -143,7 +143,7 @@ function EnquirePage() {
               Enquire about coaching with {pro.name}
             </h1>
             <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-reps-muted-light">
-              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget. They'll reply privately with a clear quote and next steps — no payment until you accept.
+              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
             </p>
           </div>
           <div className="flex items-center gap-2 text-[12px] text-reps-muted-light lg:justify-end">
@@ -307,7 +307,7 @@ function EnquirePage() {
           </form>
 
           {/* SUMMARY */}
-          <aside className="flex flex-col gap-5">
+          <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
             {/* Pro card */}
             <div className="overflow-hidden rounded-[22px] border border-reps-stone bg-reps-warm-white">
               <div className="flex items-center gap-4 p-5">
@@ -354,7 +354,7 @@ function EnquirePage() {
                 {[
                   { t: "You send this enquiry", d: "Your message lands privately in their REPs inbox." },
                   { t: "They reply with a quote", d: "Usually within a few hours — including price and availability." },
-                  { t: "Book and pay through REPs", d: "Card payment is taken when you confirm — never before." },
+                  { t: "Agree the details directly", d: "Confirm scope, times and price with your pro before anything's locked in." },
                   { t: "Start training", d: "Sessions, programming and progress all tracked in one place." },
                 ].map((s, i) => (
                   <li key={s.t} className="flex items-start gap-3">
@@ -376,8 +376,8 @@ function EnquirePage() {
               <ul className="mt-3 flex flex-col gap-2.5">
                 {[
                   { i: ShieldCheck, t: "Identity, qualifications & insurance verified" },
-                  { i: Lock, t: "Payments secured by REPs — never paid before you confirm" },
-                  { i: CheckCircle2, t: "Refund protection on cancelled sessions" },
+                  { i: Lock, t: "Private enquiry — never shared, sold, or added to mailing lists" },
+                  { i: CheckCircle2, t: "Every REPs pro signs our code of conduct" },
                 ].map((x) => (
                   <li key={x.t} className="flex items-start gap-2.5 text-[12.5px] text-reps-charcoal">
                     <x.i className="mt-0.5 size-4 shrink-0 text-reps-orange" />
