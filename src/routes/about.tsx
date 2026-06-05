@@ -42,7 +42,7 @@ const STATS = [
 ];
 
 const TIMELINE = [
-  { yr: "2009", t: "Body & Discipline founded", body: "Our predecessor register builds the foundation of UK fitness standards." },
+  { yr: "2009", t: "Body & Discipline founded", body: "Our predecessor register builds the foundation of recognised fitness standards." },
   { yr: "2018", t: "Global standards programme", body: "Cross-border CPD frameworks aligned with EuropeActive and ICREPs." },
   { yr: "2024", t: "REPs relaunches", body: "A modern register: verified, searchable, client-first." },
   { yr: "2026", t: "REPs goes global", body: "BD members migrate to REPs as we open new regions." },

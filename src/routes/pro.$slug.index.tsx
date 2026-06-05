@@ -72,7 +72,7 @@ const PROS: Record<string, Pro> = {
     name: "James Carter",
     firstName: "James",
     role: "Personal Trainer",
-    location: "London, UK",
+    location: "London",
     region: "Greater London",
     rating: 5.0,
     reviews: 128,

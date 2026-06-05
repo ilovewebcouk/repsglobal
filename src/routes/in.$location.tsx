@@ -110,7 +110,7 @@ function getLocation(slug: string): LocationMeta {
         .split("-")
         .map((s) => s[0]?.toUpperCase() + s.slice(1))
         .join(" "),
-      region: "United Kingdom",
+      region: "",
       blurb:
         "REPs-verified personal trainers, Pilates instructors, nutritionists and coaches in your area — every professional identity, qualification and insurance checked.",
       count: 32,
@@ -230,7 +230,7 @@ const FEATURED: Pro[] = [
 
 const TRUST = [
   { icon: ShieldCheck, title: "Identity Verified", sub: "Every professional ID-checked before going live." },
-  { icon: Trophy, title: "Qualified", sub: "Held to recognised UK training standards." },
+  { icon: Trophy, title: "Qualified", sub: "Held to recognised training standards." },
   { icon: BadgeCheck, title: "Insured", sub: "Active liability insurance on file." },
   { icon: Users, title: "Real Reviews", sub: "Only verified clients can leave a review." },
 ];

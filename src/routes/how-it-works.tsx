@@ -227,7 +227,7 @@ function HowItWorksPage() {
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPs</span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              The trust layer for UK fitness since 2009.
+              The trust layer for the fitness industry since 2009.
             </h2>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">

@@ -308,7 +308,7 @@ function BasicInfo() {
           <TextInput value="Carter Performance Studio" />
         </Field>
         <Field label="Location">
-          <TextInput value="London, UK" prefix={<MapPin className="h-3.5 w-3.5" />} />
+          <TextInput value="London" prefix={<MapPin className="h-3.5 w-3.5" />} />
         </Field>
         <Field label="Public phone">
           <TextInput value="+44 20 7946 0817" />
@@ -588,7 +588,7 @@ function PublicPreview() {
               <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  London, UK
+                  London
                 </span>
                 <span className="flex items-center gap-1 text-reps-orange">
                   <Star className="h-3 w-3 fill-current" />

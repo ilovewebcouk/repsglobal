@@ -924,11 +924,12 @@ function BreakdownRow() {
         <div className="grid grid-cols-[1fr_140px] gap-4">
           <WorldMap />
           <ul className="space-y-2.5 text-[12px]">
-            <GeoRow color="var(--reps-orange)" label="United Kingdom" pct="62%" />
-            <GeoRow color="var(--reps-orange-hover)" label="United States" pct="12%" />
-            <GeoRow color="var(--reps-orange-dark)" label="Australia" pct="8%" />
-            <GeoRow color="#A85200" label="Canada" pct="6%" />
-            <GeoRow color="#5D6573" label="Other" pct="12%" />
+            <GeoRow color="var(--reps-orange)" label="United States" pct="34%" />
+            <GeoRow color="var(--reps-orange-hover)" label="United Kingdom" pct="22%" />
+            <GeoRow color="var(--reps-orange-dark)" label="Australia" pct="14%" />
+            <GeoRow color="#A85200" label="Canada" pct="10%" />
+            <GeoRow color="#5D6573" label="Other" pct="20%" />
+
           </ul>
         </div>
         <div className="mt-3 text-center">

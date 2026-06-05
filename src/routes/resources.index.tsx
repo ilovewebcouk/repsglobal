@@ -23,17 +23,17 @@ export const Route = createFileRoute("/resources/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Resources — Personal Trainer & Fitness Coach Guides UK | REPs" },
+      { title: "Resources — Personal Trainer & Fitness Coach Guides | REPs" },
       {
         name: "description",
         content:
-          "Practical UK guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
+          "Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
       },
-      { property: "og:title", content: "Resources — Personal Trainer & Fitness Coach Guides UK | REPs" },
+      { property: "og:title", content: "Resources — Personal Trainer & Fitness Coach Guides | REPs" },
       {
         property: "og:description",
         content:
-          "Practical UK guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
+          "Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
       },
       { property: "og:url", content: "https://staging.repsuk.org/resources" },
       { property: "og:type", content: "website" },

@@ -73,7 +73,7 @@ function AdminCpd() {
           <ul className="mt-4 space-y-3 text-[13px]">
             {[
               { t: "Coaching the postnatal client", p: "FitPro Education", s: "Pending" },
-              { t: "Pre-screening for return-to-sport", p: "Sports Therapy UK", s: "Pending" },
+              { t: "Pre-screening for return-to-sport", p: "Sports Therapy Institute", s: "Pending" },
               { t: "Nutrition coaching essentials", p: "REPs Academy", s: "Approved" },
               { t: "Strength for over-50s", p: "Active IQ", s: "Pending" },
             ].map((c) => (

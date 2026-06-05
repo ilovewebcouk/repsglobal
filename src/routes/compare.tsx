@@ -7,9 +7,9 @@ import { CompetitorCompare } from "@/components/marketing/CompetitorCompare";
 import { COMPETITOR_LIST } from "@/data/competitor-data";
 
 const URL = "https://repsglobal.lovable.app/compare";
-const TITLE = "Personal Trainer Software UK — REPs vs Trainerize, MyPTHub & PT Distinction";
+const TITLE = "Personal Trainer Software — REPs vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-  "Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. UK personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
+  "Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -75,10 +75,10 @@ function ComparePage() {
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Personal trainer software · UK
+            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Personal trainer software
           </span>
           <h1 className="mx-auto mt-5 max-w-[860px] font-display text-[44px] font-bold leading-tight text-white lg:text-[60px]">
-            Compare personal trainer software for UK PTs.
+            Compare personal trainer software.
           </h1>
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
@@ -167,8 +167,8 @@ function ComparePage() {
               Not another coaching app.
             </h2>
             <p className="mt-3 text-[15px] text-white/65">
-              Other platforms compete on features. REPs is a different category — built in
-              the UK around the public register, not the workout builder.
+              Other platforms compete on features. REPs is a different category — built
+              around the public register, not the workout builder.
             </p>
           </div>
 

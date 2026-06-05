@@ -159,7 +159,7 @@ function SettingsPage() {
                 <Input defaultValue="james-carter" />
               </div>
             </Row>
-            <Row label="Service area"><Input defaultValue="Manchester · 10 mile radius · Online UK-wide" /></Row>
+            <Row label="Service area"><Input defaultValue="Manchester · 10 mile radius · Online worldwide" /></Row>
             <Row label="Specialisms">
               <div className="flex flex-wrap gap-2">
                 {["Strength", "Performance", "Hybrid", "Pre/post-natal"].map((s) => (

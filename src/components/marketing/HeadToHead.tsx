@@ -45,7 +45,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Deep dive · REPs vs {c.name}
               </span>
               <h1 className="mt-5 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
-                REPs vs {c.name}: which is right for UK personal trainers in 2026?
+                REPs vs {c.name}: which is right for personal trainers in 2026?
               </h1>
               <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
                 An honest, opinionated 10-minute read. Real pricing maths, a
@@ -282,7 +282,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
             <div className="rounded-[22px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/10 to-reps-orange/[0.02] p-6 lg:p-10">
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                Why UK trainers move to REPs
+                Why trainers move to REPs
               </span>
               <h3 className="mt-2 font-display text-[24px] font-bold leading-tight text-white">
                 Built around the register, not the workout builder.
@@ -292,7 +292,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                   "The public register clients already search — verified, since 2009.",
                   "Tier-based, but every feature in your tier is included. No add-on stack.",
                   "AI as the operating layer, not a $12/mo add-on.",
-                  "UK-built, GDPR-first, GBP pricing, REPs credential displayed on profile.",
+                  "GDPR-first, GBP pricing, REPs credential displayed on profile.",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />

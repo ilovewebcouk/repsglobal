@@ -171,7 +171,7 @@ function ClientHeaderCard() {
       "Location",
       <span className="inline-flex items-center gap-1">
         <MapPin className="h-3 w-3" />
-        London, UK
+        London
       </span>,
     ],
     ["Next session", "Tomorrow, 10:00 AM"],
@@ -201,7 +201,7 @@ function ClientHeaderCard() {
             <div className="mt-1.5 flex items-center gap-3 text-[12px] text-white/55">
               <span className="inline-flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                London, UK
+                London
               </span>
               <span>·</span>
               <span>Hybrid coaching</span>
