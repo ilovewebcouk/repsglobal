@@ -17,6 +17,7 @@ import {
   CreditCard,
   Dumbbell,
   FilePenLine,
+  Globe,
   Inbox,
   LineChart,
   ListChecks,
@@ -34,6 +35,7 @@ import {
 
 export type FeatureGroupKey =
   | "visibility"
+  | "shopfront"
   | "operations"
   | "coaching"
   | "ai"
