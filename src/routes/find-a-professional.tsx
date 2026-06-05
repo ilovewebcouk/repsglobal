@@ -292,9 +292,9 @@ function DirectoryPage() {
                   className="flex w-full items-center justify-between gap-2 px-5 py-4 lg:hidden"
                 >
                   <span className="text-[14px] font-semibold text-reps-charcoal">Filters (5)</span>
-                  <ChevronDown className={`h-4 w-4 text-reps-muted-light transition-transform ${mobileFiltersOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={"h-4 w-4 text-reps-muted-light transition-transform " + (mobileFiltersOpen ? "rotate-180" : "")} />
                 </button>
-                <div className={`${mobileFiltersOpen ? "block" : "hidden"} px-5 pb-5 sm:px-6 sm:pb-6 lg:block lg:px-6 lg:pt-6`}>
+                <div className={(mobileFiltersOpen ? "block" : "hidden") + " px-5 pb-5 sm:px-6 sm:pb-6 lg:block lg:px-6 lg:pt-6"}>
                   <div className="hidden items-center justify-between border-b border-reps-stone pb-3 lg:flex">
                     <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
                     <button
