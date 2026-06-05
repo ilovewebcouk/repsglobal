@@ -30,7 +30,7 @@ export const Route = createFileRoute("/reviews")({
       { property: "og:title", content: "Client Reviews — REPs" },
       {
         property: "og:description",
-        content: "Verified-client reviews of REPs professionals across the UK.",
+        content: "Verified-client reviews of REPs professionals worldwide.",
       },
       { property: "og:url", content: "/reviews" },
     ],
