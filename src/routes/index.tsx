@@ -459,11 +459,11 @@ function HomeV2() {
           {/* Inlined stats row — was a standalone band, now anchors the trust block */}
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-6">
-                <div className="font-display text-[34px] font-bold leading-none tracking-[-0.02em] text-reps-charcoal lg:text-[44px]">
+              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-5 sm:p-6">
+                <div className="font-display text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-reps-charcoal sm:text-[32px] lg:text-[44px]">
                   {s.value}
                 </div>
-                <div className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">{s.label}</div>
+                <div className="text-[11px] font-medium uppercase tracking-wider text-reps-muted-light sm:text-[12px]">{s.label}</div>
               </div>
             ))}
           </div>
