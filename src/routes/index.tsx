@@ -456,17 +456,14 @@ function HomeV2() {
             </div>
           </div>
 
-          {/* Inlined stats row — was a standalone band, now anchors the trust block */}
+          {/* Inlined stats row — typographic only, no icons, so it doesn't visually rhyme with the pillar grid above */}
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-ivory p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
-                  <s.icon className="h-5 w-5" />
-                </span>
-                <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
+              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-6">
+                <div className="font-display text-[34px] font-bold leading-none tracking-[-0.02em] text-reps-charcoal lg:text-[44px]">
                   {s.value}
                 </div>
-                <div className="text-[13px] text-reps-muted-light">{s.label}</div>
+                <div className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">{s.label}</div>
               </div>
             ))}
           </div>
