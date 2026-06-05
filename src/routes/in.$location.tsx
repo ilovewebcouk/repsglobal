@@ -463,7 +463,7 @@ function LocationCard({ pro }: { pro: Pro }) {
                   <Bookmark className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="left">Save</TooltipContent>
+              <TooltipContent side="left" className="bg-reps-black text-white">Save</TooltipContent>
             </Tooltip>
           </div>
           <div className="mt-2 flex items-center gap-1 text-[12px]">

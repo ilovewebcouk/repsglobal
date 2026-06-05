@@ -1,18 +1,10 @@
-## Problem
+Add a black background override to every "Save" bookmark tooltip across the app.
 
-Removing `open` from `<details>` collapsed it on every breakpoint. The summary chevron is `lg:hidden`, so on desktop there's no way to expand it — the filter rail looks empty.
+The shadcn `TooltipContent` component renders with `bg-primary` (brand orange) by default. The user wants the "Save" tooltip specifically to appear black.
 
-`<details>` can't be conditionally open via CSS media queries, so we need a small React state instead.
+Scope — 4 `TooltipContent` instances to update:
+- `src/routes/find-a-professional.tsx` — 2 save tooltips (featured card + list card)
+- `src/routes/professions.$profession.tsx` — 1 save tooltip
+- `src/routes/in.$location.tsx` — 1 save tooltip
 
-## Fix
-
-In `src/routes/find-a-professional.tsx` (filter rail block, ~lines 284–290):
-
-1. Replace the `<details>/<summary>` pair with a `useState` toggle (`mobileFiltersOpen`, default `false`).
-2. Render a `<button>` (mobile-only, `lg:hidden`) showing "Filters (5)" + chevron that toggles state.
-3. Wrap the filter content in a `<div>` with classes `${mobileFiltersOpen ? 'block' : 'hidden'} lg:block` so it's:
-   - collapsed by default on mobile
-   - always visible on `lg+` regardless of state
-4. Rotate the chevron based on state (`mobileFiltersOpen && 'rotate-180'`).
-
-No other files change. No business logic change.
+Change: add `className="bg-reps-black text-white"` to each `<TooltipContent>` that wraps the Save bookmark button. This uses the existing `--color-reps-black` design token (`#050608`) with white text for contrast.
