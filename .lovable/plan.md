@@ -1,66 +1,50 @@
-# /in/$city — Unify + QA + Lock
+# Lock `/pro/$slug/enquire`
 
-Bring `/in/$location` up to parity with the locked `/professions/$profession` page, run the same QA pass, then formally lock it.
+Apply the same unify → QA → lock pass we ran on `/professions/$profession` and `/in/$location`, then freeze the route.
 
-## Scope
+## What's already correct (no change)
 
-Page: `src/routes/in.$location.tsx` (489 lines). All 4 mapped slugs verified: `london`, `manchester`, `birmingham`, `edinburgh`, plus the fallback path.
+- Radii on scale: button `10px`, inputs/field wrappers `12px`, service cards `16px`, summary panels `22px`. The one `14px` is the scaled-down pro photo in the summary card — already the **memory-allowed exception**.
+- Brand orange via `reps-orange` tokens; no raw hex.
+- Buttons are flat (`shadow-none`).
+- No "UK"/"United Kingdom" copy. "central London" is a city, not a country qualifier — fine.
+- SEO: `noindex` + canonical already set (correct for a transactional form).
 
-## Changes
+## Changes (small, surgical)
 
-### 1. Swap card system → vertical FeaturedCard
-- Replace the horizontal `LocationCard` (140px image left, no tags) with the same vertical `FeaturedCard` pattern used on `/professions/$profession`: image-top (h-44), Verified pill top-left, Save Tooltip top-right, name + role + rating row, city + mode row, 2 tag chips, full-width "View Profile" CTA.
-- Grid: `sm:grid-cols-2 lg:grid-cols-4` (matches professions).
-- Add `tags` and `city` (= area) to the `Pro` type. Featured pros already have `tags` arrays — wire them in.
+1. **shadcn primitives pass** (active skill requires it). Replace hand-rolled controls with shadcn equivalents, keeping the exact visual:
+   - Native `<input type="radio">` service cards → shadcn `RadioGroup` + `RadioGroupItem` (keep the card wrapper styling).
+   - Goal chips' `<input type="checkbox">` → shadcn `Checkbox` (visually hidden, chip stays the toggle).
+   - Three filter selects (Frequency / Start by / Budget guide) → shadcn `Select`.
+   - Textarea → shadcn `Textarea`. Text inputs → shadcn `Input`. Terms checkbox → shadcn `Checkbox`.
+   - "Verified" pill → shadcn `Badge` with brand-orange/green variant.
+   - "Private to {name}…" caption + "Booking on REPs is safe" rows → keep markup, but wrap the safety items in shadcn `Tooltip` only if it adds value; otherwise leave (avoid noise).
 
-### 2. Add missing structural sections (to mirror professions)
-Insert after the Featured grid, before footer:
+2. **Copy sweep (global voice)**:
+   - Textarea placeholder currently says "central {pro.city}" — keep (city-level is fine).
+   - No other country qualifiers to strip. Confirm nothing slips in via the shadcn refactor.
 
-- **FAQ** — shadcn `Accordion` (`type="single"`, collapsible) inside an `rounded-[18px]` border panel. 5 city-flavoured Qs: how verification works, in-person vs online, pricing range in {city}, what to ask on first session, how to report a concern.
-- **Related cities** — pill row identical to professions' "Related professions": `Link` chips to the other 3 cities in `LOCATIONS`, `rounded-full border` style.
+3. **No structural / layout changes.** Section order, two-column grid, sticky summary, step indicator, "What happens next", trust block — all frozen as-is.
 
-Keep existing sections in this order: Breadcrumb → Hero + at-a-glance → By profession → Featured → Areas → FAQ (new) → Trust band → Related cities (new) → Footer.
+## QA
 
-### 3. Global-platform copy sweep
-- `region:` strings: drop country qualifier. `"Greater London, England"` → `"Greater London"`; `"West Midlands, England"` → `"West Midlands"`; `"Scotland"` → keep (it's a region, not a country qualifier on a place name) but verify reads naturally; or drop to just the city tagline.
-- Hero blurbs: remove any "UK"/"United Kingdom" if present (audit confirms none currently, but re-check after edits).
-- Fallback blurb stays neutral.
+- Visual diff at 1366 desktop and 390 mobile against current preview — must be pixel-equivalent.
+- `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0 (the existing `14px` on the pro photo is the memory-allowed exception and stays).
+- Manual: tab through the form, confirm focus rings, confirm Select dropdowns open, confirm radio/checkbox state toggles, confirm "Send enquiry" remains a non-submitting `type="button"` (Phase 1 static).
 
-### 4. Radius + shadcn audit
-- Confirm every radius is on the 9-step scale (no `rounded-xl/2xl/3xl`, no 14/20/28/32px).
-- Bookmark button → wrap in `Tooltip` (already done on FeaturedCard pattern — inherited via card swap).
-- Search input row: already `rounded-[18px]` panel + `rounded-[12px]` inputs + `rounded-[10px]` button ✓.
-- Trust band: matches professions ✓.
-- No `space-y-*` introduced; use `flex flex-col gap-*` or `mt-*` like professions does.
-- Icons in buttons: `data-icon` where applicable.
+## Lock
 
-### 5. Counts honesty
-Leave the static counts as-is (Phase 1 placeholder data, consistent with professions which does the same). No changes needed — flagged for transparency only.
+- Create `mem://design/locked-enquire` capturing: section order, radius map (with the 14px photo exception called out), shadcn primitives in use, no-commission/no-fee copy rules, `noindex` SEO.
+- Add a Core line to `mem://index.md`: `/pro/$slug/enquire` LOCKED — see `mem://design/locked-enquire`.
+- Update `docs/07_phase1_build_status.md`: set enquire route to **Locked — Phase 1 approved** with 2026-06-05 lock-log entry.
 
-### 6. QA pass
-- Visual + copy QA on all 4 mapped slugs (`/in/london`, `/in/manchester`, `/in/birmingham`, `/in/edinburgh`) + fallback (`/in/leeds`).
-- Verify desktop (1366) and mobile (390) layouts.
-- Run the `reps-build-compliance` audit script — must exit 0.
+## Out of scope (Phase 1 guardrail)
 
-### 7. Lock
-- Create `mem://design/locked-cities` memory file with the layout contract.
-- Add Core entry to `mem://index.md`: "City landing pages `/in/$location` are LOCKED — see `mem://design/locked-cities`."
-- Update `docs/07_phase1_build_status.md`: flip `/in/$location` row to **Locked — Phase 1 approved** with QA notes, add a 2026-06-05 lock log entry.
+No form submission wiring, no validation library, no email/notification backend, no auth gate, no rate limiting, no analytics events. Pure static high-fidelity screen.
 
-## Out of scope (Phase 1 boundary)
+## Files touched
 
-No real search/filter logic, no DB-backed counts, no map embed, no auth — purely static high-fidelity screen work, consistent with the locked professions and homepage passes.
-
-## Technical notes
-
-- Extract `FeaturedCard` into `src/components/public/FeaturedProCard.tsx` so both `professions.$profession.tsx` and `in.$location.tsx` can import the same component. This removes duplication and means future card tweaks land in one place. (Light, surgical refactor — does not redesign the locked professions page, just deduplicates its card.)
-- Featured pros stay local to each route (different fixture arrays).
-- Use shadcn `Accordion` (already used on professions page) for the FAQ.
-
-Files touched:
-- `src/routes/in.$location.tsx` — card swap, new sections, copy sweep
-- `src/components/public/FeaturedProCard.tsx` — new shared card
-- `src/routes/professions.$profession.tsx` — replace inline `FeaturedCard` with shared import
-- `mem://design/locked-cities` — new
-- `mem://index.md` — add Core entry
-- `docs/07_phase1_build_status.md` — lock log
+- `src/routes/pro.$slug.enquire.tsx` (shadcn primitives swap only)
+- `mem://design/locked-enquire` (new)
+- `mem://index.md` (Core entry)
+- `docs/07_phase1_build_status.md` (status + log)
