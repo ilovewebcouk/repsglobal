@@ -370,31 +370,32 @@ function DirectoryPage() {
 
 
       {/* ============ TRUST BAND ============ */}
-      <section className="bg-reps-ivory pb-14">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
+      <section className="bg-reps-ivory pb-12 sm:pb-14">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-6 lg:px-10">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 sm:gap-7 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
-                Why trust REPs
-                <br />
-                professionals?
+                Why trust REPs professionals?
               </h2>
               <p className="mt-2 text-[13px] text-reps-muted-light">
                 We connect you with verified fitness and health professionals you can trust.
               </p>
             </div>
-            {trustItems.map((t) => (
-              <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
-                  <t.icon className="h-5 w-5" strokeWidth={1.6} />
-                </span>
-                <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
-                <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
-              </div>
-            ))}
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:contents">
+              {trustItems.map((t) => (
+                <div key={t.title} className="flex flex-col items-center gap-2 text-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
+                    <t.icon className="h-5 w-5" strokeWidth={1.6} />
+                  </span>
+                  <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
+                  <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
+
 
       {/* ============ TESTIMONIAL — dark closer ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
