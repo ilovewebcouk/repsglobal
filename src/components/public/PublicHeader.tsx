@@ -213,7 +213,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 <RepsWordmark className="h-[22px] text-white" />
               </Link>
 
-              <span aria-hidden className="hidden h-6 w-px bg-white/15 lg:block" />
+
 
               <LocationPin
                 city={city}
