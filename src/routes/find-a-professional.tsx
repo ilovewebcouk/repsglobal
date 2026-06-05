@@ -339,27 +339,27 @@ function DirectoryPage() {
               {/* Pagination */}
               <nav
                 aria-label="Pagination"
-                className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10"
+                className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
               >
-                <p className="text-[12px] text-reps-muted-light">
+                <p className="text-[13px] text-reps-muted-light">
                   Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
                   <span className="font-semibold text-reps-charcoal">126</span>
                 </p>
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-2">
                   <PagerBtn aria-label="Previous">
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                   </PagerBtn>
                   <PagerNum n={1} active />
                   <PagerNum n={2} />
-                  <PagerNum n={3} />
+                  <PagerNum n={3} className="hidden sm:flex" />
                   <span className="hidden sm:contents">
                     <PagerNum n={4} />
                     <PagerNum n={5} />
                   </span>
-                  <span className="px-1 text-reps-muted-light">…</span>
-                  <PagerNum n={13} />
+                  <span className="hidden px-1 text-reps-muted-light sm:inline">…</span>
+                  <PagerNum n={13} className="hidden sm:flex" />
                   <PagerBtn aria-label="Next">
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </PagerBtn>
                 </div>
               </nav>
@@ -728,15 +728,23 @@ function EditorialBreak() {
   );
 }
 
-function PagerNum({ n, active }: { n: number; active?: boolean }) {
+function PagerNum({
+  n,
+  active,
+  className,
+}: {
+  n: number;
+  active?: boolean;
+  className?: string;
+}) {
   return (
     <button
       type="button"
-      className={`flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-semibold transition-colors ${
+      className={`flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-semibold transition-colors sm:h-11 sm:w-11 ${
         active
           ? "bg-reps-orange text-white"
           : "border border-reps-stone bg-white text-reps-charcoal hover:bg-reps-warm-white"
-      }`}
+      } ${className ?? ""}`}
     >
       {n}
     </button>
@@ -751,7 +759,7 @@ function PagerBtn({
     <button
       type="button"
       {...rest}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11"
     >
       {children}
     </button>
