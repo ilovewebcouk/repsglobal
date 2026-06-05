@@ -201,6 +201,7 @@ const testimonials = [
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   return (
+    <TooltipProvider delayDuration={120}>
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
 
