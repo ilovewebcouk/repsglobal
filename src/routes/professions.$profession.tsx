@@ -13,6 +13,13 @@ import {
   Users,
 } from "lucide-react";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -201,7 +208,7 @@ export const Route = createFileRoute("/professions/$profession")({
     const meta = getProfession(params.profession);
     return {
       meta: [
-        { title: `${meta.plural} — Find REPs-Verified ${meta.plural} | REPs` },
+        { title: `${meta.plural} — REPs-Verified | REPs` },
         {
           name: "description",
           content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPs.`,
@@ -350,7 +357,7 @@ function ProfessionLanding() {
             </p>
 
             {/* Inline search */}
-            <form className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
+            <form className="mt-6 grid gap-2 rounded-[22px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
               <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
                 <Search className="h-4 w-4 text-reps-muted-light" />
                 <input
@@ -462,10 +469,22 @@ function ProfessionLanding() {
       {/* Cities */}
       <section className="bg-reps-warm-white py-14">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-            {meta.plural} by city
-          </h2>
-          <p className="mt-1 text-[14px] text-reps-muted-light">Browse verified {meta.plural.toLowerCase()} in your area.</p>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+                Browse {meta.plural.toLowerCase()} by city
+              </h2>
+              <p className="mt-1 text-[14px] text-reps-muted-light">
+                A sample of cities — verified {meta.plural.toLowerCase()} are listed wherever you train.
+              </p>
+            </div>
+            <Link
+              to="/find-a-professional"
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+            >
+              See all locations <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {CITIES.map((c) => (
               <Link
@@ -517,17 +536,26 @@ function ProfessionLanding() {
           <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
             Hiring a {meta.title.toLowerCase()} on REPs
           </h2>
-          <div className="mt-6 divide-y divide-reps-stone overflow-hidden rounded-[18px] border border-reps-stone bg-reps-ivory">
-            {FAQS.map((f) => (
-              <details key={f.q} className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[15px] font-semibold text-reps-charcoal">
+          <Accordion
+            type="single"
+            collapsible
+            className="mt-6 overflow-hidden rounded-[18px] border border-reps-stone bg-reps-ivory"
+          >
+            {FAQS.map((f, i) => (
+              <AccordionItem
+                key={f.q}
+                value={`faq-${i}`}
+                className="border-b border-reps-stone last:border-b-0"
+              >
+                <AccordionTrigger className="px-5 py-4 text-[15px] font-semibold text-reps-charcoal hover:no-underline">
                   {f.q}
-                  <ChevronRight className="h-4 w-4 text-reps-muted-light transition-transform group-open:rotate-90" />
-                </summary>
-                <p className="px-5 pb-5 text-[14px] leading-relaxed text-reps-muted-light">{f.a}</p>
-              </details>
+                </AccordionTrigger>
+                <AccordionContent className="px-5 pb-5 text-[14px] leading-relaxed text-reps-muted-light">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 
