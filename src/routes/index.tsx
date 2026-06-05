@@ -135,11 +135,11 @@ function HomeV2() {
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           {/* Desktop: image anchored right, dark wash on the left so the copy column stays readable. Mobile/tablet: solid black, no image. */}
-          <div className="absolute inset-0 hidden lg:block">
+          <div className="absolute inset-0 hidden md:block">
             <img
               src={heroCoaching.url}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[78%_30%]"
+              className="absolute inset-0 h-full w-full object-cover object-[88%_30%] lg:object-[78%_30%]"
             />
             <div
               className="absolute inset-0"
