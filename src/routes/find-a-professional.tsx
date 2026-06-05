@@ -29,11 +29,21 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 
+const VALID_VENUE_SLUGS = new Set([
+  "puregym",
+  "gym-group",
+  "virgin-active",
+  "bannatyne",
+  "david-lloyd",
+  "nuffield-health",
+  "third-space",
+  "anytime-fitness",
+]);
+
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
     const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
-    const venue =
-      venueRaw && VENUES.some((v) => v.slug === venueRaw) ? venueRaw : undefined;
+    const venue = venueRaw && VALID_VENUE_SLUGS.has(venueRaw) ? venueRaw : undefined;
     return { venue };
   },
   head: () => ({
