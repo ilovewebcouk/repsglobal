@@ -225,18 +225,7 @@ export const Route = createFileRoute("/professions/$profession")({
 /* Featured pros (static, Phase 1)                                     */
 /* ------------------------------------------------------------------ */
 
-type Pro = {
-  name: string;
-  role: string;
-  city: string;
-  rating: number;
-  reviews: number;
-  mode: "In-person" | "Online" | "In-person & Online";
-  tags: string[];
-  image: string;
-};
-
-const FEATURED: Pro[] = [
+const FEATURED: FeaturedPro[] = [
   {
     name: "James Wilson",
     role: "Personal Trainer",
