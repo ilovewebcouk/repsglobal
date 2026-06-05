@@ -372,11 +372,11 @@ function HomeV2() {
           </div>
           <div className="relative mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
-              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-white p-6 shadow-[0_1px_2px_rgba(11,13,16,0.04),0_8px_24px_-12px_rgba(11,13,16,0.08)]">
+              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6">
                 <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-muted-light">
                   Step 0{i + 1}
                 </span>
-                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange ring-1 ring-reps-orange-border">
+                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
                   <s.icon className="h-5 w-5" strokeWidth={1.8} />
                 </span>
                 <h3 className="mt-5 font-display text-[19px] font-bold text-reps-charcoal">{s.t}</h3>
@@ -456,14 +456,17 @@ function HomeV2() {
             </div>
           </div>
 
-          {/* Inlined stats row — typographic only, no icons, so it doesn't visually rhyme with the pillar grid above */}
+          {/* Inlined stats row — was a standalone band, now anchors the trust block */}
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-6">
-                <div className="font-display text-[34px] font-bold leading-none tracking-[-0.02em] text-reps-charcoal lg:text-[44px]">
+              <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-ivory p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
+                  <s.icon className="h-5 w-5" />
+                </span>
+                <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
                   {s.value}
                 </div>
-                <div className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">{s.label}</div>
+                <div className="text-[13px] text-reps-muted-light">{s.label}</div>
               </div>
             ))}
           </div>
@@ -481,35 +484,7 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ CONSUMER CLOSER — now lands directly after the trust crescendo ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
-          <h2 className="font-display text-[36px] font-bold leading-[0.98] tracking-[-0.02em] text-reps-charcoal sm:text-[48px] lg:text-[64px]">
-            Find. Trust. Train.
-            <br />
-            <span className="text-reps-orange">Transform.</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-[520px] text-[15px] text-reps-muted-light">
-            Whether you want to train or you're a coach who wants to grow — start with REPs.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-[52px] items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-            >
-              Find a coach <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-[52px] items-center rounded-[10px] border border-reps-charcoal/20 px-7 text-[15px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-            >
-              Become a pro
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ FOR-PROS CTA — deliberate pivot before the press marquee ============ */}
+      {/* ============ PROFESSIONAL CTA BAND ============ */}
       <section className="bg-reps-ivory py-16 lg:py-20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
@@ -536,7 +511,7 @@ function HomeV2() {
                   Join 25,000+ verified pros. Get discovered, take bookings and run your practice — all in one place.
                 </p>
                 <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                  {["Verified profile that ranks", "Bookings & payments built in", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
+                  {["Verified profile that ranks", "Stripe-powered bookings", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-[14px] text-white">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
                         <Star className="h-3 w-3 fill-reps-orange" />
@@ -561,6 +536,34 @@ function HomeV2() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ CLOSER ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
+          <h2 className="font-display text-[36px] font-bold leading-[0.98] tracking-[-0.02em] text-reps-charcoal sm:text-[48px] lg:text-[64px]">
+            Find. Trust. Train.
+            <br />
+            <span className="text-reps-orange">Transform.</span>
+          </h2>
+          <p className="mx-auto mt-5 max-w-[520px] text-[15px] text-reps-muted-light">
+            Whether you want to train or you're a coach who wants to grow — start with REPs.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/find-a-professional"
+              className="inline-flex h-[52px] items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+            >
+              Find a coach <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/for-professionals"
+              className="inline-flex h-[52px] items-center rounded-[10px] border border-reps-charcoal/20 px-7 text-[15px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
+            >
+              Become a pro
+            </Link>
           </div>
         </div>
       </section>
