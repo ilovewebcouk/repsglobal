@@ -62,7 +62,7 @@ export function PricingPlans() {
               key={b}
               value={b}
               aria-label={b === "monthly" ? "Monthly billing" : "Annual billing"}
-              className="flex h-9 items-center gap-2 rounded-full bg-transparent px-5 text-[13px] font-semibold text-white/65 hover:bg-transparent hover:text-white data-[state=on]:bg-reps-orange data-[state=on]:text-white"
+              className="group flex h-9 items-center gap-2 rounded-full bg-transparent px-5 text-[13px] font-semibold text-white/65 hover:bg-transparent hover:text-white data-[state=on]:bg-reps-orange data-[state=on]:text-white"
             >
               {b === "monthly" ? "Monthly" : "Annual"}
               {b === "annual" && (
