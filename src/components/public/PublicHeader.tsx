@@ -1032,6 +1032,11 @@ function MobileDrawer({
                   </Link>
                 </li>
                 <li>
+                  <Link to="/features/shop-front" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Shop-front
+                  </Link>
+                </li>
+                <li>
                   <Link to="/features/operations" onClick={onNavigate} className={mobileSubLinkClass}>
                     Operations
                   </Link>
