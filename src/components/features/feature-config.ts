@@ -295,6 +295,17 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
     icon: BadgeCheck,
   },
   {
+    key: "shopfront",
+    label: "Shop-front",
+    desc: "Your own page. Your brand. One link.",
+    hero: {
+      eyebrow: "Personalised shop-front",
+      title: "A page that sells you while you sleep.",
+      sub: "More than a directory profile — a full single-page site at /c/your-name. Your photo, your method, your tiers, your proof, your accent colour. Every CTA drops straight into your REPs enquiry inbox.",
+    },
+    icon: Globe,
+  },
+  {
     key: "operations",
     label: "Operations",
     desc: "Run your whole practice in one place.",
