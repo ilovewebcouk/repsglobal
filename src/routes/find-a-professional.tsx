@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Compass,
   Laptop,
   MapPin,
   Search,
@@ -14,6 +15,7 @@ import {
   Trophy,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -167,6 +169,33 @@ const trustItems = [
   { icon: Users, title: "Trusted Worldwide", sub: "In-person & online" },
 ];
 
+const testimonials = [
+  {
+    quote:
+      "I'd been burned by PTs who weren't actually qualified. REPs let me see credentials before I even booked. My coach is brilliant.",
+    name: "Natalie S.",
+    role: "Strength training",
+    city: "London",
+    image: proLaura,
+  },
+  {
+    quote:
+      "Found a Pilates instructor who understood my back rehab brief on the first message. Verified, insured, and genuinely good.",
+    name: "Maya R.",
+    role: "Pilates",
+    city: "Manchester",
+    image: proSophie,
+  },
+  {
+    quote:
+      "I work shifts so I needed someone flexible and remote. REPs filtered down to qualified online coaches in minutes.",
+    name: "Tom B.",
+    role: "Online coaching",
+    city: "Bristol",
+    image: proDaniel,
+  },
+];
+
 function DirectoryPage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -294,6 +323,26 @@ function DirectoryPage() {
                   </FilterGroup>
                 </div>
               </details>
+
+              {/* Help card — fills the sticky rail beyond the filters */}
+              <div className="mt-5 hidden rounded-[22px] border border-reps-stone bg-reps-warm-white p-5 lg:block">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange/12 text-reps-orange">
+                  <Compass className="h-4 w-4" strokeWidth={1.8} />
+                </span>
+                <h3 className="mt-3 font-display text-[15px] font-bold leading-snug text-reps-charcoal">
+                  Can't find your match?
+                </h3>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-reps-muted-light">
+                  Tell us what you're looking for and we'll hand-match you to a verified REP within 24 hours.
+                </p>
+                <Link
+                  to="/find-a-professional"
+                  className="story-link mt-3 inline-flex items-center gap-1 text-[12.5px] font-semibold text-reps-orange"
+                >
+                  Tell us what you need
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </aside>
 
             {/* Results column */}
@@ -323,6 +372,30 @@ function DirectoryPage() {
                   </span>
                 </label>
               </div>
+
+              {/* Active filter chips */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-reps-muted-light">
+                  Active
+                </span>
+                {["Within 10mi", "In-person", "Online", "5★ & up"].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal transition-colors hover:border-reps-orange/40 hover:bg-white"
+                  >
+                    {chip}
+                    <X className="h-3 w-3 text-reps-muted-light" />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="ml-1 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-dark"
+                >
+                  Clear all
+                </button>
+              </div>
+
 
               {/* Cards w/ rhythm break */}
               <div className="space-y-4 pt-5">
@@ -370,35 +443,40 @@ function DirectoryPage() {
       </section>
 
 
-      {/* ============ TRUST BAND ============ */}
-      <section className="bg-reps-ivory pb-12 sm:pb-14">
+      {/* ============ TRUST BAND — borderless editorial closer ============ */}
+      <section className="bg-reps-ivory pb-14 sm:pb-16">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 sm:gap-7 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
-            <div>
-              <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
-                Why trust REPs professionals?
-              </h2>
-              <p className="mt-2 text-[13px] text-reps-muted-light">
-                We connect you with verified fitness and health professionals you can trust.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:contents">
-              {trustItems.map((t) => (
-                <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
-                    <t.icon className="h-5 w-5" strokeWidth={1.6} />
-                  </span>
-                  <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
-                  <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
+          <div className="border-t border-reps-stone pt-10 sm:pt-12">
+            <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
+                  The REPs standard
                 </div>
-              ))}
+                <h2 className="mt-2 font-display text-[22px] font-bold leading-tight text-reps-charcoal sm:text-[24px]">
+                  Why trust REPs professionals?
+                </h2>
+                <p className="mt-2 max-w-[320px] text-[13px] leading-relaxed text-reps-muted-light">
+                  We connect you with verified fitness and health professionals you can trust.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:contents">
+                {trustItems.map((t) => (
+                  <div key={t.title} className="flex flex-col items-start gap-2 text-left">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/10 text-reps-orange">
+                      <t.icon className="h-5 w-5" strokeWidth={1.6} />
+                    </span>
+                    <div className="mt-1 text-[14px] font-semibold text-reps-charcoal">{t.title}</div>
+                    <div className="text-[12.5px] leading-snug text-reps-muted-light">{t.sub}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
 
-      {/* ============ TESTIMONIAL — dark closer ============ */}
+      {/* ============ TESTIMONIALS — dark closer, 3-up ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div
           aria-hidden
@@ -409,29 +487,52 @@ function DirectoryPage() {
           aria-hidden
           className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
         />
-        <div className="mx-auto max-w-[820px] px-5 py-16 text-center sm:px-6 sm:py-20 lg:px-10 lg:py-24">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center text-reps-orange">
-            <svg viewBox="0 0 32 24" fill="currentColor" className="h-8 w-8">
-              <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
-            </svg>
+        <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
+          <div className="flex flex-col items-start gap-2 sm:items-center sm:text-center">
+            <span className="text-reps-orange">
+              <svg viewBox="0 0 32 24" fill="currentColor" className="h-7 w-7">
+                <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
+              </svg>
+            </span>
+            <h2 className="font-display text-[24px] font-bold leading-tight text-white sm:text-[30px] lg:text-[36px]">
+              People who found their match.
+            </h2>
+            <p className="max-w-[520px] text-[14px] leading-relaxed text-white/65 sm:text-[15px]">
+              Real stories from clients who used REPs to find a coach they could trust.
+            </p>
           </div>
-          <p className="mt-6 font-display text-[20px] leading-snug text-white sm:text-[24px] lg:text-[30px]">
-            "REPs helped me find the perfect trainer to reach my goals. The verification and
-            reviews gave me complete confidence."
-          </p>
 
-          <div className="mt-7 flex items-center justify-center gap-3">
-            <img
-              src={proLaura}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
-              width={40}
-              height={40}
-            />
-            <div className="text-left">
-              <div className="text-[14px] font-semibold text-white">Natalie S.</div>
-              <div className="text-[12px] text-white/55">London, UK</div>
-            </div>
+          <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {testimonials.map((t) => (
+              <figure
+                key={t.name}
+                className="flex h-full flex-col rounded-[18px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-0.5 text-reps-orange">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                  ))}
+                </div>
+                <blockquote className="mt-4 flex-1 font-display text-[16px] leading-snug text-white/90 sm:text-[17px]">
+                  "{t.quote}"
+                </blockquote>
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+                  <img
+                    src={t.image}
+                    alt=""
+                    className="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
+                    width={40}
+                    height={40}
+                  />
+                  <div>
+                    <div className="text-[13.5px] font-semibold text-white">{t.name}</div>
+                    <div className="text-[12px] text-white/55">
+                      {t.role} · {t.city}
+                    </div>
+                  </div>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
@@ -559,17 +660,23 @@ function proSlug(name: string) {
 }
 
 function ProCard({ pro }: { pro: Pro }) {
-  const photoSize = pro.featured ? 140 : 112;
+  const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
   return (
     <article
-      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
+      className={`group relative overflow-hidden rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
-          ? "border-reps-orange/30 ring-1 ring-reps-orange/15"
+          ? "border-reps-orange/40 bg-gradient-to-br from-reps-warm-white via-white to-reps-warm-white shadow-[0_18px_50px_-28px_rgba(234,88,12,0.35)] ring-1 ring-reps-orange/20"
           : "border-reps-stone"
       }`}
     >
+      {pro.featured && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-reps-orange to-reps-orange-dark"
+        />
+      )}
       <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
         style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
