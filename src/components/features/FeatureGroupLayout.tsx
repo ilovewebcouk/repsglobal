@@ -305,6 +305,7 @@ export function AINarrativeCard({
 
 const GROUP_ROUTES = {
   visibility: "/features/visibility",
+  shopfront: "/features/shop-front",
   operations: "/features/operations",
   coaching: "/features/coaching",
   ai: "/features/ai",
