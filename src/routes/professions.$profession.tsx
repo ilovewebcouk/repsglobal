@@ -1,13 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
-  Bookmark,
   ChevronRight,
-  Laptop,
   MapPin,
   Search,
   ShieldCheck,
-  Star,
   Trophy,
   UserRound,
   Users,
@@ -20,9 +17,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
