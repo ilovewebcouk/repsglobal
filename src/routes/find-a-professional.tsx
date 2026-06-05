@@ -732,7 +732,7 @@ function PagerNum({ n, active }: { n: number; active?: boolean }) {
   return (
     <button
       type="button"
-      className={`flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-semibold transition-colors ${
+      className={`flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-semibold transition-colors sm:h-11 sm:w-11 ${
         active
           ? "bg-reps-orange text-white"
           : "border border-reps-stone bg-white text-reps-charcoal hover:bg-reps-warm-white"
@@ -751,7 +751,7 @@ function PagerBtn({
     <button
       type="button"
       {...rest}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11"
     >
       {children}
     </button>
