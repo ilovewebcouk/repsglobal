@@ -4,7 +4,10 @@ import { FeaturePageLayout } from "@/components/features/FeaturePageLayout";
 import { FEATURE_CONTENT } from "@/components/features/feature-content";
 import { FEATURES, type FeatureLink } from "@/components/features/feature-config";
 
-const VALID_SLUGS = new Set(FEATURES.map((f) => f.slug));
+// shop-front has its own static route at /features/shop-front, so exclude from dynamic.
+const VALID_SLUGS = new Set(
+  FEATURES.filter((f) => f.slug !== "shop-front").map((f) => f.slug),
+);
 
 export const Route = createFileRoute("/features/$slug")({
   loader: ({ params }) => {
@@ -41,6 +44,7 @@ export const Route = createFileRoute("/features/$slug")({
 
 function FeatureRoute() {
   const { feature } = Route.useLoaderData();
-  const content = FEATURE_CONTENT[feature.slug as FeatureLink["slug"]];
-  return <FeaturePageLayout slug={feature.slug as FeatureLink["slug"]} {...content} />;
+  const slug = feature.slug as Exclude<FeatureLink["slug"], "shop-front">;
+  const content = FEATURE_CONTENT[slug];
+  return <FeaturePageLayout slug={slug} {...content} />;
 }
