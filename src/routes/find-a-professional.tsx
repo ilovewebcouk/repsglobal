@@ -339,15 +339,15 @@ function DirectoryPage() {
               {/* Pagination */}
               <nav
                 aria-label="Pagination"
-                className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10"
+                className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
               >
-                <p className="text-[12px] text-reps-muted-light">
+                <p className="text-[13px] text-reps-muted-light">
                   Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
                   <span className="font-semibold text-reps-charcoal">126</span>
                 </p>
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-2">
                   <PagerBtn aria-label="Previous">
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                   </PagerBtn>
                   <PagerNum n={1} active />
                   <PagerNum n={2} />
@@ -359,7 +359,7 @@ function DirectoryPage() {
                   <span className="px-1 text-reps-muted-light">…</span>
                   <PagerNum n={13} />
                   <PagerBtn aria-label="Next">
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </PagerBtn>
                 </div>
               </nav>
