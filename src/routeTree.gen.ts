@@ -83,6 +83,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.booki
 import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.reps-vs-trainerize'
 import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
+import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -473,6 +474,11 @@ const CompareRepsVsMypthubRoute = CompareRepsVsMypthubRouteImport.update({
   path: '/compare/reps-vs-mypthub',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CSlugRoute = CSlugRouteImport.update({
+  id: '/c/$slug',
+  path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
@@ -613,6 +619,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
+  '/c/$slug': typeof CSlugRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -707,6 +714,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
+  '/c/$slug': typeof CSlugRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -801,6 +809,7 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
+  '/c/$slug': typeof CSlugRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare_/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -897,6 +906,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
+    | '/c/$slug'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
@@ -991,6 +1001,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
+    | '/c/$slug'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
@@ -1084,6 +1095,7 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/verification'
+    | '/c/$slug'
     | '/compare_/reps-vs-mypthub'
     | '/compare_/reps-vs-pt-distinction'
     | '/compare_/reps-vs-trainerize'
@@ -1179,6 +1191,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
+  CSlugRoute: typeof CSlugRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
   CompareRepsVsTrainerizeRoute: typeof CompareRepsVsTrainerizeRoute
@@ -1745,6 +1758,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRepsVsMypthubRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug': {
+      id: '/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/verification': {
       id: '/admin_/verification'
       path: '/admin/verification'
@@ -1944,6 +1964,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
+  CSlugRoute: CSlugRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
   CompareRepsVsTrainerizeRoute: CompareRepsVsTrainerizeRoute,
