@@ -282,9 +282,9 @@ function DirectoryPage() {
           <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
             {/* Filter rail — collapsible on mobile/tablet */}
             <aside className="lg:sticky lg:top-[88px] lg:self-start">
-              <details className="group rounded-[22px] border border-reps-stone bg-reps-warm-white shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]" open>
+              <details className="group rounded-[22px] border border-reps-stone bg-reps-warm-white shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 lg:hidden">
-                  <span className="text-[14px] font-semibold text-reps-charcoal">Filter results</span>
+                  <span className="text-[14px] font-semibold text-reps-charcoal">Filters (5)</span>
                   <ChevronDown className="h-4 w-4 text-reps-muted-light transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-5 pb-5 sm:px-6 sm:pb-6 lg:px-6 lg:pt-6">
