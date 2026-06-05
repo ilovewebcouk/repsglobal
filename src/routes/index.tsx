@@ -511,7 +511,7 @@ function HomeV2() {
                   Join 25,000+ verified pros. Get discovered, take bookings and run your practice — all in one place.
                 </p>
                 <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                  {["Verified profile that ranks", "Stripe-powered bookings", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
+                  {["Verified profile that ranks", "Bookings & payments built in", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-[14px] text-white">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
                         <Star className="h-3 w-3 fill-reps-orange" />
