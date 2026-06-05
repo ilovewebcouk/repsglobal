@@ -21,6 +21,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import heroGymBg from "@/assets/hero-gym-bg.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -200,6 +201,7 @@ const testimonials = [
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   return (
+    <TooltipProvider delayDuration={120}>
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
 
@@ -558,6 +560,7 @@ function DirectoryPage() {
 
       <PublicFooter />
     </div>
+    </TooltipProvider>
   );
 }
 
@@ -735,14 +738,18 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
                 Verified
               </span>
             </div>
-            <button
-              type="button"
-              aria-label="Save"
-              title="Save"
-              className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
-            >
-              <Bookmark className="h-4 w-4" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Save"
+                  className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+                >
+                  <Bookmark className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -792,14 +799,18 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
 
         {/* RIGHT actions (desktop only) */}
         <div className="hidden flex-col items-end gap-2 sm:flex">
-          <button
-            type="button"
-            aria-label="Save"
-            title="Save"
-            className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
-          >
-            <Bookmark className="h-4 w-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Save"
+                className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+              >
+                <Bookmark className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+          </Tooltip>
           <Link
             to="/pro/$slug"
             params={{ slug: proSlug(pro.name) }}
