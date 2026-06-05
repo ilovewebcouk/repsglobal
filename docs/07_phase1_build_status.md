@@ -168,3 +168,4 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 ## Lock log
 
 - 2026-06-05 — Homepage `/` LOCKED (Phase 1 approved). See `mem://design/locked-homepage`.
+- 2026-06-05 — Profession landing pages `/professions/$profession` LOCKED (Phase 1 approved). Full visual + copy QA pass on all 5 mapped slugs (PT, PI, NU, SC, OC). See `mem://design/locked-professions`.
