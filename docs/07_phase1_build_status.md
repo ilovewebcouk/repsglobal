@@ -30,7 +30,7 @@ Status legend:
 | `/pricing` | Shipped (rebuilt as dedicated buying page) | `FoundingBanner` + hero + `PricingPlans` + cross-link to `/compare` + `PricingFAQ` + final CTA. No longer a redirect to `/for-professionals#pricing`. |
 | `/compare` | Shipped (new) | Dedicated plan-by-plan comparison: hero + `FoundingBanner` + full `PricingCompare` (with expanded `COMPARE_GROUPS` covering Billing, Visibility & trust, Business operations, Coaching delivery, REPs AI (14 rows), Growth & scale, Admin & support). |
 | `/find-a-professional` | Shipped | Static directory results, no real search logic (deferred). |
-| `/in/$location` | Shipped | Location landing pages, static data. |
+| `/in/$location` | **Locked — Phase 1 approved** | City landing pages, static data. Unified to shared `FeaturedProCard`, added FAQ + related cities, region copy de-UK'd. Full visual + copy QA on all 4 mapped slugs (London, Manchester, Birmingham, Edinburgh) + fallback. |
 | `/professions/$profession` | **Locked — Phase 1 approved** | Profession landing pages, static data. Full visual + copy QA on all 5 mapped slugs (PT, PI, NU, SC, OC). |
 | `/specialisms` | Shipped | |
 | `/standards` | Shipped | |
