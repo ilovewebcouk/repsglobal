@@ -110,13 +110,26 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Visibility & trust",
     rows: [
-      { label: "Public directory listing", verified: true, pro: true, studio: true },
+      { label: "Public directory listing (/pro/your-name)", verified: true, pro: true, studio: true },
       { label: "Verified badge", verified: true, pro: true, studio: true },
       { label: "Reviews on the record", verified: true, pro: true, studio: true },
       { label: "Enquiries inbox", verified: true, pro: true, studio: true },
       { label: "Enhanced directory placement", verified: false, pro: true, studio: true },
       { label: "Organisation profile", verified: false, pro: false, studio: true },
       { label: "Multiple locations", verified: false, pro: false, studio: true },
+    ],
+  },
+  {
+    title: "Your shop-front (/c/your-name)",
+    rows: [
+      { label: "Personalised shop-front page", verified: false, pro: true, studio: true },
+      { label: "Custom accent colour + hero photo", verified: false, pro: true, studio: true },
+      { label: "Three-tier services with 'Most popular' highlight", verified: false, pro: true, studio: true },
+      { label: "Methodology / signature method section", verified: false, pro: true, studio: true },
+      { label: "Transformations & proof cards", verified: false, pro: true, studio: true },
+      { label: "Sticky section nav + mobile CTA bar", verified: false, pro: true, studio: true },
+      { label: "Deep-linked enquiry routing", verified: false, pro: true, studio: true },
+      { label: "Team / studio accent options", verified: false, pro: false, studio: true },
     ],
   },
   {
