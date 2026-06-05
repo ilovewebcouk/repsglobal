@@ -296,6 +296,26 @@ function DirectoryPage() {
                   </FilterGroup>
                 </div>
               </details>
+
+              {/* Help card — fills the sticky rail beyond the filters */}
+              <div className="mt-5 hidden rounded-[22px] border border-reps-stone bg-reps-warm-white p-5 lg:block">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange/12 text-reps-orange">
+                  <Compass className="h-4 w-4" strokeWidth={1.8} />
+                </span>
+                <h3 className="mt-3 font-display text-[15px] font-bold leading-snug text-reps-charcoal">
+                  Can't find your match?
+                </h3>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-reps-muted-light">
+                  Tell us what you're looking for and we'll hand-match you to a verified REP within 24 hours.
+                </p>
+                <Link
+                  to="/find-a-professional"
+                  className="story-link mt-3 inline-flex items-center gap-1 text-[12.5px] font-semibold text-reps-orange"
+                >
+                  Tell us what you need
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </aside>
 
             {/* Results column */}
@@ -325,6 +345,30 @@ function DirectoryPage() {
                   </span>
                 </label>
               </div>
+
+              {/* Active filter chips */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-reps-muted-light">
+                  Active
+                </span>
+                {["Within 10mi", "In-person", "Online", "5★ & up"].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal transition-colors hover:border-reps-orange/40 hover:bg-white"
+                  >
+                    {chip}
+                    <X className="h-3 w-3 text-reps-muted-light" />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="ml-1 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-dark"
+                >
+                  Clear all
+                </button>
+              </div>
+
 
               {/* Cards w/ rhythm break */}
               <div className="space-y-4 pt-5">
