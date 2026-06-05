@@ -9,6 +9,7 @@ import {
   MapPin,
   Search,
   ShieldCheck,
+  Sparkles,
   Star,
   Trophy,
   UserRound,
@@ -17,6 +18,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import heroGymBg from "@/assets/hero-gym-bg.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
@@ -63,24 +65,26 @@ type Pro = {
   tags: [string, string, string];
   blurb: string;
   image: string;
+  featured?: boolean;
 };
 
 const directoryPros: Pro[] = [
   {
     name: "James Wilson",
     role: "Personal Trainer",
-    distance: "London, 0.8 miles away",
+    distance: "Mayfair · 0.8 mi",
     rating: 5.0,
     reviews: 128,
     mode: "In-person & Online",
     tags: ["Strength Training", "Fat Loss", "Health & Fitness"],
     blurb: "Helping busy professionals build strength, improve fitness and feel their best.",
     image: proJames,
+    featured: true,
   },
   {
     name: "Sophie Taylor",
     role: "Pilates Instructor",
-    distance: "London, 1.2 miles away",
+    distance: "Marylebone · 1.2 mi",
     rating: 5.0,
     reviews: 96,
     mode: "In-person & Online",
@@ -91,7 +95,7 @@ const directoryPros: Pro[] = [
   {
     name: "Liam Roberts",
     role: "Strength Coach",
-    distance: "London, 1.5 miles away",
+    distance: "Soho · 1.5 mi",
     rating: 4.9,
     reviews: 74,
     mode: "In-person",
@@ -102,7 +106,7 @@ const directoryPros: Pro[] = [
   {
     name: "Priya Sharma",
     role: "Nutritionist",
-    distance: "London, 2.1 miles away",
+    distance: "Fitzrovia · 2.1 mi",
     rating: 5.0,
     reviews: 112,
     mode: "Online",
@@ -113,7 +117,7 @@ const directoryPros: Pro[] = [
   {
     name: "Daniel Hughes",
     role: "Personal Trainer",
-    distance: "London, 2.3 miles away",
+    distance: "Covent Garden · 2.3 mi",
     rating: 4.8,
     reviews: 64,
     mode: "In-person & Online",
@@ -124,7 +128,7 @@ const directoryPros: Pro[] = [
   {
     name: "Emily Carter",
     role: "Pilates Instructor",
-    distance: "London, 2.4 miles away",
+    distance: "Bloomsbury · 2.4 mi",
     rating: 5.0,
     reviews: 88,
     mode: "In-person",
@@ -135,7 +139,7 @@ const directoryPros: Pro[] = [
   {
     name: "Marcus Lee",
     role: "Strength Coach",
-    distance: "London, 2.6 miles away",
+    distance: "Holborn · 2.6 mi",
     rating: 4.9,
     reviews: 51,
     mode: "In-person & Online",
@@ -146,7 +150,7 @@ const directoryPros: Pro[] = [
   {
     name: "Hannah Thompson",
     role: "Pre & Postnatal Specialist",
-    distance: "London, 3.0 miles away",
+    distance: "Clerkenwell · 3.0 mi",
     rating: 5.0,
     reviews: 77,
     mode: "In-person & Online",
@@ -166,19 +170,50 @@ const trustItems = [
 function DirectoryPage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
-      {/* ============ DARK SEARCH BAND ============ */}
-      <section className="relative isolate bg-reps-black text-white">
+      {/* ============ SEARCH HERO ============ */}
+      <section className="relative isolate overflow-hidden bg-reps-black text-white">
+        {/* atmosphere */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-cover bg-center opacity-[0.28]"
+          style={{ backgroundImage: `url(${heroGymBg})` }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black/85 via-reps-black/65 to-reps-black"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 -z-10 h-px bg-white/5"
+        />
+
         <PublicHeader variant="transparent" />
 
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-[120px] lg:px-10 lg:pb-10 lg:pt-[140px]">
-          <div className="rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 backdrop-blur-md">
+        <div className="mx-auto max-w-[1320px] px-6 pb-12 pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
+          {/* editorial title */}
+          <div className="max-w-[760px]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
+              Every REP verified · qualified · insured
+            </div>
+            <h1 className="mt-5 font-display text-[40px] font-bold leading-[1.04] tracking-tight text-white lg:text-[58px]">
+              Find a coach worth trusting.
+            </h1>
+            <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-white/70 lg:text-[16px]">
+              Search the global register of qualified, insured and credential-checked
+              fitness professionals — in your city, on your schedule, in person or online.
+            </p>
+          </div>
+
+          {/* search panel */}
+          <div className="mt-8 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
                 placeholder="e.g. Personal Trainer"
                 icon={UserRound}
               />
-              <SearchField label="Near" placeholder="SW1A 1AA" icon={MapPin} />
+              <SearchField label="Near" placeholder="London, UK" icon={MapPin} />
               <SearchField
                 label="Training type"
                 placeholder="In-person, Online or Both"
@@ -187,7 +222,7 @@ function DirectoryPage() {
               />
               <button
                 type="button"
-                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                className="inline-flex h-[62px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
               >
                 <Search className="h-4 w-4" />
                 Find Professionals
@@ -199,7 +234,7 @@ function DirectoryPage() {
                 <button
                   key={s}
                   type="button"
-                  className="font-medium text-reps-orange transition-colors hover:text-white"
+                  className="story-link font-medium text-reps-orange transition-colors hover:text-white"
                 >
                   {s}
                 </button>
@@ -211,11 +246,11 @@ function DirectoryPage() {
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-12">
+        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-14">
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {/* Filter rail */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]">
                 <div className="flex items-center justify-between border-b border-reps-stone pb-3">
                   <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
                   <button
@@ -244,10 +279,6 @@ function DirectoryPage() {
                   <Select value="Any day" />
                 </FilterGroup>
 
-                <FilterGroup label="Verified status">
-                  <Checkbox label="REPs Verified only" />
-                </FilterGroup>
-
                 <FilterGroup label="Rating" last>
                   <RatingRow stars={5} />
                   <RatingRow stars={4} />
@@ -258,10 +289,16 @@ function DirectoryPage() {
 
             {/* Results column */}
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-5">
-                <h1 className="font-display text-[20px] font-semibold text-reps-charcoal lg:text-[22px]">
-                  126 professionals found near SW1A 1AA
-                </h1>
+              {/* Sort/results bar */}
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-5">
+                <div>
+                  <h1 className="font-display text-[20px] font-semibold text-reps-charcoal lg:text-[22px]">
+                    126 professionals in London
+                  </h1>
+                  <p className="mt-1 text-[12px] text-reps-muted-light">
+                    Showing 1–8 · all REPs Verified
+                  </p>
+                </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
                   Sort by
                   <span className="relative">
@@ -278,8 +315,15 @@ function DirectoryPage() {
                 </label>
               </div>
 
-              <div className="space-y-4">
-                {directoryPros.map((p) => (
+              {/* Cards w/ rhythm break */}
+              <div className="space-y-4 pt-5">
+                {directoryPros.slice(0, 4).map((p) => (
+                  <ProCard key={p.name} pro={p} />
+                ))}
+
+                <EditorialBreak />
+
+                {directoryPros.slice(4).map((p) => (
                   <ProCard key={p.name} pro={p} />
                 ))}
               </div>
@@ -287,21 +331,27 @@ function DirectoryPage() {
               {/* Pagination */}
               <nav
                 aria-label="Pagination"
-                className="mt-8 flex items-center justify-center gap-2"
+                className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6"
               >
-                <PagerBtn aria-label="Previous">
-                  <ChevronLeft className="h-4 w-4" />
-                </PagerBtn>
-                <PagerNum n={1} active />
-                <PagerNum n={2} />
-                <PagerNum n={3} />
-                <PagerNum n={4} />
-                <PagerNum n={5} />
-                <span className="px-1 text-reps-muted-light">…</span>
-                <PagerNum n={13} />
-                <PagerBtn aria-label="Next">
-                  <ChevronRight className="h-4 w-4" />
-                </PagerBtn>
+                <p className="text-[12px] text-reps-muted-light">
+                  Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
+                  <span className="font-semibold text-reps-charcoal">126</span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <PagerBtn aria-label="Previous">
+                    <ChevronLeft className="h-4 w-4" />
+                  </PagerBtn>
+                  <PagerNum n={1} active />
+                  <PagerNum n={2} />
+                  <PagerNum n={3} />
+                  <PagerNum n={4} />
+                  <PagerNum n={5} />
+                  <span className="px-1 text-reps-muted-light">…</span>
+                  <PagerNum n={13} />
+                  <PagerBtn aria-label="Next">
+                    <ChevronRight className="h-4 w-4" />
+                  </PagerBtn>
+                </div>
               </nav>
             </div>
           </div>
@@ -309,9 +359,9 @@ function DirectoryPage() {
       </section>
 
       {/* ============ TRUST BAND ============ */}
-      <section className="bg-reps-ivory pb-12">
+      <section className="bg-reps-ivory pb-14">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-4 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-5">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust REPs
@@ -324,7 +374,7 @@ function DirectoryPage() {
             </div>
             {trustItems.map((t) => (
               <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
                   <t.icon className="h-5 w-5" strokeWidth={1.6} />
                 </span>
                 <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
@@ -335,40 +385,39 @@ function DirectoryPage() {
         </div>
       </section>
 
-      {/* ============ TESTIMONIAL ============ */}
-      <section className="bg-reps-ivory pb-16">
-        <div className="mx-auto max-w-[760px] px-6 text-center lg:px-10">
+      {/* ============ TESTIMONIAL — dark closer ============ */}
+      <section className="relative isolate overflow-hidden bg-reps-black text-white">
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-cover bg-center opacity-[0.18]"
+          style={{ backgroundImage: `url(${heroGymBg})` }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
+        />
+        <div className="mx-auto max-w-[820px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <div className="mx-auto flex h-10 w-10 items-center justify-center text-reps-orange">
-            <svg viewBox="0 0 32 24" fill="currentColor" className="h-7 w-7">
+            <svg viewBox="0 0 32 24" fill="currentColor" className="h-8 w-8">
               <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
             </svg>
           </div>
-          <p className="mt-5 font-display text-[20px] leading-snug text-reps-charcoal lg:text-[22px]">
+          <p className="mt-6 font-display text-[24px] leading-snug text-white lg:text-[30px]">
             “REPs helped me find the perfect trainer to reach my goals. The verification and
             reviews gave me complete confidence.”
           </p>
-          <div className="mt-6 flex items-center justify-center gap-3">
+          <div className="mt-7 flex items-center justify-center gap-3">
             <img
               src={proLaura}
               alt=""
-              className="h-10 w-10 rounded-full object-cover"
+              className="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
               width={40}
               height={40}
             />
             <div className="text-left">
-              <div className="text-[14px] font-semibold text-reps-charcoal">Natalie S.</div>
-              <div className="text-[12px] text-reps-muted-light">London, UK</div>
+              <div className="text-[14px] font-semibold text-white">Natalie S.</div>
+              <div className="text-[12px] text-white/55">London, UK</div>
             </div>
-          </div>
-          <div className="mt-6 flex items-center justify-center gap-2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <span
-                key={i}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === 2 ? "w-6 bg-reps-orange" : "w-1.5 bg-reps-stone"
-                }`}
-              />
-            ))}
           </div>
         </div>
       </section>
@@ -399,13 +448,13 @@ function SearchField({
         {label}
       </span>
       <span className="flex items-center gap-2 text-white">
+        <Icon className="h-4 w-4 shrink-0 text-white/55" />
         <input
           type="text"
           placeholder={placeholder}
           readOnly={isSelect}
           className="w-full bg-transparent text-[14px] text-white placeholder:text-white/45 focus:outline-none"
         />
-        <Icon className="h-4 w-4 shrink-0 text-white/55" />
       </span>
     </label>
   );
@@ -435,7 +484,7 @@ function Select({ value, placeholder }: { value: string; placeholder?: boolean }
     <div className="relative">
       <button
         type="button"
-        className={`flex w-full items-center justify-between rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-2 text-[13px] ${
+        className={`flex w-full items-center justify-between rounded-[10px] border border-reps-stone bg-white px-3 py-2 text-[13px] ${
           placeholder ? "text-reps-muted-light" : "text-reps-charcoal"
         }`}
       >
@@ -453,7 +502,7 @@ function Checkbox({ label, defaultChecked }: { label: string; defaultChecked?: b
         className={`flex h-4 w-4 items-center justify-center rounded-[6px] border ${
           defaultChecked
             ? "border-reps-orange bg-reps-orange text-white"
-            : "border-reps-stone bg-reps-warm-white"
+            : "border-reps-stone bg-white"
         }`}
       >
         {defaultChecked && (
@@ -496,17 +545,37 @@ function proSlug(name: string) {
 }
 
 function ProCard({ pro }: { pro: Pro }) {
+  const photoSize = pro.featured ? 140 : 112;
+
   return (
-    <article className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-4">
-      <div className="grid gap-4 sm:grid-cols-[112px_1fr_auto] sm:items-center">
-        <img
-          src={pro.image}
-          alt={`${pro.name} — ${pro.role}`}
-          className="h-[112px] w-[112px] rounded-[12px] object-cover"
-          loading="lazy"
-          width={224}
-          height={224}
-        />
+    <article
+      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] ${
+        pro.featured
+          ? "border-reps-orange/30 ring-1 ring-reps-orange/15"
+          : "border-reps-stone"
+      }`}
+    >
+      <div
+        className="grid gap-4 sm:items-center"
+        style={{ gridTemplateColumns: `${photoSize}px 1fr auto` }}
+      >
+        <div className="relative">
+          <img
+            src={pro.image}
+            alt={`${pro.name} — ${pro.role}`}
+            className="rounded-[12px] object-cover"
+            style={{ width: photoSize, height: photoSize }}
+            loading="lazy"
+            width={photoSize * 2}
+            height={photoSize * 2}
+          />
+          {pro.featured && (
+            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              <Sparkles className="h-3 w-3" />
+              Featured
+            </span>
+          )}
+        </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
@@ -540,14 +609,21 @@ function ProCard({ pro }: { pro: Pro }) {
             {pro.tags.map((t) => (
               <span
                 key={t}
-                className="rounded-full bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
+                className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
               >
                 {t}
               </span>
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-center">
+        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+          <button
+            type="button"
+            aria-label="Save"
+            className="self-end rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+          >
+            <Bookmark className="h-4 w-4" />
+          </button>
           <Link
             to="/pro/$slug"
             params={{ slug: proSlug(pro.name) }}
@@ -555,16 +631,43 @@ function ProCard({ pro }: { pro: Pro }) {
           >
             View Profile
           </Link>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-1.5 rounded-[10px] px-2 py-1 text-[12px] font-medium text-reps-muted-light hover:text-reps-charcoal"
-          >
-            <Bookmark className="h-3.5 w-3.5" />
-            Save
-          </button>
         </div>
       </div>
     </article>
+  );
+}
+
+function EditorialBreak() {
+  return (
+    <aside className="relative overflow-hidden rounded-[18px] border border-reps-charcoal bg-reps-black px-6 py-5 text-white">
+      <div
+        aria-hidden
+        className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-reps-orange/20 blur-3xl"
+      />
+      <div className="relative flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
+              Why REPs
+            </div>
+            <p className="mt-1 max-w-[520px] text-[14px] leading-snug text-white/85">
+              Every professional on this page is qualification-checked, insurance-verified
+              and bound to the REPs Code of Ethical Practice.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/verify"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-white/10"
+        >
+          How verification works
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </aside>
   );
 }
 
@@ -575,7 +678,7 @@ function PagerNum({ n, active }: { n: number; active?: boolean }) {
       className={`flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-semibold transition-colors ${
         active
           ? "bg-reps-orange text-white"
-          : "border border-reps-stone bg-reps-warm-white text-reps-charcoal hover:bg-reps-ivory"
+          : "border border-reps-stone bg-white text-reps-charcoal hover:bg-reps-warm-white"
       }`}
     >
       {n}
@@ -591,7 +694,7 @@ function PagerBtn({
     <button
       type="button"
       {...rest}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white text-reps-charcoal transition-colors hover:bg-reps-ivory"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white"
     >
       {children}
     </button>
