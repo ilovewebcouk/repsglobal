@@ -169,3 +169,4 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 
 - 2026-06-05 — Homepage `/` LOCKED (Phase 1 approved). See `mem://design/locked-homepage`.
 - 2026-06-05 — Profession landing pages `/professions/$profession` LOCKED (Phase 1 approved). Full visual + copy QA pass on all 5 mapped slugs (PT, PI, NU, SC, OC). See `mem://design/locked-professions`.
+- 2026-06-05 — City landing pages `/in/$location` LOCKED (Phase 1 approved). Unified to shared `FeaturedProCard` (extracted to `src/components/public/FeaturedProCard.tsx` and adopted by professions page too), added FAQ + related cities, de-UK'd region copy. Full visual + copy QA on all 4 mapped slugs (London, Manchester, Birmingham, Edinburgh) + fallback. See `mem://design/locked-cities`.
