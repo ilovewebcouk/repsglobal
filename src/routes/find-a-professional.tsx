@@ -372,6 +372,20 @@ function DirectoryPage() {
                     <Select value="Any day" />
                   </FilterGroup>
 
+                  <FilterGroup label="Gym / venue">
+                    <VenueSelect
+                      value={activeVenue?.slug}
+                      onChange={(slug) =>
+                        navigate({
+                          search: (prev: { venue?: string }) => ({
+                            ...prev,
+                            venue: slug,
+                          }),
+                        })
+                      }
+                    />
+                  </FilterGroup>
+
                   <FilterGroup label="Rating" last>
                     <RatingRow stars={5} />
                     <RatingRow stars={4} />
