@@ -164,7 +164,7 @@ export function PricingPlans() {
       </div>
 
       {/* Enterprise strip */}
-      <Card className="mt-10 overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+      <Card className="mt-10 overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel shadow-none">
         <CardContent className="flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[640px]">
             <div className="flex items-center gap-2 text-white/55">
