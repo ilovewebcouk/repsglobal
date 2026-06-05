@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Calendar,
-  ChevronDown,
   Globe,
   Instagram,
   Laptop,
@@ -19,10 +18,8 @@ import {
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
-import { cn } from "@/lib/utils";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
