@@ -255,7 +255,7 @@ function DirectoryPage() {
     : directoryPros;
 
   const clearVenue = () =>
-    navigate({ search: (prev) => ({ ...prev, venue: undefined }) });
+    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
 
   return (
     <div className="min-h-screen bg-reps-ivory">
