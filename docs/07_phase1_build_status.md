@@ -31,7 +31,7 @@ Status legend:
 | `/compare` | Shipped (new) | Dedicated plan-by-plan comparison: hero + `FoundingBanner` + full `PricingCompare` (with expanded `COMPARE_GROUPS` covering Billing, Visibility & trust, Business operations, Coaching delivery, REPs AI (14 rows), Growth & scale, Admin & support). |
 | `/find-a-professional` | Shipped | Static directory results, no real search logic (deferred). |
 | `/in/$location` | Shipped | Location landing pages, static data. |
-| `/professions/$profession` | Shipped | Profession landing pages, static data. |
+| `/professions/$profession` | **Locked — Phase 1 approved** | Profession landing pages, static data. Full visual + copy QA on all 5 mapped slugs (PT, PI, NU, SC, OC). |
 | `/specialisms` | Shipped | |
 | `/standards` | Shipped | |
 | `/cpd` | Shipped | |
@@ -168,3 +168,4 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 ## Lock log
 
 - 2026-06-05 — Homepage `/` LOCKED (Phase 1 approved). See `mem://design/locked-homepage`.
+- 2026-06-05 — Profession landing pages `/professions/$profession` LOCKED (Phase 1 approved). Full visual + copy QA pass on all 5 mapped slugs (PT, PI, NU, SC, OC). See `mem://design/locked-professions`.
