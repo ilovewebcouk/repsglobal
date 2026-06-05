@@ -824,7 +824,8 @@ function AboutSection({ coach }: { coach: Coach }) {
             <img
               src={coach.aboutImage}
               alt={`About ${coach.firstName}`}
-              loading="lazy"
+              width={1080}
+              height={1350}
               className="aspect-[4/5] h-full w-full object-cover"
             />
           </div>
