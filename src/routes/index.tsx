@@ -460,9 +460,6 @@ function HomeV2() {
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
               <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-ivory p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
-                  <s.icon className="h-5 w-5" />
-                </span>
                 <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
                   {s.value}
                 </div>
