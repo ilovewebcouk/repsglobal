@@ -1,3 +1,5 @@
+import type * as React from "react";
+
 /**
  * Editorial "Where you'll find our trainers" wordmarks rendered as inline SVG
  * with `fill="currentColor"` so the parent text color controls the marquee tint.
