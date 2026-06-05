@@ -559,38 +559,69 @@ function proSlug(name: string) {
 
 function ProCard({ pro }: { pro: Pro }) {
   const photoSize = pro.featured ? 140 : 112;
+  const mobilePhotoSize = pro.featured ? 96 : 80;
 
   return (
     <article
-      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] ${
+      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
           ? "border-reps-orange/30 ring-1 ring-reps-orange/15"
           : "border-reps-stone"
       }`}
     >
-      <div
-        className="grid gap-4 sm:items-center"
-        style={{ gridTemplateColumns: `${photoSize}px 1fr auto` }}
+      <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
+        style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
-        <div className="relative">
-          <img
-            src={pro.image}
-            alt={`${pro.name} — ${pro.role}`}
-            className="rounded-[12px] object-cover"
-            style={{ width: photoSize, height: photoSize }}
-            loading="lazy"
-            width={photoSize * 2}
-            height={photoSize * 2}
-          />
-          {pro.featured && (
-            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-              <Sparkles className="h-3 w-3" />
-              Featured
-            </span>
-          )}
+        {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
+        <div className="flex items-start gap-3 sm:block">
+          <div className="relative shrink-0">
+            <img
+              src={pro.image}
+              alt={`${pro.name} — ${pro.role}`}
+              className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+              style={{
+                width: mobilePhotoSize,
+                height: mobilePhotoSize,
+                ["--p" as never]: `${photoSize}px`,
+              }}
+              loading="lazy"
+              width={photoSize * 2}
+              height={photoSize * 2}
+            />
+            {pro.featured && (
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
+                <Sparkles className="h-3 w-3" />
+                Featured
+              </span>
+            )}
+          </div>
+
+          {/* Mobile-only heading next to photo */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-2 sm:hidden">
+            <div className="min-w-0">
+              <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
+                {pro.name}
+              </h3>
+              <div className="mt-0.5 text-[12px] text-reps-muted-light">{pro.role}</div>
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
+                <BadgeCheck className="h-3 w-3" />
+                Verified
+              </span>
+            </div>
+            <button
+              type="button"
+              aria-label="Save"
+              className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+            >
+              <Bookmark className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+
+        {/* MAIN content */}
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Desktop heading (hidden on mobile, shown sm+) */}
+          <div className="hidden flex-wrap items-center gap-2 sm:flex">
             <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
@@ -599,8 +630,9 @@ function ProCard({ pro }: { pro: Pro }) {
               REPs Verified
             </span>
           </div>
-          <div className="mt-0.5 text-[13px] text-reps-muted-light">{pro.role}</div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-reps-muted-light">
+          <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
               {pro.distance}
@@ -629,11 +661,13 @@ function ProCard({ pro }: { pro: Pro }) {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+
+        {/* RIGHT actions (desktop only) */}
+        <div className="hidden flex-col items-end gap-2 sm:flex">
           <button
             type="button"
             aria-label="Save"
-            className="self-end rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+            className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
           >
             <Bookmark className="h-4 w-4" />
           </button>
@@ -645,10 +679,20 @@ function ProCard({ pro }: { pro: Pro }) {
             View Profile
           </Link>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <Link
+          to="/pro/$slug"
+          params={{ slug: proSlug(pro.name) }}
+          className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
+        >
+          View Profile
+        </Link>
       </div>
     </article>
   );
 }
+
 
 function EditorialBreak() {
   return (
