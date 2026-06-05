@@ -448,7 +448,7 @@ function ProfessionLanding() {
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURED.map((p) => (
-            <FeaturedCard key={p.name} pro={p} />
+            <FeaturedProCard key={p.name} pro={p} />
           ))}
         </div>
       </section>
