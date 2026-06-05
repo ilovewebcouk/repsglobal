@@ -197,6 +197,7 @@ const testimonials = [
 ];
 
 function DirectoryPage() {
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
