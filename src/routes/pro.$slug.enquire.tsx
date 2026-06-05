@@ -307,7 +307,7 @@ function EnquirePage() {
           </form>
 
           {/* SUMMARY */}
-          <aside className="flex flex-col gap-5">
+          <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
             {/* Pro card */}
             <div className="overflow-hidden rounded-[22px] border border-reps-stone bg-reps-warm-white">
               <div className="flex items-center gap-4 p-5">
