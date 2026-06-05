@@ -139,8 +139,7 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
-              style={{ transform: "translate3d(15%, 0, 0) scale(1.05)" }}
-              className="absolute inset-0 h-full w-full origin-right object-cover object-[center_30%]"
+              className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
             />
             <div
               className="absolute inset-0"
