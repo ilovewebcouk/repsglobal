@@ -408,7 +408,7 @@ function DirectoryPage() {
           aria-hidden
           className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
         />
-        <div className="mx-auto max-w-[820px] px-6 py-20 text-center lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[820px] px-5 py-16 text-center sm:px-6 sm:py-20 lg:px-10 lg:py-24">
           <div className="mx-auto flex h-10 w-10 items-center justify-center text-reps-orange">
             <svg viewBox="0 0 32 24" fill="currentColor" className="h-8 w-8">
               <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
