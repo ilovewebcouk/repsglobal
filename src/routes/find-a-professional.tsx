@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Compass,
   Laptop,
   MapPin,
   Search,
@@ -14,6 +15,7 @@ import {
   Trophy,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
