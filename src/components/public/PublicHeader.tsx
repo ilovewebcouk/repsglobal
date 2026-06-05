@@ -195,7 +195,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   const expanded = active.isHome && !isSolid;
 
   const wrapperClass = cn(
-    "z-30 transition-colors duration-200",
+    "z-50 transition-colors duration-200",
     variant === "transparent" ? "fixed inset-x-0 top-0" : "sticky top-0",
     isSolid
       ? "bg-reps-ink/95 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/80 border-b border-reps-border"
