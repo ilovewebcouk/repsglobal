@@ -660,17 +660,23 @@ function proSlug(name: string) {
 }
 
 function ProCard({ pro }: { pro: Pro }) {
-  const photoSize = pro.featured ? 140 : 112;
+  const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
   return (
     <article
-      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
+      className={`group relative overflow-hidden rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
-          ? "border-reps-orange/30 ring-1 ring-reps-orange/15"
+          ? "border-reps-orange/40 bg-gradient-to-br from-reps-warm-white via-white to-reps-warm-white shadow-[0_18px_50px_-28px_rgba(234,88,12,0.35)] ring-1 ring-reps-orange/20"
           : "border-reps-stone"
       }`}
     >
+      {pro.featured && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-reps-orange to-reps-orange-dark"
+        />
+      )}
       <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
         style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
