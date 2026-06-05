@@ -191,7 +191,7 @@ function HomeV2() {
                   />
                 </label>
                 <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
-                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[200px]">
+                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[168px] lg:w-[200px]">
                   <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
                   <input
                     type="text"
