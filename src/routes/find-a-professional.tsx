@@ -375,7 +375,7 @@ function DirectoryPage() {
                   <FilterGroup label="Gym / venue">
                     <VenueSelect
                       value={activeVenue?.slug}
-                      onChange={(slug) =>
+                      onChange={(slug: string | undefined) =>
                         navigate({
                           search: (prev: { venue?: string }) => ({
                             ...prev,
