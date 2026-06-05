@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Calendar,
+  ChevronDown,
   Globe,
   Instagram,
   Laptop,
