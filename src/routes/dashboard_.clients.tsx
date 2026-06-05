@@ -14,6 +14,7 @@ import {
   resendInvite,
 } from "@/lib/roster.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/dashboard_/clients")({
   beforeLoad: async ({ location }) => {
