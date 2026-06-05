@@ -1,32 +1,31 @@
-## Fix: For-Pros CTA image crop across breakpoints
+## Problem
 
-### What I confirmed
+At 390px, the For-Pros CTA image uses `aspect-[4/3]` + `object-[72%_center]`. The source `cta-band.jpg` (1584×672, 2.36:1) places the woman at ~59% horizontal and the man at ~87%, with the man's right shoulder reaching ~96% of the frame. Current crop clips the man's right arm and leaves the pair noticeably left-of-center.
 
-- Source image (`src/assets/cta-band.jpg`) is **1584×672** (2.36:1, ultra-wide). Empty gym fills the left third; the two trainers stand in the right two-thirds (woman ~x=48%, man ~x=85%).
-- Current rule on the `<img>` (`index.tsx:489`):
-  `aspect-[4/3] w-full object-cover object-center md:aspect-auto md:h-full md:object-top lg:object-center`
-- **Mobile (390 verified):** 4:3 crop + `object-center` lands on the empty rack between trainers — woman centered, only the man's arm visible at the right edge. Matches what you saw.
-- **Tablet (md, 768–1023):** image switches to absolute fill of the panel with `object-top`. The panel is wide enough that both trainers are visible, but the horizontal default of `object-top` is centered — should be re-verified once the preview iframe stops collapsing.
-- **Desktop (lg, 1366 & 1920):** `object-center` with the panel ~1240px wide shows both trainers cleanly behind a left-to-right ink fade. No change needed.
+## Fix
 
-### Fix
+In `src/routes/index.tsx` (line ~489), change the CTA image classes:
 
-One-line change to the image className:
+- **Mobile**: widen the crop ratio from `aspect-[4/3]` to `aspect-[16/10]` so the framed window is wider and less aggressive vertically, then bias the crop right with `object-[78%_center]`. Net result: empty rack visible on the left, woman just left of centre, man fully in frame on the right — pair visually centred.
+- **`sm` (640+)**: `sm:aspect-[2/1] sm:object-[72%_center]` — even wider window as the column grows, less right-bias needed.
+- **`md` (768+)**: unchanged behaviour — `md:aspect-auto md:h-full md:object-[60%_top]` stays.
+- **`lg` (1024+)**: unchanged — `lg:object-center` with the left-to-right ink fade.
+
+Final class string:
 
 ```
-aspect-[4/3] w-full object-cover object-[72%_center]
-  sm:object-[68%_center]
+aspect-[16/10] w-full object-cover object-[78%_center]
+  sm:aspect-[2/1] sm:object-[72%_center]
   md:aspect-auto md:h-full md:object-[60%_top]
   lg:object-center
 ```
 
-- `object-[72%_center]` on mobile shifts the 4:3 crop right so both trainers sit inside the frame (woman left of centre, man right of centre, gym rack as backdrop).
-- `sm:object-[68%_center]` softens the shift as the frame widens.
-- `md:object-[60%_top]` keeps the top-anchor at tablet but biases right so neither trainer is clipped.
-- Desktop unchanged — already correct.
+## Verification
 
-### Verification
+After edit, re-screenshot at 390px and 768px and confirm:
+- Both trainers fully in frame (no clipped arm/shoulder)
+- Pair sits roughly centred horizontally
+- Rack/background still readable on the left
+- Desktop ink fade unchanged at 1366px+
 
-After the edit, re-screenshot at 390 (mobile) and 1366 (desktop) to confirm both trainers visible and the desktop ink-fade still reads. Tablet (768) can't be reliably captured through the preview iframe right now — I'll spot-check via the published URL after deploy if you want.
-
-Want me to push it?
+No other files touched. Pure presentation change.
