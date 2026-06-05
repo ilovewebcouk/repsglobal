@@ -917,7 +917,3 @@ function StickyMobileBar({
   );
 }
 
-/* Avoid unused-import lint on ChevronDown which Accordion uses internally */
-void ChevronDown;
-void cn;
-void Button;
