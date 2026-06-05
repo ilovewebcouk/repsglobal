@@ -206,14 +206,9 @@ export function FeatureGroupLayout({
             </div>
             <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {features.map((f) => {
-                const href = f.customHref ?? `/features/${f.slug}`;
                 const isCross = f.crossList?.includes(groupKey) && f.group !== groupKey;
-                return (
-                  <Link
-                    key={`${f.slug}-${groupKey}`}
-                    to={href as "/features/shop-front"}
-                    className="group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border"
-                  >
+                const cardInner = (
+                  <>
                     <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                       <f.icon className="h-5 w-5" />
                     </span>
@@ -226,6 +221,25 @@ export function FeatureGroupLayout({
                     <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
                       {isCross ? "See in Shop-front" : "Learn more"} <ArrowRight className="h-3.5 w-3.5" />
                     </span>
+                  </>
+                );
+                const cardClass =
+                  "group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border";
+                if (f.customHref === "/features/shop-front") {
+                  return (
+                    <Link key={`${f.slug}-${groupKey}`} to="/features/shop-front" className={cardClass}>
+                      {cardInner}
+                    </Link>
+                  );
+                }
+                return (
+                  <Link
+                    key={`${f.slug}-${groupKey}`}
+                    to="/features/$slug"
+                    params={{ slug: f.slug }}
+                    className={cardClass}
+                  >
+                    {cardInner}
                   </Link>
                 );
               })}
