@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
-  Bookmark,
   ChevronRight,
-  Laptop,
   MapPin,
   Navigation,
   Search,
@@ -13,9 +11,16 @@ import {
   Users,
 } from "lucide-react";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -39,7 +44,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
   london: {
     slug: "london",
     name: "London",
-    region: "Greater London, England",
+    region: "Greater London",
     blurb:
       "Find REPs-verified personal trainers, Pilates instructors, nutritionists and coaches across central, east, west, north and south London.",
     count: 482,
@@ -55,7 +60,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
   manchester: {
     slug: "manchester",
     name: "Manchester",
-    region: "Greater Manchester, England",
+    region: "Greater Manchester",
     blurb:
       "Browse REPs-verified fitness professionals across Manchester city centre, Salford, Didsbury, Altrincham and the wider region.",
     count: 164,
@@ -71,7 +76,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
   birmingham: {
     slug: "birmingham",
     name: "Birmingham",
-    region: "West Midlands, England",
+    region: "West Midlands",
     blurb:
       "Connect with REPs-verified personal trainers, coaches and nutritionists across Birmingham and the surrounding West Midlands.",
     count: 128,
@@ -87,7 +92,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
   edinburgh: {
     slug: "edinburgh",
     name: "Edinburgh",
-    region: "Scotland",
+    region: "Lothian",
     blurb:
       "Find REPs-verified fitness professionals across Edinburgh — Leith, New Town, Stockbridge, Morningside and beyond.",
     count: 74,
@@ -154,22 +159,11 @@ export const Route = createFileRoute("/in/$location")({
 /* Featured                                                            */
 /* ------------------------------------------------------------------ */
 
-type Pro = {
-  name: string;
-  role: string;
-  area: string;
-  rating: number;
-  reviews: number;
-  mode: "In-person" | "Online" | "In-person & Online";
-  tags: string[];
-  image: string;
-};
-
-const FEATURED: Pro[] = [
+const FEATURED: FeaturedPro[] = [
   {
     name: "James Wilson",
     role: "Personal Trainer",
-    area: "Shoreditch",
+    city: "Shoreditch",
     rating: 5.0,
     reviews: 128,
     mode: "In-person & Online",
@@ -179,7 +173,7 @@ const FEATURED: Pro[] = [
   {
     name: "Sophie Taylor",
     role: "Pilates Instructor",
-    area: "Clapham",
+    city: "Clapham",
     rating: 5.0,
     reviews: 96,
     mode: "In-person & Online",
@@ -189,7 +183,7 @@ const FEATURED: Pro[] = [
   {
     name: "Liam Roberts",
     role: "Strength Coach",
-    area: "Hackney",
+    city: "Hackney",
     rating: 4.9,
     reviews: 74,
     mode: "In-person",
@@ -199,7 +193,7 @@ const FEATURED: Pro[] = [
   {
     name: "Priya Sharma",
     role: "Nutritionist",
-    area: "Canary Wharf",
+    city: "Canary Wharf",
     rating: 5.0,
     reviews: 112,
     mode: "Online",
@@ -209,7 +203,7 @@ const FEATURED: Pro[] = [
   {
     name: "Daniel Hughes",
     role: "Personal Trainer",
-    area: "Islington",
+    city: "Islington",
     rating: 4.8,
     reviews: 64,
     mode: "In-person & Online",
@@ -219,7 +213,7 @@ const FEATURED: Pro[] = [
   {
     name: "Laura Bennett",
     role: "Yoga Teacher",
-    area: "Notting Hill",
+    city: "Notting Hill",
     rating: 5.0,
     reviews: 88,
     mode: "In-person",
@@ -235,6 +229,29 @@ const TRUST = [
   { icon: Users, title: "Real Reviews", sub: "Only verified clients can leave a review." },
 ];
 
+const faqsFor = (city: string) => [
+  {
+    q: `What does REPs-verified mean in ${city}?`,
+    a: `Every professional listed in ${city} has had their identity, qualifications, insurance and (where required) DBS checked by our verification team before going live on the platform.`,
+  },
+  {
+    q: `Can I train in person or online in ${city}?`,
+    a: `Both. Many professionals in ${city} work face-to-face in studios, gyms and clients' homes, and a large share also deliver remote coaching and check-ins. Use the 'Online' filter to narrow your search.`,
+  },
+  {
+    q: `What's the typical price range in ${city}?`,
+    a: `Pricing is set by each professional and you'll see a typical hourly rate on every profile. In ${city}, most personal trainers list between £45 and £85 per session, with online coaching packages priced separately.`,
+  },
+  {
+    q: "What should I ask on the first session?",
+    a: "Ask about their experience with your goal, how they assess progress, what a typical block of training looks like, and what happens if you need to cancel. A good professional will welcome the questions.",
+  },
+  {
+    q: "How do I report a concern about a professional?",
+    a: "Every profile has a 'Report a concern' link. Reports go to our verification team and we investigate every one — including suspending profiles where needed.",
+  },
+];
+
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
@@ -242,6 +259,7 @@ const TRUST = [
 function LocationLanding() {
   const { location } = Route.useParams();
   const loc = getLocation(location);
+  const relatedCities = Object.values(LOCATIONS).filter((c) => c.slug !== loc.slug);
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
@@ -262,10 +280,12 @@ function LocationLanding() {
       <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-6 lg:px-10 lg:pb-14 lg:pt-10">
         <div className="grid items-end gap-8 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
-              <MapPin className="h-3 w-3 text-reps-orange" />
-              {loc.region}
-            </span>
+            {loc.region ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+                <MapPin className="h-3 w-3 text-reps-orange" />
+                {loc.region}
+              </span>
+            ) : null}
             <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
               Verified fitness pros in <span className="text-reps-orange">{loc.name}</span>
             </h1>
@@ -377,9 +397,9 @@ function LocationLanding() {
             See all {loc.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURED.map((p) => (
-            <LocationCard key={p.name} pro={p} />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURED.slice(0, 4).map((p) => (
+            <FeaturedProCard key={p.name} pro={p} />
           ))}
         </div>
       </section>
@@ -405,10 +425,39 @@ function LocationLanding() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="bg-reps-ivory py-14">
+        <div className="mx-auto max-w-[860px] px-6 lg:px-10">
+          <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+            Hiring a professional in {loc.name}
+          </h2>
+          <Accordion
+            type="single"
+            collapsible
+            className="mt-6 overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white"
+          >
+            {faqsFor(loc.name).map((f, i) => (
+              <AccordionItem
+                key={f.q}
+                value={`faq-${i}`}
+                className="border-b border-reps-stone last:border-b-0"
+              >
+                <AccordionTrigger className="px-5 py-4 text-[15px] font-semibold text-reps-charcoal hover:no-underline">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="px-5 pb-5 text-[14px] leading-relaxed text-reps-muted-light">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       {/* Trust */}
-      <section className="bg-reps-ivory py-12">
+      <section className="bg-reps-warm-white py-12">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-ivory p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust the pros
@@ -420,7 +469,7 @@ function LocationLanding() {
             </div>
             {TRUST.map((t) => (
               <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
+                <span className="flex size-10 items-center justify-center rounded-full bg-reps-warm-white text-reps-charcoal">
                   <t.icon className="h-5 w-5" strokeWidth={1.6} />
                 </span>
                 <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
@@ -431,59 +480,31 @@ function LocationLanding() {
         </div>
       </section>
 
+      {/* Related cities */}
+      {relatedCities.length > 0 ? (
+        <section className="bg-reps-ivory py-14">
+          <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+            <h2 className="font-display text-[22px] font-bold leading-tight text-reps-charcoal">
+              Related cities
+            </h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {relatedCities.map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/in/$location"
+                  params={{ location: c.slug }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-4 py-2 text-[13px] font-semibold text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <PublicFooter />
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Card                                                                */
-/* ------------------------------------------------------------------ */
-
-function LocationCard({ pro }: { pro: Pro }) {
-  const slug = pro.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  return (
-    <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
-      <div className="grid grid-cols-[140px_1fr] gap-0">
-        <div className="relative">
-          <img src={pro.image} alt={pro.name} className="h-full w-full object-cover" loading="lazy" />
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-reps-green/95 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-            <BadgeCheck className="h-2.5 w-2.5" /> Verified
-          </span>
-        </div>
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
-              <p className="text-[12px] text-reps-muted-light">{pro.role}</p>
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button aria-label="Save" className="text-reps-muted-light hover:text-reps-orange">
-                  <Bookmark className="h-3.5 w-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="left" className="bg-reps-black text-white">Save</TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="mt-2 flex items-center gap-1 text-[12px]">
-            <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-            <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-            <span className="text-reps-muted-light">({pro.reviews})</span>
-          </div>
-          <div className="mt-1.5 flex items-center gap-3 text-[11.5px] text-reps-muted-light">
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {pro.area}</span>
-            <span className="flex items-center gap-1"><Laptop className="h-3 w-3" /> {pro.mode}</span>
-          </div>
-          <Link
-            to="/pro/$slug"
-            params={{ slug }}
-            className="mt-3 inline-flex h-8 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-          >
-            View Profile
-          </Link>
-        </div>
-      </div>
-    </article>
   );
 }
