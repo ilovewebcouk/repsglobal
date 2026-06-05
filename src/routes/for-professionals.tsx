@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Dumbbell,
   Eye,
+  Globe,
   PenTool,
   ScanLine,
   Settings2,
@@ -227,33 +228,43 @@ function ForProsPage() {
               Act 2 · Run your practice
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-              Five pillars. One operating system.
+              Six pillars. One operating system.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               When clients arrive, REPs runs the rest. Built for fitness — every booking,
-              programme, check-in and message wired into the same client record.
+              programme, check-in and message wired into the same client record. Pro and
+              Studio now include a personalised shop-front at <span className="text-white">/c/your-name</span> —{" "}
+              <Link to="/c/$slug" params={{ slug: "james-wilson" }} target="_blank" className="text-reps-orange underline-offset-4 hover:underline">
+                see a live example
+              </Link>.
             </p>
           </div>
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: Eye, name: "Visibility", body: "Verified profile on the register the public already searches." },
-              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place." },
-              { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record." },
-              { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week." },
-              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time." },
+              { icon: Eye, name: "Visibility", body: "Verified profile on the register the public already searches.", to: "/features/visibility" as const },
+              { icon: Globe, name: "Shop-front", body: "Your own page at /c/your-name — your photo, your method, your tiers.", to: "/features/shop-front" as const, accent: true },
+              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place.", to: "/features/operations" as const },
+              { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record.", to: "/features/coaching" as const },
+              { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week.", to: "/features/ai" as const },
+              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time.", to: "/features/growth" as const },
             ].map((p) => (
-              <div
+              <Link
                 key={p.name}
-                className="rounded-[18px] border border-reps-border bg-reps-panel/60 p-5"
+                to={p.to}
+                className={
+                  p.accent
+                    ? "group rounded-[18px] border border-reps-orange-border bg-reps-orange-soft/40 p-5 transition-colors hover:border-reps-orange"
+                    : "group rounded-[18px] border border-reps-border bg-reps-panel/60 p-5 transition-colors hover:border-reps-orange-border"
+                }
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                   <p.icon className="h-4.5 w-4.5" />
                 </span>
-                <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-wider text-white">
+                <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-wider text-white group-hover:text-reps-orange">
                   {p.name}
                 </h3>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{p.body}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
