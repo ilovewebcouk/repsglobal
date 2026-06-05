@@ -416,35 +416,40 @@ function DirectoryPage() {
       </section>
 
 
-      {/* ============ TRUST BAND ============ */}
-      <section className="bg-reps-ivory pb-12 sm:pb-14">
+      {/* ============ TRUST BAND — borderless editorial closer ============ */}
+      <section className="bg-reps-ivory pb-14 sm:pb-16">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 sm:gap-7 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
-            <div>
-              <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
-                Why trust REPs professionals?
-              </h2>
-              <p className="mt-2 text-[13px] text-reps-muted-light">
-                We connect you with verified fitness and health professionals you can trust.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:contents">
-              {trustItems.map((t) => (
-                <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
-                    <t.icon className="h-5 w-5" strokeWidth={1.6} />
-                  </span>
-                  <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
-                  <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
+          <div className="border-t border-reps-stone pt-10 sm:pt-12">
+            <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
+                  The REPs standard
                 </div>
-              ))}
+                <h2 className="mt-2 font-display text-[22px] font-bold leading-tight text-reps-charcoal sm:text-[24px]">
+                  Why trust REPs professionals?
+                </h2>
+                <p className="mt-2 max-w-[320px] text-[13px] leading-relaxed text-reps-muted-light">
+                  We connect you with verified fitness and health professionals you can trust.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:contents">
+                {trustItems.map((t) => (
+                  <div key={t.title} className="flex flex-col items-start gap-2 text-left">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/10 text-reps-orange">
+                      <t.icon className="h-5 w-5" strokeWidth={1.6} />
+                    </span>
+                    <div className="mt-1 text-[14px] font-semibold text-reps-charcoal">{t.title}</div>
+                    <div className="text-[12.5px] leading-snug text-reps-muted-light">{t.sub}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
 
-      {/* ============ TESTIMONIAL — dark closer ============ */}
+      {/* ============ TESTIMONIALS — dark closer, 3-up ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div
           aria-hidden
@@ -455,29 +460,52 @@ function DirectoryPage() {
           aria-hidden
           className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
         />
-        <div className="mx-auto max-w-[820px] px-5 py-16 text-center sm:px-6 sm:py-20 lg:px-10 lg:py-24">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center text-reps-orange">
-            <svg viewBox="0 0 32 24" fill="currentColor" className="h-8 w-8">
-              <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
-            </svg>
+        <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
+          <div className="flex flex-col items-start gap-2 sm:items-center sm:text-center">
+            <span className="text-reps-orange">
+              <svg viewBox="0 0 32 24" fill="currentColor" className="h-7 w-7">
+                <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
+              </svg>
+            </span>
+            <h2 className="font-display text-[24px] font-bold leading-tight text-white sm:text-[30px] lg:text-[36px]">
+              People who found their match.
+            </h2>
+            <p className="max-w-[520px] text-[14px] leading-relaxed text-white/65 sm:text-[15px]">
+              Real stories from clients who used REPs to find a coach they could trust.
+            </p>
           </div>
-          <p className="mt-6 font-display text-[20px] leading-snug text-white sm:text-[24px] lg:text-[30px]">
-            "REPs helped me find the perfect trainer to reach my goals. The verification and
-            reviews gave me complete confidence."
-          </p>
 
-          <div className="mt-7 flex items-center justify-center gap-3">
-            <img
-              src={proLaura}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
-              width={40}
-              height={40}
-            />
-            <div className="text-left">
-              <div className="text-[14px] font-semibold text-white">Natalie S.</div>
-              <div className="text-[12px] text-white/55">London, UK</div>
-            </div>
+          <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {testimonials.map((t) => (
+              <figure
+                key={t.name}
+                className="flex h-full flex-col rounded-[18px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-0.5 text-reps-orange">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                  ))}
+                </div>
+                <blockquote className="mt-4 flex-1 font-display text-[16px] leading-snug text-white/90 sm:text-[17px]">
+                  "{t.quote}"
+                </blockquote>
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+                  <img
+                    src={t.image}
+                    alt=""
+                    className="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
+                    width={40}
+                    height={40}
+                  />
+                  <div>
+                    <div className="text-[13.5px] font-semibold text-white">{t.name}</div>
+                    <div className="text-[12px] text-white/55">
+                      {t.role} · {t.city}
+                    </div>
+                  </div>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
