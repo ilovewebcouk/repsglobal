@@ -459,11 +459,11 @@ function HomeV2() {
           {/* Inlined stats row — was a standalone band, now anchors the trust block */}
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-ivory p-6">
-                <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
+              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-6">
+                <div className="font-display text-[34px] font-bold leading-none tracking-[-0.02em] text-reps-charcoal lg:text-[44px]">
                   {s.value}
                 </div>
-                <div className="text-[13px] text-reps-muted-light">{s.label}</div>
+                <div className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">{s.label}</div>
               </div>
             ))}
           </div>
@@ -537,33 +537,6 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ CLOSER ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
-          <h2 className="font-display text-[36px] font-bold leading-[0.98] tracking-[-0.02em] text-reps-charcoal sm:text-[48px] lg:text-[64px]">
-            Find. Trust. Train.
-            <br />
-            <span className="text-reps-orange">Transform.</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-[520px] text-[15px] text-reps-muted-light">
-            Whether you want to train or you're a coach who wants to grow — start with REPs.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-[52px] items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-            >
-              Find a coach <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-[52px] items-center rounded-[10px] border border-reps-charcoal/20 px-7 text-[15px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-            >
-              Become a pro
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* ============ PRESS STRIP — demoted to footer-adjacent (pro / investor / journalist trust) ============ */}
       <PressMarquee />
