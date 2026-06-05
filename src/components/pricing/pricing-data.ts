@@ -53,6 +53,7 @@ export const PLANS: PlanCard[] = [
     features: [
       "30-day free trial",
       "Everything in Verified",
+      "Personalised shop-front page (/c/your-name)",
       "Leads CRM & client management",
       "Bookings, calendar & payments",
       "Programmes & advanced nutrition",
@@ -74,6 +75,7 @@ export const PLANS: PlanCard[] = [
     ctaHref: "/signup",
     features: [
       "Everything in Pro",
+      "Personalised shop-front (team accent options)",
       "Multi-coach roles & seats",
       "Organisation profile",
       "Shared clients across coaches",
