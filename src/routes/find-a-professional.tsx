@@ -189,25 +189,26 @@ function DirectoryPage() {
 
         <PublicHeader variant="transparent" />
 
-        <div className="mx-auto max-w-[1320px] px-6 pb-12 pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
+        <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[120px] sm:px-6 sm:pb-12 sm:pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
           {/* editorial title */}
           <div className="max-w-[760px]">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-              Every REP verified · qualified · insured
+              <span className="hidden sm:inline">Every REP verified · qualified · insured</span>
+              <span className="sm:hidden">Verified · qualified · insured</span>
             </div>
-            <h1 className="mt-5 font-display text-[40px] font-bold leading-[1.04] tracking-tight text-white lg:text-[58px]">
+            <h1 className="mt-5 font-display text-[32px] font-bold leading-[1.05] tracking-tight text-white sm:text-[40px] lg:text-[58px]">
               Find a coach worth trusting.
             </h1>
-            <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-white/70 lg:text-[16px]">
+            <p className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-white/70 sm:text-[15px] lg:text-[16px]">
               Search the global register of qualified, insured and credential-checked
               fitness professionals — in your city, on your schedule, in person or online.
             </p>
           </div>
 
           {/* search panel */}
-          <div className="mt-8 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
+          <div className="mt-7 rounded-[22px] border border-white/10 bg-reps-panel/75 p-2.5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md sm:mt-8 sm:p-3">
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
                 placeholder="e.g. Personal Trainer"
@@ -222,14 +223,14 @@ function DirectoryPage() {
               />
               <button
                 type="button"
-                className="inline-flex h-[62px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                className="inline-flex h-[56px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark md:col-span-2 lg:col-span-1 lg:h-[62px]"
               >
                 <Search className="h-4 w-4" />
                 Find Professionals
               </button>
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-3 pb-2 pt-4 text-[13px]">
-              <span className="font-medium text-white/55">Popular searches:</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-2 pb-1 pt-4 text-[13px] sm:px-3 sm:pb-2">
+              <span className="font-medium text-white/55">Popular:</span>
               {popularSearches.map((s) => (
                 <button
                   key={s}
@@ -242,57 +243,64 @@ function DirectoryPage() {
             </div>
           </div>
         </div>
+
       </section>
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-14">
-          <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-            {/* Filter rail */}
+        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
+          <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
+            {/* Filter rail — collapsible on mobile/tablet */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]">
-                <div className="flex items-center justify-between border-b border-reps-stone pb-3">
-                  <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
-                  <button
-                    type="button"
-                    className="text-[12px] font-medium text-reps-orange hover:underline"
-                  >
-                    Clear all
-                  </button>
+              <details className="group rounded-[22px] border border-reps-stone bg-reps-warm-white shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]" open>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 lg:hidden">
+                  <span className="text-[14px] font-semibold text-reps-charcoal">Filter results</span>
+                  <ChevronDown className="h-4 w-4 text-reps-muted-light transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-5 pb-5 sm:px-6 sm:pb-6 lg:px-6 lg:pt-6">
+                  <div className="hidden items-center justify-between border-b border-reps-stone pb-3 lg:flex">
+                    <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
+                    <button
+                      type="button"
+                      className="text-[12px] font-medium text-reps-orange hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+
+                  <FilterGroup label="Distance">
+                    <Select value="Within 10 miles" />
+                  </FilterGroup>
+
+                  <FilterGroup label="Specialism">
+                    <Select value="Select specialism" placeholder />
+                  </FilterGroup>
+
+                  <FilterGroup label="Training Type">
+                    <Checkbox label="In-person" defaultChecked />
+                    <Checkbox label="Online" defaultChecked />
+                    <Checkbox label="Both" defaultChecked />
+                  </FilterGroup>
+
+                  <FilterGroup label="Availability">
+                    <Select value="Any day" />
+                  </FilterGroup>
+
+                  <FilterGroup label="Rating" last>
+                    <RatingRow stars={5} />
+                    <RatingRow stars={4} />
+                    <RatingRow stars={3} />
+                  </FilterGroup>
                 </div>
-
-                <FilterGroup label="Distance">
-                  <Select value="Within 10 miles" />
-                </FilterGroup>
-
-                <FilterGroup label="Specialism">
-                  <Select value="Select specialism" placeholder />
-                </FilterGroup>
-
-                <FilterGroup label="Training Type">
-                  <Checkbox label="In-person" defaultChecked />
-                  <Checkbox label="Online" defaultChecked />
-                  <Checkbox label="Both" defaultChecked />
-                </FilterGroup>
-
-                <FilterGroup label="Availability">
-                  <Select value="Any day" />
-                </FilterGroup>
-
-                <FilterGroup label="Rating" last>
-                  <RatingRow stars={5} />
-                  <RatingRow stars={4} />
-                  <RatingRow stars={3} />
-                </FilterGroup>
-              </div>
+              </details>
             </aside>
 
             {/* Results column */}
             <div>
               {/* Sort/results bar */}
-              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-5">
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
-                  <h1 className="font-display text-[20px] font-semibold text-reps-charcoal lg:text-[22px]">
+                  <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
                     126 professionals in London
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
@@ -300,7 +308,7 @@ function DirectoryPage() {
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
-                  Sort by
+                  <span className="hidden sm:inline">Sort by</span>
                   <span className="relative">
                     <select
                       className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
@@ -331,21 +339,23 @@ function DirectoryPage() {
               {/* Pagination */}
               <nav
                 aria-label="Pagination"
-                className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6"
+                className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10"
               >
                 <p className="text-[12px] text-reps-muted-light">
                   Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
                   <span className="font-semibold text-reps-charcoal">126</span>
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <PagerBtn aria-label="Previous">
                     <ChevronLeft className="h-4 w-4" />
                   </PagerBtn>
                   <PagerNum n={1} active />
                   <PagerNum n={2} />
                   <PagerNum n={3} />
-                  <PagerNum n={4} />
-                  <PagerNum n={5} />
+                  <span className="hidden sm:contents">
+                    <PagerNum n={4} />
+                    <PagerNum n={5} />
+                  </span>
                   <span className="px-1 text-reps-muted-light">…</span>
                   <PagerNum n={13} />
                   <PagerBtn aria-label="Next">
@@ -358,32 +368,34 @@ function DirectoryPage() {
         </div>
       </section>
 
+
       {/* ============ TRUST BAND ============ */}
-      <section className="bg-reps-ivory pb-14">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
+      <section className="bg-reps-ivory pb-12 sm:pb-14">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-6 lg:px-10">
+          <div className="grid items-center gap-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 sm:gap-7 lg:grid-cols-[1.2fr_repeat(4,1fr)] lg:p-6">
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
-                Why trust REPs
-                <br />
-                professionals?
+                Why trust REPs professionals?
               </h2>
               <p className="mt-2 text-[13px] text-reps-muted-light">
                 We connect you with verified fitness and health professionals you can trust.
               </p>
             </div>
-            {trustItems.map((t) => (
-              <div key={t.title} className="flex flex-col items-center gap-2 text-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
-                  <t.icon className="h-5 w-5" strokeWidth={1.6} />
-                </span>
-                <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
-                <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
-              </div>
-            ))}
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:contents">
+              {trustItems.map((t) => (
+                <div key={t.title} className="flex flex-col items-center gap-2 text-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-orange">
+                    <t.icon className="h-5 w-5" strokeWidth={1.6} />
+                  </span>
+                  <div className="text-[13px] font-semibold text-reps-charcoal">{t.title}</div>
+                  <div className="text-[12px] leading-snug text-reps-muted-light">{t.sub}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
+
 
       {/* ============ TESTIMONIAL — dark closer ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
@@ -396,16 +408,17 @@ function DirectoryPage() {
           aria-hidden
           className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
         />
-        <div className="mx-auto max-w-[820px] px-6 py-20 text-center lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[820px] px-5 py-16 text-center sm:px-6 sm:py-20 lg:px-10 lg:py-24">
           <div className="mx-auto flex h-10 w-10 items-center justify-center text-reps-orange">
             <svg viewBox="0 0 32 24" fill="currentColor" className="h-8 w-8">
               <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
             </svg>
           </div>
-          <p className="mt-6 font-display text-[24px] leading-snug text-white lg:text-[30px]">
-            “REPs helped me find the perfect trainer to reach my goals. The verification and
-            reviews gave me complete confidence.”
+          <p className="mt-6 font-display text-[20px] leading-snug text-white sm:text-[24px] lg:text-[30px]">
+            "REPs helped me find the perfect trainer to reach my goals. The verification and
+            reviews gave me complete confidence."
           </p>
+
           <div className="mt-7 flex items-center justify-center gap-3">
             <img
               src={proLaura}
@@ -546,38 +559,69 @@ function proSlug(name: string) {
 
 function ProCard({ pro }: { pro: Pro }) {
   const photoSize = pro.featured ? 140 : 112;
+  const mobilePhotoSize = pro.featured ? 96 : 80;
 
   return (
     <article
-      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] ${
+      className={`group rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
           ? "border-reps-orange/30 ring-1 ring-reps-orange/15"
           : "border-reps-stone"
       }`}
     >
-      <div
-        className="grid gap-4 sm:items-center"
-        style={{ gridTemplateColumns: `${photoSize}px 1fr auto` }}
+      <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
+        style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
-        <div className="relative">
-          <img
-            src={pro.image}
-            alt={`${pro.name} — ${pro.role}`}
-            className="rounded-[12px] object-cover"
-            style={{ width: photoSize, height: photoSize }}
-            loading="lazy"
-            width={photoSize * 2}
-            height={photoSize * 2}
-          />
-          {pro.featured && (
-            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-              <Sparkles className="h-3 w-3" />
-              Featured
-            </span>
-          )}
+        {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
+        <div className="flex items-start gap-3 sm:block">
+          <div className="relative shrink-0">
+            <img
+              src={pro.image}
+              alt={`${pro.name} — ${pro.role}`}
+              className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+              style={{
+                width: mobilePhotoSize,
+                height: mobilePhotoSize,
+                ["--p" as never]: `${photoSize}px`,
+              }}
+              loading="lazy"
+              width={photoSize * 2}
+              height={photoSize * 2}
+            />
+            {pro.featured && (
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
+                <Sparkles className="h-3 w-3" />
+                Featured
+              </span>
+            )}
+          </div>
+
+          {/* Mobile-only heading next to photo */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-2 sm:hidden">
+            <div className="min-w-0">
+              <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
+                {pro.name}
+              </h3>
+              <div className="mt-0.5 text-[12px] text-reps-muted-light">{pro.role}</div>
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
+                <BadgeCheck className="h-3 w-3" />
+                Verified
+              </span>
+            </div>
+            <button
+              type="button"
+              aria-label="Save"
+              className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+            >
+              <Bookmark className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+
+        {/* MAIN content */}
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Desktop heading (hidden on mobile, shown sm+) */}
+          <div className="hidden flex-wrap items-center gap-2 sm:flex">
             <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
@@ -586,8 +630,9 @@ function ProCard({ pro }: { pro: Pro }) {
               REPs Verified
             </span>
           </div>
-          <div className="mt-0.5 text-[13px] text-reps-muted-light">{pro.role}</div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-reps-muted-light">
+          <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
               {pro.distance}
@@ -616,11 +661,13 @@ function ProCard({ pro }: { pro: Pro }) {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+
+        {/* RIGHT actions (desktop only) */}
+        <div className="hidden flex-col items-end gap-2 sm:flex">
           <button
             type="button"
             aria-label="Save"
-            className="self-end rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+            className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
           >
             <Bookmark className="h-4 w-4" />
           </button>
@@ -632,10 +679,20 @@ function ProCard({ pro }: { pro: Pro }) {
             View Profile
           </Link>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <Link
+          to="/pro/$slug"
+          params={{ slug: proSlug(pro.name) }}
+          className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
+        >
+          View Profile
+        </Link>
       </div>
     </article>
   );
 }
+
 
 function EditorialBreak() {
   return (
