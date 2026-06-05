@@ -154,10 +154,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <div id="main-content" tabIndex={-1} className="outline-none">
-        <Outlet />
-      </div>
+      <TooltipProvider delayDuration={120}>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <div id="main-content" tabIndex={-1} className="outline-none">
+          <Outlet />
+        </div>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
