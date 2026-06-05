@@ -57,6 +57,7 @@ import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
+import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
 import { Route as FeaturesOperationsRouteImport } from './routes/features.operations'
 import { Route as FeaturesGrowthRouteImport } from './routes/features.growth'
 import { Route as FeaturesCoachingRouteImport } from './routes/features.coaching'
@@ -341,6 +342,11 @@ const InLocationRoute = InLocationRouteImport.update({
 const FeaturesVisibilityRoute = FeaturesVisibilityRouteImport.update({
   id: '/features/visibility',
   path: '/features/visibility',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesShopFrontRoute = FeaturesShopFrontRouteImport.update({
+  id: '/features/shop-front',
+  path: '/features/shop-front',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesOperationsRoute = FeaturesOperationsRouteImport.update({
@@ -646,6 +652,7 @@ export interface FileRoutesByFullPath {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
+  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -741,6 +748,7 @@ export interface FileRoutesByTo {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
+  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -836,6 +844,7 @@ export interface FileRoutesById {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
+  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
@@ -933,6 +942,7 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
+    | '/features/shop-front'
     | '/features/visibility'
     | '/in/$location'
     | '/portal/check-ins'
@@ -1028,6 +1038,7 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
+    | '/features/shop-front'
     | '/features/visibility'
     | '/in/$location'
     | '/portal/check-ins'
@@ -1122,6 +1133,7 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
+    | '/features/shop-front'
     | '/features/visibility'
     | '/in/$location'
     | '/portal_/check-ins'
@@ -1218,6 +1230,7 @@ export interface RootRouteChildren {
   FeaturesCoachingRoute: typeof FeaturesCoachingRoute
   FeaturesGrowthRoute: typeof FeaturesGrowthRoute
   FeaturesOperationsRoute: typeof FeaturesOperationsRoute
+  FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
   InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
@@ -1574,6 +1587,13 @@ declare module '@tanstack/react-router' {
       path: '/features/visibility'
       fullPath: '/features/visibility'
       preLoaderRoute: typeof FeaturesVisibilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/shop-front': {
+      id: '/features/shop-front'
+      path: '/features/shop-front'
+      fullPath: '/features/shop-front'
+      preLoaderRoute: typeof FeaturesShopFrontRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/operations': {
@@ -1991,6 +2011,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesCoachingRoute: FeaturesCoachingRoute,
   FeaturesGrowthRoute: FeaturesGrowthRoute,
   FeaturesOperationsRoute: FeaturesOperationsRoute,
+  FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
   InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
