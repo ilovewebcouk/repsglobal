@@ -14,6 +14,7 @@ import {
   resendInvite,
 } from "@/lib/roster.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/dashboard_/clients")({
   beforeLoad: async ({ location }) => {
@@ -257,26 +258,34 @@ function RosterRow({ row, onChange }: { row: Row; onChange: () => void }) {
       <td className="px-5 py-3 text-right">
         <div className="inline-flex items-center gap-1.5">
           {canConfirm && (
-            <button
-              onClick={handleConfirm}
-              disabled={busy !== null}
-              className="inline-flex h-8 items-center gap-1.5 rounded-[8px] bg-reps-orange px-2.5 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-              title="Confirm as client — sends portal invite"
-            >
-              {busy === "confirm" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
-              Confirm
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleConfirm}
+                  disabled={busy !== null}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-[8px] bg-reps-orange px-2.5 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+                >
+                  {busy === "confirm" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                  Confirm
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Confirm as client — sends portal invite</TooltipContent>
+            </Tooltip>
           )}
           {canResend && (
-            <button
-              onClick={handleResend}
-              disabled={busy !== null}
-              className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-ink px-2.5 text-[12px] font-medium text-white/80 hover:text-white disabled:opacity-60"
-              title="Resend invite email"
-            >
-              {busy === "resend" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              Resend
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleResend}
+                  disabled={busy !== null}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-ink px-2.5 text-[12px] font-medium text-white/80 hover:text-white disabled:opacity-60"
+                >
+                  {busy === "resend" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                  Resend
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Resend invite email</TooltipContent>
+            </Tooltip>
           )}
           {row.status === "active" && (
             <Link

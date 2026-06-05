@@ -15,6 +15,7 @@ import {
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -456,9 +457,14 @@ function LocationCard({ pro }: { pro: Pro }) {
               <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
               <p className="text-[12px] text-reps-muted-light">{pro.role}</p>
             </div>
-            <button aria-label="Save" className="text-reps-muted-light hover:text-reps-orange">
-              <Bookmark className="h-3.5 w-3.5" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button aria-label="Save" className="text-reps-muted-light hover:text-reps-orange">
+                  <Bookmark className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left">Save</TooltipContent>
+            </Tooltip>
           </div>
           <div className="mt-2 flex items-center gap-1 text-[12px]">
             <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />

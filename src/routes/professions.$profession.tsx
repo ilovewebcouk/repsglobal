@@ -15,6 +15,7 @@ import {
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -570,12 +571,17 @@ function FeaturedCard({ pro }: { pro: Pro }) {
         <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
           <BadgeCheck className="h-3 w-3" /> Verified
         </span>
-        <button
-          aria-label="Save"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-reps-warm-white/90 text-reps-charcoal hover:text-reps-orange"
-        >
-          <Bookmark className="h-3.5 w-3.5" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              aria-label="Save"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-reps-warm-white/90 text-reps-charcoal hover:text-reps-orange"
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">Save</TooltipContent>
+        </Tooltip>
       </div>
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">

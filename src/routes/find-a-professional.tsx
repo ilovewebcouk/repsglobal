@@ -21,7 +21,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import heroGymBg from "@/assets/hero-gym-bg.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -201,7 +201,6 @@ const testimonials = [
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   return (
-    <TooltipProvider delayDuration={120}>
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
 
@@ -560,7 +559,6 @@ function DirectoryPage() {
 
       <PublicFooter />
     </div>
-    </TooltipProvider>
   );
 }
 
