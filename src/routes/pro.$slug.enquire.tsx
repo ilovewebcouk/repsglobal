@@ -143,7 +143,7 @@ function EnquirePage() {
               Enquire about coaching with {pro.name}
             </h1>
             <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-reps-muted-light">
-              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget. They'll reply privately with a clear quote and next steps — no payment until you accept.
+              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
             </p>
           </div>
           <div className="flex items-center gap-2 text-[12px] text-reps-muted-light lg:justify-end">
