@@ -494,6 +494,29 @@ function ProProfilePage() {
                   </div>
                 </div>
               </div>
+
+              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                  Trains at
+                </h2>
+                <p className="mt-1 text-[12px] text-reps-muted-light">
+                  Independent — not affiliated with the gyms shown.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    { label: "Virgin Active", branch: "Barbican" },
+                    { label: "PureGym", branch: "Old Street" },
+                    { label: "Third Space", branch: "City" },
+                  ].map((v) => (
+                    <span
+                      key={`${v.label}-${v.branch}`}
+                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                    >
+                      {v.label} · {v.branch}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
