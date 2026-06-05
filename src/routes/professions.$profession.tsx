@@ -5,6 +5,7 @@ import {
   MapPin,
   Search,
   ShieldCheck,
+  Star,
   Trophy,
   UserRound,
   Users,
