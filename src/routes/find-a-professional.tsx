@@ -799,14 +799,18 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
 
         {/* RIGHT actions (desktop only) */}
         <div className="hidden flex-col items-end gap-2 sm:flex">
-          <button
-            type="button"
-            aria-label="Save"
-            title="Save"
-            className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
-          >
-            <Bookmark className="h-4 w-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Save"
+                className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+              >
+                <Bookmark className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+          </Tooltip>
           <Link
             to="/pro/$slug"
             params={{ slug: proSlug(pro.name) }}
