@@ -1,10 +1,17 @@
-Add a black background override to every "Save" bookmark tooltip across the app.
+## Remove atmospheric gym photo from /find-a-professional
 
-The shadcn `TooltipContent` component renders with `bg-primary` (brand orange) by default. The user wants the "Save" tooltip specifically to appear black.
+### Scope
+- `/find-a-professional` hero (lines 208-222)
+- `/find-a-professional` testimonials/closer band (lines 500-509)
 
-Scope — 4 `TooltipContent` instances to update:
-- `src/routes/find-a-professional.tsx` — 2 save tooltips (featured card + list card)
-- `src/routes/professions.$profession.tsx` — 1 save tooltip
-- `src/routes/in.$location.tsx` — 1 save tooltip
+### What changes
+- Delete the `heroGymBg` background-image layer (`opacity-[0.28]` + `opacity-[0.18]`) from both sections.
+- Delete the heavy dark-gradient overlays that were only there to tame the photo.
+- Keep the `bg-reps-black` base, the top hairline (`h-px bg-white/5`), and all copy/layout unchanged.
+- Drop the unused `import heroGymBg` if nothing else on the page references it.
 
-Change: add `className="bg-reps-black text-white"` to each `<TooltipContent>` that wraps the Save bookmark button. This uses the existing `--color-reps-black` design token (`#050608`) with white text for contrast.
+### Result
+The hero and testimonials band sit on pure solid black — cleaner, more editorial, no faint gym-equipment texture bleeding through.
+
+---
+*Other pages (Careers, CPD, Verify, etc.) also use this same asset with a similar treatment. If you want the same removal applied site-wide, say the word and I'll extend the plan.*

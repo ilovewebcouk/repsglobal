@@ -22,7 +22,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import heroGymBg from "@/assets/hero-gym-bg.jpg";
+
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
@@ -206,20 +206,11 @@ function DirectoryPage() {
 
       {/* ============ SEARCH HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        {/* atmosphere */}
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-cover bg-center opacity-[0.28]"
-          style={{ backgroundImage: `url(${heroGymBg})` }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black/85 via-reps-black/65 to-reps-black"
-        />
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 -z-10 h-px bg-white/5"
         />
+
 
 
         <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[120px] sm:px-6 sm:pb-12 sm:pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
@@ -498,15 +489,7 @@ function DirectoryPage() {
 
       {/* ============ TESTIMONIALS — dark closer, 3-up ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-cover bg-center opacity-[0.18]"
-          style={{ backgroundImage: `url(${heroGymBg})` }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-reps-black via-reps-black/90 to-reps-black"
-        />
+
         <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
           <div className="flex flex-col items-start gap-2 sm:items-center sm:text-center">
             <span className="text-reps-orange">
