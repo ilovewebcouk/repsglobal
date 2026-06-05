@@ -823,6 +823,39 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
 }
 
 
+function EmptyResults() {
+  return (
+    <div className="mt-5 rounded-[18px] border border-dashed border-reps-stone bg-reps-warm-white px-6 py-12 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-reps-stone">
+        <Search className="h-5 w-5 text-reps-muted-light" />
+      </div>
+      <h3 className="mt-4 font-display text-[18px] font-semibold text-reps-charcoal">
+        No professionals match those filters
+      </h3>
+      <p className="mx-auto mt-1.5 max-w-sm text-[13px] text-reps-muted-light">
+        Try widening the distance, removing a specialism, or switching between in-person and online.
+      </p>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+        >
+          Clear all filters
+        </button>
+        <Link
+          to="/find-a-professional"
+          className="inline-flex items-center justify-center rounded-[10px] border border-reps-stone bg-white px-4 py-2 text-[13px] font-semibold text-reps-charcoal transition-colors hover:border-reps-orange hover:text-reps-orange"
+        >
+          Browse all REPs
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+
+
+
 function EditorialBreak() {
   return (
     <aside className="relative overflow-hidden rounded-[18px] border border-reps-charcoal bg-reps-black px-6 py-5 text-white">
