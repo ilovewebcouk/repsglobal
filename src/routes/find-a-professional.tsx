@@ -414,9 +414,10 @@ function DirectoryPage() {
               <path d="M0 24V14C0 6.3 4.9 1.2 12.6 0l1 3.4C8.7 4.7 6 7.7 6 12h6v12H0Zm20 0V14C20 6.3 24.9 1.2 32.6 0l1 3.4C28.7 4.7 26 7.7 26 12h6v12H20Z" />
             </svg>
           </div>
-          <p className="mt-6 font-display text-[24px] leading-snug text-white lg:text-[30px]">
-            “REPs helped me find the perfect trainer to reach my goals. The verification and
-            reviews gave me complete confidence.”
+          <p className="mt-6 font-display text-[20px] leading-snug text-white sm:text-[24px] lg:text-[30px]">
+            "REPs helped me find the perfect trainer to reach my goals. The verification and
+            reviews gave me complete confidence."
+
           </p>
           <div className="mt-7 flex items-center justify-center gap-3">
             <img
