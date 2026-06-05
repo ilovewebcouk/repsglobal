@@ -376,8 +376,8 @@ function EnquirePage() {
               <ul className="mt-3 flex flex-col gap-2.5">
                 {[
                   { i: ShieldCheck, t: "Identity, qualifications & insurance verified" },
-                  { i: Lock, t: "Payments secured by REPs — never paid before you confirm" },
-                  { i: CheckCircle2, t: "Refund protection on cancelled sessions" },
+                  { i: Lock, t: "Private enquiry — never shared, sold, or added to mailing lists" },
+                  { i: CheckCircle2, t: "Every REPs pro signs our code of conduct" },
                 ].map((x) => (
                   <li key={x.t} className="flex items-start gap-2.5 text-[12.5px] text-reps-charcoal">
                     <x.i className="mt-0.5 size-4 shrink-0 text-reps-orange" />
