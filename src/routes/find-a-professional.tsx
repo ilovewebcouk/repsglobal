@@ -699,6 +699,31 @@ function Select({ value, placeholder }: { value: string; placeholder?: boolean }
   );
 }
 
+function VenueSelect({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (slug: string | undefined) => void;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        className="flex w-full appearance-none items-center justify-between rounded-[10px] border border-reps-stone bg-white px-3 py-2 pr-8 text-[13px] text-reps-charcoal focus:outline-none focus:ring-2 focus:ring-reps-orange/40"
+      >
+        <option value="">Any venue</option>
+        {VENUES.map((v) => (
+          <option key={v.slug} value={v.slug}>
+            {v.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-reps-muted-light" />
+    </div>
+  );
+
 function Checkbox({ label, defaultChecked }: { label: string; defaultChecked?: boolean }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-reps-charcoal">
