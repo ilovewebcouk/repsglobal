@@ -246,6 +246,17 @@ const testimonials = [
 
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const { venue: venueFilter } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const activeVenue = VENUES.find((v) => v.slug === venueFilter);
+
+  const visiblePros = activeVenue
+    ? directoryPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : directoryPros;
+
+  const clearVenue = () =>
+    navigate({ search: (prev) => ({ ...prev, venue: undefined }) });
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
