@@ -66,6 +66,13 @@ const popularSearches = [
   "Online Coaching",
 ];
 
+type ProVenue = {
+  /** Matches a slug in @/components/marketing/VenueWordmarks VENUES. */
+  slug: string;
+  /** Neighbourhood/branch label shown next to the gym name. */
+  branch: string;
+};
+
 type Pro = {
   name: string;
   role: string;
@@ -76,6 +83,8 @@ type Pro = {
   tags: [string, string, string];
   blurb: string;
   image: string;
+  /** Independent — REPs professionals choose where they train clients. */
+  venues: ProVenue[];
   featured?: boolean;
 };
 
@@ -90,6 +99,10 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Fat Loss", "Health & Fitness"],
     blurb: "Helping busy professionals build strength, improve fitness and feel their best.",
     image: proJames,
+    venues: [
+      { slug: "third-space", branch: "Mayfair" },
+      { slug: "virgin-active", branch: "Mayfair" },
+    ],
     featured: true,
   },
   {
@@ -102,6 +115,10 @@ const directoryPros: Pro[] = [
     tags: ["Pilates", "Posture", "Core Strength"],
     blurb: "Pilates for strength, mobility and long-term wellness. All levels welcome.",
     image: proSophie,
+    venues: [
+      { slug: "nuffield-health", branch: "Marylebone" },
+      { slug: "david-lloyd", branch: "Kensington" },
+    ],
   },
   {
     name: "Liam Roberts",
@@ -113,6 +130,10 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Performance", "Muscle Building"],
     blurb: "Build strength, move better and perform at your best.",
     image: proDaniel,
+    venues: [
+      { slug: "puregym", branch: "Soho" },
+      { slug: "gym-group", branch: "Victoria" },
+    ],
   },
   {
     name: "Priya Sharma",
@@ -124,6 +145,7 @@ const directoryPros: Pro[] = [
     tags: ["Nutrition", "Weight Management", "Healthy Eating"],
     blurb: "Science-based nutrition advice to help you build healthy habits and feel your best.",
     image: proLaura,
+    venues: [],
   },
   {
     name: "Daniel Hughes",
@@ -135,6 +157,10 @@ const directoryPros: Pro[] = [
     tags: ["Functional Training", "Fat Loss", "Lifestyle Coaching"],
     blurb: "Functional training and lifestyle coaching for long-term results.",
     image: proJames,
+    venues: [
+      { slug: "anytime-fitness", branch: "Covent Garden" },
+      { slug: "puregym", branch: "Holborn" },
+    ],
   },
   {
     name: "Emily Carter",
@@ -146,6 +172,10 @@ const directoryPros: Pro[] = [
     tags: ["Pilates", "Reformer Pilates", "Posture"],
     blurb: "Reformer and mat Pilates to improve strength, flexibility and posture.",
     image: proSophie,
+    venues: [
+      { slug: "third-space", branch: "Tower Bridge" },
+      { slug: "bannatyne", branch: "Russell Square" },
+    ],
   },
   {
     name: "Marcus Lee",
@@ -157,6 +187,11 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Athletic Performance", "Powerlifting"],
     blurb: "Strength and conditioning for athletes and everyday lifters.",
     image: proDaniel,
+    venues: [
+      { slug: "puregym", branch: "Holborn" },
+      { slug: "gym-group", branch: "Farringdon" },
+      { slug: "virgin-active", branch: "Barbican" },
+    ],
   },
   {
     name: "Hannah Thompson",
@@ -168,6 +203,10 @@ const directoryPros: Pro[] = [
     tags: ["Pre & Postnatal", "Pelvic Health", "Core Recovery"],
     blurb: "Support for every stage of pregnancy and postpartum recovery.",
     image: proLaura,
+    venues: [
+      { slug: "david-lloyd", branch: "Islington" },
+      { slug: "nuffield-health", branch: "City" },
+    ],
   },
 ];
 
