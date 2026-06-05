@@ -61,6 +61,7 @@ Status legend:
 | `/pro/$slug` | Shipped | Layout outlet. |
 | `/pro/$slug/` | Shipped | Locked profile layout — horizontal service cards, no icons, 3-col grid. Do not redesign without explicit request. |
 | `/pro/$slug/enquire` | **Locked — Phase 1 approved** | Enquiry page. All form controls migrated to shadcn primitives (RadioGroup, ToggleGroup, Select, Textarea, Input, Checkbox, Badge, Button). Section order, radius map (incl. 14px photo exception) and copy frozen. See `mem://design/locked-enquire`. |
+| `/c/$slug` | Shipped (new) | Coach shop-front landing page — the single page every REPs trainer can use as their public website. Slim REPs chrome bar, hero, trust strip, services grid, about, venues + cities, transformations, testimonials, qualifications, FAQ, social row (outbound links only), sticky mobile enquire bar. Tokenised accent palette (`--coach-accent-*`). All CTAs deep-link to `/pro/$slug/enquire`. `noindex` until profile data is wired. Mock data for `james-wilson`. See `mem://design/coach-shopfront`. |
 
 ## 4. Auth
 
