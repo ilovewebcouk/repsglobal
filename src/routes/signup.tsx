@@ -22,6 +22,9 @@ import {
 import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -491,14 +494,14 @@ function SignupPage() {
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               {planSummary && (
-                <div className="overflow-hidden rounded-[18px] border border-reps-orange/40 bg-reps-warm-white shadow-[0_8px_24px_-12px_rgba(232,93,58,0.35)]">
+                <Card className="overflow-hidden rounded-[18px] border border-reps-orange/40 bg-reps-warm-white p-0 shadow-[0_8px_24px_-12px_rgba(232,93,58,0.35)]">
                   {planSummary.founding && (
-                    <div className="flex items-center justify-center gap-1.5 bg-reps-orange px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white">
+                    <Badge className="flex w-full items-center justify-center gap-1.5 rounded-none border-transparent bg-reps-orange px-3 py-1.5 text-[11px] uppercase tracking-wider text-white hover:bg-reps-orange">
                       <Sparkles className="h-3 w-3" />
                       Founding member pricing
-                    </div>
+                    </Badge>
                   )}
-                  <div className="p-4">
+                  <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -531,7 +534,9 @@ function SignupPage() {
                       </div>
                     </div>
 
-                    <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-reps-stone pt-3">
+                    <Separator className="mt-3 bg-reps-stone" />
+
+                    <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
                       {planSummary.highlights.map((h) => (
                         <li
                           key={h}
@@ -551,8 +556,8 @@ function SignupPage() {
                         Change plan
                       </Link>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               )}
 
 
