@@ -261,7 +261,7 @@ function CoachShopFrontPage() {
   const enquireHref = "/pro/$slug/enquire" as const;
 
   return (
-    <div className="min-h-screen bg-reps-ivory" style={accentStyle}>
+    <div className="min-h-screen bg-reps-ink" style={accentStyle}>
       {/* ============ Slim REPs chrome bar ============ */}
       <ChromeBar coach={coach} />
 
@@ -310,12 +310,12 @@ function CoachShopFrontPage() {
 
 function ChromeBar({ coach }: { coach: Coach }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-reps-stone/70 bg-reps-warm-white/90 backdrop-blur supports-[backdrop-filter]:bg-reps-warm-white/70">
+    <header className="sticky top-0 z-30 border-b border-reps-border/70 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70">
       <div className="mx-auto flex h-14 max-w-[1320px] items-center justify-between gap-4 px-6 lg:px-10">
-        <Link to="/" className="flex items-center gap-2 text-reps-charcoal">
-          <RepsWordmark className="h-4 w-auto text-reps-charcoal" />
-          <Separator orientation="vertical" className="h-4 bg-reps-stone" />
-          <span className="text-[13px] font-semibold text-reps-charcoal">{coach.name}</span>
+        <Link to="/" className="flex items-center gap-2 text-reps-text">
+          <RepsWordmark className="h-4 w-auto text-reps-text" />
+          <Separator orientation="vertical" className="h-4 bg-reps-panel-soft" />
+          <span className="text-[13px] font-semibold text-reps-text">{coach.name}</span>
         </Link>
         <div className="hidden items-center gap-4 md:flex">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
@@ -324,7 +324,7 @@ function ChromeBar({ coach }: { coach: Coach }) {
           </span>
           <Link
             to="/login"
-            className="text-[13px] font-medium text-reps-muted-light transition-colors hover:text-reps-charcoal"
+            className="text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
           >
             Client login
           </Link>
@@ -336,7 +336,7 @@ function ChromeBar({ coach }: { coach: Coach }) {
 
 function HeroSection({ coach, enquireHref, slug }: { coach: Coach; enquireHref: "/pro/$slug/enquire"; slug: string }) {
   return (
-    <section className="bg-reps-warm-white">
+    <section className="bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 pb-10 pt-10 lg:px-10 lg:pb-16 lg:pt-14">
         <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12">
           {/* Copy */}
@@ -346,28 +346,28 @@ function HeroSection({ coach, enquireHref, slug }: { coach: Coach; enquireHref: 
                 <BadgeCheck className="h-3 w-3" />
                 REPs Verified · Insured
               </Badge>
-              <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted-light">
+              <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
                 <MapPin className="h-3.5 w-3.5" /> {coach.city}, {coach.region}
               </span>
             </div>
 
-            <h1 className="mt-5 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-charcoal lg:text-[60px]">
+            <h1 className="mt-5 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-text lg:text-[60px]">
               {coach.name}
             </h1>
-            <div className="mt-2 text-[18px] text-reps-muted-light">{coach.role}</div>
+            <div className="mt-2 text-[18px] text-reps-muted">{coach.role}</div>
 
-            <p className="mt-5 max-w-[560px] text-[17px] leading-relaxed text-reps-charcoal">
+            <p className="mt-5 max-w-[560px] text-[17px] leading-relaxed text-reps-text">
               {coach.tagline}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
               <span className="inline-flex items-center gap-1.5">
                 <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                <span className="font-semibold text-reps-charcoal">{coach.rating.toFixed(1)}</span>
-                <span className="text-reps-muted-light">({coach.reviews} reviews)</span>
+                <span className="font-semibold text-reps-text">{coach.rating.toFixed(1)}</span>
+                <span className="text-reps-muted">({coach.reviews} reviews)</span>
               </span>
               {coach.modes.map((m) => (
-                <span key={m} className="inline-flex items-center gap-1.5 text-reps-muted-light">
+                <span key={m} className="inline-flex items-center gap-1.5 text-reps-muted">
                   {m === "In-person" ? <Users className="h-3.5 w-3.5" /> : <Laptop className="h-3.5 w-3.5" />}
                   {m}
                 </span>
@@ -386,7 +386,7 @@ function HeroSection({ coach, enquireHref, slug }: { coach: Coach; enquireHref: 
               </Link>
               <a
                 href="#services"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-border bg-reps-midnight px-6 text-[14px] font-semibold text-reps-text transition-colors hover:bg-reps-ink"
               >
                 See services
                 <ArrowRight className="h-4 w-4" />
@@ -395,7 +395,7 @@ function HeroSection({ coach, enquireHref, slug }: { coach: Coach; enquireHref: 
           </div>
 
           {/* Portrait */}
-          <div className="relative overflow-hidden rounded-[24px] bg-reps-stone shadow-[var(--reps-shadow-card)]">
+          <div className="relative overflow-hidden rounded-[24px] bg-reps-panel-soft shadow-[var(--reps-shadow-card)]">
             <img
               src={coach.heroImage}
               alt={`${coach.name} — ${coach.role}`}
@@ -426,9 +426,9 @@ function TrustStrip({ coach }: { coach: Coach }) {
     { label: "Insurance valid until", value: coach.insuranceUntil, icon: BadgeCheck },
   ];
   return (
-    <section className="bg-reps-ivory">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
-        <div className="grid grid-cols-2 gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-4 sm:grid-cols-4 lg:p-5">
+        <div className="grid grid-cols-2 gap-3 rounded-[18px] border border-reps-border bg-reps-midnight p-4 sm:grid-cols-4 lg:p-5">
           {items.map((item) => {
             const Icon = item.icon;
             return (
@@ -440,10 +440,10 @@ function TrustStrip({ coach }: { coach: Coach }) {
                   <Icon className="h-5 w-5" />
                 </span>
                 <div>
-                  <div className="font-display text-[18px] font-bold leading-none text-reps-charcoal">
+                  <div className="font-display text-[18px] font-bold leading-none text-reps-text">
                     {item.value}
                   </div>
-                  <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                  <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-reps-muted">
                     {item.label}
                   </div>
                 </div>
@@ -466,16 +466,16 @@ function ServicesSection({
   enquireHref: "/pro/$slug/enquire";
 }) {
   return (
-    <section id="services" className="scroll-mt-20 bg-reps-ivory">
+    <section id="services" className="scroll-mt-20 bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="max-w-2xl">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
             Services
           </span>
-          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
             How we can work together
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-reps-muted-light">
+          <p className="mt-3 text-[15px] leading-relaxed text-reps-muted">
             Pick a starting point. Every option includes the same coaching, programming and accountability — the format just changes.
           </p>
         </div>
@@ -484,9 +484,9 @@ function ServicesSection({
           {coach.services.map((service) => (
             <article
               key={service.slug}
-              className="group flex flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-shadow hover:shadow-[var(--reps-shadow-card)]"
+              className="group flex flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-midnight transition-shadow hover:shadow-[var(--reps-shadow-card)]"
             >
-              <div className="relative aspect-[16/10] overflow-hidden bg-reps-stone">
+              <div className="relative aspect-[16/10] overflow-hidden bg-reps-panel-soft">
                 <img
                   src={service.image}
                   alt={service.title}
@@ -494,11 +494,11 @@ function ServicesSection({
                 />
               </div>
               <div className="flex flex-1 flex-col p-5">
-                <h3 className="font-display text-[18px] font-bold text-reps-charcoal">{service.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-reps-muted-light">{service.desc}</p>
+                <h3 className="font-display text-[18px] font-bold text-reps-text">{service.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-reps-muted">{service.desc}</p>
                 <div className="mt-4 flex items-baseline gap-1.5">
-                  <span className="font-display text-[20px] font-bold text-reps-charcoal">{service.price}</span>
-                  <span className="text-[12px] text-reps-muted-light">{service.unit}</span>
+                  <span className="font-display text-[20px] font-bold text-reps-text">{service.price}</span>
+                  <span className="text-[12px] text-reps-muted">{service.unit}</span>
                 </div>
                 <Link
                   to={enquireHref}
@@ -521,10 +521,10 @@ function ServicesSection({
 
 function AboutSection({ coach }: { coach: Coach }) {
   return (
-    <section id="about" className="scroll-mt-20 bg-reps-warm-white">
+    <section id="about" className="scroll-mt-20 bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-start lg:gap-14">
-          <div className="overflow-hidden rounded-[22px] bg-reps-stone">
+          <div className="overflow-hidden rounded-[22px] bg-reps-panel-soft">
             <img
               src={coach.portraitImage}
               alt={`About ${coach.firstName}`}
@@ -532,25 +532,25 @@ function AboutSection({ coach }: { coach: Coach }) {
             />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               About {coach.firstName}
             </span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
               The coaching philosophy
             </h2>
-            <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-reps-charcoal">
+            <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-reps-text">
               {coach.bio.map((p) => (
                 <p key={p}>{p}</p>
               ))}
             </div>
 
             <div className="mt-7">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
                 Specialisms
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {coach.specialisms.map((s) => (
-                  <Badge key={s} variant="outline" className="rounded-full border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal">
+                  <Badge key={s} variant="outline" className="rounded-full border-reps-border bg-reps-midnight px-3 py-1 text-[12px] font-medium text-reps-text">
                     {s}
                   </Badge>
                 ))}
@@ -565,50 +565,50 @@ function AboutSection({ coach }: { coach: Coach }) {
 
 function VenuesSection({ coach }: { coach: Coach }) {
   return (
-    <section className="bg-reps-ivory">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               Where I train
             </span>
-            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-text lg:text-[34px]">
               In-person venues
             </h2>
             <ul className="mt-5 space-y-3">
               {coach.venues.map((v) => (
                 <li
                   key={v.name}
-                  className="flex items-center justify-between rounded-[16px] border border-reps-stone bg-reps-warm-white px-4 py-3"
+                  className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-midnight px-4 py-3"
                 >
                   <div>
-                    <div className="text-[15px] font-semibold text-reps-charcoal">{v.name}</div>
-                    <div className="text-[12px] text-reps-muted-light">{v.city}</div>
+                    <div className="text-[15px] font-semibold text-reps-text">{v.name}</div>
+                    <div className="text-[12px] text-reps-muted">{v.city}</div>
                   </div>
-                  <MapPin className="h-4 w-4 text-reps-muted-light" />
+                  <MapPin className="h-4 w-4 text-reps-muted" />
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               Cities & online
             </span>
-            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-text lg:text-[34px]">
               Coaching reach
             </h2>
             <div className="mt-5 flex flex-wrap gap-2">
               {coach.cities.map((c) => (
                 <span
                   key={c}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[13px] font-medium text-reps-charcoal"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-midnight px-3 py-1.5 text-[13px] font-medium text-reps-text"
                 >
                   {c === "Online (worldwide)" ? <Globe className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
                   {c}
                 </span>
               ))}
             </div>
-            <p className="mt-6 text-[14px] leading-relaxed text-reps-muted-light">
+            <p className="mt-6 text-[14px] leading-relaxed text-reps-muted">
               Train with me in person across central London, or work together fully remote from anywhere in the world.
             </p>
           </div>
@@ -620,23 +620,23 @@ function VenuesSection({ coach }: { coach: Coach }) {
 
 function TransformationsSection({ coach }: { coach: Coach }) {
   return (
-    <section className="bg-reps-warm-white">
+    <section className="bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="max-w-2xl">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
             Client results
           </span>
-          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
             Real changes from real people
           </h2>
         </div>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {coach.transformations.map((t) => (
-            <figure key={t.caption} className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
-              <div className="aspect-[4/5] overflow-hidden bg-reps-stone">
+            <figure key={t.caption} className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-midnight">
+              <div className="aspect-[4/5] overflow-hidden bg-reps-panel-soft">
                 <img src={t.image} alt={t.caption} className="h-full w-full object-cover" />
               </div>
-              <figcaption className="p-4 text-[13.5px] leading-relaxed text-reps-charcoal">
+              <figcaption className="p-4 text-[13.5px] leading-relaxed text-reps-text">
                 {t.caption}
               </figcaption>
             </figure>
@@ -649,13 +649,13 @@ function TransformationsSection({ coach }: { coach: Coach }) {
 
 function TestimonialsSection({ coach }: { coach: Coach }) {
   return (
-    <section className="bg-reps-ivory">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="max-w-2xl">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
             What clients say
           </span>
-          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
             In their words
           </h2>
         </div>
@@ -663,15 +663,15 @@ function TestimonialsSection({ coach }: { coach: Coach }) {
           {coach.testimonials.map((t) => (
             <article
               key={t.name}
-              className="flex flex-col rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+              className="flex flex-col rounded-[18px] border border-reps-border bg-reps-midnight p-6"
             >
               <Quote className="h-6 w-6" style={{ color: "var(--accent-color)" }} />
-              <p className="mt-3 text-[15px] leading-relaxed text-reps-charcoal">&ldquo;{t.quote}&rdquo;</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-reps-text">&ldquo;{t.quote}&rdquo;</p>
               <div className="mt-5 flex items-center gap-3">
                 <img src={t.avatar} alt={t.name} className="size-10 rounded-full object-cover" />
                 <div>
-                  <div className="text-[13.5px] font-semibold text-reps-charcoal">{t.name}</div>
-                  <div className="text-[12px] text-reps-muted-light">{t.role}</div>
+                  <div className="text-[13.5px] font-semibold text-reps-text">{t.name}</div>
+                  <div className="text-[12px] text-reps-muted">{t.role}</div>
                 </div>
                 <div className="ml-auto flex">
                   {Array.from({ length: t.rating }).map((_, i) => (
@@ -689,22 +689,22 @@ function TestimonialsSection({ coach }: { coach: Coach }) {
 
 function QualificationsSection({ coach }: { coach: Coach }) {
   return (
-    <section className="bg-reps-warm-white">
+    <section className="bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-start lg:gap-14">
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               Credentials
             </span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
               Verified by REPs
             </h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-reps-muted-light">
+            <p className="mt-4 text-[15px] leading-relaxed text-reps-muted">
               Every qualification, insurance certificate and first-aid renewal is independently verified by REPs and kept current.
             </p>
             <Link
               to="/standards"
-              className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-reps-charcoal hover:underline"
+              className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-reps-text hover:underline"
             >
               How REPs verifies professionals
               <ArrowRight className="h-3.5 w-3.5" />
@@ -714,7 +714,7 @@ function QualificationsSection({ coach }: { coach: Coach }) {
             {coach.qualifications.map((q) => (
               <li
                 key={q.title}
-                className="flex flex-col rounded-[16px] border border-reps-stone bg-reps-ivory p-4"
+                className="flex flex-col rounded-[16px] border border-reps-border bg-reps-ink p-4"
               >
                 <div className="flex items-center gap-2">
                   <BadgeCheck className="h-4 w-4 text-reps-green" />
@@ -722,9 +722,9 @@ function QualificationsSection({ coach }: { coach: Coach }) {
                     Verified
                   </span>
                 </div>
-                <div className="mt-2 text-[14.5px] font-semibold text-reps-charcoal">{q.title}</div>
-                <div className="mt-1 text-[12px] text-reps-muted-light">{q.issuer}</div>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-reps-muted-light">
+                <div className="mt-2 text-[14.5px] font-semibold text-reps-text">{q.title}</div>
+                <div className="mt-1 text-[12px] text-reps-muted">{q.issuer}</div>
+                <div className="mt-3 flex items-center justify-between text-[11px] text-reps-muted">
                   <span>ID: {q.id}</span>
                   <span>{q.issued}</span>
                 </div>
@@ -739,13 +739,13 @@ function QualificationsSection({ coach }: { coach: Coach }) {
 
 function FaqSection({ coach }: { coach: Coach }) {
   return (
-    <section className="bg-reps-ivory">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[920px] px-6 py-14 lg:px-10 lg:py-20">
         <div className="text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
             FAQ
           </span>
-          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+          <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
             Common questions
           </h2>
         </div>
@@ -754,12 +754,12 @@ function FaqSection({ coach }: { coach: Coach }) {
             <AccordionItem
               key={f.q}
               value={`item-${i}`}
-              className="border-reps-stone"
+              className="border-reps-border"
             >
-              <AccordionTrigger className="text-left text-[15.5px] font-semibold text-reps-charcoal hover:no-underline">
+              <AccordionTrigger className="text-left text-[15.5px] font-semibold text-reps-text hover:no-underline">
                 {f.q}
               </AccordionTrigger>
-              <AccordionContent className="text-[14.5px] leading-relaxed text-reps-muted-light">
+              <AccordionContent className="text-[14.5px] leading-relaxed text-reps-muted">
                 {f.a}
               </AccordionContent>
             </AccordionItem>
@@ -780,17 +780,17 @@ function SocialSection({
   enquireHref: "/pro/$slug/enquire";
 }) {
   return (
-    <section className="bg-reps-warm-white">
+    <section className="bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10 lg:py-20">
-        <div className="grid items-center gap-10 rounded-[24px] border border-reps-stone bg-reps-ivory p-8 lg:grid-cols-[1.4fr_1fr] lg:gap-14 lg:p-12">
+        <div className="grid items-center gap-10 rounded-[24px] border border-reps-border bg-reps-ink p-8 lg:grid-cols-[1.4fr_1fr] lg:gap-14 lg:p-12">
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               Get in touch
             </span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
               Ready when you are
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-reps-muted-light">
+            <p className="mt-3 text-[15px] leading-relaxed text-reps-muted">
               Send an enquiry through REPs and I'll reply privately with a clear quote and next steps. No middleman, no booking fees.
             </p>
             <Link
@@ -804,7 +804,7 @@ function SocialSection({
             </Link>
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted-light">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-muted">
               Follow my work
             </div>
             <ul className="mt-4 flex flex-col gap-2">
@@ -814,13 +814,13 @@ function SocialSection({
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center justify-between gap-3 rounded-[12px] border border-reps-stone bg-reps-warm-white px-4 py-3 text-[14px] text-reps-charcoal transition-colors hover:border-reps-charcoal/30"
+                    className="group flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-midnight px-4 py-3 text-[14px] text-reps-text transition-colors hover:border-reps-charcoal/30"
                   >
                     <span className="inline-flex items-center gap-3">
                       <SocialIcon kind={s.kind} />
                       <span className="font-medium">{s.label}</span>
                     </span>
-                    <ArrowRight className="h-4 w-4 text-reps-muted-light transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight className="h-4 w-4 text-reps-muted transition-transform group-hover:translate-x-0.5" />
                   </a>
                 </li>
               ))}
@@ -833,7 +833,7 @@ function SocialSection({
 }
 
 function SocialIcon({ kind }: { kind: Coach["socials"][number]["kind"] }) {
-  const className = "h-4 w-4 text-reps-charcoal";
+  const className = "h-4 w-4 text-reps-text";
   switch (kind) {
     case "instagram":
       return <Instagram className={className} />;
@@ -870,17 +870,17 @@ function XGlyph({ className }: { className?: string }) {
 
 function FooterMark() {
   return (
-    <footer className="border-t border-reps-stone bg-reps-warm-white">
-      <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 py-6 text-[12.5px] text-reps-muted-light sm:flex-row lg:px-10">
-        <Link to="/" className="inline-flex items-center gap-2 text-reps-charcoal">
-          <RepsWordmark className="h-3.5 w-auto text-reps-charcoal" />
+    <footer className="border-t border-reps-border bg-reps-midnight">
+      <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 py-6 text-[12.5px] text-reps-muted sm:flex-row lg:px-10">
+        <Link to="/" className="inline-flex items-center gap-2 text-reps-text">
+          <RepsWordmark className="h-3.5 w-auto text-reps-text" />
           <span>·</span>
           <span className="font-medium">Powered by REPs</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Link to="/standards" className="hover:text-reps-charcoal">How we verify</Link>
-          <Link to="/privacy" className="hover:text-reps-charcoal">Privacy</Link>
-          <Link to="/terms" className="hover:text-reps-charcoal">Terms</Link>
+          <Link to="/standards" className="hover:text-reps-text">How we verify</Link>
+          <Link to="/privacy" className="hover:text-reps-text">Privacy</Link>
+          <Link to="/terms" className="hover:text-reps-text">Terms</Link>
         </div>
       </div>
     </footer>
@@ -897,12 +897,12 @@ function StickyMobileBar({
   enquireHref: "/pro/$slug/enquire";
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-stone bg-reps-warm-white px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-border bg-reps-midnight px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] lg:hidden">
       <div className="mx-auto flex max-w-[640px] items-center gap-3">
         <img src={coach.heroImage} alt="" className="size-10 rounded-full object-cover" />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[13px] font-semibold text-reps-charcoal">{coach.name}</div>
-          <div className="truncate text-[11px] text-reps-muted-light">{coach.role}</div>
+          <div className="truncate text-[13px] font-semibold text-reps-text">{coach.name}</div>
+          <div className="truncate text-[11px] text-reps-muted">{coach.role}</div>
         </div>
         <Link
           to={enquireHref}
