@@ -537,33 +537,6 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ CLOSER ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
-          <h2 className="font-display text-[36px] font-bold leading-[0.98] tracking-[-0.02em] text-reps-charcoal sm:text-[48px] lg:text-[64px]">
-            Find. Trust. Train.
-            <br />
-            <span className="text-reps-orange">Transform.</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-[520px] text-[15px] text-reps-muted-light">
-            Whether you want to train or you're a coach who wants to grow — start with REPs.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-[52px] items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-            >
-              Find a coach <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-[52px] items-center rounded-[10px] border border-reps-charcoal/20 px-7 text-[15px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-            >
-              Become a pro
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* ============ PRESS STRIP — demoted to footer-adjacent (pro / investor / journalist trust) ============ */}
       <PressMarquee />
