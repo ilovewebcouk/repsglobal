@@ -25,7 +25,7 @@ import type { FeatureLink } from "./feature-config";
 
 type Content = Omit<FeaturePageProps, "slug">;
 
-export const FEATURE_CONTENT: Record<FeatureLink["slug"], Content> = {
+export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">, Content> = {
   "profile-and-reviews": {
     hero: {
       eyebrow: "Verified profile",

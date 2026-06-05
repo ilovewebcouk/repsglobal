@@ -700,13 +700,15 @@ function ForProsMenu() {
                     to={
                       g.key === "visibility"
                         ? "/features/visibility"
-                        : g.key === "operations"
-                          ? "/features/operations"
-                          : g.key === "coaching"
-                            ? "/features/coaching"
-                            : g.key === "ai"
-                              ? "/features/ai"
-                              : "/features/growth"
+                        : g.key === "shopfront"
+                          ? "/features/shop-front"
+                          : g.key === "operations"
+                            ? "/features/operations"
+                            : g.key === "coaching"
+                              ? "/features/coaching"
+                              : g.key === "ai"
+                                ? "/features/ai"
+                                : "/features/growth"
                     }
                     className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
                   >
@@ -1027,6 +1029,11 @@ function MobileDrawer({
                 <li>
                   <Link to="/features/visibility" onClick={onNavigate} className={mobileSubLinkClass}>
                     Visibility
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features/shop-front" onClick={onNavigate} className={mobileSubLinkClass}>
+                    Shop-front
                   </Link>
                 </li>
                 <li>

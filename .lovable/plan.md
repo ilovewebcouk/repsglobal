@@ -1,84 +1,92 @@
+## Goal
 
-# Coach shop-front landing page — `/c/$slug`
+Lock the trainer shop-front mock-up at `/c/james-wilson` as the canonical source of truth for "what you get on REPs", then propagate that across the marketing surface so the £59 Pro value story includes it explicitly.
 
-A static, world-class one-page site every REPs trainer gets for free, populated from their REPs profile. This replaces the need for a personal website. Phase 1: visuals only, mock data, no auth/DB/payments.
+## 1. Lock the mock-up
 
-## 1. Route + relationship to existing surfaces
+- Promote `mem://design/coach-shopfront` from "Phase 1 layout" to LOCKED, frozen 2026-06-05. Add a Core line in `mem://index.md`: shop-front at `/c/$slug` is the locked SoT for the personalised trainer page; do not redesign without an explicit, section-named request.
+- Add the locked section order, accent-token rules, dark-theme rule, hero structure (outcome headline + name eyebrow), tiered services (3, with hybrid highlighted), Foundation Method block, proof-card transformations, sticky `SectionNav`, social-icon row, and "all CTAs deep-link to `/pro/$slug/enquire`" to the memory body.
 
-- **New file:** `src/routes/c.$slug.tsx` → URL `/c/$slug`
-- **Distinct from** the locked `/pro/$slug` (REPs directory listing) and `/pro/$slug/enquire` (enquiry form). Both stay frozen.
-- **Shareable link** trainers put in Insta bio, QR codes, business cards: `repsglobal.com/c/james-carter`.
-- **Primary CTA** on the page deep-links to `/pro/$slug/enquire` (we already locked that flow — no duplication).
-- **Secondary "Client login"** entry links to `/login` (existing).
-- Mock-data source: reuse the `PROS` record from `src/routes/pro.$slug.index.tsx` (extract to `src/lib/pros.ts` in a follow-up — for now import directly to keep the diff small).
-- `noindex` for now (Phase 1, mock data). SEO pass when real data lands.
+## 2. Add Shop-front as a 6th pillar (cross-listed in Visibility)
 
-## 2. Section list (top → bottom)
+Edit `src/components/features/feature-config.ts`:
 
-1. **Slim REPs chrome bar** — minimal top bar: REPs wordmark left, "Verified on REPs" pill, "Client login" link right. Not the full `PublicHeader` — this page reads as the trainer's site, not a REPs marketing page.
-2. **Hero** — full-bleed coach photo (left or right), name + role + city, headline ("Helping busy professionals build strength…"), 5-star + review count + verified badge inline, two CTAs: **Enquire** (primary, → `/pro/$slug/enquire`) and **See services** (anchor scroll).
-3. **Trust strip** — 4 stat tiles: years coaching · clients trained · REPs verified date · insurance valid. Sourced from profile.
-4. **Services** — 3-column grid of bookable service cards (uses existing service shape from PROS). Each card: image, title, short desc, price, "Enquire" button → enquire page with service preselected (query param `?service=slug`).
-5. **About** — 2-column: portrait + bio paragraphs + specialisms as pills.
-6. **Where I train** — gym/venue logos strip + cities served (in-person + online badges).
-7. **Results / transformations** — masonry of 3–6 before/after or training-moment images with short caption (mock data).
-8. **Testimonials** — 3-card row, name + role + quote + star rating.
-9. **Qualifications & insurance** — clean list of certs with issuer + REPs-verified tick (reuses profile data).
-10. **FAQ** — shadcn `Accordion`, reuses profile FAQs.
-11. **Social + contact** — outbound icon buttons (Instagram, TikTok, YouTube, X, website) opening in new tab. No API, no embeds. Plus "Send enquiry" button repeating the primary CTA.
-12. **Sticky mobile enquire bar** — bottom of viewport on `<lg`: avatar + name + "Enquire" button.
-13. **REPs footer mark** — small "Powered by REPs · Verified professional" with link to `/` and `/standards`. Not the full `PublicFooter`.
+- Extend `FeatureGroupKey` with `"shopfront"`.
+- Add `FEATURE_GROUPS` entry:
+  - key: `shopfront`, label: "Shop-front", icon: `Globe` (or `LayoutTemplate`)
+  - desc: "Your own page. Your brand. One link."
+  - hero eyebrow: "Personalised shop-front", title: "A page that sells you while you sleep.", sub: "More than a directory profile — a full single-page site at `/c/your-name`. Your photo, your method, your tiers, your proof, your accent colour. Every CTA goes straight into your REPs enquiry inbox."
+- Add a `shop-front` entry to `FEATURES`:
+  - tag: "Shop-front", oneLiner: "Your own page at `/c/your-name`, deep-linked into REPs enquiries.", group: `shopfront`, `includedIn: ["pro", "studio"]`.
+- Add a second `FEATURES` entry **cross-listed under Visibility** so it surfaces on the Visibility pillar page too (either a duplicate `group: "visibility"` row with a "See in Shop-front" link, or a small `crossList` array on the feature — implementation detail decided at build time, preferring the simpler duplicate-row approach to avoid schema churn).
+- Update `FEATURES` typing for `slug` union to include `"shop-front"`.
 
-## 3. Light personalisation (locked in design tokens)
+Affected downstream pages auto-pick up the change: `/features` hub, `/for-professionals` overview, header "For Professionals" dropdown, pillar deep-dives.
 
-Trainer can influence (these are mock-data fields for now; later wired to profile):
-- Hero photo + 1 logo (small, rendered next to their name in the chrome bar, optional)
-- 1 **accent colour** — picked from a curated REPs-safe palette (orange [default], teal, indigo, plum, forest, slate). NOT free hex. Drives the primary CTA + accent strokes only. Body, headings, surfaces, radii, type all stay REPs-locked.
-- Tagline, services, testimonials, transformations, FAQs, socials.
+## 3. New deep-dive page `/features/shop-front`
 
-Always-locked REPs chrome:
-- Typography (Inter Tight + Inter), spacing scale, radius scale (16/18/22/24/full/10/12), `--reps-orange` for verified pill, footer "Powered by REPs".
+- New route `src/routes/features.shop-front.tsx` using `FeaturePageLayout`.
+- Hero references the locked mock-up (link to `/c/james-wilson` as a live example).
+- Sections: "What's on the page" (hero/about/services/method/transformations/reviews/FAQ/contact), "Your brand, lightly" (accent token, hero photo, tier ordering), "Wired into REPs" (every enquire button deep-links into the locked enquiry flow; replies tracked in the Pro inbox; reviews shown are the same verified reviews), "How it compares" (Trainerize/MyPTHub/PT Distinction don't publish a public single-page site under your name).
+- Add SEO `head()` and link from the new pillar hub page.
 
-## 4. Social media — outbound links only (Phase 1)
+## 4. Pricing data — add shop-front to Pro and Studio
 
-Branded icon buttons for: Instagram, TikTok, YouTube, X, Website, Email. Open in new tab, `rel="noopener noreferrer"`. No oEmbed, no API, no per-user OAuth. Embedded feeds are a Phase 2 add-on if trainers ask for it (Instagram Graph API requires a Business account + Meta app review + token refresh — out of scope until validated demand).
+Edit `src/components/pricing/pricing-data.ts`:
 
-## 5. Components to use (shadcn-first)
+- `PLANS.pro.features`: insert `"Personalised shop-front page (/c/your-name)"` near the top of the list (above "Bookings, calendar & payments").
+- `PLANS.studio.features`: insert `"Personalised shop-front (team accent options)"`.
+- Leave Verified unchanged (no shop-front access). Optionally tighten Verified copy to "Enhanced directory profile" (already present) to make the contrast explicit.
 
-- `Button` (with `data-icon` on icons), `Badge`, `Card` (full composition), `Accordion`, `Avatar`, `Separator`, `Tooltip`, `AspectRatio` for image tiles.
-- Reuse `FeaturedProCard` shape language for service tiles (consistent with city + profession pages).
-- Reuse the verified pill + star rating treatment from the locked profile so the page feels unmistakably REPs.
+Add a new `COMPARE_GROUPS` section **"Your public presence"** with rows:
 
-## 6. Radius + token discipline
+| Row | Verified | Pro | Studio |
+|---|---|---|---|
+| Verified directory profile (`/pro/your-name`) | ✓ | ✓ | ✓ |
+| Personalised shop-front (`/c/your-name`) | — | ✓ | ✓ |
+| Custom accent colour + hero photo | — | ✓ | ✓ |
+| Tiered services with "Most popular" highlight | — | ✓ | ✓ |
+| Foundation Method / methodology section | — | ✓ | ✓ |
+| Transformations & proof cards | — | ✓ | ✓ |
+| Team / studio accent options | — | — | ✓ |
 
-Apply the FINAL scale: hero panel 24px, service cards 18px, std cards 16px, buttons 10px, inputs 12px, badges/pills full, chrome small bits 6/8px. No `rounded-xl/2xl/3xl`. Accent colour comes from a new tokenised palette in `src/styles.css` (`--coach-accent-*` set of 6), never hardcoded hex in the component.
+Place this group directly after the existing "Visibility & trust" group so the upgrade story reads cleanly.
 
-## 7. Out of scope (Phase 1 guardrail)
+Update `pricing.tsx` hero subhead lightly only if needed — no structural change.
 
-- Real bookings, payments, calendar integration
-- Editing the page from the dashboard (mock data only)
-- Social media API embeds
-- Full white-label / custom font / custom hex
-- Per-service deep-link logic on the enquire page (we'll just append `?service=` as a hint; enquire stays locked)
-- SEO `<head>` JSON-LD + indexing (page renders `noindex` until real profile data is wired)
-- Multi-language
+## 5. `/for-professionals` overview
 
-## 8. QA before handing back
+- Add a new pillar tile for "Shop-front" to whichever component renders the 5-pillar grid (`PillarTabs` and/or the pillar grid on `for-professionals.tsx`). It becomes a 6-tile grid (3×2 on desktop).
+- Add a short hero callout: "Now includes your own page at `/c/your-name`." with a "See an example" link to `/c/james-wilson` (opens in new tab, with `noindex` already on that route).
+- Update the "What you get for £59" / value-stack section (if present) to include shop-front as a bullet.
 
-- Render at 1440 desktop, 1024 tablet, 390 mobile — no overflow, sticky mobile bar visible.
-- All CTAs deep-link to `/pro/$slug/enquire` (the locked flow).
-- `reps-build-compliance` audit must exit clean on the new file (same baseline as today — only the documented 14px exception remains).
-- Test all 4 accent-colour swaps cleanly with no contrast regressions.
-- Verify no edits to any locked file (`/`, `/in/$location`, `/professions/$profession`, `/pro/$slug`, `/pro/$slug/enquire`).
+## 6. Competitor compare pages
 
-## 9. Files to touch
+For each of `/compare/reps-vs-trainerize`, `/compare/reps-vs-mypthub`, `/compare/reps-vs-pt-distinction`:
 
-- **New:** `src/routes/c.$slug.tsx` (the page)
-- **New:** `src/components/coach-site/` — small set: `CoachHero.tsx`, `CoachServicesGrid.tsx`, `CoachVenues.tsx`, `CoachTransformations.tsx`, `CoachTestimonials.tsx`, `CoachSocialRow.tsx`, `CoachStickyMobileBar.tsx`, `CoachChromeBar.tsx`, `CoachFooterMark.tsx`
-- **Edit:** `src/styles.css` — add `--coach-accent-{orange|teal|indigo|plum|forest|slate}` token set (no component hex)
-- **Edit:** `docs/07_phase1_build_status.md` — add `/c/$slug` row (Partial → Shipped after QA)
-- **New memory:** `mem://design/coach-shopfront` — section order, accent palette, sticky bar rule, "links not embeds" social rule, deep-link-to-enquire rule
+- Add a row in the feature matrix: "Public single-page site at a personal URL" → REPs ✓, competitor ✗ (or "client portal only" — verified against `src/data/competitor-data.ts` before publishing).
+- Add a short editorial paragraph in `src/data/competitor-editorial.ts` under each competitor: REPs gives every Pro a public-facing shop-front; Trainerize/MyPTHub/PT Distinction give you a client portal behind a login, not a public page.
+- Keep methodology + "Last checked" footer (per `mem://content/comparison-rules`).
 
-## 10. Open question I'll handle in the build
+Also extend `src/data/feature-matrix.ts` so the shared compare matrix carries the new row.
 
-Where to surface this from the dashboard. Lightweight answer: add a single "Your REPs page" card on `/dashboard` with a copy-link button and a "Preview" button. I'll mock it as part of the build but won't modify the locked dashboard sections.
+## 7. Header dropdown / nav
+
+- Update `src/components/public/nav-config.ts` "For Professionals" dropdown to include the Shop-front pillar entry (icon, label, blurb, `/features/shop-front`).
+
+## 8. Doc-sync pass
+
+Run the `doc-sync-source-of-truth` skill to update `docs/03_reps_page_by_page_specification.md` and any other doc that lists pillars or describes what a Pro plan includes. Add `/c/$slug` to the page-by-page spec as a locked Phase 1 page. Report exits 0.
+
+## Out of scope (Phase 1 lock still holds)
+
+- No new DB tables, no real personalisation backend, no per-coach accent picker UI in the dashboard. Shop-front stays a static mock-up at `/c/james-wilson` with the locked tokens; dashboard wiring is a later phase.
+- No price changes. £99/yr Verified, £59/mo Founding Pro, £149/mo Studio remain the ladder.
+- No copy that says "claim your page" or treats `/c/$slug` as a sales page for trainers — it's the perfect mock-up, not an upsell surface.
+
+## Technical notes
+
+- New pillar key `shopfront` requires updating the `FeatureGroupKey` union and the `PillarPage`/`FeatureGroupLayout` routing if they switch on the key.
+- The cross-listing under Visibility is implemented as a second `FEATURES` row with `group: "visibility"`, `tag: "Shop-front"`, and a link to `/features/shop-front` (cheapest, keeps the existing array-driven rendering intact).
+- Pricing comparison table is data-only — `PricingCompare.tsx` already iterates `COMPARE_GROUPS`, no component changes needed.
+- Memory updates go through `code--write mem://...`; the index file replace must preserve every existing line.

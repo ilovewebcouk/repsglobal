@@ -68,6 +68,38 @@ export const FEATURE_GROUPS: Group[] = [
     ],
   },
   {
+    label: "Shop-front · Your own page",
+    rows: [
+      {
+        feature: "Public single-page site at a personal URL (/c/your-name)",
+        cells: [
+          { kind: "yes", note: "Included in Pro & Studio" },
+          { kind: "no", note: "Client portal only" },
+          { kind: "no", note: "Client portal only" },
+          { kind: "no", note: "Client portal only" },
+        ],
+      },
+      {
+        feature: "Personalised hero, accent colour & tier services",
+        cells: [
+          { kind: "yes" },
+          { kind: "no" },
+          { kind: "no" },
+          { kind: "no" },
+        ],
+      },
+      {
+        feature: "Enquiries deep-linked from shop-front into CRM",
+        cells: [
+          { kind: "yes" },
+          { kind: "no" },
+          { kind: "no" },
+          { kind: "no" },
+        ],
+      },
+    ],
+  },
+  {
     label: "Operations · Run your practice",
     rows: [
       {
