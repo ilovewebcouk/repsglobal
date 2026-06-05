@@ -1,90 +1,66 @@
+# /in/$city — Unify + QA + Lock
 
-# QA pass: `/professions/$profession`
+Bring `/in/$location` up to parity with the locked `/professions/$profession` page, run the same QA pass, then formally lock it.
 
-Full visual + copy QA on the shared profession landing template (`src/routes/professions.$profession.tsx`, 617 lines). Verified across all 5 mapped slugs: `personal-trainer`, `pilates-instructor`, `nutritionist`, `strength-coach`, `online-coach`.
+## Scope
 
-## Goals
+Page: `src/routes/in.$location.tsx` (489 lines). All 4 mapped slugs verified: `london`, `manchester`, `birmingham`, `edinburgh`, plus the fallback path.
 
-1. Bring copy in line with the global-platform rule (no "UK" phrasing) and the no-booking-fee / tier-ladder content rules.
-2. Audit the page against the locked radius system, semantic tokens, and the shadcn-first rule.
-3. Verify mobile / tablet / desktop at high fidelity for every mapped slug.
-4. Capture findings, then ship fixes in a single focused edit pass.
+## Changes
 
-## Phase 1 — Audit (read-only)
+### 1. Swap card system → vertical FeaturedCard
+- Replace the horizontal `LocationCard` (140px image left, no tags) with the same vertical `FeaturedCard` pattern used on `/professions/$profession`: image-top (h-44), Verified pill top-left, Save Tooltip top-right, name + role + rating row, city + mode row, 2 tag chips, full-width "View Profile" CTA.
+- Grid: `sm:grid-cols-2 lg:grid-cols-4` (matches professions).
+- Add `tags` and `city` (= area) to the `Pro` type. Featured pros already have `tags` arrays — wire them in.
 
-Walk the file section by section and check against project memory:
+### 2. Add missing structural sections (to mirror professions)
+Insert after the Featured grid, before footer:
 
-- **Copy / content**
-  - Hero blurbs in `PROFESSIONS` for UK-only phrasing, "across the UK", country qualifiers. Default to global voice ("in your city", "wherever you train").
-  - Hiring FAQ for any booking-fee / commission / "Stripe included" claims (currently looks clean — re-confirm).
-  - £ currency is fine to keep per Core rules.
-  - `CITIES` list is UK-only (London / Manchester / …). Either reframe heading ("Popular cities") and keep, or add an "Or browse all locations" link — decide during audit, do not silently rewrite as global.
-  - "REPs-verified" usage consistent with brand (never "REPs UK").
+- **FAQ** — shadcn `Accordion` (`type="single"`, collapsible) inside an `rounded-[18px]` border panel. 5 city-flavoured Qs: how verification works, in-person vs online, pricing range in {city}, what to ask on first session, how to report a concern.
+- **Related cities** — pill row identical to professions' "Related professions": `Link` chips to the other 3 cities in `LOCATIONS`, `rounded-full border` style.
 
-- **Radius audit** (locked system: button 10, input 12, std card 16, featured/result 18, large panel 22, hero 24, pill full):
-  - `rounded-[18px]` form wrapper at L353 — should be **22px** (large panel) since it wraps inputs/CTA, OR keep 18 if treated as a result-style card. Flag for decision.
-  - `rounded-[12px]` inputs L354, L363 ✓
-  - `rounded-[10px]` CTA L373 ✓
-  - `rounded-[22px]` aside L381 ✓
-  - `rounded-[18px]` featured card L568 ✓
-  - `rounded-[16px]` city card L475 ✓
-  - `rounded-[18px]` trust band L491 + FAQ L520 ✓
-  - Tag chips use `rounded-full` ✓
+Keep existing sections in this order: Breadcrumb → Hero + at-a-glance → By profession → Featured → Areas → FAQ (new) → Trust band → Related cities (new) → Footer.
 
-- **Token / color audit** — no hardcoded hex; all `reps-*` tokens. Quick re-confirm.
+### 3. Global-platform copy sweep
+- `region:` strings: drop country qualifier. `"Greater London, England"` → `"Greater London"`; `"West Midlands, England"` → `"West Midlands"`; `"Scotland"` → keep (it's a region, not a country qualifier on a place name) but verify reads naturally; or drop to just the city tagline.
+- Hero blurbs: remove any "UK"/"United Kingdom" if present (audit confirms none currently, but re-check after edits).
+- Fallback blurb stays neutral.
 
-- **shadcn-first**
-  - Native `<details>/<summary>` FAQ (L520–530) → swap to shadcn `Accordion`.
-  - Native `<form>` could stay (it's marketing chrome, not a real form), but inputs could use shadcn `Input` for consistency. Decide during audit — leaning **keep native** to match the homepage hero search pattern.
-  - Tooltip already shadcn ✓.
+### 4. Radius + shadcn audit
+- Confirm every radius is on the 9-step scale (no `rounded-xl/2xl/3xl`, no 14/20/28/32px).
+- Bookmark button → wrap in `Tooltip` (already done on FeaturedCard pattern — inherited via card swap).
+- Search input row: already `rounded-[18px]` panel + `rounded-[12px]` inputs + `rounded-[10px]` button ✓.
+- Trust band: matches professions ✓.
+- No `space-y-*` introduced; use `flex flex-col gap-*` or `mt-*` like professions does.
+- Icons in buttons: `data-icon` where applicable.
 
-- **Imagery / `FeaturedCard`**
-  - `pro-james.jpg`, `pro-sophie.jpg`, `pro-daniel.jpg`, `pro-laura.jpg` — confirm the REPS wordmark rule (mem://design/trainer-imagery) is satisfied. If any are missing the visible "REPS" wordmark on the garment, flag for a later imagery pass (do not regenerate in this QA — that's out of scope unless trivially fixable).
-  - Card "View Profile" links to `/pro/$slug` derived from the featured name — confirm these slugs resolve (e.g. `james-wilson`). If not, point them at a known good slug or `/find-a-professional`.
+### 5. Counts honesty
+Leave the static counts as-is (Phase 1 placeholder data, consistent with professions which does the same). No changes needed — flagged for transparency only.
 
-- **SEO `head()`**
-  - Confirm canonical and og tags per slug. Add `og:image` per slug if a sensible hero exists; otherwise leave omitted (per `tanstack-route-architecture`: no image beats a generic one).
-  - Confirm fallback slug (`getProfession`) still produces a clean title for unmapped slugs.
+### 6. QA pass
+- Visual + copy QA on all 4 mapped slugs (`/in/london`, `/in/manchester`, `/in/birmingham`, `/in/edinburgh`) + fallback (`/in/leeds`).
+- Verify desktop (1366) and mobile (390) layouts.
+- Run the `reps-build-compliance` audit script — must exit 0.
 
-- **Responsive**
-  - Hero `lg:grid-cols-[1.4fr_1fr]` — verify aside doesn't crowd at the md→lg break.
-  - Featured cards `sm:grid-cols-2 lg:grid-cols-4` — verify at tablet (~820px) the 2-up doesn't leave huge images.
-  - Trust band `lg:grid-cols-[1.2fr_repeat(4,1fr)]` — verify the heading column isn't squashed below ~1100px.
-  - Mobile breadcrumb wrap, hero font scale, search form stacking.
+### 7. Lock
+- Create `mem://design/locked-cities` memory file with the layout contract.
+- Add Core entry to `mem://index.md`: "City landing pages `/in/$location` are LOCKED — see `mem://design/locked-cities`."
+- Update `docs/07_phase1_build_status.md`: flip `/in/$location` row to **Locked — Phase 1 approved** with QA notes, add a 2026-06-05 lock log entry.
 
-## Phase 2 — Fix pass (single edit batch)
+## Out of scope (Phase 1 boundary)
 
-Based on the audit, apply targeted fixes. Expected scope:
+No real search/filter logic, no DB-backed counts, no map embed, no auth — purely static high-fidelity screen work, consistent with the locked professions and homepage passes.
 
-1. **Copy edits in `PROFESSIONS`** — strip any UK-only language; tighten 1–2 blurbs if they read thin. No structural changes to the type.
-2. **Radius fix** — bump the hero search wrapper to `rounded-[22px]` if audit confirms it's the large-panel role (or leave at 18 with a note).
-3. **FAQ → shadcn `Accordion`** — replace native `<details>` block with `Accordion` / `AccordionItem` / `AccordionTrigger` / `AccordionContent`, keeping the same `FAQS` data and visual rhythm (ChevronRight rotate, divide borders preserved via accordion styling).
-4. **City section heading** — soften to "Browse {plural} by city" + add a small "See all locations" tertiary link to `/find-a-professional` so the UK-only list reads as a sample, not an exhaustive global list.
-5. **Featured card slugs** — confirm or repoint `View Profile` so no slug 404s.
-6. **`head()`** — minor tweaks if needed (e.g. trim title length under 60 chars).
+## Technical notes
 
-Strictly out of scope: redesigning hero composition, adding new imagery, changing the page section order, touching `/in/$location`, or any backend work.
+- Extract `FeaturedCard` into `src/components/public/FeaturedProCard.tsx` so both `professions.$profession.tsx` and `in.$location.tsx` can import the same component. This removes duplication and means future card tweaks land in one place. (Light, surgical refactor — does not redesign the locked professions page, just deduplicates its card.)
+- Featured pros stay local to each route (different fixture arrays).
+- Use shadcn `Accordion` (already used on professions page) for the FAQ.
 
-## Phase 3 — Visual verification
-
-For each of the 5 mapped slugs, capture screenshots at:
-- Mobile **390×844**
-- Tablet **820×1180**
-- Desktop **1366×768**
-
-(15 screenshots total.) Spot-check the unmapped-slug fallback at desktop only. Inspect for: hero balance, aside crowding, search form stacking, featured-card image cropping, city grid, trust-band squash, FAQ accordion open/closed states, related-pill wrap. Re-edit if anything breaks; otherwise report PASS per slug.
-
-## Phase 4 — Lock decision
-
-If the pass is clean, ask whether to lock `/professions/$profession` the same way the homepage is locked (new `mem://design/locked-profession-landing` + Core line + entry in `docs/07_phase1_build_status.md` lock log). Do **not** lock automatically.
-
-## Files touched (expected)
-
-- `src/routes/professions.$profession.tsx` — copy + radius + FAQ accordion + city heading + (maybe) head() tweaks.
-- No other route, component, or token files unless audit surfaces something unexpected.
-
-## Out of scope
-
-- Real search wiring, profile data, BD migration.
-- Imagery regeneration for `FeaturedCard` photos (flagged only).
-- `/in/$location` and `/find-a-professional` QA — separate passes.
+Files touched:
+- `src/routes/in.$location.tsx` — card swap, new sections, copy sweep
+- `src/components/public/FeaturedProCard.tsx` — new shared card
+- `src/routes/professions.$profession.tsx` — replace inline `FeaturedCard` with shared import
+- `mem://design/locked-cities` — new
+- `mem://index.md` — add Core entry
+- `docs/07_phase1_build_status.md` — lock log
