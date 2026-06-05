@@ -372,11 +372,11 @@ function HomeV2() {
           </div>
           <div className="relative mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
-              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6">
+              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-white p-6 shadow-[0_1px_2px_rgba(11,13,16,0.04),0_8px_24px_-12px_rgba(11,13,16,0.08)]">
                 <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-muted-light">
                   Step 0{i + 1}
                 </span>
-                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
+                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange ring-1 ring-reps-orange-border">
                   <s.icon className="h-5 w-5" strokeWidth={1.8} />
                 </span>
                 <h3 className="mt-5 font-display text-[19px] font-bold text-reps-charcoal">{s.t}</h3>
