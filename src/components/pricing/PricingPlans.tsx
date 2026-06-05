@@ -87,7 +87,7 @@ export function PricingPlans() {
               key={p.tier}
               className={
                 p.featured
-                  ? "relative flex flex-col rounded-[22px] border-2 border-reps-orange bg-reps-panel p-7"
+                  ? "relative flex flex-col rounded-[22px] border-2 border-reps-orange bg-gradient-to-b from-reps-panel to-reps-panel/80 p-8 ring-1 ring-reps-orange/30 lg:-translate-y-3 lg:scale-[1.03] lg:shadow-[0_30px_80px_-30px_rgba(255,122,0,0.45)]"
                   : "relative flex flex-col rounded-[22px] border border-reps-border bg-reps-panel p-7"
               }
             >
