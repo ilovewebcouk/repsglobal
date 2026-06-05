@@ -22,6 +22,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { VENUES } from "@/components/marketing/VenueWordmarks";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -29,19 +30,25 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 
 export const Route = createFileRoute("/find-a-professional")({
+  validateSearch: (raw: Record<string, unknown>) => {
+    const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
+    const venue =
+      venueRaw && VENUES.some((v) => v.slug === venueRaw) ? venueRaw : undefined;
+    return { venue };
+  },
   head: () => ({
     meta: [
       { title: "Find a Professional — REPs" },
       {
         name: "description",
         content:
-          "Search verified personal trainers, Pilates instructors, nutritionists and coaches near you. Filter by specialism, location, training type and rating.",
+          "Search verified personal trainers, Pilates instructors, nutritionists and coaches near you. Filter by specialism, location, training type, gym and rating.",
       },
       { property: "og:title", content: "Find a Professional — REPs" },
       {
         property: "og:description",
         content:
-          "Browse REPs-verified fitness professionals. Filter by specialism, location and training type.",
+          "Browse REPs-verified fitness professionals. Filter by specialism, location, gym and training type.",
       },
       { property: "og:url", content: "/find-a-professional" },
     ],
@@ -59,6 +66,13 @@ const popularSearches = [
   "Online Coaching",
 ];
 
+type ProVenue = {
+  /** Matches a slug in @/components/marketing/VenueWordmarks VENUES. */
+  slug: string;
+  /** Neighbourhood/branch label shown next to the gym name. */
+  branch: string;
+};
+
 type Pro = {
   name: string;
   role: string;
@@ -69,6 +83,8 @@ type Pro = {
   tags: [string, string, string];
   blurb: string;
   image: string;
+  /** Independent — REPs professionals choose where they train clients. */
+  venues: ProVenue[];
   featured?: boolean;
 };
 
@@ -83,6 +99,10 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Fat Loss", "Health & Fitness"],
     blurb: "Helping busy professionals build strength, improve fitness and feel their best.",
     image: proJames,
+    venues: [
+      { slug: "third-space", branch: "Mayfair" },
+      { slug: "virgin-active", branch: "Mayfair" },
+    ],
     featured: true,
   },
   {
@@ -95,6 +115,10 @@ const directoryPros: Pro[] = [
     tags: ["Pilates", "Posture", "Core Strength"],
     blurb: "Pilates for strength, mobility and long-term wellness. All levels welcome.",
     image: proSophie,
+    venues: [
+      { slug: "nuffield-health", branch: "Marylebone" },
+      { slug: "david-lloyd", branch: "Kensington" },
+    ],
   },
   {
     name: "Liam Roberts",
@@ -106,6 +130,10 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Performance", "Muscle Building"],
     blurb: "Build strength, move better and perform at your best.",
     image: proDaniel,
+    venues: [
+      { slug: "puregym", branch: "Soho" },
+      { slug: "gym-group", branch: "Victoria" },
+    ],
   },
   {
     name: "Priya Sharma",
@@ -117,6 +145,7 @@ const directoryPros: Pro[] = [
     tags: ["Nutrition", "Weight Management", "Healthy Eating"],
     blurb: "Science-based nutrition advice to help you build healthy habits and feel your best.",
     image: proLaura,
+    venues: [],
   },
   {
     name: "Daniel Hughes",
@@ -128,6 +157,10 @@ const directoryPros: Pro[] = [
     tags: ["Functional Training", "Fat Loss", "Lifestyle Coaching"],
     blurb: "Functional training and lifestyle coaching for long-term results.",
     image: proJames,
+    venues: [
+      { slug: "anytime-fitness", branch: "Covent Garden" },
+      { slug: "puregym", branch: "Holborn" },
+    ],
   },
   {
     name: "Emily Carter",
@@ -139,6 +172,10 @@ const directoryPros: Pro[] = [
     tags: ["Pilates", "Reformer Pilates", "Posture"],
     blurb: "Reformer and mat Pilates to improve strength, flexibility and posture.",
     image: proSophie,
+    venues: [
+      { slug: "third-space", branch: "Tower Bridge" },
+      { slug: "bannatyne", branch: "Russell Square" },
+    ],
   },
   {
     name: "Marcus Lee",
@@ -150,6 +187,11 @@ const directoryPros: Pro[] = [
     tags: ["Strength Training", "Athletic Performance", "Powerlifting"],
     blurb: "Strength and conditioning for athletes and everyday lifters.",
     image: proDaniel,
+    venues: [
+      { slug: "puregym", branch: "Holborn" },
+      { slug: "gym-group", branch: "Farringdon" },
+      { slug: "virgin-active", branch: "Barbican" },
+    ],
   },
   {
     name: "Hannah Thompson",
@@ -161,6 +203,10 @@ const directoryPros: Pro[] = [
     tags: ["Pre & Postnatal", "Pelvic Health", "Core Recovery"],
     blurb: "Support for every stage of pregnancy and postpartum recovery.",
     image: proLaura,
+    venues: [
+      { slug: "david-lloyd", branch: "Islington" },
+      { slug: "nuffield-health", branch: "City" },
+    ],
   },
 ];
 
@@ -200,6 +246,17 @@ const testimonials = [
 
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const { venue: venueFilter } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const activeVenue = VENUES.find((v) => v.slug === venueFilter);
+
+  const visiblePros = activeVenue
+    ? directoryPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : directoryPros;
+
+  const clearVenue = () =>
+    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
@@ -315,6 +372,20 @@ function DirectoryPage() {
                     <Select value="Any day" />
                   </FilterGroup>
 
+                  <FilterGroup label="Gym / venue">
+                    <VenueSelect
+                      value={activeVenue?.slug}
+                      onChange={(slug: string | undefined) =>
+                        navigate({
+                          search: (prev: { venue?: string }) => ({
+                            ...prev,
+                            venue: slug,
+                          }),
+                        })
+                      }
+                    />
+                  </FilterGroup>
+
                   <FilterGroup label="Rating" last>
                     <RatingRow stars={5} />
                     <RatingRow stars={4} />
@@ -350,10 +421,14 @@ function DirectoryPage() {
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
                   <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
-                    126 professionals in London
+                    {activeVenue
+                      ? `${visiblePros.length} professional${visiblePros.length === 1 ? "" : "s"} who coach at ${activeVenue.label}`
+                      : "126 professionals in London"}
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
-                    Showing 1–8 · all REPs Verified
+                    {activeVenue
+                      ? "Independent REPs-verified — not affiliated with the gym shown"
+                      : "Showing 1–8 · all REPs Verified"}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -377,6 +452,16 @@ function DirectoryPage() {
                 <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-reps-muted-light">
                   Active
                 </span>
+                {activeVenue && (
+                  <button
+                    type="button"
+                    onClick={clearVenue}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-3 py-1 text-[12px] font-medium text-reps-orange transition-colors hover:bg-reps-orange/15"
+                  >
+                    {activeVenue.label}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
                 {["Within 10mi", "In-person", "Online", "5★ & up"].map((chip) => (
                   <button
                     key={chip}
@@ -389,6 +474,7 @@ function DirectoryPage() {
                 ))}
                 <button
                   type="button"
+                  onClick={clearVenue}
                   className="ml-1 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-dark"
                 >
                   Clear all
@@ -397,11 +483,11 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              {directoryPros.length === 0 ? (
+              {visiblePros.length === 0 ? (
                 <EmptyResults />
               ) : (
                 <div className="space-y-4 pt-5">
-                  {directoryPros.slice(0, 4).map((p, i) => (
+                  {visiblePros.slice(0, 4).map((p, i) => (
                     <ProCard
                       key={p.name}
                       pro={p}
@@ -409,9 +495,9 @@ function DirectoryPage() {
                     />
                   ))}
 
-                  <EditorialBreak />
+                  {visiblePros.length > 4 && <EditorialBreak />}
 
-                  {directoryPros.slice(4).map((p, i) => (
+                  {visiblePros.slice(4).map((p, i) => (
                     <ProCard
                       key={p.name}
                       pro={p}
@@ -613,6 +699,34 @@ function Select({ value, placeholder }: { value: string; placeholder?: boolean }
   );
 }
 
+function VenueSelect({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (slug: string | undefined) => void;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        className="flex w-full appearance-none items-center justify-between rounded-[10px] border border-reps-stone bg-white px-3 py-2 pr-8 text-[13px] text-reps-charcoal focus:outline-none focus:ring-2 focus:ring-reps-orange/40"
+      >
+        <option value="">Any venue</option>
+        {VENUES.map((v) => (
+          <option key={v.slug} value={v.slug}>
+            {v.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-reps-muted-light" />
+    </div>
+  );
+}
+
+
+
 function Checkbox({ label, defaultChecked }: { label: string; defaultChecked?: boolean }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-reps-charcoal">
@@ -776,6 +890,31 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
               </span>
             ))}
           </div>
+          {pro.venues.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
+              <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
+              <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
+                Trains at
+              </span>
+              {pro.venues.slice(0, 2).map((v) => {
+                const venue = VENUES.find((x) => x.slug === v.slug);
+                if (!venue) return null;
+                return (
+                  <span
+                    key={`${v.slug}-${v.branch}`}
+                    className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
+                  >
+                    {venue.label} · {v.branch}
+                  </span>
+                );
+              })}
+              {pro.venues.length > 2 && (
+                <span className="text-[11px] text-reps-muted-light">
+                  +{pro.venues.length - 2}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT actions (desktop only) */}
@@ -825,7 +964,7 @@ function EmptyResults() {
         No professionals match those filters
       </h3>
       <p className="mx-auto mt-1.5 max-w-sm text-[13px] text-reps-muted-light">
-        Try widening the distance, removing a specialism, or switching between in-person and online.
+        Try widening the distance, removing a specialism or venue, or switching between in-person and online.
       </p>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
         <button
