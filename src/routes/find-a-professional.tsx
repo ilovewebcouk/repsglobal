@@ -560,6 +560,7 @@ function DirectoryPage() {
 
       <PublicFooter />
     </div>
+    </TooltipProvider>
   );
 }
 
