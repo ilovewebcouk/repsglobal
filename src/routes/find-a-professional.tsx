@@ -329,7 +329,7 @@ function DirectoryPage() {
                     <RatingRow stars={3} />
                   </FilterGroup>
                 </div>
-              </details>
+              </div>
 
               {/* Help card — fills the sticky rail beyond the filters */}
               <div className="mt-5 hidden rounded-[22px] border border-reps-stone bg-reps-warm-white p-5 lg:block">
