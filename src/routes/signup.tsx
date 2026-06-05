@@ -22,6 +22,9 @@ import {
 import { useState, type FormEvent } from "react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
