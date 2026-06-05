@@ -164,3 +164,7 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 - Booking flow on `/pro/$slug/enquire`.
 - Sitemap and `robots.txt` generation (not yet present).
 - Per-profession and per-location SEO landing-page generation at scale.
+
+## Lock log
+
+- 2026-06-05 — Homepage `/` LOCKED (Phase 1 approved). See `mem://design/locked-homepage`.
