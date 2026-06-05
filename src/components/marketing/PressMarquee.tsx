@@ -20,19 +20,19 @@ export function PressMarquee() {
         <div
           className="relative overflow-hidden"
           style={{
-            // Soft edge fades — narrow enough not to clip the leading wordmark.
+            // Soft edge fades — wider on mobile so marks aren't clipped at the viewport edge.
             maskImage:
-              "linear-gradient(to right, transparent 0, black 4rem, black calc(100% - 4rem), transparent 100%)",
+              "linear-gradient(to right, transparent 0, black 2.5rem, black calc(100% - 2.5rem), transparent 100%)",
             WebkitMaskImage:
-              "linear-gradient(to right, transparent 0, black 4rem, black calc(100% - 4rem), transparent 100%)",
+              "linear-gradient(to right, transparent 0, black 2.5rem, black calc(100% - 2.5rem), transparent 100%)",
           }}
         >
-          <div className="press-marquee-track flex w-max items-center gap-16 pl-16 text-white/55 lg:gap-24 lg:pl-24">
+          <div className="press-marquee-track flex w-max items-center gap-12 pl-12 text-white/55 sm:gap-16 sm:pl-16 lg:gap-24 lg:pl-24">
             {[...PRESS_WORDMARKS, ...PRESS_WORDMARKS].map(
               ({ key, Mark, widthClass }, i) => (
                 <Mark
                   key={`${key}-${i}`}
-                  className={`h-7 shrink-0 lg:h-8 ${widthClass}`}
+                  className={`h-6 shrink-0 sm:h-7 lg:h-8 ${widthClass}`}
                 />
               ),
             )}

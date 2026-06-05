@@ -191,7 +191,7 @@ function HomeV2() {
                   />
                 </label>
                 <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
-                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[200px]">
+                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[168px] lg:w-[200px]">
                   <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
                   <input
                     type="text"
@@ -459,11 +459,11 @@ function HomeV2() {
           {/* Inlined stats row — was a standalone band, now anchors the trust block */}
           <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-6">
-                <div className="font-display text-[34px] font-bold leading-none tracking-[-0.02em] text-reps-charcoal lg:text-[44px]">
+              <div key={s.label} className="flex flex-col items-start gap-1.5 bg-reps-ivory p-5 sm:p-6">
+                <div className="font-display text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-reps-charcoal sm:text-[32px] lg:text-[44px]">
                   {s.value}
                 </div>
-                <div className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">{s.label}</div>
+                <div className="text-[11px] font-medium uppercase tracking-wider text-reps-muted-light sm:text-[12px]">{s.label}</div>
               </div>
             ))}
           </div>
@@ -508,7 +508,7 @@ function HomeV2() {
                   Join 25,000+ verified pros. Get discovered, take bookings and run your practice — all in one place.
                 </p>
                 <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                  {["Verified profile that ranks", "Stripe-powered bookings", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
+                  {["Verified profile that ranks", "Built-in bookings & payments", "Clients, CRM & messaging", "CPD on rails"].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-[14px] text-white">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
                         <Star className="h-3 w-3 fill-reps-orange" />
