@@ -248,53 +248,59 @@ function DirectoryPage() {
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-14">
-          <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-            {/* Filter rail */}
+        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
+          <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
+            {/* Filter rail — collapsible on mobile/tablet */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]">
-                <div className="flex items-center justify-between border-b border-reps-stone pb-3">
-                  <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
-                  <button
-                    type="button"
-                    className="text-[12px] font-medium text-reps-orange hover:underline"
-                  >
-                    Clear all
-                  </button>
+              <details className="group rounded-[22px] border border-reps-stone bg-reps-warm-white shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)] lg:open" open>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 lg:hidden">
+                  <span className="text-[14px] font-semibold text-reps-charcoal">Filter results</span>
+                  <ChevronDown className="h-4 w-4 text-reps-muted-light transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-5 pb-5 sm:px-6 sm:pb-6 lg:px-6 lg:pt-6">
+                  <div className="hidden items-center justify-between border-b border-reps-stone pb-3 lg:flex">
+                    <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
+                    <button
+                      type="button"
+                      className="text-[12px] font-medium text-reps-orange hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+
+                  <FilterGroup label="Distance">
+                    <Select value="Within 10 miles" />
+                  </FilterGroup>
+
+                  <FilterGroup label="Specialism">
+                    <Select value="Select specialism" placeholder />
+                  </FilterGroup>
+
+                  <FilterGroup label="Training Type">
+                    <Checkbox label="In-person" defaultChecked />
+                    <Checkbox label="Online" defaultChecked />
+                    <Checkbox label="Both" defaultChecked />
+                  </FilterGroup>
+
+                  <FilterGroup label="Availability">
+                    <Select value="Any day" />
+                  </FilterGroup>
+
+                  <FilterGroup label="Rating" last>
+                    <RatingRow stars={5} />
+                    <RatingRow stars={4} />
+                    <RatingRow stars={3} />
+                  </FilterGroup>
                 </div>
-
-                <FilterGroup label="Distance">
-                  <Select value="Within 10 miles" />
-                </FilterGroup>
-
-                <FilterGroup label="Specialism">
-                  <Select value="Select specialism" placeholder />
-                </FilterGroup>
-
-                <FilterGroup label="Training Type">
-                  <Checkbox label="In-person" defaultChecked />
-                  <Checkbox label="Online" defaultChecked />
-                  <Checkbox label="Both" defaultChecked />
-                </FilterGroup>
-
-                <FilterGroup label="Availability">
-                  <Select value="Any day" />
-                </FilterGroup>
-
-                <FilterGroup label="Rating" last>
-                  <RatingRow stars={5} />
-                  <RatingRow stars={4} />
-                  <RatingRow stars={3} />
-                </FilterGroup>
-              </div>
+              </details>
             </aside>
 
             {/* Results column */}
             <div>
               {/* Sort/results bar */}
-              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-5">
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
-                  <h1 className="font-display text-[20px] font-semibold text-reps-charcoal lg:text-[22px]">
+                  <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
                     126 professionals in London
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
@@ -302,7 +308,7 @@ function DirectoryPage() {
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
-                  Sort by
+                  <span className="hidden sm:inline">Sort by</span>
                   <span className="relative">
                     <select
                       className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
@@ -333,21 +339,23 @@ function DirectoryPage() {
               {/* Pagination */}
               <nav
                 aria-label="Pagination"
-                className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6"
+                className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10"
               >
                 <p className="text-[12px] text-reps-muted-light">
                   Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
                   <span className="font-semibold text-reps-charcoal">126</span>
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <PagerBtn aria-label="Previous">
                     <ChevronLeft className="h-4 w-4" />
                   </PagerBtn>
                   <PagerNum n={1} active />
                   <PagerNum n={2} />
                   <PagerNum n={3} />
-                  <PagerNum n={4} />
-                  <PagerNum n={5} />
+                  <span className="hidden sm:contents">
+                    <PagerNum n={4} />
+                    <PagerNum n={5} />
+                  </span>
                   <span className="px-1 text-reps-muted-light">…</span>
                   <PagerNum n={13} />
                   <PagerBtn aria-label="Next">
@@ -359,6 +367,7 @@ function DirectoryPage() {
           </div>
         </div>
       </section>
+
 
       {/* ============ TRUST BAND ============ */}
       <section className="bg-reps-ivory pb-14">
