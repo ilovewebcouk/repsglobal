@@ -254,94 +254,7 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ VENUE STRIP — where you'll find our trainers (high-leverage trust + navigation) ============ */}
-      <VenueStrip />
-
-      {/* ============ SOCIAL PROOF RAIL ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
-            {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-warm-white p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-ivory text-reps-orange">
-                  <s.icon className="h-5 w-5" />
-                </span>
-                <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
-                  {s.value}
-                </div>
-                <div className="text-[13px] text-reps-muted-light">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============ HOW IT WORKS (4 steps) ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[680px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">How it works</span>
-            <h2 className="mt-2 font-display text-[34px] font-bold leading-tight text-reps-charcoal lg:text-[42px]">
-              Find the right coach in four steps.
-            </h2>
-            <p className="mt-3 text-[15px] text-reps-muted-light">
-              Every REPs professional clears the same bar — qualifications, insurance and CPD — so you start with a shortlist of people you can actually trust.
-            </p>
-          </div>
-          <div className="relative mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6">
-                <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                  Step 0{i + 1}
-                </span>
-                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
-                  <s.icon className="h-5 w-5" strokeWidth={1.8} />
-                </span>
-                <h3 className="mt-5 font-display text-[19px] font-bold text-reps-charcoal">{s.t}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============ EXPLORE BY SPECIALISM ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-[260px_1fr]">
-            <div>
-              <div className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Explore by</div>
-              <h2 className="mt-1 font-display text-[34px] font-bold leading-tight text-reps-charcoal">Specialism</h2>
-              <p className="mt-2 max-w-[220px] text-[14px] text-reps-muted-light">
-                Find the right expert for your goals.
-              </p>
-              <Link
-                to="/find-a-professional"
-                className="mt-5 inline-flex items-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-4 py-2.5 text-[13px] font-medium text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-              >
-                View all specialisms <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-4 gap-4 lg:grid-cols-8">
-              {specialisms.map((sp) => (
-                <button
-                  key={sp.label}
-                  type="button"
-                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5"
-                >
-                  <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white text-reps-charcoal transition-all group-hover:border-reps-orange/40 group-hover:text-reps-orange">
-                    <sp.icon className="h-7 w-7" strokeWidth={1.6} />
-                  </span>
-                  <span className="text-[13px] font-medium text-reps-charcoal">{sp.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ FEATURED PROFESSIONALS ============ */}
+      {/* ============ FEATURED PROFESSIONALS — product first ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="flex items-end justify-between gap-4">
@@ -410,7 +323,72 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ OUTCOMES (new emotional layer) ============ */}
+      {/* ============ EXPLORE BY SPECIALISM ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[260px_1fr]">
+            <div>
+              <div className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Explore by</div>
+              <h2 className="mt-1 font-display text-[34px] font-bold leading-tight text-reps-charcoal">Specialism</h2>
+              <p className="mt-2 max-w-[220px] text-[14px] text-reps-muted-light">
+                Find the right expert for your goals.
+              </p>
+              <Link
+                to="/find-a-professional"
+                className="mt-5 inline-flex items-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-4 py-2.5 text-[13px] font-medium text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
+              >
+                View all specialisms <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-4 gap-4 lg:grid-cols-8">
+              {specialisms.map((sp) => (
+                <button
+                  key={sp.label}
+                  type="button"
+                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5"
+                >
+                  <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white text-reps-charcoal transition-all group-hover:border-reps-orange/40 group-hover:text-reps-orange">
+                    <sp.icon className="h-7 w-7" strokeWidth={1.6} />
+                  </span>
+                  <span className="text-[13px] font-medium text-reps-charcoal">{sp.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ HOW IT WORKS (4 steps) ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[680px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">How it works</span>
+            <h2 className="mt-2 font-display text-[34px] font-bold leading-tight text-reps-charcoal lg:text-[42px]">
+              Find the right coach in four steps.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              Every REPs professional clears the same bar — qualifications, insurance and CPD — so you start with a shortlist of people you can actually trust.
+            </p>
+          </div>
+          <div className="relative mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <div key={s.t} className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6">
+                <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                  Step 0{i + 1}
+                </span>
+                <span className="mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
+                  <s.icon className="h-5 w-5" strokeWidth={1.8} />
+                </span>
+                <h3 className="mt-5 font-display text-[19px] font-bold text-reps-charcoal">{s.t}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ OUTCOMES ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[680px]">
@@ -447,7 +425,7 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ WHY TRUST REPs ============ */}
+      {/* ============ WHY TRUST REPs — stats + pillars + closing quote folded in ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-start">
@@ -478,19 +456,32 @@ function HomeV2() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ============ EDITORIAL QUOTE ============ */}
-      <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        <img src={heroCoaching.url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-black/60 via-reps-ink/85 to-reps-black" />
-        <div className="relative mx-auto max-w-[960px] px-6 py-24 text-center lg:px-10 lg:py-32">
-          <Quote className="mx-auto h-8 w-8 text-reps-orange" />
-          <p className="mt-6 font-display text-[28px] font-bold leading-tight text-white sm:text-[36px] lg:text-[44px]">
-            "The world's register of verified fitness professionals — so you never have to guess who you're trusting your body with."
-          </p>
-          <p className="mt-6 text-[13px] uppercase tracking-[0.18em] text-white/55">REPs — Since 2009</p>
+          {/* Inlined stats row — was a standalone band, now anchors the trust block */}
+          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-4">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col items-start gap-2 bg-reps-ivory p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
+                  <s.icon className="h-5 w-5" />
+                </span>
+                <div className="font-display text-[30px] font-bold leading-none text-reps-charcoal lg:text-[36px]">
+                  {s.value}
+                </div>
+                <div className="text-[13px] text-reps-muted-light">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Folded-in editorial pull-quote — now the closing line of the trust crescendo */}
+          <figure className="mx-auto mt-14 max-w-[860px] text-center">
+            <Quote className="mx-auto h-7 w-7 text-reps-orange" />
+            <blockquote className="mt-5 font-display text-[24px] font-bold leading-tight text-reps-charcoal sm:text-[30px] lg:text-[34px]">
+              "The world's register of verified fitness professionals — so you never have to guess who you're trusting your body with."
+            </blockquote>
+            <figcaption className="mt-5 text-[12px] uppercase tracking-[0.18em] text-reps-muted-light">
+              REPs — Since 2009
+            </figcaption>
+          </figure>
         </div>
       </section>
 
