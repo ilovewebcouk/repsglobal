@@ -738,14 +738,18 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
                 Verified
               </span>
             </div>
-            <button
-              type="button"
-              aria-label="Save"
-              title="Save"
-              className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
-            >
-              <Bookmark className="h-4 w-4" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Save"
+                  className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
+                >
+                  <Bookmark className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
