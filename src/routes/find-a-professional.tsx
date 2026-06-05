@@ -405,17 +405,29 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              <div className="space-y-4 pt-5">
-                {directoryPros.slice(0, 4).map((p) => (
-                  <ProCard key={p.name} pro={p} />
-                ))}
+              {directoryPros.length === 0 ? (
+                <EmptyResults />
+              ) : (
+                <div className="space-y-4 pt-5">
+                  {directoryPros.slice(0, 4).map((p, i) => (
+                    <ProCard
+                      key={p.name}
+                      pro={p}
+                      ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
+                    />
+                  ))}
 
-                <EditorialBreak />
+                  <EditorialBreak />
 
-                {directoryPros.slice(4).map((p) => (
-                  <ProCard key={p.name} pro={p} />
-                ))}
-              </div>
+                  {directoryPros.slice(4).map((p, i) => (
+                    <ProCard
+                      key={p.name}
+                      pro={p}
+                      ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               <nav
