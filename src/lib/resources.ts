@@ -128,7 +128,7 @@ const PRIYA = {
   author: "Dr Priya Shah",
   authorRole: "Head of Coaching Practice, REPs",
   authorBio:
-    "Priya leads coaching standards at REPs and has spent fifteen years coaching and mentoring coaches across the UK.",
+    "Priya leads coaching standards at REPs and has spent fifteen years coaching and mentoring coaches worldwide.",
 };
 const MARK = {
   author: "Mark Ellis",
