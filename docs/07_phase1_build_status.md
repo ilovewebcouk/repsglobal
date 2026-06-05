@@ -60,7 +60,7 @@ Status legend:
 |---|---|---|
 | `/pro/$slug` | Shipped | Layout outlet. |
 | `/pro/$slug/` | Shipped | Locked profile layout — horizontal service cards, no icons, 3-col grid. Do not redesign without explicit request. |
-| `/pro/$slug/enquire` | Shipped | Enquiry page with summary card (scaled-down pro photo uses the documented exception in `mem://design/source-of-truth`). |
+| `/pro/$slug/enquire` | **Locked — Phase 1 approved** | Enquiry page. All form controls migrated to shadcn primitives (RadioGroup, ToggleGroup, Select, Textarea, Input, Checkbox, Badge, Button). Section order, radius map (incl. 14px photo exception) and copy frozen. See `mem://design/locked-enquire`. |
 
 ## 4. Auth
 
@@ -170,3 +170,4 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 - 2026-06-05 — Homepage `/` LOCKED (Phase 1 approved). See `mem://design/locked-homepage`.
 - 2026-06-05 — Profession landing pages `/professions/$profession` LOCKED (Phase 1 approved). Full visual + copy QA pass on all 5 mapped slugs (PT, PI, NU, SC, OC). See `mem://design/locked-professions`.
 - 2026-06-05 — City landing pages `/in/$location` LOCKED (Phase 1 approved). Unified to shared `FeaturedProCard` (extracted to `src/components/public/FeaturedProCard.tsx` and adopted by professions page too), added FAQ + related cities, de-UK'd region copy. Full visual + copy QA on all 4 mapped slugs (London, Manchester, Birmingham, Edinburgh) + fallback. See `mem://design/locked-cities`.
+- 2026-06-05 — Enquire page `/pro/$slug/enquire` LOCKED (Phase 1 approved). Migrated every form control to shadcn primitives (RadioGroup, ToggleGroup multi-select capped at 3, Select, Textarea, Input, Checkbox, Badge, Button with `data-icon`). Layout/section order unchanged. Radius scale clean; the single 14px on the summary pro photo is the documented memory-allowed exception. See `mem://design/locked-enquire`.
