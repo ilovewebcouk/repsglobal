@@ -169,6 +169,33 @@ const trustItems = [
   { icon: Users, title: "Trusted Worldwide", sub: "In-person & online" },
 ];
 
+const testimonials = [
+  {
+    quote:
+      "I'd been burned by PTs who weren't actually qualified. REPs let me see credentials before I even booked. My coach is brilliant.",
+    name: "Natalie S.",
+    role: "Strength training",
+    city: "London",
+    image: proLaura,
+  },
+  {
+    quote:
+      "Found a Pilates instructor who understood my back rehab brief on the first message. Verified, insured, and genuinely good.",
+    name: "Maya R.",
+    role: "Pilates",
+    city: "Manchester",
+    image: proSophie,
+  },
+  {
+    quote:
+      "I work shifts so I needed someone flexible and remote. REPs filtered down to qualified online coaches in minutes.",
+    name: "Tom B.",
+    role: "Online coaching",
+    city: "Bristol",
+    image: proDaniel,
+  },
+];
+
 function DirectoryPage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
