@@ -139,7 +139,7 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+              className="absolute inset-0 h-full w-full object-cover object-[78%_30%]"
             />
             <div
               className="absolute inset-0"
