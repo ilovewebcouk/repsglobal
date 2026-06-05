@@ -405,17 +405,29 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              <div className="space-y-4 pt-5">
-                {directoryPros.slice(0, 4).map((p) => (
-                  <ProCard key={p.name} pro={p} />
-                ))}
+              {directoryPros.length === 0 ? (
+                <EmptyResults />
+              ) : (
+                <div className="space-y-4 pt-5">
+                  {directoryPros.slice(0, 4).map((p, i) => (
+                    <ProCard
+                      key={p.name}
+                      pro={p}
+                      ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
+                    />
+                  ))}
 
-                <EditorialBreak />
+                  <EditorialBreak />
 
-                {directoryPros.slice(4).map((p) => (
-                  <ProCard key={p.name} pro={p} />
-                ))}
-              </div>
+                  {directoryPros.slice(4).map((p, i) => (
+                    <ProCard
+                      key={p.name}
+                      pro={p}
+                      ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               <nav
@@ -666,7 +678,7 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro }: { pro: Pro }) {
+function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: string }) {
   const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
@@ -726,6 +738,7 @@ function ProCard({ pro }: { pro: Pro }) {
             <button
               type="button"
               aria-label="Save"
+              title="Save"
               className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
             >
               <Bookmark className="h-4 w-4" />
@@ -782,6 +795,7 @@ function ProCard({ pro }: { pro: Pro }) {
           <button
             type="button"
             aria-label="Save"
+            title="Save"
             className="rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
           >
             <Bookmark className="h-4 w-4" />
@@ -791,7 +805,7 @@ function ProCard({ pro }: { pro: Pro }) {
             params={{ slug: proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
-            View Profile
+            {ctaLabel}
           </Link>
         </div>
 
@@ -801,12 +815,45 @@ function ProCard({ pro }: { pro: Pro }) {
           params={{ slug: proSlug(pro.name) }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
-          View Profile
+          {ctaLabel}
         </Link>
       </div>
     </article>
   );
 }
+
+
+function EmptyResults() {
+  return (
+    <div className="mt-5 rounded-[18px] border border-dashed border-reps-stone bg-reps-warm-white px-6 py-12 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-reps-stone">
+        <Search className="h-5 w-5 text-reps-muted-light" />
+      </div>
+      <h3 className="mt-4 font-display text-[18px] font-semibold text-reps-charcoal">
+        No professionals match those filters
+      </h3>
+      <p className="mx-auto mt-1.5 max-w-sm text-[13px] text-reps-muted-light">
+        Try widening the distance, removing a specialism, or switching between in-person and online.
+      </p>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+        >
+          Clear all filters
+        </button>
+        <Link
+          to="/find-a-professional"
+          className="inline-flex items-center justify-center rounded-[10px] border border-reps-stone bg-white px-4 py-2 text-[13px] font-semibold text-reps-charcoal transition-colors hover:border-reps-orange hover:text-reps-orange"
+        >
+          Browse all REPs
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+
 
 
 function EditorialBreak() {
