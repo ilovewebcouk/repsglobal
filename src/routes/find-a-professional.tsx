@@ -728,7 +728,15 @@ function EditorialBreak() {
   );
 }
 
-function PagerNum({ n, active }: { n: number; active?: boolean }) {
+function PagerNum({
+  n,
+  active,
+  className,
+}: {
+  n: number;
+  active?: boolean;
+  className?: string;
+}) {
   return (
     <button
       type="button"
@@ -736,7 +744,7 @@ function PagerNum({ n, active }: { n: number; active?: boolean }) {
         active
           ? "bg-reps-orange text-white"
           : "border border-reps-stone bg-white text-reps-charcoal hover:bg-reps-warm-white"
-      }`}
+      } ${className ?? ""}`}
     >
       {n}
     </button>
