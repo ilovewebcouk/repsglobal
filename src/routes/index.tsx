@@ -33,6 +33,7 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
+import { VenueStrip } from "@/components/marketing/VenueStrip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -253,8 +254,8 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ PRESS STRIP — editorial wordmarks (canonical) ============ */}
-      <PressMarquee />
+      {/* ============ VENUE STRIP — where you'll find our trainers (high-leverage trust + navigation) ============ */}
+      <VenueStrip />
 
       {/* ============ SOCIAL PROOF RAIL ============ */}
       <section className="bg-reps-ivory">
@@ -576,6 +577,9 @@ function HomeV2() {
           </div>
         </div>
       </section>
+
+      {/* ============ PRESS STRIP — demoted to footer-adjacent (pro / investor / journalist trust) ============ */}
+      <PressMarquee />
 
       <PublicFooter />
     </div>
