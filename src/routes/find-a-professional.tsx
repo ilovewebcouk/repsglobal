@@ -351,13 +351,13 @@ function DirectoryPage() {
                   </PagerBtn>
                   <PagerNum n={1} active />
                   <PagerNum n={2} />
-                  <PagerNum n={3} />
+                  <PagerNum n={3} className="hidden sm:flex" />
                   <span className="hidden sm:contents">
                     <PagerNum n={4} />
                     <PagerNum n={5} />
                   </span>
-                  <span className="px-1 text-reps-muted-light">…</span>
-                  <PagerNum n={13} />
+                  <span className="hidden px-1 text-reps-muted-light sm:inline">…</span>
+                  <PagerNum n={13} className="hidden sm:flex" />
                   <PagerBtn aria-label="Next">
                     <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </PagerBtn>
