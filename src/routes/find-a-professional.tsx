@@ -170,6 +170,8 @@ const trustItems = [
 function DirectoryPage() {
   return (
     <div className="min-h-screen bg-reps-ivory">
+      <PublicHeader variant="transparent" />
+
       {/* ============ SEARCH HERO ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         {/* atmosphere */}
@@ -187,7 +189,6 @@ function DirectoryPage() {
           className="absolute inset-x-0 top-0 -z-10 h-px bg-white/5"
         />
 
-        <PublicHeader variant="transparent" />
 
         <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[120px] sm:px-6 sm:pb-12 sm:pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
           {/* editorial title */}
