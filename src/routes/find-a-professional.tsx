@@ -746,7 +746,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
                   <Bookmark className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+              <TooltipContent side="left" sideOffset={6} className="bg-reps-black text-white">Save</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -807,7 +807,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
                 <Bookmark className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={6}>Save</TooltipContent>
+            <TooltipContent side="left" sideOffset={6} className="bg-reps-black text-white">Save</TooltipContent>
           </Tooltip>
           <Link
             to="/pro/$slug"
