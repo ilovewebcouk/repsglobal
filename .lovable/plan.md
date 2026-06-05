@@ -1,47 +1,63 @@
-## Problem
+## QA verdict — brutally honest
 
-On `/find-a-professional`, the page sections (results grid, editorial break, testimonials, etc.) visually paint **over** the fixed navbar as you scroll. It is not actually a z-index value problem — `PublicHeader` already sets `z-30` and `fixed inset-x-0 top-0`.
+**Where it sits today: a strong 8/10.** It's clean, it has rhythm (black hero → ivory cards → dark editorial break → ivory cards → trust band → dark testimonial → footer), and it doesn't feel like a template. The Stripe-ish editorial directory aesthetic is landing.
 
-The real cause is a **stacking context trap**:
+**It is not world-class yet.** Five things are still holding it back. I'd fix all five before signing off.
 
-```tsx
-<section className="relative isolate overflow-hidden ...">   // hero
-  <div className="absolute inset-0 -z-10 ..." />              // bg layers
-  <PublicHeader variant="transparent" />                       // ← header is INSIDE
-  ...
-</section>
+---
 
-<section className="bg-reps-ivory">...results...</section>    // sibling
-<section>...editorial break...</section>
-<section>...testimonials...</section>
-```
+### 1. The "Featured" card is barely featured
 
-`isolate` on the hero creates a new stacking context. The fixed `PublicHeader` (z-30) is scoped *inside* that context, so its effective stacking is "hero's z-index (auto/0) + 30". The sibling sections that follow are painted **after** the hero in normal flow with z auto, so they render on top of the entire hero stacking context — including the fixed header. Result: cards/banners overflow the navbar on scroll.
+`James Wilson` has a small orange `FEATURED` badge but the card itself is the same width, same shadow, same border, same photo size as every other card on the rendered desktop view. The visual promise of "featured" doesn't pay off.
 
-## Fix
+**Fix:** Add a thin (1.5px) `reps-orange` left border (or full border at 1px) and a faint warm tint (`bg-reps-warm-white` instead of pure white), plus bump the inner photo to a slightly larger module (160px desktop, current target 140px is being clamped). Keep the badge. The card should read as "premium tier" at a glance without needing to read the badge.
 
-Lift `PublicHeader` out of the isolated hero so it lives at the page root, above every section's stacking context.
+### 2. No active-filter chips between header and results
 
-### Change in `src/routes/find-a-professional.tsx`
+Every world-class directory (Airbnb, Booking, Vinted, Class Pass) shows the user's *current* search state as removable chips above the result list: `Within 10mi ×` `In-person ×` `Strength Coach ×`. Right now the sidebar holds state, the header says "126 professionals in London", and there is no bridge. Users can't see what filters are active without scanning the rail.
 
-1. Render `<PublicHeader variant="transparent" />` as the first child of the page's outer `<div className="min-h-screen bg-reps-ivory">`, *before* the hero `<section>`.
-2. Remove the `<PublicHeader />` line from inside the hero section.
-3. Keep the hero's `relative isolate overflow-hidden` (it's needed to clip the `-z-10` background layers). No other layout/spacing changes — the hero already reserves top padding (`pt-[120px] sm:pt-[140px] lg:pt-[168px]`) for the fixed header, so visuals stay identical.
+**Fix:** Insert a one-line `ActiveFilterChips` row directly under the "126 professionals in London / Sort by" header. Pre-populate with mock chips (`In-person`, `Both`, `Online`, `5★ & up`, `Within 10mi`) styled as soft `reps-stone` outlined pills with an `×` glyph. Static — this is still a mock-up.
 
-### Defensive bump (optional, recommended)
+### 3. Sticky sidebar leaves a 600px+ dead zone on desktop
 
-Bump `PublicHeader`'s wrapper from `z-30` to `z-50` so any future sibling that introduces its own stacking context (e.g. a modal backdrop, sticky filter rail with a custom z) still sits below it. The sticky filter `<aside>` on this page has no explicit z, so it stays under the header.
+Once the filter rail ends (~AVAILABILITY/RATING block), the left column is empty all the way down through the rest of the results, the dark editorial break, and the trust band. Sticky doesn't save it because the rail is shorter than the right column from the start.
 
-## Why not just remove `isolate`?
+**Fix:** Below the filter card in the same column, add a small `bg-reps-warm-white` help card: an icon + "Can't find your match?" + one-line copy + a `story-link` "Tell us what you need →". Same 22px radius, same warm tone. Fills the rail without screaming.
 
-`isolate` is doing real work — it keeps the `-z-10` background image and gradient from leaking behind the page background. Removing it would risk the hero artwork disappearing or bleeding into other sections. Lifting the header out is the safer, scoped fix.
+### 4. Closing testimonial is thin
 
-## Verification
+A single quote in a dark band reads like a placeholder for "we'll add more later". For a directory page that has to *sell trust*, one anonymous testimonial under a long results list is the weakest closer on the page.
 
-- Screenshot at 1320 / 768 / 390 px, scrolled ~600px down: navbar must sit above the results grid, editorial break, and testimonial section.
-- Backdrop-blur on header (if any) should still composite correctly over scrolled content.
-- No layout shift in the hero (top padding unchanged).
+**Fix:** Convert the testimonial section into a 3-up grid on desktop (1-up stacked on mobile) — three short quotes, three different REPs categories represented (e.g. PT, Pilates, Nutritionist), each with name + city + 5-star row above the quote. Keep the dark atmosphere + dark gym backdrop + orange `“` glyph as the section header. Static mock data is fine.
 
-## Out of scope
+### 5. Trust band reads as a card stuck on the page
 
-No other routes touched. No changes to `PublicHeader` internals beyond the optional `z-30 → z-50` bump.
+`Why trust REPs professionals?` sits inside a single rounded panel with the four trust items as columns. On desktop it's fine; on the eye it competes with the result cards above it because it uses the same shape, same border, same shadow, same radius. There's no editorial separation between "results" and "marketing closer".
+
+**Fix:** Replace the card with a borderless full-bleed band: just a thin top hairline rule (`border-t border-reps-stone`), keep the same content, drop the panel chrome. Lets the four trust pillars sit visually between the data section and the testimonial closer instead of duplicating the card pattern.
+
+---
+
+### Lower-priority polish (do if there's time)
+
+- **Mobile filter accordion** defaults to `open` — close it by default on `<lg` so mobile users land on results, not filters.
+- **Search button copy** — "Find Professionals" is wordy. Tighten to "Search" with the magnifier, or drop the icon and keep the words. Pick one.
+- **Bookmark icon** on each card is unlabelled and lonely. Either pair it with a `MessageSquare` quick-action OR give it a hover tooltip "Save".
+- **First card photo crop** (and a few others) crops faces at the hairline. Not a code fix — flag for the image swap pass.
+
+---
+
+### What I will NOT touch
+
+- The dark hero is locked in and reads well.
+- The "WHY REPS" editorial break between cards 4 and 5 — it's doing real work breaking the vertical repetition.
+- The header z-index / stacking fix from the previous turn.
+- Pagination layout — already polished across breakpoints.
+
+---
+
+### Implementation scope (one turn)
+
+All changes in `src/routes/find-a-professional.tsx`. No new files, no design tokens added (uses existing `reps-orange`, `reps-warm-white`, `reps-stone`, `reps-charcoal`, `reps-muted-light`). No new packages. Verify with desktop (1440), tablet (768), mobile (390) screenshots.
+
+If you want me to ship all five fixes in one pass, approve and I'll do it.
