@@ -218,7 +218,7 @@ export function PillarPage({
           <h2 className="font-display text-[24px] font-bold text-white lg:text-[28px]">
             Explore the rest of the platform
           </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {otherGroups.map((g) => (
               <GroupTile key={g.key} group={g} />
             ))}

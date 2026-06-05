@@ -38,7 +38,9 @@ export function FeatureGroupLayout({
   children,
 }: Props) {
   const group = groupBySlug(groupKey);
-  const features = FEATURES.filter((f) => f.group === groupKey);
+  const features = FEATURES.filter(
+    (f) => f.group === groupKey || f.crossList?.includes(groupKey),
+  );
   const otherGroups = FEATURE_GROUPS.filter((g) => g.key !== groupKey);
 
   return (
@@ -203,27 +205,30 @@ export function FeatureGroupLayout({
               </h2>
             </div>
             <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((f) => (
-                <Link
-                  key={f.slug}
-                  to="/features/$slug"
-                  params={{ slug: f.slug }}
-                  className="group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <f.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 font-display text-[18px] font-bold text-white group-hover:text-reps-orange">
-                    {f.label}
-                  </h3>
-                  <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-white/65">
-                    {f.oneLiner}
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
-                    Learn more <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
-                </Link>
-              ))}
+              {features.map((f) => {
+                const href = f.customHref ?? `/features/${f.slug}`;
+                const isCross = f.crossList?.includes(groupKey) && f.group !== groupKey;
+                return (
+                  <Link
+                    key={`${f.slug}-${groupKey}`}
+                    to={href as "/features/shop-front"}
+                    className="group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                      <f.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-4 font-display text-[18px] font-bold text-white group-hover:text-reps-orange">
+                      {f.label}
+                    </h3>
+                    <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-white/65">
+                      {f.oneLiner}
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
+                      {isCross ? "See in Shop-front" : "Learn more"} <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -237,7 +242,7 @@ export function FeatureGroupLayout({
           <h2 className="font-display text-[22px] font-bold text-white">
             Explore the rest of the platform
           </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {otherGroups.map((g) => (
               <GroupTile key={g.key} group={g} />
             ))}

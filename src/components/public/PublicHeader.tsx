@@ -700,13 +700,15 @@ function ForProsMenu() {
                     to={
                       g.key === "visibility"
                         ? "/features/visibility"
-                        : g.key === "operations"
-                          ? "/features/operations"
-                          : g.key === "coaching"
-                            ? "/features/coaching"
-                            : g.key === "ai"
-                              ? "/features/ai"
-                              : "/features/growth"
+                        : g.key === "shopfront"
+                          ? "/features/shop-front"
+                          : g.key === "operations"
+                            ? "/features/operations"
+                            : g.key === "coaching"
+                              ? "/features/coaching"
+                              : g.key === "ai"
+                                ? "/features/ai"
+                                : "/features/growth"
                     }
                     className="group/feat flex items-start gap-2.5 rounded-[12px] p-2 transition-colors hover:bg-reps-warm-white focus:bg-reps-warm-white focus:outline-none"
                   >
