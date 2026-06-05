@@ -448,6 +448,16 @@ function DirectoryPage() {
                 <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-reps-muted-light">
                   Active
                 </span>
+                {activeVenue && (
+                  <button
+                    type="button"
+                    onClick={clearVenue}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-3 py-1 text-[12px] font-medium text-reps-orange transition-colors hover:bg-reps-orange/15"
+                  >
+                    {activeVenue.label}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
                 {["Within 10mi", "In-person", "Online", "5★ & up"].map((chip) => (
                   <button
                     key={chip}
@@ -460,6 +470,7 @@ function DirectoryPage() {
                 ))}
                 <button
                   type="button"
+                  onClick={clearVenue}
                   className="ml-1 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-dark"
                 >
                   Clear all
@@ -468,11 +479,11 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              {directoryPros.length === 0 ? (
+              {visiblePros.length === 0 ? (
                 <EmptyResults />
               ) : (
                 <div className="space-y-4 pt-5">
-                  {directoryPros.slice(0, 4).map((p, i) => (
+                  {visiblePros.slice(0, 4).map((p, i) => (
                     <ProCard
                       key={p.name}
                       pro={p}
@@ -480,9 +491,9 @@ function DirectoryPage() {
                     />
                   ))}
 
-                  <EditorialBreak />
+                  {visiblePros.length > 4 && <EditorialBreak />}
 
-                  {directoryPros.slice(4).map((p, i) => (
+                  {visiblePros.slice(4).map((p, i) => (
                     <ProCard
                       key={p.name}
                       pro={p}
