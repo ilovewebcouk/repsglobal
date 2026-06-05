@@ -738,6 +738,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
             <button
               type="button"
               aria-label="Save"
+              title="Save"
               className="shrink-0 rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light transition-colors hover:border-reps-orange hover:text-reps-orange"
             >
               <Bookmark className="h-4 w-4" />
