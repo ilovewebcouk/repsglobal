@@ -189,25 +189,26 @@ function DirectoryPage() {
 
         <PublicHeader variant="transparent" />
 
-        <div className="mx-auto max-w-[1320px] px-6 pb-12 pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
+        <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[120px] sm:px-6 sm:pb-12 sm:pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
           {/* editorial title */}
           <div className="max-w-[760px]">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-              Every REP verified · qualified · insured
+              <span className="hidden sm:inline">Every REP verified · qualified · insured</span>
+              <span className="sm:hidden">Verified · qualified · insured</span>
             </div>
-            <h1 className="mt-5 font-display text-[40px] font-bold leading-[1.04] tracking-tight text-white lg:text-[58px]">
+            <h1 className="mt-5 font-display text-[32px] font-bold leading-[1.05] tracking-tight text-white sm:text-[40px] lg:text-[58px]">
               Find a coach worth trusting.
             </h1>
-            <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-white/70 lg:text-[16px]">
+            <p className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-white/70 sm:text-[15px] lg:text-[16px]">
               Search the global register of qualified, insured and credential-checked
               fitness professionals — in your city, on your schedule, in person or online.
             </p>
           </div>
 
           {/* search panel */}
-          <div className="mt-8 rounded-[22px] border border-white/10 bg-reps-panel/75 p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.1fr_1.1fr_1fr_auto]">
+          <div className="mt-7 rounded-[22px] border border-white/10 bg-reps-panel/75 p-2.5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md sm:mt-8 sm:p-3">
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_1fr_auto]">
               <SearchField
                 label="I'm looking for"
                 placeholder="e.g. Personal Trainer"
@@ -222,14 +223,14 @@ function DirectoryPage() {
               />
               <button
                 type="button"
-                className="inline-flex h-[62px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                className="inline-flex h-[56px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark md:col-span-2 lg:col-span-1 lg:h-[62px]"
               >
                 <Search className="h-4 w-4" />
                 Find Professionals
               </button>
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-3 pb-2 pt-4 text-[13px]">
-              <span className="font-medium text-white/55">Popular searches:</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-2 pb-1 pt-4 text-[13px] sm:px-3 sm:pb-2">
+              <span className="font-medium text-white/55">Popular:</span>
               {popularSearches.map((s) => (
                 <button
                   key={s}
@@ -242,6 +243,7 @@ function DirectoryPage() {
             </div>
           </div>
         </div>
+
       </section>
 
       {/* ============ RESULTS ============ */}
