@@ -678,7 +678,7 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro }: { pro: Pro }) {
+function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: string }) {
   const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
