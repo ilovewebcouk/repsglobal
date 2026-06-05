@@ -22,6 +22,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { VENUES } from "@/components/marketing/VenueWordmarks";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -29,19 +30,25 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 
 export const Route = createFileRoute("/find-a-professional")({
+  validateSearch: (raw: Record<string, unknown>) => {
+    const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
+    const venue =
+      venueRaw && VENUES.some((v) => v.slug === venueRaw) ? venueRaw : undefined;
+    return { venue };
+  },
   head: () => ({
     meta: [
       { title: "Find a Professional — REPs" },
       {
         name: "description",
         content:
-          "Search verified personal trainers, Pilates instructors, nutritionists and coaches near you. Filter by specialism, location, training type and rating.",
+          "Search verified personal trainers, Pilates instructors, nutritionists and coaches near you. Filter by specialism, location, training type, gym and rating.",
       },
       { property: "og:title", content: "Find a Professional — REPs" },
       {
         property: "og:description",
         content:
-          "Browse REPs-verified fitness professionals. Filter by specialism, location and training type.",
+          "Browse REPs-verified fitness professionals. Filter by specialism, location, gym and training type.",
       },
       { property: "og:url", content: "/find-a-professional" },
     ],
