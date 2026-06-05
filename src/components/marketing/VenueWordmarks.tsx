@@ -107,7 +107,7 @@ export type VenueEntry = {
   key: string;
   slug: string;
   label: string;
-  Mark: (props: WordmarkProps) => JSX.Element;
+  Mark: (props: WordmarkProps) => React.ReactElement;
   widthClass: string;
 };
 
