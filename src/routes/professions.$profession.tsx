@@ -16,6 +16,7 @@ import {
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import heroTrainer from "@/assets/hero-trainer.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -334,18 +335,18 @@ function ProfessionLanding() {
         </nav>
       </div>
 
-      {/* Hero */}
+      {/* Hero — compact 50/50 with photo */}
       <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-6 lg:px-10 lg:pb-14 lg:pt-10">
-        <div className="grid items-end gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+        <div className="grid items-stretch gap-8 lg:grid-cols-2">
+          <div className="flex flex-col justify-center">
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <BadgeCheck className="h-3 w-3 text-reps-orange" />
-              {meta.count.toLocaleString()} REPs-verified {meta.plural.toLowerCase()}
+              {meta.count.toLocaleString()} verified · 4.9★ average
             </span>
-            <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
+            <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[52px]">
               Find a verified <span className="text-reps-orange">{meta.title}</span>
             </h1>
-            <p className="mt-4 max-w-[620px] text-[16px] leading-relaxed text-reps-muted-light">
+            <p className="mt-4 max-w-[560px] text-[16px] leading-relaxed text-reps-muted-light">
               {meta.blurb}
             </p>
 
@@ -375,46 +376,138 @@ function ProfessionLanding() {
                 Search
               </Link>
             </form>
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-reps-muted-light">
+              <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-reps-orange" /> Identity, qualifications & insurance checked</span>
+              <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5 text-reps-orange" /> No REPs booking fee</span>
+            </div>
           </div>
 
-          {/* Meta panel */}
-          <aside className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
-            <h2 className="font-display text-[18px] font-bold text-reps-charcoal">At a glance</h2>
-            <dl className="mt-4 space-y-3 text-[13px]">
-              <div className="flex items-center justify-between">
-                <dt className="text-reps-muted-light">Typical rate</dt>
-                <dd className="font-semibold text-reps-charcoal">{meta.avgRate}</dd>
+          {/* Hero photo */}
+          <div className="relative overflow-hidden rounded-[24px] border border-reps-stone bg-reps-charcoal">
+            <img
+              src={heroTrainer}
+              alt={`A REPs-verified ${meta.title.toLowerCase()} coaching a client`}
+              className="h-full max-h-[520px] min-h-[320px] w-full object-cover"
+              loading="eager"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-reps-charcoal/40 via-transparent to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-[16px] border border-white/15 bg-reps-charcoal/70 px-4 py-3 text-white backdrop-blur-md">
+              <div className="text-[12.5px] leading-tight">
+                <div className="font-semibold">Typical rate</div>
+                <div className="text-white/70">{meta.avgRate}</div>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-reps-muted-light">Verified pros</dt>
-                <dd className="font-semibold text-reps-charcoal">{meta.count.toLocaleString()}</dd>
+              <div className="h-8 w-px bg-white/15" />
+              <div className="text-[12.5px] leading-tight">
+                <div className="font-semibold">Verified pros</div>
+                <div className="text-white/70">{meta.count.toLocaleString()}</div>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-reps-muted-light">Avg. rating</dt>
-                <dd className="flex items-center gap-1 font-semibold text-reps-charcoal">
-                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" /> 4.9 / 5
-                </dd>
+              <div className="h-8 w-px bg-white/15" />
+              <div className="text-[12.5px] leading-tight">
+                <div className="font-semibold flex items-center gap-1">
+                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" /> 4.9
+                </div>
+                <div className="text-white/70">Avg rating</div>
               </div>
-            </dl>
-            <div className="mt-5 border-t border-reps-stone pt-4">
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                Typical qualifications
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What to expect — buyer's guide 3-column */}
+      <section className="border-y border-reps-stone bg-reps-warm-white py-12 lg:py-14">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="max-w-[760px]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
+              Buyer's guide
+            </div>
+            <h2 className="mt-2 font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+              What to expect from a verified {meta.title}
+            </h2>
+            <p className="mt-2 text-[14px] text-reps-muted-light">
+              The credentials, specialisms and typical formats you should look for before you book.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {/* Qualifications */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-ivory p-6">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+                Qualifications
               </div>
-              <ul className="space-y-1.5">
+              <h3 className="mt-2 font-display text-[18px] font-bold text-reps-charcoal">
+                What every {meta.title.toLowerCase()} on REPs holds
+              </h3>
+              <ul className="mt-4 space-y-2.5">
                 {meta.qualifications.map((q) => (
-                  <li key={q} className="flex items-start gap-2 text-[13px] text-reps-charcoal">
-                    <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                  <li key={q} className="flex items-start gap-2 text-[14px] text-reps-charcoal">
+                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                     {q}
                   </li>
                 ))}
+                <li className="flex items-start gap-2 text-[14px] text-reps-charcoal">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                  Active insurance &amp; DBS where required
+                </li>
               </ul>
             </div>
-          </aside>
+
+            {/* Typical specialisms */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-ivory p-6">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+                Typical specialisms
+              </div>
+              <h3 className="mt-2 font-display text-[18px] font-bold text-reps-charcoal">
+                What they coach
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {meta.specialisms.slice(0, 6).map((s) => (
+                  <span
+                    key={s}
+                    className="rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12.5px] font-medium text-reps-charcoal"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-4 text-[13px] leading-relaxed text-reps-muted-light">
+                Filter the full directory by specialism to find the right fit.
+              </p>
+            </div>
+
+            {/* Pricing & format */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-ivory p-6">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
+                Pricing &amp; format
+              </div>
+              <h3 className="mt-2 font-display text-[18px] font-bold text-reps-charcoal">
+                Typical rates &amp; sessions
+              </h3>
+              <dl className="mt-4 space-y-3 text-[14px]">
+                <div className="flex items-center justify-between">
+                  <dt className="text-reps-muted-light">Typical rate</dt>
+                  <dd className="font-semibold text-reps-charcoal">{meta.avgRate}</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-reps-muted-light">Format</dt>
+                  <dd className="font-semibold text-reps-charcoal">1:1 in-person or online</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-reps-muted-light">Session length</dt>
+                  <dd className="font-semibold text-reps-charcoal">30 / 45 / 60 min</dd>
+                </div>
+                <div className="flex items-center justify-between border-t border-reps-stone pt-3">
+                  <dt className="text-reps-muted-light">REPs booking fee</dt>
+                  <dd className="font-semibold text-reps-orange">None</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Specialism chips */}
-      <section className="border-y border-reps-stone bg-reps-warm-white">
+      <section className="border-b border-reps-stone bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-6 lg:px-10">
           <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
             Popular {meta.title.toLowerCase()} specialisms
@@ -424,7 +517,7 @@ function ProfessionLanding() {
               <Link
                 key={s}
                 to="/find-a-professional"
-                className="rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
+                className="rounded-full border border-reps-stone bg-reps-warm-white px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
               >
                 {s}
               </Link>

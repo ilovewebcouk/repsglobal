@@ -1,51 +1,45 @@
-# Make `/professions/<slug>` world-class
+# Plan — Dense editorial profession page
 
-Lift the profession landing pages (currently 6: personal-trainer, pilates-instructor, yoga-teacher, nutritionist, strength-coach, online-coach) to match the homepage's editorial bar. Today's page is functional but flat — small text hero, no imagery, generic "at a glance" card, weak hierarchy after the featured-pros row.
+Rebuild `src/routes/professions.$profession.tsx` (anchor: `/professions/personal-trainer`) as Direction C: a compact hero followed by a buyer's-guide info grid, then featured pros, cities, trust, FAQ, related. All on the real page so images actually render.
 
-## What's locked (does NOT change)
+## Section order
 
-- Palette, type, radius, button rules, header/footer, brand orange — already pinned by `mem://design/source-of-truth` and the locked homepage.
-- The 6 profession slugs and their static data in `professions.$profession.tsx` (qualifications, specialisms, avg rate, count, related).
-- Featured-pros card style (same component family as homepage's "Featured REPs Professionals").
-- Phase 1 scope: static only. No real search, no DB-backed trainer list, no map.
+1. Breadcrumb — Home › Find a Professional › Personal Trainers
+2. Compact hero (50/50, ~520px tall)
+   - Left: tag chip ("1,284 verified · 4.9★"), H1 "Find a verified **Personal Trainer**" (profession word in brand orange), 1-line blurb, search bar (profession pre-filled + location + orange Search), 2 trust micro-lines
+   - Right: full-height coaching photo, 18px radius, single tonal overlay (no Ken Burns)
+3. **"What to expect from a verified Personal Trainer"** — 3-column info grid (the C differentiator)
+   - **Qualifications** — Level 3 PT (RQF), Level 4 Specialist, First Aid (current), Insurance + DBS
+   - **Typical specialisms** — Strength · Fat Loss · Hypertrophy · Pre & Postnatal · Older Adults · Sports Performance
+   - **Pricing & format** — £45–£85/hr typical · 1:1 in-person or online · 30/45/60 min sessions · No REPs booking fee
+4. Specialism pill strip (horizontal, hover → orange border)
+5. Featured pros — 4 locked cards (unchanged shape, real `<img>`)
+6. Cities grid — 4×2 with counts
+7. Trust band (dark) — Verified Credentials · Recognised Training · Insurance & DBS · Real Reviews
+8. FAQ — 4 collapsed accordion items
+9. Related professions — pill links
 
-## Approach: 3 rendered design directions → user picks → I build
+## Image sourcing
 
-Because taste is already locked across the project, I'm skipping the palette/type/layout preference round and going straight to **three structural directions** that vary in composition, density, and editorial register — not in colour or font.
+Reuse the existing trainer imagery already in `src/assets/` (the same set used on the homepage and `/pro/$slug`). Hero photo: pick the dark-gym coaching shot already in the assets pipeline with the REPS wordmark visible. No new image generation in this pass — keeps the page rendering real pixels immediately.
 
-### Direction brief (sent to create_directions)
+## Technical
 
-- **Target:** the full profession page, anchored on the personal-trainer slug as the reference render.
-- **Product contract:** hero with profession-specific imagery + headline + qualifying claim + search; an "authority" moment (qualifications + rate + verified count) that reads like a credential, not a stat card; specialisms as a navigable strip; featured pros (4-up, locked card); cities (2×4 grid, locked); a "why every <profession> on REPs is verified" trust band; an FAQ; related professions footer.
-- **Energy:** premium, credential-led, trustworthy — same register as the homepage hero. Not wellness-soft, not generic directory.
-- **References:** the homepage hero/CTA band, the locked profile page, editorial sports publications (Men's Health, GQ Sport).
-- **Motion:** match the locked marketing hero template — staggered fade-up only, no Ken Burns, no parallax.
+- Single route file: `src/routes/professions.$profession.tsx`
+- Reuse `PROFESSIONS` data map — no per-slug code forks; the 3-column "what to expect" block is driven by fields on the profession object (qualifications[], specialisms[], pricing string). Add those fields if missing, with sensible defaults for the 6 slugs.
+- Reuse existing components where they exist: featured pro card, cities grid, trust band, FAQ accordion, related pills. Extract a small `ProfessionInfoGrid` component if the 3-column block grows past ~80 lines.
+- Tokens only: `bg-brand-orange`, `text-brand-orange`, semantic ink/ivory. No hex.
+- Radii: hero 24px, info-grid cards 22px, featured/pro cards 18px, cities 16px, FAQ 16px, pills full, buttons 10px, inputs 12px. No 14/20/28/32 or `rounded-xl/2xl/3xl`.
+- Flat buttons (`shadow-none`), orange (never gold) stars, staggered fade-up only (80ms stagger, 560–640ms).
+- Per-slug `head()` — title, description, og:title, og:description, og:image = hero photo.
 
-### Three flavors I'll generate
+## QA before handoff
 
-1. **Editorial** — full-bleed hero image of the profession in action (PT coaching, Pilates reformer, etc.), large display headline, qualifying line, search lives in a floating dark card overlapping the hero base. "At a glance" becomes an inline credential strip under the hero, not a sidebar card.
-2. **Split-credential** — left column: headline + blurb + search. Right column: large profession photo with a glass credential card pinned to the bottom-right (rate, count, rating, top 3 qualifications). Specialisms strip sits flush below as a single horizontal band.
-3. **Dense magazine** — compact hero (image + headline side-by-side, photo ~40% width), then immediately a 3-column "what to expect" grid (Qualifications · Typical specialisms · Pricing & format) before featured pros. Highest content density, closest to a Wirecutter-style buyer's guide.
-
-All three keep the existing section ORDER below the hero (featured pros → cities → why verified → FAQ → related) but the hero + authority moment is what varies.
-
-## Flow
-
-1. Call `design--create_directions` with the brief above + the full-page screenshot I just captured.
-2. Surface the three rendered prototypes via `ask_questions` (type: prototype). You pick one.
-3. I implement the chosen direction in `src/routes/professions.$profession.tsx`, reusing existing card primitives. All 6 profession slugs inherit the new layout via the existing `PROFESSIONS` map — no per-slug forks.
-4. QA across mobile (390), tablet (768), desktop (1366). Lock the result with a `mem://design/locked-profession-page` entry once approved.
+- `/professions/personal-trainer` at 1366 + 390 — every image renders, no broken slots
+- Spot-check `/professions/nutritionist` and `/professions/pilates-instructor` — data fallback works
+- Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0
+- Confirm no homepage edits leaked in (homepage is locked)
 
 ## Out of scope
 
-- Real search / map / DB queries.
-- New imagery generation beyond what's needed for the chosen direction (decide after pick).
-- Per-city pages (`/professions/<slug>/in/<city>`) — separate request.
-- Touching the homepage, profile page, or any other route.
-
-## Files likely touched (after pick)
-
-- `src/routes/professions.$profession.tsx` (layout rewrite, data untouched)
-- Possibly 1–2 new small components under `src/components/marketing/` if the chosen direction warrants a reusable credential strip
-- `mem://design/locked-profession-page` (new, post-approval)
-- `mem://index.md` (add reference)
+Real search, map, per-city pages, profile redesign, homepage edits, new image generation, auth, DB.
