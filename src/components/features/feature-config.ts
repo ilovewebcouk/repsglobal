@@ -44,6 +44,7 @@ export type FeatureGroupKey =
 export type FeatureLink = {
   slug:
     | "profile-and-reviews"
+    | "shop-front"
     | "bookings"
     | "payments"
     | "clients"
@@ -57,6 +58,10 @@ export type FeatureLink = {
   oneLiner: string;
   icon: LucideIcon;
   group: FeatureGroupKey;
+  /** Other pillar groups this feature should also surface under (cross-listed tiles). */
+  crossList?: FeatureGroupKey[];
+  /** Override the default `/features/$slug` deep-dive href (e.g. for static pillar pages). */
+  customHref?: string;
   /** Tier keys (from pricing-data) this feature is included in. */
   includedIn: ("verified" | "pro" | "business" | "studio")[];
 };
@@ -70,6 +75,17 @@ export const FEATURES: FeatureLink[] = [
     icon: BadgeCheck,
     group: "visibility",
     includedIn: ["verified", "pro", "business", "studio"],
+  },
+  {
+    slug: "shop-front",
+    label: "Personalised shop-front",
+    tag: "Shop-front",
+    oneLiner: "Your own page at /c/your-name — your photo, your method, your tiers.",
+    icon: Globe,
+    group: "shopfront",
+    crossList: ["visibility"],
+    customHref: "/features/shop-front",
+    includedIn: ["pro", "business", "studio"],
   },
   {
     slug: "leads",
