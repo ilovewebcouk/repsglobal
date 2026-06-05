@@ -47,8 +47,8 @@ const CHANNELS = [
 ];
 
 const OFFICES = [
-  { city: "London", line1: "1 Pancras Square", line2: "London N1C 4AG, UK", phone: "+44 20 7946 0000" },
-  { city: "Manchester", line1: "10 Whitworth St West", line2: "Manchester M1 5WG, UK", phone: "+44 161 503 2000" },
+  { city: "London", line1: "1 Pancras Square", line2: "London N1C 4AG", phone: "+44 20 7946 0000" },
+  { city: "Manchester", line1: "10 Whitworth St West", line2: "Manchester M1 5WG", phone: "+44 161 503 2000" },
 ];
 
 function ContactPage() {

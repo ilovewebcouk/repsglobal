@@ -80,7 +80,7 @@ const featuredPros = [
   {
     name: "James Carter",
     role: "Personal Trainer",
-    location: "London, UK",
+    location: "London",
     rating: 5.0,
     reviews: 128,
     mode: "In-person & Online",
@@ -89,7 +89,7 @@ const featuredPros = [
   {
     name: "Sophie Williams",
     role: "Pilates Instructor",
-    location: "Manchester, UK",
+    location: "Manchester",
     rating: 5.0,
     reviews: 96,
     mode: "In-person & Online",
@@ -98,7 +98,7 @@ const featuredPros = [
   {
     name: "Daniel Roberts",
     role: "Strength Coach",
-    location: "Birmingham, UK",
+    location: "Birmingham",
     rating: 4.9,
     reviews: 74,
     mode: "In-person",

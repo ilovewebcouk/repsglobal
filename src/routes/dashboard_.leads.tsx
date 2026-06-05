@@ -419,7 +419,7 @@ function SelectedLead() {
     ["Goal", "Weight loss coaching"],
     ["Estimated value", "£600"],
     ["Preferred format", "In-person and online"],
-    ["Location", "London, UK"],
+    ["Location", "London"],
     ["Last activity", "Enquired 2 hours ago"],
     ["Follow-up due", "Today"],
   ];
@@ -439,7 +439,7 @@ function SelectedLead() {
             </span>
             <span className="text-white/50">
               <MapPin className="mr-1 inline h-3 w-3" />
-              London, UK
+              London
             </span>
           </div>
         </div>

@@ -31,10 +31,10 @@ const VALUES = [
 ];
 
 const ROLES = [
-  { team: "Engineering", title: "Senior Full-Stack Engineer", location: "Remote (UK/EU)" },
-  { team: "Design", title: "Product Designer", location: "Remote (UK/EU)" },
+  { team: "Engineering", title: "Senior Full-Stack Engineer", location: "Remote (Global)" },
+  { team: "Design", title: "Product Designer", location: "Remote (Global)" },
   { team: "Industry", title: "Head of Professional Standards", location: "London / Hybrid" },
-  { team: "Growth", title: "SEO & Content Lead", location: "Remote (UK/EU)" },
+  { team: "Growth", title: "SEO & Content Lead", location: "Remote (Global)" },
 ];
 
 function CareersPage() {

@@ -27,7 +27,7 @@ const FACTS = [
   { label: "Founded", value: "2024" },
   { label: "Verified professionals", value: "12,400+" },
   { label: "Specialisms covered", value: "5 core + growing" },
-  { label: "Headquarters", value: "London, UK" },
+  { label: "Headquarters", value: "London" },
 ];
 
 const ASSETS = [

@@ -306,7 +306,7 @@ function DirectoryPage() {
                 placeholder="e.g. Personal Trainer"
                 icon={UserRound}
               />
-              <SearchField label="Near" placeholder="London, UK" icon={MapPin} />
+              <SearchField label="Near" placeholder="Your city" icon={MapPin} />
               <SearchField
                 label="Training type"
                 placeholder="In-person, Online or Both"

@@ -85,9 +85,9 @@ const specialisms = [
 ];
 
 const featuredPros = [
-  { name: "James Carter", role: "Personal Trainer", location: "London, UK", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
-  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester, UK", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
-  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham, UK", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
+  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
+  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
+  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
   { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true as const },
 ];
 

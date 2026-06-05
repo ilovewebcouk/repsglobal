@@ -178,7 +178,7 @@ function getProfession(slug: string): ProfessionMeta {
           .split("-")
           .map((s) => s[0]?.toUpperCase() + s.slice(1))
           .join(" ") + "s",
-      blurb: "REPs-verified professionals across the UK and online. Search, compare and book with confidence.",
+      blurb: "REPs-verified professionals in your city and online. Search, compare and book with confidence.",
       qualifications: ["Level 3 (RQF)", "Specialist Qualifications", "First Aid (current)"],
       specialisms: ["1:1 Coaching", "Online Sessions", "Group Classes", "Specialist Programmes"],
       avgRate: "£40 – £80 / hour",
@@ -287,7 +287,7 @@ const CITIES = [
 
 const TRUST = [
   { icon: ShieldCheck, title: "Verified Credentials", sub: "Every professional is identity & qualification checked." },
-  { icon: Trophy, title: "Recognised Training", sub: "Held to Ofqual-regulated standards across the UK." },
+  { icon: Trophy, title: "Recognised Training", sub: "Held to internationally recognised standards." },
   { icon: BadgeCheck, title: "Insurance & DBS", sub: "Active insurance and enhanced DBS where required." },
   { icon: Users, title: "Real Reviews", sub: "Only verified clients can leave a review." },
 ];

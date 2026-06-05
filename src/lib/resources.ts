@@ -110,7 +110,7 @@ const SOPHIE = {
   author: "Sophie Marshall",
   authorRole: "Editor, REPs",
   authorBio:
-    "Sophie writes the REPs consumer guides and has covered the UK fitness industry for over a decade.",
+    "Sophie writes the REPs consumer guides and has covered the fitness industry for over a decade.",
 };
 const STANDARDS = {
   author: "The REPs Standards Team",

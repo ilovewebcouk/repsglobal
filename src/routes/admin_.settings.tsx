@@ -35,7 +35,7 @@ function AdminSettings() {
           <div className="mt-5 space-y-5">
             <Row label="Platform name" value="REPs — The Register of Exercise Professionals" />
             <Row label="Primary domain" value="repsglobal.com" />
-            <Row label="Default region" value="United Kingdom" />
+            <Row label="Default region" value="Global" />
             <Row label="Currency" value="GBP (£)" />
             <Row label="Maintenance mode" value="Off" />
             <Row label="Public sign-ups" value="Enabled" />
