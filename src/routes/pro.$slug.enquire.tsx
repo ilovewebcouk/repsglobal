@@ -354,7 +354,7 @@ function EnquirePage() {
                 {[
                   { t: "You send this enquiry", d: "Your message lands privately in their REPs inbox." },
                   { t: "They reply with a quote", d: "Usually within a few hours — including price and availability." },
-                  { t: "Book and pay through REPs", d: "Card payment is taken when you confirm — never before." },
+                  { t: "Agree the details directly", d: "Confirm scope, times and price with your pro before anything's locked in." },
                   { t: "Start training", d: "Sessions, programming and progress all tracked in one place." },
                 ].map((s, i) => (
                   <li key={s.t} className="flex items-start gap-3">
