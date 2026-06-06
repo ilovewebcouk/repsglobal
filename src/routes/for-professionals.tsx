@@ -109,7 +109,7 @@ function ForProsPage() {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
-        <div className="relative mx-auto max-w-[1320px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
+        <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-20 lg:pt-24">
           <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             {/* Left: copy */}
             <div>
@@ -199,7 +199,7 @@ function ForProsPage() {
       {/* WHY COACHES SWITCH — competitive proof */}
       <section className="border-b border-reps-border bg-reps-ink">
 
-        <div className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-16 lg:pb-20">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Why coaches switch
@@ -219,7 +219,7 @@ function ForProsPage() {
 
       {/* PILLAR 1 — VISIBILITY */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
           <ProductBlock
             eyebrow="Pillar 1 · Visibility"
             title="Become the obvious choice in your area."
@@ -270,7 +270,7 @@ function ForProsPage() {
             bullets={[
               "Leads pipeline from enquiry to booked consult, with AI scoring",
               "Calendar with availability, session types and online consults",
-              "Card payments and subscriptions — no booking commission",
+              "Card payments and subscriptions — every payment goes to you, no REPs cut",
               "Live revenue, paid, pending and overdue at a glance",
             ]}
             imageLabel="Operations mockup — leads + calendar + payments"
