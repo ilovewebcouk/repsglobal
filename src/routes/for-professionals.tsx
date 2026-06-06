@@ -24,7 +24,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarChapter } from "@/components/marketing/PillarChapter";
+
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
