@@ -1,87 +1,81 @@
+# /for-professionals — make every feature a scannable 50/50
 
-## Verdict
+## The problem
 
-The page is strong on craft (hero, press marquee, AI moment, comparison, FAQ) and the new Act 2 grid correctly lists all **six pillars**: Visibility, Shop-front, Operations, Coaching, REPs AI, Growth.
+Two sections currently hide features:
 
-But the **deep-dive sections below Act 2 still use the old 5-pillar numbering** and don't marry up:
+1. **Pillar 3 · Operations** is one merged 50/50 with a 3-up sub-strip underneath. Leads, Bookings, Payments each get a single line of copy. Anyone scanning or Cmd-F-ing the page misses them.
+2. **Pillar 4 · Coaching** is a tabbed component (`PillarTabs` — Programmes / Check-ins / Client record). Tabs are invisible to anyone scrolling, and search-in-page can't find tab content. You missed them yourself.
 
-| Section as labelled now | Real pillar | Issue |
-|---|---|---|
-| Visibility Showcase (no pillar tag) | Visibility | Not labelled as a pillar — reads as a one-off |
-| Pillar · Shop-front | Shop-front | ✅ |
-| Pillar 1 · Leads CRM | Operations (sub-feature) | Mis-numbered, treated as its own pillar |
-| Pillar 2 · Coaching | Coaching | ✅ pillar, but number is wrong |
-| Pillar 3 · Bookings & payments | Operations (sub-feature) | Mis-numbered; duplicates Pillar 1's pillar |
-| Pillar 4 · Client portal | Coaching (sub-feature) | Mis-numbered |
-| Pillar 5 · REPs AI | AI | ✅ pillar, but number is wrong |
-| (missing) | **Growth** | No deep-dive at all — biggest gap |
+The fix is to stop forcing each pillar to be one section. Keep the six-pillar grid in Act 2 as the *map*, then let the deep-dive sections below it be one 50/50 per feature — even if that means 10–12 blocks. Each block links to its pillar page. More 50/50s is fine; hidden features is not.
 
-Other QA issues:
-- Hero "Explore features" → `/features` redirects back to `/for-professionals` (circular).
-- AI section says "AI assistance included in every paid tier" — true at a high level, but per `feature-config.ts` four AI capabilities (Command Centre, Risk Alerts, Revenue Insights, Content Studio) are Business/Studio only. Wording should be softer.
-- "Pillar 4 · Client portal" CTA links to `/features/coaching`, which is fine, but the section reads like a standalone pillar rather than part of Coaching.
-- Two consecutive comparison-style sections (`ComparisonStrip` + `ReplacedStackBoard`) — the second is on-message, but they could be visually differentiated more strongly.
+## What changes
 
-## Plan
+### A. Replace the merged Operations block with 5 individual 50/50s
 
-Single file: `src/routes/for-professionals.tsx`. No new components, no logic changes — copy + section restructure only, to make the page mirror the 6 canonical pillars in order.
+Delete the current Pillar 3 ProductBlock + `OPERATIONS_SUB` 3-up. Replace with one 50/50 per feature, all eyebrowed *"Pillar 3 · Operations · [Feature]"* and all CTA'd *"Explore Operations →"* `/features/operations`:
 
-### 1. Re-label and re-order deep-dives to 6 pillars
+1. **Leads CRM** — mockup `/dashboard/leads`. Bullets on pipeline stages, source tracking, AI lead scoring, reply drafts.
+2. **Bookings & calendar** — mockup `/dashboard/bookings` (reverse). Two-way sync, deposits, reminders, session types.
+3. **Payments & subscriptions** — mockup `/dashboard/payments`. Stripe payouts, packages, memberships, dunning, no platform cut.
+4. **Clients CRM** — mockup `/dashboard/clients` (reverse). One record per client — sessions, notes, payments, programmes, LTV.
+5. **Client messaging** — mockup `/dashboard/messages`. Focused inbox separate from personal phone, threaded, AI draft replies.
 
-Rename eyebrows so the page reads top-to-bottom as the same 6 pillars shown in the Act 2 grid:
+Copy seed already exists in `src/routes/features.operations.tsx` (`FEATURES` array) and `src/components/marketing/PillarTabs.tsx` — reuse, don't rewrite.
 
-1. **Pillar 1 · Visibility** — keep existing "Verified profile" ProductBlock, add eyebrow `Pillar 1 · Visibility`.
-2. **Pillar 2 · Shop-front** — current "Pillar · Shop-front" section, renumber.
-3. **Pillar 3 · Operations** — **merge** the current "Pillar 1 · Leads CRM" and "Pillar 3 · Bookings & payments" framing into one Operations pillar block:
-   - Keep the Leads ProductBlock as the primary visual (it's the strongest mockup).
-   - Add a compact 3-up sub-feature strip under it: Leads · Bookings & calendar · Payments & subscriptions (using existing icons from `feature-config.ts`), each linking to `/features/operations`.
-   - Remove the standalone "Pillar 3 · Bookings & payments" ProductBlock (its bullets fold into the strip).
-4. **Pillar 4 · Coaching** — keep `PillarTabs` section, renumber. Fold the "Pillar 4 · Client portal" ProductBlock into this section as a secondary block underneath the tabs (it's a Coaching sub-feature, not its own pillar).
-5. **Pillar 5 · REPs AI** — keep as-is, renumber correctly (currently labelled "Pillar 5" but only because of mis-counting; will stay Pillar 5).
-6. **Pillar 6 · Growth** — **NEW section** (currently missing). ProductBlock pointing at `/features/growth`:
-   - Eyebrow: `Pillar 6 · Growth`
-   - Title: "The single move to grow this month."
-   - Body: revenue, retention, churn risk and renewal forecasting surfaced as a Monday-morning card.
-   - Bullets pulled from `AI_FEATURES` Growth items + `FEATURES` insights entry.
-   - Mockup: `{ device: "laptop", src: "/dashboard/reports", title: "Growth insights preview" }`.
-   - CTA: "Explore Growth" → `/features/growth`.
+### B. Replace the Coaching tabs with 4 individual 50/50s
 
-### 2. Fix Act 2 transition copy
+Remove `<PillarTabs />`. Replace with one 50/50 per coaching feature, all eyebrowed *"Pillar 4 · Coaching · [Feature]"* and all CTA'd *"Explore Coaching →"* `/features/coaching`:
 
-Update the Act 2 intro paragraph to reflect that all six pillars are detailed below, not just "the rest" after Visibility.
+1. **Programmes** — mockup `/dashboard/programs`. Lift copy from the existing Programmes tab.
+2. **Check-ins** — mockup `/dashboard/check-ins` (reverse). Lift from Check-ins tab.
+3. **Client record** — mockup `/dashboard/clients`. *Move* this from Operations (one canonical home in Coaching since it's the coaching record), or keep it in Operations and drop here — see Open question 1.
+4. **Client portal** — keep the existing one, phone mockup `/portal/today` (reverse).
 
-### 3. Smaller QA fixes
+Keep `PillarTabs.tsx` file in place (still used elsewhere? — check `rg PillarTabs src/`) but stop importing it here.
 
-- Hero "Explore features" link: change `to="/features"` → `to="/for-professionals#pillars"` (anchor to Act 2) OR `to="/pricing"`. Recommend the anchor so it scrolls into the pillar grid on the same page.
-- AI moment chip: change "AI assistance included in every paid tier" → "AI built into every paid tier — full suite on Business and Studio." Matches `feature-config.ts` tier mapping.
-- Add `id="pillars"` to the Act 2 section for the hero anchor link.
+### C. Keep — already 50/50 and working
 
-### 4. Final section order (after changes)
+- Pillar 1 · Visibility
+- Pillar 2 · Shop-front
+- Pillar 5 · REPs AI (the hero moment + 6 AI capability cards is fine — AI is a horizontal layer, not a feature list)
+- Pillar 6 · Growth
 
-```text
-Hero
-PressMarquee
-Act 1 — Register (intro)
-Pillar 1 · Visibility           (ProductBlock)
-Act 2 — "Six pillars" grid       (id="pillars")
-Pillar 2 · Shop-front           (ProductBlock, live /c/james-wilson)
-Pillar 3 · Operations           (Leads ProductBlock + Bookings/Payments strip)
-TestimonialFeature
-Pillar 4 · Coaching             (PillarTabs + Client portal sub-block)
-ComparisonStrip
-ReplacedStackBoard + TestimonialTriad
-UseCaseTriad
-Pillar 5 · REPs AI              (hero moment + 6 AI caps)
-Pillar 6 · Growth               (NEW ProductBlock)
-WeekWithReps
-FAQ
-Final CTA
-```
+### D. Small QA fixes while we're in there
 
-### Out of scope
+- Hero CTA reads *"Explore the six pillars"*. With this restructure we still anchor to `#pillars` (the six-pillar grid in Act 2 is the map). Leave copy as-is.
+- Act 2 intro currently says *"Each one is detailed below"* — still true, just with more sections per pillar. Add one sentence: *"Some pillars contain multiple features — every one has its own section below."*
+- Add a tiny inline pillar tag (eyebrow) to every new 50/50 so the visual rhythm makes the pillar grouping obvious as you scroll.
+- Replaced-stack board, comparison strip, testimonials, week-with-REPs, FAQ, final CTA — untouched.
 
-- No new components, no design-token changes, no copy rewrites beyond eyebrows/intros listed above.
-- No changes to `feature-config.ts`, `PillarTabs`, `ReplacedStackBoard`, or any pillar deep-dive route.
-- No Phase 2 work (auth, DB, payments, AI wiring).
+## Final section order
 
-Used the **reps-build-compliance** skill (Phase 1 static-screens scope; no token or radius changes proposed; mock-up reference: `reps_fullpage_professional_dashboard_v1.png` for the new Growth block mockup framing).
+1. Hero
+2. PressMarquee
+3. Act 1 · Register
+4. Pillar 1 · Visibility (1 block)
+5. Act 2 · Six-pillar grid (`#pillars`)
+6. Pillar 2 · Shop-front (1 block)
+7. Pillar 3 · Operations — **5 blocks** (Leads, Bookings, Payments, Clients CRM, Messages)
+8. TestimonialFeature
+9. Pillar 4 · Coaching — **4 blocks** (Programmes, Check-ins, Client record, Client portal)
+10. ComparisonStrip
+11. ReplacedStackBoard + TestimonialTriad
+12. UseCaseTriad
+13. Pillar 5 · REPs AI hero moment + 6 AI cards
+14. Pillar 6 · Growth (1 block)
+15. WeekWithReps
+16. FAQ
+17. Final CTA
+
+Total feature 50/50s on the page: **13** (was 6). Every feature is scannable, searchable, and screenshot-able.
+
+## Out of scope
+
+- No new components — reuse `ProductBlock`. No design tokens, no pricing data, no routes outside `for-professionals.tsx`.
+- No copy rewrites on Hero / Act 1 / AI / Growth / FAQ / Final CTA.
+- `PillarTabs.tsx` not deleted (kept for possible reuse).
+
+## Open question
+
+1. **Client record — Operations or Coaching?** It's listed under Operations in `features.operations.tsx` (CRM) and under Coaching in `PillarTabs` (the coaching record). I'd put it in **Operations** (it's the CRM spine for bookings/payments too) and drop the third Coaching block, leaving Coaching with 3 blocks (Programmes, Check-ins, Client portal). Confirm or flip.
