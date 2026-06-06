@@ -56,13 +56,25 @@ export const Route = createFileRoute("/for-professionals")({
 });
 
 
-const AI_CAPS = [
-  { icon: Dumbbell, title: "Programmes, drafted in seconds", body: "One-line brief in, 12-week plan out — exercises, sets, video demos." },
-  { icon: ClipboardCheck, title: "Check-ins, read for you", body: "Six check-ins summarised into one card: headline, change, ask." },
-  { icon: ScanLine, title: "Leads, scored and answered", body: "Every enquiry scored on intent, first-draft reply ready to send." },
-  { icon: Sparkles, title: "Next Move, every Monday", body: "The single highest-leverage action this week — ranked by impact." },
-  { icon: AlertTriangle, title: "Risk, flagged before it churns", body: "Adherence watched — REPs tells you who's about to ghost." },
-  { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
+const AI_HERO_CAPS = [
+  {
+    icon: Dumbbell,
+    title: "Programmes, drafted in seconds",
+    body: "One-line brief in, 12-week plan out — exercises, sets, video demos, ready to tweak.",
+    example: "\"12-week hypertrophy for a 38yo runner, 3x/week, bad left knee\" → full plan in ~8s",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Check-ins, read for you",
+    body: "Six client check-ins summarised into one card: headline, what changed, what to ask next.",
+    example: "6 entries → 1 card: \"Sleep down 18%. Ask about work stress before Friday's session.\"",
+  },
+  {
+    icon: Sparkles,
+    title: "Next Move, every Monday",
+    body: "The single highest-leverage action this week — ranked by impact on retention and revenue.",
+    example: "This week: \"Re-engage 3 clients who missed last week — projected +£420 MRR.\"",
+  },
 ];
 
 function ForProsPage() {
@@ -337,15 +349,23 @@ function ForProsPage() {
             <AiCommandCentreMock />
           </div>
 
-          <div className="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {AI_CAPS.map((c) => (
-              <div key={c.title} className="rounded-[16px] border border-reps-border bg-reps-panel/60 p-5">
-                <c.icon className="h-5 w-5 text-reps-orange" />
-                <div className="mt-3 text-[14.5px] font-semibold text-white">{c.title}</div>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{c.body}</p>
+          <div className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {AI_HERO_CAPS.map((c) => (
+              <div key={c.title} className="flex flex-col rounded-[18px] border border-reps-border bg-reps-panel/60 p-6">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-reps-orange-soft">
+                  <c.icon className="h-5 w-5 text-reps-orange" />
+                </div>
+                <div className="mt-4 text-[16px] font-semibold text-white">{c.title}</div>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{c.body}</p>
+                <div className="mt-4 rounded-[12px] border border-reps-orange-border/40 bg-reps-orange-soft/30 px-4 py-3 text-[12.5px] leading-relaxed text-white/80">
+                  {c.example}
+                </div>
               </div>
             ))}
           </div>
+          <p className="mt-6 text-center text-[12.5px] text-white/55">
+            Plus risk flags and on-brand content drafting — included in every paid tier.
+          </p>
         </div>
       </section>
 
