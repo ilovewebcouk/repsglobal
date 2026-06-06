@@ -269,7 +269,28 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR · SHOP-FRONT (live example) */}
+      {/* PILLAR 1 — VISIBILITY */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <ProductBlock
+            eyebrow="Pillar 1 · Visibility"
+            title="Found on the register the public already searches."
+            body="REPs is the verified directory clients land on when they want a coach they can trust. Your profile is your front door — credentials, specialisms, real reviews, ranked in city and profession search."
+            bullets={[
+              "Verified profile with credentials and specialisms",
+              "Ranked in city and profession search across the register",
+              "Reviews from real verified clients — not anonymous strangers",
+              "Shareable profile preview link for socials and bios",
+            ]}
+            imageLabel="Register search results mockup"
+            mockup={{ device: "laptop", src: "/find-a-professional", title: "Register search preview" }}
+            ctaLabel="Explore Visibility"
+            ctaHref="/features/visibility"
+          />
+        </div>
+      </section>
+
+      {/* PILLAR 2 — SHOP-FRONT (live example) */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
