@@ -39,13 +39,11 @@ import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CareersRouteImport } from './routes/careers'
-import { Route as BusinessToolsRouteImport } from './routes/business-tools'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
-import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
@@ -254,11 +252,6 @@ const CareersRoute = CareersRouteImport.update({
   path: '/careers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BusinessToolsRoute = BusinessToolsRouteImport.update({
-  id: '/business-tools',
-  path: '/business-tools',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -282,11 +275,6 @@ const IndexRoute = IndexRouteImport.update({
 const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeaturesIndexRoute = FeaturesIndexRouteImport.update({
-  id: '/features/',
-  path: '/features/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
@@ -584,7 +572,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
@@ -664,7 +651,6 @@ export interface FileRoutesByFullPath {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
-  '/features/': typeof FeaturesIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -680,7 +666,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
@@ -759,7 +744,6 @@ export interface FileRoutesByTo {
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
-  '/features': typeof FeaturesIndexRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -776,7 +760,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/business-tools': typeof BusinessToolsRoute
   '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
@@ -856,7 +839,6 @@ export interface FileRoutesById {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
-  '/features/': typeof FeaturesIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -874,7 +856,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/business-tools'
     | '/careers'
     | '/compare'
     | '/comparison-methodology'
@@ -954,7 +935,6 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
-    | '/features/'
     | '/resources/'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -970,7 +950,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/business-tools'
     | '/careers'
     | '/compare'
     | '/comparison-methodology'
@@ -1049,7 +1028,6 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/professions/$profession'
     | '/resources/$slug'
-    | '/features'
     | '/resources'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -1065,7 +1043,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/business-tools'
     | '/careers'
     | '/compare'
     | '/comparison-methodology'
@@ -1145,7 +1122,6 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
-    | '/features/'
     | '/resources/'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
@@ -1162,7 +1138,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
-  BusinessToolsRoute: typeof BusinessToolsRoute
   CareersRoute: typeof CareersRoute
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
@@ -1242,7 +1217,6 @@ export interface RootRouteChildren {
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
-  FeaturesIndexRoute: typeof FeaturesIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1463,13 +1437,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/business-tools': {
-      id: '/business-tools'
-      path: '/business-tools'
-      fullPath: '/business-tools'
-      preLoaderRoute: typeof BusinessToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -1503,13 +1470,6 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/resources/'
       preLoaderRoute: typeof ResourcesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/features/': {
-      id: '/features/'
-      path: '/features'
-      fullPath: '/features/'
-      preLoaderRoute: typeof FeaturesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources/$slug': {
@@ -1943,7 +1903,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
-  BusinessToolsRoute: BusinessToolsRoute,
   CareersRoute: CareersRoute,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
@@ -2023,7 +1982,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
-  FeaturesIndexRoute: FeaturesIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
@@ -2034,3 +1992,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
