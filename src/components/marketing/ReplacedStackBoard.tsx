@@ -95,20 +95,20 @@ export function ReplacedStackBoard() {
               Before · your current stack
             </span>
             <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
-              9 tools · 9 bills
+              17 tools · 17 bills
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {BEFORE.map((b) => {
               const Icon = b.icon;
               return (
                 <div
                   key={b.name}
-                  className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
+                  className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-2.5 py-2 transition-colors hover:border-reps-border"
                 >
                   <span
                     className={`flex shrink-0 items-center justify-center opacity-60 ${
-                      b.wide ? "h-3.5 w-auto max-w-[64px]" : "h-4 w-4"
+                      b.wide ? "h-3.5 w-auto max-w-[56px]" : "h-4 w-4"
                     }`}
                   >
                     {b.logo ? (
@@ -126,11 +126,8 @@ export function ReplacedStackBoard() {
                       <Icon className="h-full w-full text-white" />
                     ) : null}
                   </span>
-                  <span className="font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
+                  <span className="truncate font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
                     {b.name}
-                  </span>
-                  <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/35">
-                    {b.job}
                   </span>
                 </div>
               );
