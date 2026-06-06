@@ -29,7 +29,6 @@ type Before = {
 const BEFORE: Before[] = [
   // Web & content
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
-  { name: "Kajabi", job: "Courses", icon: GraduationCap },
   { name: "Thinkific", job: "Courses", icon: BookOpen },
   // Programmes & training delivery
   { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
