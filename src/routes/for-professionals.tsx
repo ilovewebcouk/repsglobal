@@ -30,16 +30,16 @@ import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
     meta: [
-      { title: "Not just software. An AI operating system for fitness professionals — REPs" },
+      { title: "Get found. Get booked. Get paid. — REPs for Professionals" },
       {
         name: "description",
         content:
-          "REPs is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
+          "REPs is the verified register the public already searches — and the only tool you need to run the rest of your coaching practice. One platform. Every feature in your tier, included.",
       },
       { property: "og:title", content: "Join REPs — For Professionals" },
       {
         property: "og:description",
-        content: "The register that brings you clients, and the AI operating system that runs your practice.",
+        content: "The register that brings you clients, and the tools to run the rest of your practice.",
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
@@ -54,7 +54,7 @@ function ForProsPage() {
       <PublicHeader variant="solid" />
       <StickyCtaPill />
 
-      {/* HERO — full-bleed moody gym backdrop with device cluster */}
+      {/* HERO */}
       <section className="relative overflow-hidden">
         <img
           src={heroGym.url}
@@ -90,17 +90,17 @@ function ForProsPage() {
                 className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
                 style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
               >
-                Not just software.
+                Get found. Get booked. Get paid.
                 <br />
-                <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
+                <span className="text-reps-orange">Without four apps and a spreadsheet.</span>
               </h1>
               <p
                 className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
                 style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
               >
-                REPs is built for fitness professionals who want to get found, win more
-                clients, deliver better coaching and grow a sustainable business. One
-                platform. Every tool. Powered by AI.
+                REPs is the verified register the public already searches — and the
+                only tool you need to run the rest of your coaching practice. One
+                platform. Every feature in your tier, included.
               </p>
               <div
                 className="mt-8 flex animate-fade-in flex-wrap gap-3"
@@ -108,13 +108,13 @@ function ForProsPage() {
               >
                 <Link
                   to="/signup"
-                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
                 >
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/features"
-                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
                 >
                   Explore features
                 </Link>
@@ -129,11 +129,11 @@ function ForProsPage() {
                 </li>
                 <li className="inline-flex items-center gap-1.5">
                   <Zap className="h-4 w-4 text-reps-orange" />
-                  10-minute setup
+                  Up and running in an afternoon
                 </li>
                 <li className="inline-flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-reps-orange" />
-                  Every feature included — no add-ons
+                  Every feature in your tier — no paid add-ons
                 </li>
               </ul>
             </div>
@@ -153,45 +153,45 @@ function ForProsPage() {
         <div className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Act 1 · Get clients
+              Act 1 · Get the clients
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
               The register the public already searches.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Other platforms give you software. REPs gives you software <em>and</em>{" "}
-              clients — because the public already lands here when they're looking for
-              a trusted pro.
+              Other apps give you software and tell you to "build an audience." REPs
+              gives you software <em>and</em> clients — because the people looking for
+              a verified coach already land here.
             </p>
           </div>
           <div className="mt-10"><RegisterProof /></div>
         </div>
       </section>
 
-      {/* ACT 2 — SIX PILLARS GRID (links to pillar pages for the deep dive) */}
+      {/* ACT 2 — SIX PILLARS GRID */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Act 2 · Run your practice
+              Act 2 · Run the practice
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-              Six pillars. One operating system.
+              Six pillars. Everything you need to run the coaching part.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              When clients arrive, REPs runs the rest. Every booking, programme,
-              check-in and message wired into the same client record. Click any
-              pillar to see how it works.
+              When the client lands, REPs runs the rest. Bookings, programmes,
+              check-ins and payments wired into one client record. Tap any pillar to
+              see exactly how it works.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: Eye, name: "Visibility", body: "Verified profile on the register the public already searches.", to: "/features/visibility" as const },
-              { icon: Globe, name: "Shop-front", body: "Your own page at /c/your-name — your photo, your method, your tiers.", to: "/features/shop-front" as const, accent: true },
-              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place.", to: "/features/operations" as const },
+              { icon: Eye, name: "Visibility", body: "Show up on the register clients already trust.", to: "/features/visibility" as const },
+              { icon: Globe, name: "Shop-front", body: "Your own page at /c/your-name — photo, method, tiers.", to: "/features/shop-front" as const, accent: true },
+              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar — one place.", to: "/features/operations" as const },
               { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record.", to: "/features/coaching" as const },
-              { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week.", to: "/features/ai" as const },
-              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time.", to: "/features/growth" as const },
+              { icon: Brain, name: "REPs AI", body: "Reads check-ins. Drafts replies. Scores leads. Flags risks.", to: "/features/ai" as const },
+              { icon: TrendingUp, name: "Growth", body: "The one move to grow this month — ranked by impact.", to: "/features/growth" as const },
             ].map((p) => (
               <Link
                 key={p.name}
@@ -225,13 +225,55 @@ function ForProsPage() {
           <div className="mt-14">
             <div className="mb-8 max-w-[640px]">
               <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                Loved by working pros
+                Real coaches. Real switches.
               </span>
               <h3 className="mt-3 font-display text-[24px] font-bold text-white lg:text-[30px]">
-                Coaches who made the switch.
+                The PTs and studio owners who already moved across.
               </h3>
             </div>
             <TestimonialTriad />
+          </div>
+        </div>
+      </section>
+
+      {/* PATTERN BREAK — GIANT STAT */}
+      <section className="relative overflow-hidden border-b border-reps-border bg-reps-ink">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,122,0,0.16),transparent_70%)]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reps-orange/40 to-transparent"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-reps-orange/40 to-transparent"
+        />
+        <div className="relative mx-auto max-w-[1100px] px-6 py-28 text-center lg:px-10 lg:py-36">
+          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+            Why the register matters
+          </span>
+          <div className="mt-8 flex items-baseline justify-center gap-2 leading-none">
+            <span className="font-display text-[160px] font-bold tracking-tight text-white sm:text-[200px] lg:text-[280px]">
+              1
+            </span>
+          </div>
+          <p className="mx-auto mt-6 max-w-[760px] font-display text-[24px] font-bold leading-tight text-white lg:text-[34px]">
+            One place the public actually looks for a verified coach.
+          </p>
+          <p className="mx-auto mt-5 max-w-[640px] text-[15.5px] leading-relaxed text-white/70">
+            Not Instagram. Not a Google review you can't verify. Not "a mate of a mate
+            who does PT." The register — built specifically so clients can find a
+            qualified, insured coach they can trust before they hand over a card.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/signup"
+              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+            >
+              Get on the register <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -251,52 +293,8 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PRICING TEASER */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr]">
-            <div>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                Founding pricing
-              </span>
-              <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-                Three tiers. Every feature in yours, included.
-              </h2>
-              <p className="mt-3 max-w-[520px] text-[15px] leading-relaxed text-white/65">
-                Verified £99/yr to be trusted. Pro £59/mo (Founding) to run your
-                practice. Studio £149/mo to scale your team. Founding Pro pricing is
-                locked for life — available only before public launch.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  to="/pricing"
-                  className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-semibold text-white hover:bg-reps-orange-hover"
-                >
-                  See pricing <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/compare"
-                  className="inline-flex h-11 items-center rounded-[10px] border border-white/25 px-5 text-[13.5px] font-semibold text-white hover:bg-white/10"
-                >
-                  Compare platforms
-                </Link>
-              </div>
-            </div>
-            <ul className="grid gap-2 rounded-[18px] border border-reps-border bg-reps-panel/40 p-5 lg:p-6">
-              {[
-                "Verified · £99/yr — badge, profile, reviews on the register",
-                "Pro · £59/mo Founding — shop-front, CRM, bookings, programmes, AI",
-                "Studio · £149/mo — multi-trainer, classes, team roles, location pages",
-              ].map((row) => (
-                <li key={row} className="flex items-start gap-2.5 text-[13.5px] text-white/80">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                  <span>{row}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
+      {/* PRICING — DISTINCT TREATMENT */}
+      <PricingTeaser />
 
       {/* FAQ */}
       <section className="border-b border-reps-border bg-reps-panel/20">
@@ -324,24 +322,24 @@ function ForProsPage() {
                 <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Join the verified register.
+                Get on the register. Start tonight.
               </h2>
               <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
-                Founding Pro pricing is available only before public launch.
-                Every feature in your tier is included — no paid add-ons.
+                Founding Pro pricing is only on the table before public launch. Every
+                feature in your tier is included — no paid add-ons.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
                   to="/signup"
-                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
                 >
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/pricing"
-                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
                 >
-                  See pricing
+                  See full pricing
                 </Link>
               </div>
             </div>
@@ -351,5 +349,149 @@ function ForProsPage() {
 
       <PublicFooter />
     </div>
+  );
+}
+
+/* ------------------------- Pricing teaser (distinct) ------------------------- */
+
+type Tier = {
+  key: "verified" | "pro" | "studio";
+  name: string;
+  price: string;
+  period: string;
+  blurb: string;
+  bullets: string[];
+  cta: string;
+  featured?: boolean;
+};
+
+const TIERS: Tier[] = [
+  {
+    key: "verified",
+    name: "Verified",
+    price: "£99",
+    period: "/year",
+    blurb: "Get on the register. Get the badge. Get found.",
+    bullets: ["Verified badge", "Public profile + reviews", "Listed in directory & city pages"],
+    cta: "Get verified",
+  },
+  {
+    key: "pro",
+    name: "Pro",
+    price: "£59",
+    period: "/mo · Founding",
+    blurb: "Run your whole 1-1 practice end-to-end.",
+    bullets: [
+      "Everything in Verified",
+      "Shop-front at /c/your-name",
+      "CRM, bookings, payments, programmes",
+      "REPs AI — drafts, summaries, lead scoring",
+    ],
+    cta: "Start Pro",
+    featured: true,
+  },
+  {
+    key: "studio",
+    name: "Studio",
+    price: "£149",
+    period: "/mo",
+    blurb: "Scale a team and locations.",
+    bullets: [
+      "Everything in Pro",
+      "Multi-trainer rosters & roles",
+      "Classes, packages, memberships",
+      "Location pages",
+    ],
+    cta: "Talk to us",
+  },
+];
+
+function PricingTeaser() {
+  return (
+    <section className="relative overflow-hidden border-b border-reps-border bg-reps-ink">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_0%,rgba(255,122,0,0.10),transparent_70%)]"
+      />
+      <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto mb-12 max-w-[720px] text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+            <Sparkles className="h-3.5 w-3.5" /> Founding pricing
+          </span>
+          <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+            Three tiers. Pick the one you're at.
+          </h2>
+          <p className="mt-3 text-[15.5px] leading-relaxed text-white/70">
+            Every feature in your tier is included — no paid add-ons. The Founding
+            Pro price is locked for life, but only if you join before public launch.
+          </p>
+        </div>
+
+        <div className="grid items-stretch gap-5 md:grid-cols-3 md:gap-4 lg:gap-6">
+          {TIERS.map((t) => (
+            <div
+              key={t.key}
+              className={
+                t.featured
+                  ? "relative flex flex-col rounded-[22px] border-2 border-reps-orange bg-gradient-to-b from-reps-panel to-reps-panel/70 p-8 ring-1 ring-reps-orange/30 lg:-translate-y-3 lg:scale-[1.03]"
+                  : "relative flex flex-col rounded-[22px] border border-reps-border bg-reps-panel/60 p-7"
+              }
+            >
+              {t.featured && (
+                <span className="absolute -top-3 left-7 inline-flex items-center gap-1 rounded-full bg-reps-orange px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
+                  <Star className="h-3 w-3 fill-white" /> Most popular
+                </span>
+              )}
+              <h3 className="font-display text-[20px] font-bold text-white">{t.name}</h3>
+              <p className="mt-1 text-[13px] text-white/60">{t.blurb}</p>
+              <div className="mt-5 flex items-baseline gap-1.5">
+                <span className="font-display text-[40px] font-bold text-white">{t.price}</span>
+                <span className="text-[13px] text-white/55">{t.period}</span>
+              </div>
+              {t.featured && (
+                <span className="mt-2 inline-flex w-fit items-center rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-reps-orange">
+                  Locked for life
+                </span>
+              )}
+              <ul className="mt-6 flex-1 space-y-2.5 text-[13.5px]">
+                {t.bullets.map((b) => (
+                  <li key={b} className="flex items-start gap-2 text-white/80">
+                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/pricing"
+                className={
+                  t.featured
+                    ? "mt-7 inline-flex h-11 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+                    : "mt-7 inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-white/20 text-[13px] font-semibold text-white shadow-none hover:bg-white/10"
+                }
+              >
+                {t.cta}
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12.5px] text-white/55">
+          <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Every feature in your tier — included</span>
+          <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Cancel any time</span>
+          <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Migration help included</span>
+        </div>
+
+        <div className="mt-8 text-center">
+          <Link
+            to="/compare"
+            className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-reps-orange hover:underline"
+          >
+            Compare with Trainerize, MyPTHub & PT Distinction <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
