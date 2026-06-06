@@ -24,7 +24,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarChapter } from "@/components/marketing/PillarChapter";
+
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -272,14 +272,8 @@ function ForProsPage() {
       {/* CHAPTER P1 — VISIBILITY */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={1}
-              name="Visibility"
-              promise="Be found by the clients already searching the register — and trusted before they even message you."
-            />
-          </div>
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Verified profile & reviews"
               title="Found on the register the public already searches."
@@ -302,14 +296,8 @@ function ForProsPage() {
       {/* CHAPTER P2 — SHOP-FRONT */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={2}
-              name="Shop-front"
-              promise="A personalised page at /c/your-name that turns visitors into paying clients — built in, not bolted on."
-            />
-          </div>
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Personalised shop-front"
               title="The page that turns visitors into clients."
@@ -333,15 +321,8 @@ function ForProsPage() {
       {/* CHAPTER P3 — OPERATIONS (5 features) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={3}
-              name="Operations"
-              promise="Leads, bookings, payments, CRM and messaging — every moving part of your practice in one place, wired to the same client record."
-            />
-          </div>
-
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Lead pipeline"
               title="Every enquiry tracked from first touch to first session."
@@ -445,15 +426,8 @@ function ForProsPage() {
       {/* CHAPTER P4 — COACHING (3 features) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={4}
-              name="Coaching"
-              promise="Programmes, check-ins and the client portal that makes your work feel premium — wired into the same client record as your bookings and payments."
-            />
-          </div>
-
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Programmes"
               title="Programmes your clients show off."
@@ -569,16 +543,6 @@ function ForProsPage() {
       </section>
 
 
-      {/* CHAPTER P5 — REPS AI (HERO MOMENT) */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
-          <PillarChapter
-            number={5}
-            name="REPs AI"
-            promise="An AI operating layer working across every pillar — drafting, scoring, summarising and ranking your next move."
-          />
-        </div>
-      </section>
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
         <div
           aria-hidden
@@ -626,16 +590,6 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* CHAPTER P6 — GROWTH */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
-          <PillarChapter
-            number={6}
-            name="Growth"
-            promise="Reviews, content and reporting that compound — every happy client makes the next one easier to win."
-          />
-        </div>
-      </section>
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
