@@ -36,6 +36,8 @@ import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
+import { SubFeatureCard } from "@/components/marketing/SubFeatureCard";
+import { CalendarDays, CreditCard, Users, MessageSquare } from "lucide-react";
 
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
