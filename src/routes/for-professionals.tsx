@@ -590,16 +590,6 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* CHAPTER P6 — GROWTH */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
-          <PillarChapter
-            number={6}
-            name="Growth"
-            promise="Reviews, content and reporting that compound — every happy client makes the next one easier to win."
-          />
-        </div>
-      </section>
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
