@@ -89,7 +89,7 @@ export function ReplacedStackBoard() {
               Before · your current stack
             </span>
             <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
-              16 tools · 16 bills
+              14 tools · 14 bills
             </span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
