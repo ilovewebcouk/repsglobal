@@ -588,7 +588,7 @@ function ForProsPage() {
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
-                <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPs AI Operating System
+                <Wand2 className="h-3.5 w-3.5" /> REPs AI Operating System
               </span>
               <h2 className="mt-4 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
                 The AI layer behind your fitness business.
