@@ -7,7 +7,7 @@ import stripe from "@/assets/logos/stripe.svg.asset.json";
 import mailchimp from "@/assets/logos/mailchimp.svg.asset.json";
 import googlesheets from "@/assets/logos/googlesheets.svg.asset.json";
 import whatsapp from "@/assets/logos/whatsapp.svg.asset.json";
-import googleforms from "@/assets/logos/googleforms.svg.asset.json";
+import typeform from "@/assets/logos/typeform.svg.asset.json";
 
 type Before = {
   name: string;
@@ -26,7 +26,7 @@ const BEFORE: Before[] = [
   { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
   { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
-  { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
+  { name: "Typeform", job: "Check-ins", logo: typeform.url },
 ];
 
 const AFTER = [

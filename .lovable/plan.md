@@ -1,13 +1,16 @@
-## Scope
+## Replace "Manual check-in forms" with Typeform in ReplacedStackBoard
 
-Single occurrence across the whole codebase:
+**File:** `src/components/marketing/ReplacedStackBoard.tsx`
 
-- `src/components/marketing/ReplacedStackBoard.tsx:28` — `{ name: "MyFitnessPal-style apps", job: "Nutrition", icon: Apple }`
+**Change:** Swap the existing "Manual check-in forms" chip (one of the 9 BEFORE tools) for Typeform.
 
-No other file (routes, marketing components, comparison tables, copy libraries, resources, mockups) references MyFitnessPal in any form.
+- `name`: `"Typeform"`
+- `job`: `"Check-ins"`
+- `logo`: white Typeform wordmark SVG, sourced and inlined the same way the other brand logos in this component are handled (white-only, no color, matching stroke/weight conventions already in the file)
+- Keep the chip in the same slot/order currently occupied by "Manual check-in forms"
+- Keep the existing `wide` flag state for that slot unchanged
+- Badge stays "9 tools · 9 bills" (still 9 chips)
 
-## Fix
+**Sourcing the logo:** Use the official Typeform wordmark (the "T." mark + "Typeform" wordmark, matching the version used in their press kit) rendered as a single-color white inline SVG, consistent with how Trainerize and the other logos are inlined in this file.
 
-Change the chip name from `"MyFitnessPal-style apps"` to `"MyFitnessPal"`. Everything else on that entry (the `Nutrition` job label, the `Apple` lucide icon fallback, the `wide` flag absence, ordering in the BEFORE grid) stays as-is.
-
-No other edits required.
+No other files change.
