@@ -3,6 +3,7 @@ import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import trainerize from "@/assets/logos/trainerize.svg.asset.json";
 
 const BEFORE = [
+  { name: "Wix / Squarespace", job: "Website" },
   { name: "Trainerize", job: "Programmes", logo: trainerize.url },
   { name: "Calendly", job: "Bookings" },
   { name: "Stripe Checkout", job: "Payments" },
@@ -15,6 +16,7 @@ const BEFORE = [
 
 const AFTER = [
   "Verified directory listing",
+  "Personal shop-front at /c/your-name",
   "Leads CRM",
   "Calendar & bookings",
   "Payments & subscriptions",
