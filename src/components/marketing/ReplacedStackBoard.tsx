@@ -1,10 +1,9 @@
 import { ArrowRight, Check } from "lucide-react";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
-import trainerize from "@/assets/logos/trainerize.svg.asset.json";
 
 const BEFORE = [
   { name: "Wix / Squarespace", job: "Website" },
-  { name: "Trainerize", job: "Programmes", logo: trainerize.url },
+  { name: "Trainerize", job: "Programmes" },
   { name: "Calendly", job: "Bookings" },
   { name: "Stripe Checkout", job: "Payments" },
   { name: "Mailchimp", job: "Email" },
