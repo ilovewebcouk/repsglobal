@@ -4,15 +4,11 @@ import {
   ArrowRight,
   BadgeCheck,
   Brain,
-  Calendar,
   Check,
   ClipboardCheck,
-  CreditCard,
   Dumbbell,
   Eye,
   Globe,
-  Inbox,
-  LineChart,
   PenTool,
   ScanLine,
   Settings2,
@@ -73,12 +69,6 @@ const AI_CAPS = [
   { icon: Sparkles, title: "Next Move, every Monday", body: "The single highest-leverage action this week — ranked by impact." },
   { icon: AlertTriangle, title: "Risk, flagged before it churns", body: "Adherence watched — REPs tells you who's about to ghost." },
   { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
-];
-
-const OPERATIONS_SUB = [
-  { icon: Inbox, name: "Leads CRM", body: "Pipeline, source tracking and AI lead scoring." },
-  { icon: Calendar, name: "Bookings & calendar", body: "Sessions, consults and classes on one calendar." },
-  { icon: CreditCard, name: "Payments & subs", body: "Card payments, packages and memberships." },
 ];
 
 function ForProsPage() {
@@ -151,12 +141,12 @@ function ForProsPage() {
                 >
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
-                <a
-                  href="#pillars"
+                <Link
+                  to="/features"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
                 >
-                  Explore the six pillars
-                </a>
+                  Explore features
+                </Link>
               </div>
               <ul
                 className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
@@ -209,11 +199,11 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 1 — VISIBILITY */}
+      {/* VISIBILITY SHOWCASE */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar 1 · Visibility"
+            eyebrow="Verified profile"
             title="Become the obvious choice in your area."
             body="Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the verified register since 2009."
             bullets={[
@@ -224,14 +214,14 @@ function ForProsPage() {
             ]}
             imageLabel="Profile + directory mockup — screenshot coming"
             mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified professional profile preview" }}
-            ctaLabel="Explore Visibility"
+            ctaLabel="See the profile"
             ctaHref="/features/visibility"
           />
         </div>
       </section>
 
-      {/* ACT 2 — SIX PILLARS GRID */}
-      <section id="pillars" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/20">
+      {/* ACT 2 — PILLARS */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
@@ -241,11 +231,11 @@ function ForProsPage() {
               Six pillars. One operating system.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Six pillars, one platform — every booking, programme, check-in and message
-              wired into the same client record. Each one is detailed below. Pro and Studio
-              plans include a personalised shop-front at{" "}
-              <span className="text-white">/c/your-name</span> — the page in Pillar 2 shows
-              what yours can look like.
+              When clients arrive, REPs runs the rest. Built for fitness — every booking,
+              programme, check-in and message wired into the same client record. Pro and
+              Studio plans include a personalised shop-front at{" "}
+              <span className="text-white">/c/your-name</span> — the page below shows what
+              yours can look like.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,7 +245,7 @@ function ForProsPage() {
               { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place.", to: "/features/operations" as const },
               { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record.", to: "/features/coaching" as const },
               { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week.", to: "/features/ai" as const },
-              { icon: TrendingUp, name: "Growth", body: "Insights and the single move that grows your business this month.", to: "/features/growth" as const },
+              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time.", to: "/features/growth" as const },
             ].map((p) => (
               <Link
                 key={p.name}
@@ -279,11 +269,11 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 2 — SHOP-FRONT (live example) */}
+      {/* PILLAR · SHOP-FRONT (live example) */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar 2 · Shop-front"
+            eyebrow="Pillar · Shop-front"
             title="The page that turns visitors into clients."
             body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
             bullets={[
@@ -309,41 +299,39 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 3 — OPERATIONS (Leads + Bookings + Payments) */}
+      {/* PILLAR 1 — LEADS */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar 3 · Operations"
-            title="Leads, bookings and payments — wired into one client record."
-            body="Slow replies cost you clients. Scattered tools cost you hours. REPs lands every lead in one pipeline, every session on one calendar, every payment on one ledger — and AI scores intent and drafts the first reply before you've opened the tab."
+            eyebrow="Pillar 1 · Leads CRM"
+            title="Stop losing the clients you've already won."
+            body="Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab."
             bullets={[
               "Pipeline stages from enquiry to booked consult",
-              "Source tracking and AI lead scoring with reply drafts",
-              "Calendar with availability and session types",
-              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
+              "Source tracking — know which channel pays",
+              "Automated follow-up reminders, never another cold lead",
+              "AI lead scoring and reply drafts ready to send",
             ]}
             imageLabel="Leads pipeline mockup — screenshot coming"
             mockup={{ device: "laptop", src: "/dashboard/leads", title: "Leads pipeline preview" }}
-            ctaLabel="Explore Operations"
+            ctaLabel="See the pipeline"
             ctaHref="/features/operations"
           />
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
-            {OPERATIONS_SUB.map((s) => (
-              <Link
-                key={s.name}
-                to="/features/operations"
-                className="group rounded-[16px] border border-reps-border bg-reps-panel/60 p-4 transition-colors hover:border-reps-orange-border"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <s.icon className="h-4 w-4" />
-                </span>
-                <div className="mt-3 text-[13.5px] font-semibold text-white group-hover:text-reps-orange">
-                  {s.name}
-                </div>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-white/60">{s.body}</p>
-              </Link>
-            ))}
+        </div>
+      </section>
+
+      {/* PILLAR 2 — COACHING (TABBED) */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="mb-10 max-w-[720px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Pillar 2 · Coaching
+            </span>
+            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
+              Programmes, check-ins and the full client record — in one tool.
+            </h2>
           </div>
+          <PillarTabs />
         </div>
       </section>
 
@@ -354,37 +342,46 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 4 — COACHING (TABBED) + CLIENT PORTAL */}
+      {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[720px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 4 · Coaching
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins and the full client record — in one tool.
-            </h2>
-          </div>
-          <PillarTabs />
+          <ProductBlock
+            eyebrow="Pillar 3 · Bookings & payments"
+            title="Your schedule and your revenue, in one place."
+            body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
+            bullets={[
+              "Calendar with availability and session types",
+              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
+              "Live revenue, paid, pending and overdue",
+              "Per-client invoice and payment history",
+            ]}
+            imageLabel="Bookings + payments mockup — screenshot coming"
+            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Bookings and calendar preview" }}
+            ctaLabel="Explore Operations"
+            ctaHref="/features/operations"
+            reverse
+          />
+        </div>
+      </section>
 
-          <div className="mt-20">
-            <ProductBlock
-              eyebrow="Inside Coaching · Client portal"
-              title="The app your clients tell their friends about."
-              body="What your clients see matters as much as what you see. A portal that looks like a premium product, not a beta. Today's session, this week's targets, next booking, last message — wherever they open it."
-              bullets={[
-                "Client dashboard on web and mobile",
-                "Programme, nutrition and check-ins in one tab each",
-                "One-tap check-in with photos and metrics",
-                "Bookings and payment history visible to the client",
-              ]}
-              imageLabel="Client portal mockup — screenshot coming"
-              mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
-              ctaLabel="Explore Coaching"
-              ctaHref="/features/coaching"
-              reverse
-            />
-          </div>
+      {/* PILLAR 4 — CLIENT PORTAL */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <ProductBlock
+            eyebrow="Pillar 4 · Client portal"
+            title="The app your clients tell their friends about."
+            body="What your clients see matters as much as what you see. A portal that looks like a premium product, not a beta. Today's session, this week's targets, next booking, last message — wherever they open it."
+            bullets={[
+              "Client dashboard on web and mobile",
+              "Programme, nutrition and check-ins in one tab each",
+              "One-tap check-in with photos and metrics",
+              "Bookings and payment history visible to the client",
+            ]}
+            imageLabel="Client portal mockup — screenshot coming"
+            mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
+            ctaLabel="Explore Client Portal"
+            ctaHref="/features/coaching"
+          />
         </div>
       </section>
 
@@ -462,7 +459,7 @@ function ForProsPage() {
               </p>
               <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-4 py-2">
                 <Brain className="h-5 w-5 text-reps-orange" />
-                <span className="text-[12.5px] text-white/80">AI built into every paid tier — full suite on Business and Studio</span>
+                <span className="text-[12.5px] text-white/80">AI assistance included in every paid tier</span>
               </div>
               <div className="mt-6">
                 <Link
@@ -484,30 +481,6 @@ function ForProsPage() {
                 <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{c.body}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PILLAR 6 — GROWTH */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 6 · Growth"
-            title="The single move to grow your business this month."
-            body="Revenue, retention, churn risk and renewal forecasting — surfaced as a Monday-morning card, not a dashboard you have to read. The compounding layer on top of everything else REPs does."
-            bullets={[
-              "Cohort revenue, churn risk and renewal forecasting at a glance",
-              "Client risk alerts before adherence slides",
-              "Weekly Next Move card — ranked by impact",
-              "Content Studio: on-brand posts and lead magnets from a one-line brief",
-            ]}
-            imageLabel="Growth insights mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/dashboard/reports", title: "Growth insights preview" }}
-            ctaLabel="Explore Growth"
-            ctaHref="/features/growth"
-          />
-          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel/60 px-3 py-1.5 text-[12.5px] text-white/70">
-            <LineChart className="h-4 w-4 text-reps-orange" /> Full Growth suite included on Business and Studio
           </div>
         </div>
       </section>
