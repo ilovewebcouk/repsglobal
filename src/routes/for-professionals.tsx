@@ -1,42 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  AlertTriangle,
   ArrowRight,
   BadgeCheck,
   Brain,
   Check,
   ClipboardCheck,
-  Dumbbell,
   Eye,
   Globe,
-  PenTool,
-  ScanLine,
   Settings2,
   Sparkles,
   Star,
   TrendingUp,
-  Wand2,
   Zap,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
-
-import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarTabs } from "@/components/marketing/PillarTabs";
-import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
-import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock";
-import { WeekWithReps } from "@/components/marketing/WeekWithReps";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
-import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
-
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
 
@@ -61,16 +48,6 @@ export const Route = createFileRoute("/for-professionals")({
   component: ForProsPage,
 });
 
-
-const AI_CAPS = [
-  { icon: Dumbbell, title: "Programmes, drafted in seconds", body: "One-line brief in, 12-week plan out — exercises, sets, video demos." },
-  { icon: ClipboardCheck, title: "Check-ins, read for you", body: "Six check-ins summarised into one card: headline, change, ask." },
-  { icon: ScanLine, title: "Leads, scored and answered", body: "Every enquiry scored on intent, first-draft reply ready to send." },
-  { icon: Sparkles, title: "Next Move, every Monday", body: "The single highest-leverage action this week — ranked by impact." },
-  { icon: AlertTriangle, title: "Risk, flagged before it churns", body: "Adherence watched — REPs tells you who's about to ghost." },
-  { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
-];
-
 function ForProsPage() {
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
@@ -86,28 +63,22 @@ function ForProsPage() {
           height={1080}
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
-        {/* Legibility overlay — stronger base wash on mobile (copy spans full width), lighter on desktop */}
         <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
-        {/* Mobile: centred vignette darkens the whole copy zone. Desktop: focused darken behind the left copy column only. */}
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.72),transparent_75%)] lg:bg-[radial-gradient(70%_85%_at_28%_55%,rgba(10,10,12,0.78),transparent_72%)]"
         />
-        {/* Right-edge fade — only meaningful on desktop where the device cluster sits on the right */}
         <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-transparent to-reps-ink/85 lg:block" />
-        {/* Soft brand glow — slightly stronger and re-centred on mobile to balance the frame */}
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
         />
-        {/* Hero floor seal — shorter on mobile (compact hero), longer on desktop (smoother resolve into Act 1) */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
         <div className="relative mx-auto max-w-[1320px] px-6 pb-24 pt-20 lg:px-10 lg:pb-32 lg:pt-24">
           <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
-            {/* Left: copy */}
             <div>
               <span
                 className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
@@ -167,7 +138,6 @@ function ForProsPage() {
               </ul>
             </div>
 
-            {/* Right: device cluster — hidden on small screens */}
             <div className="relative hidden md:block">
               <HeroDeviceCluster />
             </div>
@@ -175,13 +145,11 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PRESS MARQUEE — continuous R→L scroll on the same ink continuum as hero + Act 1 */}
+      {/* PRESS MARQUEE */}
       <PressMarquee />
-
 
       {/* ACT 1 — REGISTER */}
       <section className="border-b border-reps-border bg-reps-ink">
-
         <div className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
@@ -191,36 +159,16 @@ function ForProsPage() {
               The register the public already searches.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{" "}
-              <em>and</em> clients — because the public already lands here when they're looking for a trusted pro.
+              Other platforms give you software. REPs gives you software <em>and</em>{" "}
+              clients — because the public already lands here when they're looking for
+              a trusted pro.
             </p>
           </div>
           <div className="mt-10"><RegisterProof /></div>
         </div>
       </section>
 
-      {/* VISIBILITY SHOWCASE */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Verified profile"
-            title="Become the obvious choice in your area."
-            body="Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the verified register since 2009."
-            bullets={[
-              "Verified badge backed by a 16-year register",
-              "Qualifications, insurance and CPD shown live",
-              "Reviews on the public record — not screenshotted on Instagram",
-              "Indexed by location, specialism and price band",
-            ]}
-            imageLabel="Profile + directory mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified professional profile preview" }}
-            ctaLabel="See the profile"
-            ctaHref="/features/visibility"
-          />
-        </div>
-      </section>
-
-      {/* ACT 2 — PILLARS */}
+      {/* ACT 2 — SIX PILLARS GRID (links to pillar pages for the deep dive) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
@@ -231,11 +179,9 @@ function ForProsPage() {
               Six pillars. One operating system.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              When clients arrive, REPs runs the rest. Built for fitness — every booking,
-              programme, check-in and message wired into the same client record. Pro and
-              Studio plans include a personalised shop-front at{" "}
-              <span className="text-white">/c/your-name</span> — the page below shows what
-              yours can look like.
+              When clients arrive, REPs runs the rest. Every booking, programme,
+              check-in and message wired into the same client record. Click any
+              pillar to see how it works.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -263,140 +209,12 @@ function ForProsPage() {
                   {p.name}
                 </h3>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{p.body}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-white/55 group-hover:text-reps-orange">
+                  See how it works <ArrowRight className="h-3.5 w-3.5" />
+                </span>
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* PILLAR · SHOP-FRONT (live example) */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar · Shop-front"
-            title="The page that turns visitors into clients."
-            body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
-            bullets={[
-              "Outcome-led hero with your photo and verified badge",
-              "Three-tier services with a 'Most popular' lane",
-              "Foundation method, transformation proof, testimonials",
-              "Replaces your Wix or Squarespace site — one less bill, one less login",
-            ]}
-            imageLabel="Coach shop-front mockup — /c/james-wilson"
-            mockup={{ device: "laptop", src: "/c/james-wilson", title: "Coach shop-front live example" }}
-            ctaLabel="See the live example"
-            ctaHref="/c/james-wilson"
-            reverse
-          />
-          <div className="mt-6 lg:ml-[calc(50%+1.75rem)]">
-            <Link
-              to="/features/shop-front"
-              className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
-            >
-              Explore Shop-front <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* PILLAR 1 — LEADS */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 1 · Leads CRM"
-            title="Stop losing the clients you've already won."
-            body="Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab."
-            bullets={[
-              "Pipeline stages from enquiry to booked consult",
-              "Source tracking — know which channel pays",
-              "Automated follow-up reminders, never another cold lead",
-              "AI lead scoring and reply drafts ready to send",
-            ]}
-            imageLabel="Leads pipeline mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/dashboard/leads", title: "Leads pipeline preview" }}
-            ctaLabel="See the pipeline"
-            ctaHref="/features/operations"
-          />
-        </div>
-      </section>
-
-      {/* PILLAR 2 — COACHING (TABBED) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[720px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 2 · Coaching
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins and the full client record — in one tool.
-            </h2>
-          </div>
-          <PillarTabs />
-        </div>
-      </section>
-
-      {/* FEATURE TESTIMONIAL */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-          <TestimonialFeature />
-        </div>
-      </section>
-
-      {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 3 · Bookings & payments"
-            title="Your schedule and your revenue, in one place."
-            body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
-            bullets={[
-              "Calendar with availability and session types",
-              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
-              "Live revenue, paid, pending and overdue",
-              "Per-client invoice and payment history",
-            ]}
-            imageLabel="Bookings + payments mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Bookings and calendar preview" }}
-            ctaLabel="Explore Operations"
-            ctaHref="/features/operations"
-            reverse
-          />
-        </div>
-      </section>
-
-      {/* PILLAR 4 — CLIENT PORTAL */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 4 · Client portal"
-            title="The app your clients tell their friends about."
-            body="What your clients see matters as much as what you see. A portal that looks like a premium product, not a beta. Today's session, this week's targets, next booking, last message — wherever they open it."
-            bullets={[
-              "Client dashboard on web and mobile",
-              "Programme, nutrition and check-ins in one tab each",
-              "One-tap check-in with photos and metrics",
-              "Bookings and payment history visible to the client",
-            ]}
-            imageLabel="Client portal mockup — screenshot coming"
-            mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
-            ctaLabel="Explore Client Portal"
-            ctaHref="/features/coaching"
-          />
-        </div>
-      </section>
-
-      {/* COMPARISON */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mx-auto mb-10 max-w-[680px] text-center">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              The honest comparison
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              What you actually get for your money.
-            </h2>
-          </div>
-          <ComparisonStrip />
         </div>
       </section>
 
@@ -418,88 +236,65 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* USE CASES */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      {/* COMPARISON */}
+      <section className="border-b border-reps-border bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[680px]">
+          <div className="mx-auto mb-10 max-w-[680px] text-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Who it's for
+              The honest comparison
             </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-              Built for every serious fitness professional.
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              What you actually get for your money.
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              One platform, three ways to run a fitness business. Pick the shape that fits you.
-            </p>
           </div>
-          <UseCaseTriad />
+          <ComparisonStrip />
         </div>
       </section>
 
-
-      {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
-      <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(55%_50%_at_75%_40%,rgba(255,122,0,0.12),transparent_70%)]"
-        />
-        <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+      {/* PRICING TEASER */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
-                <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPs AI Operating System
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+                Founding pricing
               </span>
-              <h2 className="mt-4 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
-                The AI layer behind your fitness business.
+              <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+                Three tiers. Every feature in yours, included.
               </h2>
-              <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/75">
-                An AI layer working across programmes, check-ins, leads, risk and
-                growth — drafting work, scoring intent, flagging churn, ranking the
-                single move that pays this week. You stay the coach.
+              <p className="mt-3 max-w-[520px] text-[15px] leading-relaxed text-white/65">
+                Verified £99/yr to be trusted. Pro £59/mo (Founding) to run your
+                practice. Studio £149/mo to scale your team. Founding Pro pricing is
+                locked for life — available only before public launch.
               </p>
-              <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-4 py-2">
-                <Brain className="h-5 w-5 text-reps-orange" />
-                <span className="text-[12.5px] text-white/80">AI assistance included in every paid tier</span>
-              </div>
-              <div className="mt-6">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  to="/features/ai"
-                  className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-5 text-[13.5px] font-semibold text-reps-orange hover:bg-reps-orange-soft/80"
+                  to="/pricing"
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Explore AI <ArrowRight className="h-4 w-4" />
+                  See pricing <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/compare"
+                  className="inline-flex h-11 items-center rounded-[10px] border border-white/25 px-5 text-[13.5px] font-semibold text-white hover:bg-white/10"
+                >
+                  Compare platforms
                 </Link>
               </div>
             </div>
-            <AiCommandCentreMock />
+            <ul className="grid gap-2 rounded-[18px] border border-reps-border bg-reps-panel/40 p-5 lg:p-6">
+              {[
+                "Verified · £99/yr — badge, profile, reviews on the register",
+                "Pro · £59/mo Founding — shop-front, CRM, bookings, programmes, AI",
+                "Studio · £149/mo — multi-trainer, classes, team roles, location pages",
+              ].map((row) => (
+                <li key={row} className="flex items-start gap-2.5 text-[13.5px] text-white/80">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>{row}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-
-          <div className="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {AI_CAPS.map((c) => (
-              <div key={c.title} className="rounded-[16px] border border-reps-border bg-reps-panel/60 p-5">
-                <c.icon className="h-5 w-5 text-reps-orange" />
-                <div className="mt-3 text-[14.5px] font-semibold text-white">{c.title}</div>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{c.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* A WEEK WITH REPS */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[680px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              A week with REPs
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              Monday to Friday, ranked and ready.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              The five things REPs surfaces every week so you spend your time coaching, not catching up.
-            </p>
-          </div>
-          <WeekWithReps />
         </div>
       </section>
 
@@ -547,12 +342,6 @@ function ForProsPage() {
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
                 >
                   See pricing
-                </Link>
-                <Link
-                  to="/compare"
-                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
-                >
-                  Compare platforms
                 </Link>
               </div>
             </div>
