@@ -40,6 +40,7 @@ import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
+import { PricingSnapshot } from "@/components/marketing/PricingSnapshot";
 
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
@@ -527,6 +528,32 @@ function ForProsPage() {
             </p>
           </div>
           <WeekWithReps />
+        </div>
+      </section>
+
+      {/* PRICING SNAPSHOT */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="mb-10 max-w-[680px] text-center lg:mx-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Pricing
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              One tier. Every feature included.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              No add-on stack, no per-client fees, no booking commission. Pick the tier that fits your business — every feature in it is included.
+            </p>
+          </div>
+          <PricingSnapshot />
+          <div className="mt-8 text-center">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
+            >
+              See full plan comparison <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
