@@ -25,7 +25,7 @@ const BEFORE: Before[] = [
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
   { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
-  { name: "MyFitnessPal-style apps", job: "Nutrition", icon: Apple },
+  { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
   { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
 ];
 
