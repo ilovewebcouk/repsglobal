@@ -1,4 +1,14 @@
-import { ArrowRight, Check, Apple } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Apple,
+  Filter,
+  Zap,
+  GraduationCap,
+  BookOpen,
+  Users,
+  FileSignature,
+} from "lucide-react";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import wix from "@/assets/logos/wix.svg.asset.json";
 import trainerize from "@/assets/logos/trainerize.svg.asset.json";
@@ -8,6 +18,8 @@ import mailchimp from "@/assets/logos/mailchimp.svg.asset.json";
 import googlesheets from "@/assets/logos/googlesheets.svg.asset.json";
 import whatsapp from "@/assets/logos/whatsapp.svg.asset.json";
 import googleforms from "@/assets/logos/googleforms.svg.asset.json";
+import hubspot from "@/assets/logos/hubspot.svg.asset.json";
+import typeform from "@/assets/logos/typeform.svg.asset.json";
 
 type Before = {
   name: string;
@@ -18,16 +30,32 @@ type Before = {
 };
 
 const BEFORE: Before[] = [
+  // Web & content
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
+  { name: "Kajabi", job: "Courses", icon: GraduationCap },
+  { name: "Thinkific", job: "Courses", icon: BookOpen },
+  // Programmes & training delivery
   { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
+  // Sales & lead capture
+  { name: "ClickFunnels", job: "Funnels", icon: Filter },
+  { name: "Typeform", job: "Lead forms", logo: typeform.url },
+  // Bookings & money
   { name: "Calendly", job: "Bookings", logo: calendly.url },
   { name: "Stripe Checkout", job: "Payments", logo: stripe.url },
+  { name: "DocuSign", job: "Contracts", icon: FileSignature },
+  // Marketing & CRM
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
-  { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
+  { name: "HubSpot", job: "CRM", logo: hubspot.url },
+  { name: "Google Sheets", job: "Spreadsheets", logo: googlesheets.url },
+  { name: "GoHighLevel", job: "Automation", icon: Zap },
+  // Community & client comms
+  { name: "Skool", job: "Community", icon: Users },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
+  // Coaching ops
   { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
   { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
 ];
+
 
 const AFTER = [
   "Verified directory listing",
