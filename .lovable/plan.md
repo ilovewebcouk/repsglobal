@@ -1,77 +1,56 @@
-# Shop-front pass on /for-professionals
+# Make "Before · your current stack" feel uniform and premium
 
-## The gap
+## The problem
 
-The page name-drops Shop-front in the Act 2 intro ("see a live example") and includes it as one of six pillar tiles, but the rest of the page acts like it doesn't exist:
+In `ReplacedStackBoard`, eight of nine chips render the tool name as **text with a strikethrough**, but Trainerize renders as a **monochrome SVG logo** with no strike line — so it visually breaks the row and looks like the odd one out (or worse, like a tool that isn't being replaced).
 
-- No dedicated 50/50 showcase / CTA section — the "see a live example" link is the only proof.
-- The comparison table (`ComparisonStrip`) has zero rows about it.
-- The "One connected platform" before/after board (`ReplacedStackBoard`) doesn't list Wix/Squarespace on the **Before** side, and doesn't surface "Personal shop-front at /c/your-name" on the **After** side — so coaches don't see that REPs replaces their website too.
+Three options were considered:
 
-Shop-front is a **Pro + Studio** feature (per locked coach shop-front memory) and is the most photographable surface REPs has — it deserves a hero moment on this page.
+1. **Add brand logos for all nine** — requires sourcing/licensing 8 more SVGs (Wix, Calendly, Stripe, Mailchimp, Google Sheets, WhatsApp, MyFitnessPal-equivalent, "manual forms"). High risk, scope creep, and several of these aren't single-vendor concepts.
+2. **Keep the Trainerize logo, overlay a strikethrough line on the chip** — works, but a strike through a logo always reads as a legal-grey-area negative attack rather than a confident "retired tool" tag.
+3. **Drop the Trainerize logo on this board, render the name as text like the rest** — uniform, premium, no logo licensing risk. Trainerize keeps its logo treatment in the comparison strip directly above, which is the right place for a head-to-head.
+
+**Recommendation: option 3** — uniformity wins. Then polish the "retired chip" treatment so it feels deliberate and world-class.
 
 ## What we'll change
 
-### 1. New Pillar 1.5 — Shop-front showcase (50/50 with live CTA)
+### 1. `src/components/marketing/ReplacedStackBoard.tsx`
 
-Insert a new section **between Act 2 pillars grid and Pillar 1 · Leads CRM** (i.e. right after the six-tile grid, so it directly fulfils the "see a live example" promise made in the intro).
+- Remove the `logo` field from the Trainerize BEFORE entry. All 9 chips now render the same way.
+- Drop the `trainerize` SVG import — it's still used in `ComparisonStrip` so the asset stays.
+- Refine the chip treatment for a more polished "retired tool" feel:
+  - Lower chip background from `bg-reps-panel/60` to `bg-reps-panel/40` so it whispers vs the AFTER card.
+  - Tighten border to `border-reps-border/70`.
+  - Name: same `line-through decoration-reps-orange/60` but bump font weight from bold to semibold and color from `white/55` to `white/65` so the name remains readable through the strike.
+  - Job label on the right: keep the `text-[10.5px] uppercase tracking-wider` but use `text-white/35` (slightly muter) so the name is the focal point.
+  - Add `transition-colors` and a subtle hover state (border lifts to `reps-border`) so the board feels alive when you mouse over it — matches the polish on the AFTER list.
 
-Use the existing `ProductBlock` component for visual consistency with the other pillar showcases.
+### 2. Header micro-polish (same component)
 
-```
-eyebrow:  "Pillar · Shop-front"
-title:    "The page that turns visitors into clients."
-body:     "Pro and Studio plans include a personalised shop-front at
-           /c/your-name — your story, your method, your tiers, your
-           proof. Designed to convert. Indexed by Google. Nothing to
-           build, nothing to host."
-bullets:
-  - Outcome-led hero with your photo and verified badge
-  - Three-tier services with a 'Most popular' lane
-  - Foundation method, transformation proof, testimonials
-  - SEO-ready at /c/your-name — replaces your Wix/Squarespace site
-mockup:   { device: laptop, src: "/c/james-wilson" }
-ctaLabel: "See the live example"
-ctaHref:  "/c/james-wilson" (open in new tab)
-secondary CTA: "Explore Shop-front" → /features/shop-front
-reverse:  true (image-left, copy-right — alternates with Pillar 1 below)
-```
+- Change the right-side counter from a flat `9 tools` to a small pill: `border border-reps-border/60 rounded-full px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50` reading `9 tools · 9 bills`. The "9 bills" half lands the headline argument ("one bill" appears on the AFTER side and in the strap line below) without needing more body copy.
+- Keep the `BEFORE · YOUR CURRENT STACK` eyebrow exactly as-is — it sets the parallel with `AFTER` on the right card.
 
-Also remove the "see a live example" link from the Act 2 intro paragraph (line 236–239) since the showcase section right below now carries that job — keeps the intro paragraph clean.
+### 3. Optional: rebalance the 9-tool grid
 
-### 2. Add Shop-front rows to `ComparisonStrip`
+The current 2-col × 5-row grid leaves a trailing empty cell because 9 is odd. Two clean fixes:
 
-Edit `src/components/marketing/ComparisonStrip.tsx` ROWS to add two new rows:
+- **Recommended:** leave as-is. The asymmetry actually reads as "and there's always more tools creeping in" — the gap implies the list isn't even closed. No code change.
+- **Alternative:** widen the BEFORE card and use 3 cols × 3 rows. Cleaner geometry but makes each chip narrower and may force the longer labels (`Manual check-in forms`, `MyFitnessPal-style apps`) to wrap.
 
-```
-{ label: "Personal shop-front at /c/your-name", reps: true, trainerize: false, mypthub: false, ptd: false },
-{ label: "Replaces your website (Wix/Squarespace)", reps: true, trainerize: false, mypthub: false, ptd: false },
-```
+Going with the recommended no-op on grid shape — the chip-uniformity fix is the only thing the user actually flagged.
 
-Place them after "Public verified register" so the two register/shop-front rows sit together at the top.
+## Out of scope
 
-### 3. Add Wix/Squarespace + Shop-front to `ReplacedStackBoard`
-
-Edit `src/components/marketing/ReplacedStackBoard.tsx`:
-
-- **BEFORE list:** add `{ name: "Wix / Squarespace", job: "Website" }` — bump the "8 tools" counter to "9 tools".
-- **AFTER list:** add `"Personal shop-front at /c/your-name"` near the top (just after "Verified directory listing").
-
-This makes the headline promise — "replace the scattered stack" — actually include the website most coaches are paying £15/mo for.
-
-## Out of scope (Phase 1 guardrail)
-
-No new routes, no backend, no edits to /features/shop-front or /c/$slug (both locked). No pricing copy changes. No new images — the `ProductBlock` mockup component renders the live `/c/james-wilson` route inside its laptop frame as it already does for other pillars.
+- No changes to the AFTER card, the headline, the arrow, or the surrounding page chrome.
+- No changes to `ComparisonStrip` — Trainerize logo stays there.
+- No new SVG assets or design tokens.
 
 ## Files touched
 
-- `src/routes/for-professionals.tsx` — new `<section>` with `ProductBlock`, intro paragraph trim.
-- `src/components/marketing/ComparisonStrip.tsx` — 2 new ROWS entries.
-- `src/components/marketing/ReplacedStackBoard.tsx` — 1 new BEFORE entry + counter bump + 1 new AFTER entry.
+- `src/components/marketing/ReplacedStackBoard.tsx` — remove logo branch, refine chip styling, polish counter pill.
 
 ## QA after build
 
-- Visit `/for-professionals` at 1440 / 1024 / 390. Confirm new Shop-front section renders, `reverse` alternation looks right against the Pillar 1 section that follows it, and CTAs work.
-- Confirm `ComparisonStrip` still fits without horizontal scroll on desktop; mobile already scrolls.
-- Confirm `ReplacedStackBoard` "9 tools" reads correctly and the two-column BEFORE grid still balances.
-- Run REPs compliance audit (tokens, radii, no shadows on buttons).
+- Visit `/for-professionals`, scroll to "One connected platform". Confirm all 9 chips are visually identical: muted background, strike-through name on the left, muted job label on the right, hover lift.
+- Confirm Trainerize logo still renders in the comparison table just above.
+- Re-run REPs compliance audit — no new banned radii / hex / button shadows.
