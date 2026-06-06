@@ -233,10 +233,9 @@ function ForProsPage() {
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               When clients arrive, REPs runs the rest. Built for fitness — every booking,
               programme, check-in and message wired into the same client record. Pro and
-              Studio now include a personalised shop-front at <span className="text-white">/c/your-name</span> —{" "}
-              <Link to="/c/$slug" params={{ slug: "james-wilson" }} target="_blank" className="text-reps-orange underline-offset-4 hover:underline">
-                see a live example
-              </Link>.
+              Studio plans include a personalised shop-front at{" "}
+              <span className="text-white">/c/your-name</span> — the page below shows what
+              yours can look like.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
