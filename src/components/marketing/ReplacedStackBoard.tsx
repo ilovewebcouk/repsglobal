@@ -50,27 +50,20 @@ export function ReplacedStackBoard() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
               Before · your current stack
             </span>
-            <span className="text-[11px] text-white/40">9 tools</span>
+            <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
+              9 tools · 9 bills
+            </span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             {BEFORE.map((b) => (
               <div
                 key={b.name}
-                className="flex items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel/60 px-3 py-2"
+                className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
               >
-                {b.logo ? (
-                  <img
-                    src={b.logo}
-                    alt=""
-                    className="h-3.5 w-auto opacity-60 brightness-0 invert"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="font-display text-[12px] font-bold text-white/55 line-through decoration-reps-orange/60">
-                    {b.name}
-                  </span>
-                )}
-                <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/40">
+                <span className="font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
+                  {b.name}
+                </span>
+                <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/35">
                   {b.job}
                 </span>
               </div>
