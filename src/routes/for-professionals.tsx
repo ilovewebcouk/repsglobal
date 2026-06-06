@@ -321,15 +321,8 @@ function ForProsPage() {
       {/* CHAPTER P3 — OPERATIONS (5 features) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={3}
-              name="Operations"
-              promise="Leads, bookings, payments, CRM and messaging — every moving part of your practice in one place, wired to the same client record."
-            />
-          </div>
-
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Lead pipeline"
               title="Every enquiry tracked from first touch to first session."
