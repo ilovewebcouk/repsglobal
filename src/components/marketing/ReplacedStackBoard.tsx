@@ -3,8 +3,6 @@ import {
   Check,
   Apple,
   Filter,
-  Zap,
-  GraduationCap,
   BookOpen,
   Users,
   FileSignature,
@@ -31,7 +29,6 @@ type Before = {
 const BEFORE: Before[] = [
   // Web & content
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
-  { name: "Kajabi", job: "Courses", icon: GraduationCap },
   { name: "Thinkific", job: "Courses", icon: BookOpen },
   // Programmes & training delivery
   { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
@@ -46,7 +43,6 @@ const BEFORE: Before[] = [
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
   { name: "HubSpot", job: "CRM", logo: hubspot.url },
   { name: "Google Sheets", job: "Spreadsheets", logo: googlesheets.url },
-  { name: "GoHighLevel", job: "Automation", icon: Zap },
   // Community & client comms
   { name: "Skool", job: "Community", icon: Users },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
@@ -93,7 +89,7 @@ export function ReplacedStackBoard() {
               Before · your current stack
             </span>
             <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
-              16 tools · 16 bills
+              14 tools · 14 bills
             </span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
