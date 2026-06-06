@@ -14,11 +14,12 @@ type Before = {
   job: string;
   logo?: string;
   icon?: React.ComponentType<{ className?: string }>;
+  wide?: boolean;
 };
 
 const BEFORE: Before[] = [
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
-  { name: "Trainerize", job: "Programmes", logo: trainerize.url },
+  { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
   { name: "Calendly", job: "Bookings", logo: calendly.url },
   { name: "Stripe Checkout", job: "Payments", logo: stripe.url },
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
@@ -77,13 +78,21 @@ export function ReplacedStackBoard() {
                   key={b.name}
                   className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
                 >
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center opacity-60">
+                  <span
+                    className={`flex shrink-0 items-center justify-center opacity-60 ${
+                      b.wide ? "h-3.5 w-auto max-w-[64px]" : "h-4 w-4"
+                    }`}
+                  >
                     {b.logo ? (
                       <img
                         src={b.logo}
                         alt=""
                         aria-hidden
-                        className="h-full w-full object-contain"
+                        className={
+                          b.wide
+                            ? "h-full w-auto object-contain"
+                            : "h-full w-full object-contain"
+                        }
                       />
                     ) : Icon ? (
                       <Icon className="h-full w-full text-white" />
