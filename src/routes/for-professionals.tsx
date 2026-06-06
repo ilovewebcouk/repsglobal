@@ -271,32 +271,28 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 4 — COACHING (TABBED) */}
+      {/* PILLAR 4 — COACHING */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[720px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 4 · Coaching
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins, the full client record — and the client app they love.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              One tool for what you see and what your clients see. Programme builder, check-ins
-              and history on your side; a premium portal on web and mobile on theirs.
-            </p>
-          </div>
-          <PillarTabs />
-          <div className="mt-8">
-            <Link
-              to="/features/coaching"
-              className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
-            >
-              Explore Coaching <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <ProductBlock
+            eyebrow="Pillar 4 · Coaching"
+            title="Programmes, check-ins and the full client record — in one tool."
+            body="One platform for what you see and what your clients see. Programme builder, check-ins and history on your side; a premium portal on web and mobile on theirs."
+            bullets={[
+              "Programme builder with week-by-week progression and video demos",
+              "AI check-in summariser — six check-ins into one card per client",
+              "Full client record: programme, adherence, payments and LTV in one view",
+              "Branded client portal on web and mobile — included, not an add-on",
+            ]}
+            imageLabel="Coaching mockup — programmes + check-ins + client record"
+            mockup={{ device: "laptop", src: "/dashboard/programs", title: "Coaching preview" }}
+            ctaLabel="Explore Coaching"
+            ctaHref="/features/coaching"
+            reverse
+          />
         </div>
       </section>
+
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
