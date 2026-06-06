@@ -8,10 +8,9 @@ import {
   Eye,
   Globe,
   Settings2,
-  Sparkles,
+  ShieldCheck,
   Star,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -21,7 +20,7 @@ import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
-import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
+import { HeroProductShowcase } from "@/components/marketing/HeroProductShowcase";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
@@ -30,16 +29,16 @@ import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
     meta: [
-      { title: "Not just software. An AI operating system for fitness professionals — REPs" },
+      { title: "The verified register for fitness professionals — since 2009 · REPs" },
       {
         name: "description",
         content:
-          "REPs is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
+          "Get found on the register clients have searched since 2009. Run the rest of your practice on the platform built around it — leads, bookings, programmes, payments and AI.",
       },
-      { property: "og:title", content: "Join REPs — For Professionals" },
+      { property: "og:title", content: "Join REPs — the verified register since 2009" },
       {
         property: "og:description",
-        content: "The register that brings you clients, and the AI operating system that runs your practice.",
+        content: "The register that brings you clients, and the platform that runs your practice.",
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
@@ -81,26 +80,27 @@ function ForProsPage() {
           <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             <div>
               <span
-                className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
+                className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-gold/40 bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-gold backdrop-blur"
                 style={{ animationDuration: "560ms", animationFillMode: "both" }}
               >
-                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
+                <ShieldCheck className="h-3.5 w-3.5" /> The register · Since 2009
               </span>
               <h1
-                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
+                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[60px]"
                 style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
               >
-                Not just software.
+                Verified fitness professionals have lived here for{" "}
+                <span className="text-reps-orange">17 years</span>.
                 <br />
-                <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
+                Now the software lives here too.
               </h1>
               <p
-                className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
+                className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/75"
                 style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
               >
-                REPs is built for fitness professionals who want to get found, win more
-                clients, deliver better coaching and grow a sustainable business. One
-                platform. Every tool. Powered by AI.
+                Get found on the verified register the public has searched since 2009. Run
+                the rest of your practice on the platform built around it — leads,
+                bookings, programmes, check-ins, payments and AI, all in one place.
               </p>
               <div
                 className="mt-8 flex animate-fade-in flex-wrap gap-3"
@@ -112,12 +112,12 @@ function ForProsPage() {
                 >
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  to="/features"
+                <a
+                  href="#pillars"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
                 >
-                  Explore features
-                </Link>
+                  See how it works
+                </a>
               </div>
               <ul
                 className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
@@ -125,21 +125,21 @@ function ForProsPage() {
               >
                 <li className="inline-flex items-center gap-1.5">
                   <BadgeCheck className="h-4 w-4 text-reps-orange" />
-                  Verified credentials
-                </li>
-                <li className="inline-flex items-center gap-1.5">
-                  <Zap className="h-4 w-4 text-reps-orange" />
-                  10-minute setup
+                  Verified register since 2009
                 </li>
                 <li className="inline-flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-reps-orange" />
-                  Every feature included — no add-ons
+                  Every feature in your tier included
+                </li>
+                <li className="inline-flex items-center gap-1.5">
+                  <Star className="h-4 w-4 text-reps-orange" />
+                  Founding pricing — locked for life
                 </li>
               </ul>
             </div>
 
             <div className="relative hidden md:block">
-              <HeroDeviceCluster />
+              <HeroProductShowcase />
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@ function ForProsPage() {
       </section>
 
       {/* ACT 2 — SIX PILLARS GRID (links to pillar pages for the deep dive) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section id="pillars" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
