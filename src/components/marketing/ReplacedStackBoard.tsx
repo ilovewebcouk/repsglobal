@@ -88,11 +88,11 @@ export function ReplacedStackBoard() {
                         src={b.logo}
                         alt=""
                         aria-hidden
-                        className={
+                        className={`brightness-0 invert ${
                           b.wide
                             ? "h-full w-auto object-contain"
                             : "h-full w-full object-contain"
-                        }
+                        }`}
                       />
                     ) : Icon ? (
                       <Icon className="h-full w-full text-white" />
