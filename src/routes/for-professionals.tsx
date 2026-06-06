@@ -40,6 +40,7 @@ import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
+import { PricingSnapshot } from "@/components/marketing/PricingSnapshot";
 
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
