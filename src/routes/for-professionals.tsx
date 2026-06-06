@@ -20,7 +20,8 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarTabs } from "@/components/marketing/PillarTabs";
+import { PhoneFrame } from "@/components/marketing/PhoneFrame";
+import { ScaledFrame } from "@/components/marketing/DeviceMockup";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock";
