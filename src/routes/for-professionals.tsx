@@ -233,10 +233,9 @@ function ForProsPage() {
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               When clients arrive, REPs runs the rest. Built for fitness — every booking,
               programme, check-in and message wired into the same client record. Pro and
-              Studio now include a personalised shop-front at <span className="text-white">/c/your-name</span> —{" "}
-              <Link to="/c/$slug" params={{ slug: "james-wilson" }} target="_blank" className="text-reps-orange underline-offset-4 hover:underline">
-                see a live example
-              </Link>.
+              Studio plans include a personalised shop-front at{" "}
+              <span className="text-white">/c/your-name</span> — the page below shows what
+              yours can look like.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -266,6 +265,36 @@ function ForProsPage() {
                 <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{p.body}</p>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PILLAR · SHOP-FRONT (live example) */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <ProductBlock
+            eyebrow="Pillar · Shop-front"
+            title="The page that turns visitors into clients."
+            body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
+            bullets={[
+              "Outcome-led hero with your photo and verified badge",
+              "Three-tier services with a 'Most popular' lane",
+              "Foundation method, transformation proof, testimonials",
+              "Replaces your Wix or Squarespace site — one less bill, one less login",
+            ]}
+            imageLabel="Coach shop-front mockup — /c/james-wilson"
+            mockup={{ device: "laptop", src: "/c/james-wilson", title: "Coach shop-front live example" }}
+            ctaLabel="See the live example"
+            ctaHref="/c/james-wilson"
+            reverse
+          />
+          <div className="mt-6 lg:ml-[calc(50%+1.75rem)]">
+            <Link
+              to="/features/shop-front"
+              className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
+            >
+              Explore Shop-front <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
