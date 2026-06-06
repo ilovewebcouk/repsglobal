@@ -29,16 +29,16 @@ import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
     meta: [
-      { title: "Not just software. An AI operating system for fitness professionals — REPs" },
+      { title: "The verified register for fitness professionals — since 2009 · REPs" },
       {
         name: "description",
         content:
-          "REPs is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
+          "Get found on the register clients have searched since 2009. Run the rest of your practice on the platform built around it — leads, bookings, programmes, payments and AI.",
       },
-      { property: "og:title", content: "Join REPs — For Professionals" },
+      { property: "og:title", content: "Join REPs — the verified register since 2009" },
       {
         property: "og:description",
-        content: "The register that brings you clients, and the AI operating system that runs your practice.",
+        content: "The register that brings you clients, and the platform that runs your practice.",
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
@@ -169,7 +169,7 @@ function ForProsPage() {
       </section>
 
       {/* ACT 2 — SIX PILLARS GRID (links to pillar pages for the deep dive) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section id="pillars" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
