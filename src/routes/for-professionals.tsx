@@ -86,13 +86,13 @@ function ForProsPage() {
                 <ShieldCheck className="h-3.5 w-3.5" /> The register · Since 2009
               </span>
               <h1
-                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[60px]"
+                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[42px] lg:text-[52px]"
                 style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
               >
-                Verified fitness professionals have lived here for{" "}
-                <span className="text-reps-orange">17 years</span>.
+                The verified register{" "}
+                <span className="text-reps-orange">since 2009</span>.
                 <br />
-                Now the software lives here too.
+                Now the software to run your practice.
               </h1>
               <p
                 className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/75"
