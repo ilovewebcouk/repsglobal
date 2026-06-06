@@ -272,14 +272,8 @@ function ForProsPage() {
       {/* CHAPTER P1 — VISIBILITY */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={1}
-              name="Visibility"
-              promise="Be found by the clients already searching the register — and trusted before they even message you."
-            />
-          </div>
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Verified profile & reviews"
               title="Found on the register the public already searches."
