@@ -8,10 +8,9 @@ import {
   Eye,
   Globe,
   Settings2,
-  Sparkles,
+  ShieldCheck,
   Star,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -21,7 +20,7 @@ import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
-import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
+import { HeroProductShowcase } from "@/components/marketing/HeroProductShowcase";
 import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
