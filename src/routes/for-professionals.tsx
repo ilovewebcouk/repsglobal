@@ -7,14 +7,10 @@ import {
   Check,
   ClipboardCheck,
   Dumbbell,
-  Eye,
-  Globe,
   PenTool,
   ScanLine,
-  Settings2,
   Sparkles,
   Star,
-  TrendingUp,
   Wand2,
   Zap,
 } from "lucide-react";
@@ -27,14 +23,11 @@ import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PillarTabs } from "@/components/marketing/PillarTabs";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
-import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
 import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock";
-import { WeekWithReps } from "@/components/marketing/WeekWithReps";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
-import { ReplacedStackBoard } from "@/components/marketing/ReplacedStackBoard";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 
@@ -192,60 +185,13 @@ function ForProsPage() {
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{" "}
-              <em>and</em> clients — because the public already lands here when they're looking for a trusted pro.
+              <em>and</em> the clients to fill it — because the public already lands here when they're searching for a trusted pro.
             </p>
           </div>
           <div className="mt-10"><RegisterProof /></div>
         </div>
       </section>
 
-      {/* SIX-PILLAR GRID (TOC for the deep-dives below) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="max-w-[720px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              The six pillars
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-              Six pillars. One operating system.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Here are the six. Each one has its own deep-dive below — tap a card to
-              jump straight to the feature page. Pro and Studio plans include a
-              personalised shop-front at{" "}
-              <span className="text-white">/c/your-name</span>.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { icon: Eye, name: "Visibility", body: "Verified profile on the register the public already searches.", to: "/features/visibility" as const },
-              { icon: Globe, name: "Shop-front", body: "Your own page at /c/your-name — your photo, your method, your tiers.", to: "/features/shop-front" as const, accent: true },
-              { icon: Settings2, name: "Operations", body: "Leads, bookings, payments and your calendar in one place.", to: "/features/operations" as const },
-              { icon: ClipboardCheck, name: "Coaching", body: "Programmes, check-ins and the full client record.", to: "/features/coaching" as const },
-              { icon: Brain, name: "REPs AI", body: "Drafts, scores and flags so you stay ahead of the week.", to: "/features/ai" as const },
-              { icon: TrendingUp, name: "Growth", body: "Content, reviews and reporting that compound over time.", to: "/features/growth" as const },
-            ].map((p) => (
-              <Link
-                key={p.name}
-                to={p.to}
-                className={
-                  p.accent
-                    ? "group rounded-[18px] border border-reps-orange-border bg-reps-orange-soft/40 p-5 transition-colors hover:border-reps-orange"
-                    : "group rounded-[18px] border border-reps-border bg-reps-panel/60 p-5 transition-colors hover:border-reps-orange-border"
-                }
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <p.icon className="h-4.5 w-4.5" />
-                </span>
-                <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-wider text-white group-hover:text-reps-orange">
-                  {p.name}
-                </h3>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{p.body}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* PILLAR 1 — VISIBILITY */}
       <section className="border-b border-reps-border">
@@ -415,36 +361,19 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* COMPARISON */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mx-auto mb-10 max-w-[680px] text-center">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              The honest comparison
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              What you actually get for your money.
-            </h2>
-          </div>
-          <ComparisonStrip />
-        </div>
-      </section>
 
-      {/* REPLACED STACK + TRIAD TESTIMONIALS */}
+      {/* TRIAD TESTIMONIALS */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ReplacedStackBoard />
-          <div className="mt-14">
-            <div className="mb-8 max-w-[640px]">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                Loved by working pros
-              </span>
-              <h3 className="mt-3 font-display text-[24px] font-bold text-white lg:text-[30px]">
-                Coaches who made the switch.
-              </h3>
-            </div>
-            <TestimonialTriad />
+          <div className="mb-8 max-w-[640px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Loved by working pros
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+              Coaches who made the switch.
+            </h2>
           </div>
+          <TestimonialTriad />
         </div>
       </section>
 
@@ -466,23 +395,6 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* A WEEK WITH REPS */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[680px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              A week with REPs
-            </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              Monday to Friday, ranked and ready.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              The five things REPs surfaces every week so you spend your time coaching, not catching up.
-            </p>
-          </div>
-          <WeekWithReps />
-        </div>
-      </section>
 
       {/* FAQ */}
       <section className="border-b border-reps-border bg-reps-panel/20">
