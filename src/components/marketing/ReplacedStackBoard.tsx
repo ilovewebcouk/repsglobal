@@ -43,7 +43,6 @@ const BEFORE: Before[] = [
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
   { name: "HubSpot", job: "CRM", logo: hubspot.url },
   { name: "Google Sheets", job: "Spreadsheets", logo: googlesheets.url },
-  { name: "GoHighLevel", job: "Automation", icon: Zap },
   // Community & client comms
   { name: "Skool", job: "Community", icon: Users },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
