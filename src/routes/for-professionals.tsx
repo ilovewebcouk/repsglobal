@@ -179,16 +179,16 @@ function ForProsPage() {
       <PressMarquee />
 
 
-      {/* ACT 1 — REGISTER */}
+      {/* WHY COACHES SWITCH — competitive proof */}
       <section className="border-b border-reps-border bg-reps-ink">
 
         <div className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Act 1 · Get clients
+              Why coaches switch
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-              The register the public already searches.
+              Software that also brings you clients.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{" "}
