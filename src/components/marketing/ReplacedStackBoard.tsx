@@ -1,12 +1,4 @@
-import {
-  ArrowRight,
-  Check,
-  Apple,
-  Filter,
-  BookOpen,
-  Users,
-  FileSignature,
-} from "lucide-react";
+import { ArrowRight, Check, Apple } from "lucide-react";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import wix from "@/assets/logos/wix.svg.asset.json";
 import trainerize from "@/assets/logos/trainerize.svg.asset.json";
@@ -15,8 +7,7 @@ import stripe from "@/assets/logos/stripe.svg.asset.json";
 import mailchimp from "@/assets/logos/mailchimp.svg.asset.json";
 import googlesheets from "@/assets/logos/googlesheets.svg.asset.json";
 import whatsapp from "@/assets/logos/whatsapp.svg.asset.json";
-import hubspot from "@/assets/logos/hubspot.svg.asset.json";
-import typeform from "@/assets/logos/typeform.svg.asset.json";
+import googleforms from "@/assets/logos/googleforms.svg.asset.json";
 
 type Before = {
   name: string;
@@ -27,29 +18,16 @@ type Before = {
 };
 
 const BEFORE: Before[] = [
-  // Web & content
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
-  { name: "Thinkific", job: "Courses", icon: BookOpen },
-  // Programmes & training delivery
   { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
-  // Sales & lead capture
-  { name: "ClickFunnels", job: "Funnels", icon: Filter },
-  { name: "Typeform", job: "Lead forms", logo: typeform.url },
-  // Bookings & money
   { name: "Calendly", job: "Bookings", logo: calendly.url },
   { name: "Stripe Checkout", job: "Payments", logo: stripe.url },
-  { name: "DocuSign", job: "Contracts", icon: FileSignature },
-  // Marketing & CRM
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
-  { name: "HubSpot", job: "CRM", logo: hubspot.url },
-  { name: "Google Sheets", job: "Spreadsheets", logo: googlesheets.url },
-  // Community & client comms
-  { name: "Skool", job: "Community", icon: Users },
+  { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
-  // Coaching ops
   { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
+  { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
 ];
-
 
 const AFTER = [
   "Verified directory listing",
@@ -89,7 +67,7 @@ export function ReplacedStackBoard() {
               Before · your current stack
             </span>
             <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
-              14 tools · 14 bills
+              9 tools · 9 bills
             </span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
@@ -98,11 +76,11 @@ export function ReplacedStackBoard() {
               return (
                 <div
                   key={b.name}
-                  className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-2.5 py-2 transition-colors hover:border-reps-border"
+                  className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
                 >
                   <span
                     className={`flex shrink-0 items-center justify-center opacity-60 ${
-                      b.wide ? "h-3.5 w-auto max-w-[56px]" : "h-4 w-4"
+                      b.wide ? "h-3.5 w-auto max-w-[64px]" : "h-4 w-4"
                     }`}
                   >
                     {b.logo ? (
@@ -120,8 +98,11 @@ export function ReplacedStackBoard() {
                       <Icon className="h-full w-full text-white" />
                     ) : null}
                   </span>
-                  <span className="truncate font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
+                  <span className="font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
                     {b.name}
+                  </span>
+                  <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/35">
+                    {b.job}
                   </span>
                 </div>
               );
