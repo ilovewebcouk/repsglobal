@@ -6,7 +6,7 @@ const PROOFS = [
     icon: BadgeCheck,
     stat: "Verified",
     title: "The register the public searches",
-    body: "REPs is the verified register UK clients already know — qualifications, insurance and CPD checked, not self-declared.",
+    body: "REPs is the verified register clients already search — qualifications, insurance and CPD checked, not self-declared.",
   },
   {
     icon: ShieldCheck,
