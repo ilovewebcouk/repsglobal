@@ -372,7 +372,80 @@ function ForProsPage() {
       </section>
 
 
+      {/* PRICING ANCHOR — compact 3-tier strip so visitors know the price without leaving */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+          <div className="mb-10 max-w-[680px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Pricing
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Three tiers. Every feature in your tier included — no paid add-ons.
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              {
+                name: "Verified",
+                price: "£99",
+                cadence: "/ year",
+                tagline: "Your verified profile on the register the public already searches.",
+                href: "/pricing",
+              },
+              {
+                name: "Pro",
+                price: "£59",
+                cadence: "/ month",
+                tagline: "Shop-front, operations, coaching and the AI layer that runs the rest.",
+                href: "/pricing",
+                featured: true,
+                badge: "Founding — locked for life",
+              },
+              {
+                name: "Studio",
+                price: "£149",
+                cadence: "/ month",
+                tagline: "Multi-coach team, shared client base, studio-level reporting.",
+                href: "/pricing",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className={`relative rounded-[18px] border p-6 ${
+                  t.featured
+                    ? "border-reps-orange-border bg-reps-orange-soft/40 shadow-[0_0_0_1px_rgba(255,122,0,0.25),0_30px_80px_-40px_rgba(255,122,0,0.45)]"
+                    : "border-reps-border bg-reps-panel/60"
+                }`}
+              >
+                {t.badge && (
+                  <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full border border-reps-orange-border bg-reps-ink px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+                    <Star className="h-3 w-3 fill-reps-orange" /> {t.badge}
+                  </span>
+                )}
+                <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                  {t.name}
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-display text-[36px] font-bold text-white">{t.price}</span>
+                  <span className="text-[13px] text-white/60">{t.cadence}</span>
+                </div>
+                <p className="mt-3 text-[13.5px] leading-relaxed text-white/70">{t.tagline}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
+            >
+              See full pricing and what's included <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* TRIAD TESTIMONIALS */}
+
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-8 max-w-[640px]">
