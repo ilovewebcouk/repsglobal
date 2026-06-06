@@ -21,7 +21,7 @@ export function StickyCtaPill({ threshold = 680 }: { threshold?: number }) {
         to="/pricing"
         className="inline-flex h-12 items-center gap-2 rounded-full bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
       >
-        See pricing <ArrowRight className="h-4 w-4" />
+        Sign up free <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   );
