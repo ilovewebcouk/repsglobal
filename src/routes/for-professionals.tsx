@@ -20,7 +20,8 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarTabs } from "@/components/marketing/PillarTabs";
+import { PhoneFrame } from "@/components/marketing/PhoneFrame";
+import { ScaledFrame } from "@/components/marketing/DeviceMockup";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { AiCommandCentreMock } from "@/components/marketing/AiCommandCentreMock";
@@ -165,6 +166,19 @@ function ForProsPage() {
               <HeroDeviceCluster />
             </div>
           </div>
+
+          {/* Mobile-only hero visual — small phone preview so visitors see the product above the fold */}
+          <div className="mt-10 flex justify-center md:hidden">
+            <div className="relative w-[200px]">
+              <div
+                aria-hidden
+                className="absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(60%_55%_at_50%_40%,rgba(255,122,0,0.25),transparent_70%)] blur-2xl"
+              />
+              <PhoneFrame>
+                <ScaledFrame src="/portal/today" scale={0.32} title="REPs client portal preview" />
+              </PhoneFrame>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -257,32 +271,28 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 4 — COACHING (TABBED) */}
+      {/* PILLAR 4 — COACHING */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[720px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 4 · Coaching
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins, the full client record — and the client app they love.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              One tool for what you see and what your clients see. Programme builder, check-ins
-              and history on your side; a premium portal on web and mobile on theirs.
-            </p>
-          </div>
-          <PillarTabs />
-          <div className="mt-8">
-            <Link
-              to="/features/coaching"
-              className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
-            >
-              Explore Coaching <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <ProductBlock
+            eyebrow="Pillar 4 · Coaching"
+            title="Programmes, check-ins and the full client record — in one tool."
+            body="One platform for what you see and what your clients see. Programme builder, check-ins and history on your side; a premium portal on web and mobile on theirs."
+            bullets={[
+              "Programme builder with week-by-week progression and video demos",
+              "AI check-in summariser — six check-ins into one card per client",
+              "Full client record: programme, adherence, payments and LTV in one view",
+              "Branded client portal on web and mobile — included, not an add-on",
+            ]}
+            imageLabel="Coaching mockup — programmes + check-ins + client record"
+            mockup={{ device: "laptop", src: "/dashboard/programs", title: "Coaching preview" }}
+            ctaLabel="Explore Coaching"
+            ctaHref="/features/coaching"
+            reverse
+          />
         </div>
       </section>
+
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
@@ -362,7 +372,80 @@ function ForProsPage() {
       </section>
 
 
+      {/* PRICING ANCHOR — compact 3-tier strip so visitors know the price without leaving */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+          <div className="mb-10 max-w-[680px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+              Pricing
+            </span>
+            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+              Three tiers. Every feature in your tier included — no paid add-ons.
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              {
+                name: "Verified",
+                price: "£99",
+                cadence: "/ year",
+                tagline: "Your verified profile on the register the public already searches.",
+                href: "/pricing",
+              },
+              {
+                name: "Pro",
+                price: "£59",
+                cadence: "/ month",
+                tagline: "Shop-front, operations, coaching and the AI layer that runs the rest.",
+                href: "/pricing",
+                featured: true,
+                badge: "Founding — locked for life",
+              },
+              {
+                name: "Studio",
+                price: "£149",
+                cadence: "/ month",
+                tagline: "Multi-coach team, shared client base, studio-level reporting.",
+                href: "/pricing",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className={`relative rounded-[18px] border p-6 ${
+                  t.featured
+                    ? "border-reps-orange-border bg-reps-orange-soft/40 shadow-[0_0_0_1px_rgba(255,122,0,0.25),0_30px_80px_-40px_rgba(255,122,0,0.45)]"
+                    : "border-reps-border bg-reps-panel/60"
+                }`}
+              >
+                {t.badge && (
+                  <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full border border-reps-orange-border bg-reps-ink px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+                    <Star className="h-3 w-3 fill-reps-orange" /> {t.badge}
+                  </span>
+                )}
+                <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                  {t.name}
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-display text-[36px] font-bold text-white">{t.price}</span>
+                  <span className="text-[13px] text-white/60">{t.cadence}</span>
+                </div>
+                <p className="mt-3 text-[13.5px] leading-relaxed text-white/70">{t.tagline}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
+            >
+              See full pricing and what's included <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* TRIAD TESTIMONIALS */}
+
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-8 max-w-[640px]">
@@ -422,18 +505,17 @@ function ForProsPage() {
                 <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Join the verified register.
+                Verified profile live today. Set up in 10 minutes.
               </h2>
-              <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
-                Founding Pro pricing is available only before public launch.
-                Every feature in your tier is included — no paid add-ons.
+              <p className="mx-auto mt-3 max-w-[540px] text-[15px] text-white/70">
+                Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
                   to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs <ArrowRight className="h-4 w-4" />
+                  Start free — get verified <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/pricing"
