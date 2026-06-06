@@ -543,16 +543,6 @@ function ForProsPage() {
       </section>
 
 
-      {/* CHAPTER P5 — REPS AI (HERO MOMENT) */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
-          <PillarChapter
-            number={5}
-            name="REPs AI"
-            promise="An AI operating layer working across every pillar — drafting, scoring, summarising and ranking your next move."
-          />
-        </div>
-      </section>
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
         <div
           aria-hidden
