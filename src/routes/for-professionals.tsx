@@ -269,113 +269,248 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 1 — VISIBILITY */}
+      {/* CHAPTER P1 — VISIBILITY */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 1 · Visibility"
-            title="Found on the register the public already searches."
-            body="REPs is the verified directory clients land on when they want a coach they can trust. Your profile is your front door — credentials, specialisms, real reviews, ranked in city and profession search."
-            bullets={[
-              "Verified profile with credentials and specialisms",
-              "Ranked in city and profession search across the register",
-              "Reviews from real verified clients — not anonymous strangers",
-              "Shareable profile preview link for socials and bios",
-            ]}
-            imageLabel="Register search results mockup"
-            mockup={{ device: "laptop", src: "/find-a-professional", title: "Register search preview" }}
-            ctaLabel="Explore Visibility"
-            ctaHref="/features/visibility"
-          />
-        </div>
-      </section>
-
-      {/* PILLAR 2 — SHOP-FRONT (live example) */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 2 · Shop-front"
-            title="The page that turns visitors into clients."
-            body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
-            bullets={[
-              "Outcome-led hero with your photo and verified badge",
-              "Three-tier services with a 'Most popular' lane",
-              "Foundation method, transformation proof, testimonials",
-              "Replaces your Wix or Squarespace site — one less bill, one less login",
-            ]}
-            imageLabel="Coach shop-front mockup — /c/james-wilson"
-            mockup={{ device: "laptop", src: "/c/james-wilson", title: "Coach shop-front live example" }}
-            ctaLabel="See the live example"
-            ctaHref="/c/james-wilson"
-            reverse
-          />
-          <div className="mt-6 lg:ml-[calc(50%+1.75rem)]">
-            <Link
-              to="/features/shop-front"
-              className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/70 hover:text-reps-orange"
-            >
-              Explore Shop-front <ArrowRight className="h-4 w-4" />
-            </Link>
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="pt-20 lg:pt-24">
+            <PillarChapter
+              number={1}
+              name="Visibility"
+              promise="Be found by the clients already searching the register — and trusted before they even message you."
+            />
           </div>
-        </div>
-      </section>
-
-      {/* PILLAR 3 — OPERATIONS (LEADS + BOOKINGS + PAYMENTS) */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 3 · Operations"
-            title="One pipeline. One calendar. One ledger."
-            body="Every enquiry, booking, invoice and payment in the same client record. Slow replies cost you clients — REPs lands every lead with source, value and priority, scores intent, and drafts the first reply before you've opened the tab."
-            bullets={[
-              "Lead pipeline with source, value, priority and follow-up date",
-              "AI scores intent and drafts the first reply",
-              "Calendar with availability, session types and online check-ins",
-              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
-              "Per-client invoice and payment history with revenue, paid, pending and overdue",
-            ]}
-            imageLabel="Operations mockup — calendar + leads"
-            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Operations preview" }}
-            ctaLabel="Explore Operations"
-            ctaHref="/features/operations"
-          />
-        </div>
-      </section>
-
-
-
-      {/* PILLAR 4 — COACHING (TABBED + PORTAL) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[760px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 4 · Coaching
-            </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins and the full client record — plus the portal clients use.
-            </h2>
-          </div>
-          <PillarTabs />
-
-          {/* Client portal sub-block */}
-          <div className="mt-16">
+          <div className="py-20 lg:py-24">
             <ProductBlock
-              eyebrow="Inside Coaching · Client portal"
+              eyebrow="Verified profile & reviews"
+              title="Found on the register the public already searches."
+              body="Your REPs profile is your front door — credentials, specialisms, insurance and real reviews, ranked in city and profession search across the verified register."
+              bullets={[
+                "Verified profile with credentials and specialisms",
+                "Ranked in city and profession search across the register",
+                "Reviews from real verified clients — not anonymous strangers",
+                "Shareable profile preview link for socials and bios",
+              ]}
+              imageLabel="Register search results mockup"
+              mockup={{ device: "laptop", src: "/find-a-professional", title: "Register search preview" }}
+              ctaLabel="Explore Visibility"
+              ctaHref="/features/visibility"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CHAPTER P2 — SHOP-FRONT */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="pt-20 lg:pt-24">
+            <PillarChapter
+              number={2}
+              name="Shop-front"
+              promise="A personalised page at /c/your-name that turns visitors into paying clients — built in, not bolted on."
+            />
+          </div>
+          <div className="py-20 lg:py-24">
+            <ProductBlock
+              eyebrow="Personalised shop-front"
+              title="The page that turns visitors into clients."
+              body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
+              bullets={[
+                "Outcome-led hero with your photo and verified badge",
+                "Three-tier services with a 'Most popular' lane",
+                "Foundation method, transformation proof, testimonials",
+                "Replaces your Wix or Squarespace site — one less bill, one less login",
+              ]}
+              imageLabel="Coach shop-front mockup — /c/james-wilson"
+              mockup={{ device: "laptop", src: "/c/james-wilson", title: "Coach shop-front live example" }}
+              ctaLabel="Explore Shop-front"
+              ctaHref="/features/shop-front"
+              reverse
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CHAPTER P3 — OPERATIONS (5 features) */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="pt-20 lg:pt-24">
+            <PillarChapter
+              number={3}
+              name="Operations"
+              promise="Leads, bookings, payments, CRM and messaging — every moving part of your practice in one place, wired to the same client record."
+            />
+          </div>
+
+          <div className="py-20 lg:py-24">
+            <ProductBlock
+              eyebrow="Lead pipeline"
+              title="Every enquiry tracked from first touch to first session."
+              body="Slow replies cost you clients. REPs lands every lead with source, value, priority and follow-up date — and AI scores intent so the hot ones never wait."
+              bullets={[
+                "Pipeline view with source, value, priority and follow-up date",
+                "AI lead scoring — intent ranked 1–10",
+                "First-reply drafts in your tone of voice",
+                "Conversion reporting from enquiry to paid client",
+              ]}
+              imageLabel="Leads pipeline mockup"
+              mockup={{ device: "laptop", src: "/dashboard/leads", title: "Lead pipeline preview" }}
+              ctaLabel="Explore Operations"
+              ctaHref="/features/operations"
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Bookings & calendar"
+              title="A calendar built for coaching, not Outlook."
+              body="Availability, session types, deposits and reminders — two-way synced to your existing calendar so nothing double-books and nothing slips."
+              bullets={[
+                "Two-way sync with Google and Apple Calendar",
+                "Session types with deposits, durations and locations",
+                "Automated reminders that kill no-shows",
+                "Online sessions with a one-tap join link",
+              ]}
+              imageLabel="Calendar mockup"
+              mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Calendar preview" }}
+              ctaLabel="Explore Operations"
+              ctaHref="/features/operations"
+              reverse
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Payments & subscriptions"
+              title="Get paid on time, every time."
+              body="Card payments, packages and subscriptions powered by Stripe — REPs takes no cut of what your clients pay you. Per-client revenue, paid, pending and overdue at a glance."
+              bullets={[
+                "One-off, package and subscription billing",
+                "Stripe payouts straight to your bank",
+                "Automated invoices and overdue chasers",
+                "REPs takes no cut of what your clients pay you",
+              ]}
+              imageLabel="Payments mockup"
+              mockup={{ device: "laptop", src: "/dashboard/payments", title: "Payments preview" }}
+              ctaLabel="Explore Operations"
+              ctaHref="/features/operations"
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Clients CRM"
+              title="One record per client. The whole story."
+              body="Sessions, notes, programmes, payments, messages and check-ins on a single screen. The CRM the coaching apps don't have, wired to the coaching tools the CRMs don't have."
+              bullets={[
+                "Full client record with goals, programme and last check-in",
+                "Lifetime value, renewal date and outstanding invoice surfaced",
+                "Session notes, files and progress photos in one place",
+                "Tags and segments for win-back, renewal and onboarding",
+              ]}
+              imageLabel="Clients CRM mockup"
+              mockup={{ device: "laptop", src: "/dashboard/clients", title: "Clients CRM preview" }}
+              ctaLabel="Explore Operations"
+              ctaHref="/features/operations"
+              reverse
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Client messaging"
+              title="A focused inbox, separate from your personal phone."
+              body="Every client thread in one tidy inbox — with context, history and AI-drafted replies on tap. Reclaim WhatsApp for your friends and family."
+              bullets={[
+                "Threaded inbox separate from your personal messages",
+                "Client context — programme, last check-in, next session — beside every thread",
+                "AI reply drafts in your tone of voice",
+                "Read on web and mobile, replies stay in sync",
+              ]}
+              imageLabel="Messaging mockup"
+              mockup={{ device: "phone", src: "/dashboard/messages", title: "Messaging preview" }}
+              ctaLabel="Explore Operations"
+              ctaHref="/features/operations"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE TESTIMONIAL (kept as rhythm-breaker between Operations and Coaching) */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+          <TestimonialFeature />
+        </div>
+      </section>
+
+      {/* CHAPTER P4 — COACHING (3 features) */}
+      <section className="border-b border-reps-border bg-reps-panel/20">
+        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+          <div className="pt-20 lg:pt-24">
+            <PillarChapter
+              number={4}
+              name="Coaching"
+              promise="Programmes, check-ins and the client portal that makes your work feel premium — wired into the same client record as your bookings and payments."
+            />
+          </div>
+
+          <div className="py-20 lg:py-24">
+            <ProductBlock
+              eyebrow="Programmes"
+              title="Programmes your clients show off."
+              body="Weeks, workouts, sets, reps, rest, RPE and video demos — built in a clean editor and assigned in one click. Or one-line brief in, 12-week plan out, drafted by REPs AI."
+              bullets={[
+                "Week-by-week structure with progression",
+                "Curated exercise library with video demos",
+                "One-click assignment, bulk edits across clients",
+                "AI Programme Writer — drafted from a brief",
+              ]}
+              imageLabel="Programme builder mockup"
+              mockup={{ device: "laptop", src: "/dashboard/programs", title: "Programme builder preview" }}
+              ctaLabel="Explore Coaching"
+              ctaHref="/features/coaching"
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Check-ins & progress"
+              title="Reclaim your Sunday evenings."
+              body="Adherence, sleep, stress, training, nutrition, measurements and photos summarised into one card per client — with a reply already drafted in your tone of voice."
+              bullets={[
+                "Single-screen check-in review per client",
+                "AI Check-in Summariser — headline, change, ask",
+                "Nutrition targets vs actuals with deltas",
+                "Progress photos and measurements side-by-side",
+              ]}
+              imageLabel="Check-ins mockup"
+              mockup={{ device: "laptop", src: "/dashboard/check-ins", title: "Check-in review preview" }}
+              ctaLabel="Explore Coaching"
+              ctaHref="/features/coaching"
+              reverse
+            />
+          </div>
+
+          <div className="pb-20 lg:pb-24">
+            <ProductBlock
+              eyebrow="Client portal"
               title="The app your clients tell their friends about."
               body="What your clients see matters as much as what you see. A premium-feeling portal — today's session, this week's targets, next booking, last message — wherever they open it."
               bullets={[
                 "Client dashboard on web and mobile",
                 "One-tap check-in with photos and metrics",
                 "Bookings and payment history visible to the client",
+                "Branded with your accent colour on Pro and Studio",
               ]}
-              imageLabel="Client portal mockup — screenshot coming"
+              imageLabel="Client portal mockup"
               mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
-              ctaLabel="Explore Client Portal"
+              ctaLabel="Explore Coaching"
               ctaHref="/features/coaching"
             />
           </div>
         </div>
       </section>
+
+
 
 
       {/* FEATURE TESTIMONIAL */}
