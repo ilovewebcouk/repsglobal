@@ -26,7 +26,7 @@ const BEFORE: Before[] = [
   { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
   { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
-  { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
+  { name: "Typeform", job: "Check-ins", logo: typeform.url },
 ];
 
 const AFTER = [
