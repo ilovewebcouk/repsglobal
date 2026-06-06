@@ -166,6 +166,19 @@ function ForProsPage() {
               <HeroDeviceCluster />
             </div>
           </div>
+
+          {/* Mobile-only hero visual — small phone preview so visitors see the product above the fold */}
+          <div className="mt-10 flex justify-center md:hidden">
+            <div className="relative w-[200px]">
+              <div
+                aria-hidden
+                className="absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(60%_55%_at_50%_40%,rgba(255,122,0,0.25),transparent_70%)] blur-2xl"
+              />
+              <PhoneFrame>
+                <ScaledFrame src="/portal/today" scale={0.32} title="REPs client portal preview" />
+              </PhoneFrame>
+            </div>
+          </div>
         </div>
       </section>
 
