@@ -1,51 +1,53 @@
-## Goal
+# Tighten /for-professionals to a 10/10 flow
 
-Make `/for-professionals` echo the six-pillar story cleanly: grid up top as the TOC, then six 50/50 `ProductBlock` sections in the same order, each one teasing a pillar and linking to its `/features/<pillar>` deep-dive.
+The page currently has 14 stacked sections and three different "why switch" pitches. The fix is to **cut redundancy, not add polish** — and to let the six pillar deep-dives (the actual software tour) do the heavy lifting instead of being buried behind two text-heavy intros.
 
-Today the page mixes 5 numbered "pillars" with extras (Verified profile sits unnumbered before the grid; Bookings and Client portal are really sub-features of Operations/Coaching but presented as their own pillars; Growth is missing entirely). It also numbers them in the wrong order vs the grid.
+## What to remove (4 sections)
 
-## New section order
+1. **Six-pillar grid / TOC** (lines 202–248) — six cards that just summarise the six 50/50 deep-dives sitting directly underneath. It delays the software tour by a full screen and repeats every label. Cut it; the deep-dives below ARE the tour.
+2. **Comparison section** (lines 418–432) — we already have the full `/compare` hub and individual `/compare/*` pages linked from nav. Duplicating a comparison block here splits the story.
+3. **Replaced stack** half of the "Replaced stack + triad testimonials" block (lines 433–450) — overlaps with "Software that also brings you clients" (same "you don't need 5 tools" message). Keep the triad testimonials, drop the replaced-stack visual.
+4. **A week with REPs** (lines 469–486) — narrative device that competes with "Who's it for". Use cases wins because it pushes software capability per persona; "A week" is mood. Cut the week, keep use cases.
 
+## What to keep and re-order
+
+```text
 1. Hero (unchanged)
-2. PressMarquee (unchanged)
-3. Act 1 — Register + `RegisterProof` (unchanged)
-4. **Act 2 intro + six-pillar grid** (moved up to act as TOC; copy nudged so it reads as "here are the six, each one below")
-5. **Pillar 1 · Visibility** — 50/50, links to `/features/visibility` (replaces the current "Verified profile" block, re-eyebrowed and renumbered)
-6. **Pillar 2 · Shop-front** — 50/50 with live `/c/james-wilson` mockup, links to `/features/shop-front` (existing block, renumbered from "Pillar ·" to "Pillar 2 ·")
-7. **Pillar 3 · Operations** — 50/50 covering leads + bookings + payments in one block, links to `/features/operations`. Merges today's "Pillar 1 · Leads CRM" and "Pillar 3 · Bookings & payments" into one teaser (4 bullets: leads pipeline, calendar, payments, revenue). Deep-dive lives on `/features/operations`.
-8. **Pillar 4 · Coaching** — keep the `PillarTabs` section but renumber to Pillar 4. Drop the standalone "Pillar 4 · Client portal" block — fold it into the Coaching tabs / `/features/coaching` deep-dive instead (one bullet here).
-9. **TestimonialFeature** (unchanged, acts as breather between Coaching and AI)
-10. **Pillar 5 · REPs AI** — keep existing hero moment + 6 capability cards, renumber stays at Pillar 5. Links to `/features/ai`.
-11. **Pillar 6 · Growth** — NEW 50/50 `ProductBlock`. Bullets: content drafted on-brand, review requests on autopilot, reporting that compounds, Next Move every Monday. Links to `/features/growth`. Uses an existing dashboard mockup route (e.g. `/dashboard/growth` if it exists, otherwise reuse a generic mockup — confirm during build).
-12. Comparison strip (unchanged)
-13. ReplacedStackBoard + TestimonialTriad (unchanged)
-14. UseCaseTriad (unchanged — "who it's for")
-15. WeekWithReps (unchanged)
-16. FAQ (unchanged)
-17. Final CTA (unchanged)
+2. Press marquee (unchanged)
+3. Why coaches switch  ← keep, this IS the differentiator band (software + clients)
+                         RegisterProof stays here as the visual payoff
+4. Pillar 1 · Visibility       ┐
+5. Pillar 2 · Shop-front       │
+6. Pillar 3 · Operations       │  the software tour —
+7. Pillar 4 · Coaching (tabs)  │  straight into product, no TOC delay
+8. Feature testimonial         │
+9. Pillar 5 · REPs AI (hero)   │
+10. Pillar 6 · Growth          ┘
+11. Triad testimonials  (replaced-stack visual removed)
+12. Who's it for / Use cases
+13. FAQ
+14. Final CTA
+```
 
-Net effect: 5 numbered "pillars" + 1 unnumbered Verified-profile block → **6 numbered pillars in grid order**, no duplicates, no missing pillar.
+Net: **14 sections → 10**, and the user hits real product screenshots within one scroll of the hero instead of three.
 
-## Edits
+## Light copy tweak on "Why coaches switch"
 
-Single file: `src/routes/for-professionals.tsx`
+Since it now sits alone as the only "why" band before the pillars, tighten the subtext one notch so it earns its place:
 
-- Move the "Act 2 · Six pillars" grid section to sit immediately after Act 1.
-- Adjust the grid intro copy: "Here are the six. Each one has its own deep-dive below — tap a card to jump straight to the feature page."
-- Rename eyebrows:
-  - "Verified profile" → "Pillar 1 · Visibility"
-  - "Pillar · Shop-front" → "Pillar 2 · Shop-front"
-  - Merge "Pillar 1 · Leads CRM" + "Pillar 3 · Bookings & payments" into a single "Pillar 3 · Operations" block (new title e.g. "Leads, bookings and payments — one tool.")
-  - "Pillar 2 · Coaching" → "Pillar 4 · Coaching"
-  - Delete "Pillar 4 · Client portal" section (fold its best bullet into Coaching)
-  - "Pillar 5 · REPs AI Operating System" stays
-  - Add new "Pillar 6 · Growth" `ProductBlock` after the AI section
-- Every pillar section keeps `ctaHref` pointing at its `/features/<pillar>` deep-dive so the user has a clear path from teaser → deep dive.
-- Alternate `reverse` so the 50/50 image side zig-zags down the page (Visibility left, Shop-front right, Operations left, Coaching tabs full-width, AI right, Growth left).
+> Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software **and** the clients to fill it — because the public already lands here when they're searching for a trusted pro.
 
-## Out of scope
+(Adds "the clients to fill it" — makes the software-first promise explicit.)
 
-- No changes to `/features/*` deep-dive pages themselves.
-- No copy rewrites beyond eyebrows/titles needed to renumber.
-- No design-token, header/footer, or component-API changes.
-- No new images generated in this pass — Growth section reuses an existing mockup route; if none fits, we'll flag and pick one during build.
+## Technical notes
+
+- Single file edit: `src/routes/for-professionals.tsx`.
+- Delete line ranges: 202–248 (six-pillar grid), 418–432 (comparison), the replaced-stack half of 433–450 (keep the triad testimonials JSX), 469–486 (week with REPs).
+- Remove any now-unused imports (`Eye, Globe, Settings2, ClipboardCheck, Brain, TrendingUp` if only used by the grid; the comparison/week components if only used by those sections).
+- No route changes, no new components, no data changes. Hero, pillar deep-dives, AI hero moment, and FAQ stay exactly as locked.
+
+## What I'm NOT doing (and why)
+
+- Not touching the locked hero, the AI Pillar 5 hero moment, or any of the six pillar 50/50 layouts — those are the strongest software-forward modules already.
+- Not adding new sections. The complaint is "too much"; the answer is subtraction, not another module.
+- Not redesigning "Why coaches switch" — one copy-line tweak only. A redesign there would just reintroduce the text-heavy feel.
