@@ -1,16 +1,31 @@
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Apple } from "lucide-react";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import wix from "@/assets/logos/wix.svg.asset.json";
+import trainerize from "@/assets/logos/trainerize.svg.asset.json";
+import calendly from "@/assets/logos/calendly.svg.asset.json";
+import stripe from "@/assets/logos/stripe.svg.asset.json";
+import mailchimp from "@/assets/logos/mailchimp.svg.asset.json";
+import googlesheets from "@/assets/logos/googlesheets.svg.asset.json";
+import whatsapp from "@/assets/logos/whatsapp.svg.asset.json";
+import googleforms from "@/assets/logos/googleforms.svg.asset.json";
 
-const BEFORE = [
-  { name: "Wix / Squarespace", job: "Website" },
-  { name: "Trainerize", job: "Programmes" },
-  { name: "Calendly", job: "Bookings" },
-  { name: "Stripe Checkout", job: "Payments" },
-  { name: "Mailchimp", job: "Email" },
-  { name: "Google Sheets", job: "CRM" },
-  { name: "WhatsApp", job: "Client comms" },
-  { name: "MyFitnessPal-style apps", job: "Nutrition" },
-  { name: "Manual check-in forms", job: "Check-ins" },
+type Before = {
+  name: string;
+  job: string;
+  logo?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+};
+
+const BEFORE: Before[] = [
+  { name: "Wix / Squarespace", job: "Website", logo: wix.url },
+  { name: "Trainerize", job: "Programmes", logo: trainerize.url },
+  { name: "Calendly", job: "Bookings", logo: calendly.url },
+  { name: "Stripe Checkout", job: "Payments", logo: stripe.url },
+  { name: "Mailchimp", job: "Email", logo: mailchimp.url },
+  { name: "Google Sheets", job: "CRM", logo: googlesheets.url },
+  { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
+  { name: "MyFitnessPal-style apps", job: "Nutrition", icon: Apple },
+  { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
 ];
 
 const AFTER = [
@@ -55,19 +70,34 @@ export function ReplacedStackBoard() {
             </span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
-            {BEFORE.map((b) => (
-              <div
-                key={b.name}
-                className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
-              >
-                <span className="font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
-                  {b.name}
-                </span>
-                <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/35">
-                  {b.job}
-                </span>
-              </div>
-            ))}
+            {BEFORE.map((b) => {
+              const Icon = b.icon;
+              return (
+                <div
+                  key={b.name}
+                  className="flex items-center gap-2 rounded-[10px] border border-reps-border/70 bg-reps-panel/40 px-3 py-2 transition-colors hover:border-reps-border"
+                >
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center opacity-60">
+                    {b.logo ? (
+                      <img
+                        src={b.logo}
+                        alt=""
+                        aria-hidden
+                        className="h-full w-full object-contain"
+                      />
+                    ) : Icon ? (
+                      <Icon className="h-full w-full text-white" />
+                    ) : null}
+                  </span>
+                  <span className="font-display text-[12px] font-semibold text-white/65 line-through decoration-reps-orange/60">
+                    {b.name}
+                  </span>
+                  <span className="ml-auto text-[10.5px] uppercase tracking-wider text-white/35">
+                    {b.job}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
