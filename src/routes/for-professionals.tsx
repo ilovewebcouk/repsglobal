@@ -199,12 +199,12 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* ACT 2 — SIX-PILLAR GRID (TOC for the deep-dives below) */}
+      {/* SIX-PILLAR GRID (TOC for the deep-dives below) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Act 2 · Run your practice
+              The six pillars
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
               Six pillars. One operating system.
