@@ -296,14 +296,8 @@ function ForProsPage() {
       {/* CHAPTER P2 — SHOP-FRONT */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={2}
-              name="Shop-front"
-              promise="A personalised page at /c/your-name that turns visitors into paying clients — built in, not bolted on."
-            />
-          </div>
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Personalised shop-front"
               title="The page that turns visitors into clients."
