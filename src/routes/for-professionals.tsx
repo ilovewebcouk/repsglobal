@@ -299,15 +299,28 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 1 — LEADS */}
+      {/* PILLAR 3 — OPERATIONS (LEADS + BOOKINGS + PAYMENTS) */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar 1 · Leads CRM"
-            title="Stop losing the clients you've already won."
-            body="Slow replies cost you clients. REPs lands every lead in one pipeline with source, value, priority and a follow-up date — and AI scores intent and drafts the first reply before you've opened the tab."
+            eyebrow="Pillar 3 · Operations"
+            title="One pipeline. One calendar. One ledger."
+            body="Every enquiry, booking, invoice and payment in the same client record. Slow replies cost you clients — REPs lands every lead with source, value and priority, scores intent, and drafts the first reply before you've opened the tab."
             bullets={[
-              "Pipeline stages from enquiry to booked consult",
+              "Lead pipeline with source, value, priority and follow-up date",
+              "AI scores intent and drafts the first reply",
+              "Calendar with availability, session types and online check-ins",
+              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
+              "Per-client invoice and payment history with revenue, paid, pending and overdue",
+            ]}
+            imageLabel="Operations mockup — calendar + leads"
+            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Operations preview" }}
+            ctaLabel="Explore Operations"
+            ctaHref="/features/operations"
+          />
+        </div>
+      </section>
+
               "Source tracking — know which channel pays",
               "Automated follow-up reminders, never another cold lead",
               "AI lead scoring and reply drafts ready to send",
