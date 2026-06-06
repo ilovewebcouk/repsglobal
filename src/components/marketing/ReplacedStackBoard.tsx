@@ -3,8 +3,6 @@ import {
   Check,
   Apple,
   Filter,
-  Zap,
-  GraduationCap,
   BookOpen,
   Users,
   FileSignature,
