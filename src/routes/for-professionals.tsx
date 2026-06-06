@@ -485,7 +485,29 @@ function ForProsPage() {
         </div>
       </section>
 
+      {/* PILLAR 6 — GROWTH */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <ProductBlock
+            eyebrow="Pillar 6 · Growth"
+            title="Compound your reputation week after week."
+            body="Reviews, content and reporting that build a flywheel — every happy client makes the next one easier to win. Your numbers, your proof and your story, all working together."
+            bullets={[
+              "Automated review collection from real verified clients",
+              "Lead-magnet builder and content scheduler",
+              "Weekly business report — revenue, retention, leads, reviews",
+              "Benchmarks vs comparable pros in your city and specialism",
+            ]}
+            imageLabel="Growth reports mockup — coming soon"
+            mockup={{ device: "laptop", src: "/dashboard/reports", title: "Growth reports preview" }}
+            ctaLabel="Explore Growth"
+            ctaHref="/features/growth"
+          />
+        </div>
+      </section>
+
       {/* A WEEK WITH REPS */}
+
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
