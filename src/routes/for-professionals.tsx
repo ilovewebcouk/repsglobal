@@ -273,7 +273,7 @@ function ForProsPage() {
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar · Shop-front"
+            eyebrow="Pillar 2 · Shop-front"
             title="The page that turns visitors into clients."
             body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
             bullets={[
