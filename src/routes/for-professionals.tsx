@@ -321,17 +321,7 @@ function ForProsPage() {
         </div>
       </section>
 
-              "Source tracking — know which channel pays",
-              "Automated follow-up reminders, never another cold lead",
-              "AI lead scoring and reply drafts ready to send",
-            ]}
-            imageLabel="Leads pipeline mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/dashboard/leads", title: "Leads pipeline preview" }}
-            ctaLabel="See the pipeline"
-            ctaHref="/features/operations"
-          />
-        </div>
-      </section>
+
 
       {/* PILLAR 4 — COACHING (TABBED + PORTAL) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
