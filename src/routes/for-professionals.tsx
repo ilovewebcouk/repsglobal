@@ -1,14 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  AlertTriangle,
+  
   ArrowRight,
   BadgeCheck,
   Brain,
   Check,
   ClipboardCheck,
   Dumbbell,
-  PenTool,
-  ScanLine,
   Sparkles,
   Star,
   Wand2,
