@@ -320,20 +320,39 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 2 — COACHING (TABBED) */}
+      {/* PILLAR 4 — COACHING (TABBED + PORTAL) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="mb-10 max-w-[720px]">
+          <div className="mb-10 max-w-[760px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-              Pillar 2 · Coaching
+              Pillar 4 · Coaching
             </span>
             <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-              Programmes, check-ins and the full client record — in one tool.
+              Programmes, check-ins and the full client record — plus the portal clients use.
             </h2>
           </div>
           <PillarTabs />
+
+          {/* Client portal sub-block */}
+          <div className="mt-16">
+            <ProductBlock
+              eyebrow="Inside Coaching · Client portal"
+              title="The app your clients tell their friends about."
+              body="What your clients see matters as much as what you see. A premium-feeling portal — today's session, this week's targets, next booking, last message — wherever they open it."
+              bullets={[
+                "Client dashboard on web and mobile",
+                "One-tap check-in with photos and metrics",
+                "Bookings and payment history visible to the client",
+              ]}
+              imageLabel="Client portal mockup — screenshot coming"
+              mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
+              ctaLabel="Explore Client Portal"
+              ctaHref="/features/coaching"
+            />
+          </div>
         </div>
       </section>
+
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
