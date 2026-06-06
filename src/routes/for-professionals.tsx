@@ -28,7 +28,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarTabs } from "@/components/marketing/PillarTabs";
+
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -75,11 +75,6 @@ const AI_CAPS = [
   { icon: PenTool, title: "Content, on tap and on-brand", body: "Posts, captions and lead magnets drafted in your tone of voice." },
 ];
 
-const OPERATIONS_SUB = [
-  { icon: Inbox, name: "Leads CRM", body: "Pipeline, source tracking and AI lead scoring." },
-  { icon: Calendar, name: "Bookings & calendar", body: "Sessions, consults and classes on one calendar." },
-  { icon: CreditCard, name: "Payments & subs", body: "Card payments, packages and memberships." },
-];
 
 function ForProsPage() {
   return (
@@ -242,10 +237,10 @@ function ForProsPage() {
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               Six pillars, one platform — every booking, programme, check-in and message
-              wired into the same client record. Each one is detailed below. Pro and Studio
-              plans include a personalised shop-front at{" "}
-              <span className="text-white">/c/your-name</span> — the page in Pillar 2 shows
-              what yours can look like.
+              wired into the same client record. Some pillars contain multiple features —
+              every one has its own section below. Pro and Studio plans include a
+              personalised shop-front at <span className="text-white">/c/your-name</span> —
+              the page in Pillar 2 shows what yours can look like.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
