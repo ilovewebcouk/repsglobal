@@ -19,7 +19,7 @@ export function TestimonialFeature() {
             </span>
           </div>
           <blockquote className="mt-4 font-display text-[22px] font-semibold leading-snug text-white lg:text-[28px]">
-            "I shut down my old programme app, my booking link and my spreadsheet
+            "I shut down my old Trainerize app, my booking link and my spreadsheet
             on the same day. REPs runs the lot — and the Verified badge actually
             fills my diary."
           </blockquote>

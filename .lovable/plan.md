@@ -1,7 +1,15 @@
-The page already has a sticky CTA (`StickyCtaPill`) — it currently says "See pricing" and links to `/pricing`. The only change needed is to update the label to "Sign up free".
+## Scope
+Update the placeholder testimonial in the `/for-professionals` page to replace the generic "programme app" with Trainerize, as requested.
 
-Plan
-----
-1. Update `src/components/marketing/StickyCtaPill.tsx` — change button text from "See pricing" to "Sign up free". Leave the `/pricing` link, arrow icon, scroll threshold, and styling untouched.
+## Change
+In `src/components/marketing/TestimonialFeature.tsx`, update the `blockquote` copy:
 
-No new components, no route changes, no dependency installs.
+**From:**
+> "I shut down my old programme app, my booking link and my spreadsheet on the same day. REPs runs the lot — and the Verified badge actually fills my diary."
+
+**To:**
+> "I shut down my old Trainerize app, my booking link and my spreadsheet on the same day. REPs runs the lot — and the Verified badge actually fills my diary."
+
+## Out of scope
+- The "Sample story · for illustration" label, avatar, name, location and stat pills remain unchanged.
+- No structural or visual changes to the component.
