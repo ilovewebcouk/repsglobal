@@ -1,81 +1,116 @@
-# /for-professionals — make every feature a scannable 50/50
+# /for-professionals → 10/10
 
-## The problem
+The current page is information-complete but visually monotonous: 13 identical 50/50 blocks, iframed dashboard routes used as marketing screenshots, no sticky navigation, no pricing on page, and two testimonial sections doing the same job. This plan fixes the six things blocking 10/10 — *without* touching the homepage, shop-front, profile, city, enquire or coach-shop-front locks, and without rewriting the underlying brand, tokens or copy voice.
 
-Two sections currently hide features:
+## Locked taste (no design ritual)
 
-1. **Pillar 3 · Operations** is one merged 50/50 with a 3-up sub-strip underneath. Leads, Bookings, Payments each get a single line of copy. Anyone scanning or Cmd-F-ing the page misses them.
-2. **Pillar 4 · Coaching** is a tabbed component (`PillarTabs` — Programmes / Check-ins / Client record). Tabs are invisible to anyone scrolling, and search-in-page can't find tab content. You missed them yourself.
+We keep the existing locked design system from the source-of-truth memory: dark ink background, brand orange accent, REPs radius scale, display + body type pairing, 1320px max. This is structural, not a redesign — so we skip the palette/type/layout ritual.
 
-The fix is to stop forcing each pillar to be one section. Keep the six-pillar grid in Act 2 as the *map*, then let the deep-dive sections below it be one 50/50 per feature — even if that means 10–12 blocks. Each block links to its pillar page. More 50/50s is fine; hidden features is not.
+## Section-by-section overhaul
 
-## What changes
+### 1. New `<PillarSubnav />` — sticky on scroll
 
-### A. Replace the merged Operations block with 5 individual 50/50s
+Pinned bar under the global header. Six chips: **Visibility · Shop-front · Operations · Coaching · REPs AI · Growth**. Active chip highlights based on scroll position (`IntersectionObserver` on the six pillar section ids). Hidden until the user has scrolled past the hero (`scrollY > 720`), hides again over the footer. Mobile: horizontal scroll strip.
 
-Delete the current Pillar 3 ProductBlock + `OPERATIONS_SUB` 3-up. Replace with one 50/50 per feature, all eyebrowed *"Pillar 3 · Operations · [Feature]"* and all CTA'd *"Explore Operations →"* `/features/operations`:
+Anchors: `#visibility`, `#shop-front`, `#operations`, `#coaching`, `#ai`, `#growth`.
 
-1. **Leads CRM** — mockup `/dashboard/leads`. Bullets on pipeline stages, source tracking, AI lead scoring, reply drafts.
-2. **Bookings & calendar** — mockup `/dashboard/bookings` (reverse). Two-way sync, deposits, reminders, session types.
-3. **Payments & subscriptions** — mockup `/dashboard/payments`. Stripe payouts, packages, memberships, dunning, no platform cut.
-4. **Clients CRM** — mockup `/dashboard/clients` (reverse). One record per client — sessions, notes, payments, programmes, LTV.
-5. **Client messaging** — mockup `/dashboard/messages`. Focused inbox separate from personal phone, threaded, AI draft replies.
+### 2. Replace the six-pillar grid (Act 2) with a denser visual map
 
-Copy seed already exists in `src/routes/features.operations.tsx` (`FEATURES` array) and `src/components/marketing/PillarTabs.tsx` — reuse, don't rewrite.
+Same six cards, but: a **2-column hero-pair** at the top (Visibility + Shop-front, both with a thumbnail strip), then four equal cards below. Each card gets a tiny stat ("5 features inside", "Pro+Studio", "Included on every tier"). The Act 2 intro stays as the map — but now visually anchors the rest of the page instead of being a generic grid.
 
-### B. Replace the Coaching tabs with 4 individual 50/50s
+### 3. **Operations → one bento section** (replaces 5 stacked 50/50s)
 
-Remove `<PillarTabs />`. Replace with one 50/50 per coaching feature, all eyebrowed *"Pillar 4 · Coaching · [Feature]"* and all CTA'd *"Explore Coaching →"* `/features/coaching`:
+New `<OperationsBento />`:
 
-1. **Programmes** — mockup `/dashboard/programs`. Lift copy from the existing Programmes tab.
-2. **Check-ins** — mockup `/dashboard/check-ins` (reverse). Lift from Check-ins tab.
-3. **Client record** — mockup `/dashboard/clients`. *Move* this from Operations (one canonical home in Coaching since it's the coaching record), or keep it in Operations and drop here — see Open question 1.
-4. **Client portal** — keep the existing one, phone mockup `/portal/today` (reverse).
+```
+┌─────────────────────────────┬─────────────────┐
+│ LEADS (tall, hero tile)     │ BOOKINGS        │
+│  pipeline mockup + AI score │  calendar mock  │
+│                             ├─────────────────┤
+│                             │ PAYMENTS        │
+│                             │  MRR card mock  │
+├──────────────┬──────────────┴─────────────────┤
+│ CLIENTS CRM  │ MESSAGES                       │
+│  record card │  inbox preview                 │
+└──────────────┴────────────────────────────────┘
+```
 
-Keep `PillarTabs.tsx` file in place (still used elsewhere? — check `rg PillarTabs src/`) but stop importing it here.
+5 tiles, mixed sizes, each ~280–500px tall, all clickable → `/features/operations`. One pillar opener above ("Operations — the practice runs itself."). One CTA below ("Explore Operations →"). Visual cohesion replaces 5× scroll fatigue.
 
-### C. Keep — already 50/50 and working
+### 4. **Coaching → split-scroll panel** (replaces 3 stacked 50/50s + adds Nutrition)
 
-- Pillar 1 · Visibility
-- Pillar 2 · Shop-front
-- Pillar 5 · REPs AI (the hero moment + 6 AI capability cards is fine — AI is a horizontal layer, not a feature list)
-- Pillar 6 · Growth
+New `<CoachingScrollPanel />`: sticky 60/40 layout. Left = sticky device mockup that **swaps** as the user scrolls. Right = 4 stacked copy blocks (Programmes / Check-ins / Nutrition / Client portal). Active block highlights its bullet list and updates the sticky mockup via `IntersectionObserver`. Mobile falls back to 4 stacked cards.
 
-### D. Small QA fixes while we're in there
+Adds **Nutrition** which is currently missing from the page (it exists on `/features/coaching` and AI). Resolves the pillar-grid card lie.
 
-- Hero CTA reads *"Explore the six pillars"*. With this restructure we still anchor to `#pillars` (the six-pillar grid in Act 2 is the map). Leave copy as-is.
-- Act 2 intro currently says *"Each one is detailed below"* — still true, just with more sections per pillar. Add one sentence: *"Some pillars contain multiple features — every one has its own section below."*
-- Add a tiny inline pillar tag (eyebrow) to every new 50/50 so the visual rhythm makes the pillar grouping obvious as you scroll.
-- Replaced-stack board, comparison strip, testimonials, week-with-REPs, FAQ, final CTA — untouched.
+### 5. Move Client Record back to Coaching (where the pillar grid promised it)
+
+Out of Operations bento, into the Coaching split-scroll as a fifth block. Operations bento becomes 4 tiles (Leads tall hero, Bookings, Payments, Messages). Aligns with the pillar grid copy.
+
+### 6. AI section: keep, but make it *the* moment
+
+Keep `AiCommandCentreMock`. Replace the 6 static AI capability cards with a **single hovering "Next Move" card mock** (left) + a 3-row "this week REPs noticed…" feed (right) that scrolls/animates. Move the 6 AI capabilities into a compact horizontal carousel below — less card-soup, more product demo.
+
+### 7. New `<PricingSnapshot />` strip — above the Final CTA
+
+3 tier cards in one strip, same data as `pricing-data.ts`. Verified £99/yr · Pro £59/mo (founding) · Studio £149/mo. Each shows 3 "best included" bullets and a link to `/pricing`. Phase-1 rule respected: no checkout, just a snapshot.
+
+### 8. Final CTA rewrite
+
+Founding-price urgency frame. Replace "Join the verified register" duplicate hero copy with:
+- Eyebrow: "Founding Pro pricing — locked for life"
+- Headline: "£59/month, forever. Before public launch."
+- One testimonial quote inline (lift from `TestimonialTriad`).
+- Two CTAs: Join REPs (primary) · See pricing (ghost).
+- Drop the "Compare platforms" third button (already in the page above).
+
+### 9. Cut one testimonial section
+
+Keep `<TestimonialFeature />` (single hero quote, between Operations and Coaching). Drop `<TestimonialTriad />` from inside `ReplacedStackBoard` section — that section already does the "we replace your stack" job; doubling up with three more headshots is filler.
+
+### 10. Mockup quality pass
+
+The iframed `/dashboard/*` and `/portal/today` routes look thin in laptop frames. For the new bento/scroll-panel/AI moment, build **small bespoke React mock components** (the same approach as `AiCommandCentreMock`, `PlatformMockups`, `HeroDeviceCluster`):
+
+- `OpsLeadsMock`, `OpsBookingsMock`, `OpsPaymentsMock`, `OpsClientsMock`, `OpsMessagesMock` — 5 small composed UI cards (already partly exist in `PlatformMockups.tsx`, will extend).
+- `CoachProgrammeMock`, `CoachCheckinsMock`, `CoachNutritionMock`, `CoachPortalMock` — 4 sticky-scroll devices.
+- `AiNextMoveCard`, `AiNoticedFeed` — for the AI moment.
+
+No image generation, no external assets. Everything stays in-component, on-token, dark-mode native.
 
 ## Final section order
 
-1. Hero
+1. Hero (unchanged)
 2. PressMarquee
-3. Act 1 · Register
-4. Pillar 1 · Visibility (1 block)
-5. Act 2 · Six-pillar grid (`#pillars`)
-6. Pillar 2 · Shop-front (1 block)
-7. Pillar 3 · Operations — **5 blocks** (Leads, Bookings, Payments, Clients CRM, Messages)
-8. TestimonialFeature
-9. Pillar 4 · Coaching — **4 blocks** (Programmes, Check-ins, Client record, Client portal)
-10. ComparisonStrip
-11. ReplacedStackBoard + TestimonialTriad
-12. UseCaseTriad
-13. Pillar 5 · REPs AI hero moment + 6 AI cards
-14. Pillar 6 · Growth (1 block)
-15. WeekWithReps
-16. FAQ
-17. Final CTA
+3. **PillarSubnav (sticky, appears on scroll)**
+4. Act 1 · Register
+5. Pillar 1 · Visibility (single 50/50 — unchanged)
+6. Act 2 · Six-pillar map (denser)
+7. Pillar 2 · Shop-front (single 50/50 — unchanged)
+8. **Pillar 3 · Operations — bento (4 tiles)**
+9. TestimonialFeature
+10. **Pillar 4 · Coaching — split-scroll panel (5 blocks: Programmes, Check-ins, Nutrition, Client record, Client portal)**
+11. ComparisonStrip
+12. ReplacedStackBoard *(TestimonialTriad cut)*
+13. UseCaseTriad
+14. **Pillar 5 · REPs AI — Command Centre + Next Move card + noticed feed + compact carousel**
+15. Pillar 6 · Growth (single 50/50 — unchanged)
+16. WeekWithReps
+17. **PricingSnapshot strip**
+18. FAQ
+19. **Final CTA — founding-price moment**
 
-Total feature 50/50s on the page: **13** (was 6). Every feature is scannable, searchable, and screenshot-able.
+Section count drops from 22 to 19; visual layouts drop from 1 (50/50) to ~6 distinct shapes. Scannability and pacing go up. Bandwidth goes down.
 
-## Out of scope
+## Out of scope (Phase 1 guard)
 
-- No new components — reuse `ProductBlock`. No design tokens, no pricing data, no routes outside `for-professionals.tsx`.
-- No copy rewrites on Hero / Act 1 / AI / Growth / FAQ / Final CTA.
-- `PillarTabs.tsx` not deleted (kept for possible reuse).
+- No auth, DB, payments, AI, BD migration logic.
+- No homepage / profile / city / enquire / coach-shopfront / professions changes.
+- No new routes, no new tokens, no image generation.
+- `PillarTabs.tsx` stays in repo (unused) — don't delete in case it's wanted later.
 
-## Open question
+## Open questions
 
-1. **Client record — Operations or Coaching?** It's listed under Operations in `features.operations.tsx` (CRM) and under Coaching in `PillarTabs` (the coaching record). I'd put it in **Operations** (it's the CRM spine for bookings/payments too) and drop the third Coaching block, leaving Coaching with 3 blocks (Programmes, Check-ins, Client portal). Confirm or flip.
+1. **Sticky sub-nav under header** — confirm. Some pages don't want it; this one needs it.
+2. **Drop `TestimonialTriad`?** It's 3 more testimonials. I think yes (we keep `TestimonialFeature`). Confirm.
+3. **Build bespoke React mocks vs. screenshot the actual dashboard routes** — I'm proposing bespoke React mocks because they read tighter at marketing scale. Confirm or push back.
