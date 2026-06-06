@@ -17,7 +17,6 @@ import stripe from "@/assets/logos/stripe.svg.asset.json";
 import mailchimp from "@/assets/logos/mailchimp.svg.asset.json";
 import googlesheets from "@/assets/logos/googlesheets.svg.asset.json";
 import whatsapp from "@/assets/logos/whatsapp.svg.asset.json";
-import googleforms from "@/assets/logos/googleforms.svg.asset.json";
 import hubspot from "@/assets/logos/hubspot.svg.asset.json";
 import typeform from "@/assets/logos/typeform.svg.asset.json";
 
@@ -53,7 +52,6 @@ const BEFORE: Before[] = [
   { name: "WhatsApp", job: "Client comms", logo: whatsapp.url },
   // Coaching ops
   { name: "MyFitnessPal", job: "Nutrition", icon: Apple },
-  { name: "Manual check-in forms", job: "Check-ins", logo: googleforms.url },
 ];
 
 
@@ -95,10 +93,10 @@ export function ReplacedStackBoard() {
               Before · your current stack
             </span>
             <span className="rounded-full border border-reps-border/60 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-white/50">
-              17 tools · 17 bills
+              16 tools · 16 bills
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {BEFORE.map((b) => {
               const Icon = b.icon;
               return (
