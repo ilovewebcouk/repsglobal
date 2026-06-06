@@ -326,7 +326,7 @@ function ForProsPage() {
               </h2>
               <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
                 Founding Pro pricing is only on the table before public launch. Every
-                feature in your tier is included — no paid add-ons, no booking fee.
+                feature in your tier is included — no paid add-ons.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
@@ -422,9 +422,8 @@ function PricingTeaser() {
             Three tiers. Pick the one you're at.
           </h2>
           <p className="mt-3 text-[15.5px] leading-relaxed text-white/70">
-            Every feature in your tier is included — no paid add-ons, no booking fee,
-            no Stripe surcharge from us. The Founding Pro price is locked for life,
-            but only if you join before public launch.
+            Every feature in your tier is included — no paid add-ons. The Founding
+            Pro price is locked for life, but only if you join before public launch.
           </p>
         </div>
 
@@ -479,7 +478,7 @@ function PricingTeaser() {
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12.5px] text-white/55">
-          <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> No booking commission</span>
+          <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Every feature in your tier — included</span>
           <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Cancel any time</span>
           <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-reps-orange" /> Migration help included</span>
         </div>
