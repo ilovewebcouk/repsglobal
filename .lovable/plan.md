@@ -1,18 +1,16 @@
-## Goal
-Strip the /for-professionals page back to a clean feature-led layout: 10 alternating 50/50 ProductBlocks, no chapter dividers.
+## Replace "Manual check-in forms" with Typeform in ReplacedStackBoard
 
-## Changes
-1. **Delete** `src/components/marketing/PillarChapter.tsx` — no longer used.
-2. **Edit** `src/routes/for-professionals.tsx`:
-   - Remove all 6 `<PillarChapter />` imports and usages.
-   - Keep the 10 existing ProductBlocks in their current order (Verified profile → Personalised page → Lead pipeline → Bookings & calendar → Payments → Clients CRM → Messaging → Programmes → Check-ins → Client portal).
-   - Keep `reverse` alternating on every other block for visual rhythm.
-   - Keep all existing rhythm-breakers (TestimonialFeature, ComparisonStrip, ReplacedStackBoard, TestimonialTriad, UseCaseTriad, REPs AI, Growth, WeekWithReps, FAQ, Final CTA) exactly where they are.
-   - No new content, no rewrites — purely delete the dividers.
+**File:** `src/components/marketing/ReplacedStackBoard.tsx`
 
-## Out of scope
-- Hero, pillar grid, RegisterProof, ComparisonStrip, ReplacedStackBoard, TestimonialTriad, UseCaseTriad, WeekWithReps, FAQ, final CTA, footer.
-- Any `/features/*` pages or feature-config data.
+**Change:** Swap the existing "Manual check-in forms" chip (one of the 9 BEFORE tools) for Typeform.
 
-## Result
-Page flows: pillar grid → 10 feature 50/50s → existing rhythm-breakers → closing sections. No chapter headers, no extra visual noise between pillars.
+- `name`: `"Typeform"`
+- `job`: `"Check-ins"`
+- `logo`: white Typeform wordmark SVG, sourced and inlined the same way the other brand logos in this component are handled (white-only, no color, matching stroke/weight conventions already in the file)
+- Keep the chip in the same slot/order currently occupied by "Manual check-in forms"
+- Keep the existing `wide` flag state for that slot unchanged
+- Badge stays "9 tools · 9 bills" (still 9 chips)
+
+**Sourcing the logo:** Use the official Typeform wordmark (the "T." mark + "Typeform" wordmark, matching the version used in their press kit) rendered as a single-color white inline SVG, consistent with how Trainerize and the other logos are inlined in this file.
+
+No other files change.
