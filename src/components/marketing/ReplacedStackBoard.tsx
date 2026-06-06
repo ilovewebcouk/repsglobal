@@ -14,6 +14,7 @@ type Before = {
   job: string;
   logo?: string;
   icon?: React.ComponentType<{ className?: string }>;
+  wide?: boolean;
 };
 
 const BEFORE: Before[] = [
