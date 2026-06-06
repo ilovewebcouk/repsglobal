@@ -24,7 +24,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { PillarTabs } from "@/components/marketing/PillarTabs";
+import { PillarChapter } from "@/components/marketing/PillarChapter";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { TestimonialTriad } from "@/components/marketing/TestimonialTriad";
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -513,12 +513,7 @@ function ForProsPage() {
 
 
 
-      {/* FEATURE TESTIMONIAL */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-          <TestimonialFeature />
-        </div>
-      </section>
+
 
 
 
@@ -574,7 +569,16 @@ function ForProsPage() {
       </section>
 
 
-      {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
+      {/* CHAPTER P5 — REPS AI (HERO MOMENT) */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
+          <PillarChapter
+            number={5}
+            name="REPs AI"
+            promise="An AI operating layer working across every pillar — drafting, scoring, summarising and ranking your next move."
+          />
+        </div>
+      </section>
       <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
         <div
           aria-hidden
@@ -622,7 +626,16 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 6 — GROWTH */}
+      {/* CHAPTER P6 — GROWTH */}
+      <section className="border-b border-reps-border">
+        <div className="mx-auto max-w-[1320px] px-6 pt-20 lg:px-10 lg:pt-24">
+          <PillarChapter
+            number={6}
+            name="Growth"
+            promise="Reviews, content and reporting that compound — every happy client makes the next one easier to win."
+          />
+        </div>
+      </section>
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
           <ProductBlock
