@@ -23,7 +23,7 @@ export function VenueStrip() {
           Where you'll find our trainers
         </p>
         <h2 className="mt-3 font-display text-[22px] font-bold leading-tight text-reps-charcoal sm:text-[26px] lg:text-[30px]">
-          REPs professionals coach clients at gyms across the UK.
+          REPs professionals coach clients at gyms worldwide.
         </h2>
         <p className="mx-auto mt-2 max-w-[520px] text-[12.5px] leading-relaxed text-reps-muted-light">
           Independent REPs-verified professionals — not affiliated with the gyms shown.
