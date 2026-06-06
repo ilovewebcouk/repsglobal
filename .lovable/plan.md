@@ -1,61 +1,98 @@
-## Unify 6-pillar taxonomy on `/for-professionals` (Option A)
+## Unshoehorn: one 50/50 per feature, 6 pillar chapters on `/for-professionals`
 
-**Goal.** Make the grid and the deep-dive sections tell the same story. One taxonomy, six pillars, customer-journey order. Every grid card has a matching deep-dive with the same name and number.
+**Goal.** Replace the merged Operations + Coaching blocks with one `ProductBlock` per feature. Keep the 6-pillar grid and story by introducing lightweight **pillar chapter dividers** between feature groups. Every feature CTA still points to the relevant `/features/*` pillar page.
 
-**Locked order (1 → 6):**
-1. **Visibility** — verified register (the moat). Stays first.
-2. **Shop-front** — `/c/your-name`. The conversion beat.
-3. **Operations** — leads CRM + bookings + payments, merged.
-4. **Coaching** — programmes, check-ins, client portal, merged.
-5. **REPs AI** — the layer across all of it.
-6. **Growth** — content, reviews, reporting. New section.
+### Final Act 2 order
 
-### Changes to `src/routes/for-professionals.tsx`
+```text
+Six-pillar grid (unchanged)
 
-**1. Grid (lines 241–268).** Reorder array so the cards render Visibility → Shop-front → Operations → Coaching → REPs AI → Growth. Keep the orange accent on Shop-front. Headline "Six pillars. One operating system." stays.
+— Chapter divider —  Pillar 1 · Visibility
+  1. Verified profile & reviews                  → /features/visibility
 
-**2. New `PILLAR 1 · VISIBILITY` deep-dive section** (inserted just after the grid, before the existing Shop-front section). `ProductBlock` with:
-- Eyebrow: `Pillar 1 · Visibility`
-- Title: "Found on the register the public already searches."
-- Body: REPs is the verified directory clients land on. Your profile is your front door.
-- Bullets: Verified profile with credentials/specialisms; ranked in city + profession search; reviews from real verified clients; profile preview link you can share.
-- CTA: `Explore Visibility` → `/features/visibility`
-- Mockup: laptop frame showing `/in/london` or `/find-a-professional` (use an existing route slug that renders).
+— Chapter divider —  Pillar 2 · Shop-front
+  2. Personalised shop-front (/c/your-name)      → /features/shop-front
 
-**3. Existing Shop-front section (lines 272–300).** Eyebrow becomes `Pillar 2 · Shop-front`. Everything else unchanged.
+— Chapter divider —  Pillar 3 · Operations
+  3. Lead pipeline                                → /features/operations
+  4. Bookings & calendar                          → /features/operations
+  5. Payments & subscriptions                     → /features/operations
+  6. Clients CRM                                  → /features/operations
+  7. Client messaging                             → /features/operations
 
-**4. Merge Leads CRM (302–321) + Bookings & payments (345–365) into one `PILLAR 3 · OPERATIONS` section.** One `ProductBlock`:
-- Eyebrow: `Pillar 3 · Operations`
-- Title: "One pipeline. One calendar. One ledger."
-- Body: Combine the leads and bookings narratives — every enquiry, booking, invoice and payment in one place.
-- Bullets (merged, ~5): Lead pipeline with source, value, priority; AI scores intent and drafts the first reply; calendar with availability and session types; card payments and subscriptions — REPs takes no cut of what your clients pay you; per-client invoice + payment history.
-- CTA: `Explore Operations` → `/features/operations`
-- Mockup: keep the existing leads or calendar mock — pick one (preference: calendar, since it visually carries both).
-- Delete the standalone Bookings & payments section (345–365).
+(Feature testimonial — existing, kept as rhythm-breaker)
 
-**5. Merge Coaching (323–336, PillarTabs) + Client portal (367–386) into one `PILLAR 4 · COACHING` section.**
-- Eyebrow: `Pillar 4 · Coaching`
-- Title: "Programmes, check-ins and the full client record — plus the portal clients use."
-- Keep `<PillarTabs />` as the primary visual.
-- Add a smaller secondary block below the tabs with a phone-mockup of the client portal (current "Client portal" content collapsed into 2–3 lines + 3 bullets + small mockup), CTA `Explore Client Portal` → `/features/coaching`.
-- Delete the standalone Client portal section (367–386).
+— Chapter divider —  Pillar 4 · Coaching
+  8. Programmes                                   → /features/coaching
+  9. Check-ins & progress                         → /features/coaching
+ 10. Client portal                                → /features/coaching
 
-**6. Existing REPs AI section (440–486).** Eyebrow stays `Pillar 5 · REPs AI Operating System`. No other change.
+(Comparison + Replaced Stack + Triad + Use Cases — existing, untouched)
 
-**7. New `PILLAR 6 · GROWTH` section** (inserted between the REPs AI section and the "Week with REPs" section). `ProductBlock` with:
-- Eyebrow: `Pillar 6 · Growth`
-- Title: "Compound your reputation week after week."
-- Body: Reviews, content and reporting that build a flywheel — every happy client makes the next one easier to win.
-- Bullets: Automated review collection from real clients; lead-magnet builder and content scheduler; weekly business report — revenue, retention, leads, reviews; benchmarks vs comparable pros.
-- CTA: `Explore Growth` → `/features/growth`
-- Mockup: laptop frame, can reuse an existing dashboard route (e.g. `/dashboard/reports` if it exists, else `/dashboard/reviews`).
+— Chapter divider —  Pillar 5 · REPs AI
+ 11. REPs AI Operating System block               → /features/ai     (unchanged)
 
-### Final section order in Act 2
-P1 Visibility → P2 Shop-front → P3 Operations → Feature Testimonial → P4 Coaching → Comparison → Replaced Stack + Triad → Use Cases → P5 REPs AI → P6 Growth → Week with REPs → FAQ → Final CTA.
+— Chapter divider —  Pillar 6 · Growth
+ 12. Growth block                                  → /features/growth (unchanged)
+
+A Week with REPs → FAQ → Final CTA  (unchanged)
+```
+
+### Component changes
+
+**New tiny component: `PillarChapter`** (in `src/components/marketing/PillarChapter.tsx`)
+- Renders a chapter heading row: small orange eyebrow `Pillar N`, big pillar name (e.g. "Operations"), one-line pillar promise, thin `border-t border-reps-border` rule above.
+- No mockup, no CTA — purely a visual divider so the page reads as 6 chapters, not 12 random sections.
+- Compact: `py-10 lg:py-12`, max-w narrow, left-aligned to match `ProductBlock` rhythm.
+
+**Retire `PillarTabs`** on this page.
+- Each of its 3 tabs (Programmes, Check-ins, Client record) becomes its own `ProductBlock` in the Coaching chapter.
+- Leave the `PillarTabs.tsx` component file in place (it may be used elsewhere or revived later) — just stop importing it on `/for-professionals`.
+
+**Each new `ProductBlock`:**
+- Eyebrow: feature name in caps (e.g. `LEAD PIPELINE`) — NOT "Pillar N · …" anymore (the chapter divider above carries the pillar).
+- Title, body, 3–4 bullets, mockup, CTA "Explore {Pillar}" → `/features/{pillar}`.
+- Alternate `reverse` on every other block so the mockup flips left/right and the page doesn't feel monotonous.
+- Pull copy from existing `FEATURES` array in `src/components/features/feature-config.ts` where possible (oneLiner → body seed, tag → eyebrow); expand bullets per feature.
+
+### Mockup routes (all use existing `DeviceMockup` + dashboard route as iframe src)
+
+| # | Feature | Device | Mockup src |
+|---|---|---|---|
+| 1 | Verified profile & reviews | laptop | `/find-a-professional` |
+| 2 | Shop-front | laptop | `/c/{demo-slug}` (whichever the page currently uses) |
+| 3 | Lead pipeline | laptop | `/dashboard/leads` |
+| 4 | Bookings & calendar | laptop | `/dashboard/calendar` |
+| 5 | Payments & subscriptions | laptop | `/dashboard/payments` |
+| 6 | Clients CRM | laptop | `/dashboard/clients` |
+| 7 | Messaging | phone | `/dashboard/messages` |
+| 8 | Programmes | laptop | `/dashboard/programs` |
+| 9 | Check-ins | laptop | `/dashboard/check-ins` |
+| 10 | Client portal | phone | `/portal/today` |
+| 11 | REPs AI | unchanged | unchanged |
+| 12 | Growth | unchanged | unchanged |
+
+Mixing 2 phone mockups (Messaging, Client portal) into a laptop-dominant scroll gives natural visual rhythm alongside the alternating `reverse`.
+
+### Edits to `src/routes/for-professionals.tsx`
+
+1. Remove the merged P3 Operations `ProductBlock` (the one with 5 bullets + calendar mockup).
+2. Remove the merged P4 Coaching block (PillarTabs + nested Client portal `ProductBlock`).
+3. Drop the `PillarTabs` import.
+4. Insert: `PillarChapter` (P1) → 1 ProductBlock → `PillarChapter` (P2) → 1 ProductBlock → `PillarChapter` (P3) → 5 ProductBlocks (reverse alternating) → existing TestimonialFeature → `PillarChapter` (P4) → 3 ProductBlocks → existing Comparison/ReplacedStack/Triad/UseCases → `PillarChapter` (P5) → existing AI block → `PillarChapter` (P6) → existing Growth block → existing Week / FAQ / CTA.
+5. Renumber any "Pillar N · …" eyebrows that are now redundant (chapter divider carries the number; ProductBlock eyebrows become the feature name).
 
 ### Out of scope
-- No changes to Act 1 hero, RegisterProof, ComparisonStrip, ReplacedStackBoard, TestimonialTriad, UseCaseTriad, WeekWithReps, ForProsFaq, final CTA, footer, head/meta.
-- No copy rewrites beyond the eyebrow renumber and the merged Operations + Coaching bullets and the two new section bodies.
-- No new components — P1 Visibility and P6 Growth reuse the existing `ProductBlock`.
-- No edits to the six `/features/*` pages — those are the user's next job, audited against the depth bar separately.
-- Compliance pass after the edits: brand orange tokens only, radii from the 9-step scale, no banned hex, no banned mock-up filenames.
+
+- No changes to the 6-card pillar grid, hero, RegisterProof, ComparisonStrip, ReplacedStackBoard, TestimonialTriad, UseCaseTriad, WeekWithReps, ForProsFaq, final CTA, footer, head/meta.
+- No edits to `/features/*` pages (your next pass).
+- No new pages or routes.
+- No edits to `feature-config.ts` data — only read from it.
+- No copy beyond per-feature body + 3–4 bullets each. Aim for plain, punchy lines; no banned phrases (no "15%", "Stripe surcharge", "flat plan", UK qualifiers).
+- Compliance pass after edits: brand orange tokens only, radii from the 9-step scale, no `rounded-xl/2xl/3xl`.
+
+### Risks / honest call-outs
+
+- **Page length grows.** With 10 feature blocks + 6 chapter dividers + existing rhythm-breakers, Act 2 gets noticeably longer. Mitigated by the alternating mockup sides, 2 phone mockups, and the existing TestimonialFeature / Comparison / Triad interrupts already spaced through it.
+- **Messaging is the weakest standalone block.** If on review it feels thin next to Leads/Bookings/Payments/CRM, the easiest fix later is to fold it back into the CRM block — but we won't pre-empt that; ship all 10 and judge in situ.
+- **Chapter dividers must stay subtle.** If they read as section headers they'll fight the ProductBlock titles. Spec is: small orange eyebrow + medium pillar name + thin top rule — quieter than a ProductBlock title.
