@@ -1,52 +1,77 @@
-# Pricing table — full visual QA pass
+# Shop-front pass on /for-professionals
 
-## Scope
-`/pricing` page, focused on:
-1. `PricingPlans` — Monthly/Annual toggle, 3 plan cards (Verified / Pro / Studio), Enterprise strip
-2. `PricingCompare` — feature matrix below
-3. `PricingFAQ` — accordion section
-4. Founding banner + hero
+## The gap
 
-## What I'll check
+The page name-drops Shop-front in the Act 2 intro ("see a live example") and includes it as one of six pillar tiles, but the rest of the page acts like it doesn't exist:
 
-**Toggle (Monthly / Annual)**
-- Both states render, `data-[state=on]` styling correct (orange pill, white text)
-- "Save 2 months" badge present on Annual and reads correctly in both selected/unselected states
-- Keyboard focus ring visible, arrow-key navigation works
-- Hover state on inactive option
+- No dedicated 50/50 showcase / CTA section — the "see a live example" link is the only proof.
+- The comparison table (`ComparisonStrip`) has zero rows about it.
+- The "One connected platform" before/after board (`ReplacedStackBoard`) doesn't list Wix/Squarespace on the **Before** side, and doesn't surface "Personal shop-front at /c/your-name" on the **After** side — so coaches don't see that REPs replaces their website too.
 
-**Plan cards (Verified / Pro / Studio)**
-- Pro card: orange border + ring, `-translate-y-3 scale-[1.03]` lift, no glow bleed into Enterprise (regression check from previous fix)
-- "Most popular" badge position (`-top-3 left-7`) not clipped at any breakpoint
-- "Founding price — limited" badge renders only where expected
-- Price block: `was` strike-through, price size, period text alignment
-- Feature list: check-icon circles aligned, line-height consistent, no orphaned bullets
-- CTA buttons: primary (Pro) vs outline (others), loading spinner state, disabled state, hover colors
-- Card heights line up; footers bottom-aligned
+Shop-front is a **Pro + Studio** feature (per locked coach shop-front memory) and is the most photographable surface REPs has — it deserves a hero moment on this page.
 
-**Enterprise strip**
-- Layout switches cleanly between stacked (mobile) and row (lg)
-- Border / radius match plan cards (`rounded-[22px]`)
-- Contact CTA hover
+## What we'll change
 
-**Compare matrix + FAQ**
-- Section dividers (`border-b border-reps-border`) consistent
-- Accordion open/close, focus ring, chevron rotation
-- Sticky/overflow behaviour on the compare table at mobile
+### 1. New Pillar 1.5 — Shop-front showcase (50/50 with live CTA)
 
-**Breakpoints**
-- 1920 (desktop), 1440, 1024 (lg boundary), 834 (tablet), 414, 375 (mobile)
-- Verify lift/scale only kicks in at `lg` and doesn't cause clipping or overlap with the "Most popular" badge
+Insert a new section **between Act 2 pillars grid and Pillar 1 · Leads CRM** (i.e. right after the six-tile grid, so it directly fulfils the "see a live example" promise made in the intro).
 
-**Other**
-- Console errors / warnings while toggling and hovering
-- Dark mode only (no light theme exists) — skip light check
-- Founding banner doesn't overlap sticky header at scroll
+Use the existing `ProductBlock` component for visual consistency with the other pillar showcases.
 
-## Deliverable
-A written report listing:
-- Issues found (with breakpoint + screenshot reference)
-- "Looks good" items explicitly confirmed
-- Recommended fixes grouped as **must-fix** vs **nice-to-have**
+```
+eyebrow:  "Pillar · Shop-front"
+title:    "The page that turns visitors into clients."
+body:     "Pro and Studio plans include a personalised shop-front at
+           /c/your-name — your story, your method, your tiers, your
+           proof. Designed to convert. Indexed by Google. Nothing to
+           build, nothing to host."
+bullets:
+  - Outcome-led hero with your photo and verified badge
+  - Three-tier services with a 'Most popular' lane
+  - Foundation method, transformation proof, testimonials
+  - SEO-ready at /c/your-name — replaces your Wix/Squarespace site
+mockup:   { device: laptop, src: "/c/james-wilson" }
+ctaLabel: "See the live example"
+ctaHref:  "/c/james-wilson" (open in new tab)
+secondary CTA: "Explore Shop-front" → /features/shop-front
+reverse:  true (image-left, copy-right — alternates with Pillar 1 below)
+```
 
-No code changes in this pass — once you approve the report, fixes go in a follow-up build turn.
+Also remove the "see a live example" link from the Act 2 intro paragraph (line 236–239) since the showcase section right below now carries that job — keeps the intro paragraph clean.
+
+### 2. Add Shop-front rows to `ComparisonStrip`
+
+Edit `src/components/marketing/ComparisonStrip.tsx` ROWS to add two new rows:
+
+```
+{ label: "Personal shop-front at /c/your-name", reps: true, trainerize: false, mypthub: false, ptd: false },
+{ label: "Replaces your website (Wix/Squarespace)", reps: true, trainerize: false, mypthub: false, ptd: false },
+```
+
+Place them after "Public verified register" so the two register/shop-front rows sit together at the top.
+
+### 3. Add Wix/Squarespace + Shop-front to `ReplacedStackBoard`
+
+Edit `src/components/marketing/ReplacedStackBoard.tsx`:
+
+- **BEFORE list:** add `{ name: "Wix / Squarespace", job: "Website" }` — bump the "8 tools" counter to "9 tools".
+- **AFTER list:** add `"Personal shop-front at /c/your-name"` near the top (just after "Verified directory listing").
+
+This makes the headline promise — "replace the scattered stack" — actually include the website most coaches are paying £15/mo for.
+
+## Out of scope (Phase 1 guardrail)
+
+No new routes, no backend, no edits to /features/shop-front or /c/$slug (both locked). No pricing copy changes. No new images — the `ProductBlock` mockup component renders the live `/c/james-wilson` route inside its laptop frame as it already does for other pillars.
+
+## Files touched
+
+- `src/routes/for-professionals.tsx` — new `<section>` with `ProductBlock`, intro paragraph trim.
+- `src/components/marketing/ComparisonStrip.tsx` — 2 new ROWS entries.
+- `src/components/marketing/ReplacedStackBoard.tsx` — 1 new BEFORE entry + counter bump + 1 new AFTER entry.
+
+## QA after build
+
+- Visit `/for-professionals` at 1440 / 1024 / 390. Confirm new Shop-front section renders, `reverse` alternation looks right against the Pillar 1 section that follows it, and CTAs work.
+- Confirm `ComparisonStrip` still fits without horizontal scroll on desktop; mobile already scrolls.
+- Confirm `ReplacedStackBoard` "9 tools" reads correctly and the two-column BEFORE grid still balances.
+- Run REPs compliance audit (tokens, radii, no shadows on buttons).
