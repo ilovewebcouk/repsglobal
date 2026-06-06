@@ -426,15 +426,8 @@ function ForProsPage() {
       {/* CHAPTER P4 — COACHING (3 features) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="pt-20 lg:pt-24">
-            <PillarChapter
-              number={4}
-              name="Coaching"
-              promise="Programmes, check-ins and the client portal that makes your work feel premium — wired into the same client record as your bookings and payments."
-            />
-          </div>
-
           <div className="py-20 lg:py-24">
+
             <ProductBlock
               eyebrow="Programmes"
               title="Programmes your clients show off."
