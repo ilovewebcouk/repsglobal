@@ -51,7 +51,7 @@ export function ReplacedStackBoard() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
               Before · your current stack
             </span>
-            <span className="text-[11px] text-white/40">8 tools</span>
+            <span className="text-[11px] text-white/40">9 tools</span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             {BEFORE.map((b) => (
