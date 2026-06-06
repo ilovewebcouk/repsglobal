@@ -342,8 +342,9 @@ function ForProsPage() {
             />
           </div>
 
-          <div className="pb-20 lg:pb-24">
-            <ProductBlock
+          <div className="mt-12 grid gap-5 lg:mt-16 lg:grid-cols-2 lg:gap-6">
+            <SubFeatureCard
+              icon={CalendarDays}
               eyebrow="Bookings & calendar"
               title="A calendar built for coaching, not Outlook."
               body="Availability, session types, deposits and reminders — two-way synced to your existing calendar so nothing double-books and nothing slips."
@@ -351,67 +352,51 @@ function ForProsPage() {
                 "Two-way sync with Google and Apple Calendar",
                 "Session types with deposits, durations and locations",
                 "Automated reminders that kill no-shows",
-                "Online sessions with a one-tap join link",
               ]}
-              imageLabel="Calendar mockup"
               mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Calendar preview" }}
-              ctaLabel="Explore Operations"
+              ctaLabel="Explore calendar"
               ctaHref="/features/operations"
-              reverse
             />
-          </div>
-
-          <div className="pb-20 lg:pb-24">
-            <ProductBlock
+            <SubFeatureCard
+              icon={CreditCard}
               eyebrow="Payments & subscriptions"
               title="Get paid on time, every time."
-              body="Card payments, packages and subscriptions powered by Stripe — REPs takes no cut of what your clients pay you. Per-client revenue, paid, pending and overdue at a glance."
+              body="Card payments, packages and subscriptions powered by Stripe — REPs takes no cut of what your clients pay you."
               bullets={[
                 "One-off, package and subscription billing",
                 "Stripe payouts straight to your bank",
                 "Automated invoices and overdue chasers",
-                "REPs takes no cut of what your clients pay you",
               ]}
-              imageLabel="Payments mockup"
               mockup={{ device: "laptop", src: "/dashboard/payments", title: "Payments preview" }}
-              ctaLabel="Explore Operations"
+              ctaLabel="Explore payments"
               ctaHref="/features/operations"
             />
-          </div>
-
-          <div className="pb-20 lg:pb-24">
-            <ProductBlock
+            <SubFeatureCard
+              icon={Users}
               eyebrow="Clients CRM"
               title="One record per client. The whole story."
-              body="Sessions, notes, programmes, payments, messages and check-ins on a single screen. The CRM the coaching apps don't have, wired to the coaching tools the CRMs don't have."
+              body="Sessions, notes, programmes, payments, messages and check-ins on a single screen — wired to the coaching tools the CRMs don't have."
               bullets={[
                 "Full client record with goals, programme and last check-in",
                 "Lifetime value, renewal date and outstanding invoice surfaced",
-                "Session notes, files and progress photos in one place",
                 "Tags and segments for win-back, renewal and onboarding",
               ]}
-              imageLabel="Clients CRM mockup"
               mockup={{ device: "laptop", src: "/dashboard/clients", title: "Clients CRM preview" }}
-              ctaLabel="Explore Operations"
+              ctaLabel="Explore CRM"
               ctaHref="/features/operations"
-              reverse
             />
-          </div>
-
-          <div className="pb-20 lg:pb-24">
-            <ProductBlock
+            <SubFeatureCard
+              icon={MessageSquare}
               eyebrow="Client messaging"
               title="A focused inbox, separate from your personal phone."
               body="Every client thread in one tidy inbox — with context, history and AI-drafted replies on tap. Reclaim WhatsApp for your friends and family."
               bullets={[
                 "Threaded inbox separate from your personal messages",
-                "Client context — programme, last check-in, next session — beside every thread",
+                "Client context beside every thread — programme, check-in, next session",
                 "AI reply drafts in your tone of voice",
-                "Read on web and mobile, replies stay in sync",
               ]}
-              imageLabel="Messaging mockup"
               mockup={{ device: "phone", src: "/dashboard/messages", title: "Messaging preview" }}
-              ctaLabel="Explore Operations"
+              ctaLabel="Explore messaging"
               ctaHref="/features/operations"
             />
           </div>
