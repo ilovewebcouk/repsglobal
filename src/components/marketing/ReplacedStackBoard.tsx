@@ -19,7 +19,7 @@ type Before = {
 
 const BEFORE: Before[] = [
   { name: "Wix / Squarespace", job: "Website", logo: wix.url },
-  { name: "Trainerize", job: "Programmes", logo: trainerize.url },
+  { name: "Trainerize", job: "Programmes", logo: trainerize.url, wide: true },
   { name: "Calendly", job: "Bookings", logo: calendly.url },
   { name: "Stripe Checkout", job: "Payments", logo: stripe.url },
   { name: "Mailchimp", job: "Email", logo: mailchimp.url },
