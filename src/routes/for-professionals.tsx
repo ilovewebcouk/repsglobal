@@ -342,27 +342,6 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 3 — BOOKINGS & PAYMENTS */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 3 · Bookings & payments"
-            title="Your schedule and your revenue, in one place."
-            body="Once they're a client, the rest is logistics. Sessions, consults, online check-ins and classes on one calendar. Invoices, subscriptions, refunds and revenue on one ledger."
-            bullets={[
-              "Calendar with availability and session types",
-              "Card payments and subscriptions — REPs takes no cut of what your clients pay you",
-              "Live revenue, paid, pending and overdue",
-              "Per-client invoice and payment history",
-            ]}
-            imageLabel="Bookings + payments mockup — screenshot coming"
-            mockup={{ device: "laptop", src: "/dashboard/calendar", title: "Bookings and calendar preview" }}
-            ctaLabel="Explore Operations"
-            ctaHref="/features/operations"
-            reverse
-          />
-        </div>
-      </section>
 
 
       {/* COMPARISON */}
