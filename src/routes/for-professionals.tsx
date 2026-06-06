@@ -364,26 +364,6 @@ function ForProsPage() {
         </div>
       </section>
 
-      {/* PILLAR 4 — CLIENT PORTAL */}
-      <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <ProductBlock
-            eyebrow="Pillar 4 · Client portal"
-            title="The app your clients tell their friends about."
-            body="What your clients see matters as much as what you see. A portal that looks like a premium product, not a beta. Today's session, this week's targets, next booking, last message — wherever they open it."
-            bullets={[
-              "Client dashboard on web and mobile",
-              "Programme, nutrition and check-ins in one tab each",
-              "One-tap check-in with photos and metrics",
-              "Bookings and payment history visible to the client",
-            ]}
-            imageLabel="Client portal mockup — screenshot coming"
-            mockup={{ device: "phone", src: "/portal/today", title: "Client portal preview" }}
-            ctaLabel="Explore Client Portal"
-            ctaHref="/features/coaching"
-          />
-        </div>
-      </section>
 
       {/* COMPARISON */}
       <section className="border-b border-reps-border bg-reps-panel/30">
