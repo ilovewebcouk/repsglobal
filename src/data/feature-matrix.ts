@@ -73,7 +73,7 @@ export const FEATURE_GROUPS: Group[] = [
       {
         feature: "Public single-page site at a personal URL (/c/your-name)",
         cells: [
-          { kind: "yes", note: "Included in Pro & Studio" },
+          { kind: "yes" },
           { kind: "no", note: "Client portal only" },
           { kind: "no", note: "Client portal only" },
           { kind: "no", note: "Client portal only" },
