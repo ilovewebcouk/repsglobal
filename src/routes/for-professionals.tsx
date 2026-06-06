@@ -505,18 +505,17 @@ function ForProsPage() {
                 <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Join the verified register.
+                Verified profile live today. Set up in 10 minutes.
               </h2>
-              <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
-                Founding Pro pricing is available only before public launch.
-                Every feature in your tier is included — no paid add-ons.
+              <p className="mx-auto mt-3 max-w-[540px] text-[15px] text-white/70">
+                Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
                   to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs <ArrowRight className="h-4 w-4" />
+                  Start free — get verified <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/pricing"
