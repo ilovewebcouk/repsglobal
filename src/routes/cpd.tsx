@@ -373,13 +373,13 @@ const REGISTERS = [
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
-  "\u201CLevel 3 PT plus 47 free CPD courses\u201D bundled \u2014 those CPDs are usually self-marked PDFs with no awarding body.",
+  "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
   "Awarding body not Ofqual-regulated or CIMSPA-endorsed (or no awarding body listed at all).",
-  "No external assessment \u2014 everything is in-house multiple-choice you can retake until you pass.",
-  "High-pressure finance sales, \u201Ctoday-only\u201D discounts and a sales rep on commission.",
-  "Tutor names, faces and qualifications hidden behind a generic \u201Cexpert team\u201D page.",
+  "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
+  "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
+  "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
   "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing is all \u201Cearn \u00A35k a month\u201D income claims instead of what you'll actually learn.",
+  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
@@ -388,7 +388,7 @@ const GOOD_SIGNS = [
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
-  "Listed on REPs as a verified training provider \u2014 CPD hours auto-count toward your log.",
+  "Listed on REPs as a verified training provider — CPD hours auto-count toward your log.",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -537,7 +537,7 @@ function Hero() {
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            CPD is what keeps a qualification current. REPs is what keeps it honest \u2014 logged quarterly,
+            CPD is what keeps a qualification current. REPs is what keeps it honest — logged quarterly,
             audited annually, and only counted when it's from a verified training provider.
             If a course isn't, it isn't worth the paper.
           </p>
@@ -592,7 +592,7 @@ function Hero() {
               <span>HCPC</span>
               <span className="text-reps-orange/70">·</span>
               <span>YAP</span>
-              <span className="ml-2 text-reps-orange">\u2014 cross-checked at source</span>
+              <span className="ml-2 text-reps-orange">— cross-checked at source</span>
             </p>
           </div>
         </div>
@@ -639,10 +639,10 @@ function WhatCpdIs() {
     "Supervised mentoring with a senior coach",
   ];
   const doesnt = [
-    "Vendor product demos dressed up as \u201Ceducation\u201D",
+    "Vendor product demos dressed up as “education”",
     "Sales webinars from supplement or app companies",
     "YouTube videos with no awarding body or assessment",
-    "Free in-house \u201Cmini-CPDs\u201D bundled with a sales course",
+    "Free in-house “mini-CPDs” bundled with a sales course",
     "Anything self-marked with no external check",
   ];
   return (
@@ -657,7 +657,7 @@ function WhatCpdIs() {
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
             Continuing Professional Development means a professional keeps learning after the initial
-            qualification \u2014 and proves it. The science of training, nutrition and rehab moves every year.
+            qualification — and proves it. The science of training, nutrition and rehab moves every year.
             Adjacent professions (physio, dietetics, medicine) mandate CPD by default. Fitness should too.
             On REPs, it does.
           </p>
@@ -712,12 +712,12 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year \u2014 with evidence attached. No \u201Ctrust me bro\u201D.",
+      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
     },
     {
       icon: ShieldCheck,
       title: "Verified-provider only",
-      body: "Hours through REPs-verified training providers auto-count. Hours from unverified providers don't \u2014 they go in a separate column the public can see.",
+      body: "Hours through REPs-verified training providers auto-count. Hours from unverified providers don't — they go in a separate column the public can see.",
     },
     {
       icon: Award,
@@ -727,7 +727,7 @@ function RepsCpdSystem() {
     {
       icon: Crosshair,
       title: "Audited annually",
-      body: "A random sample of members is fully audited each year. Faked logs lose verification. The badge means current \u2014 not historic.",
+      body: "A random sample of members is fully audited each year. Faked logs lose verification. The badge means current — not historic.",
     },
   ];
 
@@ -789,11 +789,11 @@ function Qualifications() {
             Qualifications, decoded
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Know what the letters actually mean \u2014 before you spend.
+            Know what the letters actually mean — before you spend.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             The fitness industry runs on acronyms, and most punters don't know the difference between
-            a Level 2, a Level 3 and a weekend \u201Cmastery\u201D certificate. Here's the real ladder \u2014
+            a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
             for fitness, nutrition and movement disciplines.
           </p>
         </div>
@@ -802,7 +802,7 @@ function Qualifications() {
         <div className="mt-12">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Activity className="h-4.5 w-4.5" />
+              <Activity className="h-4 w-4" />
             </span>
             <h3 className="font-display text-[20px] font-bold text-white">Fitness pathway</h3>
           </div>
@@ -872,13 +872,13 @@ function Qualifications() {
         <div className="mt-16">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Heart className="h-4.5 w-4.5" />
+              <Heart className="h-4 w-4" />
             </span>
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where punters get scammed most. Anyone can call themselves a \u201Cnutritionist.\u201D
-            Only one role is legally protected \u2014 and only that role can prescribe diets for disease.
+            This is where punters get scammed most. Anyone can call themselves a “nutritionist.”
+            Only one role is legally protected — and only that role can prescribe diets for disease.
           </p>
 
           <div className="mt-6 grid gap-5 lg:grid-cols-3">
@@ -916,7 +916,7 @@ function Qualifications() {
           <div className="mt-8 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
             <p className="text-[14px] leading-relaxed text-white">
               <strong className="text-white">Plain English:</strong> if someone selling you a
-              \u201Cclinical meal plan\u201D for a medical condition isn't a Registered Dietitian (RD, HCPC),
+              “clinical meal plan” for a medical condition isn't a Registered Dietitian (RD, HCPC),
               they're operating outside their lane. REPs verifies which role you're actually getting.
             </p>
           </div>
@@ -926,13 +926,13 @@ function Qualifications() {
         <div className="mt-16">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Sparkles className="h-4.5 w-4.5" />
+              <Sparkles className="h-4 w-4" />
             </span>
             <h3 className="font-display text-[20px] font-bold text-white">Movement disciplines</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
             Yoga and Pilates run on hours-based teacher training rather than the RQF. The honest
-            standards are clear \u2014 here are the ones REPs cross-checks.
+            standards are clear — here are the ones REPs cross-checks.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {MOVEMENT_QUALS.map((q) => (
@@ -978,7 +978,7 @@ function GeneralistVsSpecialist() {
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
             Medicine sorted this out a long time ago. For the thing you actually need fixed, you
-            see the specialist \u2014 not the generalist. Fitness should work the same way.
+            see the specialist — not the generalist. Fitness should work the same way.
           </p>
         </div>
 
@@ -1005,7 +1005,7 @@ function GeneralistVsSpecialist() {
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>The GP is brilliant at triage \u2014 not at the thing you actually need fixed.</span>
+                <span>The GP is brilliant at triage — not at the thing you actually need fixed.</span>
               </li>
             </ul>
           </article>
@@ -1024,11 +1024,11 @@ function GeneralistVsSpecialist() {
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>A <strong className="text-white">Level 4 specialist</strong>, an <strong className="text-white">accredited S&C coach</strong>, a <strong className="text-white">Registered Dietitian</strong> \u2014 that's the consultant.</span>
+                <span>A <strong className="text-white">Level 4 specialist</strong>, an <strong className="text-white">accredited S&C coach</strong>, a <strong className="text-white">Registered Dietitian</strong> — that's the consultant.</span>
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>REPs surfaces the specialist for the exact thing you're chasing. No \u201CI also do that on the side.\u201D</span>
+                <span>REPs surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
@@ -1077,7 +1077,7 @@ function VerifiedProviders() {
               If the provider isn't on REPs, ask them why.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              A REPs-verified training provider has been checked at the points that actually matter \u2014
+              A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition, tutor qualifications, assessment integrity, refund and
               complaints policy. Every CPD hour you earn through them auto-counts toward your REPs
               log. Hours from unverified providers don't. Full stop.
@@ -1089,7 +1089,7 @@ function VerifiedProviders() {
 
             <blockquote className="mt-8 border-l-2 border-reps-orange pl-5">
               <p className="font-display text-[18px] leading-snug text-white lg:text-[20px]">
-                \u201CThe honest providers are already here. The rest are running a print shop for certificates.\u201D
+                “The honest providers are already here. The rest are running a print shop for certificates.”
               </p>
             </blockquote>
           </div>
@@ -1140,8 +1140,8 @@ function DodgyCourses() {
             Before you spend a penny, run this list.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            Most scammy training providers follow the same playbook \u2014 oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a trillion \u201Cfree\u201D CPDs taped to the side.
+            Most scammy training providers follow the same playbook — oversized claims, hidden tutors,
+            in-house assessment, finance pressure and a trillion “free” CPDs taped to the side.
             Here's what to look for, and what good actually looks like.
           </p>
         </div>
@@ -1195,12 +1195,12 @@ function RaiseTheStandard() {
     {
       n: "01",
       title: "Siphon out the bullshit.",
-      body: "Bedroom PTs with no qualifications. Instagram \u201Conline coaches\u201D selling \u00A3400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent \u2014 the listing alone proves the work.",
+      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
       title: "Make the profession look like a profession.",
-      body: "Identity check, qualification check, insurance check, CPD logged and audited. The same baseline a physio or dietitian meets \u2014 applied to fitness, properly and publicly.",
+      body: "Identity check, qualification check, insurance check, CPD logged and audited. The same baseline a physio or dietitian meets — applied to fitness, properly and publicly.",
     },
     {
       n: "03",
@@ -1271,7 +1271,7 @@ function ProviderCtaBand() {
                 <BadgeCheck className="h-3.5 w-3.5" /> Training providers
               </span>
               <h2 className="mt-3 font-display text-[24px] font-bold leading-tight text-white lg:text-[30px]">
-                Find a verified provider \u2014 or report one that isn't.
+                Find a verified provider — or report one that isn't.
               </h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
                 The REPs verified-provider directory opens shortly. In the meantime, if a provider
@@ -1316,7 +1316,7 @@ function RegistersBlock() {
             Every acronym, in plain English.
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-white/70">
-            The industry runs on letters after people's names. Here's what each one actually means \u2014
+            The industry runs on letters after people's names. Here's what each one actually means —
             and which ones we cross-check before a profile or provider goes live on REPs.
           </p>
         </div>
@@ -1370,7 +1370,7 @@ const VERIFY_STEPS = [
   {
     icon: GraduationCap,
     title: "Qualifications",
-    body: "Every credential cross-checked against the body that issued it \u2014 Ofqual, CIMSPA, AfN, HCPC, YAP.",
+    body: "Every credential cross-checked against the body that issued it — Ofqual, CIMSPA, AfN, HCPC, YAP.",
   },
   {
     icon: ShieldCheck,
@@ -1388,7 +1388,7 @@ function VerifyStrip() {
             How we verify every professional
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Three checks \u2014 every profile, every renewal.
+            Three checks — every profile, every renewal.
           </h2>
         </div>
 
@@ -1435,7 +1435,7 @@ function FaqBlock() {
           FAQ
         </span>
         <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          CPD, qualifications & providers \u2014 answered.
+          CPD, qualifications & providers — answered.
         </h2>
 
         <Accordion type="single" collapsible className="mt-10">
