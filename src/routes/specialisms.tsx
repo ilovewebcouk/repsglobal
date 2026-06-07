@@ -377,13 +377,6 @@ const REGISTERS: Register[] = [
     meaning: "The verified register the public searches — identity, qualification and insurance on the public record.",
   },
   {
-    short: "CIMSPA",
-    full: "Chartered Institute for the Management of Sport & Physical Activity",
-    covers: "Fitness professionals, instructors, sport managers",
-    meaning: "Sector body setting professional standards — listed pros meet agreed minimum standards.",
-    href: "https://www.cimspa.co.uk/",
-  },
-  {
     short: "AfN",
     full: "Association for Nutrition",
     covers: "Nutritionists (ANutr, RNutr)",
