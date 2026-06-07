@@ -425,7 +425,7 @@ const FAQS = [
   },
   {
     q: "Why are some big-name training providers not on REPs?",
-    a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as information.",
+    a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as a signal.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
