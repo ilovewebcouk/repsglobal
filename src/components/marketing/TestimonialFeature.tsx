@@ -34,7 +34,7 @@ export function TestimonialFeature() {
             </figcaption>
           </div>
         </div>
-        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
           <Stat k="+12 enquiries" v="first 90 days on the verified register" />
           <Stat k="Sundays back" v="AI drafts every weekly check-in" />
           <Stat k="£0 add-ons" v="Trainerize, Calendly and Mailchimp retired" />
