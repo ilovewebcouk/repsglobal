@@ -1,39 +1,26 @@
-## Goal
+## Objective
+Regenerate the `/cpd` hero image so it visually belongs to the same series as `/specialisms`, `/for-professionals`, and homepage heroes — warm tones, orange ambient glow, sunlit/tanned subjects, premium editorial feel — instead of the current flat, cold, pale-skinned shot.
 
-Replace the remaining slang on `/cpd` with precise, professional terminology — keeping the contrast sharp (verified vs not) rather than going bland. Single file touched: `src/routes/cpd.tsx`.
+## Approach
 
-## Replacement vocabulary (consistent across the page)
+1. **Generate a new hero** at 1536×1024 (`fast → standard` tier) with a prompt tuned to match the existing series:
+   - Editorial wide shot inside a premium fitness/education environment (e.g. a sunlit private studio with a coach mid-flow with one client, or a senior coach reviewing a programme on a tablet with another trainer — i.e. on-brand for a CPD/education page).
+   - Warm late-afternoon backlight, deep amber/orange rim light, soft golden haze, shallow depth of field.
+   - Subjects: realistic, healthy, sun-kissed/tanned skin tones, athletic build, calm and competent expressions.
+   - Visible **white "REPS"** wordmark on coach's t-shirt/polo (left-chest, embroidered look — per locked brand rule).
+   - Cinematic colour grade: deep charcoal blacks, warm midtones, orange highlights — same palette as `/specialisms` hero.
+   - No text, no UI overlays, no logos other than the REPS chest mark.
+   - Save to `src/assets/cpd-hero-v3.jpg`, upload via `lovable-assets`, write `cpd-hero-v3.jpg.asset.json`.
 
-- "dodgy" (course/provider) → **"unaccredited"** (course/provider)
-- "dodgy provider or coach" → **"unaccredited provider or unverified coach"**
-- "chancer" → **"unaccredited operator"**
-- "Bedroom PTs with no qualifications" → **"Unqualified coaches working without credentials or insurance"**
-- Anchor id `dodgy-courses` → **`unaccredited-courses`** (NAV_CHIPS entry + `<section id>`)
+2. **Swap the asset** in `src/routes/cpd.tsx`:
+   - Change the import from `cpd-hero-v2.jpg.asset.json` → `cpd-hero-v3.jpg.asset.json`.
+   - Leave all hero markup, overlays, gradients, and copy untouched.
 
-No other copy, layout, components or imagery change. RED_FLAGS / GOOD_SIGNS bullet text stays as-is (already professional).
+3. **Delete the old v2 asset** (`cpd-hero-v2.jpg.asset.json`) once the swap is in place.
 
-## Exact edits in `src/routes/cpd.tsx`
-
-| # | Line | Field | Before | After |
-|---|---|---|---|---|
-| 1 | 51 | meta description | "…how to spot a **dodgy** training provider…" | "…how to spot an **unaccredited** training provider…" |
-| 2 | 102 | NAV_CHIPS entry | `{ anchor: "dodgy-courses", label: "Spot a dodgy course" }` | `{ anchor: "unaccredited-courses", label: "Spot an unaccredited course" }` |
-| 3 | 383 | section comment | `/* Dodgy-course red flags */` | `/* Unaccredited-course red flags */` |
-| 4 | 444 | FAQ answer | "verified expert and a **chancer**" | "verified expert and an **unaccredited operator**" |
-| 5 | 447 | FAQ question | "How do I report a **dodgy provider or coach**?" | "How do I report an **unaccredited provider or unverified coach**?" |
-| 6 | 1136 | section comment | `/* Section: Dodgy courses */` | `/* Section: Unaccredited courses */` |
-| 7 | 1142 | `<section id>` | `id="dodgy-courses"` | `id="unaccredited-courses"` |
-| 8 | 1148 | eyebrow label | "Spot a **dodgy** course" | "Spot an **unaccredited** course" |
-| 9 | 1209 | "Filter out the noise" body | "**Bedroom PTs with no qualifications.** Instagram "online coaches"…" | "**Unqualified coaches working without credentials or insurance.** Instagram "online coaches"…" |
-| 10 | 1219 | "Charge what you're worth" body | "verified expert and a **chancer**" | "verified expert and an **unaccredited operator**" |
-
-## Verification after edit
-
-1. `rg -n -i 'dodgy\|chancer\|bedroom pt\|punter\|scammy\|bullshit' src/routes/cpd.tsx` returns no matches.
-2. `rg -n 'dodgy-courses' src/` returns no matches (anchor fully renamed; no other route links to it).
-3. Anchor scroll from the in-page nav still lands on the renamed section.
+4. **QA**: screenshot `/cpd` and compare side-by-side against `/specialisms` to confirm the warm/orange tonal match. If it still reads cold or the subject looks pale, iterate the prompt once more (single re-gen) before declaring done.
 
 ## Out of scope
-
-- RED_FLAGS / GOOD_SIGNS bullets, hero copy, qualification cards, pathways, pricing, imagery — unchanged.
-- No new sections, no layout/typography changes, no token changes.
+- No layout, overlay, gradient, or copy changes to the hero section.
+- No changes to other pages.
+- No new memory rule unless you want to lock this image afterwards.
