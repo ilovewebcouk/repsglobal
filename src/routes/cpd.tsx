@@ -99,7 +99,7 @@ const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
   { anchor: "qualifications", label: "Qualifications" },
   { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
   { anchor: "verified-providers", label: "Verified providers" },
-  { anchor: "dodgy-courses", label: "Spot a dodgy course" },
+  { anchor: "unaccredited-courses", label: "Spot an unaccredited course" },
   { anchor: "raise-the-standard", label: "Raise the standard" },
   { anchor: "faq", label: "FAQ" },
 ];
