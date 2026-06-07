@@ -52,7 +52,7 @@ const THREADS = [
     last: "1h ago",
   },
   {
-    title: "CIMSPA renewal — anyone else's evidence rejected?",
+    title: "REPs renewal — anyone else's evidence rejected?",
     author: "Priya Mehta",
     level: "L3",
     category: "CPD",
