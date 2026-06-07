@@ -12,6 +12,7 @@ import {
   Laptop,
   ShieldCheck,
   Sparkles,
+  Users,
   Wand2,
 } from "lucide-react";
 
