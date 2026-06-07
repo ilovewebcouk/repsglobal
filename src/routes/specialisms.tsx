@@ -152,6 +152,51 @@ const SPECIALISMS: Specialism[] = [
     ],
   },
   {
+    slug: "group-exercise",
+    anchor: "group-exercise",
+    navLabel: "Group ex & instructors",
+    icon: Users,
+    eyebrow: "Specialism 02",
+    title: "Group Exercise & Fitness Instructors",
+    plural: "Group ex and fitness instructors",
+    intro:
+      "The energy on the gym floor and in the studio. Level 2 instructors lead classes, run inductions and coach group sessions — the entry point into a career on the register.",
+    does: [
+      "Group classes: circuits, bootcamp, indoor cycling, exercise to music",
+      "Gym floor inductions, equipment demos and supervised programmes",
+      "Small-group training under a club, studio or PT's supervision",
+    ],
+    verifies: [
+      "Government-recognised Level 2 qualification (RQF)",
+      "Public liability insurance appropriate to the class type they teach",
+      "Current first aid and a verified photo ID",
+    ],
+    rate: "£25 – £45 / session",
+    count: 612,
+    quals: [
+      {
+        acronym: "L2 GI",
+        full: "Level 2 Gym Instructor (RQF)",
+        meaning: "Gym-floor inductions, supervised programmes and group circuits — not 1:1 PT.",
+      },
+      {
+        acronym: "L2 ETM",
+        full: "Level 2 Exercise to Music",
+        meaning: "Choreographed studio classes — aerobics, dance fitness, step.",
+      },
+      {
+        acronym: "L2 GT",
+        full: "Level 2 Group Training",
+        meaning: "Bootcamp, circuits and small-group conditioning sessions.",
+      },
+      {
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "L2 instructors hold full register status — same identity, qualification and insurance checks as L3+ pros.",
+      },
+    ],
+  },
+  {
     slug: "strength-coach",
     anchor: "strength-coaches",
     navLabel: "Strength coaches",
