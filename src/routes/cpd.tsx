@@ -48,7 +48,7 @@ const CANONICAL = "https://repsglobal.lovable.app/cpd";
 const META_TITLE =
   "CPD & Verified Training Providers — Education that actually counts | REPs";
 const META_DESC =
-  "What CPD really is, how REPs governs it, and how to spot a dodgy training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
+  "What CPD really is, how REPs governs it, and how to spot an unaccredited training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
 
 export const Route = createFileRoute("/cpd")({
   head: () => ({
@@ -99,7 +99,7 @@ const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
   { anchor: "qualifications", label: "Qualifications" },
   { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
   { anchor: "verified-providers", label: "Verified providers" },
-  { anchor: "dodgy-courses", label: "Spot a dodgy course" },
+  { anchor: "unaccredited-courses", label: "Spot an unaccredited course" },
   { anchor: "raise-the-standard", label: "Raise the standard" },
   { anchor: "faq", label: "FAQ" },
 ];
@@ -380,7 +380,7 @@ const REGISTERS = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Dodgy-course red flags                                              */
+/* Unaccredited-course red flags                                       */
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
@@ -441,10 +441,10 @@ const FAQS = [
   },
   {
     q: "Does being verified on REPs let me charge more?",
-    a: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
+    a: "When the public can tell the difference between a verified expert and an unaccredited operator, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
   },
   {
-    q: "How do I report a dodgy provider or coach?",
+    q: "How do I report an unaccredited provider or unverified coach?",
     a: "Use the reporting route on this page. Every report is reviewed, evidence cross-checked, and where required, escalated to the relevant awarding body or register. Bad actors lose verification and lose listings.",
   },
 ];
@@ -475,7 +475,7 @@ function CpdPage() {
 
         <VerifiedProviders />
 
-        <DodgyCourses />
+        <UnaccreditedCourses />
 
         <RaiseTheStandard />
 
@@ -1133,19 +1133,19 @@ function VerifiedProviders() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: Dodgy courses                                              */
+/* Section: Unaccredited courses                                       */
 /* ------------------------------------------------------------------ */
 
-function DodgyCourses() {
+function UnaccreditedCourses() {
   return (
     <section
-      id="dodgy-courses"
+      id="unaccredited-courses"
       className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a dodgy course
+            Spot an unaccredited course
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
             Before you spend a penny, run this list.
@@ -1206,7 +1206,7 @@ function RaiseTheStandard() {
     {
       n: "01",
       title: "Filter out the noise.",
-      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
+      body: "Unqualified coaches working without credentials or insurance. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
@@ -1216,7 +1216,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and an unaccredited operator, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
     },
   ];
 
