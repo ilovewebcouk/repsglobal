@@ -165,9 +165,9 @@ const FITNESS_LADDER: LadderRung[] = [
         meaning: "Government-recognised qualification — the minimum every 1:1 coach must hold.",
       },
       {
-        acronym: "CIMSPA",
-        full: "Chartered Institute for the Management of Sport & Physical Activity",
-        meaning: "Professional standards body that endorses qualifications and training providers.",
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "Sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
@@ -291,7 +291,7 @@ const PROVIDER_CHECKS = [
   {
     icon: BadgeCheck,
     title: "Accrediting body recognition",
-    body: "Qualifications must be Ofqual-regulated or endorsed by a recognised professional body (CIMSPA, AfN, Yoga Alliance Professionals).",
+    body: "Qualifications must be Ofqual-regulated or endorsed by a recognised professional body (REPs, AfN, Yoga Alliance Professionals).",
   },
   {
     icon: GraduationCap,
@@ -319,11 +319,11 @@ const REGISTERS = [
     href: "https://www.gov.uk/government/organisations/ofqual",
   },
   {
-    short: "CIMSPA",
-    full: "Chartered Institute for the Management of Sport & Physical Activity",
+    short: "REPs",
+    full: "Register of Exercise Professionals",
     covers: "Endorses training providers, qualifications and CPD",
-    meaning: "Sets professional standards across the sport and physical-activity sector. CIMSPA-endorsed CPD is the safe default.",
-    href: "https://www.cimspa.co.uk/",
+    meaning: "Sets professional standards across the sport and physical-activity sector. REPs-endorsed CPD is the safe default.",
+    href: "/",
   },
   {
     short: "Active IQ",
@@ -375,7 +375,7 @@ const REGISTERS = [
 
 const RED_FLAGS = [
   "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
-  "Awarding body not Ofqual-regulated or CIMSPA-endorsed (or no awarding body listed at all).",
+  "Awarding body not Ofqual-regulated or REPs-endorsed (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
   "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
@@ -385,7 +385,7 @@ const RED_FLAGS = [
 
 const GOOD_SIGNS = [
   "Regulated qualification on the RQF, awarded by a named Ofqual body.",
-  "CIMSPA endorsement listed openly on the course page.",
+  "REPs endorsement listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
@@ -586,7 +586,7 @@ function Hero() {
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
               <span>Ofqual</span>
               <span className="text-reps-orange/70">·</span>
-              <span>CIMSPA</span>
+              <span>REPs</span>
               <span className="text-reps-orange/70">·</span>
               <span>AfN</span>
               <span className="text-reps-orange/70">·</span>
@@ -634,7 +634,7 @@ function StickyNav() {
 function WhatCpdIs() {
   const counts = [
     "Regulated qualifications (Ofqual / RQF)",
-    "CIMSPA-endorsed CPD courses",
+    "REPs-endorsed CPD courses",
     "Accredited conferences and workshops",
     "Peer-reviewed reading with reflective notes",
     "Supervised mentoring with a senior coach",
@@ -1371,7 +1371,7 @@ const VERIFY_STEPS = [
   {
     icon: GraduationCap,
     title: "Qualifications",
-    body: "Every credential cross-checked against the body that issued it — Ofqual, CIMSPA, AfN, HCPC, YAP.",
+    body: "Every credential cross-checked against the body that issued it — Ofqual, REPs, AfN, HCPC, YAP.",
   },
   {
     icon: ShieldCheck,
