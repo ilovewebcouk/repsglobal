@@ -724,7 +724,7 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
+      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. Self-declared hours without evidence don't count.",
     },
     {
       icon: ShieldCheck,
