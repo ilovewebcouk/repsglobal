@@ -32,7 +32,8 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
-import heroSpecialisms from "@/assets/specialisms-hero.jpg";
+import heroSpecialismsAsset from "@/assets/specialisms-hero.jpg.asset.json";
+const heroSpecialisms = heroSpecialismsAsset.url;
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
