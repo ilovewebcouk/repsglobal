@@ -32,7 +32,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
-import heroGym from "@/assets/hero-gym-bg.jpg";
+import heroSpecialisms from "@/assets/specialisms-hero.jpg";
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
