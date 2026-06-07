@@ -510,7 +510,7 @@ function Hero() {
         loading="eager"
         fetchPriority="high"
         decoding="async"
-        className="absolute inset-0 h-full w-full object-cover object-[70%_center] lg:object-center"
+        className="absolute inset-0 h-full w-full object-cover object-[75%_center] lg:object-center"
       />
       <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/35" />
       <div
