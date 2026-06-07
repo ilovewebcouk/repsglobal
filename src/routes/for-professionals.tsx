@@ -48,10 +48,15 @@ export const Route = createFileRoute("/for-professionals")({
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" }],
+    links: [
+      { rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" },
+      // Preload the LCP hero image — biggest single perceived-performance win on this page.
+      { rel: "preload", as: "image", href: heroGym.url, fetchpriority: "high" },
+    ],
   }),
   component: ForProsPage,
 });
+
 
 
 const AI_HERO_CAPS = [
