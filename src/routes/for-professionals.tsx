@@ -48,10 +48,15 @@ export const Route = createFileRoute("/for-professionals")({
       },
       { property: "og:url", content: "https://repsglobal.lovable.app/for-professionals" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" }],
+    links: [
+      { rel: "canonical", href: "https://repsglobal.lovable.app/for-professionals" },
+      // Preload the LCP hero image — biggest single perceived-performance win on this page.
+      { rel: "preload", as: "image", href: heroGym.url, fetchpriority: "high" },
+    ],
   }),
   component: ForProsPage,
 });
+
 
 
 const AI_HERO_CAPS = [
@@ -88,8 +93,12 @@ function ForProsPage() {
           alt=""
           width={1920}
           height={1080}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
+
         {/* Legibility overlay — stronger base wash on mobile (copy spans full width), lighter on desktop */}
         <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
         {/* Mobile: centred vignette darkens the whole copy zone. Desktop: focused darken behind the left copy column only. */}

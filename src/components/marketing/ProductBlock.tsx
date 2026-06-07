@@ -38,7 +38,7 @@ export function ProductBlock({
 }: ProductBlockProps) {
   return (
     <div
-      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-14 ${
+      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-14 [&>*]:min-w-0 ${
         reverse ? "lg:[&>div:first-child]:order-2" : ""
       }`}
     >
@@ -50,6 +50,7 @@ export function ProductBlock({
         <MockupPlaceholder label={imageLabel} />
       )}
       <div>
+
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {eyebrow}
         </span>

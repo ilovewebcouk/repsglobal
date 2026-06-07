@@ -6,7 +6,7 @@ import { ReactNode } from "react";
  */
 export function LaptopFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full overflow-hidden">
       {/* Screen */}
       <div className="relative overflow-hidden rounded-[18px] border border-white/10 bg-reps-panel shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]">
         {/* Top bar */}
@@ -22,8 +22,9 @@ export function LaptopFrame({ children }: { children: ReactNode }) {
         </div>
       </div>
       {/* Base */}
-      <div className="relative mx-auto h-2 w-[110%] -translate-x-[4.5%] rounded-b-[10px] bg-gradient-to-b from-white/15 to-white/5" />
+      <div className="relative mx-auto h-2 w-[106%] -translate-x-[3%] rounded-b-[10px] bg-gradient-to-b from-white/15 to-white/5" />
       <div className="mx-auto h-1 w-[88%] rounded-b-[8px] bg-black/40" />
     </div>
   );
 }
+
