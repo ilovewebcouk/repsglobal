@@ -144,9 +144,9 @@ const SPECIALISMS: Specialism[] = [
         meaning: "Advanced training in areas like low back pain or obesity & diabetes.",
       },
       {
-        acronym: "CIMSPA",
-        full: "Chartered Institute for the Management of Sport & Physical Activity",
-        meaning: "Sector body — a CIMSPA-listed PT meets agreed professional standards.",
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "The verified register clients search — identity, qualification and insurance on the public record.",
       },
     ],
   },
