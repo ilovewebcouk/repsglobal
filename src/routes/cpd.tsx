@@ -1146,14 +1146,14 @@ function DodgyCourses() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a dodgy course
+            Spot a poor-quality course
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Before you spend a penny, run this list.
+            Before you pay, run this list.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            Most scammy training providers follow the same playbook — oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a trillion “free” CPDs taped to the side.
+            Low-quality training providers follow the same playbook — oversized claims, hidden tutors,
+            in-house assessment, finance pressure and a long list of bundled “free” CPDs.
             Here's what to look for, and what good actually looks like.
           </p>
         </div>
