@@ -93,8 +93,12 @@ function ForProsPage() {
           alt=""
           width={1920}
           height={1080}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover object-left"
         />
+
         {/* Legibility overlay — stronger base wash on mobile (copy spans full width), lighter on desktop */}
         <div className="absolute inset-0 bg-reps-ink/70 lg:bg-reps-ink/55" />
         {/* Mobile: centred vignette darkens the whole copy zone. Desktop: focused darken behind the left copy column only. */}
