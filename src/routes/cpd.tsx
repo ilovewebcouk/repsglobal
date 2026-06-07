@@ -142,6 +142,11 @@ const FITNESS_LADDER: LadderRung[] = [
         full: "Level 2 Exercise to Music",
         meaning: "Choreographed studio classes — aerobics, dance fitness, step.",
       },
+      {
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+      },
     ],
   },
   {
