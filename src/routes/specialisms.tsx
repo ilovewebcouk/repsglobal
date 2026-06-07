@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
@@ -671,66 +670,21 @@ function Hero() {
 /* ------------------------------------------------------------------ */
 
 function StickyNav() {
-  const [active, setActive] = useState<string>(SPECIALISMS[0]?.anchor ?? "");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const els = SPECIALISMS
-      .map((s) => document.getElementById(s.anchor))
-      .filter((el): el is HTMLElement => !!el);
-    if (!els.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]?.target?.id) setActive(visible[0].target.id);
-      },
-      { rootMargin: "-140px 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <nav
       aria-label="Specialisms"
-      className="sticky top-[72px] z-30 bg-reps-bg/80 px-4 py-3 backdrop-blur-md lg:px-6"
+      className="sticky top-14 z-30 border-t border-white/10 border-b border-reps-border/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
     >
-      <div className="mx-auto max-w-[1320px]">
-        <div className="relative flex items-center rounded-[18px] border border-white/[0.07] bg-reps-panel/90 p-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] backdrop-blur-xl">
-          <ul className="no-scrollbar flex w-full items-center gap-1 overflow-x-auto">
-            {SPECIALISMS.map((s) => {
-              const isActive = active === s.anchor;
-              return (
-                <li key={s.slug} className="shrink-0">
-                  <a
-                    href={`#${s.anchor}`}
-                    aria-current={isActive ? "true" : undefined}
-                    className={
-                      isActive
-                        ? "relative inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold leading-none text-black shadow-[0_4px_14px_-4px_rgba(255,107,0,0.5)] ring-1 ring-reps-orange/30 transition-all"
-                        : "inline-flex h-9 items-center whitespace-nowrap rounded-[10px] px-4 text-[13px] font-medium leading-none text-white/55 transition-colors hover:bg-white/[0.04] hover:text-white"
-                    }
-                  >
-                    {isActive && (
-                      <span
-                        aria-hidden
-                        className="h-1.5 w-1.5 rounded-full bg-black/80"
-                      />
-                    )}
-                    {s.navLabel}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-1.5 right-1.5 w-10 rounded-r-[16px] bg-gradient-to-l from-reps-panel to-transparent md:hidden"
-          />
-        </div>
+      <div className="mx-auto flex h-14 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
+        {SPECIALISMS.map((s) => (
+          <a
+            key={s.slug}
+            href={`#${s.anchor}`}
+            className="whitespace-nowrap rounded-[8px] px-3 py-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:bg-reps-panel hover:text-white"
+          >
+            {s.navLabel}
+          </a>
+        ))}
       </div>
     </nav>
   );
