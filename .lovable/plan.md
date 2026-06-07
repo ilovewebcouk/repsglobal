@@ -1,22 +1,39 @@
-Tighten the tone on `/cpd` (`src/routes/cpd.tsx`) by replacing four off-brand phrases with professional copy that keeps the same intent.
+## Goal
 
-## Changes
+Replace the remaining slang on `/cpd` with precise, professional terminology — keeping the contrast sharp (verified vs not) rather than going bland. Single file touched: `src/routes/cpd.tsx`.
 
-**1. Line 806 — "Qualifications, decoded" intro**
-- From: *"The fitness industry runs on acronyms, and most punters don't know the difference between a Level 2, a Level 3 and a weekend "mastery" certificate."*
-- To: *"The fitness industry runs on acronyms, and most clients can't tell the difference between a Level 2, a Level 3 and a weekend "mastery" certificate."*
+## Replacement vocabulary (consistent across the page)
 
-**2. Line 891 — Nutrition pathway intro**
-- From: *"This is where punters get scammed most. Anyone can call themselves a "nutritionist.""*
-- To: *"This is where clients get misled most. Anyone can call themselves a "nutritionist.""*
+- "dodgy" (course/provider) → **"unaccredited"** (course/provider)
+- "dodgy provider or coach" → **"unaccredited provider or unverified coach"**
+- "chancer" → **"unaccredited operator"**
+- "Bedroom PTs with no qualifications" → **"Unqualified coaches working without credentials or insurance"**
+- Anchor id `dodgy-courses` → **`unaccredited-courses`** (NAV_CHIPS entry + `<section id>`)
 
-**3. Line 1154 — "Spot a dodgy course" intro**
-- From: *"Most scammy training providers follow the same playbook — oversized claims, hidden tutors, in-house assessment, finance pressure and a trillion "free" CPDs taped to the side."*
-- To: *"The weakest training providers follow the same playbook — oversized claims, hidden tutors, in-house assessment, finance pressure and a trillion "free" CPDs taped to the side."*
+No other copy, layout, components or imagery change. RED_FLAGS / GOOD_SIGNS bullet text stays as-is (already professional).
 
-**4. Line 1208 — Raise the standard, beat 01**
-- Title from: *"Siphon out the bullshit."* → *"Filter out the noise."*
-- Body unchanged (the rest is already direct without slang).
+## Exact edits in `src/routes/cpd.tsx`
+
+| # | Line | Field | Before | After |
+|---|---|---|---|---|
+| 1 | 51 | meta description | "…how to spot a **dodgy** training provider…" | "…how to spot an **unaccredited** training provider…" |
+| 2 | 102 | NAV_CHIPS entry | `{ anchor: "dodgy-courses", label: "Spot a dodgy course" }` | `{ anchor: "unaccredited-courses", label: "Spot an unaccredited course" }` |
+| 3 | 383 | section comment | `/* Dodgy-course red flags */` | `/* Unaccredited-course red flags */` |
+| 4 | 444 | FAQ answer | "verified expert and a **chancer**" | "verified expert and an **unaccredited operator**" |
+| 5 | 447 | FAQ question | "How do I report a **dodgy provider or coach**?" | "How do I report an **unaccredited provider or unverified coach**?" |
+| 6 | 1136 | section comment | `/* Section: Dodgy courses */` | `/* Section: Unaccredited courses */` |
+| 7 | 1142 | `<section id>` | `id="dodgy-courses"` | `id="unaccredited-courses"` |
+| 8 | 1148 | eyebrow label | "Spot a **dodgy** course" | "Spot an **unaccredited** course" |
+| 9 | 1209 | "Filter out the noise" body | "**Bedroom PTs with no qualifications.** Instagram "online coaches"…" | "**Unqualified coaches working without credentials or insurance.** Instagram "online coaches"…" |
+| 10 | 1219 | "Charge what you're worth" body | "verified expert and a **chancer**" | "verified expert and an **unaccredited operator**" |
+
+## Verification after edit
+
+1. `rg -n -i 'dodgy\|chancer\|bedroom pt\|punter\|scammy\|bullshit' src/routes/cpd.tsx` returns no matches.
+2. `rg -n 'dodgy-courses' src/` returns no matches (anchor fully renamed; no other route links to it).
+3. Anchor scroll from the in-page nav still lands on the renamed section.
 
 ## Out of scope
-No layout, structure, imagery, or other section copy is touched. Section headings ("Spot a dodgy course", "Before you spend a penny, run this list.") stay as-is — they're punchy, not unprofessional.
+
+- RED_FLAGS / GOOD_SIGNS bullets, hero copy, qualification cards, pathways, pricing, imagery — unchanged.
+- No new sections, no layout/typography changes, no token changes.
