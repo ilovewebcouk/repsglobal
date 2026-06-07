@@ -384,13 +384,13 @@ const REGISTERS = [
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
-  "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
+  "“Level 3 PT plus dozens of free CPD courses” bundled — those CPDs are typically self-marked PDFs with no awarding body behind them.",
   "Awarding body not Ofqual-regulated or REPs-endorsed (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
-  "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
+  "High-pressure finance sales, “today-only” discounts and commission-based sales reps.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
   "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
+  "Marketing leads with income claims (“earn £5k a month”) instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
