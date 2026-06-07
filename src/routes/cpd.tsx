@@ -651,7 +651,7 @@ function WhatCpdIs() {
     "Supervised mentoring with a senior coach",
   ];
   const doesnt = [
-    "Vendor product demos dressed up as “education”",
+    "Vendor product demos presented as “education”",
     "Sales webinars from supplement or app companies",
     "YouTube videos with no awarding body or assessment",
     "Free in-house “mini-CPDs” bundled with a sales course",
