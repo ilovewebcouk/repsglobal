@@ -444,7 +444,7 @@ const FAQS = [
     a: "When the public can tell the difference between a verified expert and an unaccredited operator, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
   },
   {
-    q: "How do I report a dodgy provider or coach?",
+    q: "How do I report an unaccredited provider or unverified coach?",
     a: "Use the reporting route on this page. Every report is reviewed, evidence cross-checked, and where required, escalated to the relevant awarding body or register. Bad actors lose verification and lose listings.",
   },
 ];
