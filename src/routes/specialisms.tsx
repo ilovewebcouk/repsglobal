@@ -500,126 +500,122 @@ function SpecialismsPage() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden lg:min-h-[680px]">
-      <img
-        src={heroSpecialisms}
-        alt=""
-        width={1920}
-        height={832}
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover object-[35%_center] lg:object-center"
-      />
-      {/* Base wash — photo-first */}
-      <div className="absolute inset-0 bg-reps-ink/50 lg:bg-reps-ink/35" />
-      {/* Left-anchored darken behind copy column */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_80%_at_30%_45%,rgba(10,10,12,0.65),transparent_78%)] lg:bg-[radial-gradient(55%_85%_at_22%_50%,rgba(10,10,12,0.82),transparent_72%)]"
-      />
-      {/* Horizontal seal (lg) — keeps headline contrast without flattening photo */}
-      <div
-        aria-hidden
-        className="absolute inset-0 hidden lg:block bg-gradient-to-r from-reps-ink/80 via-reps-ink/15 to-transparent"
-      />
-      {/* Orange top glow */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.12),transparent_70%)]"
-      />
-      {/* Floor seal */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
-      />
+    <>
+      <section className="relative overflow-hidden lg:min-h-[680px]">
+        <img
+          src={heroSpecialisms}
+          alt=""
+          width={1920}
+          height={832}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover object-[60%_center] lg:object-center"
+        />
+        {/* Base wash — photo-first */}
+        <div className="absolute inset-0 bg-reps-ink/45 lg:bg-reps-ink/25" />
+        {/* Left linear seal — headline backdrop on lg, full wash on mobile */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-r from-reps-ink/85 via-reps-ink/55 to-reps-ink/10 lg:from-reps-ink/90 lg:via-reps-ink/55 lg:to-transparent"
+        />
+        {/* Orange top glow */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.12),transparent_70%)]"
+        />
+        {/* Floor seal */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
+        />
 
-      <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-28 lg:pt-24">
-        <div className="flex max-w-[720px] flex-col items-start">
-          <span
-            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
-            style={{ animationDuration: "560ms", animationFillMode: "both" }}
-          >
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Every specialism · One register
-          </span>
-
-          <h1
-            className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
-            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
-          >
-            Every REPs specialism.
-            <br />
-            <span className="text-reps-orange">All verified, all in one place.</span>
-          </h1>
-
-          <p
-            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
-            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
-          >
-            Personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors —
-            with their qualifications, insurance and registers checked against the bodies that issue them. No guesswork.
-            No screenshots. Just verified pros.
-          </p>
-
-          <div
-            className="mt-8 flex animate-fade-in flex-wrap gap-3"
-            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
-          >
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+        <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-28 lg:pt-24">
+          <div className="flex max-w-[720px] flex-col items-start">
+            <span
+              className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
+              style={{ animationDuration: "560ms", animationFillMode: "both" }}
             >
-              Find a verified pro <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="#personal-trainers"
-              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
+              <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Every specialism · One register
+            </span>
+
+            <h1
+              className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
+              style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
             >
-              Browse specialisms
-            </a>
-          </div>
+              Every REPs specialism.
+              <br />
+              <span className="text-reps-orange">All verified, all in one place.</span>
+            </h1>
 
-          <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
-          >
-            <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" />
-              Identity, qualification & insurance verified
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-reps-orange" />
-              Registers cross-checked at source
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-reps-orange" />
-              Reviews on the public record
-            </li>
-          </ul>
-
-          {/* Editorial specialism strip — single typographic line, replaces card cluster */}
-          <div
-            className="mt-10 w-full animate-fade-in border-t border-white/10 pt-5"
-            style={{ animationDuration: "640ms", animationDelay: "420ms", animationFillMode: "both" }}
-          >
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
-              <span>PT</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Strength</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Online</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Nutrition</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Yoga</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Pilates</span>
-              <span className="ml-2 text-reps-orange">— All verified</span>
+            <p
+              className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
+              style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+            >
+              Personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors —
+              with their qualifications, insurance and registers checked against the bodies that issue them. No guesswork.
+              No screenshots. Just verified pros.
             </p>
+
+            <div
+              className="mt-8 flex animate-fade-in flex-wrap gap-3"
+              style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+            >
+              <Link
+                to="/find-a-professional"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+              >
+                Find a verified pro <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="#personal-trainers"
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
+              >
+                Browse specialisms
+              </a>
+            </div>
+
+            <ul
+              className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75 lg:flex-nowrap lg:gap-x-5"
+              style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+            >
+              <li className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <BadgeCheck className="h-4 w-4 shrink-0 text-reps-orange" />
+                Identity & insurance verified
+              </li>
+              <li className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-reps-orange" />
+                Registers cross-checked at source
+              </li>
+              <li className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <Check className="h-4 w-4 shrink-0 text-reps-orange" />
+                Reviewed publicly
+              </li>
+            </ul>
           </div>
         </div>
+      </section>
+
+      {/* Editorial specialism strip — full-bleed dark bar flush below the photo */}
+      <div className="border-y border-reps-border bg-reps-ink">
+        <div className="mx-auto flex h-11 max-w-[1320px] items-center overflow-x-auto px-6 lg:px-10">
+          <p className="flex flex-nowrap items-center gap-x-2.5 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+            <span>PT</span>
+            <span className="text-reps-orange/85">·</span>
+            <span>Strength</span>
+            <span className="text-reps-orange/85">·</span>
+            <span>Online</span>
+            <span className="text-reps-orange/85">·</span>
+            <span>Nutrition</span>
+            <span className="text-reps-orange/85">·</span>
+            <span>Yoga</span>
+            <span className="text-reps-orange/85">·</span>
+            <span>Pilates</span>
+            <span className="ml-3 text-reps-orange">— All verified</span>
+          </p>
+        </div>
       </div>
-    </section>
+    </>
   );
 }
 

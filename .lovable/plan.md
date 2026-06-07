@@ -1,70 +1,46 @@
-# /specialisms hero — make it actually 10/10
+## Goal
+Make the `/specialisms` hero genuinely world-class. The current image is composed backwards (REPS-polo coach + reformer on the right, generic shirtless kettlebell guy stealing the left third where the H1 lives). Fix it at the image level, not just with darker overlays.
 
-## What's wrong now (honest)
+## What changes
 
-1. **Recycled image** — `hero-gym-bg.jpg` is already the bg on `/` and `/for-professionals`. Flagship pages don't share heroes.
-2. **Image doesn't match the page promise** — a dim dumbbell rack says "strength gym," not "every specialism."
-3. **The 3 SpecimenCards are weak.** They look like SaaS feature tiles, not editorial proof. They compete with the photo, add noise, and lower the page's premium read. They go.
+### 1. New hero image
+Regenerate `src/assets/specialisms-hero.jpg` (21:9, 1920×832) via `imagegen` premium tier.
 
-## Fix — one cinematic custom photo, no chrome
+Brief:
+- Cinematic wide of a premium training space, late afternoon, warm tungsten + soft window bounce, shallow filmic depth, subtle grain.
+- **Left ~38%**: intentional dark negative space — shadowed brick / charcoal acoustic panelling / blacked-out steel. **No human, no equipment, no text** in this zone. This is where the headline lives.
+- **Centre ~32%**: ONE coaching moment — female client mid-goblet-squat with a kettlebell, male coach beside her cueing, hand near her ribcage. Coach wears a charcoal polo with an embroidered **"REPS"** wordmark, ALL CAPS, small left-chest (matches the brand rule in `mem://design/trainer-imagery`).
+- **Right ~30%**: visible Pilates reformer with leather straps, a rolled yoga mat on oak shelving, a small olive plant, soft window light behind. Reads as "other disciplines live here too" without competing with the centre.
+- **No** shirtless model, no kettlebell-bro foreground, no gym selfie energy, no logos other than the REPS polo, no text overlay baked in.
+- Mood reference: Whoop editorial / Form Athletica / Equinox brand campaigns. Premium, quiet, expert.
 
-The hero becomes a single full-bleed wide gym hall image with multiple disciplines visible in one frame, copy column anchored left, **no cards, no right-column device.** The photo is the device.
+Save → upload via `lovable-assets` → overwrite `src/assets/specialisms-hero.jpg.asset.json` (existing asset_id gets replaced with a new one; that's fine).
 
-### 1. Generate the hero image (custom)
+### 2. Retune overlay and chrome on top
+File: `src/routes/specialisms.tsx`, Hero function only.
 
-- **Aspect:** 21:9 (wide cinematic).
-- **Composition:** Premium high-ceiling training space, late-afternoon light.
-  - **Foreground (left third, in focus):** head coach in a REPS-branded polo (ALL CAPS "REPS" wordmark embroidered on left chest, per `mem://design/trainer-imagery`), mid-instruction, hand guiding a client's kettlebell goblet squat.
-  - **Mid-ground (centre, soft focus):** second coach with a client on a barbell setup at a power rack.
-  - **Background (right third, deeper bokeh):** visible Pilates reformer, rolled yoga mats stacked on an oak shelf, soft daylight from tall windows.
-- **Lighting:** warm tungsten key from one direction, deep shadow falloff right-to-left, a faint brand-orange ambient bounce from off-camera. Cinematic, filmic grain. Never stock-bright.
-- **Style:** editorial fitness photography — think Form Athletica / Equinox campaign / Whoop annual report — NOT gym stock site.
-- **Saved to:** `src/assets/specialisms-hero.jpg` via `imagegen` (premium tier for human-figure quality), then externalised via `lovable-assets` because it's a large hero binary.
-- **LCP wiring:** preload + `fetchpriority="high"` + `loading="eager"` (matches `marketing-hero-template`).
+- **Mobile** (`object-position`): `object-[60%_center]` (push the coaching moment into frame; left negative space matters less on narrow widths because copy stacks over a full wash).
+- **Desktop**: `object-center`.
+- **Overlay stack** (rebuilt left→right, not radial):
+  1. Base wash: `bg-reps-ink/45 lg:bg-reps-ink/25`
+  2. Left linear seal (lg only): `bg-gradient-to-r from-reps-ink/90 via-reps-ink/55 to-transparent`, covers ~58% width. This is the headline's backdrop.
+  3. Bottom seal: keep current `from-reps-ink via-reps-ink/70 to-transparent` for the specialism strip.
+  4. Top orange glow + footer floor seal: keep as-is.
+- **Trust chips**: change wrap to `flex-nowrap lg:gap-x-5 gap-y-2` on lg so the three chips sit on one line; allow stacked wrap below lg. Drop one redundant word in chip #3 if needed to fit ("Reviewed publicly" instead of "Reviews on the public record").
+- **Specialism strip**: move OFF the photo. Render as its own `<div>` flush below the hero photo block, full-bleed, `bg-reps-ink` solid, `h-11`, centred row, type stays the same tracking but bumps to `white/70` and orange/85 bullets so it's legible.
 
-### 2. Restructure the hero section
-
-- **Remove entirely:** the `lg:grid-cols-[1fr_1.05fr]` split, the right-column container, the orange glow div, all 3 `SpecimenCard` instances, and the `SpecimenCard` component itself (dead code).
-- **Layout:** revert to single-column copy stack, max-width ~720px, anchored top-left per `mem://design/hero-anchoring` (`lg:pt-24`).
-- **Hero height:** `lg:min-h-[680px]` so the wide photo has room to breathe.
-- **Image position:** `object-cover object-center` on lg, `object-[35%_center]` on mobile so the coach stays in frame when cropped.
-
-### 3. One editorial gesture (not cards) to convey breadth
-
-Above the eyebrow chip OR just under the trust chips — a single tracked-out typographic strip:
-
-> `PT · STRENGTH · ONLINE · NUTRITION · YOGA · PILATES — ALL VERIFIED`
-
-- `text-[11px] tracking-[0.22em] uppercase font-semibold text-white/55`
-- Bullets in `text-reps-orange/70`
-- One line, no wrap on lg, scrolls horizontally on mobile (no overflow on container).
-
-That single line replaces three cards. Editorial, premium, doesn't compete with the photo.
-
-### 4. Overlay stack (lighter, photo-first)
-
-- Base wash: `bg-reps-ink/35` (lg) / `/50` (mobile).
-- Left-anchored darken behind copy: `radial-gradient(55% 80% at 22% 50%, rgba(10,10,12,0.78), transparent 72%)`.
-- Soft horizontal gradient: `from-reps-ink/75 via-reps-ink/20 to-transparent` (lg only).
-- Orange top glow + bottom floor seal: keep as currently tuned.
-
-### 5. Keep as-is
-- Eyebrow chip, headline, sub, CTA pair, 3 trust chips (with stagger timings).
-- All locked sections below the hero.
-
-## Out of scope
-- No section reordering, no nav changes, no copy rewrites beyond the new specialism strip.
-- Mobile composition simplifies naturally (single column already).
-- Card removal is the only structural cut; everything else just gets a better photo and lighter overlays.
+### 3. Out of scope
+- No section re-order, no nav changes, no copy rewrites beyond the one chip tweak above.
+- No new components. `SpecimenCard` stays deleted.
+- No changes to the rest of `/specialisms` (sticky nav, 6 SpecialismSection blocks, RegistersBlock, VerifyStrip, FAQ).
+- No memory change — `mem://design/locked-specialisms` already covers this page.
 
 ## Files touched
-- `src/routes/specialisms.tsx` (Hero function + delete `SpecimenCard`)
-- `src/assets/specialisms-hero.jpg(.asset.json)` (new)
-- Lock memory `mem://design/locked-specialisms` updated to reflect the new hero composition.
+- `src/assets/specialisms-hero.jpg` (regenerated)
+- `src/assets/specialisms-hero.jpg.asset.json` (re-uploaded via `lovable-assets`)
+- `src/routes/specialisms.tsx` (Hero function only)
 
-## Acceptance
-- New, unique custom photo. Multiple disciplines visibly present in one frame. REPS wordmark visible on the foreground coach's polo.
-- Zero cards in the hero.
-- Copy column legible, photo clearly readable across the full width.
-- Audit passes (no banned hex/radii, no button shadows).
-- Looks at-or-above Whoop / Form / Future hero quality on a side-by-side.
+## Verify before declaring done
+1. `browser--view_preview /specialisms` at 1440×900 → screenshot → confirm H1 sits on near-black, no face/skin tone behind it, REPS polo readable, reformer visible right.
+2. `browser--view_preview /specialisms` at 390×844 → screenshot → confirm coaching moment is in frame, copy legible, chips stack cleanly, specialism bar reads.
+3. Audit: no banned radii (`rounded-xl/2xl/3xl`, 20/28/32px) introduced; semantic tokens only.
