@@ -48,7 +48,7 @@ const CANONICAL = "https://repsglobal.lovable.app/cpd";
 const META_TITLE =
   "CPD & Verified Training Providers — Education that actually counts | REPs";
 const META_DESC =
-  "What CPD really is, how REPs governs it, and how to spot a dodgy training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
+  "What CPD really is, how REPs governs it, and how to spot an unsafe training provider before you pay. Every CPD hour through a REPs-verified provider counts. The rest don't count.";
 
 export const Route = createFileRoute("/cpd")({
   head: () => ({
@@ -99,7 +99,7 @@ const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
   { anchor: "qualifications", label: "Qualifications" },
   { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
   { anchor: "verified-providers", label: "Verified providers" },
-  { anchor: "dodgy-courses", label: "Spot a dodgy course" },
+  { anchor: "dodgy-courses", label: "Spot a poor-quality course" },
   { anchor: "raise-the-standard", label: "Raise the standard" },
   { anchor: "faq", label: "FAQ" },
 ];
@@ -311,12 +311,12 @@ const PROVIDER_CHECKS = [
   {
     icon: ShieldCheck,
     title: "Assessment integrity",
-    body: "Real external assessment — not 47 multiple-choice questions you can re-take until you pass.",
+    body: "Real external assessment — not in-house multiple-choice questions you can resit until you pass.",
   },
   {
     icon: BookOpen,
     title: "Refunds & complaints",
-    body: "Published refund policy and a real complaints route — not a help-desk that ghosts you after the card clears.",
+    body: "Published refund policy and a real complaints route — not a help-desk that goes silent once payment clears.",
   },
 ];
 
@@ -384,13 +384,13 @@ const REGISTERS = [
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
-  "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
+  "“Level 3 PT plus dozens of free CPD courses” bundled — those CPDs are typically self-marked PDFs with no awarding body behind them.",
   "Awarding body not Ofqual-regulated or REPs-endorsed (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
-  "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
+  "High-pressure finance sales, “today-only” discounts and commission-based sales reps.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
   "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
+  "Marketing leads with income claims (“earn £5k a month”) instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
@@ -425,7 +425,7 @@ const FAQS = [
   },
   {
     q: "Why are some big-name training providers not on REPs?",
-    a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as information.",
+    a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as a signal.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
@@ -441,10 +441,10 @@ const FAQS = [
   },
   {
     q: "Does being verified on REPs let me charge more?",
-    a: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
+    a: "When the public can tell the difference between a verified expert and an unverified operator, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
   },
   {
-    q: "How do I report a dodgy provider or coach?",
+    q: "How do I report a poor-quality provider or coach?",
     a: "Use the reporting route on this page. Every report is reviewed, evidence cross-checked, and where required, escalated to the relevant awarding body or register. Bad actors lose verification and lose listings.",
   },
 ];
@@ -550,7 +550,8 @@ function Hero() {
           >
             REPs is the global standard for verified CPD in fitness, sport and physical activity.
             CPD keeps a qualification current — logged quarterly, audited annually, and only counted
-            when it's from a verified training provider. If a course isn't, it isn't worth the paper.
+            when it's from a verified training provider. If a course isn't from a verified provider,
+            it doesn't count toward your CPD log.
           </p>
 
           <div
@@ -650,7 +651,7 @@ function WhatCpdIs() {
     "Supervised mentoring with a senior coach",
   ];
   const doesnt = [
-    "Vendor product demos dressed up as “education”",
+    "Vendor product demos presented as “education”",
     "Sales webinars from supplement or app companies",
     "YouTube videos with no awarding body or assessment",
     "Free in-house “mini-CPDs” bundled with a sales course",
@@ -723,7 +724,7 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
+      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. Self-declared hours without evidence don't count.",
     },
     {
       icon: ShieldCheck,
@@ -753,7 +754,7 @@ function RepsCpdSystem() {
             How REPs runs CPD
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Four mechanics. No theatre.
+            Four mechanics. No window dressing.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             CPD is only worth something if it's evidenced, governed and visible to the public.
@@ -803,7 +804,7 @@ function Qualifications() {
             Know what the letters actually mean — before you spend.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The fitness industry runs on acronyms, and most punters don't know the difference between
+            The fitness industry runs on acronyms, and most clients can't tell the difference between
             a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
             for fitness, nutrition and movement disciplines.
           </p>
@@ -888,7 +889,7 @@ function Qualifications() {
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where punters get scammed most. Anyone can call themselves a “nutritionist.”
+            This is where the public is most often misled. Anyone can call themselves a “nutritionist.”
             Only one role is legally protected — and only that role can prescribe diets for disease.
           </p>
 
@@ -1039,7 +1040,7 @@ function GeneralistVsSpecialist() {
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>REPs surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
+                <span>REPs surfaces the specialist for the exact thing you're chasing. Not a generalist with a side interest.</span>
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
@@ -1091,7 +1092,7 @@ function VerifiedProviders() {
               A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition, tutor qualifications, assessment integrity, refund and
               complaints policy. Every CPD hour you earn through them auto-counts toward your REPs
-              log. Hours from unverified providers don't. Full stop.
+              log. Hours from unverified providers don't.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               The standard is industry-baseline. Verification is open to apply for. The only reason
@@ -1100,7 +1101,7 @@ function VerifiedProviders() {
 
             <blockquote className="mt-8 border-l-2 border-reps-orange pl-5">
               <p className="font-display text-[18px] leading-snug text-white lg:text-[20px]">
-                “The honest providers are already here. The rest are running a print shop for certificates.”
+                “The honest providers are already here. The rest are selling certificates without standards.”
               </p>
             </blockquote>
           </div>
@@ -1145,14 +1146,14 @@ function DodgyCourses() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a dodgy course
+            Spot a poor-quality course
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Before you spend a penny, run this list.
+            Before you pay, run this list.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            Most scammy training providers follow the same playbook — oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a trillion “free” CPDs taped to the side.
+            Low-quality training providers follow the same playbook — oversized claims, hidden tutors,
+            in-house assessment, finance pressure and a long list of bundled “free” CPDs.
             Here's what to look for, and what good actually looks like.
           </p>
         </div>
@@ -1205,8 +1206,8 @@ function RaiseTheStandard() {
   const beats = [
     {
       n: "01",
-      title: "Siphon out the bullshit.",
-      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
+      title: "Filter out the bad actors.",
+      body: "Unqualified trainers. “Online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
@@ -1216,7 +1217,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and an unqualified operator, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
     },
   ];
 
