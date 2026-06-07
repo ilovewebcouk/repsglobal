@@ -230,7 +230,7 @@ function ForProsPage() {
               "Reviews on the public record — not screenshotted on Instagram",
               "Indexed by location, specialism and price band",
             ]}
-            imageLabel="Profile + directory mockup — screenshot coming"
+            imageLabel="Verified professional profile on the public register"
             mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified professional profile preview" }}
             ctaLabel="Explore Visibility"
             ctaHref="/features/visibility"
@@ -251,7 +251,7 @@ function ForProsPage() {
               "Foundation method, transformation proof, testimonials",
               "Replaces your Wix or Squarespace site — one less bill, one less login",
             ]}
-            imageLabel="Coach shop-front mockup — /c/james-wilson"
+            imageLabel="Personalised coach shop-front with three service tiers"
             mockup={{ device: "laptop", src: "/c/james-wilson", title: "Coach shop-front live example" }}
             ctaLabel="Explore Shop-front"
             ctaHref="/features/shop-front"
@@ -273,7 +273,7 @@ function ForProsPage() {
               "Card payments and subscriptions — every payment goes to you, no REPs cut",
               "Live revenue, paid, pending and overdue at a glance",
             ]}
-            imageLabel="Operations mockup — leads + calendar + payments"
+            imageLabel="Leads pipeline, calendar and payments in one view"
             mockup={{ device: "laptop", src: "/dashboard/leads", title: "Operations preview" }}
             ctaLabel="Explore Operations"
             ctaHref="/features/operations"
@@ -294,7 +294,7 @@ function ForProsPage() {
               "Full client record: programme, adherence, payments and LTV in one view",
               "Branded client portal on web and mobile — included, not an add-on",
             ]}
-            imageLabel="Coaching mockup — programmes + check-ins + client record"
+            imageLabel="Programme builder, check-ins and the full client record"
             mockup={{ device: "laptop", src: "/dashboard/programs", title: "Coaching preview" }}
             ctaLabel="Explore Coaching"
             ctaHref="/features/coaching"
@@ -380,7 +380,7 @@ function ForProsPage() {
               "Reporting that shows what's compounding — not vanity metrics",
               "Next Move every Monday — the single highest-leverage action",
             ]}
-            imageLabel="Growth dashboard mockup — Next Move + reporting"
+            imageLabel="Growth dashboard with Next Move and weekly reporting"
             mockup={{ device: "laptop", src: "/dashboard", title: "Growth dashboard preview" }}
             ctaLabel="Explore Growth"
             ctaHref="/features/growth"

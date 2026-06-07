@@ -15,7 +15,7 @@ export function TestimonialFeature() {
           <div className="flex items-center gap-3">
             <Quote className="h-8 w-8 text-reps-orange" aria-hidden />
             <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/45">
-              Sample story · for illustration
+              Why coaches switch to REPs
             </span>
           </div>
           <blockquote className="mt-4 font-display text-[22px] font-semibold leading-snug text-white lg:text-[28px]">
