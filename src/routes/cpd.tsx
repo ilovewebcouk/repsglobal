@@ -475,7 +475,7 @@ function CpdPage() {
 
         <VerifiedProviders />
 
-        <DodgyCourses />
+        <UnaccreditedCourses />
 
         <RaiseTheStandard />
 
@@ -1136,7 +1136,7 @@ function VerifiedProviders() {
 /* Section: Unaccredited courses                                       */
 /* ------------------------------------------------------------------ */
 
-function DodgyCourses() {
+function UnaccreditedCourses() {
   return (
     <section
       id="unaccredited-courses"
