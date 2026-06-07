@@ -32,7 +32,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
-import heroSpecialismsAsset from "@/assets/specialisms-hero.jpg.asset.json";
+import heroSpecialismsAsset from "@/assets/specialisms-hero-v2.jpg.asset.json";
 const heroSpecialisms = heroSpecialismsAsset.url;
 
 /* ------------------------------------------------------------------ */
