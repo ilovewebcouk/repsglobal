@@ -17,6 +17,7 @@ import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SealPreviewRouteImport } from './routes/seal-preview'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -140,6 +141,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SealPreviewRoute = SealPreviewRouteImport.update({
+  id: '/seal-preview',
+  path: '/seal-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewsRoute = ReviewsRouteImport.update({
@@ -594,6 +600,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/seal-preview': typeof SealPreviewRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -688,6 +695,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/seal-preview': typeof SealPreviewRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -782,6 +790,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/seal-preview': typeof SealPreviewRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -878,6 +887,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/seal-preview'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -972,6 +982,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/seal-preview'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -1065,6 +1076,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/seal-preview'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -1160,6 +1172,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReviewsRoute: typeof ReviewsRoute
+  SealPreviewRoute: typeof SealPreviewRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
@@ -1281,6 +1294,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seal-preview': {
+      id: '/seal-preview'
+      path: '/seal-preview'
+      fullPath: '/seal-preview'
+      preLoaderRoute: typeof SealPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviews': {
@@ -1925,6 +1945,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReviewsRoute: ReviewsRoute,
+  SealPreviewRoute: SealPreviewRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
