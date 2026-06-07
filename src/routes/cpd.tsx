@@ -804,7 +804,7 @@ function Qualifications() {
             Know what the letters actually mean — before you spend.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The fitness industry runs on acronyms, and most punters don't know the difference between
+            The fitness industry runs on acronyms, and most clients can't tell the difference between
             a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
             for fitness, nutrition and movement disciplines.
           </p>
