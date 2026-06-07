@@ -1092,7 +1092,7 @@ function VerifiedProviders() {
               A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition, tutor qualifications, assessment integrity, refund and
               complaints policy. Every CPD hour you earn through them auto-counts toward your REPs
-              log. Hours from unverified providers don't. Full stop.
+              log. Hours from unverified providers don't.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               The standard is industry-baseline. Verification is open to apply for. The only reason
@@ -1101,7 +1101,7 @@ function VerifiedProviders() {
 
             <blockquote className="mt-8 border-l-2 border-reps-orange pl-5">
               <p className="font-display text-[18px] leading-snug text-white lg:text-[20px]">
-                “The honest providers are already here. The rest are running a print shop for certificates.”
+                “The honest providers are already here. The rest are selling certificates without standards.”
               </p>
             </blockquote>
           </div>
