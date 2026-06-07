@@ -1040,7 +1040,7 @@ function GeneralistVsSpecialist() {
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>REPs surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
+                <span>REPs surfaces the specialist for the exact thing you're chasing. Not a generalist with a side interest.</span>
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
