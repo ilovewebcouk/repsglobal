@@ -1,60 +1,38 @@
-## QA verdict: not yet a 10/10 — two real issues, both small
+## Verdict: 9.5/10 — one small polish remaining
 
-I walked the page top-to-bottom at 1440×900. The structure, copy ladder, hero, pillar sequence, AI moment, pricing strip, testimonials, FAQ and final CTA are all working. Two concrete issues to fix.
+I walked the page at 1440×900 (hero, Pillar 2, the testimonial feature, AI section, Pillar 6, pricing trio) and ran the compliance audit on radii, hex, UK qualifiers and `space-y-*` in the touched files.
 
----
+### What's already at 10/10
 
-### Issue 1 — Banned phrase: "no booking commission"
+- **Hero**: copy ladder, staggered fade-up, trust chips ("Verified credentials / 10-minute setup / Every feature included — no add-ons"), device cluster sizing — all on spec. "Explore features" now links to `/features/visibility` (no broken link).
+- **Sticky CTA pill**: "See pricing" → `/pricing` ✓.
+- **Pillar copy**: Pillar 3 bullet now reads "every payment goes to you, no REPs cut" (no banned phrase). Pillar 5 caption is "Plus risk flags across your full client list — included in every paid tier."
+- **TestimonialFeature**: eyebrow correctly relabeled to "WHY COACHES SWITCH TO REPS"; quote names Trainerize; James Carter avatar renders.
+- **Pricing trio**: locked 3-tier ladder (£99 / £59 Founding / £149), no banned "flat plan" language.
+- **Final CTA**: "Compare platforms" + "See pricing", both correct.
+- **Pillar 5 → 6 vertical band**: spacing tightened, no dead band.
+- **Compliance audit**: no banned radii (`rounded-xl/2xl/3xl`, 14/20/28/32px), no banned orange hex (`#F28C38`, `#D87322`), no "UK"/"United Kingdom" tokens in this route or the components it owns. `ProductBlock` bullet list now uses `flex flex-col gap-2` (no `space-y-*`).
+- **`imageLabel` dev placeholders**: cleaned to real captions on all five `ProductBlock` instances.
 
-`src/routes/for-professionals.tsx:273` — Pillar 3 (Operations) bullet:
+### The one remaining issue
 
-> "Card payments and subscriptions — **no booking commission**"
+**`TestimonialFeature` stat tiles word-break ugly at desktop.**
 
-Project memory bans "booking commission" as a REPs claim. The body copy two lines above already says "REPs takes no cut of what your clients pay you", which is the approved framing.
+In the right-hand stats column, "£0 add-ons" wraps as "£0 add-" / "ons" — the hyphen sits at the line break and "ons" hangs on its own line. Cause: at `lg:grid-cols-1 xl:grid-cols-3`, each tile sits in a narrow column and the `dt` runs at 18–20px display bold, so the column can't hold "£0 add-ons" on one line. "+12 enquiries" and "Sundays back" wrap to two lines too, but they read fine; only "add-ons" looks broken because of the hyphenation.
 
-**Fix:** replace the bullet with:
+### Fix (one file, two small edits)
 
-> "Card payments and subscriptions — every payment goes to you, no REPs cut"
+**File:** `src/components/marketing/TestimonialFeature.tsx`
 
-(Keeps the same column shape; drops the banned phrase; aligns with the body sentence and with the "no booking commission" constraint.)
+1. On the stats grid container, switch `xl:grid-cols-3` → `xl:grid-cols-1` so each tile gets the full sidebar width and the headline stays on one line. (Or alternatively keep 3-up at xl but drop the `dt` from `text-[18px]/[20px]` to `text-[15px]/[16px]` so each headline fits.)
+2. Add `[word-break:keep-all] hyphens-none` (or simpler: a non-breaking hyphen "£0 add\u2011ons") on the affected `dt` so future similar terms ("add-ons", "drop-ins") never split mid-hyphen.
 
----
-
-### Issue 2 — Dead vertical band between Hero → Press marquee → "Why coaches switch" → Pillar 1
-
-Stacked paddings are compounding into ~1 full viewport of empty ink:
-
-- Hero section: `lg:pb-32` (~128px)
-- `PressMarquee`: `lg:py-20` (~80px top + 80px bottom)
-- "Why coaches switch" section: `lg:py-28` (~112px top + 112px bottom)
-- Pillar 1 section: `lg:py-28` (~112px top)
-
-Between Hero CTA buttons and the marquee, and between the marquee and "Why coaches switch", and between the proof strip and Pillar 1, you can see large empty bands in the screenshots — the page reads slower than it should.
-
-**Fix (targeted, no structural changes):**
-
-1. `src/routes/for-professionals.tsx:112` — Hero inner container: `pb-24 ... lg:pb-32` → `pb-20 ... lg:pb-20`.
-2. `src/routes/for-professionals.tsx:202` — "Why coaches switch" container: `py-12 lg:px-10 lg:py-28` → `pt-10 pb-16 lg:px-10 lg:pt-16 lg:pb-20`.
-3. `src/routes/for-professionals.tsx:222` — Pillar 1 container: `py-24 lg:px-10 lg:py-28` → `pt-16 pb-24 lg:px-10 lg:pt-20 lg:pb-28`.
-
-Net effect: ~120–140px removed from the dead band above Pillar 1 and ~80px above "Why coaches switch", without touching the inner rhythm of the rest of the pillar sequence (Pillars 2–6 keep their current `lg:py-28` cadence so the page still breathes at full width).
-
----
-
-### What's already good (no change)
-
-- Hero copy ladder, animation timings, trust chips ("Verified credentials / 10-minute setup / Every feature included — no add-ons") all on spec.
-- Pillar order, eyebrows, and `ProductBlock` reversal pattern.
-- Pricing strip uses the locked 3-tier ladder (£99 / £59 Founding / £149), no banned "flat plan" language.
-- Testimonial feature now correctly names Trainerize.
-- Final CTA has the two correct buttons (Compare platforms + See pricing).
-- FAQ titles read straight, no UK qualifiers.
-
----
+Preferred option: **(1)** — vertical stack at xl. It gives each stat room to breathe, matches the way the testimonial reads as a single vertical sidebar, and removes the wrap risk entirely without touching font sizes.
 
 ### Out of scope (not changing in this pass)
 
-- Hero device cluster sizing, image crop, gradient stops.
-- Pillar mockup screenshots (they render correctly via live iframes).
-- `RegisterProof` and `VenueStrip` copy (already cleaned in previous turns).
-- Pricing strip card visual treatment.
+- Iframe contents inside the `ProductBlock` mock-ups (e.g. "London, Greater London" inside the `/c/james-wilson` shop-front preview) — those belong to the locked shop-front page, not `/for-professionals`.
+- Hero device cluster, gradient stops, image crop.
+- `RegisterProof`, `UseCaseTriad`, `TestimonialTriad`, `ForProsFaq` — already clean in prior passes.
+
+Once that one fix lands, the page is a clean 10/10.
