@@ -1,60 +1,87 @@
-## QA pass — `/specialisms` across desktop, tablet, mobile
+## Goal
 
-### Heads-up on testing limits
-The in-loop browser tool's `set_viewport_size(390, 844)` silently snapped back to a ~1200px window (confirmed via `window.innerWidth`), so I can't capture real mobile/tablet screenshots from here. Desktop is verified visually; tablet/mobile findings below come from reading the actual rendered breakpoints in the code against the page structure. **Please spot-check the live preview on tablet and mobile after these changes** — I'll talk you through what to look for.
+Add a new specialism section — **Group Exercise & Fitness Instructors** — to `/specialisms`. This is the only home for **Level 2** qualifications on REPs, with scope limits made explicit so visitors don't confuse L2 instructors with L3 personal trainers.
 
-### What's already 10/10
-- Hero copy, gradient stops, image crop (`object-[70%_center]` → `lg:object-center`), animated stagger, top-anchored content block — all matches the Marketing Hero template.
-- 7-section narrative grid (`lg:grid-cols-[1.4fr_1fr]`) stacks cleanly at md/sm, `sm:grid-cols-2` for "What they do / What REPs verifies" is right.
-- Eyebrows 01–07 are sequential; PT stays L3→L4→REPs; L2 quals live only in Group Exercise.
-- RegistersBlock 4-col → 2-col → 1-col responsive ladder is correct.
-- FAQ, VerifyStrip, CrossLinkStrip wrap cleanly.
+Note: the `/specialisms` page is in the locked list (6 sections, frozen 2026-06-07). The user has explicitly requested this 7th section, so the lock is being intentionally extended — not bypassed.
 
-### Fixes (small, surgical — no redesign)
+## Changes
 
-**1. Sticky-nav alignment + scroll affordance (`StickyNav`)**
+### 1. `src/routes/specialisms.tsx` — add new SPECIALISM entry
 
-The nav uses `sticky top-14` but `PublicHeader` is `h-16` (64px) on small screens — that 8px gap shows a sliver of page behind the nav as it sticks. Also, with 7 chips the row overflows on tablet/mobile and `overflow-x-auto` shows hard-cut chips with no fade hint.
+Append a 7th object to `SPECIALISMS`, inserted **after `personal-trainer`** (position 2) so the L2 → L3 conceptual ladder reads naturally in the sticky nav and in scroll order.
 
-  - Change `top-14` → `top-16` so the nav sits flush under the header.
-  - Add a left+right linear-gradient mask on the inner scroll container so overflowing chips fade rather than getting clipped (same trick as `PressMarquee`).
-  - Add `[-webkit-overflow-scrolling:touch]` and `scroll-smooth` on the scroller.
+```ts
+{
+  slug: "group-exercise",
+  anchor: "group-exercise",
+  navLabel: "Group ex & instructors",
+  icon: Users,            // import from lucide-react
+  eyebrow: "Specialism 02",
+  title: "Group Exercise & Fitness Instructors",
+  plural: "Group ex and fitness instructors",
+  intro:
+    "The energy on the gym floor and in the studio. Level 2 instructors lead classes, run inductions and coach group sessions — the entry point into a career on the register.",
+  does: [
+    "Group classes: circuits, bootcamp, indoor cycling, exercise to music",
+    "Gym floor inductions, equipment demos and supervised programmes",
+    "Small-group training under a club, studio or PT's supervision",
+  ],
+  verifies: [
+    "Government-recognised Level 2 qualification (RQF)",
+    "Public liability insurance appropriate to the class type they teach",
+    "Current first aid and a verified photo ID",
+  ],
+  rate: "£25 – £45 / session",
+  count: 612,             // placeholder, same style as other sections
+  quals: [
+    {
+      acronym: "L2 GI",
+      full: "Level 2 Gym Instructor (RQF)",
+      meaning: "Gym-floor inductions, supervised programmes and group circuits — not 1:1 PT.",
+    },
+    {
+      acronym: "L2 ETM",
+      full: "Level 2 Exercise to Music",
+      meaning: "Choreographed studio classes — aerobics, dance fitness, step.",
+    },
+    {
+      acronym: "L2 GT",
+      full: "Level 2 Group Training",
+      meaning: "Bootcamp, circuits and small-group conditioning sessions.",
+    },
+    {
+      acronym: "REPs",
+      full: "Register of Exercise Professionals",
+      meaning: "L2 instructors hold full register status — same identity, qualification and insurance checks as L3+ pros.",
+    },
+  ],
+},
+```
 
-**2. Anchor scroll-margin (`SpecialismSection`)**
+Also: renumber the existing `eyebrow` strings ("Specialism 02" → "Specialism 03", etc.) on the five sections that follow, so they stay sequential.
 
-`scroll-mt-28` = 112px. With header (64) + sticky nav (48) = 112 only when nav is exactly 48; the nav is `h-12` (48) so the math works, but jumping to `#group-exercise` from the nav lands the eyebrow flush against the nav border with no breathing room. Change `scroll-mt-28` → `scroll-mt-32` (128px) to leave ~16px of clearance above the section eyebrow.
+### 2. Scope-limit copy
 
-**3. Touch-friendly qualification tooltips (`SpecialismSection` aside)**
+The `does` and the L2 GI `meaning` line make the boundary explicit ("not 1:1 PT") so we don't mislead consumers. No extra disclaimer block needed — it's baked into the existing card structure.
 
-Radix `Tooltip` is hover/focus only — on touch devices tapping the underlined L3 PT / L2 GI / NSCA CSCS button does nothing useful (the full name is already displayed inline next to it, so it's just confusing UX). Two options:
+### 3. Sticky in-page nav
 
-  - **Option A (recommended, no behavior change for mouse):** Drop the `Tooltip` wrapper entirely. The full name is already rendered to the right of the acronym, so the tooltip is redundant. Keep the underline as a visual "definition" affordance. Cleaner, fewer moving parts, equal info on every device.
-  - **Option B:** Swap `Tooltip` → `Popover` (Radix) so it opens on click/tap as well as hover. More work, more JS, no extra info.
+Picks up the new section automatically (renders from `SPECIALISMS.map`). The nav label is kept short ("Group ex & instructors") so it fits the row alongside the other 6.
 
-Going with A unless you want to keep the hover-reveal motion.
+### 4. Memory
 
-**4. Hero CTA anchor target**
+Update `mem://design/locked-specialisms` to reflect 7 sections instead of 6, noting Group Exercise sits at position 2 and owns all L2 quals.
 
-`Browse specialisms` button links to `#personal-trainers`. That's correct (PT is still position 01), but after adding Group Exercise the editorial chip strip and the visual ladder might lead a user to expect to land at the first card under the nav. Keep PT as the target; no change needed — flagging so you don't ask later.
+## Out of scope
 
-**5. Hero trust-strip wrap at md**
+- No changes to the PT section (stays L3 → L4 → REPs as is).
+- No changes to the REGISTERS grid, hero, FAQ, VerifyStrip or any other section.
+- No changes to `PROFESSIONS` data, find-a-pro filters, profession landing pages, or routing.
+- No new images.
 
-The `mt-7 flex flex-wrap gap-x-5 gap-y-2` row works, but at 600–760px viewport the third item ("Reviews on the public record") wraps alone under a wide row. Tighten `gap-x-5` → `gap-x-6` and add `gap-y-2.5` so the wrapped row reads as deliberate, not orphaned. Cosmetic.
+## Verification
 
-**6. CrossLinkStrip rounded radius**
-
-`rounded-[22px]` matches the panel scale per the radius lock ✓ — no change. Just noting.
-
-### Files touched
-- `src/routes/specialisms.tsx` — `StickyNav` (top, mask, scroll), `SpecialismSection` (scroll-mt + Tooltip removal), `Hero` (gap tweak).
-
-### Out of scope
-- No copy rewrites, no new sections, no image swaps, no FAQ changes.
-- No changes to PublicHeader, RegistersBlock, VerifyStrip, FaqBlock, CrossLinkStrip, or the locked memory.
-
-### Verification (you, on the live preview)
-- **Desktop (≥1280):** sticky nav sits flush under header; 7 chips fit without scroll; clicking each chip lands the eyebrow with ~16px above it.
-- **Tablet (768–1024):** sticky nav scrolls horizontally; left/right edges fade rather than hard-clip; section narrative stacks above the qual card; "What they do / verify" sits in 2 columns.
-- **Mobile (≤414):** hero h1 wraps over 3 lines without overflow; trust-strip wraps cleanly; sticky nav fades on both edges and scrolls smoothly with momentum; tapping any L2/L3 acronym does nothing weird (no broken tooltip popover).
-
-If you want me to also QA `/professions/group-exercise` (the matching landing page from the find-a-pro list) in the same pass, say the word and I'll roll it in.
+- `/specialisms` shows 7 sticky-nav chips in order: PT, Group ex & instructors, Strength, Online, Nutritionist, Yoga, Pilates.
+- New section renders with 4 qual tooltips, all readable on hover/tap.
+- Eyebrow numbers run 01–07 sequentially.
+- No console errors; build clean.
