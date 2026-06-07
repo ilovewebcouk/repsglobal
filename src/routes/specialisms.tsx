@@ -506,33 +506,31 @@ const FAQS = [
 
 function SpecialismsPage() {
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
-        <PublicHeader variant="solid" />
+    <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
+      <PublicHeader variant="solid" />
 
-        <Hero />
+      <Hero />
 
-        <PressMarquee />
+      <PressMarquee />
 
-        <StickyNav />
+      <StickyNav />
 
-        <div className="border-b border-reps-border bg-reps-ink">
-          {SPECIALISMS.map((s, i) => (
-            <SpecialismSection key={s.slug} spec={s} isLast={i === SPECIALISMS.length - 1} />
-          ))}
-        </div>
-
-        <RegistersBlock />
-
-        <VerifyStrip />
-
-        <FaqBlock />
-
-        <CrossLinkStrip />
-
-        <PublicFooter />
+      <div className="border-b border-reps-border bg-reps-ink">
+        {SPECIALISMS.map((s, i) => (
+          <SpecialismSection key={s.slug} spec={s} isLast={i === SPECIALISMS.length - 1} />
+        ))}
       </div>
-    </TooltipProvider>
+
+      <RegistersBlock />
+
+      <VerifyStrip />
+
+      <FaqBlock />
+
+      <CrossLinkStrip />
+
+      <PublicFooter />
+    </div>
   );
 }
 
