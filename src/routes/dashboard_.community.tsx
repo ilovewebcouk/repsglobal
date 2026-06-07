@@ -92,7 +92,7 @@ const GROUPS = [
   { name: "Off-season athletes", members: 7, last: "Video added · 2 days ago" },
 ];
 
-const TRENDING = ["#pricing-2026", "#cimspa", "#hybrid-coaching", "#client-retention", "#deadlift-cues"];
+const TRENDING = ["#pricing-2026", "#reps-endorsed", "#hybrid-coaching", "#client-retention", "#deadlift-cues"];
 
 const SUGGESTED = [
   { name: "Sophie Nguyen", role: "Strength Coach · L4", city: "Leeds" },
