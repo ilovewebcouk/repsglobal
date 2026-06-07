@@ -754,7 +754,7 @@ function RepsCpdSystem() {
             How REPs runs CPD
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Four mechanics. No theatre.
+            Four mechanics. No window dressing.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             CPD is only worth something if it's evidenced, governed and visible to the public.
