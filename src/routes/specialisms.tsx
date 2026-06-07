@@ -622,7 +622,7 @@ function Hero() {
           </div>
 
           <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-6 gap-y-2.5 text-[12.5px] font-medium text-white/75"
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
@@ -670,12 +670,21 @@ function Hero() {
 /* ------------------------------------------------------------------ */
 
 function StickyNav() {
+  const maskStyle = {
+    maskImage:
+      "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%)",
+    WebkitMaskImage:
+      "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%)",
+  } as const;
   return (
     <nav
       aria-label="Specialisms"
-      className="sticky top-14 z-30 border-y border-reps-border/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
+      className="sticky top-16 z-30 border-y border-reps-border/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
     >
-      <div className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
+      <div
+        className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto scroll-smooth px-6 lg:px-10 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={maskStyle}
+      >
         {SPECIALISMS.map((s) => (
           <a
             key={s.slug}
@@ -699,7 +708,7 @@ function SpecialismSection({ spec, isLast }: { spec: Specialism; isLast: boolean
   return (
     <section
       id={spec.anchor}
-      className={`scroll-mt-28 ${isLast ? "" : "border-b border-reps-border"}`}
+      className={`scroll-mt-32 ${isLast ? "" : "border-b border-reps-border"}`}
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-14">
@@ -799,17 +808,9 @@ function SpecialismSection({ spec, isLast }: { spec: Specialism; isLast: boolean
               {spec.quals.map((q) => (
                 <li key={q.acronym} className="border-t border-reps-border pt-4 first:border-t-0 first:pt-0">
                   <div className="flex flex-wrap items-baseline gap-x-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          className="rounded-[6px] text-[14px] font-semibold text-white underline decoration-reps-orange/70 decoration-dotted underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange"
-                        >
-                          {q.acronym}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{q.full}</TooltipContent>
-                    </Tooltip>
+                    <span className="text-[14px] font-semibold text-white underline decoration-reps-orange/70 decoration-dotted underline-offset-4">
+                      {q.acronym}
+                    </span>
                     <span className="text-[12.5px] text-white/55">{q.full}</span>
                   </div>
                   <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/70">{q.meaning}</p>
