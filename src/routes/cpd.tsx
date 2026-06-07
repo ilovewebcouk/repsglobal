@@ -48,7 +48,7 @@ const CANONICAL = "https://repsglobal.lovable.app/cpd";
 const META_TITLE =
   "CPD & Verified Training Providers — Education that actually counts | REPs";
 const META_DESC =
-  "What CPD really is, how REPs governs it, and how to spot a dodgy training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
+  "What CPD really is, how REPs governs it, and how to spot an unaccredited training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
 
 export const Route = createFileRoute("/cpd")({
   head: () => ({
