@@ -1216,7 +1216,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and an unaccredited operator, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
     },
   ];
 
