@@ -1133,7 +1133,7 @@ function VerifiedProviders() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: Dodgy courses                                              */
+/* Section: Unaccredited courses                                       */
 /* ------------------------------------------------------------------ */
 
 function DodgyCourses() {
