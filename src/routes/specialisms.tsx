@@ -201,7 +201,7 @@ const SPECIALISMS: Specialism[] = [
     anchor: "strength-coaches",
     navLabel: "Strength coaches",
     icon: Activity,
-    eyebrow: "Specialism 02",
+    eyebrow: "Specialism 03",
     title: "Strength Coaches",
     plural: "Strength coaches",
     intro:
@@ -241,7 +241,7 @@ const SPECIALISMS: Specialism[] = [
     anchor: "online-coaches",
     navLabel: "Online coaches",
     icon: Laptop,
-    eyebrow: "Specialism 03",
+    eyebrow: "Specialism 04",
     title: "Online Coaches",
     plural: "Online coaches",
     intro:
@@ -281,7 +281,7 @@ const SPECIALISMS: Specialism[] = [
     anchor: "nutritionists",
     navLabel: "Nutritionists",
     icon: Apple,
-    eyebrow: "Specialism 04",
+    eyebrow: "Specialism 05",
     title: "Nutritionists",
     plural: "Nutritionists",
     intro:
@@ -326,7 +326,7 @@ const SPECIALISMS: Specialism[] = [
     anchor: "yoga-teachers",
     navLabel: "Yoga teachers",
     icon: Sparkles,
-    eyebrow: "Specialism 05",
+    eyebrow: "Specialism 06",
     title: "Yoga Teachers",
     plural: "Yoga teachers",
     intro:
@@ -366,7 +366,7 @@ const SPECIALISMS: Specialism[] = [
     anchor: "pilates-instructors",
     navLabel: "Pilates instructors",
     icon: Flower2,
-    eyebrow: "Specialism 06",
+    eyebrow: "Specialism 07",
     title: "Pilates Instructors",
     plural: "Pilates instructors",
     intro:
