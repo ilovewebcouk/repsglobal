@@ -142,6 +142,11 @@ const FITNESS_LADDER: LadderRung[] = [
         full: "Level 2 Exercise to Music",
         meaning: "Choreographed studio classes — aerobics, dance fitness, step.",
       },
+      {
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+      },
     ],
   },
   {
@@ -203,6 +208,11 @@ const FITNESS_LADDER: LadderRung[] = [
         acronym: "NSCA CSCS",
         full: "Certified Strength & Conditioning Specialist (NSCA)",
         meaning: "Internationally recognised S&C qualification.",
+      },
+      {
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
