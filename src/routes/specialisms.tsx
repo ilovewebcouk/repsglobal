@@ -673,14 +673,14 @@ function StickyNav() {
   return (
     <nav
       aria-label="Specialisms"
-      className="sticky top-14 z-30 border-y border-white/10 bg-reps-panel"
+      className="sticky top-[72px] z-30 border-t border-white/10 border-b border-black/40 bg-reps-panel shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]"
     >
-      <div className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
+      <div className="mx-auto flex h-[52px] max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
         {SPECIALISMS.map((s) => (
           <a
             key={s.slug}
             href={`#${s.anchor}`}
-            className="whitespace-nowrap rounded-[8px] px-3 py-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:bg-reps-panel hover:text-white"
+            className="inline-flex h-8 items-center whitespace-nowrap rounded-[8px] px-3 text-[13px] font-medium leading-none text-reps-muted transition-colors hover:bg-white/5 hover:text-white"
           >
             {s.navLabel}
           </a>

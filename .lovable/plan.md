@@ -1,27 +1,55 @@
-## Diagnosis
+## Goal
+Make the `/specialisms` sticky nav feel premium and intentional across desktop, tablet, and mobile — with correct separation from the global header, balanced vertical spacing, crisp borders, and optically centered chip labels.
 
-`StickyNav` (`src/routes/specialisms.tsx:672`) sets `bg-reps-ink/85` with a dim `border-b border-reps-border/60`. Both the header above and the next `SpecialismSection` below are also dark, so the bar's bottom edge is invisible. The chip text IS vertically centred inside `h-14`, but because you can't see where the bar ends, the eye reads it as "text at top, empty padding below". The previous `h-12 → h-14` bump didn't solve this — the problem is contrast, not height.
+## Current QA finding
+It is **not** world-class yet.
 
-## Fix
+Across desktop, tablet, and mobile, the sticky bar is still reading wrong for two concrete reasons:
+1. The sticky rail is offset with `top-14` while the global header is actually `72px` tall, so the rail tucks too far up into the header instead of sitting cleanly beneath it.
+2. The chip labels are only box-centered, not optically centered, because the row is fixed-height while the links rely on text padding rather than a controlled chip height/line-height.
 
-Single edit to `src/routes/specialisms.tsx:674–688` (`StickyNav`):
+## Plan
+### 1. Correct the sticky rail’s vertical position
+- Update the sticky nav so it locks **below the real header height**, not into it.
+- Keep the sticky rail reading as a second navigation tier, not as part of the header border.
+- Preserve existing content/order/labels.
 
-1. Drop the faux-translucent `bg-reps-ink/85` + `backdrop-blur` and use a solid, slightly elevated panel: `bg-reps-panel` so the bar reads as a distinct strip against both the header and the dark sections.
-2. Replace the dim borders with a brighter hairline on both sides: `border-y border-white/10`.
-3. Reduce height to `h-12` (the bar feels chunky at `h-14` once it has visible edges); keep `items-center` so chips stay centred.
-4. Keep `top-14`, chip styling, `overflow-x-auto`, and `SPECIALISMS.map` unchanged. No copy or order changes.
+### 2. Rebuild the sticky nav spacing for optical centering
+- Refine the rail height so it feels slimmer and more deliberate.
+- Convert the chip links to a more controlled geometry:
+  - explicit chip height
+  - `inline-flex` centering
+  - tighter line-height
+  - balanced horizontal padding
+- Tune the row/chip relationship so the text no longer feels high in the bar.
 
-## Full QA pass (scope of this turn)
+### 3. Strengthen the separation lines
+- Keep the solid panel background.
+- Tune the top/bottom hairlines so the bar reads clearly against both the header above and the dark content below.
+- Avoid blur/transparency that muddies the edge definition.
 
-After the fix, walk `/specialisms` top-to-bottom at 1484px in the browser:
-- Hero anchoring + LCP image render
-- Sticky nav transition from non-stuck → stuck (clear edges, centred chips, 7 chips fit without horizontal scroll)
-- Each of the 7 `SpecialismSection` blocks: eyebrow numbering, QualCard tooltips on hover, CTA buttons
-- `RegistersBlock`, `VerifyStrip`, FAQ accordion
-- Console + network for runtime errors
+### 4. Full breakpoint QA after the fix
+I’ll verify the sticky state at:
+- Desktop: 1484px
+- Tablet: 834px
+- Mobile: 390px
 
-Any additional defects I find get reported back in the final message (not silently patched) so we can scope a follow-up.
+For each breakpoint I’ll check:
+- top gap vs bottom gap around the chips
+- border visibility
+- visual separation from the main header
+- chip label alignment
+- horizontal scroll behavior
+- no clipping or crowding at the edges
 
-## Out of scope
+## Technical details
+- File: `src/routes/specialisms.tsx`
+- Likely adjustments:
+  - replace `top-14` with a header-matched offset
+  - refine `h-12` / row height if needed
+  - change chip anchors from padded text boxes to explicit-height centered pills
+  - keep semantic tokens only
+- No content rewrites, no section redesign, no route restructuring.
 
-No changes to section content, hero copy, FAQ, RegistersBlock, PROFESSIONS data, or any other route. No new memory entry — locked-specialisms already covers the structure.
+## Deliverable
+A corrected sticky nav with a proper two-tier hierarchy and a responsive QA pass confirming whether it now meets the standard.
