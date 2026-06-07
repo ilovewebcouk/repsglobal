@@ -168,6 +168,35 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       { slug: "strength-coach", label: "Strength Coach" },
     ],
   },
+  "yoga-teacher": {
+    slug: "yoga-teacher",
+    title: "Yoga Teacher",
+    plural: "Yoga Teachers",
+    blurb:
+      "REPs-verified yoga teachers for vinyasa, hatha, yin and pregnancy yoga — register-checked through Yoga Alliance Professionals or BWY, insured and ready to teach.",
+    qualifications: [
+      "200hr / 500hr Yoga Alliance Professionals",
+      "British Wheel of Yoga (BWY) Level 4",
+      "First Aid (current)",
+    ],
+    specialisms: [
+      "Vinyasa Flow",
+      "Hatha",
+      "Yin",
+      "Pregnancy Yoga",
+      "Beginners",
+      "Mobility & Recovery",
+      "1:1 Private",
+      "Online Classes",
+    ],
+    avgRate: "£35 – £75 / class",
+    count: 412,
+    related: [
+      { slug: "pilates-instructor", label: "Pilates Instructor" },
+      { slug: "personal-trainer", label: "Personal Trainer" },
+      { slug: "online-coach", label: "Online Coach" },
+    ],
+  },
 };
 
 function getProfession(slug: string): ProfessionMeta {
