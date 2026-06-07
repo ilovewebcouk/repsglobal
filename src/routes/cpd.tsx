@@ -550,7 +550,8 @@ function Hero() {
           >
             REPs is the global standard for verified CPD in fitness, sport and physical activity.
             CPD keeps a qualification current — logged quarterly, audited annually, and only counted
-            when it's from a verified training provider. If a course isn't, it isn't worth the paper.
+            when it's from a verified training provider. If a course isn't from a verified provider,
+            it doesn't count toward your CPD log.
           </p>
 
           <div
