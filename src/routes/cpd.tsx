@@ -538,9 +538,9 @@ function Hero() {
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            CPD is what keeps a qualification current. REPs is what keeps it honest — logged quarterly,
-            audited annually, and only counted when it's from a verified training provider.
-            If a course isn't, it isn't worth the paper.
+            REPs is the global standard for verified CPD in fitness, sport and physical activity.
+            CPD keeps a qualification current — logged quarterly, audited annually, and only counted
+            when it's from a verified training provider. If a course isn't, it isn't worth the paper.
           </p>
 
           <div
