@@ -889,7 +889,7 @@ function Qualifications() {
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where punters get scammed most. Anyone can call themselves a “nutritionist.”
+            This is where the public is most often misled. Anyone can call themselves a “nutritionist.”
             Only one role is legally protected — and only that role can prescribe diets for disease.
           </p>
 
