@@ -412,6 +412,13 @@ const REGISTERS: Register[] = [
     href: "https://www.uksca.org.uk/",
   },
   {
+    short: "NSCA",
+    full: "National Strength & Conditioning Association",
+    covers: "Strength coaches (CSCS), tactical and personal trainers (NSCA-CPT)",
+    meaning: "Internationally recognised S&C body — CSCS is the global benchmark credential for coaches working with athletes.",
+    href: "https://www.nsca.com/",
+  },
+  {
     short: "BASES",
     full: "British Association of Sport & Exercise Sciences",
     covers: "Sport scientists and accredited practitioners",
