@@ -37,7 +37,8 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
-import heroCpd from "@/assets/cpd-hero-v1.jpg";
+import heroCpdAsset from "@/assets/cpd-hero-v2.jpg.asset.json";
+const heroCpd = heroCpdAsset.url;
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
@@ -494,8 +495,8 @@ function Hero() {
       <img
         src={heroCpd}
         alt=""
-        width={1920}
-        height={1088}
+        width={1536}
+        height={1024}
         loading="eager"
         fetchPriority="high"
         decoding="async"
