@@ -311,12 +311,12 @@ const PROVIDER_CHECKS = [
   {
     icon: ShieldCheck,
     title: "Assessment integrity",
-    body: "Real external assessment — not 47 multiple-choice questions you can re-take until you pass.",
+    body: "Real external assessment — not in-house multiple-choice questions you can resit until you pass.",
   },
   {
     icon: BookOpen,
     title: "Refunds & complaints",
-    body: "Published refund policy and a real complaints route — not a help-desk that ghosts you after the card clears.",
+    body: "Published refund policy and a real complaints route — not a help-desk that goes silent once payment clears.",
   },
 ];
 
