@@ -209,6 +209,11 @@ const FITNESS_LADDER: LadderRung[] = [
         full: "Certified Strength & Conditioning Specialist (NSCA)",
         meaning: "Internationally recognised S&C qualification.",
       },
+      {
+        acronym: "REPs",
+        full: "Register of Exercise Professionals",
+        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+      },
     ],
   },
 ];
