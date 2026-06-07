@@ -37,7 +37,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PressMarquee } from "@/components/marketing/PressMarquee";
 
-import heroCpdAsset from "@/assets/cpd-hero-v2.jpg.asset.json";
+import heroCpdAsset from "@/assets/cpd-hero-v3.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
 
 /* ------------------------------------------------------------------ */
