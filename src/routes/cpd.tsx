@@ -167,7 +167,7 @@ const FITNESS_LADDER: LadderRung[] = [
       {
         acronym: "REPs",
         full: "Register of Exercise Professionals",
-        meaning: "Sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
