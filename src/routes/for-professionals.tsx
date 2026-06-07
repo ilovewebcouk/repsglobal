@@ -146,7 +146,7 @@ function ForProsPage() {
                   Join REPs <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to="/features"
+                  to="/features/visibility"
                   className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white backdrop-blur hover:bg-white/15"
                 >
                   Explore features
@@ -266,7 +266,7 @@ function ForProsPage() {
           <ProductBlock
             eyebrow="Pillar 3 · Operations"
             title="Leads, bookings and payments — one tool."
-            body="Every enquiry lands in one pipeline with source, value and a follow-up date. Sessions, consults and classes share one calendar. Invoices, subscriptions and revenue share one ledger. REPs takes no cut of what your clients pay you."
+            body="Every enquiry lands in one pipeline with source, value and a follow-up date. Sessions, consults and classes share one calendar. Invoices, subscriptions and revenue share one ledger."
             bullets={[
               "Leads pipeline from enquiry to booked consult, with AI scoring",
               "Calendar with availability, session types and online consults",
@@ -317,7 +317,7 @@ function ForProsPage() {
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(55%_50%_at_75%_40%,rgba(255,122,0,0.12),transparent_70%)]"
         />
-        <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="relative mx-auto max-w-[1320px] px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-20">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
@@ -362,14 +362,14 @@ function ForProsPage() {
             ))}
           </div>
           <p className="mt-6 text-center text-[12.5px] text-white/55">
-            Plus risk flags and on-brand content drafting — included in every paid tier.
+            Plus risk flags across your full client list — included in every paid tier.
           </p>
         </div>
       </section>
 
       {/* PILLAR 6 — GROWTH */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 pt-20 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
           <ProductBlock
             eyebrow="Pillar 6 · Growth"
             title="The work that compounds, done for you."
