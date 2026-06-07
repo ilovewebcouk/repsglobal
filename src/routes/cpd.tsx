@@ -803,7 +803,7 @@ function Qualifications() {
             Know what the letters actually mean — before you spend.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The fitness industry runs on acronyms, and most punters don't know the difference between
+            The fitness industry runs on acronyms, and most clients can't tell the difference between
             a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
             for fitness, nutrition and movement disciplines.
           </p>
@@ -888,7 +888,7 @@ function Qualifications() {
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where punters get scammed most. Anyone can call themselves a “nutritionist.”
+            This is where clients get misled most. Anyone can call themselves a “nutritionist.”
             Only one role is legally protected — and only that role can prescribe diets for disease.
           </p>
 
@@ -1151,7 +1151,7 @@ function DodgyCourses() {
             Before you spend a penny, run this list.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            Most scammy training providers follow the same playbook — oversized claims, hidden tutors,
+            The weakest training providers follow the same playbook — oversized claims, hidden tutors,
             in-house assessment, finance pressure and a trillion “free” CPDs taped to the side.
             Here's what to look for, and what good actually looks like.
           </p>
@@ -1205,7 +1205,7 @@ function RaiseTheStandard() {
   const beats = [
     {
       n: "01",
-      title: "Siphon out the bullshit.",
+      title: "Filter out the noise.",
       body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
