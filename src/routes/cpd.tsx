@@ -1139,13 +1139,13 @@ function VerifiedProviders() {
 function DodgyCourses() {
   return (
     <section
-      id="dodgy-courses"
+      id="unaccredited-courses"
       className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a dodgy course
+            Spot an unaccredited course
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
             Before you spend a penny, run this list.
