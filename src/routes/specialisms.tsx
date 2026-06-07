@@ -56,7 +56,7 @@ export const Route = createFileRoute("/specialisms")({
     ],
     links: [
       { rel: "canonical", href: CANONICAL },
-      { rel: "preload", as: "image", href: heroGym, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: heroSpecialisms, fetchpriority: "high" },
     ],
     scripts: [
       {
@@ -501,7 +501,7 @@ function Hero() {
   return (
     <section className="relative overflow-hidden lg:min-h-[640px]">
       <img
-        src={heroGym}
+        src={heroSpecialisms}
         alt=""
         width={1920}
         height={1080}
