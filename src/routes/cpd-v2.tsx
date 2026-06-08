@@ -919,8 +919,8 @@ function SpecialistAreas() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Specialism areas"
-          heading="Build credibility through recognised specialisms."
-          lede="Specialism areas are evidenced through recognised qualifications and CPD — not handed out. When you complete the right credentials, your profile reflects them."
+          heading="Build visibility around your specialist areas."
+          lede="Specialism areas are evidenced through recognised qualifications and CPD — REPs doesn't hand out badges for things you haven't proven. When you complete the right credentials, your profile reflects them."
         />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
