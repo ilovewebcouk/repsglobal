@@ -992,8 +992,8 @@ function VerifiedProviders() {
 
 function ProfileScreenshot() {
   const bullets = [
-    "Qualifications, insurance & CPD — all evidenced",
-    "Verified-provider hours auto-count toward CPD",
+    "Qualifications & insurance — all evidenced",
+    "Awarding body & issue date visible on every credential",
     "Specialisms appear once the awarding body confirms",
   ];
   return (
