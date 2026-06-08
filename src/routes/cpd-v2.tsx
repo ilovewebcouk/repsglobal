@@ -177,6 +177,12 @@ const PATHWAYS = [
     outcome: "Use your shop-front, enquiries and AI tools to grow on REPs.",
     topics: ["Shop-front", "Enquiry conversion", "AI assistant"],
   },
+  {
+    icon: Monitor,
+    title: "Online coaching & tech",
+    outcome: "Deliver high-quality coaching to clients anywhere, with the right tools.",
+    topics: ["Online programming", "Coaching apps", "Client communications"],
+  },
 ];
 
 const COURSES = [
@@ -313,12 +319,15 @@ function CpdV2Page() {
         <DevelopmentPassport />
         <RegisterProofBand />
         <LearningPathways />
+        <RecognitionStrip />
         <CpdDiscovery />
         <SpecialistAreas />
         <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
+        <VerifyStrip />
         <FinalCta />
+
         <PublicFooter />
         <StickyCtaPill />
       </div>
@@ -343,35 +352,50 @@ function Hero() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[78%_38%] sm:object-[72%_42%] md:object-[68%_45%] lg:object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/35 via-reps-ink/60 to-reps-ink/85 lg:bg-reps-ink/40 lg:bg-none" />
+      <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/35" />
       <div
         aria-hidden
-        className="absolute inset-0 hidden lg:block bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
+        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_30%_45%,rgba(10,10,12,0.60),transparent_75%)] lg:bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
       />
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
+      />
 
-      <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-7xl flex-col items-start justify-start px-5 pt-24 sm:px-6 lg:px-8 lg:pt-28">
-        <div className="max-w-2xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
+      <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-[1320px] flex-col items-start justify-start px-6 pb-20 pt-24 lg:px-10 lg:pb-28 lg:pt-28">
+        <div className="max-w-[720px]">
+          <span
+            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange backdrop-blur"
+            style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Education & CPD
-          </Badge>
-          <h1 className="mt-5 font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]">
+            <GraduationCap className="h-3.5 w-3.5" /> Education & CPD
+          </span>
+
+          <h1
+            className="mt-6 animate-fade-in font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]"
+            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+          >
             Education, CPD and career growth{" "}
             <span className="text-reps-orange">for fitness professionals.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/80 sm:text-[18px]">
+
+          <p
+            className="mt-6 max-w-[560px] animate-fade-in text-[17px] leading-relaxed text-white/80 sm:text-[18px]"
+            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+          >
             Build your professional profile, track your development and find
             recognised education that helps you stay credible, visible and
             trusted through REPs.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <div
+            className="mt-8 flex animate-fade-in flex-wrap items-center gap-3"
+            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+          >
             <Link
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
@@ -392,25 +416,47 @@ function Hero() {
             </a>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/70">
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-              Accredited providers only
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5 text-reps-orange" />
-              Ofqual · Yoga Alliance · BASI · STOTT
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 text-reps-orange" />
-              Trusted by clients worldwide
-            </span>
+          <ul
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+          >
+            <li className="inline-flex items-center gap-1.5">
+              <BadgeCheck className="h-4 w-4 text-reps-orange" />
+              Identity, qualification & insurance verified
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-reps-orange" />
+              Recognised education partners
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-reps-orange" />
+              CPD tracked on your public profile
+            </li>
+          </ul>
+
+          <div
+            className="mt-10 w-full animate-fade-in border-t border-white/10 pt-5"
+            style={{ animationDuration: "640ms", animationDelay: "420ms", animationFillMode: "both" }}
+          >
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+              <span>Education</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>CPD</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Specialisms</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Pathways</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Career</span>
+              <span className="ml-2 text-reps-orange">— All in one place</span>
+            </p>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Proof cards                                                         */
@@ -419,7 +465,7 @@ function Hero() {
 function ProofCards() {
   return (
     <section className="border-y border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8 lg:py-14">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-4 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
         {PROOF_CARDS.map(({ icon: Icon, title, body }) => (
           <Card
             key={title}
@@ -451,7 +497,7 @@ function DevelopmentPassport() {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(255,122,0,0.10),transparent_70%)]" />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
@@ -641,7 +687,7 @@ function ProfessionalDevelopmentMockup() {
 function RegisterProofBand() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
+      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="mb-8 max-w-2xl">
           <Badge
             variant="outline"
@@ -666,7 +712,7 @@ function RegisterProofBand() {
 function LearningPathways() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-3xl">
           <Badge
             variant="outline"
@@ -734,7 +780,7 @@ function LearningPathways() {
 function CpdDiscovery() {
   return (
     <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <Badge
@@ -885,7 +931,7 @@ function CpdDiscovery() {
 function SpecialistAreas() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-3xl">
           <Badge
             variant="outline"
@@ -940,7 +986,7 @@ function SpecialistAreas() {
 function AiRecommendations() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
@@ -1058,7 +1104,7 @@ function TrainingProvidersBand() {
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(50%_60%_at_15%_50%,rgba(255,122,0,0.10),transparent_70%)]"
       />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-8 lg:py-24">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
@@ -1187,3 +1233,97 @@ function FinalCta() {
     </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Recognition strip — bodies that accredit the qualifications         */
+/* ------------------------------------------------------------------ */
+
+const RECOGNITION = [
+  { name: "Ofqual", note: "UK regulator for vocational qualifications — including L2/L3/L4 fitness." },
+  { name: "CIMSPA", note: "Chartered Institute for the Management of Sport & Physical Activity." },
+  { name: "Yoga Alliance", note: "Global registry for yoga teachers and 200/500-hour trainings." },
+  { name: "BASI Pilates", note: "Body Arts & Science International — comprehensive Pilates teacher training." },
+  { name: "STOTT Pilates", note: "Merrithew's contemporary Pilates education — mat and apparatus." },
+  { name: "Les Mills", note: "Group fitness programmes and instructor certification, used worldwide." },
+];
+
+function RecognitionStrip() {
+  return (
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="max-w-3xl">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            <Globe className="mr-1.5 h-3.5 w-3.5" /> Recognition
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
+            Recognised by the bodies that{" "}
+            <span className="text-reps-orange">issue the qualifications.</span>
+          </h2>
+          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
+            REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile.
+          </p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {RECOGNITION.map((r) => (
+            <Card
+              key={r.name}
+              className="rounded-[16px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
+            >
+              <CardContent className="flex items-start gap-3 p-4">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <ShieldCheck className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[14px] font-semibold text-white">{r.name}</div>
+                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/65">
+                    {r.note}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Verify strip — three short proofs above the final CTA               */
+/* ------------------------------------------------------------------ */
+
+const VERIFY = [
+  { icon: ShieldCheck, title: "Identity verified", body: "Government-ID checked on every REPs member — no anonymous listings." },
+  { icon: BadgeCheck, title: "Insurance current", body: "Public liability and professional indemnity confirmed against the policy." },
+  { icon: GraduationCap, title: "CPD on the public record", body: "Hours and points are visible on your profile, not buried in a folder." },
+];
+
+function VerifyStrip() {
+  return (
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {VERIFY.map(({ icon: Icon, title, body }) => (
+            <div
+              key={title}
+              className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-5"
+            >
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                <Icon className="h-5 w-5" />
+              </span>
+              <div>
+                <div className="text-[14.5px] font-semibold text-white">{title}</div>
+                <div className="mt-1 text-[13px] leading-relaxed text-white/70">{body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
