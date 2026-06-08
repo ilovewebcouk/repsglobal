@@ -1289,18 +1289,14 @@ function ProviderCtaBand() {
                 The verified-provider directory opens shortly. Until it does, if a provider
                 claims credibility they can't back up, send it our way.
               </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-[6px] border border-reps-border bg-reps-ink px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                Directory · Coming soon
+              </span>
             </div>
             <div className="flex flex-wrap gap-3">
-              <span
-                aria-disabled
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange/60 px-6 text-[14px] font-semibold text-white shadow-none"
-                title="Verified provider directory coming soon"
-              >
-                Directory coming soon
-              </span>
               <Link
                 to="/contact"
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-ink px-6 text-[14px] font-semibold text-white shadow-none hover:border-reps-orange-border"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
               >
                 Report a provider <ArrowRight className="h-4 w-4" />
               </Link>
