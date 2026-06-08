@@ -1141,7 +1141,290 @@ function VerifiedProviders() {
 /* Section: Dodgy courses                                              */
 /* ------------------------------------------------------------------ */
 
+function CredibilityQuiz() {
+  type Choice = "yes" | "no" | "unsure";
+  const questions: Array<{
+    id: string;
+    q: string;
+    help?: string;
+    // weight applied when answer = yes; -weight when no; 0 when unsure
+    weight: number;
+    // if true, "yes" is the bad answer (negative outcome)
+    inverted?: boolean;
+  }> = [
+    {
+      id: "ofqual",
+      q: "Is the qualification on an Ofqual-regulated awarding organisation's register (e.g. Active IQ, YMCA Awards, Focus Awards, iCQ)?",
+      help: "Search the awarding body's website for the exact qualification title and level.",
+      weight: 2,
+    },
+    {
+      id: "eqa",
+      q: "Is the course externally assessed or quality-assured — not marked entirely in-house by the same people selling it?",
+      weight: 2,
+    },
+    {
+      id: "level",
+      q: "Does the listing state a clear Level (e.g. Level 3) plus credits or Total Qualification Time (TQT)?",
+      weight: 1,
+    },
+    {
+      id: "tutors",
+      q: "Are the tutors / assessors named, with their own qualifications and insurance visible?",
+      weight: 1,
+    },
+    {
+      id: "income",
+      q: "Does the provider guarantee a salary, “£X in your first month”, or push finance with a countdown timer?",
+      help: "Income guarantees and finance pressure are the single biggest red flag in this industry.",
+      weight: 2,
+      inverted: true,
+    },
+    {
+      id: "freecpd",
+      q: "Is the headline padded with dozens of “free CPD points” bundled in to make the course look bigger?",
+      weight: 1,
+      inverted: true,
+    },
+  ];
+
+  const [answers, setAnswers] = useState<Record<string, Choice>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const answeredCount = Object.keys(answers).length;
+  const total = questions.length;
+
+  const score = useMemo(() => {
+    let s = 0;
+    for (const q of questions) {
+      const a = answers[q.id];
+      if (!a || a === "unsure") continue;
+      const positive = q.inverted ? a === "no" : a === "yes";
+      s += positive ? q.weight : -q.weight;
+    }
+    return s;
+  }, [answers]);
+
+  const maxScore = questions.reduce((acc, q) => acc + q.weight, 0);
+
+  const verdict = (() => {
+    if (score >= Math.ceil(maxScore * 0.6)) {
+      return {
+        tone: "good" as const,
+        label: "Looks credible",
+        summary:
+          "On the signals you've checked, this qualification behaves like a real, regulated one. Verify the specifics below before paying.",
+        next: [
+          "Confirm the exact qualification title and number on the awarding body's public register.",
+          "Check the provider's centre approval / listing on that same awarding body site.",
+          "Ask for a sample assessment plan and the name of the External Quality Assurer.",
+          "Cross-check tutor names against the REPs register or their own professional body.",
+        ],
+      };
+    }
+    if (score <= 0) {
+      return {
+        tone: "bad" as const,
+        label: "Walk away",
+        summary:
+          "Too many red flags. This looks like a sales product wrapped in qualification language, not a regulated course. Don't pay.",
+        next: [
+          "Do not sign a finance agreement — interest-bearing loans for unregulated courses are very hard to undo.",
+          "Search the provider name + “refund” and + “Ofqual” before any further contact.",
+          "If you've already paid, contact your card provider about a Section 75 / chargeback claim.",
+          "Report the provider to REPs so future buyers see the warning.",
+        ],
+      };
+    }
+    return {
+      tone: "mixed" as const,
+      label: "Mixed signals — dig deeper",
+      summary:
+        "Some of the right ingredients are there, but enough is missing that you should not pay yet. Get the answers below in writing before you commit.",
+      next: [
+        "Ask in writing: which Ofqual-regulated awarding body sits behind this course, and what is the qualification number?",
+        "Ask who externally quality-assures the assessments, and request the EQA's name.",
+        "Ask for the Level, credits and Total Qualification Time on a single page — not buried in a brochure.",
+        "Wait 48 hours before deciding. Anyone urgent enough to pressure you in that window is the problem.",
+      ],
+    };
+  })();
+
+  const toneStyles =
+    verdict.tone === "good"
+      ? "border-reps-orange-border bg-reps-orange-soft"
+      : verdict.tone === "bad"
+        ? "border-white/15 bg-white/[0.04]"
+        : "border-reps-border bg-reps-panel";
+
+  const toneIcon =
+    verdict.tone === "good" ? (
+      <BadgeCheck className="h-5 w-5 text-reps-orange" />
+    ) : verdict.tone === "bad" ? (
+      <X className="h-5 w-5 text-white/70" />
+    ) : (
+      <Flag className="h-5 w-5 text-white/70" />
+    );
+
+  function reset() {
+    setAnswers({});
+    setSubmitted(false);
+  }
+
+  return (
+    <section
+      id="credibility-quiz"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink"
+    >
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="max-w-[820px]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+            Credibility quiz
+          </span>
+          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+            Is this qualification actually real?
+          </h2>
+          <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+            Six quick questions. Answer for the course you're looking at — we'll give you a
+            verdict and a short list of what to check next. Nothing is stored.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+          {/* Questions */}
+          <div className="rounded-[18px] border border-reps-border bg-reps-panel p-6 lg:p-8">
+            <ol className="flex flex-col gap-6">
+              {questions.map((q, i) => (
+                <li key={q.id} className="border-b border-reps-border pb-6 last:border-0 last:pb-0">
+                  <div className="flex gap-3">
+                    <span className="font-display text-[18px] font-bold leading-none text-reps-orange/80">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-[15px] font-semibold leading-snug text-white">{q.q}</p>
+                      {q.help ? (
+                        <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">{q.help}</p>
+                      ) : null}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(["yes", "no", "unsure"] as Choice[]).map((c) => {
+                          const active = answers[q.id] === c;
+                          const label = c === "yes" ? "Yes" : c === "no" ? "No" : "Not sure";
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() =>
+                                setAnswers((prev) => ({ ...prev, [q.id]: c }))
+                              }
+                              className={
+                                "inline-flex h-9 items-center rounded-[10px] border px-3.5 text-[13px] font-semibold transition " +
+                                (active
+                                  ? "border-reps-orange bg-reps-orange-soft text-white"
+                                  : "border-reps-border bg-reps-ink text-white/70 hover:border-reps-orange-border hover:text-white")
+                              }
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setSubmitted(true)}
+                disabled={answeredCount < total}
+                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white transition hover:bg-reps-orange/90 disabled:cursor-not-allowed disabled:bg-reps-orange/40"
+              >
+                Get my verdict <ArrowRight className="h-4 w-4" />
+              </button>
+              {answeredCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-reps-border bg-transparent px-4 text-[13px] font-semibold text-white/70 hover:border-reps-orange-border hover:text-white"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Reset
+                </button>
+              ) : null}
+              <span className="text-[12px] text-white/50">
+                {answeredCount}/{total} answered
+              </span>
+            </div>
+          </div>
+
+          {/* Verdict */}
+          <div
+            className={
+              "rounded-[18px] border p-6 lg:p-8 " +
+              (submitted ? toneStyles : "border-dashed border-reps-border bg-reps-panel/40")
+            }
+          >
+            {!submitted ? (
+              <div className="flex h-full flex-col items-start justify-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/5 text-white/60">
+                  <Crosshair className="h-5 w-5" />
+                </span>
+                <h3 className="font-display text-[18px] font-bold text-white">
+                  Your verdict will appear here.
+                </h3>
+                <p className="text-[13.5px] leading-relaxed text-white/60">
+                  Answer all six questions on the left, then hit “Get my verdict”. We'll tell you
+                  whether the course looks credible and exactly what to verify next.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/5">
+                    {toneIcon}
+                  </span>
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                      Verdict
+                    </span>
+                    <h3 className="font-display text-[20px] font-bold leading-tight text-white">
+                      {verdict.label}
+                    </h3>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-[14px] leading-relaxed text-white/80">{verdict.summary}</p>
+
+                <div className="mt-5 rounded-[12px] border border-white/10 bg-reps-ink/60 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                    What to check next
+                  </p>
+                  <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-relaxed text-white/85">
+                    {verdict.next.map((n) => (
+                      <li key={n} className="flex gap-2.5">
+                        <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
+                        <span>{n}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <p className="mt-4 text-[12px] leading-relaxed text-white/45">
+                  Heuristic guidance only — not legal or financial advice. When in doubt, default to
+                  awarding-body confirmation before paying.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DodgyCourses() {
+
   return (
     <section
       id="dodgy-courses"
