@@ -874,8 +874,7 @@ function HowTheStandardWorks() {
           <div className="flex flex-wrap items-center gap-3">
             <BadgeCheck className="h-5 w-5 text-reps-orange" />
             <p className="text-[14px] font-semibold text-white">
-              Every CPD entry includes provider, awarding body and issue date — visible on the
-              public profile. Miss a quarter and the badge auto-suspends until CPD is current.
+              The awarding body is named on every profile. CPD only counts toward a REPs profile when it's delivered by a REPs-accredited provider.
             </p>
           </div>
         </div>
