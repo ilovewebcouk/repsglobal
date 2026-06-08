@@ -499,6 +499,7 @@ const REGISTERS = [
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
+  "Claims “REPs approved” but isn't listed on the public REPs register — always cross-check the register, not the marketing.",
   "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
   "Awarding body not Ofqual-regulated or REPs-accredited (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
@@ -509,13 +510,12 @@ const RED_FLAGS = [
 ];
 
 const GOOD_SIGNS = [
+  "Carries the REPs Endorsed Course badge — and is listed on the public REPs register so you can verify it yourself.",
   "Regulated qualification on the RQF, awarded by a named Ofqual body — or, for Pilates and yoga, a recognised teacher-training school with named, qualified tutors.",
-  "REPs verification listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules and tutor-to-learner ratios in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
   "Verifiable learner reviews — not just selected testimonials on the provider's own site.",
-  "Listed on the REPs verified training provider register.",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -526,6 +526,10 @@ const FAQS = [
   {
     q: "What does it mean for a course to be accredited by REPs?",
     a: "REPs accreditation means the training provider and its course have been independently checked at the points that matter: a recognised awarding body (Ofqual for regulated fitness and nutrition qualifications; Yoga Alliance Professionals, the British Wheel of Yoga or comparable bodies for yoga; the PMA, BASI, STOTT or comparable for Pilates), named and qualified tutors, external assessment, and published refund and complaints policies. Hours earned through an accredited provider auto-count toward a REPs member's CPD log.",
+  },
+  {
+    q: "How do I check if a course is genuinely REPs-endorsed?",
+    a: "Look for the REPs Endorsed Course badge on the provider's course page — then cross-check the provider on the public REPs verified training provider register. If it's not on the register, it's not endorsed, regardless of what the marketing says. The register is the single source of truth.",
   },
   {
     q: "What is CPD?",
@@ -631,6 +635,8 @@ function CpdPage() {
         <Hero />
 
         <RepsPosition />
+
+        <EndorsedBadge />
 
         <ProfileScreenshot />
 
@@ -796,7 +802,7 @@ function RepsPosition() {
       icon: BadgeCheck,
       title: "Sits between students and providers.",
       body:
-        "REPs independently checks that a provider is genuinely regulated, holds them to a published service standard on top of the awarding body's requirements, and surfaces verified reviews from real learners. Students get one place to see who is worth their tuition fees.",
+        "REPs independently checks each provider against a published service standard, verifies their accreditation, and surfaces reviews from real learners — so a student has one place to see who is worth the tuition fee. For Pilates and yoga, where no statutory regulator exists, this is the standard.",
     },
   ];
 
@@ -850,14 +856,6 @@ function RepsPosition() {
           })}
         </ol>
 
-        <div className="mt-10 rounded-[18px] border border-reps-border bg-reps-panel px-5 py-4">
-          <p className="text-[14px] leading-relaxed text-white/85">
-            <span className="font-semibold text-white">A note on Pilates and yoga.</span>{" "}
-            These disciplines sit outside the statutory regulator's remit. For students, that means
-            the only meaningful protection is an independent check of the teacher-training school
-            and its tutors — which is the work REPs does, in the absence of an Ofqual equivalent.
-          </p>
-        </div>
       </div>
     </section>
   );
@@ -882,12 +880,13 @@ function ProfileScreenshot() {
               On the profile
             </span>
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              This is what verified CPD looks like to your clients.
+              And here's how that course shows up on your REPs profile.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every verified hour, qualification and insurance certificate shows up live on the
-              public REPs profile — with the provider, the awarding body and the date it was issued.
-              Unverified hours sit in a separate column. Clients can see the difference at a glance.
+              Hours earned through an endorsed provider auto-count toward your CPD log, with the
+              provider, the awarding body and the date it was issued — visible on your public REPs
+              profile. Unverified hours sit in a separate column. Clients can see the difference at
+              a glance.
             </p>
             <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
               {bullets.map((b) => (
@@ -1447,17 +1446,11 @@ function VerifiedProviders() {
               The verified training provider register.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              REPs lists training providers that meet a published service standard on top of their
-              awarding-body recognition — tutor credentials, assessment integrity, refund and
-              complaints policies, and verified reviews from real learners. For students it is the
-              shortest path to a course worth the tuition fee.
+              Every provider listed here has had their courses reviewed against REPs criteria,
+              carries valid insurance, names qualified tutors and is re-checked each year. Search
+              by discipline, location or qualification — it's the shortest path to a course worth
+              the tuition fee.
             </p>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              For providers it is the place informed students search. When buyers can tell the
-              difference between a verified school and a chancer, the verified school fills more
-              courses at a higher price. That is what the register is for.
-            </p>
-
           </div>
 
           <div className="grid gap-4">
@@ -1877,12 +1870,12 @@ function JoinRepsCta() {
                 >
                   Find verified training providers <ArrowRight className="h-4 w-4" />
                 </a>
-                <Link
-                  to="/for-professionals"
+                <a
+                  href="/training-providers"
                   className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
                 >
-                  List your training organisation
-                </Link>
+                  Are you a training provider? →
+                </a>
               </div>
             </div>
           </div>
