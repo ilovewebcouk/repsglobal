@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Award,
   BadgeCheck,
-  Brain,
   Briefcase,
   Check,
   Crosshair,
