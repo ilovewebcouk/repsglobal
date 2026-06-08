@@ -637,27 +637,15 @@ function CpdPage() {
 
         <Hero />
 
+        <RepsPosition />
+
         <ProfileScreenshot />
-
-        <WhatCpdIs />
-
-
-
-        <RepsCpdSystem />
 
         <Qualifications />
 
-        
-
-        <VerifiedProviders />
-
         <DodgyCourses />
 
-        
-
-        <RaiseTheStandard />
-
-        <ProviderCtaBand />
+        <VerifiedProviders />
 
         <RegistersBlock />
 
