@@ -40,6 +40,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
@@ -1089,171 +1090,119 @@ function Qualifications() {
           </p>
         </div>
 
-        {/* Fitness ladder */}
-        <div className="mt-12">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Activity className="h-4 w-4" />
-            </span>
-            <h3 className="font-display text-[20px] font-bold text-white">Fitness pathway</h3>
-          </div>
-          <div className="mt-6 grid gap-5 lg:grid-cols-3">
-            {FITNESS_LADDER.map((r) => (
-              <article key={r.level} className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
-                <span className="inline-flex items-center rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[12px] font-semibold text-reps-orange">
-                  {r.level}
-                </span>
-                <h4 className="mt-3 font-display text-[20px] font-bold leading-tight text-white">
-                  {r.title}
-                </h4>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{r.blurb}</p>
-
-                <h5 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                  Can do
-                </h5>
-                <ul className="mt-2 flex flex-col gap-2 text-[13px] leading-relaxed text-white/80">
-                  {r.scope.map((s) => (
-                    <li key={s} className="flex gap-2">
-                      <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-reps-orange" />
-                      <span>{s}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <h5 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                  Can't do
-                </h5>
-                <ul className="mt-2 flex flex-col gap-2 text-[13px] leading-relaxed text-white/65">
-                  {r.notScope.map((s) => (
-                    <li key={s} className="flex gap-2">
-                      <X className="mt-[3px] h-3.5 w-3.5 shrink-0 text-white/40" />
-                      <span>{s}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-5 border-t border-reps-border pt-4">
-                  <div className="flex flex-wrap gap-2">
-                    {r.quals.map((q) => (
-                      <Tooltip key={q.acronym}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            className="rounded-[6px] border border-reps-border bg-reps-ink px-2 py-1 text-[12px] font-semibold text-white underline decoration-reps-orange/70 decoration-dotted underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange"
-                          >
-                            {q.acronym}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <span className="block text-[12px] font-semibold">{q.full}</span>
-                          <span className="mt-1 block max-w-[260px] text-[12px] text-white/80">
-                            {q.meaning}
-                          </span>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-
-        {/* Nutrition ladder */}
-        <div className="mt-16">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Heart className="h-4 w-4" />
-            </span>
-            <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
-          </div>
-          <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where buyers get burned hardest. Anyone can call themselves a “nutritionist.”
-            Only one role is legally protected — and only that role can prescribe diets for disease.
-          </p>
-
-          <div className="mt-6 grid gap-5 lg:grid-cols-3">
-            {NUTRITION_LADDER.map((row) => (
-              <article
-                key={row.title}
-                className={`rounded-[18px] border bg-reps-panel p-6 ${
-                  row.protected ? "border-reps-orange-border" : "border-reps-border"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <h4 className="font-display text-[18px] font-bold text-white">{row.title}</h4>
-                  {row.protected && (
-                    <span className="inline-flex items-center gap-1 rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
-                      <ShieldCheck className="h-3 w-3" /> Protected title
-                    </span>
-                  )}
-                </div>
-                <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
-                  {row.letters}
-                </p>
-                <p className="mt-3 text-[13.5px] leading-relaxed text-white/75">{row.body}</p>
-                <ul className="mt-4 flex flex-col gap-2 text-[13px] leading-relaxed text-white/75">
-                  {row.scope.map((s) => (
-                    <li key={s} className="flex gap-2">
-                      <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-reps-orange" />
-                      <span>{s}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
+        <Tabs defaultValue="fitness" className="mt-12 gap-0">
+          <div className="overflow-x-auto">
+            <TabsList className="h-auto w-full justify-start gap-6 rounded-none border-b border-reps-border bg-transparent p-0">
+              {[
+                { value: "fitness", label: "Fitness", Icon: Activity },
+                { value: "nutrition", label: "Nutrition", Icon: Heart },
+                { value: "pilates", label: "Pilates", Icon: Disc },
+                { value: "yoga", label: "Yoga", Icon: Flower2 },
+              ].map(({ value, label, Icon }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="relative rounded-none border-0 bg-transparent px-1 pb-3 pt-2 text-[14px] font-semibold text-white/55 shadow-none after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-transparent after:content-[''] data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:after:bg-reps-orange dark:data-[state=active]:bg-transparent"
+                >
+                  <Icon data-icon="inline-start" />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </div>
 
-          <div className="mt-8 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
-            <p className="text-[14px] leading-relaxed text-white">
-              <strong className="text-white">Plain English:</strong> if someone selling you a
-              “clinical meal plan” for a medical condition isn't a Registered Dietitian (RD, HCPC),
-              they're operating outside their lane. REPs verifies which role you're actually getting.
+          {/* Fitness */}
+          <TabsContent value="fitness" className="mt-8">
+            <p className="max-w-[760px] text-[14px] leading-relaxed text-white/70">
+              The RQF fitness ladder, in plain English. Each tier defines what someone is actually
+              qualified to deliver — and what they aren't.
             </p>
-          </div>
-        </div>
+            <div className="mt-6 grid gap-5 lg:grid-cols-3">
+              {FITNESS_LADDER.map((r) => (
+                <LadderCard key={r.title} rung={r} />
+              ))}
+            </div>
+          </TabsContent>
 
-        {/* Pilates pathway */}
-        <div className="mt-16">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Disc className="h-4 w-4" />
-            </span>
-            <h3 className="font-display text-[20px] font-bold text-white">Pilates pathway</h3>
-          </div>
-          <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            Pilates runs on hours-based teacher training rather than the RQF for most apparatus work.
-            Here's the honest ladder REPs cross-checks.
-          </p>
-          <div className="mt-6 grid gap-5 lg:grid-cols-3">
-            {PILATES_LADDER.map((r) => (
-              <LadderCard key={r.title} rung={r} />
-            ))}
-          </div>
-        </div>
+          {/* Nutrition */}
+          <TabsContent value="nutrition" className="mt-8">
+            <p className="max-w-[760px] text-[14px] leading-relaxed text-white/70">
+              This is where buyers get burned hardest. Anyone can call themselves a “nutritionist.”
+              Only one role is legally protected — and only that role can prescribe diets for disease.
+            </p>
+            <div className="mt-6 grid gap-5 lg:grid-cols-3">
+              {NUTRITION_LADDER.map((row) => (
+                <article
+                  key={row.title}
+                  className={`rounded-[18px] border bg-reps-panel p-6 ${
+                    row.protected ? "border-reps-orange-border" : "border-reps-border"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-display text-[18px] font-bold text-white">{row.title}</h4>
+                    {row.protected && (
+                      <span className="inline-flex items-center gap-1 rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
+                        <ShieldCheck className="h-3 w-3" /> Protected title
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
+                    {row.letters}
+                  </p>
+                  <p className="mt-3 text-[13.5px] leading-relaxed text-white/75">{row.body}</p>
+                  <ul className="mt-4 flex flex-col gap-2 text-[13px] leading-relaxed text-white/75">
+                    {row.scope.map((s) => (
+                      <li key={s} className="flex gap-2">
+                        <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+            <div className="mt-8 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
+              <p className="text-[14px] leading-relaxed text-white">
+                <strong className="text-white">Plain English:</strong> if someone selling you a
+                “clinical meal plan” for a medical condition isn't a Registered Dietitian (RD, HCPC),
+                they're operating outside their lane. REPs verifies which role you're actually getting.
+              </p>
+            </div>
+          </TabsContent>
 
-        {/* Yoga pathway */}
-        <div className="mt-16">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Flower2 className="h-4 w-4" />
-            </span>
-            <h3 className="font-display text-[20px] font-bold text-white">Yoga pathway</h3>
-          </div>
-          <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            Yoga teacher training is measured in hours, not RQF levels — but the international
-            standards are clear. These are the ones REPs verifies.
-          </p>
-          <div className="mt-6 grid gap-5 lg:grid-cols-3">
-            {YOGA_LADDER.map((r) => (
-              <LadderCard key={r.title} rung={r} />
-            ))}
-          </div>
-        </div>
+          {/* Pilates */}
+          <TabsContent value="pilates" className="mt-8">
+            <p className="max-w-[760px] text-[14px] leading-relaxed text-white/70">
+              Pilates runs on hours-based teacher training rather than the RQF for most apparatus work.
+              Here's the honest ladder REPs cross-checks.
+            </p>
+            <div className="mt-6 grid gap-5 lg:grid-cols-3">
+              {PILATES_LADDER.map((r) => (
+                <LadderCard key={r.title} rung={r} />
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Yoga */}
+          <TabsContent value="yoga" className="mt-8">
+            <p className="max-w-[760px] text-[14px] leading-relaxed text-white/70">
+              Yoga teacher training is measured in hours, not RQF levels — but the international
+              standards are clear. These are the ones REPs verifies.
+            </p>
+            <div className="mt-6 grid gap-5 lg:grid-cols-3">
+              {YOGA_LADDER.map((r) => (
+                <LadderCard key={r.title} rung={r} />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </section>
   );
 }
+
+
+
 
 /* ------------------------------------------------------------------ */
 /* Section: Generalist vs specialist                                   */
