@@ -377,17 +377,16 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            Education, CPD and career growth{" "}
-            <span className="text-reps-orange">for fitness professionals.</span>
+            Education and CPD that strengthens your REPs profile.
           </h1>
 
           <p
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            Build your professional profile, track your development and find
-            recognised education that helps you stay credible, visible and
-            trusted through REPs.
+            Track your development, build recognised specialisms and show
+            clients the qualifications, standards and professional learning
+            behind your work.
           </p>
 
           <div
@@ -410,7 +409,7 @@ function Hero() {
               href="#training-providers"
               className="text-[13.5px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
             >
-              Are you a training provider?
+              Training providers
             </a>
           </div>
 
