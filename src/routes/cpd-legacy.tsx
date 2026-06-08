@@ -49,7 +49,7 @@ const heroCpd = cpdTutorMomentAsset.url;
 /* Page head                                                           */
 /* ------------------------------------------------------------------ */
 
-const CANONICAL = "https://repsglobal.lovable.app/cpd";
+const CANONICAL = "https://repsglobal.lovable.app/cpd-legacy";
 const META_TITLE =
   "CPD & Verified Training Providers — Education that actually counts | REPs";
 const META_DESC =
