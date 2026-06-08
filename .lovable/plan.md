@@ -1,46 +1,61 @@
 ## Goal
 
-Drop a "this is what CPD looks like on a REPs profile" product band into `/cpd`, immediately after the hero. Closes the loop on the hero's claim (verified CPD = visible badge on a public profile) and gives the page a visual breather before the dense educational content.
+Lift `/cpd` from a long wall of dark sections to a page with real rhythm and one earned hero-grade visual moment mid-page — while confirming the two original empty bands are now closed.
 
-## Placement
+## A. Verify the empty bands are closed (no edit unless gap is found)
 
-`src/routes/cpd.tsx` — insert a new `<ProfileScreenshot />` section between `<Hero />` and `<WhatCpdIs />` in `CpdPage()`.
+Navigate to `/cpd`, take a full-page screenshot, and inspect the full section stack:
 
-## What the section contains
+1. Hero → 2. ProfileScreenshot (new) → 3. WhatCpdIs → 4. RepsCpdSystem → 5. Qualifications → 6. GeneralistVsSpecialist → 7. VerifiedProviders → 8. DodgyCourses → 9. RaiseTheStandard → 10. ProviderCtaBand → 11. RegistersBlock → 12. VerifyStrip → 13. FaqBlock → 14. JoinRepsCta.
 
-A standard dark-band section (`bg-reps-ink`, matching surrounding rhythm), 2-column on desktop, stacked on mobile:
+- The upper gap (was VenueMarquee) is filled by ProfileScreenshot.
+- The lower gap (was PressMarquee, likely between FaqBlock and JoinRepsCta) needs visual confirmation. If a dead band of >120px is visible, tighten the `py-*` on `JoinRepsCta` (currently `py-16 lg:py-20`) so the dark hand-off reads as one section, not two.
 
-**Left column (copy):**
-- Small orange eyebrow: "On the profile"
-- H2: "This is what verified CPD looks like to your clients."
-- Body: One short paragraph — verified hours show up as live credentials on the public profile, with provider, level and date; unverified hours sit in a separate column the public can see.
-- 3 short bullet rows with `Check` icons (mirrors hero trust chips style):
-  - "Logged quarterly, audited annually"
-  - "Verified-provider hours auto-count"
-  - "Specialisms appear once the awarding body confirms"
+No code change unless the screenshot proves a gap.
 
-**Right column (product shot):**
-- A real screenshot of `/c/james-wilson` (the locked Pro shop-front), cropped to the qualifications / credentials area, wrapped in the existing `BrowserFrame` (`src/components/mockups/BrowserFrame.tsx`) with `url="repsglobal.com/c/james-wilson"`.
-- Subtle orange glow behind the frame (`bg-[radial-gradient(...)]` using `--reps-orange`) for hero-grade polish.
+## B. Section rhythm (light/dark cadence)
 
-## Implementation steps
+Page currently alternates `bg-reps-ink` ↔ `bg-reps-panel-soft/40`. The `/40` opacity makes the "lifted" sections barely distinguishable — the page reads as one slab. Fix by swapping the four panel-soft sections to `bg-reps-midnight` (the same step the coach shop-front uses for its alternation), and lifting their inner cards from `bg-reps-panel` → `bg-reps-panel-soft` so card contrast holds.
 
-1. Capture the screenshot
-   - `browser--view_preview` to `/c/james-wilson`, scroll to the qualifications/credentials section.
-   - `browser--screenshot` (viewport, not full page) framed around that area.
-   - Save to `src/assets/cpd-profile-screenshot.jpg` via `lovable-assets create` and write the `.asset.json` pointer.
+Sections to convert (`bg-reps-panel-soft/40` → `bg-reps-midnight`):
 
-2. Add the section to `src/routes/cpd.tsx`
-   - Import the asset pointer and `BrowserFrame`.
-   - Add a new `ProfileScreenshot` component below `Hero`.
-   - Mount it between `<Hero />` and `<WhatCpdIs />` in `CpdPage()`.
+- `RepsCpdSystem` (line 783)
+- `GeneralistVsSpecialist` (line 1017)
+- `DodgyCourses` (line 1180)
+- `RegistersBlock` (line 1353)
 
-3. Verify
-   - `browser--view_preview` `/cpd`, screenshot the new section, check copy fit, frame alignment and that it reads as "earned" rather than filler.
+Inside each of those four sections, swap card `bg-reps-panel` → `bg-reps-panel-soft` so the cards don't disappear into the new midnight surface. Borders stay `border-reps-border`.
 
-## Technical notes
+No light/ivory section — the page is editorially heavy and the dark palette is intentional. Midnight gives genuine cadence without breaking the visual register.
 
-- Use semantic tokens only (`bg-reps-ink`, `border-reps-border`, `text-reps-orange`, `bg-reps-orange-soft`) per project core rule.
-- Radius: `BrowserFrame` already uses `rounded-[22px]` (large panel) — keep as-is. Container is a section, no card radius needed.
-- No new dependencies, no business logic changes, no DB.
-- The screenshot is a real capture of a locked page (`/c/james-wilson`), so it stays in sync with the canonical shop-front mock-up.
+## C. One hero-grade visual moment mid-page
+
+Add a new full-bleed photo band, `<TutorMoment />`, placed between `<DodgyCourses />` and `<RaiseTheStandard />` in `CpdPage()`. This is the structural midpoint and breaks ~6 card-grid sections in a row.
+
+Layout: 60vh-ish band, full-bleed background image of a tutor teaching at a CPD workshop (small group, focused, REPS wordmark on the tutor's polo per project core rule). Dark gradient overlay bottom-left for legibility. Overlaid content:
+
+- Small orange eyebrow: "Inside a verified CPD course"
+- Large pulled quote (font-display, ~32-44px): "The honest providers are already here. The rest are running a print shop for certificates."
+- Caption row: "REPs — verified training providers"
+
+The blockquote currently buried in `VerifiedProviders` (line 1138-1142) is removed when this band lands, so the quote is not duplicated.
+
+Image source: generate via `imagegen--generate_image` (standard quality, 1920x1080, jpg). Save to `src/assets/cpd-tutor-moment.jpg`, then upload via `lovable-assets create` and write the `.asset.json` pointer. Prompt enforces: tutor in a fitness studio teaching 3-4 students at whiteboard or with anatomy chart, ALL-CAPS white REPS wordmark on left chest of polo (real print, not overlay), warm rim light from window, editorial photography, no on-image text.
+
+Section uses `bg-reps-ink`, `rounded-none`, full-width image with the same dark→orange micro-gradient overlay used in the hero so it reads as a continuation of brand atmosphere, not a stock-photo drop.
+
+## Implementation order
+
+1. Screenshot `/cpd` and confirm whether any visible gap remains. If yes, tighten the `JoinRepsCta` padding in the same edit batch as B.
+2. Edit `src/routes/cpd.tsx` — swap four section backgrounds + their inner card backgrounds (B).
+3. Generate tutor image, upload via `lovable-assets`, write `.asset.json`.
+4. Add `TutorMoment` component, remove the duplicate blockquote from `VerifiedProviders`, mount between `DodgyCourses` and `RaiseTheStandard` (C).
+5. Re-screenshot `/cpd` end-to-end to confirm: no dead bands, clear ink/midnight cadence, one cinematic moment mid-page.
+
+## Notes / constraints
+
+- All colours via semantic tokens (`bg-reps-ink`, `bg-reps-midnight`, `bg-reps-panel`, `bg-reps-panel-soft`, `border-reps-border`, `text-reps-orange`).
+- Radius rules preserved — no new radii introduced.
+- REPS wordmark rule enforced on the generated tutor image (white, ALL CAPS, left-chest embroidery).
+- No content/copy changes outside the moved blockquote.
+- No backend work.
