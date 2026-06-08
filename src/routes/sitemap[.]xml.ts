@@ -22,7 +22,7 @@ const STATIC_ROUTES: SitemapEntry[] = [
   { path: "/pricing", changefreq: "monthly", priority: "0.8" },
   { path: "/standards", changefreq: "monthly", priority: "0.7" },
   { path: "/verify", changefreq: "monthly", priority: "0.7" },
-  { path: "/education", changefreq: "monthly", priority: "0.7" },
+  { path: "/cpd", changefreq: "monthly", priority: "0.7" },
   { path: "/specialisms", changefreq: "monthly", priority: "0.7" },
   { path: "/business-tools", changefreq: "monthly", priority: "0.7" },
   { path: "/resources", changefreq: "weekly", priority: "0.9" },

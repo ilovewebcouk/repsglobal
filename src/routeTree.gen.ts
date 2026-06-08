@@ -31,7 +31,6 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as FaqRouteImport } from './routes/faq'
-import { Route as EducationRouteImport } from './routes/education'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
@@ -211,11 +210,6 @@ const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EducationRoute = EducationRouteImport.update({
-  id: '/education',
-  path: '/education',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -586,7 +580,6 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
@@ -681,7 +674,6 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
@@ -776,7 +768,6 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
@@ -873,7 +864,6 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/cpd'
     | '/dashboard'
-    | '/education'
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
@@ -968,7 +958,6 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/cpd'
     | '/dashboard'
-    | '/education'
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
@@ -1062,7 +1051,6 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/cpd'
     | '/dashboard'
-    | '/education'
     | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
@@ -1158,7 +1146,6 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
   DashboardRoute: typeof DashboardRoute
-  EducationRoute: typeof EducationRoute
   FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
@@ -1392,13 +1379,6 @@ declare module '@tanstack/react-router' {
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/education': {
-      id: '/education'
-      path: '/education'
-      fullPath: '/education'
-      preLoaderRoute: typeof EducationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -1931,7 +1911,6 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
   DashboardRoute: DashboardRoute,
-  EducationRoute: EducationRoute,
   FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,

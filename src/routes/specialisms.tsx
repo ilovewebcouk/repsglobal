@@ -993,7 +993,7 @@ function CrossLinkStrip() {
     { label: "Find a professional", to: "/find-a-professional" },
     { label: "Personal trainers in London", to: "/in/$location", params: { location: "london" } },
     { label: "For professionals", to: "/for-professionals" },
-    { label: "Qualifications & education", to: "/education" },
+    { label: "CPD & qualifications", to: "/cpd" },
     { label: "About REPs", to: "/about" },
   ];
   return (
