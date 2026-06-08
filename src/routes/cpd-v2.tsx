@@ -675,8 +675,9 @@ function RegisterProofBand() {
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="mb-8">
           <SectionHeader
-            eyebrow="Why members renew"
-            heading="A register clients actually search."
+            eyebrow="Your public profile"
+            heading="Your education strengthens the profile clients see."
+            lede="Every qualification you log, every CPD point you renew and every specialism you evidence shows up as a trust signal on your public REPs profile — the page clients actually land on."
           />
         </div>
         <RegisterProof />
