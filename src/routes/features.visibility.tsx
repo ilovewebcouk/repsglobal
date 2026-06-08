@@ -57,7 +57,7 @@ const FEATURES: PillarFeature[] = [
     tag: "City & specialism pages",
     title: "REPs ranks for the searches your future clients are typing.",
     body:
-      "Hundreds of city and specialism landing pages — &ldquo;pilates instructors in Manchester&rdquo;, &ldquo;strength coach in Brixton&rdquo; — pull verified pros to the top of Google. You inherit that distribution the day you join.",
+      "Hundreds of city and specialism landing pages — \u201Cpilates instructors in Manchester\u201D, \u201Cstrength coach in Brixton\u201D — pull verified pros to the top of Google. You inherit that distribution the day you join.",
     bullets: [
       "Auto-listed on every relevant /in/<city> page",
       "Auto-listed on every /specialisms/<specialism> page",
