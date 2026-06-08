@@ -89,20 +89,8 @@ function FAQS_FOR_JSONLD() {
   }));
 }
 
-/* ------------------------------------------------------------------ */
-/* Sticky nav chips                                                    */
-/* ------------------------------------------------------------------ */
 
-const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
-  { anchor: "what-cpd-is", label: "What CPD is" },
-  { anchor: "how-reps-runs-it", label: "How REPs runs it" },
-  { anchor: "qualifications", label: "Qualifications" },
-  { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
-  { anchor: "verified-providers", label: "Verified providers" },
-  { anchor: "worthless-courses", label: "Spot a worthless course" },
-  { anchor: "raise-the-standard", label: "Raise the standard" },
-  { anchor: "faq", label: "FAQ" },
-];
+
 
 /* ------------------------------------------------------------------ */
 /* Qualification ladder data                                           */
@@ -463,9 +451,8 @@ function CpdPage() {
 
         <VenueMarquee />
 
-        <StickyNav />
-
         <WhatCpdIs />
+
 
         <RepsCpdSystem />
 
@@ -613,30 +600,8 @@ function Hero() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Sticky in-page nav                                                  */
-/* ------------------------------------------------------------------ */
 
-function StickyNav() {
-  return (
-    <nav
-      aria-label="CPD page sections"
-      className="sticky top-[72px] z-30 border-t border-white/10 border-b border-reps-border/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
-    >
-      <div className="mx-auto flex h-[52px] max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
-        {NAV_CHIPS.map((c) => (
-          <a
-            key={c.anchor}
-            href={`#${c.anchor}`}
-            className="whitespace-nowrap rounded-[8px] px-3 py-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:bg-reps-panel hover:text-white"
-          >
-            {c.label}
-          </a>
-        ))}
-      </div>
-    </nav>
-  );
-}
+
 
 /* ------------------------------------------------------------------ */
 /* Section: What CPD actually is                                       */
