@@ -7,9 +7,10 @@ import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 import { MockupStage } from "@/components/marketing/MockupStage";
 import { DeviceMockup, type DeviceMockupProps } from "@/components/marketing/DeviceMockup";
 import {
-  CinematicCardStack,
-  type CinematicCardStackProps,
-} from "@/components/marketing/CinematicCardStack";
+  TrainerToPlatformComposite,
+  type TrainerToPlatformCompositeProps,
+} from "@/components/marketing/TrainerToPlatformComposite";
+import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { ActIntro } from "@/components/marketing/ActIntro";
 
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -32,8 +33,8 @@ const GROUP_ROUTES = {
   growth: "/features/growth",
 } as const;
 
-/** Marker variant for the shared cinematic-photo + floating-cards layout. */
-export type CinematicMockup = { kind: "cinematic" } & CinematicCardStackProps;
+/** Marker variant for the shared trainer-to-platform composite layout. */
+export type CinematicMockup = { kind: "cinematic" } & TrainerToPlatformCompositeProps;
 
 export type PillarFeature = {
   tag: string;
@@ -42,7 +43,7 @@ export type PillarFeature = {
   bullets: string[];
   /**
    * Three options, in order of preference:
-   * - CinematicMockup `{ kind: 'cinematic', image, cards }` — shared photo + floating cards
+   * - CinematicMockup `{ kind: 'cinematic', image, composition?, device?, stats? }` — shared trainer-to-platform composite
    * - DeviceMockupProps — real REPs route inside a laptop/phone frame
    * - React node — escape hatch for bespoke mockups
    */
@@ -277,7 +278,7 @@ export function PillarPage({
 function isCinematicMockup(m: PillarFeature["mockup"]): m is CinematicMockup {
   if (typeof m !== "object" || m === null) return false;
   const obj = m as unknown as Record<string, unknown>;
-  return obj.kind === "cinematic" && "image" in obj && "cards" in obj;
+  return obj.kind === "cinematic" && "image" in obj;
 }
 
 function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProps {
@@ -299,9 +300,7 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {feature.tag}
         </span>
-        <h3 className="mt-3 font-display text-[30px] font-bold leading-[1.1] text-white lg:text-[40px]">
-          {feature.title}
-        </h3>
+        <BlockHeading className="mt-3">{feature.title}</BlockHeading>
         <p className="mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
           {feature.body}
         </p>
@@ -325,7 +324,7 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
       </div>
       <div className={reverse ? "lg:order-1" : ""}>
         {cinematic ? (
-          <CinematicCardStack {...(feature.mockup as CinematicMockup)} />
+          <TrainerToPlatformComposite {...(feature.mockup as CinematicMockup)} />
         ) : isDevice ? (
           <MockupStage variant={(feature.mockup as DeviceMockupProps).device}>
             <DeviceMockup {...(feature.mockup as DeviceMockupProps)} />

@@ -4,6 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { MockupPlaceholder } from "@/components/mockups/MockupPlaceholder";
 import { DeviceMockup } from "@/components/marketing/DeviceMockup";
 import { MockupStage } from "@/components/marketing/MockupStage";
+import { BlockHeading } from "@/components/marketing/BlockHeading";
 import type { FeatureLink } from "@/components/features/feature-config";
 
 export interface ProductBlockProps {
@@ -54,9 +55,7 @@ export function ProductBlock({
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {eyebrow}
         </span>
-        <h3 className="mt-2 font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
-          {title}
-        </h3>
+        <BlockHeading className="mt-2">{title}</BlockHeading>
         <p className="mt-3 text-[15px] leading-relaxed text-white/70">{body}</p>
         <ul className="mt-4 flex flex-col gap-2">
           {bullets.map((b) => (

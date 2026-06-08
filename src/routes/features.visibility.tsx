@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Globe, Star } from "lucide-react";
 
 import { PillarPage, type PillarFeature } from "@/components/features/PillarPage";
+import { BlockHeading } from "@/components/marketing/BlockHeading";
 import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
 
 const FEATURES: PillarFeature[] = [
@@ -18,22 +19,19 @@ const FEATURES: PillarFeature[] = [
     ],
     mockup: {
       kind: "cinematic",
+      composition: "card-trail",
       image: {
         src: heroVisibility.url,
         alt: "Verified REPs trainer coaching a client at a premium boutique studio",
       },
-      cards: [
+      stats: [
         {
-          position: "top-left",
-          kind: "stat",
           label: "Verified",
           value: "L3 PT",
           delta: "Insurance · DBS",
           icon: BadgeCheck,
         },
         {
-          position: "bottom-right",
-          kind: "stat",
           label: "Profile rating",
           value: "4.9",
           delta: "+18% enquiries",
@@ -138,9 +136,9 @@ export const Route = createFileRoute("/features/visibility")({
                 <Globe className="h-3.5 w-3.5" />
                 Pro &amp; Studio
               </span>
-              <h3 className="mt-3 font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
+              <BlockHeading className="mt-3">
                 Want more than a profile? Add your own shop-front.
-              </h3>
+              </BlockHeading>
               <p className="mt-3 max-w-[560px] text-[14.5px] leading-relaxed text-white/70">
                 Pro and Studio tiers get a full single-page site at{" "}
                 <code className="rounded-[6px] bg-white/5 px-1.5 py-0.5 text-[13px] text-reps-orange">
