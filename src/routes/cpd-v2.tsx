@@ -378,7 +378,9 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            Education and CPD that strengthens your REPs profile.
+            Education and CPD that
+            <br />
+            <span className="text-reps-orange">strengthens your REPs profile.</span>
           </h1>
 
           <p
