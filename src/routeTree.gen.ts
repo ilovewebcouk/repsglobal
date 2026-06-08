@@ -32,7 +32,7 @@ import { Route as ForProfessionalsRouteImport } from './routes/for-professionals
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CpdV2RouteImport } from './routes/cpd-v2'
+import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -219,9 +219,9 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CpdV2Route = CpdV2RouteImport.update({
-  id: '/cpd-v2',
-  path: '/cpd-v2',
+const CpdLegacyRoute = CpdLegacyRouteImport.update({
+  id: '/cpd-legacy',
+  path: '/cpd-legacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CpdRoute = CpdRouteImport.update({
@@ -591,7 +591,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-v2': typeof CpdV2Route
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -687,7 +687,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-v2': typeof CpdV2Route
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -783,7 +783,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-v2': typeof CpdV2Route
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -881,7 +881,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-v2'
+    | '/cpd-legacy'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -977,7 +977,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-v2'
+    | '/cpd-legacy'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -1072,7 +1072,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-v2'
+    | '/cpd-legacy'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -1169,7 +1169,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
-  CpdV2Route: typeof CpdV2Route
+  CpdLegacyRoute: typeof CpdLegacyRoute
   DashboardRoute: typeof DashboardRoute
   FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
@@ -1413,11 +1413,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cpd-v2': {
-      id: '/cpd-v2'
-      path: '/cpd-v2'
-      fullPath: '/cpd-v2'
-      preLoaderRoute: typeof CpdV2RouteImport
+    '/cpd-legacy': {
+      id: '/cpd-legacy'
+      path: '/cpd-legacy'
+      fullPath: '/cpd-legacy'
+      preLoaderRoute: typeof CpdLegacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd': {
@@ -1960,7 +1960,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
-  CpdV2Route: CpdV2Route,
+  CpdLegacyRoute: CpdLegacyRoute,
   DashboardRoute: DashboardRoute,
   FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
@@ -2043,3 +2043,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
