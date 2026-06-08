@@ -861,6 +861,110 @@ function RepsPosition() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Section: EndorsedBadge — the one mark a learner sees in the wild    */
+/* ------------------------------------------------------------------ */
+
+function EndorsedBadge() {
+  const meaning = [
+    "Reviewed against published REPs criteria — tutors, assessment, refund & complaints policy.",
+    "Re-checked every year, not awarded once and forgotten.",
+    "Listed on the public REPs register so you can verify it yourself in 30 seconds.",
+  ];
+
+  return (
+    <section
+      id="endorsed-badge"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink"
+    >
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16">
+          <div className="max-w-[520px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+              What to look for
+            </span>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+              The one mark to look for on any course.
+            </h2>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
+              When a training provider has passed REPs' independent review, they're entitled to
+              show the <span className="font-semibold text-white">REPs Endorsed Course</span> badge
+              on the course page. It's the single signal that separates a real, externally-checked
+              programme from a self-marked PDF dressed up as accreditation.
+            </p>
+            <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
+              {meaning.map((m) => (
+                <li key={m} className="flex gap-2">
+                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>{m}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-[13.5px] text-white/60">
+              Don't see the badge?{" "}
+              <a
+                href="#verified-providers"
+                className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+              >
+                Check the register
+              </a>{" "}
+              before you pay a deposit.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+            />
+            <BrowserFrame url="academyofmovement.example/courses/level-3-pt">
+              <div className="bg-white p-6 sm:p-8">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-7">
+                  <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-reps-orange/15 via-reps-orange/5 to-transparent sm:w-[200px]">
+                    <div className="flex h-full w-full items-center justify-center">
+                      <GraduationCap className="h-16 w-16 text-reps-orange/60" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-ink/55">
+                          Level 3 · 12 weeks
+                        </p>
+                        <h3 className="mt-1.5 font-display text-[20px] font-bold leading-tight text-reps-ink">
+                          Diploma in Personal Training
+                        </h3>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange/30 bg-reps-orange/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-reps-orange">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        REPs Endorsed
+                      </span>
+                    </div>
+                    <p className="mt-3 text-[13.5px] leading-relaxed text-reps-ink/75">
+                      Ofqual-regulated, externally assessed. Named tutors with verified L4
+                      specialisms. Tutor-to-learner ratio 1:8.
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-reps-ink/60">
+                      <span className="inline-flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
+                        Verified on the REPs register
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                        4.8 · 312 learner reviews
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </BrowserFrame>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ProfileScreenshot() {
   const bullets = [
     "Logged quarterly, audited annually",
