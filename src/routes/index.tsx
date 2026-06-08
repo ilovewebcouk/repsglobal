@@ -425,6 +425,21 @@ function HomeV2() {
         </div>
       </section>
 
+      {/* ============ VERIFICATION MOMENT — scannable public proof ============ */}
+      <VerificationMoment
+        audience="consumer"
+        pro={{
+          name: "James Carter",
+          role: "Personal Trainer",
+          location: "London",
+          photo: proJames,
+          slug: "james-carter",
+          verifiedId: "REPS-2024-08147",
+          lastVerified: "Mar 2026",
+          renewsOn: "Mar 2027",
+        }}
+      />
+
       {/* ============ WHY TRUST REPs — stats + pillars + closing quote folded in ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
