@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Brain,
   Briefcase,
+  Check,
   Compass,
   Crosshair,
   Dumbbell,
@@ -15,7 +16,6 @@ import {
   Layers,
   Lightbulb,
   Lock,
-  MapPin,
   Monitor,
   Rocket,
   Search,
@@ -30,20 +30,47 @@ import {
 } from "lucide-react";
 
 import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
+
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { RegisterProof } from "@/components/marketing/RegisterProof";
+import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
 
 const heroImg = cpdTutorMomentAsset.url;
 
@@ -210,12 +237,11 @@ const COURSES = [
 ];
 
 const FILTERS: { label: string; options: string[] }[] = [
-  { label: "Category", options: ["All", "Strength", "Pre/Postnatal", "Nutrition", "Mobility"] },
-  { label: "Delivery type", options: ["Any", "Online", "In-person", "Blended"] },
-  { label: "CPD points", options: ["Any", "1–5", "6–15", "16+"] },
-  { label: "Level", options: ["Any", "Level 2", "Level 3", "Level 4"] },
+  { label: "Category", options: ["All categories", "Strength", "Pre/Postnatal", "Nutrition", "Mobility"] },
+  { label: "CPD points", options: ["Any points", "1–5", "6–15", "16+"] },
+  { label: "Level", options: ["Any level", "Level 2", "Level 3", "Level 4"] },
   { label: "Provider", options: ["All providers", "Verified only"] },
-  { label: "Specialism", options: ["Any", "S&C", "Pre/Postnatal", "Older Adults"] },
+  { label: "Specialism", options: ["Any specialism", "S&C", "Pre/Postnatal", "Older Adults"] },
 ];
 
 const SPECIALISMS = [
@@ -228,6 +254,14 @@ const SPECIALISMS = [
   { icon: Rocket, title: "Youth Fitness" },
   { icon: Crosshair, title: "Sports Performance" },
   { icon: Zap, title: "Mobility & Rehabilitation" },
+];
+
+const PROVIDER_BENEFITS = [
+  "Branded provider profiles with course catalogues",
+  "Verified-provider badge surfaced across REPs",
+  "Direct link to enquiries from member profiles",
+  "Performance insights on enrolments and completions",
+  "Tools to publish CPD, qualifications and short courses",
 ];
 
 const FAQS = [
@@ -272,11 +306,12 @@ const FAQS = [
 function CpdV2Page() {
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
+      <div className="min-h-screen overflow-x-clip bg-reps-ink text-white">
         <PublicHeader variant="solid" />
         <Hero />
         <ProofCards />
         <DevelopmentPassport />
+        <RegisterProofBand />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
@@ -285,6 +320,7 @@ function CpdV2Page() {
         <FaqBlock />
         <FinalCta />
         <PublicFooter />
+        <StickyCtaPill />
       </div>
     </TooltipProvider>
   );
@@ -319,14 +355,17 @@ function Hero() {
 
       <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-7xl flex-col items-start justify-start px-5 pt-24 sm:px-6 lg:px-8 lg:pt-28">
         <div className="max-w-2xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-reps-orange">
-            <GraduationCap className="h-3.5 w-3.5" /> Education & CPD
-          </span>
-          <h1 className="mt-5 text-[40px] leading-[1.05] font-semibold tracking-tight text-white sm:text-[52px] lg:text-[60px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
+          >
+            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Education & CPD
+          </Badge>
+          <h1 className="mt-5 font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]">
             Education, CPD and career growth{" "}
             <span className="text-reps-orange">for fitness professionals.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 sm:text-[18px]">
+          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/80 sm:text-[18px]">
             Build your professional profile, track your development and find
             recognised education that helps you stay credible, visible and
             trusted through REPs.
@@ -335,25 +374,25 @@ function Hero() {
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               to="/signup"
-              className="inline-flex items-center gap-2 rounded-[10px] bg-reps-orange px-5 py-3 text-[15px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.55)] hover:bg-reps-orange/90 transition"
+              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
               Join REPs <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#cpd-discovery"
-              className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 bg-white/5 px-5 py-3 text-[15px] font-medium text-white hover:bg-white/10 transition"
+              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
             >
               Explore CPD
             </a>
             <a
               href="#training-providers"
-              className="text-[14px] font-medium text-white/75 underline decoration-white/30 underline-offset-4 hover:text-white"
+              className="text-[13.5px] font-medium text-white/75 underline decoration-white/30 underline-offset-4 hover:text-white"
             >
               Are you a training provider?
             </a>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/65">
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/70">
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
               Accredited providers only
@@ -379,21 +418,25 @@ function Hero() {
 
 function ProofCards() {
   return (
-    <section className="border-y border-white/5 bg-reps-ink/95">
+    <section className="border-y border-reps-border bg-reps-ink">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8 lg:py-14">
         {PROOF_CARDS.map(({ icon: Icon, title, body }) => (
-          <div
+          <Card
             key={title}
-            className="rounded-[16px] border border-white/10 bg-white/[0.03] p-5 hover:bg-white/[0.05] transition"
+            className="rounded-[16px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange/15 text-reps-orange">
-              <Icon className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 text-[15px] font-semibold text-white">{title}</h3>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/65">
-              {body}
-            </p>
-          </div>
+            <CardHeader className="pb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                <Icon className="h-5 w-5" />
+              </span>
+              <CardTitle className="mt-4 text-[15px] font-semibold text-white">
+                {title}
+              </CardTitle>
+              <CardDescription className="text-[13.5px] leading-relaxed text-white/65">
+                {body}
+              </CardDescription>
+            </CardHeader>
+          </Card>
         ))}
       </div>
     </section>
@@ -410,10 +453,13 @@ function DevelopmentPassport() {
       <div className="absolute inset-0 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(255,122,0,0.10),transparent_70%)]" />
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
-            <Layers className="h-3.5 w-3.5" /> Professional Development Passport
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            <Layers className="mr-1.5 h-3.5 w-3.5" /> Professional Development Passport
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Your professional development,{" "}
             <span className="text-reps-orange">
               connected to your public profile.
@@ -425,7 +471,7 @@ function DevelopmentPassport() {
             profile clients see — so the work you put in shows up where it
             matters.
           </p>
-          <ul className="mt-6 space-y-3 text-[14.5px] text-white/80">
+          <ul className="mt-6 flex flex-col gap-3 text-[14.5px] text-white/80">
             {[
               "Verification, CPD and insurance in one record",
               "Specialism areas evidenced by recognised credentials",
@@ -449,121 +495,167 @@ function DevelopmentPassport() {
 function ProfessionalDevelopmentMockup() {
   return (
     <div className="relative">
-      <div className="absolute -inset-6 rounded-[28px] bg-reps-orange/10 blur-2xl" aria-hidden />
-      <div className="relative rounded-[22px] border border-white/10 bg-[#0E0E11]/95 p-5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] sm:p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/20 text-reps-orange font-semibold">
-              SH
-            </div>
-            <div>
-              <div className="text-[14px] font-semibold text-white">Sarah Hughes</div>
-              <div className="text-[11.5px] text-white/55">Personal Trainer · Manchester</div>
-            </div>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-400/30">
-            <ShieldCheck className="h-3 w-3" /> Verified
-          </span>
-        </div>
-
-        {/* CPD progress + trust score */}
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-[14px] border border-white/8 bg-white/[0.03] p-4">
-            <div className="text-[11px] uppercase tracking-wide text-white/55">CPD this cycle</div>
-            <div className="mt-2 flex items-baseline gap-1.5">
-              <span className="text-[28px] font-semibold text-white tabular-nums">18</span>
-              <span className="text-[13px] text-white/55">/ 20 pts</span>
-            </div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
-              <div className="h-full w-[90%] rounded-full bg-reps-orange" />
-            </div>
-          </div>
-          <div className="rounded-[14px] border border-white/8 bg-white/[0.03] p-4">
-            <div className="text-[11px] uppercase tracking-wide text-white/55">Profile trust score</div>
-            <div className="mt-2 flex items-baseline gap-1.5">
-              <span className="text-[28px] font-semibold text-white tabular-nums">92</span>
-              <span className="text-[13px] text-white/55">/ 100</span>
-            </div>
-            <div className="mt-3 flex items-center gap-1.5 text-[11.5px] text-emerald-300">
-              <TrendingUp className="h-3 w-3" /> +8 this month
-            </div>
-          </div>
-        </div>
-
-        {/* Qualifications + Insurance */}
-        <div className="mt-3 rounded-[14px] border border-white/8 bg-white/[0.03] p-4">
-          <div className="text-[11px] uppercase tracking-wide text-white/55">Qualifications</div>
-          <ul className="mt-2 space-y-1.5 text-[13px] text-white/85">
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
-                L3 Personal Training
-              </span>
-              <span className="text-[11px] text-white/45">Active</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
-                L4 Lower Back Pain
-              </span>
-              <span className="text-[11px] text-white/45">Active</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-                Insurance · Insure4Sport
-              </span>
-              <span className="text-[11px] text-white/45">Renews 14 Mar</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Specialisms */}
-        <div className="mt-3 rounded-[14px] border border-white/8 bg-white/[0.03] p-4">
-          <div className="text-[11px] uppercase tracking-wide text-white/55">Specialism areas</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {["Strength & Conditioning", "Pre/Postnatal", "Lower Back Pain"].map(
-              (s) => (
-                <span
-                  key={s}
-                  className="rounded-full bg-reps-orange/12 px-2.5 py-1 text-[11.5px] font-medium text-reps-orange ring-1 ring-reps-orange/25"
-                >
-                  {s}
-                </span>
-              ),
-            )}
-          </div>
-        </div>
-
-        {/* Recommended next CPD */}
-        <div className="mt-3 rounded-[14px] border border-reps-orange/30 bg-reps-orange/[0.06] p-4">
+      <div className="absolute -inset-6 rounded-[24px] bg-reps-orange/10 blur-2xl" aria-hidden />
+      <Card className="relative rounded-[22px] border-reps-border bg-reps-panel p-2 shadow-none">
+        <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="text-[11px] uppercase tracking-wide text-reps-orange">
-              Recommended next CPD
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10 border border-reps-border">
+                <AvatarFallback className="bg-reps-orange-soft text-reps-orange font-semibold">
+                  SH
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="text-[14px] font-semibold text-white">
+                  Sarah Hughes
+                </div>
+                <div className="text-[11.5px] text-white/55">
+                  Personal Trainer · Manchester
+                </div>
+              </div>
             </div>
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
+            <Badge className="rounded-full border-emerald-400/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">
+              <ShieldCheck className="mr-1 h-3 w-3" /> Verified
+            </Badge>
           </div>
-          <div className="mt-1.5 text-[14px] font-semibold text-white">
-            Behaviour Change in Practice
-          </div>
-          <div className="mt-0.5 text-[12px] text-white/60">
-            Coach Catalyst · 8 pts · Online · £89
-          </div>
-        </div>
 
-        {/* Renewal */}
-        <div className="mt-3 flex items-center justify-between rounded-[14px] border border-white/8 bg-white/[0.03] p-3.5">
-          <div className="flex items-center gap-2 text-[12.5px] text-white/75">
-            <Lock className="h-3.5 w-3.5 text-emerald-300" />
-            REPs renewal
+          <Separator className="bg-reps-border" />
+
+          {/* CPD progress + trust score */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[16px] border border-reps-border bg-reps-ink p-4">
+              <div className="text-[11px] uppercase tracking-wide text-white/55">
+                CPD this cycle
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="font-display text-[28px] font-bold text-white tabular-nums">
+                  18
+                </span>
+                <span className="text-[13px] text-white/55">/ 20 pts</span>
+              </div>
+              <Progress value={90} className="mt-3 h-1.5 bg-reps-border [&>div]:bg-reps-orange" />
+            </div>
+            <div className="rounded-[16px] border border-reps-border bg-reps-ink p-4">
+              <div className="text-[11px] uppercase tracking-wide text-white/55">
+                Profile trust score
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="font-display text-[28px] font-bold text-white tabular-nums">
+                  92
+                </span>
+                <span className="text-[13px] text-white/55">/ 100</span>
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-[11.5px] text-emerald-300">
+                <TrendingUp className="h-3 w-3" /> +8 this month
+              </div>
+            </div>
           </div>
-          <span className="text-[12px] font-medium text-emerald-300">
-            On track · 14 Mar 2027
-          </span>
-        </div>
-      </div>
+
+          {/* Qualifications */}
+          <div className="rounded-[16px] border border-reps-border bg-reps-ink p-4">
+            <div className="text-[11px] uppercase tracking-wide text-white/55">
+              Qualifications
+            </div>
+            <ul className="mt-2 flex flex-col gap-1.5 text-[13px] text-white/85">
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
+                  L3 Personal Training
+                </span>
+                <span className="text-[11px] text-white/45">Active</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
+                  L4 Lower Back Pain
+                </span>
+                <span className="text-[11px] text-white/45">Active</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
+                  Insurance · Insure4Sport
+                </span>
+                <span className="text-[11px] text-white/45">Renews 14 Mar</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Specialisms */}
+          <div className="rounded-[16px] border border-reps-border bg-reps-ink p-4">
+            <div className="text-[11px] uppercase tracking-wide text-white/55">
+              Specialism areas
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {["Strength & Conditioning", "Pre/Postnatal", "Lower Back Pain"].map(
+                (s) => (
+                  <Badge
+                    key={s}
+                    variant="outline"
+                    className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[11.5px] font-medium text-reps-orange"
+                  >
+                    {s}
+                  </Badge>
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* Recommended next CPD */}
+          <div className="rounded-[16px] border border-reps-orange-border bg-reps-orange-soft p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-wide text-reps-orange">
+                Recommended next CPD
+              </div>
+              <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
+            </div>
+            <div className="mt-1.5 text-[14px] font-semibold text-white">
+              Behaviour Change in Practice
+            </div>
+            <div className="mt-0.5 text-[12px] text-white/60">
+              Coach Catalyst · 8 pts · Online · £89
+            </div>
+          </div>
+
+          {/* Renewal */}
+          <div className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink p-3.5">
+            <div className="flex items-center gap-2 text-[12.5px] text-white/75">
+              <Lock className="h-3.5 w-3.5 text-emerald-300" />
+              REPs renewal
+            </div>
+            <span className="text-[12px] font-medium text-emerald-300">
+              On track · 14 Mar 2027
+            </span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Register proof (shared)                                             */
+/* ------------------------------------------------------------------ */
+
+function RegisterProofBand() {
+  return (
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mb-8 max-w-2xl">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            Why members renew
+          </Badge>
+          <h2 className="mt-4 font-display text-[28px] leading-[1.1] font-bold tracking-tight text-white sm:text-[34px]">
+            A register clients actually search.
+          </h2>
+        </div>
+        <RegisterProof />
+      </div>
+    </section>
   );
 }
 
@@ -573,17 +665,20 @@ function ProfessionalDevelopmentMockup() {
 
 function LearningPathways() {
   return (
-    <section className="border-t border-white/5 bg-[#0B0B0D]">
+    <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
-            <Compass className="h-3.5 w-3.5" /> Pathways
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            <Compass className="mr-1.5 h-3.5 w-3.5" /> Pathways
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Choose the pathway that{" "}
             <span className="text-reps-orange">matches your next stage.</span>
           </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/70">
+          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
             From day-one verification to specialist depth, REPs maps the
             recognised education that fits where you are in your career.
           </p>
@@ -591,32 +686,40 @@ function LearningPathways() {
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PATHWAYS.map(({ icon: Icon, title, outcome, topics }) => (
-            <div
+            <Card
               key={title}
-              className="group rounded-[18px] border border-white/10 bg-white/[0.03] p-5 hover:border-reps-orange/40 hover:bg-white/[0.05] transition"
+              className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange/15 text-reps-orange">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 text-[16px] font-semibold text-white">{title}</h3>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/65">
-                {outcome}
-              </p>
-              <ul className="mt-3 space-y-1 text-[12.5px] text-white/55">
-                {topics.map((t) => (
-                  <li key={t} className="flex items-center gap-1.5">
-                    <span className="h-1 w-1 rounded-full bg-reps-orange" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="#cpd-discovery"
-                className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-reps-orange hover:gap-2 transition-all"
-              >
-                See courses <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
+              <CardHeader>
+                <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <CardTitle className="mt-4 font-display text-[18px] font-bold leading-tight text-white">
+                  {title}
+                </CardTitle>
+                <CardDescription className="text-[13.5px] leading-relaxed text-white/70">
+                  {outcome}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 pt-0">
+                <ul className="flex flex-col gap-1.5 text-[12.5px] text-white/60">
+                  {topics.map((t) => (
+                    <li key={t} className="flex items-center gap-1.5">
+                      <span className="h-1 w-1 rounded-full bg-reps-orange" />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <a
+                  href="#cpd-discovery"
+                  className="inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange hover:underline"
+                >
+                  See courses <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </div>
@@ -630,101 +733,146 @@ function LearningPathways() {
 
 function CpdDiscovery() {
   return (
-    <section id="cpd-discovery" className="border-t border-white/5 bg-reps-ink">
+    <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
-              <Search className="h-3.5 w-3.5" /> CPD Discovery
-            </span>
-            <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+            <Badge
+              variant="outline"
+              className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+            >
+              <Search className="mr-1.5 h-3.5 w-3.5" /> CPD Discovery
+            </Badge>
+            <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
               Find CPD that supports{" "}
               <span className="text-reps-orange">your professional goals.</span>
             </h2>
           </div>
-          <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11.5px] font-medium text-white/65">
-            Preview · Example courses
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[11px] font-semibold uppercase tracking-wide text-reps-orange"
+              >
+                Preview · Example courses
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              Filters and courses are illustrative. Live search is coming.
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Filter bar */}
-        <div className="mt-8 grid grid-cols-2 gap-3 rounded-[18px] border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-3 lg:grid-cols-7">
-          {FILTERS.map((f) => (
-            <div key={f.label} className="min-w-0">
-              <div className="text-[10.5px] uppercase tracking-wide text-white/45">
-                {f.label}
+        <Card className="mt-8 rounded-[18px] border-reps-border bg-reps-panel shadow-none">
+          <CardContent className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
+            {FILTERS.map((f) => (
+              <div key={f.label} className="flex min-w-0 flex-col gap-1">
+                <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+                  {f.label}
+                </span>
+                <Select disabled defaultValue={f.options[0]}>
+                  <SelectTrigger className="h-9 rounded-[8px] border-reps-border bg-reps-ink text-[12.5px] text-white/85">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {f.options.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {o}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
-              <button
-                type="button"
-                disabled
-                className="mt-1 inline-flex w-full items-center justify-between gap-2 rounded-[8px] border border-white/10 bg-reps-ink/60 px-2.5 py-1.5 text-[12.5px] text-white/80"
-              >
-                <span className="truncate">{f.options[0]}</span>
-                <ArrowRight className="h-3 w-3 rotate-90 text-white/40" />
-              </button>
-            </div>
-          ))}
-          <div className="min-w-0">
-            <div className="text-[10.5px] uppercase tracking-wide text-white/45">
-              Mode
-            </div>
-            <div className="mt-1 inline-flex w-full rounded-[8px] border border-white/10 bg-reps-ink/60 p-0.5 text-[11.5px] font-medium text-white/80">
-              <span className="flex-1 rounded-[6px] bg-reps-orange/20 px-2 py-1 text-center text-reps-orange">
-                Online
+            ))}
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+                Mode
               </span>
-              <span className="flex-1 px-2 py-1 text-center text-white/55">
-                In-person
-              </span>
+              <Tabs defaultValue="online">
+                <TabsList className="h-9 w-full rounded-[8px] border border-reps-border bg-reps-ink p-0.5">
+                  <TabsTrigger
+                    value="online"
+                    className="flex-1 rounded-[6px] text-[11.5px] data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange"
+                  >
+                    Online
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="in-person"
+                    className="flex-1 rounded-[6px] text-[11.5px] data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange"
+                  >
+                    In-person
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Course grid */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {COURSES.map((c) => (
-            <article
+            <Card
               key={c.title}
-              className="flex flex-col rounded-[18px] border border-white/10 bg-white/[0.03] p-5 hover:border-reps-orange/40 transition"
+              className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange/12 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange ring-1 ring-reps-orange/25">
-                  <ShieldCheck className="h-3 w-3" /> Verified provider
-                </span>
-                <span className="text-[12px] font-semibold text-white">{c.price}</span>
-              </div>
-              <h3 className="mt-3 text-[16px] font-semibold leading-snug text-white">
-                {c.title}
-              </h3>
-              <div className="mt-0.5 text-[12.5px] text-white/55">{c.provider}</div>
-              <p className="mt-2.5 text-[13px] leading-relaxed text-white/65">
-                {c.blurb}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-1.5 text-[11px] text-white/70">
-                <span className="rounded-full bg-white/8 px-2 py-0.5">
-                  {c.points} CPD pts
-                </span>
-                <span className="rounded-full bg-white/8 px-2 py-0.5">
-                  {c.level}
-                </span>
-                <span className="rounded-full bg-white/8 px-2 py-0.5">
-                  {c.format}
-                </span>
-              </div>
-              <button
-                type="button"
-                disabled
-                className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-[10px] border border-white/15 bg-white/5 px-3 py-2 text-[13px] font-medium text-white/80"
-              >
-                View course
-              </button>
-            </article>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange"
+                  >
+                    <ShieldCheck className="mr-1 h-3 w-3" /> Verified provider
+                  </Badge>
+                  <span className="text-[12px] font-semibold text-white">
+                    {c.price}
+                  </span>
+                </div>
+                <CardTitle className="mt-3 font-display text-[17px] font-bold leading-snug text-white">
+                  {c.title}
+                </CardTitle>
+                <CardDescription className="text-[12.5px] text-white/55">
+                  {c.provider}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <p className="text-[13px] leading-relaxed text-white/70">
+                  {c.blurb}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                    {c.points} CPD pts
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                    {c.level}
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                    {c.format}
+                  </Badge>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="outline"
+                  disabled
+                  className="w-full rounded-[10px] border-reps-border bg-reps-ink text-white/80 shadow-none hover:bg-reps-panel-soft"
+                >
+                  View course
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
 
-        <p className="mt-6 text-[12.5px] text-white/45">
-          Live course search is in development. These are illustrative examples
-          of the providers and CPD that will appear here.
-        </p>
+        <Alert className="mt-6 rounded-[16px] border-reps-border bg-reps-panel text-white/70">
+          <Sparkles className="h-4 w-4 text-reps-orange" />
+          <AlertDescription className="text-[13px] text-white/70">
+            Live course search is in development. These are illustrative examples
+            of the providers and CPD that will appear here.
+          </AlertDescription>
+        </Alert>
       </div>
     </section>
   );
@@ -736,42 +884,50 @@ function CpdDiscovery() {
 
 function SpecialistAreas() {
   return (
-    <section className="border-t border-white/5 bg-[#0B0B0D]">
+    <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
-            <Award className="h-3.5 w-3.5" /> Specialism areas
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            <Award className="mr-1.5 h-3.5 w-3.5" /> Specialism areas
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Build credibility through{" "}
             <span className="text-reps-orange">recognised specialisms.</span>
           </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/70">
+          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
             Specialism areas are evidenced through recognised qualifications and
             CPD — not handed out. When you complete the right credentials, your
             profile reflects them.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {SPECIALISMS.map(({ icon: Icon, title }) => (
-            <div
+            <Card
               key={title}
-              className="flex items-center gap-3 rounded-[16px] border border-white/10 bg-white/[0.03] p-4 hover:border-reps-orange/40 transition"
+              className="flex flex-row items-center gap-3 rounded-[16px] border-reps-border bg-reps-panel p-4 shadow-none transition hover:border-reps-orange-border"
             >
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/15 text-reps-orange">
-                <Icon className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[14px] font-medium text-white">{title}</span>
-            </div>
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="text-[14px] font-semibold text-white">
+                {title}
+              </span>
+            </Card>
           ))}
         </div>
 
-        <p className="mt-6 text-[12.5px] text-white/45">
-          REPs displays specialism areas you can evidence with recognised
-          qualifications and CPD. Where a formal specialist register exists, it
-          is shown separately on your profile.
-        </p>
+        <Alert className="mt-6 rounded-[16px] border-reps-border bg-reps-panel text-white/70">
+          <BadgeCheck className="h-4 w-4 text-reps-orange" />
+          <AlertDescription className="text-[13px] text-white/70">
+            REPs displays specialism areas you can evidence with recognised
+            qualifications and CPD. Where a formal specialist register exists,
+            it is shown separately on your profile.
+          </AlertDescription>
+        </Alert>
       </div>
     </section>
   );
@@ -783,13 +939,16 @@ function SpecialistAreas() {
 
 function AiRecommendations() {
   return (
-    <section className="border-t border-white/5 bg-reps-ink">
+    <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-reps-orange">
-            <Wand2 className="h-3.5 w-3.5" /> AI · Preview
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
+          >
+            <Wand2 className="mr-1.5 h-3.5 w-3.5" /> AI · Preview
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Know what to learn{" "}
             <span className="text-reps-orange">next.</span>
           </h2>
@@ -798,55 +957,61 @@ function AiRecommendations() {
             qualifications, specialisms and profile to suggest the next CPD that
             actually moves your career forward. Here's the direction.
           </p>
-          <p className="mt-3 text-[12.5px] text-white/45">
+          <p className="mt-3 text-[12.5px] text-white/55">
             Preview only — recommendations are illustrative and not yet
             personalised.
           </p>
         </div>
 
         <div className="relative">
-          <div className="absolute -inset-6 rounded-[28px] bg-reps-orange/8 blur-2xl" aria-hidden />
-          <div className="relative rounded-[22px] border border-white/10 bg-[#0E0E11]/95 p-6 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Brain className="h-4 w-4 text-reps-orange" />
-                <span className="text-[12px] font-semibold uppercase tracking-wide text-white/70">
-                  Suggested for Sarah
-                </span>
+          <div className="absolute -inset-6 rounded-[24px] bg-reps-orange/8 blur-2xl" aria-hidden />
+          <Card className="relative rounded-[22px] border-reps-border bg-reps-panel shadow-none">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-reps-orange" />
+                  <span className="text-[12px] font-semibold uppercase tracking-wide text-white/70">
+                    Suggested for Sarah
+                  </span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold text-reps-orange"
+                >
+                  Preview
+                </Badge>
               </div>
-              <span className="rounded-full bg-reps-orange/15 px-2 py-0.5 text-[10.5px] font-semibold text-reps-orange ring-1 ring-reps-orange/30">
-                Preview
-              </span>
-            </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="rounded-[16px] border border-reps-orange-border bg-reps-orange-soft p-4">
+                <div className="text-[11px] uppercase tracking-wide text-reps-orange">
+                  Recommended next CPD
+                </div>
+                <div className="mt-1.5 text-[16px] font-semibold text-white">
+                  Coaching Lower Back Pain · Movement Mechanics
+                </div>
+                <div className="mt-0.5 text-[12px] text-white/60">
+                  16 CPD pts · Level 4 · Blended
+                </div>
+              </div>
 
-            <div className="mt-5 rounded-[14px] border border-reps-orange/25 bg-reps-orange/[0.06] p-4">
-              <div className="text-[11px] uppercase tracking-wide text-reps-orange">
-                Recommended next CPD
-              </div>
-              <div className="mt-1.5 text-[16px] font-semibold text-white">
-                Coaching Lower Back Pain · Movement Mechanics
-              </div>
-              <div className="mt-0.5 text-[12px] text-white/55">
-                16 CPD pts · Level 4 · Blended
-              </div>
-            </div>
-
-            <RecRow
-              icon={Lightbulb}
-              label="Why it matters"
-              body="42% of your enquiries mention back pain. A recognised L4 course unlocks specialist visibility on your profile."
-            />
-            <RecRow
-              icon={TrendingUp}
-              label="Profile improvement"
-              body="Adds a verified specialism area and lifts your trust score from 92 → 96."
-            />
-            <RecRow
-              icon={Target}
-              label="Suggested next action"
-              body="Book the next cohort — starts 14 Apr."
-            />
-          </div>
+              <RecRow
+                icon={Lightbulb}
+                label="Why it matters"
+                body="42% of your enquiries mention back pain. A recognised L4 course unlocks specialist visibility on your profile."
+              />
+              <RecRow
+                icon={TrendingUp}
+                label="Profile improvement"
+                body="Adds a verified specialism area and lifts your trust score from 92 → 96."
+              />
+              <RecRow
+                icon={Target}
+                label="Suggested next action"
+                body="Book the next cohort — starts 14 Apr."
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
@@ -863,8 +1028,8 @@ function RecRow({
   body: string;
 }) {
   return (
-    <div className="mt-3 flex items-start gap-3 rounded-[14px] border border-white/8 bg-white/[0.03] p-4">
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-white/8 text-reps-orange">
+    <div className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-ink p-4">
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
         <Icon className="h-4 w-4" />
       </div>
       <div>
@@ -887,18 +1052,21 @@ function TrainingProvidersBand() {
   return (
     <section
       id="training-providers"
-      className="relative overflow-hidden border-t border-white/5 bg-[#0B0B0D]"
+      className="relative overflow-hidden border-t border-reps-border bg-reps-ink"
     >
       <div
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(50%_60%_at_15%_50%,rgba(255,122,0,0.10),transparent_70%)]"
       />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-[1.2fr,1fr] lg:gap-14 lg:px-8 lg:py-24">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-8 lg:py-24">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
-            <GraduationCap className="h-3.5 w-3.5" /> Training providers
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
+            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Training providers
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Training providers will have a{" "}
             <span className="text-reps-orange">stronger place inside REPs.</span>
           </h2>
@@ -911,7 +1079,7 @@ function TrainingProvidersBand() {
           <div className="mt-7">
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 rounded-[10px] bg-reps-orange px-5 py-3 text-[15px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.55)] hover:bg-reps-orange/90 transition"
+              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
               Register interest as a training provider{" "}
               <ArrowRight className="h-4 w-4" />
@@ -919,25 +1087,23 @@ function TrainingProvidersBand() {
           </div>
         </div>
 
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-6 sm:p-7">
-          <div className="text-[11px] uppercase tracking-wide text-reps-orange">
-            What's coming
-          </div>
-          <ul className="mt-4 space-y-3 text-[14px] text-white/85">
-            {[
-              "Branded provider profiles with course catalogues",
-              "Verified-provider badge surfaced across REPs",
-              "Direct link to enquiries from member profiles",
-              "Performance insights on enrolments and completions",
-              "Tools to publish CPD, qualifications and short courses",
-            ].map((l) => (
-              <li key={l} className="flex items-start gap-2.5">
-                <BadgeCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-reps-orange" />
-                <span>{l}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Card className="rounded-[22px] border-reps-border bg-reps-panel shadow-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wide text-reps-orange">
+              What's coming
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-3 text-[14px] text-white/85">
+              {PROVIDER_BENEFITS.map((l) => (
+                <li key={l} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-reps-orange" />
+                  <span>{l}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -949,34 +1115,41 @@ function TrainingProvidersBand() {
 
 function FaqBlock() {
   return (
-    <section className="border-t border-white/5 bg-reps-ink">
+    <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-4xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
+          <Badge
+            variant="outline"
+            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+          >
             FAQ
-          </span>
-          <h2 className="mt-4 text-[34px] leading-[1.1] font-semibold tracking-tight text-white sm:text-[40px]">
+          </Badge>
+          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
             Questions, answered{" "}
             <span className="text-reps-orange">honestly.</span>
           </h2>
         </div>
 
-        <Accordion type="single" collapsible className="mt-10">
-          {FAQS.map((f, i) => (
-            <AccordionItem
-              key={f.q}
-              value={`q-${i}`}
-              className="border-white/10"
-            >
-              <AccordionTrigger className="text-left text-[15.5px] font-medium text-white hover:text-reps-orange hover:no-underline">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-[14px] leading-relaxed text-white/70">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <Card className="mt-10 rounded-[22px] border-reps-border bg-reps-panel shadow-none">
+          <CardContent className="p-2 sm:p-4">
+            <Accordion type="single" collapsible className="w-full">
+              {FAQS.map((f, i) => (
+                <AccordionItem
+                  key={f.q}
+                  value={`q-${i}`}
+                  className="border-reps-border"
+                >
+                  <AccordionTrigger className="text-left text-[15px] font-semibold text-white hover:no-underline [&>svg]:text-white/60">
+                    {f.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-[14px] leading-relaxed text-white/70">
+                    {f.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -988,13 +1161,13 @@ function FaqBlock() {
 
 function FinalCta() {
   return (
-    <section className="relative overflow-hidden border-t border-white/5 bg-[#0B0B0D]">
+    <section className="relative overflow-hidden border-t border-reps-border bg-reps-ink">
       <div
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
       />
       <div className="relative mx-auto max-w-4xl px-5 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-        <h2 className="text-[34px] leading-[1.08] font-semibold tracking-tight text-white sm:text-[44px]">
+        <h2 className="font-display text-[34px] leading-[1.08] font-bold tracking-tight text-white sm:text-[44px]">
           Build your profile. Prove your standards.{" "}
           <span className="text-reps-orange">Grow your career.</span>
         </h2>
@@ -1005,7 +1178,7 @@ function FinalCta() {
         <div className="mt-8 flex justify-center">
           <Link
             to="/signup"
-            className="inline-flex items-center gap-2 rounded-[10px] bg-reps-orange px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.6)] hover:bg-reps-orange/90 transition"
+            className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-8 text-[15px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
           >
             Join REPs <ArrowRight className="h-4 w-4" />
           </Link>
