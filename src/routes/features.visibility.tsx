@@ -18,22 +18,19 @@ const FEATURES: PillarFeature[] = [
     ],
     mockup: {
       kind: "cinematic",
+      composition: "card-trail",
       image: {
         src: heroVisibility.url,
         alt: "Verified REPs trainer coaching a client at a premium boutique studio",
       },
-      cards: [
+      stats: [
         {
-          position: "top-left",
-          kind: "stat",
           label: "Verified",
           value: "L3 PT",
           delta: "Insurance · DBS",
           icon: BadgeCheck,
         },
         {
-          position: "bottom-right",
-          kind: "stat",
           label: "Profile rating",
           value: "4.9",
           delta: "+18% enquiries",
