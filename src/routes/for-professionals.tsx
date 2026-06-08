@@ -226,6 +226,21 @@ function ForProsPage() {
       </section>
 
 
+      {/* VERIFICATION MOMENT — your public credential */}
+      <VerificationMoment
+        audience="professional"
+        pro={{
+          name: "James Carter",
+          role: "Personal Trainer",
+          location: "London",
+          photo: proJames,
+          slug: "james-carter",
+          verifiedId: "REPS-2024-08147",
+          lastVerified: "Mar 2026",
+          renewsOn: "Mar 2027",
+        }}
+      />
+
       {/* PILLAR 1 — VISIBILITY */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
