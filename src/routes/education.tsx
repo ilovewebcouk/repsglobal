@@ -49,11 +49,11 @@ const heroCpd = heroCpdAsset.url;
 /* Page head                                                           */
 /* ------------------------------------------------------------------ */
 
-const CANONICAL = "https://repsglobal.lovable.app/cpd";
+const CANONICAL = "https://staging.repsuk.org/education";
 const META_TITLE =
-  "CPD & Verified Training Providers — Education that actually counts | REPs";
+  "Fitness education that actually counts — qualifications, providers, CPD | REPs";
 const META_DESC =
-  "What CPD really is, how REPs runs it, and how to spot a worthless training provider before you spend a penny. Every CPD hour through a verified provider counts. The rest don't.";
+  "Regulated qualifications, REPs-verified training providers, ongoing CPD — and how to spot a worthless course before you spend a penny.";
 
 export const Route = createFileRoute("/education")({
   head: () => ({
@@ -83,7 +83,7 @@ export const Route = createFileRoute("/education")({
       },
     ],
   }),
-  component: CpdPage,
+  component: EducationPage,
 });
 
 function FAQS_FOR_JSONLD() {
@@ -401,16 +401,24 @@ const GOOD_SIGNS = [
 
 const FAQS = [
   {
+    q: "What qualifications do I actually need to work as a personal trainer?",
+    a: "The professional baseline is a Level 3 Personal Trainer qualification on the regulated framework (Ofqual / RQF). Most routes start with a Level 2 Gym Instructor first. Specialist work — clinical populations, strength & conditioning, pre/post-natal — sits at Level 4 with a recognised awarding body. REPs cross-checks every qualification against the awarding body before it appears on a profile.",
+  },
+  {
+    q: "What's a regulated qualification, and why does it matter?",
+    a: "A regulated qualification is one that sits on the official framework (in the UK, the Regulated Qualifications Framework, governed by Ofqual) and is awarded by an approved awarding body — Active IQ, YMCA Awards, Focus Awards and similar. Regulated means the course content, assessment and tutor standards are independently checked. An unregulated 'diploma' has no such check — anyone can print one. Insurers, employers and registers like REPs only recognise regulated qualifications.",
+  },
+  {
+    q: "How do I know a training provider is legitimate before I pay them?",
+    a: "Four checks: (1) the qualification they offer is Ofqual-regulated or endorsed by a recognised body; (2) tutors are named with their own qualifications visible; (3) there is real external assessment, not in-house multiple-choice you can re-take until you pass; (4) refund and complaints policies are published. REPs-verified providers have already passed those checks — see the red-flag list on this page for what to avoid otherwise.",
+  },
+  {
     q: "What is CPD?",
     a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
   },
   {
     q: "How many CPD hours do I need per year on REPs?",
     a: "Every REPs professional commits to a meaningful annual minimum, logged quarterly in their dashboard and audited at random. Specific hour thresholds per tier are published in each member's onboarding pack and updated as standards evolve.",
-  },
-  {
-    q: "What happens if I miss a CPD quarter?",
-    a: "The verified badge auto-suspends on the public profile until you bring your CPD log current. The public can see that a profile is currently unverified — that's the entire point of the standard. Catch up, log it, badge restored.",
   },
   {
     q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
@@ -425,16 +433,8 @@ const FAQS = [
     a: "Anyone can call themselves a 'nutritionist' — the title isn't legally protected. On REPs we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). 'Dietitian' is legally protected and regulated by the HCPC — it's the only role that can assess, diagnose and treat clinical conditions with diet.",
   },
   {
-    q: "Do I need a specialist or is a general PT enough?",
-    a: "For general adult fitness — fat loss, getting stronger, building the habit — a Level 3 PT is the right tool. For specialist populations (clinical conditions, pre/post-natal, competition strength & conditioning, rehabilitation), you want a Level 4 specialist or a registered S&C coach. REPs surfaces the right specialism for the goal so you don't end up with a generalist trying to wing it.",
-  },
-  {
     q: "Can CPD upgrade me to a new specialism?",
     a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPs profile once the awarding body confirms it.",
-  },
-  {
-    q: "Does being verified on REPs let me charge more?",
-    a: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
   },
   {
     q: "How do I report a predatory provider or coach?",
@@ -447,7 +447,7 @@ const FAQS = [
 /* ------------------------------------------------------------------ */
 
 
-function CpdPage() {
+function EducationPage() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
@@ -457,15 +457,13 @@ function CpdPage() {
 
         <ProfileScreenshot />
 
-        <WhatCpdIs />
-
-
-
-        <RepsCpdSystem />
+        <WhatEducationIs />
 
         <Qualifications />
 
         <VerifiedProviders />
+
+        <RepsCpdSystem />
 
         <DodgyCourses />
 
@@ -525,7 +523,7 @@ function Hero() {
             className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> CPD & Education
+            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Education & standards
           </span>
 
           <h1
@@ -540,8 +538,8 @@ function Hero() {
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs is the global standard for verified CPD. Every hour is logged quarterly,
-            audited annually, and only counts when it's from a verified training provider.
+            REPs is the global standard for verified education in fitness, nutrition and movement —
+            regulated qualifications, vetted training providers, and CPD that's logged and audited.
           </p>
 
           <div
@@ -555,10 +553,10 @@ function Hero() {
               Browse verified providers <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#how-reps-runs-it"
+              href="#how-the-standard-works"
               className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
             >
-              How REPs runs CPD
+              How the standard works
             </a>
           </div>
 
@@ -572,7 +570,7 @@ function Hero() {
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-reps-orange" />
-              CPD logged quarterly, audited annually
+              Quals, insurance & CPD all evidenced
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-4 w-4 text-reps-orange" />
@@ -610,8 +608,8 @@ function Hero() {
 
 function ProfileScreenshot() {
   const bullets = [
-    "Logged quarterly, audited annually",
-    "Verified-provider hours auto-count",
+    "Qualifications, insurance & CPD — all evidenced",
+    "Verified-provider hours auto-count toward CPD",
     "Specialisms appear once the awarding body confirms",
   ];
   return (
@@ -627,12 +625,12 @@ function ProfileScreenshot() {
               On the profile
             </span>
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              This is what verified CPD looks like to your clients.
+              This is what verified credentials look like to your clients.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every verified hour, qualification and insurance certificate shows up live on the
-              public REPs profile — with the provider, the awarding body and the date it was issued.
-              Unverified hours sit in a separate column. Clients can see the difference at a glance.
+              Every qualification, insurance certificate and CPD entry shows up live on the
+              public REPs profile — with the awarding body, the provider and the date it was issued.
+              Unverified items sit in a separate column. Clients can see the difference at a glance.
             </p>
             <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
               {bullets.map((b) => (
@@ -672,39 +670,38 @@ function ProfileScreenshot() {
 
 
 /* ------------------------------------------------------------------ */
-/* Section: What CPD actually is                                       */
+/* Section: What real education looks like                             */
 /* ------------------------------------------------------------------ */
 
-function WhatCpdIs() {
+function WhatEducationIs() {
   const counts = [
-    "Regulated qualifications (Ofqual / RQF)",
-    "REPs-endorsed CPD courses",
-    "Accredited conferences and workshops",
+    "Regulated qualifications on the RQF (Ofqual-recognised)",
+    "REPs-endorsed CPD courses with external assessment",
+    "Accredited conferences, workshops and supervised mentoring",
     "Peer-reviewed reading with reflective notes",
-    "Supervised mentoring with a senior coach",
+    "Specialist Level 4 credentials from recognised awarding bodies",
   ];
   const doesnt = [
+    "Unregulated 'diplomas' with no named awarding body",
     "Vendor product demos dressed up as “education”",
     "Sales webinars from supplement or app companies",
-    "YouTube videos with no awarding body or assessment",
     "Free in-house “mini-CPDs” bundled with a sales course",
     "Anything self-marked with no external check",
   ];
   return (
-    <section id="what-cpd-is" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
+    <section id="what-education-is" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            What CPD actually is
+            What real education looks like
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Ongoing learning. Actually checked.
+            Qualified. Verified. Kept current.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-            Continuing Professional Development means a professional keeps learning after the initial
-            qualification — and proves it. The science of training, nutrition and rehab moves every year.
-            Adjacent professions (physio, dietetics, medicine) mandate CPD by default. Fitness should too.
-            On REPs, it's the standard.
+            Three layers sit behind every REPs professional: a regulated qualification from a recognised
+            awarding body, a training provider that's been checked end-to-end, and ongoing CPD that's
+            logged and audited. Miss any one and the standard breaks.
           </p>
         </div>
 
@@ -714,7 +711,7 @@ function WhatCpdIs() {
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <Check className="h-5 w-5" />
               </span>
-              <h3 className="font-display text-[18px] font-bold text-white">What counts as CPD</h3>
+              <h3 className="font-display text-[18px] font-bold text-white">What counts as real education</h3>
             </div>
             <ul className="mt-5 flex flex-col gap-2.5 text-[14px] leading-relaxed text-white/80">
               {counts.map((c) => (
@@ -778,7 +775,7 @@ function RepsCpdSystem() {
 
   return (
     <section
-      id="how-reps-runs-it"
+      id="how-the-standard-works"
       className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
@@ -790,8 +787,8 @@ function RepsCpdSystem() {
             Four mechanics. No theatre.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            CPD is only worth something if it's evidenced, governed and visible to the public.
-            Here's the system every REPs professional signs up to.
+            Qualifications get you in the door. CPD keeps them current. Here's the system every
+            REPs professional signs up to.
           </p>
         </div>
 
