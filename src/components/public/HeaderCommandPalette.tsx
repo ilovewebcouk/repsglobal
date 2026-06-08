@@ -8,7 +8,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, MapPin, Sparkles, ShieldCheck, BookOpen } from "lucide-react";
+import { Search, MapPin, Sparkles, BookOpen } from "lucide-react";
 import {
   TOP_PROFESSIONS,
   TOP_LOCATIONS,
@@ -40,12 +40,6 @@ export function HeaderCommandPalette({
           >
             <Search />
             <span>Browse all professionals</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => go(() => navigate({ to: "/verify" }))}
-          >
-            <ShieldCheck />
-            <span>How verification works</span>
           </CommandItem>
           <CommandItem onSelect={() => go(() => navigate({ to: "/resources" }))}>
             <BookOpen />
