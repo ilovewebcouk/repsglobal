@@ -499,6 +499,7 @@ const REGISTERS = [
 /* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
+  "Claims “REPs approved” but isn't listed on the public REPs register — always cross-check the register, not the marketing.",
   "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
   "Awarding body not Ofqual-regulated or REPs-accredited (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
@@ -509,13 +510,12 @@ const RED_FLAGS = [
 ];
 
 const GOOD_SIGNS = [
+  "Carries the REPs Endorsed Course badge — and is listed on the public REPs register so you can verify it yourself.",
   "Regulated qualification on the RQF, awarded by a named Ofqual body — or, for Pilates and yoga, a recognised teacher-training school with named, qualified tutors.",
-  "REPs verification listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules and tutor-to-learner ratios in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
   "Verifiable learner reviews — not just selected testimonials on the provider's own site.",
-  "Listed on the REPs verified training provider register.",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -526,6 +526,10 @@ const FAQS = [
   {
     q: "What does it mean for a course to be accredited by REPs?",
     a: "REPs accreditation means the training provider and its course have been independently checked at the points that matter: a recognised awarding body (Ofqual for regulated fitness and nutrition qualifications; Yoga Alliance Professionals, the British Wheel of Yoga or comparable bodies for yoga; the PMA, BASI, STOTT or comparable for Pilates), named and qualified tutors, external assessment, and published refund and complaints policies. Hours earned through an accredited provider auto-count toward a REPs member's CPD log.",
+  },
+  {
+    q: "How do I check if a course is genuinely REPs-endorsed?",
+    a: "Look for the REPs Endorsed Course badge on the provider's course page — then cross-check the provider on the public REPs verified training provider register. If it's not on the register, it's not endorsed, regardless of what the marketing says. The register is the single source of truth.",
   },
   {
     q: "What is CPD?",
@@ -631,6 +635,8 @@ function CpdPage() {
         <Hero />
 
         <RepsPosition />
+
+        <EndorsedBadge />
 
         <ProfileScreenshot />
 
@@ -796,7 +802,7 @@ function RepsPosition() {
       icon: BadgeCheck,
       title: "Sits between students and providers.",
       body:
-        "REPs independently checks that a provider is genuinely regulated, holds them to a published service standard on top of the awarding body's requirements, and surfaces verified reviews from real learners. Students get one place to see who is worth their tuition fees.",
+        "REPs independently checks each provider against a published service standard, verifies their accreditation, and surfaces reviews from real learners — so a student has one place to see who is worth the tuition fee. For Pilates and yoga, where no statutory regulator exists, this is the standard.",
     },
   ];
 
@@ -850,13 +856,109 @@ function RepsPosition() {
           })}
         </ol>
 
-        <div className="mt-10 rounded-[18px] border border-reps-border bg-reps-panel px-5 py-4">
-          <p className="text-[14px] leading-relaxed text-white/85">
-            <span className="font-semibold text-white">A note on Pilates and yoga.</span>{" "}
-            These disciplines sit outside the statutory regulator's remit. For students, that means
-            the only meaningful protection is an independent check of the teacher-training school
-            and its tutors — which is the work REPs does, in the absence of an Ofqual equivalent.
-          </p>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: EndorsedBadge — the one mark a learner sees in the wild    */
+/* ------------------------------------------------------------------ */
+
+function EndorsedBadge() {
+  const meaning = [
+    "Reviewed against published REPs criteria — tutors, assessment, refund & complaints policy.",
+    "Re-checked every year, not awarded once and forgotten.",
+    "Listed on the public REPs register so you can verify it yourself in 30 seconds.",
+  ];
+
+  return (
+    <section
+      id="endorsed-badge"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink"
+    >
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16">
+          <div className="max-w-[520px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+              What to look for
+            </span>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+              The one mark to look for on any course.
+            </h2>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
+              When a training provider has passed REPs' independent review, they're entitled to
+              show the <span className="font-semibold text-white">REPs Endorsed Course</span> badge
+              on the course page. It's the single signal that separates a real, externally-checked
+              programme from a self-marked PDF dressed up as accreditation.
+            </p>
+            <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
+              {meaning.map((m) => (
+                <li key={m} className="flex gap-2">
+                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>{m}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-[13.5px] text-white/60">
+              Don't see the badge?{" "}
+              <a
+                href="#verified-providers"
+                className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+              >
+                Check the register
+              </a>{" "}
+              before you pay a deposit.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+            />
+            <BrowserFrame url="academyofmovement.example/courses/level-3-pt">
+              <div className="bg-white p-6 sm:p-8">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-7">
+                  <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-reps-orange/15 via-reps-orange/5 to-transparent sm:w-[200px]">
+                    <div className="flex h-full w-full items-center justify-center">
+                      <GraduationCap className="h-16 w-16 text-reps-orange/60" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-ink/55">
+                          Level 3 · 12 weeks
+                        </p>
+                        <h3 className="mt-1.5 font-display text-[20px] font-bold leading-tight text-reps-ink">
+                          Diploma in Personal Training
+                        </h3>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange/30 bg-reps-orange/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-reps-orange">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        REPs Endorsed
+                      </span>
+                    </div>
+                    <p className="mt-3 text-[13.5px] leading-relaxed text-reps-ink/75">
+                      Ofqual-regulated, externally assessed. Named tutors with verified L4
+                      specialisms. Tutor-to-learner ratio 1:8.
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-reps-ink/60">
+                      <span className="inline-flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
+                        Verified on the REPs register
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                        4.8 · 312 learner reviews
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </BrowserFrame>
+          </div>
         </div>
       </div>
     </section>
@@ -882,12 +984,13 @@ function ProfileScreenshot() {
               On the profile
             </span>
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              This is what verified CPD looks like to your clients.
+              And here's how that course shows up on your REPs profile.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every verified hour, qualification and insurance certificate shows up live on the
-              public REPs profile — with the provider, the awarding body and the date it was issued.
-              Unverified hours sit in a separate column. Clients can see the difference at a glance.
+              Hours earned through an endorsed provider auto-count toward your CPD log, with the
+              provider, the awarding body and the date it was issued — visible on your public REPs
+              profile. Unverified hours sit in a separate column. Clients can see the difference at
+              a glance.
             </p>
             <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
               {bullets.map((b) => (
@@ -1447,17 +1550,11 @@ function VerifiedProviders() {
               The verified training provider register.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              REPs lists training providers that meet a published service standard on top of their
-              awarding-body recognition — tutor credentials, assessment integrity, refund and
-              complaints policies, and verified reviews from real learners. For students it is the
-              shortest path to a course worth the tuition fee.
+              Every provider listed here has had their courses reviewed against REPs criteria,
+              carries valid insurance, names qualified tutors and is re-checked each year. Search
+              by discipline, location or qualification — it's the shortest path to a course worth
+              the tuition fee.
             </p>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              For providers it is the place informed students search. When buyers can tell the
-              difference between a verified school and a chancer, the verified school fills more
-              courses at a higher price. That is what the register is for.
-            </p>
-
           </div>
 
           <div className="grid gap-4">
@@ -1877,12 +1974,12 @@ function JoinRepsCta() {
                 >
                   Find verified training providers <ArrowRight className="h-4 w-4" />
                 </a>
-                <Link
-                  to="/for-professionals"
+                <a
+                  href="/training-providers"
                   className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
                 >
-                  List your training organisation
-                </Link>
+                  Are you a training provider? →
+                </a>
               </div>
             </div>
           </div>
