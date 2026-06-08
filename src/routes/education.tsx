@@ -588,36 +588,9 @@ function Hero() {
             </a>
           </div>
 
-          {/* Promoted sub-hero credibility band */}
-          <div
-            className="mt-8 w-full animate-fade-in rounded-[16px] border border-white/15 bg-reps-ink/55 px-5 py-4 backdrop-blur"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
-          >
-            <p className="text-[10.5px] font-semibold uppercase tracking-[0.22em] text-white/55">
-              Cross-checked at source
-            </p>
-            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] font-semibold text-white">
-              <span>Ofqual</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>REPs</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>AfN</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>HCPC</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>YAP</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Active IQ</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>YMCA Awards</span>
-              <span className="text-reps-orange/70">·</span>
-              <span>Focus Awards</span>
-            </p>
-          </div>
-
           <ul
-            className="mt-6 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
-            style={{ animationDuration: "640ms", animationDelay: "420ms", animationFillMode: "both" }}
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-reps-orange" />
@@ -632,6 +605,29 @@ function Hero() {
               Only verified-provider hours count
             </li>
           </ul>
+
+          {/* Editorial cross-check strip — matches /specialisms hero pattern */}
+          <div
+            className="mt-10 w-full animate-fade-in border-t border-white/10 pt-5"
+            style={{ animationDuration: "640ms", animationDelay: "420ms", animationFillMode: "both" }}
+          >
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+              <span>Ofqual</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>AfN</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>HCPC</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>YAP</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Active IQ</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>YMCA</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Focus</span>
+              <span className="ml-2 text-reps-orange">— Cross-checked at source</span>
+            </p>
+          </div>
         </div>
       </div>
     </section>
