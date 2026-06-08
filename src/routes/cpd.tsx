@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
@@ -100,6 +101,7 @@ const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
   { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
   { anchor: "verified-providers", label: "Verified providers" },
   { anchor: "dodgy-courses", label: "Spot a worthless course" },
+  { anchor: "credibility-quiz", label: "Credibility quiz" },
   { anchor: "raise-the-standard", label: "Raise the standard" },
   { anchor: "faq", label: "FAQ" },
 ];
@@ -476,6 +478,8 @@ function CpdPage() {
         <VerifiedProviders />
 
         <DodgyCourses />
+
+        <CredibilityQuiz />
 
         <RaiseTheStandard />
 
