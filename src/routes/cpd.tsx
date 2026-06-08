@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 import ctaTrainers from "@/assets/cta-band.jpg";
+import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
+import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
   Accordion,
