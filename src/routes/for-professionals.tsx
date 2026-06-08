@@ -27,7 +27,7 @@ import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
-import { VenueStrip } from "@/components/marketing/VenueStrip";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 
 import heroGym from "@/assets/for-pros-hero-gym.jpg.asset.json";
@@ -202,7 +202,7 @@ function ForProsPage() {
       </section>
 
       {/* PRESS MARQUEE — continuous R→L scroll on the same ink continuum as hero + Act 1 */}
-      <VenueStrip />
+      <PressMarquee />
 
 
       {/* WHY COACHES SWITCH — competitive proof */}
