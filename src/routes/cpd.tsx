@@ -48,7 +48,7 @@ const CANONICAL = "https://repsglobal.lovable.app/cpd";
 const META_TITLE =
   "CPD & Verified Training Providers — Education that actually counts | REPs";
 const META_DESC =
-  "What CPD really is, how REPs governs it, and how to spot a worthless training provider before you spend a penny. Every CPD hour through a REPs-verified provider counts. The rest don't.";
+  "What CPD really is, how REPs runs it, and how to spot a worthless training provider before you spend a penny. Every CPD hour through a verified provider counts. The rest don't.";
 
 export const Route = createFileRoute("/cpd")({
   head: () => ({
@@ -433,7 +433,7 @@ const FAQS = [
   },
   {
     q: "Do I need a specialist or is a general PT enough?",
-    a: "For general adult fitness — fat loss, strength, getting stronger and healthier — a Level 3 PT is the right tool. For specialist populations (clinical conditions, pre/post-natal, competition strength & conditioning, rehabilitation), you want a Level 4 specialist or a registered S&C coach. REPs surfaces the right specialism for the goal so you don't end up with a generalist trying to wing it.",
+    a: "For general adult fitness — fat loss, getting stronger, building the habit — a Level 3 PT is the right tool. For specialist populations (clinical conditions, pre/post-natal, competition strength & conditioning, rehabilitation), you want a Level 4 specialist or a registered S&C coach. REPs surfaces the right specialism for the goal so you don't end up with a generalist trying to wing it.",
   },
   {
     q: "Can CPD upgrade me to a new specialism?",
@@ -540,7 +540,7 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            The certificate is only worth
+            A certificate is only as good as
             <br />
             <span className="text-reps-orange">the people behind it.</span>
           </h1>
@@ -551,7 +551,7 @@ function Hero() {
           >
             REPs is the global standard for verified CPD in fitness, sport and physical activity.
             CPD keeps a qualification current — logged quarterly, audited annually, and only counted
-            when it's from a verified training provider. If a course isn't, it isn't worth the paper.
+            when it's from a verified training provider. If the provider isn't verified, the certificate isn't worth the paper it's printed on.
           </p>
 
           <div
@@ -568,7 +568,7 @@ function Hero() {
               href="#how-reps-runs-it"
               className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
             >
-              How REPs governs CPD
+              How REPs runs CPD
             </a>
           </div>
 
@@ -665,13 +665,13 @@ function WhatCpdIs() {
             What CPD actually is
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Ongoing learning that's actually checked.
+            Ongoing learning. Actually checked.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
             Continuing Professional Development means a professional keeps learning after the initial
             qualification — and proves it. The science of training, nutrition and rehab moves every year.
             Adjacent professions (physio, dietetics, medicine) mandate CPD by default. Fitness should too.
-            On REPs, it does.
+            On REPs, it's the standard.
           </p>
         </div>
 
@@ -801,7 +801,7 @@ function Qualifications() {
             Qualifications, decoded
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Know what the letters actually mean — before you spend.
+            Know what the letters mean — before you spend a penny.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             The fitness industry runs on acronyms, and most buyers don't know the difference between
@@ -889,7 +889,7 @@ function Qualifications() {
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where buyers get burned most. Anyone can call themselves a “nutritionist.”
+            This is where buyers get burned hardest. Anyone can call themselves a “nutritionist.”
             Only one role is legally protected — and only that role can prescribe diets for disease.
           </p>
 
@@ -1027,7 +1027,7 @@ function GeneralistVsSpecialist() {
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <BadgeCheck className="h-5 w-5" />
               </span>
-              <h3 className="font-display text-[18px] font-bold text-white">Same logic. Different industry.</h3>
+              <h3 className="font-display text-[18px] font-bold text-white">Same logic. In fitness.</h3>
             </div>
             <ul className="mt-5 flex flex-col gap-3 text-[14.5px] leading-relaxed text-white/80">
               <li className="flex gap-2.5">
@@ -1096,7 +1096,7 @@ function VerifiedProviders() {
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               The standard is industry-baseline. Verification is open to apply for. The only reason
-              a provider refuses or fails it is the reason you should refuse them.
+              a provider refuses or fails verification is the reason you should refuse them.
             </p>
 
             <blockquote className="mt-8 border-l-2 border-reps-orange pl-5">
@@ -1153,7 +1153,7 @@ function DodgyCourses() {
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             The most predatory training providers follow the same playbook — oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a trillion “free” CPDs taped to the side.
+            in-house assessment, finance pressure and a stack of “free” CPDs taped to the side.
             Here's what to look for, and what good actually looks like.
           </p>
         </div>
@@ -1286,21 +1286,17 @@ function ProviderCtaBand() {
                 Find a verified provider — or report one that isn't.
               </h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
-                The REPs verified-provider directory opens shortly. In the meantime, if a provider
+                The verified-provider directory opens shortly. Until it does, if a provider
                 claims credibility they can't back up, send it our way.
               </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-[6px] border border-reps-border bg-reps-ink px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                Directory · Coming soon
+              </span>
             </div>
             <div className="flex flex-wrap gap-3">
-              <span
-                aria-disabled
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange/60 px-6 text-[14px] font-semibold text-white shadow-none"
-                title="Verified provider directory coming soon"
-              >
-                Directory coming soon
-              </span>
               <Link
                 to="/contact"
-                className="inline-flex h-12 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-ink px-6 text-[14px] font-semibold text-white shadow-none hover:border-reps-orange-border"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
               >
                 Report a provider <ArrowRight className="h-4 w-4" />
               </Link>
