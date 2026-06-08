@@ -26,6 +26,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { VerificationMoment } from "@/components/marketing/VerificationMoment";
 import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainers from "@/assets/cta-band.jpg";
 import proJames from "@/assets/pro-james.jpg";
@@ -423,6 +424,21 @@ function HomeV2() {
           </div>
         </div>
       </section>
+
+      {/* ============ VERIFICATION MOMENT — scannable public proof ============ */}
+      <VerificationMoment
+        audience="consumer"
+        pro={{
+          name: "James Carter",
+          role: "Personal Trainer",
+          location: "London",
+          photo: proJames,
+          slug: "james-carter",
+          verifiedId: "REPS-2024-08147",
+          lastVerified: "Mar 2026",
+          renewsOn: "Mar 2027",
+        }}
+      />
 
       {/* ============ WHY TRUST REPs — stats + pillars + closing quote folded in ============ */}
       <section className="bg-reps-warm-white">
