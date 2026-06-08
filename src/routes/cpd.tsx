@@ -1137,7 +1137,7 @@ function RaiseTheStandard() {
     {
       n: "01",
       title: "Cut the noise.",
-      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
+      body: "Unqualified 'online coaches' selling generic PDFs as programmes. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
@@ -1147,7 +1147,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and an unverified one, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
     },
   ];
 
