@@ -319,7 +319,6 @@ function CpdV2Page() {
         <Hero />
         <ProofCards />
         <DevelopmentPassport />
-        <VerifyStrip />
         <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
