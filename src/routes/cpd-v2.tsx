@@ -962,7 +962,7 @@ function AiRecommendations() {
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <SectionHeader
-            eyebrow="AI · Preview"
+            eyebrow="AI · Preview · Phase 1"
             heading="Know what to learn next."
             lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
             className="max-w-none"
