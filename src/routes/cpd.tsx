@@ -261,31 +261,153 @@ const NUTRITION_LADDER: NutritionRow[] = [
   },
 ];
 
-const MOVEMENT_QUALS: Qual[] = [
+const PILATES_LADDER: LadderRung[] = [
   {
-    acronym: "YAP 200hr",
-    full: "Yoga Alliance Professionals — 200-hour Teacher Training",
-    meaning: "Internationally recognised baseline for yoga teachers.",
+    level: "Mat",
+    title: "Mat Pilates Teacher",
+    blurb:
+      "The baseline studio qualification — bodyweight Pilates on the mat, taught to general adult populations.",
+    scope: [
+      "Mat-based group classes",
+      "1:1 mat sessions for healthy adults",
+      "Core, mobility and posture programmes",
+    ],
+    notScope: ["Reformer or equipment-based teaching", "Rehab for clinical populations"],
+    quals: [
+      {
+        acronym: "L3 Mat",
+        full: "Level 3 Mat Pilates (RQF)",
+        meaning: "Ofqual-regulated baseline for mat-Pilates teaching.",
+      },
+      {
+        acronym: "BASI Mat",
+        full: "Body Arts and Science International — Mat Programme",
+        meaning: "Internationally recognised mat-Pilates teacher training.",
+      },
+    ],
   },
   {
-    acronym: "YAP 500hr",
-    full: "Yoga Alliance Professionals — 500-hour Teacher Training",
-    meaning: "Advanced training; typical of senior or specialist teachers.",
+    level: "Reformer",
+    title: "Reformer & Equipment",
+    blurb:
+      "Studio-based equipment Pilates — Reformer, Cadillac, Chair and Barrels. Required for any equipment-based studio work.",
+    scope: [
+      "Reformer group and 1:1 sessions",
+      "Cadillac, Wunda Chair and Barrel work",
+      "Apparatus-based programming",
+    ],
+    notScope: ["Clinical rehab without a clinician", "Teaching apparatus you weren't certified on"],
+    quals: [
+      {
+        acronym: "Reformer",
+        full: "Recognised Reformer Pilates Certification",
+        meaning: "Required for equipment-based Pilates teaching and studio work.",
+      },
+      {
+        acronym: "STOTT",
+        full: "STOTT Pilates — Reformer / Full Equipment",
+        meaning: "Globally recognised contemporary Pilates teacher training.",
+      },
+    ],
   },
   {
-    acronym: "BWY L4",
-    full: "British Wheel of Yoga — Level 4 Diploma",
-    meaning: "Long-established teacher-training pathway recognised across studios.",
+    level: "Comprehensive",
+    title: "Comprehensive Teacher",
+    blurb:
+      "The senior tier — full apparatus, advanced programming and the ability to mentor newer teachers.",
+    scope: [
+      "Full apparatus across all repertoire",
+      "Advanced and specialist clients (with referral)",
+      "Mentoring and teacher training",
+    ],
+    notScope: ["Diagnosis or medical treatment — refer to a clinician"],
+    quals: [
+      {
+        acronym: "Comprehensive",
+        full: "Comprehensive Pilates Teacher Training (450hr+)",
+        meaning: "Full mat plus all apparatus — the senior studio standard.",
+      },
+      {
+        acronym: "PMA-CPT",
+        full: "Pilates Method Alliance — Certified Pilates Teacher",
+        meaning: "Independent international certification for Pilates teachers.",
+      },
+    ],
+  },
+];
+
+const YOGA_LADDER: LadderRung[] = [
+  {
+    level: "200hr",
+    title: "Yoga Teacher",
+    blurb:
+      "The international entry-level standard. 200 hours of teacher training covering asana, anatomy, philosophy and teaching practice.",
+    scope: [
+      "Open-level group classes",
+      "1:1 yoga for healthy adults",
+      "Studio, gym and community teaching",
+    ],
+    notScope: ["Yoga therapy for medical conditions", "Pre/post-natal without specialist training"],
+    quals: [
+      {
+        acronym: "YAP 200hr",
+        full: "Yoga Alliance Professionals — 200-hour Teacher Training",
+        meaning: "Internationally recognised baseline for yoga teachers.",
+      },
+      {
+        acronym: "RYT 200",
+        full: "Registered Yoga Teacher — 200hr (Yoga Alliance)",
+        meaning: "The most widely used entry-level yoga teaching credential.",
+      },
+    ],
   },
   {
-    acronym: "L3 Mat",
-    full: "Level 3 Mat Pilates (RQF)",
-    meaning: "Baseline qualification for mat-Pilates teaching.",
+    level: "500hr",
+    title: "Senior Teacher",
+    blurb:
+      "Advanced teacher training — typical of senior studio teachers and those running workshops or short trainings.",
+    scope: [
+      "Advanced group and specialist classes",
+      "Workshops, retreats and short courses",
+      "Mentoring newer teachers",
+    ],
+    notScope: ["Clinical yoga therapy", "Therapeutic prescription for disease"],
+    quals: [
+      {
+        acronym: "YAP 500hr",
+        full: "Yoga Alliance Professionals — 500-hour Teacher Training",
+        meaning: "Advanced training; typical of senior or specialist teachers.",
+      },
+      {
+        acronym: "BWY L4",
+        full: "British Wheel of Yoga — Level 4 Diploma",
+        meaning: "Long-established teacher-training pathway recognised across studios.",
+      },
+    ],
   },
   {
-    acronym: "Reformer",
-    full: "Recognised Reformer Pilates Certification",
-    meaning: "Required for equipment-based Pilates teaching and studio work.",
+    level: "Specialist",
+    title: "Specialist & Therapy",
+    blurb:
+      "Post-graduate specialisms — pre/post-natal, children's yoga, trauma-informed and clinical yoga therapy.",
+    scope: [
+      "Pre and post-natal yoga",
+      "Children's and family yoga",
+      "Trauma-informed and accessible classes",
+    ],
+    notScope: ["Diagnosis or medical treatment — refer to a clinician"],
+    quals: [
+      {
+        acronym: "C-IAYT",
+        full: "Certified Yoga Therapist (International Association of Yoga Therapists)",
+        meaning: "Recognised clinical yoga-therapy credential for working alongside healthcare.",
+      },
+      {
+        acronym: "Pre/Post-natal",
+        full: "Recognised Pre & Post-natal Yoga Training",
+        meaning: "Specialist training required to teach pregnant and post-natal clients safely.",
+      },
+    ],
   },
 ];
 
