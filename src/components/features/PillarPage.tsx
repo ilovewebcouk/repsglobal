@@ -263,12 +263,9 @@ export function PillarPage({
 }
 
 function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProps {
-  return (
-    typeof m === "object" &&
-    m !== null &&
-    "device" in (m as Record<string, unknown>) &&
-    "src" in (m as Record<string, unknown>)
-  );
+  if (typeof m !== "object" || m === null) return false;
+  const obj = m as unknown as Record<string, unknown>;
+  return "device" in obj && "src" in obj;
 }
 
 function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reverse: boolean }) {
