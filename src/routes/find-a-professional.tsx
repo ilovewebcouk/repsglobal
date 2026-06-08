@@ -1020,13 +1020,6 @@ function EditorialBreak() {
             </p>
           </div>
         </div>
-        <Link
-          to="/verify"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-white/10"
-        >
-          How verification works
-          <ChevronRight className="h-3.5 w-3.5" />
-        </Link>
       </div>
     </aside>
   );

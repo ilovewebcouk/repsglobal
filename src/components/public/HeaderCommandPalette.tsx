@@ -41,12 +41,6 @@ export function HeaderCommandPalette({
             <Search />
             <span>Browse all professionals</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => go(() => navigate({ to: "/verify" }))}
-          >
-            <ShieldCheck />
-            <span>How verification works</span>
-          </CommandItem>
           <CommandItem onSelect={() => go(() => navigate({ to: "/resources" }))}>
             <BookOpen />
             <span>Read resources</span>

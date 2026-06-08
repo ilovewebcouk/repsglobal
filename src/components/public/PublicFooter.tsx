@@ -34,7 +34,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "About REPs", to: "/about" },
       { label: "Standards", to: "/standards" },
-      { label: "Verification", to: "/verify" },
+      
       { label: "Resources", to: "/resources" },
       { label: "Careers", to: "/careers" },
       { label: "Press", to: "/press" },

@@ -47,7 +47,7 @@ export const TOP_LOCATIONS: { slug: string; label: string }[] = [
 export const ABOUT_LINKS = [
   { to: "/about", label: "About REPs", sub: "Who we are and what we stand for" },
   { to: "/standards", label: "Our Standards", sub: "The bar every professional clears" },
-  { to: "/verify", label: "Verification", sub: "How the Verified badge works" },
+  
   { to: "/reviews", label: "Reviews", sub: "Verified client feedback, on the record" },
   { to: "/complaints", label: "Complaints", sub: "Raise an issue with our standards team" },
 ] as const;
@@ -73,7 +73,7 @@ export const PRO_RESOURCES = [
 // About REPs mega-menu — 3 columns of institutional, trust and support pages.
 export const ABOUT_GROUPS: {
   heading: string;
-  links: { to: "/about" | "/careers" | "/press" | "/contact" | "/standards" | "/verify" | "/reviews" | "/complaints" | "/help" | "/faq"; label: string }[];
+  links: { to: "/about" | "/careers" | "/press" | "/contact" | "/standards" | "/reviews" | "/complaints" | "/help" | "/faq"; label: string }[];
 }[] = [
   {
     heading: "Organisation",
@@ -88,7 +88,7 @@ export const ABOUT_GROUPS: {
     heading: "Standards & trust",
     links: [
       { to: "/standards", label: "Our Standards" },
-      { to: "/verify", label: "How verification works" },
+      
       { to: "/reviews", label: "Reviews" },
       { to: "/complaints", label: "Complaints" },
     ],
