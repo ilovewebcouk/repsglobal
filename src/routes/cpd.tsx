@@ -43,10 +43,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-
-
-import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
-const heroCpd = heroCpdAsset.url;
+const heroCpd = cpdTutorMomentAsset.url;
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
