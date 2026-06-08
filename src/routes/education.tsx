@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Activity,
   ArrowRight,
   BadgeCheck,
   BookOpen,
@@ -8,7 +7,6 @@ import {
   ChevronDown,
   ExternalLink,
   GraduationCap,
-  Heart,
   RefreshCw,
   ShieldCheck,
   Sparkles,
