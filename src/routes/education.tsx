@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Activity,
   ArrowRight,
   BadgeCheck,
   BookOpen,
@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ExternalLink,
   GraduationCap,
-  Heart,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -32,7 +31,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Collapsible,
   CollapsibleContent,
@@ -51,9 +49,9 @@ const heroCpd = heroCpdAsset.url;
 
 const CANONICAL = "https://staging.repsuk.org/education";
 const META_TITLE =
-  "Fitness education that actually counts — qualifications, providers, CPD | REPs";
+  "Fitness education that actually counts — qualifications & verified providers | REPs";
 const META_DESC =
-  "Regulated qualifications, REPs-verified training providers, ongoing CPD — and how to spot a worthless course before you spend a penny.";
+  "Regulated qualifications and REPs-verified training providers across fitness, nutrition, yoga and Pilates — and how to spot a worthless course before you spend a penny.";
 
 export const Route = createFileRoute("/education")({
   head: () => ({
@@ -462,15 +460,15 @@ const FAQS = [
   },
   {
     q: "What is CPD?",
-    a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
+    a: "Continuing Professional Development — ongoing learning a professional commits to after their initial qualification. For REPs, the rule is simple: CPD only counts toward your profile if it's delivered by a REPs-accredited provider. The exact framework (hours, points, cycle) is being finalised and will be published before launch.",
   },
   {
     q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
-    a: "If you want the qualification to mean anything on REPs — yes. Hours through a verified provider auto-count toward your CPD log once you're a member. Hours through unverified providers don't. More importantly, REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. If the provider isn't on REPs, ask them why.",
+    a: "If you want the qualification to mean anything on REPs — yes. REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. CPD delivered through a REPs-accredited provider is the only CPD that will update a REPs profile. If the provider isn't on REPs, ask them why.",
   },
   {
-    q: "Can CPD upgrade me to a new specialism?",
-    a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPs profile once the awarding body confirms it.",
+    q: "Can further training upgrade me to a new specialism?",
+    a: "Yes. Stack training toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes — and the new specialism appears on your REPs profile once the awarding body confirms it.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
@@ -559,15 +557,15 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            Regulated qualifications. Verified providers.{" "}
-            <span className="text-reps-orange">CPD that's logged and audited.</span>
+            Regulated qualifications.{" "}
+            <span className="text-reps-orange">Verified training providers.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            The standard behind every REPs professional — across fitness, nutrition and movement.
+            The education standard behind every REPs professional — across fitness, nutrition, yoga and Pilates.
           </p>
 
           <div
@@ -598,13 +596,14 @@ function Hero() {
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-reps-orange" />
-              Quals, insurance & CPD all evidenced
+              Awarding body named on every profile
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-4 w-4 text-reps-orange" />
-              Only verified-provider hours count
+              Cross-checked at source
             </li>
           </ul>
+
 
           {/* Editorial cross-check strip — matches /specialisms hero pattern */}
           <div
@@ -706,6 +705,40 @@ function LadderCard({ rung }: { rung: LadderRung }) {
   );
 }
 
+function LadderBlock({
+  eyebrow,
+  title,
+  blurb,
+  rungs,
+  footnote,
+}: {
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  rungs: LadderRung[];
+  footnote?: ReactNode;
+}) {
+  return (
+    <div className="mt-16 first:mt-0">
+      <div className="max-w-[820px]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+          {eyebrow}
+        </span>
+        <h3 className="mt-3 font-display text-[24px] font-bold leading-tight text-white lg:text-[30px]">
+          {title}
+        </h3>
+        <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">{blurb}</p>
+      </div>
+      <div className="mt-8 grid gap-5 lg:grid-cols-3">
+        {rungs.map((r) => (
+          <LadderCard key={r.title} rung={r} />
+        ))}
+      </div>
+      {footnote}
+    </div>
+  );
+}
+
 function Qualifications() {
   return (
     <section id="qualifications" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
@@ -719,39 +752,25 @@ function Qualifications() {
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             The industry runs on acronyms, and most buyers don't know the difference between
-            a Level 2, a Level 3 and a weekend “mastery” certificate. Here are the three real
-            ladders — fitness, nutrition and movement — with the recognised qualifications at
-            every step.
+            a Level 2, a Level 3 and a weekend “mastery” certificate. Here are the real
+            ladders — fitness, nutrition, yoga and Pilates — with the recognised qualifications
+            at every step.
           </p>
         </div>
 
-        <Tabs defaultValue="fitness" className="mt-10">
-          <TabsList className="bg-reps-panel-soft">
-            <TabsTrigger value="fitness" className="gap-2">
-              <Activity className="h-4 w-4" /> Fitness
-            </TabsTrigger>
-            <TabsTrigger value="nutrition" className="gap-2">
-              <Heart className="h-4 w-4" /> Nutrition
-            </TabsTrigger>
-            <TabsTrigger value="movement" className="gap-2">
-              <Sparkles className="h-4 w-4" /> Yoga &amp; Pilates
-            </TabsTrigger>
-          </TabsList>
+        <LadderBlock
+          eyebrow="Fitness"
+          title="The fitness ladder"
+          blurb="Ofqual-regulated RQF qualifications. Level 2 to lead group circuits, Level 3 to coach 1:1, Level 4 for clinical or performance specialisms."
+          rungs={FITNESS_LADDER}
+        />
 
-          <TabsContent value="fitness" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {FITNESS_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="nutrition" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {NUTRITION_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
+        <LadderBlock
+          eyebrow="Nutrition"
+          title="The nutrition ladder"
+          blurb="The most-mis-sold area in the industry. Three honest tiers — coach, registered nutritionist, registered dietitian — and only one of them can prescribe diets for clinical conditions."
+          rungs={NUTRITION_LADDER}
+          footnote={
             <div className="mt-8 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
               <p className="text-[14px] leading-relaxed text-white">
                 <strong className="text-white">Plain English:</strong> if someone selling you a
@@ -759,20 +778,27 @@ function Qualifications() {
                 they're operating outside their lane.
               </p>
             </div>
-          </TabsContent>
+          }
+        />
 
-          <TabsContent value="movement" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {MOVEMENT_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        <LadderBlock
+          eyebrow="Yoga"
+          title="The yoga ladder"
+          blurb="Yoga runs on hours-based teacher training rather than the RQF. The honest standards are Yoga Alliance Professionals (200hr / 500hr) and the British Wheel of Yoga."
+          rungs={MOVEMENT_LADDER.filter((r) => r.level.startsWith("Yoga"))}
+        />
+
+        <LadderBlock
+          eyebrow="Pilates"
+          title="The Pilates ladder"
+          blurb="Regulated mat-Pilates qualifications plus recognised reformer and equipment certifications for studio work."
+          rungs={MOVEMENT_LADDER.filter((r) => r.level === "Pilates")}
+        />
       </div>
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Section: How the standard works (merges 3 sections)                 */
@@ -795,8 +821,8 @@ function HowTheStandardWorks() {
     {
       icon: RefreshCw,
       eyebrow: "Current",
-      title: "CPD logged and audited",
-      body: "Members log every CPD activity quarterly with evidence attached. A random sample is fully audited each year. Faked logs lose verification.",
+      title: "CPD must be REPs-accredited",
+      body: "Continuing professional development only counts toward a REPs profile if it's delivered by a REPs-accredited provider. Unaccredited 'certificates' don't update the profile.",
     },
   ];
 
@@ -846,8 +872,7 @@ function HowTheStandardWorks() {
           <div className="flex flex-wrap items-center gap-3">
             <BadgeCheck className="h-5 w-5 text-reps-orange" />
             <p className="text-[14px] font-semibold text-white">
-              Every CPD entry includes provider, awarding body and issue date — visible on the
-              public profile. Miss a quarter and the badge auto-suspends until CPD is current.
+              The awarding body is named on every profile. CPD only counts toward a REPs profile when it's delivered by a REPs-accredited provider.
             </p>
           </div>
         </div>
@@ -878,8 +903,8 @@ function VerifiedProviders() {
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition (Ofqual / REPs / AfN / YAP), tutor qualifications, assessment
-              integrity, refund and complaints policy. Every CPD hour you earn through them auto-counts
-              toward your REPs log. Hours from unverified providers don't.
+              integrity, refund and complaints policy. Any CPD that updates a REPs profile has to be
+              delivered by a REPs-accredited provider.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               The standard is industry-baseline. Verification is open to apply for.
@@ -965,8 +990,8 @@ function VerifiedProviders() {
 
 function ProfileScreenshot() {
   const bullets = [
-    "Qualifications, insurance & CPD — all evidenced",
-    "Verified-provider hours auto-count toward CPD",
+    "Qualifications & insurance — all evidenced",
+    "Awarding body & issue date visible on every credential",
     "Specialisms appear once the awarding body confirms",
   ];
   return (
@@ -985,7 +1010,7 @@ function ProfileScreenshot() {
               This is what verified credentials look like to your clients.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every qualification, insurance certificate and CPD entry shows up live on the
+              Every qualification and insurance certificate shows up live on the
               public REPs profile — with the awarding body, the provider and the date it was issued.
               Unverified items sit in a separate column. Clients can see the difference at a glance.
             </p>
@@ -1124,7 +1149,7 @@ function FaqBlock() {
           FAQ
         </span>
         <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          Qualifications, providers & CPD — answered.
+          Qualifications & providers — answered.
         </h2>
 
         <Accordion type="single" collapsible className="mt-10">
