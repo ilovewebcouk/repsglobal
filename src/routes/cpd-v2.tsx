@@ -494,7 +494,7 @@ function DevelopmentPassport() {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(255,122,0,0.10),transparent_70%)]" />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
@@ -684,7 +684,7 @@ function ProfessionalDevelopmentMockup() {
 function RegisterProofBand() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
+      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="mb-8 max-w-2xl">
           <Badge
             variant="outline"
@@ -709,7 +709,7 @@ function RegisterProofBand() {
 function LearningPathways() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-3xl">
           <Badge
             variant="outline"
@@ -777,7 +777,7 @@ function LearningPathways() {
 function CpdDiscovery() {
   return (
     <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <Badge
@@ -928,7 +928,7 @@ function CpdDiscovery() {
 function SpecialistAreas() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-3xl">
           <Badge
             variant="outline"
@@ -983,7 +983,7 @@ function SpecialistAreas() {
 function AiRecommendations() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
@@ -1101,7 +1101,7 @@ function TrainingProvidersBand() {
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(50%_60%_at_15%_50%,rgba(255,122,0,0.10),transparent_70%)]"
       />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-6 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-8 lg:py-24">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <Badge
             variant="outline"
