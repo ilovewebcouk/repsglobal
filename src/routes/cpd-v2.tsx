@@ -177,6 +177,12 @@ const PATHWAYS = [
     outcome: "Use your shop-front, enquiries and AI tools to grow on REPs.",
     topics: ["Shop-front", "Enquiry conversion", "AI assistant"],
   },
+  {
+    icon: Monitor,
+    title: "Online coaching & tech",
+    outcome: "Deliver high-quality coaching to clients anywhere, with the right tools.",
+    topics: ["Online programming", "Coaching apps", "Client communications"],
+  },
 ];
 
 const COURSES = [
