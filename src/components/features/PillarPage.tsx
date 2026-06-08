@@ -32,13 +32,21 @@ const GROUP_ROUTES = {
   growth: "/features/growth",
 } as const;
 
+/** Marker variant for the shared cinematic-photo + floating-cards layout. */
+export type CinematicMockup = { kind: "cinematic" } & CinematicCardStackProps;
+
 export type PillarFeature = {
   tag: string;
   title: string;
   body: string;
   bullets: string[];
-  /** Either a DeviceMockup config (preferred — renders a real REPs route inside a laptop/phone frame) or a custom React node. */
-  mockup: DeviceMockupProps | React.ReactNode;
+  /**
+   * Three options, in order of preference:
+   * - CinematicMockup `{ kind: 'cinematic', image, cards }` — shared photo + floating cards
+   * - DeviceMockupProps — real REPs route inside a laptop/phone frame
+   * - React node — escape hatch for bespoke mockups
+   */
+  mockup: CinematicMockup | DeviceMockupProps | React.ReactNode;
   learnMoreSlug?: string;
 };
 
