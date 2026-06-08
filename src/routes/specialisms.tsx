@@ -17,12 +17,6 @@ import {
 } from "lucide-react";
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -31,7 +25,10 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-
+import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from "@/components/marketing/SectionHeader";
+import { VerifySteps } from "@/components/marketing/VerifySteps";
+import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import heroSpecialismsAsset from "@/assets/specialisms-hero-v2.jpg.asset.json";
 const heroSpecialisms = heroSpecialismsAsset.url;
