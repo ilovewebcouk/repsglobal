@@ -503,24 +503,12 @@ function DevelopmentPassport() {
       <div className="absolute inset-0 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(255,122,0,0.10),transparent_70%)]" />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Layers className="mr-1.5 h-3.5 w-3.5" /> Professional Development Passport
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Your professional development,{" "}
-            <span className="text-reps-orange">
-              connected to your public profile.
-            </span>
-          </h2>
-          <p className="mt-5 max-w-lg text-[16px] leading-relaxed text-white/75">
-            Qualifications, CPD, insurance and specialist development don't
-            belong in a folder on your laptop. On REPs they support the public
-            profile clients see — so the work you put in shows up where it
-            matters.
-          </p>
+          <SectionHeader
+            eyebrow="Professional Development Passport"
+            heading="Your professional development, connected to your public profile."
+            lede="Qualifications, CPD, insurance and specialist development don't belong in a folder on your laptop. On REPs they support the public profile clients see — so the work you put in shows up where it matters."
+            className="max-w-none"
+          />
           <ul className="mt-6 flex flex-col gap-3 text-[14.5px] text-white/80">
             {[
               "Verification, CPD and insurance in one record",
@@ -692,16 +680,11 @@ function RegisterProofBand() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="mb-8 max-w-2xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            Why members renew
-          </Badge>
-          <h2 className="mt-4 font-display text-[28px] leading-[1.1] font-bold tracking-tight text-white sm:text-[34px]">
-            A register clients actually search.
-          </h2>
+        <div className="mb-8">
+          <SectionHeader
+            eyebrow="Why members renew"
+            heading="A register clients actually search."
+          />
         </div>
         <RegisterProof />
       </div>
@@ -717,22 +700,11 @@ function LearningPathways() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Compass className="mr-1.5 h-3.5 w-3.5" /> Pathways
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Choose the pathway that{" "}
-            <span className="text-reps-orange">matches your next stage.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            From day-one verification to specialist depth, REPs maps the
-            recognised education that fits where you are in your career.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Pathways"
+          heading="Choose the pathway that matches your next stage."
+          lede="From day-one verification to specialist depth, REPs maps the recognised education that fits where you are in your career."
+        />
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PATHWAYS.map(({ icon: Icon, title, outcome, topics }) => (
@@ -786,18 +758,10 @@ function CpdDiscovery() {
     <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <Badge
-              variant="outline"
-              className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-            >
-              <Search className="mr-1.5 h-3.5 w-3.5" /> CPD Discovery
-            </Badge>
-            <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-              Find CPD that supports{" "}
-              <span className="text-reps-orange">your professional goals.</span>
-            </h2>
-          </div>
+          <SectionHeader
+            eyebrow="CPD Discovery"
+            heading="Find CPD that supports your professional goals."
+          />
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
@@ -936,23 +900,11 @@ function SpecialistAreas() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Award className="mr-1.5 h-3.5 w-3.5" /> Specialism areas
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Build credibility through{" "}
-            <span className="text-reps-orange">recognised specialisms.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            Specialism areas are evidenced through recognised qualifications and
-            CPD — not handed out. When you complete the right credentials, your
-            profile reflects them.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Specialism areas"
+          heading="Build credibility through recognised specialisms."
+          lede="Specialism areas are evidenced through recognised qualifications and CPD — not handed out. When you complete the right credentials, your profile reflects them."
+        />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {SPECIALISMS.map(({ icon: Icon, title }) => (
@@ -992,21 +944,12 @@ function AiRecommendations() {
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
-          >
-            <Wand2 className="mr-1.5 h-3.5 w-3.5" /> AI · Preview
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Know what to learn{" "}
-            <span className="text-reps-orange">next.</span>
-          </h2>
-          <p className="mt-4 max-w-lg text-[15.5px] leading-relaxed text-white/75">
-            REPs is building learning recommendations that look at your
-            qualifications, specialisms and profile to suggest the next CPD that
-            actually moves your career forward. Here's the direction.
-          </p>
+          <SectionHeader
+            eyebrow="AI · Preview"
+            heading="Know what to learn next."
+            lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
+            className="max-w-none"
+          />
           <p className="mt-3 text-[12.5px] text-white/55">
             Preview only — recommendations are illustrative and not yet
             personalised.
@@ -1110,22 +1053,12 @@ function TrainingProvidersBand() {
       />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Training providers
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Training providers will have a{" "}
-            <span className="text-reps-orange">stronger place inside REPs.</span>
-          </h2>
-          <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/75">
-            REPs is being developed to give training providers clearer
-            visibility, stronger provider profiles and a better route to present
-            qualifications, CPD and professional education to the fitness
-            industry.
-          </p>
+          <SectionHeader
+            eyebrow="Training providers"
+            heading="Training providers will have a stronger place inside REPs."
+            lede="REPs is being developed to give training providers clearer visibility, stronger provider profiles and a better route to present qualifications, CPD and professional education to the fitness industry."
+            className="max-w-none"
+          />
           <div className="mt-7">
             <Link
               to="/contact"
@@ -1255,21 +1188,11 @@ function RecognitionStrip() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Globe className="mr-1.5 h-3.5 w-3.5" /> Recognition
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Recognised by the bodies that{" "}
-            <span className="text-reps-orange">issue the qualifications.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Recognition"
+          heading="Recognised by the bodies that issue the qualifications."
+          lede="REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile."
+        />
 
         <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {RECOGNITION.map((r) => (
