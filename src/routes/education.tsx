@@ -905,8 +905,8 @@ function VerifiedProviders() {
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition (Ofqual / REPs / AfN / YAP), tutor qualifications, assessment
-              integrity, refund and complaints policy. Every CPD hour you earn through them auto-counts
-              toward your REPs log. Hours from unverified providers don't.
+              integrity, refund and complaints policy. Any CPD that updates a REPs profile has to be
+              delivered by a REPs-accredited provider.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               The standard is industry-baseline. Verification is open to apply for.
