@@ -51,9 +51,9 @@ const heroCpd = heroCpdAsset.url;
 
 const CANONICAL = "https://staging.repsuk.org/education";
 const META_TITLE =
-  "Fitness education that actually counts — qualifications, providers, CPD | REPs";
+  "Fitness education that actually counts — qualifications & verified providers | REPs";
 const META_DESC =
-  "Regulated qualifications, REPs-verified training providers, ongoing CPD — and how to spot a worthless course before you spend a penny.";
+  "Regulated qualifications and REPs-verified training providers across fitness, nutrition, yoga and Pilates — and how to spot a worthless course before you spend a penny.";
 
 export const Route = createFileRoute("/education")({
   head: () => ({
