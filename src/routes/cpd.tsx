@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Stethoscope,
+  
   TrendingUp,
   Wand2,
   X,
@@ -23,7 +23,6 @@ import {
 
 import ctaTrainers from "@/assets/cta-band.jpg";
 import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
-import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
@@ -43,7 +42,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 
 
-import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
+import heroCpdAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
 
 /* ------------------------------------------------------------------ */
@@ -310,7 +309,7 @@ const PROVIDER_CHECKS = [
   {
     icon: BookOpen,
     title: "Refunds & complaints",
-    body: "Published refund policy and a real complaints route — not a help-desk that ghosts you after the card clears.",
+    body: "Published refund policy and a real complaints route — not a help-desk that goes silent once payment clears.",
   },
 ];
 
@@ -384,7 +383,7 @@ const RED_FLAGS = [
   "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
   "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
+  "Marketing leads with income claims instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
@@ -447,62 +446,6 @@ const FAQS = [
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-function TutorMoment() {
-  return (
-    <section className="relative isolate overflow-hidden border-b border-reps-border bg-reps-ink">
-      <img
-        src={cpdTutorMomentAsset.url}
-        alt=""
-        loading="lazy"
-        width={1920}
-        height={1080}
-        className="absolute inset-0 h-full w-full object-cover object-[70%_center]"
-      />
-      {/* Mobile: bottom-anchored legibility gradient */}
-      <div
-        aria-hidden
-        className="absolute inset-0 md:hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 70%, #0B0D10 100%)",
-        }}
-      />
-      {/* Desktop: left-anchored copy well */}
-      <div
-        aria-hidden
-        className="absolute inset-0 hidden md:block"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 30%, rgba(11,13,16,0.55) 48%, rgba(11,13,16,0) 62%)",
-        }}
-      />
-      {/* Warm orange micro-glow tying to brand */}
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-70"
-        style={{
-          backgroundImage:
-            "radial-gradient(900px 500px at 10% 60%, rgba(255,107,53,0.10), transparent 60%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
-        <div className="max-w-[640px]">
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-            <BookOpen className="h-3.5 w-3.5" /> Inside a verified CPD course
-          </span>
-          <p className="mt-6 font-display text-[28px] font-bold leading-[1.1] text-white lg:text-[44px]">
-            “The honest providers are already here.
-            <span className="text-reps-orange"> The rest are running a print shop for certificates.”</span>
-          </p>
-          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[0.22em] text-white/55">
-            REPs — verified training providers
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function CpdPage() {
   return (
@@ -522,13 +465,9 @@ function CpdPage() {
 
         <Qualifications />
 
-        <GeneralistVsSpecialist />
-
         <VerifiedProviders />
 
         <DodgyCourses />
-
-        <TutorMoment />
 
         <RaiseTheStandard />
 
@@ -593,18 +532,16 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            A certificate is only as good as
-            <br />
-            <span className="text-reps-orange">the people behind it.</span>
+            The honest providers are already here.{" "}
+            <span className="text-reps-orange">The rest are running a print shop for certificates.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs is the global standard for verified CPD in fitness, sport and physical activity.
-            CPD keeps a qualification current — logged quarterly, audited annually, and only counted
-            when it's from a verified training provider. If the provider isn't verified, the certificate isn't worth the paper it's printed on.
+            REPs is the global standard for verified CPD. Every hour is logged quarterly,
+            audited annually, and only counts when it's from a verified training provider.
           </p>
 
           <div
@@ -820,7 +757,7 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
+      body: "Members log every CPD activity in their REPs dashboard four times a year, with evidence attached to every entry.",
     },
     {
       icon: ShieldCheck,
@@ -1067,107 +1004,9 @@ function Qualifications() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: Generalist vs specialist                                   */
-/* ------------------------------------------------------------------ */
-
-function GeneralistVsSpecialist() {
-  return (
-    <section
-      id="specialist-vs-generalist"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
-    >
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[820px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Generalist vs specialist
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            You wouldn't book your GP for a heart operation.
-          </h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-            Medicine sorted this out a long time ago. For the thing you actually need fixed, you
-            see the specialist — not the generalist. Fitness should work the same way.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <Stethoscope className="h-5 w-5" />
-              </span>
-              <h3 className="font-display text-[18px] font-bold text-white">In medicine</h3>
-            </div>
-            <ul className="mt-5 flex flex-col gap-3 text-[14.5px] leading-relaxed text-white/80">
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>Heart issue? You see a <strong className="text-white">cardiologist</strong>.</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>Knee rebuild? You see an <strong className="text-white">orthopaedic surgeon</strong>.</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>Clinical diet? You see a <strong className="text-white">dietitian</strong>.</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>The GP is brilliant at triage — not at the thing you actually need fixed.</span>
-              </li>
-            </ul>
-          </article>
-
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <BadgeCheck className="h-5 w-5" />
-              </span>
-              <h3 className="font-display text-[18px] font-bold text-white">Same logic. In fitness.</h3>
-            </div>
-            <ul className="mt-5 flex flex-col gap-3 text-[14.5px] leading-relaxed text-white/80">
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>A <strong className="text-white">Level 3 PT</strong> trains the general adult population safely. That's the GP.</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>A <strong className="text-white">Level 4 specialist</strong>, an <strong className="text-white">accredited S&C coach</strong>, a <strong className="text-white">Registered Dietitian</strong> — that's the consultant.</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>REPs surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>Generalists are fine for general. For specific, get specific.</span>
-              </li>
-            </ul>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                to="/specialisms"
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
-              >
-                Browse specialisms <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/find-a-professional"
-                className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-ink px-5 text-[13.5px] font-semibold text-white shadow-none hover:border-reps-orange-border"
-              >
-                Find a specialist
-              </Link>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* Section: Verified training providers                                */
 /* ------------------------------------------------------------------ */
+
 
 function VerifiedProviders() {
   return (
@@ -1298,7 +1137,7 @@ function RaiseTheStandard() {
     {
       n: "01",
       title: "Cut the noise.",
-      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
+      body: "Unqualified 'online coaches' selling generic PDFs as programmes. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
@@ -1308,7 +1147,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and an unverified one, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
     },
   ];
 
@@ -1326,7 +1165,7 @@ function RaiseTheStandard() {
             REPs exists for one reason: to raise the floor of this industry.
           </h2>
           <p className="mt-5 text-[15.5px] leading-relaxed text-white/75">
-            Fitness has been cheap for too long because nobody checks. REPs checks. That's the entire
+            Standards have stayed low because nobody checks. REPs checks. That's the entire
             product. Three things change when the standard goes up.
           </p>
         </div>
@@ -1350,8 +1189,8 @@ function RaiseTheStandard() {
 
         <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-orange-soft px-6 py-6 lg:px-8">
           <p className="font-display text-[20px] font-bold leading-tight text-white lg:text-[24px]">
-            Cheap coaching exists because nobody checks. REPs checks.
-            <span className="text-reps-orange"> Price accordingly.</span>
+            Standards are low because nobody checks. REPs checks.
+            <span className="text-reps-orange"> Verified professionals should price accordingly.</span>
           </p>
         </div>
       </div>
