@@ -1,45 +1,63 @@
+# /cpd-v2 — trim duplicates, elevate the verification beat
+
 ## What changes
 
-### 1. Memory rule — never mention CIMSPA
-Add a Core rule and a small memory file:
-- **Core line:** "Never mention CIMSPA anywhere on the site — product, marketing, comparison, dashboard, FAQ. Use 'Ofqual-regulated' or 'recognised awarding body' instead."
-- **`mem://content/banned-orgs`** holding the rule and the reasoning (REPs does not endorse or promote CIMSPA).
+**1. Cut `RegisterProofBand`** (the "Your public profile" section).
+- `BeforeAfterTeardown` already makes the public-profile point with stronger proof. Two sections in a row saying "this shows up on your profile" reads as repetition.
+- Remove the section function and the `<RegisterProofBand />` line from `CpdV2Page`. Leave `RegisterProof` itself (the component) untouched — it's used elsewhere.
 
-Audit: only one current hit — `src/routes/cpd-v2.tsx:1142`. It's removed in step 2.
+**2. Cut `AiRecommendations`** (the "AI · Preview · Phase 1" section).
+- You already have three course-discovery beats (`LearningPathways`, `CpdDiscovery`, `SpecialistAreas`) plus `TrainingProvidersBand`. A fourth is overkill, and "Preview · Phase 1" labelling weakens the page's authority.
+- Remove the section function, the `<AiRecommendations />` line, and its supporting constants (`FOCUS_OPTIONS`, `STAGE_OPTIONS`, `RECS_BY_FOCUS`, `RecCard`, `Recommendation` type) so nothing dangles.
 
-### 2. Replace the Recognition section on `/cpd-v2`
-Currently `RecognitionStrip` (lines 1137–1182) lists 6 third-party orgs (Ofqual, CIMSPA, Yoga Alliance, BASI, STOTT, Les Mills). We're handing free brand placement to organisations that don't pay REPs — and to CIMSPA, which we don't promote at all.
+**3. Rebuild `VerifyStrip` as the page's signature beat — "The CPD verification chain"**
 
-Replace it with a **Verified Training Providers** block in the same slot:
+Right now `VerifyStrip` is a generic four-step trust strip that could live on any page. To make this page the best, it should be the only page on the site that owns the CPD verification mechanism end-to-end — and it should sit immediately before `BeforeAfterTeardown` so it reads as **the engine** that produces the after-state.
 
-- **Eyebrow:** "Verified training providers"
-- **Heading:** "Training providers, listed when they're verified by REPs."
-- **Lede:** "Verified training providers appear here once they've completed REPs verification — accrediting body checked, tutors named, refund and complaints policies published. We only list providers who meet the bar."
-- **Body (empty state today):** a single bordered panel (rounded-[18px], `border-reps-border bg-reps-panel`) with:
-  - Icon row + line: "First verified providers coming soon."
-  - Short paragraph: "REPs is onboarding the first cohort of verified training providers. Once verified, their logo, course catalogue and CPD points appear here and on member profiles automatically."
-  - Single CTA `Link to="/contact"`: "Apply to become a verified training provider →"
-- **No third-party logos. No CIMSPA. No free placement.**
+New section (replaces `VerifyStrip` on this page only — the shared marketing primitive stays untouched for other pages):
 
-When paying providers exist, the empty state becomes a logo/name grid in the same slot — no further layout changes needed.
+- **Eyebrow**: "The CPD verification chain"
+- **Heading**: "Every point you earn is signed off by the body that issued it."
+- **Lede**: One sentence: most platforms accept a self-typed CPD number. REPs verifies each point at source before it touches your public profile.
+- **The chain** — four nodes connected by a thin orange thread, animated subtly into view:
+  1. **Course completed** — provider issues a digital credential (icon + provider name slot)
+  2. **Awarding body confirms** — points are signed by the recognised awarding body (Ofqual-regulated language, per memory)
+  3. **REPs logs the CPD** — entry lands in your CPD log with provenance metadata (date, provider, points, evidence link)
+  4. **Public profile updates** — the verified count on your profile changes the same day
+- **Right rail** (desktop) / **below chain** (mobile): a small "What this prevents" card — three crisp lines: "Inflated CPD claims · Lapsed credentials shown as current · Unverifiable certificates from unrecognised bodies." Emerald-only-for-status tokens used for the "verified" pip on each node, per status-colors memory.
+- **Footer line**: "Same standard applies to qualifications, insurance and identity — see the Trust page." (Link to existing trust page if one exists; otherwise plain text.)
 
-### 3. Keep what already works
-- `TrainingProvidersBand` (the "Training providers will have a stronger place inside REPs" section) stays — it's the long-form pitch.
-- The new Verified Training Providers block sits in the old Recognition slot (between Specialism areas and TrainingProvidersBand) and acts as the proof slot for the section below.
+This turns the strip from a trust footer into the *mechanism reveal* — and `BeforeAfterTeardown` directly after now reads as "…and this is what that mechanism produces over 12 months."
 
-### 4. Quality bar (keeps the 9/10)
-- Uses existing `SectionHeader` primitive — no new components, no drift.
-- Single brand-orange accent, no emerald (no status semantic in play).
-- Card radius 18px (panel scale), button radius 10px — all on the locked radius scale.
-- Copy is honest about the empty state — no fake logos, no "coming soon" filler that reads as weak.
+## New section order
 
-### Out of scope
-- Other CIMSPA sweeps (only one hit; covered).
-- Touching `/cpd` (the older route) — separate pass.
-- Designing the populated-state logo grid; the empty state is the only Phase 1 deliverable.
+```text
+Hero
+ProofCards
+DevelopmentPassport
+CPD verification chain    ← rebuilt VerifyStrip, page-specific
+BeforeAfterTeardown
+LearningPathways
+CpdDiscovery
+SpecialistAreas
+TrainingProvidersBand
+FaqBlock
+FinalCta
+```
 
-## Files
+(`RegisterProofBand` and `AiRecommendations` removed.)
 
-- **edit** `mem://index.md` — add CIMSPA Core line + Memories entry
-- **create** `mem://content/banned-orgs` — full rule
-- **edit** `src/routes/cpd-v2.tsx` — replace `RECOGNITION` array + `RecognitionStrip` (lines 1137–1182) with a `VerifiedProvidersSlot` component using `SectionHeader` + a single empty-state panel
+## Technical notes
+
+- File touched: `src/routes/cpd-v2.tsx` only.
+- The page currently uses the shared `VerifySteps` primitive via `VerifyStrip`. The replacement is a page-local component (`CpdVerificationChain`) defined in `cpd-v2.tsx` — does not modify the shared `VerifySteps` primitive used by other marketing pages.
+- All copy follows existing rules: no CIMSPA name, no UK qualifier, "Ofqual-regulated / recognised awarding body" only, emerald used only for the verified status pips, orange for the connecting thread.
+- Radius: nodes use `rounded-[16px]` (std card), the surrounding panel uses `rounded-[22px]` (large panel), per the radius system.
+- Removed dead imports (`Brain`, ToggleGroup if no longer used, etc.) get pruned so the file stays clean.
+- No route changes, no data changes, no schema changes.
+
+## Out of scope
+
+- The shared `VerifySteps` primitive used on other marketing pages — untouched.
+- The standalone `/verify/$id` page and `VerificationCard` — untouched.
+- Any change to other pages.

@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Award,
   BadgeCheck,
-  Brain,
   Briefcase,
   Check,
   Crosshair,
@@ -28,11 +27,9 @@ import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { VerifySteps } from "@/components/marketing/VerifySteps";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import {
@@ -64,7 +61,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -324,12 +320,10 @@ function CpdV2Page() {
         <ProofCards />
         <DevelopmentPassport />
         <VerifyStrip />
-        <RegisterProofBand />
         <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
-        <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
         <FinalCta />
@@ -673,26 +667,7 @@ function ProfessionalDevelopmentMockup() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Register proof (shared)                                             */
-/* ------------------------------------------------------------------ */
 
-function RegisterProofBand() {
-  return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="mb-8">
-          <SectionHeader
-            eyebrow="Your public profile"
-            heading="Your education strengthens the profile clients see."
-            lede="Every qualification you log, every CPD point you renew and every specialism you evidence shows up as a trust signal on your public REPs profile — the page clients actually land on."
-          />
-        </div>
-        <RegisterProof />
-      </div>
-    </section>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Before / after profile teardown                                     */
@@ -1142,377 +1117,6 @@ function SpecialistAreas() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* AI recommendations                                                  */
-/* ------------------------------------------------------------------ */
-
-type Recommendation = {
-  rank: number;
-  title: string;
-  provider: string;
-  points: number;
-  delivery: string;
-  reasons: string[];
-  impact: string;
-  status: string;
-};
-
-const FOCUS_OPTIONS = [
-  { value: "back-pain", label: "Lower back pain" },
-  { value: "prenatal", label: "Pre/Postnatal" },
-  { value: "older-adults", label: "Older adults" },
-  { value: "online", label: "Online coaching" },
-  { value: "strength", label: "Strength & Conditioning" },
-] as const;
-
-const STAGE_OPTIONS = [
-  { value: "new", label: "Newly qualified" },
-  { value: "mid", label: "2–5 years" },
-  { value: "senior", label: "5+ years" },
-] as const;
-
-const RECS_BY_FOCUS: Record<string, Recommendation[]> = {
-  "back-pain": [
-    {
-      rank: 1,
-      title: "Coaching Lower Back Pain",
-      provider: "Movement Mechanics",
-      points: 16,
-      delivery: "Blended",
-      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 14 Apr"],
-      impact: "Adds Lower-back specialism area · lifts profile trust signals",
-      status: "Cohort starts 14 Apr",
-    },
-    {
-      rank: 2,
-      title: "Behaviour Change in Practice",
-      provider: "Coach Catalyst",
-      points: 8,
-      delivery: "Online",
-      reasons: ["Improves retention", "Pairs with rehab work", "Self-paced"],
-      impact: "Strengthens 'How I coach' signal on your public profile",
-      status: "Self-paced · open now",
-    },
-    {
-      rank: 3,
-      title: "Online Coaching Operations",
-      provider: "REPs Academy",
-      points: 6,
-      delivery: "Online",
-      reasons: ["Reach more rehab clients", "Light load", "Open now"],
-      impact: "Opens online-coaching tag on your shop-front",
-      status: "Self-paced · open now",
-    },
-  ],
-  prenatal: [
-    {
-      rank: 1,
-      title: "Pre & Postnatal Foundations",
-      provider: "Holistic Core Restore",
-      points: 12,
-      delivery: "Online",
-      reasons: ["Matches your focus", "Specialism unlock", "Open now"],
-      impact: "Adds Pre/Postnatal specialism area to your profile",
-      status: "Self-paced · open now",
-    },
-    {
-      rank: 2,
-      title: "Behaviour Change in Practice",
-      provider: "Coach Catalyst",
-      points: 8,
-      delivery: "Online",
-      reasons: ["Critical for adherence", "Low time cost", "Self-paced"],
-      impact: "Strengthens client-retention signal",
-      status: "Self-paced · open now",
-    },
-    {
-      rank: 3,
-      title: "Online Coaching Operations",
-      provider: "REPs Academy",
-      points: 6,
-      delivery: "Online",
-      reasons: ["Most clients want online", "Quick to complete", "Open now"],
-      impact: "Opens online-coaching tag on your shop-front",
-      status: "Self-paced · open now",
-    },
-  ],
-  "older-adults": [
-    {
-      rank: 1,
-      title: "Older Adults Specialism",
-      provider: "Functional Ageing Institute",
-      points: 14,
-      delivery: "Blended",
-      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 21 Apr"],
-      impact: "Adds Older-adults specialism area · profile trust lifts",
-      status: "Cohort starts 21 Apr",
-    },
-    {
-      rank: 2,
-      title: "Coaching Lower Back Pain",
-      provider: "Movement Mechanics",
-      points: 16,
-      delivery: "Blended",
-      reasons: ["High overlap with 55+ clients", "Awarded specialism", "Cohort soon"],
-      impact: "Stacks with Older-adults for stronger trust signal",
-      status: "Cohort starts 14 Apr",
-    },
-    {
-      rank: 3,
-      title: "Behaviour Change in Practice",
-      provider: "Coach Catalyst",
-      points: 8,
-      delivery: "Online",
-      reasons: ["Drives long-term adherence", "Self-paced", "Low cost"],
-      impact: "Strengthens retention signal on profile",
-      status: "Self-paced · open now",
-    },
-  ],
-  online: [
-    {
-      rank: 1,
-      title: "Online Coaching Operations",
-      provider: "REPs Academy",
-      points: 6,
-      delivery: "Online",
-      reasons: ["Matches your focus", "Quick win", "Open now"],
-      impact: "Opens online-coaching tag on your shop-front",
-      status: "Self-paced · open now",
-    },
-    {
-      rank: 2,
-      title: "Behaviour Change in Practice",
-      provider: "Coach Catalyst",
-      points: 8,
-      delivery: "Online",
-      reasons: ["Critical for remote adherence", "Self-paced", "Low cost"],
-      impact: "Strengthens online-coaching trust signal",
-      status: "Self-paced · open now",
-    },
-    {
-      rank: 3,
-      title: "Strength & Conditioning for Coaches",
-      provider: "S&C Education",
-      points: 20,
-      delivery: "In-person",
-      reasons: ["Differentiates your online offer", "Specialism unlock", "Cohort starts soon"],
-      impact: "Adds S&C credibility to remote programming",
-      status: "Cohort starts 06 May",
-    },
-  ],
-  strength: [
-    {
-      rank: 1,
-      title: "Strength & Conditioning for Coaches",
-      provider: "S&C Education",
-      points: 20,
-      delivery: "In-person",
-      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 06 May"],
-      impact: "Adds S&C specialism area · qualifies you for sport clients",
-      status: "Cohort starts 06 May",
-    },
-    {
-      rank: 2,
-      title: "Coaching Lower Back Pain",
-      provider: "Movement Mechanics",
-      points: 16,
-      delivery: "Blended",
-      reasons: ["Common in lifters", "Awarded specialism", "Cohort soon"],
-      impact: "Stacks with S&C for stronger trust signal",
-      status: "Cohort starts 14 Apr",
-    },
-    {
-      rank: 3,
-      title: "Behaviour Change in Practice",
-      provider: "Coach Catalyst",
-      points: 8,
-      delivery: "Online",
-      reasons: ["Programme adherence", "Self-paced", "Low cost"],
-      impact: "Strengthens retention signal",
-      status: "Self-paced · open now",
-    },
-  ],
-};
-
-function AiRecommendations() {
-  const [focus, setFocus] = useState<string>("back-pain");
-  const [stage, setStage] = useState<string>("mid");
-  const [revealedFocus, setRevealedFocus] = useState<string>("back-pain");
-  const [revealedStage, setRevealedStage] = useState<string>("mid");
-  const [showResults, setShowResults] = useState<boolean>(true);
-
-  const recs = RECS_BY_FOCUS[revealedFocus] ?? RECS_BY_FOCUS["back-pain"];
-  const dirty = focus !== revealedFocus || stage !== revealedStage;
-
-  const handleGenerate = () => {
-    setRevealedFocus(focus);
-    setRevealedStage(stage);
-    setShowResults(true);
-  };
-
-  return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <SectionHeader
-          eyebrow="AI · Preview · Phase 1"
-          heading="Know what to learn next."
-          lede="Pick a focus and your experience stage. REPs returns three ranked CPD picks, each with reasoning and the impact on your public profile. Personalised on your real data once your CPD log is live."
-        />
-
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
-          {/* Input panel */}
-          <Card className="relative overflow-hidden rounded-[22px] border-reps-border bg-reps-panel shadow-none">
-            <div aria-hidden className="pointer-events-none absolute -inset-4 bg-reps-orange/10 opacity-50 blur-3xl" />
-            <CardHeader className="relative pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-reps-orange" />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-white/70">
-                    Your inputs
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10px] font-bold uppercase tracking-wider text-reps-orange"
-                >
-                  Preview
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="relative flex flex-col gap-5">
-              <div>
-                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
-                  Your focus area
-                </span>
-                <ToggleGroup
-                  type="single"
-                  value={focus}
-                  onValueChange={(v) => v && setFocus(v)}
-                  className="mt-2 flex flex-wrap justify-start gap-1.5"
-                >
-                  {FOCUS_OPTIONS.map((o) => (
-                    <ToggleGroupItem
-                      key={o.value}
-                      value={o.value}
-                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
-                    >
-                      {o.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-
-              <div>
-                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
-                  Experience stage
-                </span>
-                <ToggleGroup
-                  type="single"
-                  value={stage}
-                  onValueChange={(v) => v && setStage(v)}
-                  className="mt-2 flex flex-wrap justify-start gap-1.5"
-                >
-                  {STAGE_OPTIONS.map((o) => (
-                    <ToggleGroupItem
-                      key={o.value}
-                      value={o.value}
-                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
-                    >
-                      {o.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={!dirty && showResults}
-                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-bold text-white shadow-none transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Sparkles className="h-4 w-4" />
-                {dirty ? "Show recommendations" : "Recommendations ready"}
-              </button>
-
-              <p className="text-[11.5px] leading-relaxed text-white/55">
-                Static preview — recommendations are illustrative and ranked by
-                a deterministic rule set, not a model.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Results panel */}
-          <div key={revealedFocus} className="flex flex-col gap-3 animate-fade-in">
-            {recs.map((r) => (
-              <RecCard key={r.rank} rec={r} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function RecCard({ rec }: { rec: Recommendation }) {
-  return (
-    <Card className="group relative overflow-hidden rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-0 top-0 h-24 w-24 bg-reps-orange/10 opacity-60 blur-[60px] transition-opacity group-hover:opacity-100"
-      />
-      <div className="relative grid grid-cols-[auto_1fr] gap-4 p-5">
-        <div className="flex h-12 w-12 flex-col items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
-          <span className="text-[10px] font-bold uppercase tracking-wider">Rank</span>
-          <span className="text-[15px] font-bold leading-none">#{rec.rank}</span>
-        </div>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-            <h3 className="font-display text-[16px] font-bold leading-tight text-white">
-              {rec.title}
-            </h3>
-            <span className="text-[12px] font-medium text-white/55">{rec.provider}</span>
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-bold text-reps-orange">
-              {rec.points} CPD pts
-            </span>
-            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
-              {rec.delivery}
-            </span>
-            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
-              {rec.status}
-            </span>
-          </div>
-
-          <div className="mt-4 border-t border-reps-border pt-3">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
-              Why this matches
-            </span>
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {rec.reasons.map((r) => (
-                <li
-                  key={r}
-                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-white/70"
-                >
-                  <Check className="h-3 w-3 text-reps-orange" strokeWidth={3} />
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-3 flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80">
-            <TrendingUp className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-reps-orange" />
-            <span>
-              <span className="font-semibold text-white/70">Profile impact · </span>
-              {rec.impact}
-            </span>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Training providers                                                  */
@@ -1662,23 +1266,129 @@ function RecognitionStrip() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Verify strip — three short proofs above the final CTA               */
+/* CPD verification chain — signature mechanism beat                   */
 /* ------------------------------------------------------------------ */
 
-const VERIFY = [
-  { icon: ShieldCheck, title: "Identity verified", body: "Government-ID checked on every REPs member — no anonymous listings." },
-  { icon: BadgeCheck, title: "Insurance current", body: "Public liability and professional indemnity confirmed against the policy." },
-  { icon: GraduationCap, title: "CPD on the public record", body: "Hours and points are visible on your profile, not buried in a folder." },
+const CHAIN_STEPS = [
+  {
+    icon: GraduationCap,
+    label: "Course completed",
+    body: "A recognised provider issues a digital credential the moment you finish the course.",
+    meta: "Source · accredited provider",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Awarding body confirms",
+    body: "Points are signed off by an Ofqual-regulated or recognised awarding body — not the provider alone.",
+    meta: "Signed · recognised awarding body",
+  },
+  {
+    icon: BadgeCheck,
+    label: "REPs logs the CPD",
+    body: "The entry lands in your CPD log with full provenance: date, provider, points and evidence link.",
+    meta: "Provenance · stored on file",
+  },
+  {
+    icon: TrendingUp,
+    label: "Public profile updates",
+    body: "Your verified CPD count and specialism evidence update on your public profile the same day.",
+    meta: "Live · visible to clients",
+  },
+];
+
+const CHAIN_PREVENTS = [
+  "Inflated CPD claims that nobody checks",
+  "Lapsed credentials still shown as current",
+  "Certificates from unrecognised bodies",
 ];
 
 function VerifyStrip() {
   return (
-    <VerifySteps
-      eyebrow="How REPs verifies"
-      heading="Three checks — every profile, every renewal."
-      steps={VERIFY}
-      bannerText="The result: a single Verified badge the public can actually trust."
-    />
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <SectionHeader
+          eyebrow="The CPD verification chain"
+          heading="Every point you earn is signed off by the body that issued it."
+          lede="Most platforms accept a self-typed CPD number. REPs verifies each point at source — from the provider, through the awarding body, into your log — before it ever touches your public profile."
+        />
+
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+          {/* Chain panel */}
+          <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -left-12 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-reps-orange/10 opacity-50 blur-3xl"
+            />
+            <ol className="relative flex flex-col gap-5">
+              {CHAIN_STEPS.map((step, i) => {
+                const Icon = step.icon;
+                const isLast = i === CHAIN_STEPS.length - 1;
+                return (
+                  <li key={step.label} className="relative grid grid-cols-[auto_1fr] gap-4">
+                    <div className="relative flex flex-col items-center">
+                      <span className="relative flex h-11 w-11 items-center justify-center rounded-[16px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                        <Icon className="h-[18px] w-[18px]" />
+                        <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+                          <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                        </span>
+                      </span>
+                      {!isLast && (
+                        <span
+                          aria-hidden
+                          className="mt-1 h-full w-px flex-1 bg-gradient-to-b from-reps-orange/60 via-reps-orange/30 to-transparent"
+                        />
+                      )}
+                    </div>
+                    <div className={isLast ? "" : "pb-2"}>
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+                          Step {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <h3 className="font-display text-[16px] font-bold leading-tight text-white">
+                          {step.label}
+                        </h3>
+                      </div>
+                      <p className="mt-1.5 text-[14px] leading-relaxed text-white/70">
+                        {step.body}
+                      </p>
+                      <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
+                        <Lock className="h-3 w-3" />
+                        {step.meta}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {/* Prevents card */}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-7">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-reps-orange">
+                <ShieldCheck className="h-3 w-3" />
+                What this prevents
+              </span>
+              <ul className="mt-4 flex flex-col gap-3">
+                {CHAIN_PREVENTS.map((line) => (
+                  <li key={line} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-white/80">
+                    <span className="mt-1 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-5 border-t border-reps-border pt-4 text-[12.5px] leading-relaxed text-white/55">
+                Same standard applies to qualifications, insurance and identity
+                — every credential is verified at source before it goes public.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
+
 
