@@ -31,7 +31,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { PressMarquee } from "@/components/marketing/PressMarquee";
+import { VenueStrip } from "@/components/marketing/VenueStrip";
 
 import heroSpecialismsAsset from "@/assets/specialisms-hero-v2.jpg.asset.json";
 const heroSpecialisms = heroSpecialismsAsset.url;
@@ -516,7 +516,7 @@ function SpecialismsPage() {
 
         <Hero />
 
-        <PressMarquee />
+        <VenueStrip />
 
         <StickyNav />
 
