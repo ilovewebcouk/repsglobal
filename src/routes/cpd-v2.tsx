@@ -696,6 +696,182 @@ function RegisterProofBand() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Before / after profile teardown                                     */
+/* ------------------------------------------------------------------ */
+
+type TeardownLine = { label: string; value: string; tone: "muted" | "active" };
+
+const TEARDOWN_BEFORE: TeardownLine[] = [
+  { label: "Verification", value: "Not verified", tone: "muted" },
+  { label: "Qualifications", value: "1 listed · unverified", tone: "muted" },
+  { label: "Insurance", value: "Not on file", tone: "muted" },
+  { label: "CPD log", value: "Empty", tone: "muted" },
+  { label: "Specialism areas", value: "None", tone: "muted" },
+  { label: "Client reviews", value: "0 reviews", tone: "muted" },
+];
+
+const TEARDOWN_AFTER: TeardownLine[] = [
+  { label: "Verification", value: "Verified · ID + insurance + CPD", tone: "active" },
+  { label: "Qualifications", value: "3 verified · awarding body checked", tone: "active" },
+  { label: "Insurance", value: "Current · renews 14 Apr", tone: "active" },
+  { label: "CPD log", value: "32 pts logged · last 12 months", tone: "active" },
+  { label: "Specialism areas", value: "Lower-back · Older adults", tone: "active" },
+  { label: "Client reviews", value: "11 reviews · 4.9 average", tone: "active" },
+];
+
+function BeforeAfterTeardown() {
+  return (
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <SectionHeader
+          eyebrow="Outcome"
+          heading="What a year of CPD does to your REPs profile."
+          lede="Side-by-side: the same coach on day one, and after twelve months of logged CPD, verified credentials and specialism evidence. This is the trust signal clients are scanning for."
+        />
+
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <TeardownCard
+            stateLabel="Day one"
+            stateTone="muted"
+            name="Alex M."
+            tagline="Personal trainer · Online & in-person"
+            initials="AM"
+            lines={TEARDOWN_BEFORE}
+            footer="Public profile reads as 'new and unproven'."
+          />
+          <TeardownCard
+            stateLabel="After 12 months"
+            stateTone="active"
+            name="Alex M."
+            tagline="Personal trainer · Lower-back · Older adults"
+            initials="AM"
+            lines={TEARDOWN_AFTER}
+            footer="Public profile reads as 'verified, current and specialist'."
+            highlight
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[16px] border border-reps-border bg-reps-panel px-5 py-4">
+          <p className="text-[13px] leading-relaxed text-white/70">
+            Illustrative — built from the data points REPs surfaces on every
+            public profile. Your real profile updates the moment each
+            credential is verified or each CPD entry is logged.
+          </p>
+          <a
+            href="#cpd-discovery"
+            className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-white/15 bg-white/5 px-4 text-[13px] font-semibold text-white shadow-none hover:bg-white/10"
+          >
+            Start with CPD <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TeardownCard({
+  stateLabel,
+  stateTone,
+  name,
+  tagline,
+  initials,
+  lines,
+  footer,
+  highlight,
+}: {
+  stateLabel: string;
+  stateTone: "muted" | "active";
+  name: string;
+  tagline: string;
+  initials: string;
+  lines: TeardownLine[];
+  footer: string;
+  highlight?: boolean;
+}) {
+  return (
+    <Card
+      className={`relative overflow-hidden rounded-[22px] border-reps-border bg-reps-panel shadow-none ${
+        highlight ? "border-reps-orange-border" : ""
+      }`}
+    >
+      {highlight ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 bg-reps-orange/10 blur-3xl"
+        />
+      ) : null}
+
+      <div className="relative flex items-center justify-between border-b border-reps-border px-6 py-4">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+            stateTone === "active"
+              ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+              : "border border-white/10 bg-white/5 text-white/55"
+          }`}
+        >
+          {stateTone === "active" ? (
+            <Check className="h-3 w-3" strokeWidth={3} />
+          ) : (
+            <Lock className="h-3 w-3" />
+          )}
+          {stateLabel}
+        </span>
+        {stateTone === "active" ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+            <ShieldCheck className="h-3 w-3" /> Verified
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/45">
+            Unverified
+          </span>
+        )}
+      </div>
+
+      <div className="relative flex items-center gap-4 px-6 py-5">
+        <Avatar className="h-14 w-14 rounded-[14px]">
+          <AvatarFallback className="rounded-[14px] bg-reps-ink text-[15px] font-bold text-white/80">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <div className="font-display text-[18px] font-bold leading-tight text-white">
+            {name}
+          </div>
+          <div className="mt-0.5 text-[12.5px] text-white/55">{tagline}</div>
+        </div>
+      </div>
+
+      <div className="relative px-6 pb-6">
+        <dl className="flex flex-col divide-y divide-reps-border overflow-hidden rounded-[16px] border border-reps-border">
+          {lines.map((l) => (
+            <div
+              key={l.label}
+              className="flex items-center justify-between gap-3 bg-reps-ink/40 px-4 py-3"
+            >
+              <dt className="text-[11.5px] font-semibold uppercase tracking-wider text-white/45">
+                {l.label}
+              </dt>
+              <dd
+                className={`text-right text-[13px] font-medium ${
+                  l.tone === "active" ? "text-white" : "text-white/55"
+                }`}
+              >
+                {l.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-4 text-[12.5px] italic leading-relaxed text-white/55">
+          {footer}
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+
+/* ------------------------------------------------------------------ */
 /* Learning pathways                                                   */
 /* ------------------------------------------------------------------ */
 
