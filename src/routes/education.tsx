@@ -716,7 +716,7 @@ function LadderBlock({
   title: string;
   blurb: string;
   rungs: LadderRung[];
-  footnote?: React.ReactNode;
+  footnote?: ReactNode;
 }) {
   return (
     <div className="mt-16 first:mt-0">
