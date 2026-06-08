@@ -33,7 +33,8 @@ export type PillarFeature = {
   title: string;
   body: string;
   bullets: string[];
-  mockup: React.ReactNode;
+  /** Either a DeviceMockup config (preferred — renders a real REPs route inside a laptop/phone frame) or a custom React node. */
+  mockup: DeviceMockupProps | React.ReactNode;
   learnMoreSlug?: string;
 };
 
