@@ -27,11 +27,9 @@ import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { VerifySteps } from "@/components/marketing/VerifySteps";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import {
