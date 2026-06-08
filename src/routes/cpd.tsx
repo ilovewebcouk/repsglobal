@@ -454,7 +454,10 @@ function CpdPage() {
 
         <Hero />
 
+        <ProfileScreenshot />
+
         <WhatCpdIs />
+
 
 
         <RepsCpdSystem />
