@@ -99,7 +99,7 @@ const NAV_CHIPS: Array<{ anchor: string; label: string }> = [
   { anchor: "qualifications", label: "Qualifications" },
   { anchor: "specialist-vs-generalist", label: "Generalist vs specialist" },
   { anchor: "verified-providers", label: "Verified providers" },
-  { anchor: "dodgy-courses", label: "Spot a worthless course" },
+  { anchor: "worthless-courses", label: "Spot a worthless course" },
   { anchor: "raise-the-standard", label: "Raise the standard" },
   { anchor: "faq", label: "FAQ" },
 ];
@@ -1140,7 +1140,7 @@ function VerifiedProviders() {
 function DodgyCourses() {
   return (
     <section
-      id="dodgy-courses"
+      id="worthless-courses"
       className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
