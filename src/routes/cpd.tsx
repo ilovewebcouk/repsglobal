@@ -528,6 +528,8 @@ function CpdPage() {
 
         <DodgyCourses />
 
+        <TutorMoment />
+
         <RaiseTheStandard />
 
         <ProviderCtaBand />
