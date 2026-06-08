@@ -833,16 +833,19 @@ function CpdDiscovery() {
               className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <Badge
                     variant="outline"
                     className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange"
                   >
                     <ShieldCheck className="mr-1 h-3 w-3" /> Verified provider
                   </Badge>
-                  <span className="text-[12px] font-semibold text-white">
-                    {c.price}
-                  </span>
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-reps-border bg-reps-ink text-[10.5px] font-semibold uppercase tracking-wide text-white/70"
+                  >
+                    {c.category}
+                  </Badge>
                 </div>
                 <CardTitle className="mt-3 font-display text-[17px] font-bold leading-snug text-white">
                   {c.title}
@@ -852,20 +855,34 @@ function CpdDiscovery() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <p className="text-[13px] leading-relaxed text-white/70">
-                  {c.blurb}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="secondary" className="rounded-full bg-reps-orange-soft text-[11px] font-semibold text-reps-orange">
                     {c.points} CPD pts
                   </Badge>
                   <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
-                    {c.level}
-                  </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
-                    {c.format}
+                    {c.delivery}
                   </Badge>
                 </div>
+
+                <dl className="mt-4 flex flex-col gap-2.5 text-[12.5px] leading-relaxed">
+                  <div>
+                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                      Who it's for
+                    </dt>
+                    <dd className="mt-0.5 text-white/80">{c.audience}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-reps-border pt-2.5">
+                    <div>
+                      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                        Status
+                      </dt>
+                      <dd className="mt-0.5 text-white/80">{c.status}</dd>
+                    </div>
+                    <span className="text-[13px] font-semibold text-white">
+                      {c.price}
+                    </span>
+                  </div>
+                </dl>
               </CardContent>
               <CardFooter>
                 <Button
