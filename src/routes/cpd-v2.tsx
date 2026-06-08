@@ -318,8 +318,8 @@ function CpdV2Page() {
         <PublicHeader variant="solid" />
         <Hero />
         <ProofCards />
-        <BeforeAfterTeardown />
         <DevelopmentPassport />
+        <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
@@ -415,7 +415,7 @@ function Hero() {
           </div>
 
           <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
+            className="mt-8 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
@@ -463,7 +463,7 @@ function Hero() {
 function ProofCards() {
   return (
     <section className="border-y border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-4 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-5 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
         {PROOF_CARDS.map(({ icon: Icon, title, body }) => (
           <Card
             key={title}
@@ -1197,7 +1197,7 @@ function FinalCta() {
         className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
       />
       <div className="relative mx-auto max-w-[920px] px-6 py-20 text-center lg:px-10 lg:py-28">
-        <h2 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[44px]">
+        <h2 className="font-display text-[30px] font-bold leading-[1.05] text-white lg:text-[44px]">
           Build your profile. Prove your standards.{" "}
           <span className="text-reps-orange">Grow your career.</span>
         </h2>
