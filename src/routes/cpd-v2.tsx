@@ -326,6 +326,7 @@ function CpdV2Page() {
         <DevelopmentPassport />
         <VerifyStrip />
         <RegisterProofBand />
+        <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
