@@ -43,7 +43,10 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-const heroCpd = cpdTutorMomentAsset.url;
+
+
+import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
+const heroCpd = heroCpdAsset.url;
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
@@ -500,12 +503,12 @@ const REGISTERS = [
 
 const RED_FLAGS = [
   "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
-  "Awarding body not Ofqual-regulated or REPs-accredited (or no awarding body listed at all).",
+  "Awarding body not Ofqual-regulated or REPs-endorsed (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
-  "High-pressure finance sales and time-limited “today-only” discounts.",
+  "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
-  "No published refund policy, complaints route or external ombudsman.",
-  "Marketing focuses on income claims rather than what you will actually learn and be assessed on.",
+  "No refund policy. No complaints route. No external ombudsman.",
+  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
@@ -522,10 +525,6 @@ const GOOD_SIGNS = [
 /* ------------------------------------------------------------------ */
 
 const FAQS = [
-  {
-    q: "What does it mean for a course to be accredited by REPs?",
-    a: "REPs accreditation means the training provider and its course have been independently checked at the points that matter: a recognised awarding body (Ofqual for regulated fitness and nutrition qualifications; Yoga Alliance Professionals, the British Wheel of Yoga or comparable bodies for yoga; the PMA, BASI, STOTT or comparable for Pilates), named and qualified tutors, external assessment, and published refund and complaints policies. Hours earned through an accredited provider auto-count toward a REPs member's CPD log.",
-  },
   {
     q: "What is CPD?",
     a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
@@ -653,7 +652,7 @@ function CpdPage() {
 
         <DodgyCourses />
 
-        
+        <TutorMoment />
 
         <RaiseTheStandard />
 
@@ -711,26 +710,25 @@ function Hero() {
             className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Education & accredited courses
+            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> CPD & Education
           </span>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            The standard for accredited education
+            A certificate is only as good as
             <br />
-            <span className="text-reps-orange">in fitness, sport and movement.</span>
+            <span className="text-reps-orange">the people behind it.</span>
           </h1>
 
           <p
-            className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
+            className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs accredits training providers, qualifications and CPD across three pillars —
-            initial qualifications in fitness and nutrition, ongoing CPD, and teacher training in
-            Pilates and yoga. Every accredited course is checked at the points that matter:
-            awarding body, tutor credentials, assessment integrity and learner protections.
+            REPs is the global standard for verified CPD in fitness, sport and physical activity.
+            CPD keeps a qualification current — logged quarterly, audited annually, and only counted
+            when it's from a verified training provider. If the provider isn't verified, the certificate isn't worth the paper it's printed on.
           </p>
 
           <div
@@ -741,7 +739,13 @@ function Hero() {
               href="#verified-providers"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Find verified training providers <ArrowRight className="h-4 w-4" />
+              Browse verified providers <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href="#how-reps-runs-it"
+              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
+            >
+              How REPs runs CPD
             </a>
           </div>
 
@@ -759,7 +763,7 @@ function Hero() {
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-4 w-4 text-reps-orange" />
-              Accredited providers only
+              Only verified-provider hours count
             </li>
           </ul>
 
@@ -878,17 +882,16 @@ function WhatCpdIs() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            What "accredited" actually means
+            What CPD actually is
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Real learning. Externally checked.
+            Ongoing learning. Actually checked.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-            Accredited education means a course has been independently assessed against
-            a recognised standard — and that members keep learning after the initial qualification
-            through Continuing Professional Development (CPD). The science of training, nutrition,
-            rehab and movement moves every year; adjacent professions like physiotherapy and
-            dietetics mandate ongoing CPD by default. On REPs, it's the same standard.
+            Continuing Professional Development means a professional keeps learning after the initial
+            qualification — and proves it. The science of training, nutrition and rehab moves every year.
+            Adjacent professions (physio, dietetics, medicine) mandate CPD by default. Fitness should too.
+            On REPs, it's the standard.
           </p>
         </div>
 
@@ -968,15 +971,14 @@ function RepsCpdSystem() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How REPs accredits education
+            How REPs runs CPD
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
             Four mechanics. No theatre.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            REPs accredits training providers and the courses they deliver — qualifications,
-            CPD and teacher training — and holds professionals to an ongoing CPD log. The system
-            is evidenced, governed and visible to the public.
+            CPD is only worth something if it's evidenced, governed and visible to the public.
+            Here's the system every REPs professional signs up to.
           </p>
         </div>
 
@@ -1080,12 +1082,12 @@ function Qualifications() {
             Qualifications, decoded
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Every accredited pathway, in plain English.
+            Know what the letters mean — before you spend a penny.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            REPs accredits qualifications across four pathways: fitness, nutrition, Pilates and
-            yoga. Each pathway has its own recognised awarding bodies and credentials — here is
-            what those letters actually mean, and what each tier is qualified to do.
+            The fitness industry runs on acronyms, and most buyers don't know the difference between
+            a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
+            for fitness, nutrition and movement disciplines.
           </p>
         </div>
 
@@ -1371,19 +1373,17 @@ function VerifiedProviders() {
               Verified training providers
             </span>
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              Accredited training providers, across every pathway.
+              If the provider isn't on REPs, ask them why.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              A REPs-verified training provider has been independently checked at the points that
-              matter — accrediting body recognition, tutor credentials, assessment integrity, and
-              published refund and complaints policies. This covers Ofqual-regulated awarding bodies
-              for fitness and nutrition qualifications, and recognised teacher-training schools for
-              Pilates and yoga.
+              A REPs-verified training provider has been checked at the points that actually matter —
+              accrediting body recognition, tutor qualifications, assessment integrity, refund and
+              complaints policy. Every CPD hour you earn through them auto-counts toward your REPs
+              log. Hours from unverified providers don't. Full stop.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Hours earned through verified providers auto-count toward a member's REPs CPD log.
-              Verification is open to apply for and the standard is industry-baseline — there is no
-              legitimate reason for a credible provider to refuse it.
+              The standard is industry-baseline. Verification is open to apply for. The only reason
+              a provider refuses or fails verification is the reason you should refuse them.
             </p>
 
           </div>
@@ -1565,11 +1565,11 @@ function ProviderCtaBand() {
                 <BadgeCheck className="h-3.5 w-3.5" /> Training providers
               </span>
               <h2 className="mt-3 font-display text-[24px] font-bold leading-tight text-white lg:text-[30px]">
-                Find a verified training provider — or report one that isn't.
+                Find a verified provider — or report one that isn't.
               </h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
-                The verified-provider directory opens shortly. Until then, if a provider claims
-                accreditation they can't back up, send it our way.
+                The verified-provider directory opens shortly. Until it does, if a provider
+                claims credibility they can't back up, send it our way.
               </p>
               <span className="mt-4 inline-flex items-center gap-1.5 rounded-[6px] border border-reps-border bg-reps-ink px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
                 Directory · Coming soon
@@ -1725,7 +1725,7 @@ function FaqBlock() {
           FAQ
         </span>
         <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          Accreditation, qualifications & providers — answered.
+          CPD, qualifications & providers — answered.
         </h2>
 
         <Accordion type="single" collapsible className="mt-10">
@@ -1776,16 +1776,14 @@ function JoinRepsCta() {
                 <Sparkles className="h-3 w-3 fill-reps-orange" /> For professionals
               </span>
               <h2 className="mt-4 font-display text-[28px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[32px] lg:text-[38px]">
-                Train with accredited providers. Be found on REPs.
+                Turn your CPD into clients.
               </h2>
               <p className="mt-3 max-w-[440px] text-[14.5px] leading-relaxed text-white/85">
-                Find the verified training providers behind every accredited course — or join the
-                global register of fitness, nutrition, Pilates and yoga professionals with your
-                qualifications and CPD on show.
+                Join the global register of verified fitness professionals. Showcase your qualifications, CPD and specialisms on a profile clients actually find.
               </p>
               <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
                 {[
-                  "Accredited providers, every pathway",
+                  "Verified profile that ranks",
                   "Qualifications & CPD on show",
                   "Built-in bookings & payments",
                   "Clients, CRM & messaging",
@@ -1799,17 +1797,17 @@ function JoinRepsCta() {
                 ))}
               </ul>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a
-                  href="#verified-providers"
-                  className="inline-flex h-[48px] items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-                >
-                  Find verified training providers <ArrowRight className="h-4 w-4" />
-                </a>
                 <Link
                   to="/for-professionals"
+                  className="inline-flex h-[48px] items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+                >
+                  Join REPs <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/pricing"
                   className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
                 >
-                  Apply to be a verified provider
+                  See plans
                 </Link>
               </div>
             </div>

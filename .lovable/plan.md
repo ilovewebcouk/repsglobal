@@ -1,58 +1,61 @@
 ## Goal
 
-Lift `/cpd` from a CPD-only page into the REPs **Education** hub it should be: REPs accredits *courses* — most of which are CPD, but the framing also covers initial qualifications and the Pilates/Yoga teacher-training market that's core to REPs' reach. Tone moves from punchy/marketing to professional.
+Lift `/cpd` from a long wall of dark sections to a page with real rhythm and one earned hero-grade visual moment mid-page — while confirming the two original empty bands are now closed.
 
-No URL change. No new sections. Edits live in `src/routes/cpd.tsx` only.
+## A. Verify the empty bands are closed (no edit unless gap is found)
 
----
+Navigate to `/cpd`, take a full-page screenshot, and inspect the full section stack:
 
-## 1. Hero — new image, new H1, single CTA
+1. Hero → 2. ProfileScreenshot (new) → 3. WhatCpdIs → 4. RepsCpdSystem → 5. Qualifications → 6. GeneralistVsSpecialist → 7. VerifiedProviders → 8. DodgyCourses → 9. RaiseTheStandard → 10. ProviderCtaBand → 11. RegistersBlock → 12. VerifyStrip → 13. FaqBlock → 14. JoinRepsCta.
 
-**Image swap.** The current hero (`cpd-hero-v5.jpg`) is replaced by the editorial workshop photo currently used in `TutorMoment` (`cpd-tutor-moment.jpg.asset.json`). This is the image the user pointed at — a real teaching environment reads as "education", not "fitness marketing".
+- The upper gap (was VenueMarquee) is filled by ProfileScreenshot.
+- The lower gap (was PressMarquee, likely between FaqBlock and JoinRepsCta) needs visual confirmation. If a dead band of >120px is visible, tighten the `py-*` on `JoinRepsCta` (currently `py-16 lg:py-20`) so the dark hand-off reads as one section, not two.
 
-**Copy rewrite (professional register).**
+No code change unless the screenshot proves a gap.
 
-- Eyebrow chip: `CPD & Education` → `Education & accredited courses`
-- H1: `A certificate is only as good as the people behind it.` → `The standard for accredited education in fitness, sport and movement.`
-- Sub: rewritten to name the three pillars REPs accredits — initial qualifications, ongoing CPD, and teacher training in Pilates and yoga. Drops the "isn't worth the paper it's printed on" line.
-- Trust chips: kept (Identity verified · CPD logged quarterly · Verified-provider hours count) but the third softened to `Accredited providers only`.
-- Body registers strip: kept (Ofqual · REPs · AfN · HCPC · YAP) — already covers Pilates/Yoga via YAP.
+## B. Section rhythm (light/dark cadence)
 
-**CTA simplification.** Two buttons collapse to one primary: **`Find verified training providers →`** anchored to `#verified-providers`. The secondary "How REPs runs CPD" button is removed (it competes with the primary action and reinforces the CPD-only framing).
+Page currently alternates `bg-reps-ink` ↔ `bg-reps-panel-soft/40`. The `/40` opacity makes the "lifted" sections barely distinguishable — the page reads as one slab. Fix by swapping the four panel-soft sections to `bg-reps-midnight` (the same step the coach shop-front uses for its alternation), and lifting their inner cards from `bg-reps-panel` → `bg-reps-panel-soft` so card contrast holds.
 
----
+Sections to convert (`bg-reps-panel-soft/40` → `bg-reps-midnight`):
 
-## 2. Remove the now-orphan TutorMoment band
+- `RepsCpdSystem` (line 783)
+- `GeneralistVsSpecialist` (line 1017)
+- `DodgyCourses` (line 1180)
+- `RegistersBlock` (line 1353)
 
-`TutorMoment` (the dark band with the pull-quote "The honest providers are already here…") used the image we're promoting to hero. With the image gone, the band is removed from the page stack in `CpdPage()`. The associated `cpdTutorMomentAsset` import becomes the new hero image source, so no asset is orphaned.
+Inside each of those four sections, swap card `bg-reps-panel` → `bg-reps-panel-soft` so the cards don't disappear into the new midnight surface. Borders stay `border-reps-border`.
 
-(The old `cpd-hero-v5.jpg` asset stays in the codebase for now — not deleting in case other pages reference it; can prune in a follow-up.)
+No light/ivory section — the page is editorially heavy and the dark palette is intentional. Midnight gives genuine cadence without breaking the visual register.
 
----
+## C. One hero-grade visual moment mid-page
 
-## 3. Tone pass — "education", not just "CPD"
+Add a new full-bleed photo band, `<TutorMoment />`, placed between `<DodgyCourses />` and `<RaiseTheStandard />` in `CpdPage()`. This is the structural midpoint and breaks ~6 card-grid sections in a row.
 
-Targeted copy edits, no structural changes:
+Layout: 60vh-ish band, full-bleed background image of a tutor teaching at a CPD workshop (small group, focused, REPS wordmark on the tutor's polo per project core rule). Dark gradient overlay bottom-left for legibility. Overlaid content:
 
-| Section | Change |
-|---|---|
-| `WhatCpdIs` heading | "What CPD actually is" → "What 'accredited' actually means" (CPD covered as one mode of accredited learning). |
-| `RepsCpdSystem` heading | "How REPs runs CPD" → "How REPs accredits education". Subcopy reframed: courses, CPD, teacher training. |
-| `Qualifications` intro | Tightened, drops "industry runs on acronyms" colloquialism; opens with "REPs accredits qualifications across four pathways" (Fitness, Nutrition, Pilates, Yoga). |
-| `VerifiedProviders` | Heading kept; subcopy reframed so Pilates/Yoga teacher-training schools are explicitly named alongside L2/L3 awarding bodies. |
-| `DodgyCourses` | Kept (this is the page's teeth) but two flippant lines softened: "earn £5k a month" example trimmed, "print shop for certificates" pull-quote removed (it left with TutorMoment anyway). |
-| `ProviderCtaBand` | CTA label aligned to "Find verified training providers". |
-| `FaqBlock` | First Q broadened: "What is CPD?" stays, but a new lead Q is added: "What does it mean for a course to be accredited by REPs?" — pulls Pilates/Yoga into the answer. |
-| `JoinRepsCta` | Final CTA aligned to "Find verified training providers" (primary) with "Apply to be a verified provider" as the professional-side secondary. |
+- Small orange eyebrow: "Inside a verified CPD course"
+- Large pulled quote (font-display, ~32-44px): "The honest providers are already here. The rest are running a print shop for certificates."
+- Caption row: "REPs — verified training providers"
 
-Anywhere the page currently says "the CPD page" or "this is about CPD" implicitly, the language shifts to "accredited education" / "courses and CPD" / "training providers".
+The blockquote currently buried in `VerifiedProviders` (line 1138-1142) is removed when this band lands, so the quote is not duplicated.
 
-No data arrays change (Fitness / Nutrition / Pilates / Yoga ladders, providers, FAQs all stay). No new components. No new assets. No route or nav-label changes.
+Image source: generate via `imagegen--generate_image` (standard quality, 1920x1080, jpg). Save to `src/assets/cpd-tutor-moment.jpg`, then upload via `lovable-assets create` and write the `.asset.json` pointer. Prompt enforces: tutor in a fitness studio teaching 3-4 students at whiteboard or with anatomy chart, ALL-CAPS white REPS wordmark on left chest of polo (real print, not overlay), warm rim light from window, editorial photography, no on-image text.
 
----
+Section uses `bg-reps-ink`, `rounded-none`, full-width image with the same dark→orange micro-gradient overlay used in the hero so it reads as a continuation of brand atmosphere, not a stock-photo drop.
 
-## Out of scope (flagged for later)
+## Implementation order
 
-- Renaming the route from `/cpd` → `/education` and updating header nav. Mentioning so you can decide separately; not doing it here unless you say so.
-- Pruning the unused `cpd-hero-v5.jpg` asset.
-- Long-form copy revisions inside `RED_FLAGS` / `GOOD_SIGNS` beyond the two flippant lines noted above.
+1. Screenshot `/cpd` and confirm whether any visible gap remains. If yes, tighten the `JoinRepsCta` padding in the same edit batch as B.
+2. Edit `src/routes/cpd.tsx` — swap four section backgrounds + their inner card backgrounds (B).
+3. Generate tutor image, upload via `lovable-assets`, write `.asset.json`.
+4. Add `TutorMoment` component, remove the duplicate blockquote from `VerifiedProviders`, mount between `DodgyCourses` and `RaiseTheStandard` (C).
+5. Re-screenshot `/cpd` end-to-end to confirm: no dead bands, clear ink/midnight cadence, one cinematic moment mid-page.
+
+## Notes / constraints
+
+- All colours via semantic tokens (`bg-reps-ink`, `bg-reps-midnight`, `bg-reps-panel`, `bg-reps-panel-soft`, `border-reps-border`, `text-reps-orange`).
+- Radius rules preserved — no new radii introduced.
+- REPS wordmark rule enforced on the generated tutor image (white, ALL CAPS, left-chest embroidery).
+- No content/copy changes outside the moved blockquote.
+- No backend work.
