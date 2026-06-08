@@ -970,101 +970,371 @@ function SpecialistAreas() {
 /* AI recommendations                                                  */
 /* ------------------------------------------------------------------ */
 
+type Recommendation = {
+  rank: number;
+  title: string;
+  provider: string;
+  points: number;
+  delivery: string;
+  reasons: string[];
+  impact: string;
+  status: string;
+};
+
+const FOCUS_OPTIONS = [
+  { value: "back-pain", label: "Lower back pain" },
+  { value: "prenatal", label: "Pre/Postnatal" },
+  { value: "older-adults", label: "Older adults" },
+  { value: "online", label: "Online coaching" },
+  { value: "strength", label: "Strength & Conditioning" },
+] as const;
+
+const STAGE_OPTIONS = [
+  { value: "new", label: "Newly qualified" },
+  { value: "mid", label: "2–5 years" },
+  { value: "senior", label: "5+ years" },
+] as const;
+
+const RECS_BY_FOCUS: Record<string, Recommendation[]> = {
+  "back-pain": [
+    {
+      rank: 1,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 14 Apr"],
+      impact: "Adds Lower-back specialism area · lifts profile trust signals",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Improves retention", "Pairs with rehab work", "Self-paced"],
+      impact: "Strengthens 'How I coach' signal on your public profile",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Reach more rehab clients", "Light load", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+  ],
+  prenatal: [
+    {
+      rank: 1,
+      title: "Pre & Postnatal Foundations",
+      provider: "Holistic Core Restore",
+      points: 12,
+      delivery: "Online",
+      reasons: ["Matches your focus", "Specialism unlock", "Open now"],
+      impact: "Adds Pre/Postnatal specialism area to your profile",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Critical for adherence", "Low time cost", "Self-paced"],
+      impact: "Strengthens client-retention signal",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Most clients want online", "Quick to complete", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+  ],
+  "older-adults": [
+    {
+      rank: 1,
+      title: "Older Adults Specialism",
+      provider: "Functional Ageing Institute",
+      points: 14,
+      delivery: "Blended",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 21 Apr"],
+      impact: "Adds Older-adults specialism area · profile trust lifts",
+      status: "Cohort starts 21 Apr",
+    },
+    {
+      rank: 2,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["High overlap with 55+ clients", "Awarded specialism", "Cohort soon"],
+      impact: "Stacks with Older-adults for stronger trust signal",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 3,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Drives long-term adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens retention signal on profile",
+      status: "Self-paced · open now",
+    },
+  ],
+  online: [
+    {
+      rank: 1,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Matches your focus", "Quick win", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Critical for remote adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens online-coaching trust signal",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Strength & Conditioning for Coaches",
+      provider: "S&C Education",
+      points: 20,
+      delivery: "In-person",
+      reasons: ["Differentiates your online offer", "Specialism unlock", "Cohort starts soon"],
+      impact: "Adds S&C credibility to remote programming",
+      status: "Cohort starts 06 May",
+    },
+  ],
+  strength: [
+    {
+      rank: 1,
+      title: "Strength & Conditioning for Coaches",
+      provider: "S&C Education",
+      points: 20,
+      delivery: "In-person",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 06 May"],
+      impact: "Adds S&C specialism area · qualifies you for sport clients",
+      status: "Cohort starts 06 May",
+    },
+    {
+      rank: 2,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["Common in lifters", "Awarded specialism", "Cohort soon"],
+      impact: "Stacks with S&C for stronger trust signal",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 3,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Programme adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens retention signal",
+      status: "Self-paced · open now",
+    },
+  ],
+};
+
 function AiRecommendations() {
+  const [focus, setFocus] = useState<string>("back-pain");
+  const [stage, setStage] = useState<string>("mid");
+  const [revealedFocus, setRevealedFocus] = useState<string>("back-pain");
+  const [revealedStage, setRevealedStage] = useState<string>("mid");
+  const [showResults, setShowResults] = useState<boolean>(true);
+
+  const recs = RECS_BY_FOCUS[revealedFocus] ?? RECS_BY_FOCUS["back-pain"];
+  const dirty = focus !== revealedFocus || stage !== revealedStage;
+
+  const handleGenerate = () => {
+    setRevealedFocus(focus);
+    setRevealedStage(stage);
+    setShowResults(true);
+  };
+
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
-        <div>
-          <SectionHeader
-            eyebrow="AI · Preview · Phase 1"
-            heading="Know what to learn next."
-            lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
-            className="max-w-none"
-          />
-          <p className="mt-3 text-[12.5px] text-white/55">
-            Preview only — recommendations are illustrative and not yet
-            personalised.
-          </p>
-        </div>
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <SectionHeader
+          eyebrow="AI · Preview · Phase 1"
+          heading="Know what to learn next."
+          lede="Pick a focus and your experience stage. REPs returns three ranked CPD picks, each with reasoning and the impact on your public profile. Personalised on your real data once your CPD log is live."
+        />
 
-        <div className="relative">
-          <div className="absolute -inset-6 rounded-[24px] bg-reps-orange/8 blur-2xl" aria-hidden />
-          <Card className="relative rounded-[22px] border-reps-border bg-reps-panel shadow-none">
-            <CardHeader className="pb-3">
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
+          {/* Input panel */}
+          <Card className="relative overflow-hidden rounded-[22px] border-reps-border bg-reps-panel shadow-none">
+            <div aria-hidden className="pointer-events-none absolute -inset-4 bg-reps-orange/10 opacity-50 blur-3xl" />
+            <CardHeader className="relative pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Brain className="h-4 w-4 text-reps-orange" />
-                  <span className="text-[12px] font-semibold uppercase tracking-wide text-white/70">
-                    Suggested for Sarah
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-white/70">
+                    Your inputs
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold text-reps-orange"
+                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10px] font-bold uppercase tracking-wider text-reps-orange"
                 >
                   Preview
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <div className="rounded-[16px] border border-reps-orange-border bg-reps-orange-soft p-4">
-                <div className="text-[11px] uppercase tracking-wide text-reps-orange">
-                  Recommended next CPD
-                </div>
-                <div className="mt-1.5 text-[16px] font-semibold text-white">
-                  Coaching Lower Back Pain · Movement Mechanics
-                </div>
-                <div className="mt-0.5 text-[12px] text-white/55">
-                  16 CPD pts · Level 4 · Blended
-                </div>
+            <CardContent className="relative flex flex-col gap-5">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                  Your focus area
+                </span>
+                <ToggleGroup
+                  type="single"
+                  value={focus}
+                  onValueChange={(v) => v && setFocus(v)}
+                  className="mt-2 flex flex-wrap justify-start gap-1.5"
+                >
+                  {FOCUS_OPTIONS.map((o) => (
+                    <ToggleGroupItem
+                      key={o.value}
+                      value={o.value}
+                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
+                    >
+                      {o.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </div>
 
-              <RecRow
-                icon={Lightbulb}
-                label="Why it matters"
-                body="42% of your enquiries mention back pain. A recognised L4 course unlocks specialist visibility on your profile."
-              />
-              <RecRow
-                icon={TrendingUp}
-                label="Profile improvement"
-                body="Adds a verified specialism area and lifts your trust score from 92 → 96."
-              />
-              <RecRow
-                icon={Target}
-                label="Suggested next action"
-                body="Book the next cohort — starts 14 Apr."
-              />
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                  Experience stage
+                </span>
+                <ToggleGroup
+                  type="single"
+                  value={stage}
+                  onValueChange={(v) => v && setStage(v)}
+                  className="mt-2 flex flex-wrap justify-start gap-1.5"
+                >
+                  {STAGE_OPTIONS.map((o) => (
+                    <ToggleGroupItem
+                      key={o.value}
+                      value={o.value}
+                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
+                    >
+                      {o.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!dirty && showResults}
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-bold text-white shadow-none transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Sparkles className="h-4 w-4" />
+                {dirty ? "Show recommendations" : "Recommendations ready"}
+              </button>
+
+              <p className="text-[11.5px] leading-relaxed text-white/55">
+                Static preview — recommendations are illustrative and ranked by
+                a deterministic rule set, not a model.
+              </p>
             </CardContent>
           </Card>
+
+          {/* Results panel */}
+          <div key={revealedFocus} className="flex flex-col gap-3 animate-fade-in">
+            {recs.map((r) => (
+              <RecCard key={r.rank} rec={r} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function RecRow({
-  icon: Icon,
-  label,
-  body,
-}: {
-  icon: typeof Brain;
-  label: string;
-  body: string;
-}) {
+function RecCard({ rec }: { rec: Recommendation }) {
   return (
-    <div className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-ink p-4">
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <div className="text-[11px] uppercase tracking-wide text-white/55">
-          {label}
+    <Card className="group relative overflow-hidden rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-0 h-24 w-24 bg-reps-orange/10 opacity-60 blur-[60px] transition-opacity group-hover:opacity-100"
+      />
+      <div className="relative grid grid-cols-[auto_1fr] gap-4 p-5">
+        <div className="flex h-12 w-12 flex-col items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+          <span className="text-[10px] font-bold uppercase tracking-wider">Rank</span>
+          <span className="text-[15px] font-bold leading-none">#{rec.rank}</span>
         </div>
-        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/80">
-          {body}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <h3 className="font-display text-[16px] font-bold leading-tight text-white">
+              {rec.title}
+            </h3>
+            <span className="text-[12px] font-medium text-white/55">{rec.provider}</span>
+          </div>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-bold text-reps-orange">
+              {rec.points} CPD pts
+            </span>
+            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
+              {rec.delivery}
+            </span>
+            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
+              {rec.status}
+            </span>
+          </div>
+
+          <div className="mt-4 border-t border-reps-border pt-3">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+              Why this matches
+            </span>
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {rec.reasons.map((r) => (
+                <li
+                  key={r}
+                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-white/70"
+                >
+                  <Check className="h-3 w-3 text-reps-orange" strokeWidth={3} />
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-3 flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80">
+            <TrendingUp className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-reps-orange" />
+            <span>
+              <span className="font-semibold text-white/70">Profile impact · </span>
+              {rec.impact}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
