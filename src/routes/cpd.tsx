@@ -1012,6 +1012,67 @@ function RepsCpdSystem() {
 /* Section: Qualification ladder                                       */
 /* ------------------------------------------------------------------ */
 
+function LadderCard({ rung: r }: { rung: LadderRung }) {
+  return (
+    <article className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
+      <span className="inline-flex items-center rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[12px] font-semibold text-reps-orange">
+        {r.level}
+      </span>
+      <h4 className="mt-3 font-display text-[20px] font-bold leading-tight text-white">
+        {r.title}
+      </h4>
+      <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{r.blurb}</p>
+
+      <h5 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
+        Can do
+      </h5>
+      <ul className="mt-2 flex flex-col gap-2 text-[13px] leading-relaxed text-white/80">
+        {r.scope.map((s) => (
+          <li key={s} className="flex gap-2">
+            <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-reps-orange" />
+            <span>{s}</span>
+          </li>
+        ))}
+      </ul>
+
+      <h5 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
+        Can't do
+      </h5>
+      <ul className="mt-2 flex flex-col gap-2 text-[13px] leading-relaxed text-white/65">
+        {r.notScope.map((s) => (
+          <li key={s} className="flex gap-2">
+            <X className="mt-[3px] h-3.5 w-3.5 shrink-0 text-white/40" />
+            <span>{s}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-5 border-t border-reps-border pt-4">
+        <div className="flex flex-wrap gap-2">
+          {r.quals.map((q) => (
+            <Tooltip key={q.acronym}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="rounded-[6px] border border-reps-border bg-reps-ink px-2 py-1 text-[12px] font-semibold text-white underline decoration-reps-orange/70 decoration-dotted underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange"
+                >
+                  {q.acronym}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <span className="block text-[12px] font-semibold">{q.full}</span>
+                <span className="mt-1 block max-w-[260px] text-[12px] text-white/80">
+                  {q.meaning}
+                </span>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function Qualifications() {
   return (
     <section id="qualifications" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
