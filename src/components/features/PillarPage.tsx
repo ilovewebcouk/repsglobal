@@ -262,7 +262,17 @@ export function PillarPage({
   );
 }
 
+function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProps {
+  return (
+    typeof m === "object" &&
+    m !== null &&
+    "device" in (m as Record<string, unknown>) &&
+    "src" in (m as Record<string, unknown>)
+  );
+}
+
 function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reverse: boolean }) {
+  const isDevice = isDeviceMockupConfig(feature.mockup);
   return (
     <div
       className={`grid items-center gap-10 lg:gap-16 ${
@@ -270,10 +280,10 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
       }`}
     >
       <div className={reverse ? "lg:order-2" : ""}>
-        <span className="inline-flex w-fit items-center rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {feature.tag}
         </span>
-        <h3 className="mt-4 font-display text-[30px] font-bold leading-[1.1] text-white lg:text-[40px]">
+        <h3 className="mt-3 font-display text-[30px] font-bold leading-[1.1] text-white lg:text-[40px]">
           {feature.title}
         </h3>
         <p className="mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
@@ -293,14 +303,20 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
             params={{ slug: feature.learnMoreSlug }}
             className="mt-6 inline-flex items-center gap-1 text-[14px] font-semibold text-reps-orange hover:underline"
           >
-            Learn more about {feature.tag.toLowerCase()} <ArrowRight className="h-4 w-4" />
+            Learn more <ArrowRight className="h-4 w-4" />
           </Link>
         )}
       </div>
       <div className={reverse ? "lg:order-1" : ""}>
-        <MockupStage variant="laptop">
-          <BrowserFrame>{feature.mockup}</BrowserFrame>
-        </MockupStage>
+        {isDevice ? (
+          <MockupStage variant={(feature.mockup as DeviceMockupProps).device}>
+            <DeviceMockup {...(feature.mockup as DeviceMockupProps)} />
+          </MockupStage>
+        ) : (
+          <MockupStage variant="laptop">
+            <BrowserFrame>{feature.mockup as React.ReactNode}</BrowserFrame>
+          </MockupStage>
+        )}
       </div>
     </div>
   );
