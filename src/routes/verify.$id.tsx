@@ -267,7 +267,7 @@ function VerifyRecordPage() {
             </div>
 
             <ol className="mt-10 grid gap-4 md:grid-cols-2">
-              {record.chain.map((c, i) => (
+              {record.chain.map((c: VerificationRecord["chain"][number], i: number) => (
                 <li
                   key={c.title}
                   className="rounded-[18px] border border-white/10 bg-white/[0.04] p-6"

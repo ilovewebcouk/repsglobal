@@ -45,6 +45,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as VerifyIdRouteImport } from './routes/verify.$id'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
@@ -282,6 +283,11 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyIdRoute = VerifyIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => VerifyRoute,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
@@ -607,7 +613,7 @@ export interface FileRoutesByFullPath {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -658,6 +664,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/verify/$id': typeof VerifyIdRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -702,7 +709,7 @@ export interface FileRoutesByTo {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -752,6 +759,7 @@ export interface FileRoutesByTo {
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/verify/$id': typeof VerifyIdRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -797,7 +805,7 @@ export interface FileRoutesById {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
@@ -848,6 +856,7 @@ export interface FileRoutesById {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/verify/$id': typeof VerifyIdRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -945,6 +954,7 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/verify/$id'
     | '/resources/'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -1039,6 +1049,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/verify/$id'
     | '/resources'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
@@ -1134,6 +1145,7 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/resources/$slug'
+    | '/verify/$id'
     | '/resources/'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
@@ -1179,7 +1191,7 @@ export interface RootRouteChildren {
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
-  VerifyRoute: typeof VerifyRoute
+  VerifyRoute: typeof VerifyRouteWithChildren
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
@@ -1491,6 +1503,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/resources/'
       preLoaderRoute: typeof ResourcesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/verify/$id': {
+      id: '/verify/$id'
+      path: '/$id'
+      fullPath: '/verify/$id'
+      preLoaderRoute: typeof VerifyIdRouteImport
+      parentRoute: typeof VerifyRoute
     }
     '/resources/$slug': {
       id: '/resources/$slug'
@@ -1894,6 +1913,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface VerifyRouteChildren {
+  VerifyIdRoute: typeof VerifyIdRoute
+}
+
+const VerifyRouteChildren: VerifyRouteChildren = {
+  VerifyIdRoute: VerifyIdRoute,
+}
+
+const VerifyRouteWithChildren =
+  VerifyRoute._addFileChildren(VerifyRouteChildren)
+
 interface DashboardClientsRouteChildren {
   DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
@@ -1952,7 +1982,7 @@ const rootRouteChildren: RootRouteChildren = {
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
-  VerifyRoute: VerifyRoute,
+  VerifyRoute: VerifyRouteWithChildren,
   VerifyEmailRoute: VerifyEmailRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
