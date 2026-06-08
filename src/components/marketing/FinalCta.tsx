@@ -59,7 +59,7 @@ export function FinalCta({
               {heading}
               {headingAccent ? (
                 <>
-                  {" "}
+                  <br />
                   <span className="text-reps-orange">{headingAccent}</span>
                 </>
               ) : null}
