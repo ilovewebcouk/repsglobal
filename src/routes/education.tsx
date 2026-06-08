@@ -1151,7 +1151,7 @@ function FaqBlock() {
           FAQ
         </span>
         <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          Qualifications, providers & CPD — answered.
+          Qualifications & providers — answered.
         </h2>
 
         <Accordion type="single" collapsible className="mt-10">
