@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Stethoscope,
+  
   TrendingUp,
   Wand2,
   X,
@@ -23,7 +23,6 @@ import {
 
 import ctaTrainers from "@/assets/cta-band.jpg";
 import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
-import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
@@ -43,7 +42,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 
 
-import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
+import heroCpdAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
 
 /* ------------------------------------------------------------------ */
@@ -310,7 +309,7 @@ const PROVIDER_CHECKS = [
   {
     icon: BookOpen,
     title: "Refunds & complaints",
-    body: "Published refund policy and a real complaints route — not a help-desk that ghosts you after the card clears.",
+    body: "Published refund policy and a real complaints route — not a help-desk that goes silent once payment clears.",
   },
 ];
 
@@ -384,7 +383,7 @@ const RED_FLAGS = [
   "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
   "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing is all “earn £5k a month” income claims instead of what you'll actually learn.",
+  "Marketing leads with income claims instead of what you'll actually learn.",
 ];
 
 const GOOD_SIGNS = [
@@ -447,62 +446,6 @@ const FAQS = [
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-function TutorMoment() {
-  return (
-    <section className="relative isolate overflow-hidden border-b border-reps-border bg-reps-ink">
-      <img
-        src={cpdTutorMomentAsset.url}
-        alt=""
-        loading="lazy"
-        width={1920}
-        height={1080}
-        className="absolute inset-0 h-full w-full object-cover object-[70%_center]"
-      />
-      {/* Mobile: bottom-anchored legibility gradient */}
-      <div
-        aria-hidden
-        className="absolute inset-0 md:hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 70%, #0B0D10 100%)",
-        }}
-      />
-      {/* Desktop: left-anchored copy well */}
-      <div
-        aria-hidden
-        className="absolute inset-0 hidden md:block"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 30%, rgba(11,13,16,0.55) 48%, rgba(11,13,16,0) 62%)",
-        }}
-      />
-      {/* Warm orange micro-glow tying to brand */}
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-70"
-        style={{
-          backgroundImage:
-            "radial-gradient(900px 500px at 10% 60%, rgba(255,107,53,0.10), transparent 60%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
-        <div className="max-w-[640px]">
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-            <BookOpen className="h-3.5 w-3.5" /> Inside a verified CPD course
-          </span>
-          <p className="mt-6 font-display text-[28px] font-bold leading-[1.1] text-white lg:text-[44px]">
-            “The honest providers are already here.
-            <span className="text-reps-orange"> The rest are running a print shop for certificates.”</span>
-          </p>
-          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[0.22em] text-white/55">
-            REPs — verified training providers
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function CpdPage() {
   return (
@@ -522,13 +465,9 @@ function CpdPage() {
 
         <Qualifications />
 
-        <GeneralistVsSpecialist />
-
         <VerifiedProviders />
 
         <DodgyCourses />
-
-        <TutorMoment />
 
         <RaiseTheStandard />
 
@@ -593,18 +532,16 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            A certificate is only as good as
-            <br />
-            <span className="text-reps-orange">the people behind it.</span>
+            The honest providers are already here.{" "}
+            <span className="text-reps-orange">The rest are running a print shop for certificates.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs is the global standard for verified CPD in fitness, sport and physical activity.
-            CPD keeps a qualification current — logged quarterly, audited annually, and only counted
-            when it's from a verified training provider. If the provider isn't verified, the certificate isn't worth the paper it's printed on.
+            REPs is the global standard for verified CPD. Every hour is logged quarterly,
+            audited annually, and only counts when it's from a verified training provider.
           </p>
 
           <div
@@ -820,7 +757,7 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
+      body: "Members log every CPD activity in their REPs dashboard four times a year, with evidence attached to every entry.",
     },
     {
       icon: ShieldCheck,
