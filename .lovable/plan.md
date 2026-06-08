@@ -1,24 +1,23 @@
-Update copy on `/cpd` to replace slang with hard-hitting, professional wording that matches the tone of `/specialisms` and `/for-professionals`.
+## Scope
+Replace the "As featured in" press marquee on **`/cpd` only** with a new "Where you'll find our trainers" marquee using the 10 uploaded gym brand logos. Keep the existing PressMarquee (editorial wordmarks) everywhere else — it's part of the locked marketing-hero template.
 
 ## Changes
 
-| Location | Current | New |
-|---|---|---|
-| Meta description (line 51) | "how to spot a dodgy training provider" | "how to spot a worthless training provider" |
-| Sticky nav label (line 102 area) | "Spot a dodgy course" | "Spot a worthless course" |
-| FAQ question (line 447 area) | "How do I report a dodgy provider or coach?" | "How do I report a predatory provider or coach?" |
-| Body copy (line 807 area) | "most punters don't know the difference" | "most buyers don't know the difference" |
-| Body copy (line 892 area) | "This is where punters get scammed most." | "This is where buyers get burned most." |
-| Section H2 (line 1149 area) | "Spot a dodgy course" | "Spot a worthless course" |
-| Subhead under H2 | (none / current subhead) | "How to tell a real qualification from a bad one" |
-| Body copy (line 1155 area) | "Most scammy training providers follow…" | "The most predatory training providers follow…" |
-| Step title (line 1209 area) | "Siphon out the bullshit." | "Cut the noise." |
+### 1. Upload the 10 gym SVGs as CDN assets
+Run `lovable-assets create` for each of: anytime_fitness, david_lloyd, energie_fitness, everyone_active, fitness_first, nuffield_health, puregym, the_gym_group, third_space, virgin_active. Write pointers to `src/assets/venues/<name>.svg.asset.json`.
 
-## What's not changing
+### 2. New component `src/components/marketing/VenueMarquee.tsx`
+- Same structure, bg, padding, mask fade, scroll animation, reduced-motion behaviour and height scaling (`h-6 sm:h-7 lg:h-8`) as `PressMarquee`.
+- Eyebrow label text: **"Where you'll find our trainers"** (same `text-[10.5px] font-semibold uppercase tracking-[0.32em] text-white/45`).
+- Logos rendered as `<img src={asset.url}>` with `filter: brightness(0) invert(1)` + `opacity-55` so the coloured brand SVGs render as the same white/55 silhouettes the press marks use. Each logo carries an `alt` attribute (gym name).
+- Per-logo `widthClass` (e.g. `w-24`, `w-32`) tuned so visual heights/weights look balanced across the 10 marks, mirroring the press treatment.
 
-- Section anchor `id="dodgy-courses"` stays as-is (internal slug only).
-- No structural, component, or image changes.
+### 3. Swap on `/cpd`
+In `src/routes/cpd.tsx`:
+- Replace `import { PressMarquee } from "@/components/marketing/PressMarquee";` with `VenueMarquee`.
+- Replace `<PressMarquee />` (line 464) with `<VenueMarquee />`.
 
-## Verification
-
-After edits, `rg -n "punter|scammed|scammy|bullshit|Siphon" src/routes/cpd.tsx` returns zero matches.
+## Out of scope
+- No change to the shared `PressMarquee` component or any other page that uses it.
+- No layout, copy, animation-timing or section-position changes — only the eyebrow text + the logo set swap, as requested.
+- The two stale runtime ENOENT errors (`puregym.svg`, `the_times.svg`) reference legacy file-system paths unrelated to this work; not touched here.
