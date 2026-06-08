@@ -27,6 +27,7 @@ import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
+import { FinalCta } from "@/components/marketing/FinalCta";
 
 
 
@@ -519,41 +520,12 @@ function ForProsPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
-          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 text-center lg:p-16">
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
-            />
-            <div className="relative">
-              <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-                <Star className="h-3 w-3 fill-reps-orange" /> Founding pricing — locked for life
-              </span>
-              <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-                Verified profile live today. Set up in 10 minutes.
-              </h2>
-              <p className="mx-auto mt-3 max-w-[540px] text-[15px] text-white/70">
-                Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch.
-              </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Link
-                  to="/compare"
-                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
-                >
-                  Compare platforms <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/pricing"
-                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
-                >
-                  See pricing
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FinalCta
+        heading="Verified profile live today. Set up in 10 minutes."
+        lede="Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch."
+        primary={{ to: "/compare", label: "Compare platforms" }}
+        secondary={{ to: "/pricing", label: "See pricing" }}
+      />
 
       <PublicFooter />
     </div>
