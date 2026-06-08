@@ -1,48 +1,58 @@
 ## Goal
 
-Keep `/cpd` as the **learner-first** Education Authority page (hero stays — you like it). Tighten the rest of the page around one job: helping a student / PT / yoga or Pilates teacher decide *"is this course actually any good?"*. Then, in a follow-up, build a dedicated `/training-providers` sales page modelled on the old REPs training-provider-membership page.
+Lift `/cpd` from a CPD-only page into the REPs **Education** hub it should be: REPs accredits *courses* — most of which are CPD, but the framing also covers initial qualifications and the Pilates/Yoga teacher-training market that's core to REPs' reach. Tone moves from punchy/marketing to professional.
 
-The old training-provider page reveals what providers buy from REPs: **course endorsement, the REPs badge on their marketing, directory listing, student reviews.** That's exactly what learners need to *recognise* — so we surface that signal from the learner side, without turning `/cpd` into a sales pitch.
+No URL change. No new sections. Edits live in `src/routes/cpd.tsx` only.
 
-## What's wrong today
+---
 
-- The page explains REPs' position (regulators → providers → REPs) well, but never names the *one signal a learner actually sees in the wild*: the **REPs Endorsed Course** badge on a provider's website / course page.
-- `VerifiedProviders` reads slightly provider-pitchy ("dual benefit for students and providers"); on a learner-first page it should be 100% learner-framed.
-- `JoinRepsCta` secondary button ("List your training organisation") currently sits with no destination — should send providers off to the dedicated page.
+## 1. Hero — new image, new H1, single CTA
 
-## Plan — edits to `src/routes/cpd.tsx` only
+**Image swap.** The current hero (`cpd-hero-v5.jpg`) is replaced by the editorial workshop photo currently used in `TutorMoment` (`cpd-tutor-moment.jpg.asset.json`). This is the image the user pointed at — a real teaching environment reads as "education", not "fitness marketing".
 
-1. **Hero** — leave as-is (locked by your feedback). Sub-copy already reads learner-side. No changes.
+**Copy rewrite (professional register).**
 
-2. **New section: `EndorsedBadge`** (insert between `RepsPosition` and `ProfileScreenshot`)
-   - Heading: *"The one mark to look for on any course"*
-   - Visual: a mock course-listing card on a provider's site with a "REPs Endorsed Course" badge top-right; arrow callouts to the badge + to a "Verified on the REPs register" line.
-   - 3 short bullets explaining what the badge means: *reviewed against published criteria · re-checked annually · listed on the public register so you can verify it yourself*.
-   - One subtle "Don't see the badge? Check the register" link to `#verified-providers`.
-   - No new asset generation needed — render the mock card in JSX (same `BrowserFrame` pattern already used in `ProfileScreenshot`).
+- Eyebrow chip: `CPD & Education` → `Education & accredited courses`
+- H1: `A certificate is only as good as the people behind it.` → `The standard for accredited education in fitness, sport and movement.`
+- Sub: rewritten to name the three pillars REPs accredits — initial qualifications, ongoing CPD, and teacher training in Pilates and yoga. Drops the "isn't worth the paper it's printed on" line.
+- Trust chips: kept (Identity verified · CPD logged quarterly · Verified-provider hours count) but the third softened to `Accredited providers only`.
+- Body registers strip: kept (Ofqual · REPs · AfN · HCPC · YAP) — already covers Pilates/Yoga via YAP.
 
-3. **`RepsPosition`** — keep, trim the third actor card's copy to land on the Pilates/yoga point in one sentence instead of two.
+**CTA simplification.** Two buttons collapse to one primary: **`Find verified training providers →`** anchored to `#verified-providers`. The secondary "How REPs runs CPD" button is removed (it competes with the primary action and reinforces the CPD-only framing).
 
-4. **`ProfileScreenshot`** — keep. Tweak heading from *"This is what verified CPD looks like to your clients"* → *"And here's how that course shows up on your REPs profile."* (Connects the badge story to the profile, learner-side narrative.)
+---
 
-5. **`Qualifications`** — keep as-is.
+## 2. Remove the now-orphan TutorMoment band
 
-6. **`DodgyCourses`** — keep. Add one bullet to `GOOD_SIGNS`: *"Carries the REPs Endorsed Course badge (verify on the register)."* Add one to `RED_FLAGS`: *"Claims 'REPs approved' but isn't listed on the public register."*
+`TutorMoment` (the dark band with the pull-quote "The honest providers are already here…") used the image we're promoting to hero. With the image gone, the band is removed from the page stack in `CpdPage()`. The associated `cpdTutorMomentAsset` import becomes the new hero image source, so no asset is orphaned.
 
-7. **`VerifiedProviders`** — re-frame fully learner-side:
-   - Heading: *"The verified training provider register"*
-   - Lede: *"Every provider here has had their courses reviewed against REPs criteria, carries valid insurance, and is re-checked each year. Search by discipline, location or qualification."*
-   - Remove the "and providers" / dual-benefit copy. Drop the "more profitable" angle.
+(The old `cpd-hero-v5.jpg` asset stays in the codebase for now — not deleting in case other pages reference it; can prune in a follow-up.)
 
-8. **`JoinRepsCta`** — make the primary CTA the learner action ("Find a verified course") and the secondary CTA *"Are you a training provider? →"* linking to `/training-providers` (route stub to be created in the follow-up build; safe `<Link to="/training-providers">` will compile once that file exists — for this turn, use a plain `<a href="/training-providers">` to avoid the strict route check, then upgrade to a typed `Link` when the route is added next).
+---
 
-9. **FAQ** — add one Q: *"How do I check if a course is genuinely REPs-endorsed?"* → answer points to the register and the badge.
+## 3. Tone pass — "education", not just "CPD"
 
-## Out of scope (next turn)
+Targeted copy edits, no structural changes:
 
-- New `/training-providers` route modelled on the old training-provider-membership page (Endorsed Training Provider hero, Meeting Industry Standards block, 6-benefit grid, single annual price card). Fresh copy in current REPs voice — not a copy-paste of the legacy page.
-- No new image generation, no token changes, no other locked pages touched.
+| Section | Change |
+|---|---|
+| `WhatCpdIs` heading | "What CPD actually is" → "What 'accredited' actually means" (CPD covered as one mode of accredited learning). |
+| `RepsCpdSystem` heading | "How REPs runs CPD" → "How REPs accredits education". Subcopy reframed: courses, CPD, teacher training. |
+| `Qualifications` intro | Tightened, drops "industry runs on acronyms" colloquialism; opens with "REPs accredits qualifications across four pathways" (Fitness, Nutrition, Pilates, Yoga). |
+| `VerifiedProviders` | Heading kept; subcopy reframed so Pilates/Yoga teacher-training schools are explicitly named alongside L2/L3 awarding bodies. |
+| `DodgyCourses` | Kept (this is the page's teeth) but two flippant lines softened: "earn £5k a month" example trimmed, "print shop for certificates" pull-quote removed (it left with TutorMoment anyway). |
+| `ProviderCtaBand` | CTA label aligned to "Find verified training providers". |
+| `FaqBlock` | First Q broadened: "What is CPD?" stays, but a new lead Q is added: "What does it mean for a course to be accredited by REPs?" — pulls Pilates/Yoga into the answer. |
+| `JoinRepsCta` | Final CTA aligned to "Find verified training providers" (primary) with "Apply to be a verified provider" as the professional-side secondary. |
 
-## Files
+Anywhere the page currently says "the CPD page" or "this is about CPD" implicitly, the language shifts to "accredited education" / "courses and CPD" / "training providers".
 
-- `src/routes/cpd.tsx` — all of the above (one file).
+No data arrays change (Fitness / Nutrition / Pilates / Yoga ladders, providers, FAQs all stay). No new components. No new assets. No route or nav-label changes.
+
+---
+
+## Out of scope (flagged for later)
+
+- Renaming the route from `/cpd` → `/education` and updating header nav. Mentioning so you can decide separately; not doing it here unless you say so.
+- Pruning the unused `cpd-hero-v5.jpg` asset.
+- Long-form copy revisions inside `RED_FLAGS` / `GOOD_SIGNS` beyond the two flippant lines noted above.
