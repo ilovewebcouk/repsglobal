@@ -372,15 +372,15 @@ function Hero() {
 
       <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-[1320px] flex-col items-start justify-start px-6 pb-20 pt-24 lg:px-10 lg:pb-28 lg:pt-28">
         <div className="max-w-[720px]">
-          <span
-            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange backdrop-blur"
+          <MarketingHeroEyebrow
+            icon={GraduationCap}
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <GraduationCap className="h-3.5 w-3.5" /> Education & CPD
-          </span>
+            Education & CPD
+          </MarketingHeroEyebrow>
 
           <h1
-            className="mt-6 animate-fade-in font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]"
+            className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
             Education, CPD and career growth{" "}
@@ -388,7 +388,7 @@ function Hero() {
           </h1>
 
           <p
-            className="mt-6 max-w-[560px] animate-fade-in text-[17px] leading-relaxed text-white/80 sm:text-[18px]"
+            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
             Build your professional profile, track your development and find
