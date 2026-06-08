@@ -646,7 +646,7 @@ function CpdPage() {
 
         <Qualifications />
 
-        <GeneralistVsSpecialist />
+        
 
         <VerifiedProviders />
 
