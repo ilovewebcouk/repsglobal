@@ -1154,34 +1154,40 @@ function Qualifications() {
           </div>
         </div>
 
-        {/* Movement disciplines */}
+        {/* Pilates pathway */}
         <div className="mt-16">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <Sparkles className="h-4 w-4" />
+              <Disc className="h-4 w-4" />
             </span>
-            <h3 className="font-display text-[20px] font-bold text-white">Movement disciplines</h3>
+            <h3 className="font-display text-[20px] font-bold text-white">Pilates pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            Yoga and Pilates run on hours-based teacher training rather than the RQF. The honest
-            standards are clear — here are the ones REPs cross-checks.
+            Pilates runs on hours-based teacher training rather than the RQF for most apparatus work.
+            Here's the honest ladder REPs cross-checks.
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {MOVEMENT_QUALS.map((q) => (
-              <Tooltip key={q.acronym}>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="rounded-[8px] border border-reps-border bg-reps-panel px-3 py-1.5 text-[13px] font-semibold text-white underline decoration-reps-orange/70 decoration-dotted underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange"
-                  >
-                    {q.acronym}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span className="block text-[12px] font-semibold">{q.full}</span>
-                  <span className="mt-1 block max-w-[260px] text-[12px] text-white/80">{q.meaning}</span>
-                </TooltipContent>
-              </Tooltip>
+          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+            {PILATES_LADDER.map((r) => (
+              <LadderCard key={r.title} rung={r} />
+            ))}
+          </div>
+        </div>
+
+        {/* Yoga pathway */}
+        <div className="mt-16">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+              <Flower2 className="h-4 w-4" />
+            </span>
+            <h3 className="font-display text-[20px] font-bold text-white">Yoga pathway</h3>
+          </div>
+          <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
+            Yoga teacher training is measured in hours, not RQF levels — but the international
+            standards are clear. These are the ones REPs verifies.
+          </p>
+          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+            {YOGA_LADDER.map((r) => (
+              <LadderCard key={r.title} rung={r} />
             ))}
           </div>
         </div>
