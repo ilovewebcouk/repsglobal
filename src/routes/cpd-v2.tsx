@@ -1098,43 +1098,10 @@ function TrainingProvidersBand() {
 
 function FaqBlock() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-4xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
-        <div className="text-center">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            FAQ
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Questions, answered{" "}
-            <span className="text-reps-orange">honestly.</span>
-          </h2>
-        </div>
-
-        <Card className="mt-10 rounded-[22px] border-reps-border bg-reps-panel shadow-none">
-          <CardContent className="p-2 sm:p-4">
-            <Accordion type="single" collapsible className="w-full">
-              {FAQS.map((f, i) => (
-                <AccordionItem
-                  key={f.q}
-                  value={`q-${i}`}
-                  className="border-reps-border"
-                >
-                  <AccordionTrigger className="text-left text-[15px] font-semibold text-white hover:no-underline [&>svg]:text-white/60">
-                    {f.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-[14px] leading-relaxed text-white/70">
-                    {f.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+    <MarketingFaq
+      heading="Questions, answered honestly."
+      items={FAQS}
+    />
   );
 }
 
@@ -1149,12 +1116,12 @@ function FinalCta() {
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
       />
-      <div className="relative mx-auto max-w-4xl px-5 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-        <h2 className="font-display text-[34px] leading-[1.08] font-bold tracking-tight text-white sm:text-[44px]">
+      <div className="relative mx-auto max-w-[920px] px-6 py-20 text-center lg:px-10 lg:py-28">
+        <h2 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[44px]">
           Build your profile. Prove your standards.{" "}
           <span className="text-reps-orange">Grow your career.</span>
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
+        <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/70">
           Join REPs to connect your verification, education, profile and
           professional development in one platform.
         </p>
@@ -1231,26 +1198,12 @@ const VERIFY = [
 
 function VerifyStrip() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {VERIFY.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-5"
-            >
-              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <Icon className="h-5 w-5" />
-              </span>
-              <div>
-                <div className="text-[14.5px] font-semibold text-white">{title}</div>
-                <div className="mt-1 text-[13px] leading-relaxed text-white/70">{body}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <VerifySteps
+      eyebrow="How REPs verifies"
+      heading="Three checks — every profile, every renewal."
+      steps={VERIFY}
+      bannerText="The result: a single Verified badge the public can actually trust."
+    />
   );
 }
 
