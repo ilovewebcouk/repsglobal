@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Globe } from "lucide-react";
+import { ArrowRight, BadgeCheck, Globe, Star } from "lucide-react";
 
 import { PillarPage, type PillarFeature } from "@/components/features/PillarPage";
 import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
@@ -16,7 +16,31 @@ const FEATURES: PillarFeature[] = [
       "Specialisms, services and pricing in one scan",
       "Mobile-first layout that converts on a phone, not just desktop",
     ],
-    mockup: { device: "laptop", src: "/pro/james-carter", title: "Verified professional profile" },
+    mockup: {
+      kind: "cinematic",
+      image: {
+        src: heroVisibility.url,
+        alt: "Verified REPs trainer coaching a client at a premium boutique studio",
+      },
+      cards: [
+        {
+          position: "top-left",
+          kind: "stat",
+          label: "Verified",
+          value: "L3 PT",
+          delta: "Insurance · DBS",
+          icon: BadgeCheck,
+        },
+        {
+          position: "bottom-right",
+          kind: "stat",
+          label: "Profile rating",
+          value: "4.9",
+          delta: "+18% enquiries",
+          icon: Star,
+        },
+      ],
+    },
     learnMoreSlug: "profile-and-reviews",
   },
   {
