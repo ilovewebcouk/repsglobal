@@ -13,7 +13,6 @@ import {
   GraduationCap,
   Heart,
   Lock,
-  Lock,
   Monitor,
   Rocket,
   ShieldCheck,
