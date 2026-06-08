@@ -66,7 +66,7 @@ export const RESOURCE_QUICK_LINKS: { to: "/resources"; label: string }[] = [];
 
 // For Professionals — supplementary links surfaced below pricing/compare/features.
 export const PRO_RESOURCES = [
-  { to: "/cpd" as const, label: "CPD & Education" },
+  { to: "/education" as const, label: "Education" },
   { to: "/specialisms" as const, label: "Specialisms explained" },
 ];
 

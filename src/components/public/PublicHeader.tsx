@@ -91,7 +91,7 @@ function useActive() {
       pathname.startsWith("/features") ||
       pathname.startsWith("/pricing") ||
       pathname.startsWith("/compare") ||
-      pathname.startsWith("/cpd") ||
+      pathname.startsWith("/education") ||
       pathname.startsWith("/specialisms") ||
       pathname.startsWith("/signup"),
     about:
