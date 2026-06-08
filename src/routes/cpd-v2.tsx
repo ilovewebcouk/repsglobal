@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
@@ -11,7 +12,6 @@ import {
   Dumbbell,
   GraduationCap,
   Heart,
-  Lightbulb,
   Lock,
   Monitor,
   Rocket,
@@ -64,6 +64,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -324,6 +325,7 @@ function CpdV2Page() {
         <DevelopmentPassport />
         <VerifyStrip />
         <RegisterProofBand />
+        <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
@@ -693,6 +695,182 @@ function RegisterProofBand() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Before / after profile teardown                                     */
+/* ------------------------------------------------------------------ */
+
+type TeardownLine = { label: string; value: string; tone: "muted" | "active" };
+
+const TEARDOWN_BEFORE: TeardownLine[] = [
+  { label: "Verification", value: "Not verified", tone: "muted" },
+  { label: "Qualifications", value: "1 listed · unverified", tone: "muted" },
+  { label: "Insurance", value: "Not on file", tone: "muted" },
+  { label: "CPD log", value: "Empty", tone: "muted" },
+  { label: "Specialism areas", value: "None", tone: "muted" },
+  { label: "Client reviews", value: "0 reviews", tone: "muted" },
+];
+
+const TEARDOWN_AFTER: TeardownLine[] = [
+  { label: "Verification", value: "Verified · ID + insurance + CPD", tone: "active" },
+  { label: "Qualifications", value: "3 verified · awarding body checked", tone: "active" },
+  { label: "Insurance", value: "Current · renews 14 Apr", tone: "active" },
+  { label: "CPD log", value: "32 pts logged · last 12 months", tone: "active" },
+  { label: "Specialism areas", value: "Lower-back · Older adults", tone: "active" },
+  { label: "Client reviews", value: "11 reviews · 4.9 average", tone: "active" },
+];
+
+function BeforeAfterTeardown() {
+  return (
+    <section className="border-t border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <SectionHeader
+          eyebrow="Outcome"
+          heading="What a year of CPD does to your REPs profile."
+          lede="Side-by-side: the same coach on day one, and after twelve months of logged CPD, verified credentials and specialism evidence. This is the trust signal clients are scanning for."
+        />
+
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <TeardownCard
+            stateLabel="Day one"
+            stateTone="muted"
+            name="Alex M."
+            tagline="Personal trainer · Online & in-person"
+            initials="AM"
+            lines={TEARDOWN_BEFORE}
+            footer="Public profile reads as 'new and unproven'."
+          />
+          <TeardownCard
+            stateLabel="After 12 months"
+            stateTone="active"
+            name="Alex M."
+            tagline="Personal trainer · Lower-back · Older adults"
+            initials="AM"
+            lines={TEARDOWN_AFTER}
+            footer="Public profile reads as 'verified, current and specialist'."
+            highlight
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[16px] border border-reps-border bg-reps-panel px-5 py-4">
+          <p className="text-[13px] leading-relaxed text-white/70">
+            Illustrative — built from the data points REPs surfaces on every
+            public profile. Your real profile updates the moment each
+            credential is verified or each CPD entry is logged.
+          </p>
+          <a
+            href="#cpd-discovery"
+            className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-white/15 bg-white/5 px-4 text-[13px] font-semibold text-white shadow-none hover:bg-white/10"
+          >
+            Start with CPD <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TeardownCard({
+  stateLabel,
+  stateTone,
+  name,
+  tagline,
+  initials,
+  lines,
+  footer,
+  highlight,
+}: {
+  stateLabel: string;
+  stateTone: "muted" | "active";
+  name: string;
+  tagline: string;
+  initials: string;
+  lines: TeardownLine[];
+  footer: string;
+  highlight?: boolean;
+}) {
+  return (
+    <Card
+      className={`relative overflow-hidden rounded-[22px] border-reps-border bg-reps-panel shadow-none ${
+        highlight ? "border-reps-orange-border" : ""
+      }`}
+    >
+      {highlight ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 bg-reps-orange/10 blur-3xl"
+        />
+      ) : null}
+
+      <div className="relative flex items-center justify-between border-b border-reps-border px-6 py-4">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+            stateTone === "active"
+              ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+              : "border border-white/10 bg-white/5 text-white/55"
+          }`}
+        >
+          {stateTone === "active" ? (
+            <Check className="h-3 w-3" strokeWidth={3} />
+          ) : (
+            <Lock className="h-3 w-3" />
+          )}
+          {stateLabel}
+        </span>
+        {stateTone === "active" ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+            <ShieldCheck className="h-3 w-3" /> Verified
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/45">
+            Unverified
+          </span>
+        )}
+      </div>
+
+      <div className="relative flex items-center gap-4 px-6 py-5">
+        <Avatar className="h-14 w-14 rounded-[14px]">
+          <AvatarFallback className="rounded-[14px] bg-reps-ink text-[15px] font-bold text-white/80">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <div className="font-display text-[18px] font-bold leading-tight text-white">
+            {name}
+          </div>
+          <div className="mt-0.5 text-[12.5px] text-white/55">{tagline}</div>
+        </div>
+      </div>
+
+      <div className="relative px-6 pb-6">
+        <dl className="flex flex-col divide-y divide-reps-border overflow-hidden rounded-[16px] border border-reps-border">
+          {lines.map((l) => (
+            <div
+              key={l.label}
+              className="flex items-center justify-between gap-3 bg-reps-ink/40 px-4 py-3"
+            >
+              <dt className="text-[11.5px] font-semibold uppercase tracking-wider text-white/45">
+                {l.label}
+              </dt>
+              <dd
+                className={`text-right text-[13px] font-medium ${
+                  l.tone === "active" ? "text-white" : "text-white/55"
+                }`}
+              >
+                {l.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-4 text-[12.5px] italic leading-relaxed text-white/55">
+          {footer}
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+
+/* ------------------------------------------------------------------ */
 /* Learning pathways                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -830,69 +1008,81 @@ function CpdDiscovery() {
           {COURSES.map((c) => (
             <Card
               key={c.title}
-              className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
+              className="group relative flex flex-col overflow-hidden rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange"
-                  >
-                    <ShieldCheck className="mr-1 h-3 w-3" /> Verified provider
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-reps-border bg-reps-ink text-[10.5px] font-semibold uppercase tracking-wide text-white/70"
-                  >
-                    {c.category}
-                  </Badge>
-                </div>
-                <CardTitle className="mt-3 font-display text-[17px] font-bold leading-snug text-white">
+              {/* Signature accent — top-right orange glow */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute right-0 top-0 h-32 w-32 bg-reps-orange/10 opacity-60 blur-[60px] transition-opacity group-hover:opacity-100"
+              />
+
+              {/* Top chrome */}
+              <div className="relative flex items-center justify-between px-5 pb-2 pt-5">
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-emerald-400/30 bg-emerald-500/15 text-[10px] font-bold uppercase tracking-wider text-emerald-300"
+                >
+                  <Check className="mr-1 h-3 w-3" strokeWidth={3} />
+                  Verified provider
+                </Badge>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  {c.category}
+                </span>
+              </div>
+
+              {/* Editorial body */}
+              <div className="relative flex-1 px-5 py-4">
+                <h3 className="font-display text-[22px] font-bold leading-tight tracking-tight text-white transition-colors group-hover:text-reps-orange">
                   {c.title}
-                </CardTitle>
-                <CardDescription className="text-[12.5px] text-white/55">
+                </h3>
+                <p className="mt-1 text-[13.5px] font-medium tracking-wide text-white/55">
                   {c.provider}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-orange-soft text-[11px] font-semibold text-reps-orange">
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft px-3 py-1.5 text-[12px] font-bold text-reps-orange">
                     {c.points} CPD pts
-                  </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
+                  </span>
+                  <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-white/70">
                     {c.delivery}
-                  </Badge>
+                  </span>
                 </div>
 
-                <dl className="mt-4 flex flex-col gap-2.5 text-[12.5px] leading-relaxed">
+                <div className="mt-6">
+                  <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                    Who it's for
+                  </span>
+                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/70">
+                    {c.audience}
+                  </p>
+                </div>
+              </div>
+
+              {/* Sticky meta + CTA */}
+              <div className="relative mt-auto">
+                <div className="flex items-center justify-between border-t border-white/5 bg-white/[0.02] px-5 py-4">
                   <div>
-                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-                      Who it's for
-                    </dt>
-                    <dd className="mt-0.5 text-white/80">{c.audience}</dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-reps-border pt-2.5">
-                    <div>
-                      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-                        Status
-                      </dt>
-                      <dd className="mt-0.5 text-white/80">{c.status}</dd>
-                    </div>
-                    <span className="text-[13px] font-semibold text-white">
-                      {c.price}
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-white/45">
+                      Status
+                    </span>
+                    <span className="text-[13px] font-medium text-white/80">
+                      {c.status}
                     </span>
                   </div>
-                </dl>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  disabled
-                  className="w-full rounded-[10px] border-reps-border bg-reps-ink text-white/80 shadow-none hover:bg-reps-panel-soft"
-                >
-                  View course
-                </Button>
-              </CardFooter>
+                  <span className="text-[18px] font-bold tracking-tight text-white">
+                    {c.price}
+                  </span>
+                </div>
+                <div className="p-5 pt-3">
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full cursor-not-allowed rounded-[10px] border border-white/10 bg-white/5 py-3 text-[13px] font-bold text-white/80 shadow-none transition-all"
+                  >
+                    View course
+                  </button>
+                </div>
+              </div>
             </Card>
           ))}
         </div>
@@ -956,101 +1146,371 @@ function SpecialistAreas() {
 /* AI recommendations                                                  */
 /* ------------------------------------------------------------------ */
 
+type Recommendation = {
+  rank: number;
+  title: string;
+  provider: string;
+  points: number;
+  delivery: string;
+  reasons: string[];
+  impact: string;
+  status: string;
+};
+
+const FOCUS_OPTIONS = [
+  { value: "back-pain", label: "Lower back pain" },
+  { value: "prenatal", label: "Pre/Postnatal" },
+  { value: "older-adults", label: "Older adults" },
+  { value: "online", label: "Online coaching" },
+  { value: "strength", label: "Strength & Conditioning" },
+] as const;
+
+const STAGE_OPTIONS = [
+  { value: "new", label: "Newly qualified" },
+  { value: "mid", label: "2–5 years" },
+  { value: "senior", label: "5+ years" },
+] as const;
+
+const RECS_BY_FOCUS: Record<string, Recommendation[]> = {
+  "back-pain": [
+    {
+      rank: 1,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 14 Apr"],
+      impact: "Adds Lower-back specialism area · lifts profile trust signals",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Improves retention", "Pairs with rehab work", "Self-paced"],
+      impact: "Strengthens 'How I coach' signal on your public profile",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Reach more rehab clients", "Light load", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+  ],
+  prenatal: [
+    {
+      rank: 1,
+      title: "Pre & Postnatal Foundations",
+      provider: "Holistic Core Restore",
+      points: 12,
+      delivery: "Online",
+      reasons: ["Matches your focus", "Specialism unlock", "Open now"],
+      impact: "Adds Pre/Postnatal specialism area to your profile",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Critical for adherence", "Low time cost", "Self-paced"],
+      impact: "Strengthens client-retention signal",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Most clients want online", "Quick to complete", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+  ],
+  "older-adults": [
+    {
+      rank: 1,
+      title: "Older Adults Specialism",
+      provider: "Functional Ageing Institute",
+      points: 14,
+      delivery: "Blended",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 21 Apr"],
+      impact: "Adds Older-adults specialism area · profile trust lifts",
+      status: "Cohort starts 21 Apr",
+    },
+    {
+      rank: 2,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["High overlap with 55+ clients", "Awarded specialism", "Cohort soon"],
+      impact: "Stacks with Older-adults for stronger trust signal",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 3,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Drives long-term adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens retention signal on profile",
+      status: "Self-paced · open now",
+    },
+  ],
+  online: [
+    {
+      rank: 1,
+      title: "Online Coaching Operations",
+      provider: "REPs Academy",
+      points: 6,
+      delivery: "Online",
+      reasons: ["Matches your focus", "Quick win", "Open now"],
+      impact: "Opens online-coaching tag on your shop-front",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 2,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Critical for remote adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens online-coaching trust signal",
+      status: "Self-paced · open now",
+    },
+    {
+      rank: 3,
+      title: "Strength & Conditioning for Coaches",
+      provider: "S&C Education",
+      points: 20,
+      delivery: "In-person",
+      reasons: ["Differentiates your online offer", "Specialism unlock", "Cohort starts soon"],
+      impact: "Adds S&C credibility to remote programming",
+      status: "Cohort starts 06 May",
+    },
+  ],
+  strength: [
+    {
+      rank: 1,
+      title: "Strength & Conditioning for Coaches",
+      provider: "S&C Education",
+      points: 20,
+      delivery: "In-person",
+      reasons: ["Matches your focus", "Specialism unlock", "Cohort starts 06 May"],
+      impact: "Adds S&C specialism area · qualifies you for sport clients",
+      status: "Cohort starts 06 May",
+    },
+    {
+      rank: 2,
+      title: "Coaching Lower Back Pain",
+      provider: "Movement Mechanics",
+      points: 16,
+      delivery: "Blended",
+      reasons: ["Common in lifters", "Awarded specialism", "Cohort soon"],
+      impact: "Stacks with S&C for stronger trust signal",
+      status: "Cohort starts 14 Apr",
+    },
+    {
+      rank: 3,
+      title: "Behaviour Change in Practice",
+      provider: "Coach Catalyst",
+      points: 8,
+      delivery: "Online",
+      reasons: ["Programme adherence", "Self-paced", "Low cost"],
+      impact: "Strengthens retention signal",
+      status: "Self-paced · open now",
+    },
+  ],
+};
+
 function AiRecommendations() {
+  const [focus, setFocus] = useState<string>("back-pain");
+  const [stage, setStage] = useState<string>("mid");
+  const [revealedFocus, setRevealedFocus] = useState<string>("back-pain");
+  const [revealedStage, setRevealedStage] = useState<string>("mid");
+  const [showResults, setShowResults] = useState<boolean>(true);
+
+  const recs = RECS_BY_FOCUS[revealedFocus] ?? RECS_BY_FOCUS["back-pain"];
+  const dirty = focus !== revealedFocus || stage !== revealedStage;
+
+  const handleGenerate = () => {
+    setRevealedFocus(focus);
+    setRevealedStage(stage);
+    setShowResults(true);
+  };
+
   return (
     <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
-        <div>
-          <SectionHeader
-            eyebrow="AI · Preview · Phase 1"
-            heading="Know what to learn next."
-            lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
-            className="max-w-none"
-          />
-          <p className="mt-3 text-[12.5px] text-white/55">
-            Preview only — recommendations are illustrative and not yet
-            personalised.
-          </p>
-        </div>
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <SectionHeader
+          eyebrow="AI · Preview · Phase 1"
+          heading="Know what to learn next."
+          lede="Pick a focus and your experience stage. REPs returns three ranked CPD picks, each with reasoning and the impact on your public profile. Personalised on your real data once your CPD log is live."
+        />
 
-        <div className="relative">
-          <div className="absolute -inset-6 rounded-[24px] bg-reps-orange/8 blur-2xl" aria-hidden />
-          <Card className="relative rounded-[22px] border-reps-border bg-reps-panel shadow-none">
-            <CardHeader className="pb-3">
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
+          {/* Input panel */}
+          <Card className="relative overflow-hidden rounded-[22px] border-reps-border bg-reps-panel shadow-none">
+            <div aria-hidden className="pointer-events-none absolute -inset-4 bg-reps-orange/10 opacity-50 blur-3xl" />
+            <CardHeader className="relative pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Brain className="h-4 w-4 text-reps-orange" />
-                  <span className="text-[12px] font-semibold uppercase tracking-wide text-white/70">
-                    Suggested for Sarah
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-white/70">
+                    Your inputs
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold text-reps-orange"
+                  className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10px] font-bold uppercase tracking-wider text-reps-orange"
                 >
                   Preview
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <div className="rounded-[16px] border border-reps-orange-border bg-reps-orange-soft p-4">
-                <div className="text-[11px] uppercase tracking-wide text-reps-orange">
-                  Recommended next CPD
-                </div>
-                <div className="mt-1.5 text-[16px] font-semibold text-white">
-                  Coaching Lower Back Pain · Movement Mechanics
-                </div>
-                <div className="mt-0.5 text-[12px] text-white/55">
-                  16 CPD pts · Level 4 · Blended
-                </div>
+            <CardContent className="relative flex flex-col gap-5">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                  Your focus area
+                </span>
+                <ToggleGroup
+                  type="single"
+                  value={focus}
+                  onValueChange={(v) => v && setFocus(v)}
+                  className="mt-2 flex flex-wrap justify-start gap-1.5"
+                >
+                  {FOCUS_OPTIONS.map((o) => (
+                    <ToggleGroupItem
+                      key={o.value}
+                      value={o.value}
+                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
+                    >
+                      {o.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </div>
 
-              <RecRow
-                icon={Lightbulb}
-                label="Why it matters"
-                body="42% of your enquiries mention back pain. A recognised L4 course unlocks specialist visibility on your profile."
-              />
-              <RecRow
-                icon={TrendingUp}
-                label="Profile improvement"
-                body="Adds a verified specialism area and lifts your trust score from 92 → 96."
-              />
-              <RecRow
-                icon={Target}
-                label="Suggested next action"
-                body="Book the next cohort — starts 14 Apr."
-              />
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                  Experience stage
+                </span>
+                <ToggleGroup
+                  type="single"
+                  value={stage}
+                  onValueChange={(v) => v && setStage(v)}
+                  className="mt-2 flex flex-wrap justify-start gap-1.5"
+                >
+                  {STAGE_OPTIONS.map((o) => (
+                    <ToggleGroupItem
+                      key={o.value}
+                      value={o.value}
+                      className="h-8 rounded-full border border-white/10 bg-white/5 px-3 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange"
+                    >
+                      {o.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!dirty && showResults}
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-bold text-white shadow-none transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Sparkles className="h-4 w-4" />
+                {dirty ? "Show recommendations" : "Recommendations ready"}
+              </button>
+
+              <p className="text-[11.5px] leading-relaxed text-white/55">
+                Static preview — recommendations are illustrative and ranked by
+                a deterministic rule set, not a model.
+              </p>
             </CardContent>
           </Card>
+
+          {/* Results panel */}
+          <div key={revealedFocus} className="flex flex-col gap-3 animate-fade-in">
+            {recs.map((r) => (
+              <RecCard key={r.rank} rec={r} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function RecRow({
-  icon: Icon,
-  label,
-  body,
-}: {
-  icon: typeof Brain;
-  label: string;
-  body: string;
-}) {
+function RecCard({ rec }: { rec: Recommendation }) {
   return (
-    <div className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-ink p-4">
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-reps-orange-soft text-reps-orange">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <div className="text-[11px] uppercase tracking-wide text-white/55">
-          {label}
+    <Card className="group relative overflow-hidden rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-0 h-24 w-24 bg-reps-orange/10 opacity-60 blur-[60px] transition-opacity group-hover:opacity-100"
+      />
+      <div className="relative grid grid-cols-[auto_1fr] gap-4 p-5">
+        <div className="flex h-12 w-12 flex-col items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+          <span className="text-[10px] font-bold uppercase tracking-wider">Rank</span>
+          <span className="text-[15px] font-bold leading-none">#{rec.rank}</span>
         </div>
-        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/80">
-          {body}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <h3 className="font-display text-[16px] font-bold leading-tight text-white">
+              {rec.title}
+            </h3>
+            <span className="text-[12px] font-medium text-white/55">{rec.provider}</span>
+          </div>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-bold text-reps-orange">
+              {rec.points} CPD pts
+            </span>
+            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
+              {rec.delivery}
+            </span>
+            <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/70">
+              {rec.status}
+            </span>
+          </div>
+
+          <div className="mt-4 border-t border-reps-border pt-3">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+              Why this matches
+            </span>
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {rec.reasons.map((r) => (
+                <li
+                  key={r}
+                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-white/70"
+                >
+                  <Check className="h-3 w-3 text-reps-orange" strokeWidth={3} />
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-3 flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80">
+            <TrendingUp className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-reps-orange" />
+            <span>
+              <span className="font-semibold text-white/70">Profile impact · </span>
+              {rec.impact}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
