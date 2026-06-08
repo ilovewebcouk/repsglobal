@@ -414,14 +414,14 @@ function Hero() {
             </a>
             <a
               href="#training-providers"
-              className="text-[13.5px] font-medium text-white/75 underline decoration-white/30 underline-offset-4 hover:text-white"
+              className="text-[13.5px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
             >
               Are you a training provider?
             </a>
           </div>
 
           <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
@@ -482,7 +482,7 @@ function ProofCards() {
               <CardTitle className="mt-4 text-[15px] font-semibold text-white">
                 {title}
               </CardTitle>
-              <CardDescription className="text-[13.5px] leading-relaxed text-white/65">
+              <CardDescription className="text-[13.5px] leading-relaxed text-white/70">
                 {body}
               </CardDescription>
             </CardHeader>
@@ -595,7 +595,7 @@ function ProfessionalDevelopmentMockup() {
             <div className="text-[11px] uppercase tracking-wide text-white/55">
               Qualifications
             </div>
-            <ul className="mt-2 flex flex-col gap-1.5 text-[13px] text-white/85">
+            <ul className="mt-2 flex flex-col gap-1.5 text-[13px] text-white/80">
               <li className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
@@ -651,14 +651,14 @@ function ProfessionalDevelopmentMockup() {
             <div className="mt-1.5 text-[14px] font-semibold text-white">
               Behaviour Change in Practice
             </div>
-            <div className="mt-0.5 text-[12px] text-white/60">
+            <div className="mt-0.5 text-[12px] text-white/55">
               Coach Catalyst · 8 pts · Online · £89
             </div>
           </div>
 
           {/* Renewal */}
           <div className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink p-3.5">
-            <div className="flex items-center gap-2 text-[12.5px] text-white/75">
+            <div className="flex items-center gap-2 text-[12.5px] text-white/70">
               <Lock className="h-3.5 w-3.5 text-emerald-300" />
               REPs renewal
             </div>
@@ -724,7 +724,7 @@ function LearningPathways() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 pt-0">
-                <ul className="flex flex-col gap-1.5 text-[12.5px] text-white/60">
+                <ul className="flex flex-col gap-1.5 text-[12.5px] text-white/55">
                   {topics.map((t) => (
                     <li key={t} className="flex items-center gap-1.5">
                       <span className="h-1 w-1 rounded-full bg-reps-orange" />
@@ -782,11 +782,11 @@ function CpdDiscovery() {
           <CardContent className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
             {FILTERS.map((f) => (
               <div key={f.label} className="flex min-w-0 flex-col gap-1">
-                <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+                <span className="text-[10.5px] uppercase tracking-wide text-white/55">
                   {f.label}
                 </span>
                 <Select disabled defaultValue={f.options[0]}>
-                  <SelectTrigger className="h-9 rounded-[8px] border-reps-border bg-reps-ink text-[12.5px] text-white/85">
+                  <SelectTrigger className="h-9 rounded-[8px] border-reps-border bg-reps-ink text-[12.5px] text-white/80">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -802,7 +802,7 @@ function CpdDiscovery() {
               </div>
             ))}
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+              <span className="text-[10.5px] uppercase tracking-wide text-white/55">
                 Mode
               </span>
               <Tabs defaultValue="online">
@@ -856,13 +856,13 @@ function CpdDiscovery() {
                   {c.blurb}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.points} CPD pts
                   </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.level}
                   </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.format}
                   </Badge>
                 </div>
@@ -983,7 +983,7 @@ function AiRecommendations() {
                 <div className="mt-1.5 text-[16px] font-semibold text-white">
                   Coaching Lower Back Pain · Movement Mechanics
                 </div>
-                <div className="mt-0.5 text-[12px] text-white/60">
+                <div className="mt-0.5 text-[12px] text-white/55">
                   16 CPD pts · Level 4 · Blended
                 </div>
               </div>
@@ -1029,7 +1029,7 @@ function RecRow({
         <div className="text-[11px] uppercase tracking-wide text-white/55">
           {label}
         </div>
-        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/85">
+        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/80">
           {body}
         </div>
       </div>
@@ -1077,7 +1077,7 @@ function TrainingProvidersBand() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="flex flex-col gap-3 text-[14px] text-white/85">
+            <ul className="flex flex-col gap-3 text-[14px] text-white/80">
               {PROVIDER_BENEFITS.map((l) => (
                 <li key={l} className="flex items-start gap-2.5">
                   <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-reps-orange" />
@@ -1173,7 +1173,7 @@ function RecognitionStrip() {
                 </span>
                 <div className="min-w-0">
                   <div className="text-[14px] font-semibold text-white">{r.name}</div>
-                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/65">
+                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/70">
                     {r.note}
                   </div>
                 </div>
