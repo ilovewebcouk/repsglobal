@@ -559,15 +559,15 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            Regulated qualifications. Verified providers.{" "}
-            <span className="text-reps-orange">CPD that's logged and audited.</span>
+            Regulated qualifications.{" "}
+            <span className="text-reps-orange">Verified training providers.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            The standard behind every REPs professional — across fitness, nutrition and movement.
+            The education standard behind every REPs professional — across fitness, nutrition, yoga and Pilates.
           </p>
 
           <div
@@ -598,13 +598,14 @@ function Hero() {
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-reps-orange" />
-              Quals, insurance & CPD all evidenced
+              Awarding body named on every profile
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-4 w-4 text-reps-orange" />
-              Only verified-provider hours count
+              Cross-checked at source
             </li>
           </ul>
+
 
           {/* Editorial cross-check strip — matches /specialisms hero pattern */}
           <div
