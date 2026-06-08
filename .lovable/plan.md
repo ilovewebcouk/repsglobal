@@ -1,12 +1,17 @@
-Remove the sticky in-page section nav from `/cpd`.
+Remove "As featured in" and "Where you'll find our trainers" sections from every page in the app.
 
-## Change
-In `src/routes/cpd.tsx`:
-- Delete the sticky nav JSX block (the `<nav>` with anchor chips like "What CPD is / How REPs runs CPD / Qualifications / …").
-- Remove any related imports/refs only used by it (icon imports, NAV_ITEMS array, scroll-spy state if present) — only if they have no other usage in the file.
-- Leave all section `id="..."` anchors in place — they're still useful for direct deep-links.
-- Do not touch the global site header, hero, or any other section.
+## Scope
 
-## Out of scope
-- No copy or layout changes to the rest of the page.
-- No changes to other routes or shared components.
+1. **"As featured in" (`PressMarquee`)** — remove from:
+   - `src/routes/index.tsx` (homepage)
+   - `src/routes/for-professionals.tsx`
+   - `src/routes/specialisms.tsx`
+   - `src/components/features/FeatureGroupLayout.tsx`
+   - `src/components/features/PillarPage.tsx`
+
+2. **"Where you'll find our trainers" (`VenueMarquee`)** — remove from:
+   - `src/routes/cpd.tsx`
+
+3. **Cleanup** — remove now-unused imports for `PressMarquee` and `VenueMarquee` in each affected file.
+
+No layout, copy, or other section changes. These sections will be brought back post-launch.
