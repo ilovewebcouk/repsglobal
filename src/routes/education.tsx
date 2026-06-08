@@ -707,6 +707,40 @@ function LadderCard({ rung }: { rung: LadderRung }) {
   );
 }
 
+function LadderBlock({
+  eyebrow,
+  title,
+  blurb,
+  rungs,
+  footnote,
+}: {
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  rungs: LadderRung[];
+  footnote?: React.ReactNode;
+}) {
+  return (
+    <div className="mt-16 first:mt-0">
+      <div className="max-w-[820px]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+          {eyebrow}
+        </span>
+        <h3 className="mt-3 font-display text-[24px] font-bold leading-tight text-white lg:text-[30px]">
+          {title}
+        </h3>
+        <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">{blurb}</p>
+      </div>
+      <div className="mt-8 grid gap-5 lg:grid-cols-3">
+        {rungs.map((r) => (
+          <LadderCard key={r.title} rung={r} />
+        ))}
+      </div>
+      {footnote}
+    </div>
+  );
+}
+
 function Qualifications() {
   return (
     <section id="qualifications" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
@@ -720,39 +754,25 @@ function Qualifications() {
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
             The industry runs on acronyms, and most buyers don't know the difference between
-            a Level 2, a Level 3 and a weekend “mastery” certificate. Here are the three real
-            ladders — fitness, nutrition and movement — with the recognised qualifications at
-            every step.
+            a Level 2, a Level 3 and a weekend “mastery” certificate. Here are the real
+            ladders — fitness, nutrition, yoga and Pilates — with the recognised qualifications
+            at every step.
           </p>
         </div>
 
-        <Tabs defaultValue="fitness" className="mt-10">
-          <TabsList className="bg-reps-panel-soft">
-            <TabsTrigger value="fitness" className="gap-2">
-              <Activity className="h-4 w-4" /> Fitness
-            </TabsTrigger>
-            <TabsTrigger value="nutrition" className="gap-2">
-              <Heart className="h-4 w-4" /> Nutrition
-            </TabsTrigger>
-            <TabsTrigger value="movement" className="gap-2">
-              <Sparkles className="h-4 w-4" /> Yoga &amp; Pilates
-            </TabsTrigger>
-          </TabsList>
+        <LadderBlock
+          eyebrow="Fitness"
+          title="The fitness ladder"
+          blurb="Ofqual-regulated RQF qualifications. Level 2 to lead group circuits, Level 3 to coach 1:1, Level 4 for clinical or performance specialisms."
+          rungs={FITNESS_LADDER}
+        />
 
-          <TabsContent value="fitness" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {FITNESS_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="nutrition" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {NUTRITION_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
+        <LadderBlock
+          eyebrow="Nutrition"
+          title="The nutrition ladder"
+          blurb="The most-mis-sold area in the industry. Three honest tiers — coach, registered nutritionist, registered dietitian — and only one of them can prescribe diets for clinical conditions."
+          rungs={NUTRITION_LADDER}
+          footnote={
             <div className="mt-8 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
               <p className="text-[14px] leading-relaxed text-white">
                 <strong className="text-white">Plain English:</strong> if someone selling you a
@@ -760,20 +780,27 @@ function Qualifications() {
                 they're operating outside their lane.
               </p>
             </div>
-          </TabsContent>
+          }
+        />
 
-          <TabsContent value="movement" className="mt-8">
-            <div className="grid gap-5 lg:grid-cols-3">
-              {MOVEMENT_LADDER.map((r) => (
-                <LadderCard key={r.title} rung={r} />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        <LadderBlock
+          eyebrow="Yoga"
+          title="The yoga ladder"
+          blurb="Yoga runs on hours-based teacher training rather than the RQF. The honest standards are Yoga Alliance Professionals (200hr / 500hr) and the British Wheel of Yoga."
+          rungs={MOVEMENT_LADDER.filter((r) => r.level.startsWith("Yoga"))}
+        />
+
+        <LadderBlock
+          eyebrow="Pilates"
+          title="The Pilates ladder"
+          blurb="Regulated mat-Pilates qualifications plus recognised reformer and equipment certifications for studio work."
+          rungs={MOVEMENT_LADDER.filter((r) => r.level === "Pilates")}
+        />
       </div>
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Section: How the standard works (merges 3 sections)                 */
