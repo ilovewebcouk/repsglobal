@@ -189,64 +189,70 @@ const COURSES = [
     title: "Coaching Lower Back Pain",
     provider: "Movement Mechanics",
     points: 16,
-    level: "Level 4",
-    format: "Blended",
-    blurb: "Screening, exercise selection and red flags for low-back presentations.",
+    delivery: "Blended",
+    category: "Rehabilitation",
+    audience: "PTs working 1-1 with desk-bound or post-injury clients",
+    status: "Cohort starts 14 Apr",
     price: "£249",
   },
   {
     title: "Pre & Postnatal Foundations",
     provider: "Holistic Core Restore",
     points: 12,
-    level: "Level 3",
-    format: "Online",
-    blurb: "Programming for pregnant and postpartum clients with confidence.",
+    delivery: "Online",
+    category: "Pre/Postnatal",
+    audience: "Coaches programming for pregnant and postpartum clients",
+    status: "Self-paced · open now",
     price: "£189",
   },
   {
     title: "Strength & Conditioning for Coaches",
     provider: "S&C Education",
     points: 20,
-    level: "Level 4",
-    format: "In-person",
-    blurb: "Force-velocity, periodisation and sport-specific programming.",
+    delivery: "In-person",
+    category: "Strength & Conditioning",
+    audience: "PTs moving into sport-specific S&C work",
+    status: "Cohort starts 06 May",
     price: "£395",
   },
   {
     title: "Behaviour Change in Practice",
     provider: "Coach Catalyst",
     points: 8,
-    level: "Level 3",
-    format: "Online",
-    blurb: "Practical tools for habit formation, motivation and adherence.",
+    delivery: "Online",
+    category: "Coaching skills",
+    audience: "Any coach focused on adherence and habit change",
+    status: "Self-paced · open now",
     price: "£89",
   },
   {
     title: "Older Adults Specialism",
     provider: "Functional Ageing Institute",
     points: 14,
-    level: "Level 4",
-    format: "Blended",
-    blurb: "Train clients 55+ with confidence: balance, bone health, longevity.",
+    delivery: "Blended",
+    category: "Older adults",
+    audience: "PTs and group instructors training clients 55+",
+    status: "Cohort starts 21 Apr",
     price: "£275",
   },
   {
     title: "Online Coaching Operations",
     provider: "REPs Academy",
     points: 6,
-    level: "Level 3",
-    format: "Online",
-    blurb: "Build an online coaching practice that delivers real outcomes.",
+    delivery: "Online",
+    category: "Business growth",
+    audience: "Coaches building or scaling an online practice",
+    status: "Self-paced · open now",
     price: "£59",
   },
 ];
 
 const FILTERS: { label: string; options: string[] }[] = [
-  { label: "Category", options: ["All categories", "Strength", "Pre/Postnatal", "Nutrition", "Mobility"] },
+  { label: "Category", options: ["All categories", "Strength", "Pre/Postnatal", "Older adults", "Rehabilitation", "Coaching skills", "Business growth"] },
   { label: "CPD points", options: ["Any points", "1–5", "6–15", "16+"] },
-  { label: "Level", options: ["Any level", "Level 2", "Level 3", "Level 4"] },
-  { label: "Provider", options: ["All providers", "Verified only"] },
-  { label: "Specialism", options: ["Any specialism", "S&C", "Pre/Postnatal", "Older Adults"] },
+  { label: "Delivery", options: ["Any delivery", "Online", "In-person", "Blended"] },
+  { label: "Audience", options: ["Any audience", "PTs", "Group instructors", "Online coaches", "S&C"] },
+  { label: "Status", options: ["Any status", "Open for enrolment", "Self-paced", "Cohort coming up"] },
 ];
 
 const SPECIALISMS = [
@@ -295,8 +301,8 @@ const FAQS = [
     a: "We're building learning recommendations that surface CPD relevant to your specialisms, goals and profile gaps. The recommendation preview on this page shows the direction.",
   },
   {
-    q: "Are specialist badges verified?",
-    a: "REPs shows specialism areas evidenced by recognised qualifications and CPD. We don't issue badges that aren't backed by a credential — that's the point.",
+    q: "How do specialism areas work?",
+    a: "REPs shows specialism areas evidenced by recognised qualifications and CPD. We don't award badges for things you haven't proven — your specialism areas appear on your profile when the credential behind them is verified.",
   },
   {
     q: "Can I use REPs without completing CPD?",
@@ -316,15 +322,14 @@ function CpdV2Page() {
         <Hero />
         <ProofCards />
         <DevelopmentPassport />
+        <VerifyStrip />
         <RegisterProofBand />
         <LearningPathways />
-        <RecognitionStrip />
         <CpdDiscovery />
         <SpecialistAreas />
         <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
-        <VerifyStrip />
         <FinalCta />
 
         <PublicFooter />
@@ -378,17 +383,16 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            Education, CPD and career growth{" "}
-            <span className="text-reps-orange">for fitness professionals.</span>
+            Education and CPD that strengthens your REPs profile.
           </h1>
 
           <p
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            Build your professional profile, track your development and find
-            recognised education that helps you stay credible, visible and
-            trusted through REPs.
+            Track your development, build recognised specialisms and show
+            clients the qualifications, standards and professional learning
+            behind your work.
           </p>
 
           <div
@@ -411,7 +415,7 @@ function Hero() {
               href="#training-providers"
               className="text-[13.5px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
             >
-              Are you a training provider?
+              Training providers
             </a>
           </div>
 
@@ -677,8 +681,9 @@ function RegisterProofBand() {
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="mb-8">
           <SectionHeader
-            eyebrow="Why members renew"
-            heading="A register clients actually search."
+            eyebrow="Your public profile"
+            heading="Your education strengthens the profile clients see."
+            lede="Every qualification you log, every CPD point you renew and every specialism you evidence shows up as a trust signal on your public REPs profile — the page clients actually land on."
           />
         </div>
         <RegisterProof />
@@ -828,16 +833,19 @@ function CpdDiscovery() {
               className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <Badge
                     variant="outline"
                     className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange"
                   >
                     <ShieldCheck className="mr-1 h-3 w-3" /> Verified provider
                   </Badge>
-                  <span className="text-[12px] font-semibold text-white">
-                    {c.price}
-                  </span>
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-reps-border bg-reps-ink text-[10.5px] font-semibold uppercase tracking-wide text-white/70"
+                  >
+                    {c.category}
+                  </Badge>
                 </div>
                 <CardTitle className="mt-3 font-display text-[17px] font-bold leading-snug text-white">
                   {c.title}
@@ -847,20 +855,34 @@ function CpdDiscovery() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <p className="text-[13px] leading-relaxed text-white/70">
-                  {c.blurb}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="secondary" className="rounded-full bg-reps-orange-soft text-[11px] font-semibold text-reps-orange">
                     {c.points} CPD pts
                   </Badge>
                   <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
-                    {c.level}
-                  </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
-                    {c.format}
+                    {c.delivery}
                   </Badge>
                 </div>
+
+                <dl className="mt-4 flex flex-col gap-2.5 text-[12.5px] leading-relaxed">
+                  <div>
+                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                      Who it's for
+                    </dt>
+                    <dd className="mt-0.5 text-white/80">{c.audience}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-reps-border pt-2.5">
+                    <div>
+                      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                        Status
+                      </dt>
+                      <dd className="mt-0.5 text-white/80">{c.status}</dd>
+                    </div>
+                    <span className="text-[13px] font-semibold text-white">
+                      {c.price}
+                    </span>
+                  </div>
+                </dl>
               </CardContent>
               <CardFooter>
                 <Button
@@ -897,8 +919,8 @@ function SpecialistAreas() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Specialism areas"
-          heading="Build credibility through recognised specialisms."
-          lede="Specialism areas are evidenced through recognised qualifications and CPD — not handed out. When you complete the right credentials, your profile reflects them."
+          heading="Build visibility around your specialist areas."
+          lede="Specialism areas are evidenced through recognised qualifications and CPD — REPs doesn't hand out badges for things you haven't proven. When you complete the right credentials, your profile reflects them."
         />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -940,7 +962,7 @@ function AiRecommendations() {
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
           <SectionHeader
-            eyebrow="AI · Preview"
+            eyebrow="AI · Preview · Phase 1"
             heading="Know what to learn next."
             lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
             className="max-w-none"
