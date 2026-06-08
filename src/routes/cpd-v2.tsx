@@ -316,15 +316,14 @@ function CpdV2Page() {
         <Hero />
         <ProofCards />
         <DevelopmentPassport />
+        <VerifyStrip />
         <RegisterProofBand />
         <LearningPathways />
-        <RecognitionStrip />
         <CpdDiscovery />
         <SpecialistAreas />
         <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
-        <VerifyStrip />
         <FinalCta />
 
         <PublicFooter />
