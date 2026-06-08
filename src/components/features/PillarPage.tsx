@@ -6,6 +6,10 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 import { MockupStage } from "@/components/marketing/MockupStage";
 import { DeviceMockup, type DeviceMockupProps } from "@/components/marketing/DeviceMockup";
+import {
+  CinematicCardStack,
+  type CinematicCardStackProps,
+} from "@/components/marketing/CinematicCardStack";
 import { ActIntro } from "@/components/marketing/ActIntro";
 
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
