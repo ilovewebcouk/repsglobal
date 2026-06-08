@@ -463,7 +463,7 @@ function Hero() {
 function ProofCards() {
   return (
     <section className="border-y border-reps-border bg-reps-ink">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-4 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-5 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
         {PROOF_CARDS.map(({ icon: Icon, title, body }) => (
           <Card
             key={title}
