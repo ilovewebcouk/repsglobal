@@ -320,12 +320,10 @@ function CpdV2Page() {
         <ProofCards />
         <DevelopmentPassport />
         <VerifyStrip />
-        <RegisterProofBand />
         <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
-        <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
         <FinalCta />
