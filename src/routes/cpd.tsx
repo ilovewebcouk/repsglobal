@@ -509,12 +509,13 @@ const RED_FLAGS = [
 ];
 
 const GOOD_SIGNS = [
-  "Regulated qualification on the RQF, awarded by a named Ofqual body.",
-  "REPs endorsement listed openly on the course page.",
+  "Regulated qualification on the RQF, awarded by a named Ofqual body — or, for Pilates and yoga, a recognised teacher-training school with named, qualified tutors.",
+  "REPs verification listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
-  "External assessment, with re-sit rules in writing.",
+  "External assessment, with re-sit rules and tutor-to-learner ratios in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
-  "Listed on REPs as a verified training provider — CPD hours auto-count toward your log.",
+  "Verifiable learner reviews — not just selected testimonials on the provider's own site.",
+  "Listed on the REPs verified training provider register.",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -529,14 +530,6 @@ const FAQS = [
   {
     q: "What is CPD?",
     a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
-  },
-  {
-    q: "How many CPD hours do I need per year on REPs?",
-    a: "Every REPs professional commits to a meaningful annual minimum, logged quarterly in their dashboard and audited at random. Specific hour thresholds per tier are published in each member's onboarding pack and updated as standards evolve.",
-  },
-  {
-    q: "What happens if I miss a CPD quarter?",
-    a: "The verified badge auto-suspends on the public profile until you bring your CPD log current. The public can see that a profile is currently unverified — that's the entire point of the standard. Catch up, log it, badge restored.",
   },
   {
     q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
@@ -637,27 +630,15 @@ function CpdPage() {
 
         <Hero />
 
+        <RepsPosition />
+
         <ProfileScreenshot />
-
-        <WhatCpdIs />
-
-
-
-        <RepsCpdSystem />
 
         <Qualifications />
 
-        
-
-        <VerifiedProviders />
-
         <DodgyCourses />
 
-        
-
-        <RaiseTheStandard />
-
-        <ProviderCtaBand />
+        <VerifiedProviders />
 
         <RegistersBlock />
 
@@ -727,10 +708,9 @@ function Hero() {
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs accredits training providers, qualifications and CPD across three pillars —
-            initial qualifications in fitness and nutrition, ongoing CPD, and teacher training in
-            Pilates and yoga. Every accredited course is checked at the points that matter:
-            awarding body, tutor credentials, assessment integrity and learner protections.
+            REPs sits between students and training providers across fitness, nutrition, Pilates and
+            yoga — independently checking who is genuinely accredited, what their service standard is,
+            and what their learners actually say. The register below is the result.
           </p>
 
           <div
@@ -790,6 +770,98 @@ function Hero() {
 /* ------------------------------------------------------------------ */
 /* Section: Profile screenshot — what CPD looks like on a REPs profile */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Section: RepsPosition — the three-actor model                       */
+/* ------------------------------------------------------------------ */
+
+function RepsPosition() {
+  const actors = [
+    {
+      eyebrow: "Awarding bodies & regulators",
+      icon: ShieldCheck,
+      title: "Set the standard for the qualification.",
+      body:
+        "Ofqual regulates RQF qualifications in fitness and nutrition. The AfN holds the register of nutritionists. The HCPC regulates dietitians. Yoga Alliance Professionals and comparable bodies recognise yoga teacher training. They decide what a qualification has to contain.",
+    },
+    {
+      eyebrow: "Training providers",
+      icon: GraduationCap,
+      title: "Deliver and externally assess.",
+      body:
+        "Providers run the courses, employ the tutors and put learners through external assessment against the awarding body's standard. A provider's job is to deliver that standard consistently — and to look after the people paying for it.",
+    },
+    {
+      eyebrow: "REPs",
+      icon: BadgeCheck,
+      title: "Sits between students and providers.",
+      body:
+        "REPs independently checks that a provider is genuinely regulated, holds them to a published service standard on top of the awarding body's requirements, and surfaces verified reviews from real learners. Students get one place to see who is worth their tuition fees.",
+    },
+  ];
+
+  return (
+    <section
+      id="how-reps-runs-it"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
+    >
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="max-w-[820px]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+            Where REPs sits
+          </span>
+          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+            The standard between students and training providers.
+          </h2>
+          <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
+            Education in fitness, sport and movement involves three different actors with three
+            different jobs. Most students never see how it fits together — which is exactly why poor
+            providers get away with it. Here is the model REPs operates inside.
+          </p>
+        </div>
+
+        <ol className="mt-12 grid gap-5 lg:grid-cols-3">
+          {actors.map((a, i) => {
+            const Icon = a.icon;
+            const isReps = a.eyebrow === "REPs";
+            return (
+              <li
+                key={a.eyebrow}
+                className={
+                  isReps
+                    ? "rounded-[18px] border border-reps-orange-border bg-reps-panel-soft p-7"
+                    : "rounded-[18px] border border-reps-border bg-reps-panel-soft p-7"
+                }
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
+                    {String(i + 1).padStart(2, "0")} · {a.eyebrow}
+                  </span>
+                </div>
+                <h3 className="mt-5 font-display text-[19px] font-bold leading-snug text-white">
+                  {a.title}
+                </h3>
+                <p className="mt-2.5 text-[13.5px] leading-relaxed text-white/75">{a.body}</p>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="mt-10 rounded-[18px] border border-reps-border bg-reps-panel px-5 py-4">
+          <p className="text-[14px] leading-relaxed text-white/85">
+            <span className="font-semibold text-white">A note on Pilates and yoga.</span>{" "}
+            These disciplines sit outside the statutory regulator's remit. For students, that means
+            the only meaningful protection is an independent check of the teacher-training school
+            and its tutors — which is the work REPs does, in the absence of an Ofqual equivalent.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function ProfileScreenshot() {
   const bullets = [
@@ -1083,9 +1155,10 @@ function Qualifications() {
             Every accredited pathway, in plain English.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            REPs accredits qualifications across four pathways: fitness, nutrition, Pilates and
-            yoga. Each pathway has its own recognised awarding bodies and credentials — here is
-            what those letters actually mean, and what each tier is qualified to do.
+            REPs verifies qualifications across four pathways: fitness, nutrition, Pilates and yoga.
+            Fitness and nutrition sit on the regulated RQF; Pilates and yoga are hours-based teacher
+            training with no statutory equivalent — so the standard is the school and the tutors,
+            and that is what REPs checks against.
           </p>
         </div>
 
@@ -1368,22 +1441,21 @@ function VerifiedProviders() {
         <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-              Verified training providers
+              The training provider register
             </span>
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              Accredited training providers, across every pathway.
+              The verified training provider register.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              A REPs-verified training provider has been independently checked at the points that
-              matter — accrediting body recognition, tutor credentials, assessment integrity, and
-              published refund and complaints policies. This covers Ofqual-regulated awarding bodies
-              for fitness and nutrition qualifications, and recognised teacher-training schools for
-              Pilates and yoga.
+              REPs lists training providers that meet a published service standard on top of their
+              awarding-body recognition — tutor credentials, assessment integrity, refund and
+              complaints policies, and verified reviews from real learners. For students it is the
+              shortest path to a course worth the tuition fee.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Hours earned through verified providers auto-count toward a member's REPs CPD log.
-              Verification is open to apply for and the standard is industry-baseline — there is no
-              legitimate reason for a credible provider to refuse it.
+              For providers it is the place informed students search. When buyers can tell the
+              difference between a verified school and a chancer, the verified school fills more
+              courses at a higher price. That is what the register is for.
             </p>
 
           </div>
@@ -1428,15 +1500,15 @@ function DodgyCourses() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a worthless course
+            Good education, bad education
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            How to tell a real qualification from a bad one.
+            What good education looks like — and what doesn't.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The most predatory training providers follow the same playbook — oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a stack of “free” CPDs taped to the side.
-            Here's what to look for, and what good actually looks like.
+            Predatory providers follow the same playbook: oversized claims, hidden tutors,
+            in-house assessment, finance pressure and a stack of "free" CPDs taped to the side.
+            Good providers do the opposite — and publish the receipts.
           </p>
         </div>
 
@@ -1809,7 +1881,7 @@ function JoinRepsCta() {
                   to="/for-professionals"
                   className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
                 >
-                  Apply to be a verified provider
+                  List your training organisation
                 </Link>
               </div>
             </div>
