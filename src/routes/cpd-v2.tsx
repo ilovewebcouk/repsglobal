@@ -318,8 +318,8 @@ function CpdV2Page() {
         <PublicHeader variant="solid" />
         <Hero />
         <ProofCards />
-        <BeforeAfterTeardown />
         <DevelopmentPassport />
+        <BeforeAfterTeardown />
         <LearningPathways />
         <CpdDiscovery />
         <SpecialistAreas />
