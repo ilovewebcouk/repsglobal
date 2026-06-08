@@ -86,7 +86,7 @@ export function SearchResultsMockup() {
             key={r.name}
             className={`flex gap-3 px-4 py-3 ${r.pinned ? "bg-reps-orange-soft/40" : "bg-white"}`}
           >
-            <img src={r.img} alt="" className="h-16 w-16 rounded-[14px] object-cover" />
+            <img src={r.img} alt="" className="h-16 w-16 rounded-[16px] object-cover" />
             <div className="flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-[12px] font-semibold">{r.name}</span>
@@ -248,7 +248,7 @@ export function SeoLandingMockup() {
         {pros.map((p) => (
           <div
             key={p.name}
-            className="overflow-hidden rounded-[14px] border border-reps-stone bg-white"
+            className="overflow-hidden rounded-[16px] border border-reps-stone bg-white"
           >
             <div className="relative h-[78px]">
               <img src={p.img} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -293,7 +293,7 @@ export function ShareKitMockup() {
       </div>
       <div className="mt-3 grid flex-1 grid-cols-2 gap-3">
         {/* Share card preview */}
-        <div className="overflow-hidden rounded-[14px] border border-reps-stone bg-reps-ink text-white">
+        <div className="overflow-hidden rounded-[16px] border border-reps-stone bg-reps-ink text-white">
           <div className="relative h-[150px]">
             <img src={proSophie} alt="" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-reps-ink via-reps-ink/30 to-transparent" />
@@ -316,7 +316,7 @@ export function ShareKitMockup() {
         </div>
         {/* QR + asset list */}
         <div className="flex flex-col gap-3">
-          <div className="flex flex-1 flex-col items-center justify-center rounded-[14px] border border-reps-stone bg-white p-3">
+          <div className="flex flex-1 flex-col items-center justify-center rounded-[16px] border border-reps-stone bg-white p-3">
             <div className="flex h-[88px] w-[88px] items-center justify-center rounded-[10px] border-2 border-reps-orange/30 bg-white">
               <QrCode className="h-16 w-16 text-reps-charcoal" strokeWidth={1.25} />
             </div>
