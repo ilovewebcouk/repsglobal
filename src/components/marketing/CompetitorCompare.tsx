@@ -91,7 +91,7 @@ export function CompetitorCompare() {
                     ].join(" ")}
                   >
                     {i === 0 ? (
-                      <RepsWordmark className="h-[15px] text-reps-orange lg:text-reps-orange" />
+                      <RepsWordmark className="h-[15px] text-white" />
                     ) : c.logo ? (
                       <img
                         src={c.logo}
