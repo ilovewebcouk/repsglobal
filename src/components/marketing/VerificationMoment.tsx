@@ -116,7 +116,7 @@ export function VerificationMoment({ audience, pro }: VerificationMomentProps) {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                to={copy.cta.href as "/verify"}
+                to={copy.cta.href}
                 className="inline-flex items-center gap-2 text-[13.5px] font-semibold text-white/80 underline-offset-4 transition-colors hover:text-white hover:underline"
               >
                 {copy.cta.label}
