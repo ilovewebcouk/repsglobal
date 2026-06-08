@@ -1012,7 +1012,7 @@ function ProfileScreenshot() {
               This is what verified credentials look like to your clients.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every qualification, insurance certificate and CPD entry shows up live on the
+              Every qualification and insurance certificate shows up live on the
               public REPs profile — with the awarding body, the provider and the date it was issued.
               Unverified items sit in a separate column. Clients can see the difference at a glance.
             </p>
