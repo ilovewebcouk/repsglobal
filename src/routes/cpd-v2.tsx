@@ -830,69 +830,81 @@ function CpdDiscovery() {
           {COURSES.map((c) => (
             <Card
               key={c.title}
-              className="flex flex-col rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
+              className="group relative flex flex-col overflow-hidden rounded-[18px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-reps-orange-border bg-reps-orange-soft text-[10.5px] font-semibold uppercase tracking-wide text-reps-orange"
-                  >
-                    <ShieldCheck className="mr-1 h-3 w-3" /> Verified provider
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-reps-border bg-reps-ink text-[10.5px] font-semibold uppercase tracking-wide text-white/70"
-                  >
-                    {c.category}
-                  </Badge>
-                </div>
-                <CardTitle className="mt-3 font-display text-[17px] font-bold leading-snug text-white">
+              {/* Signature accent — top-right orange glow */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute right-0 top-0 h-32 w-32 bg-reps-orange/10 opacity-60 blur-[60px] transition-opacity group-hover:opacity-100"
+              />
+
+              {/* Top chrome */}
+              <div className="relative flex items-center justify-between px-5 pb-2 pt-5">
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-emerald-400/30 bg-emerald-500/15 text-[10px] font-bold uppercase tracking-wider text-emerald-300"
+                >
+                  <Check className="mr-1 h-3 w-3" strokeWidth={3} />
+                  Verified provider
+                </Badge>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  {c.category}
+                </span>
+              </div>
+
+              {/* Editorial body */}
+              <div className="relative flex-1 px-5 py-4">
+                <h3 className="font-display text-[22px] font-bold leading-tight tracking-tight text-white transition-colors group-hover:text-reps-orange">
                   {c.title}
-                </CardTitle>
-                <CardDescription className="text-[12.5px] text-white/55">
+                </h3>
+                <p className="mt-1 text-[13.5px] font-medium tracking-wide text-white/55">
                   {c.provider}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-orange-soft text-[11px] font-semibold text-reps-orange">
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft px-3 py-1.5 text-[12px] font-bold text-reps-orange">
                     {c.points} CPD pts
-                  </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
+                  </span>
+                  <span className="inline-flex items-center rounded-[8px] border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-white/70">
                     {c.delivery}
-                  </Badge>
+                  </span>
                 </div>
 
-                <dl className="mt-4 flex flex-col gap-2.5 text-[12.5px] leading-relaxed">
+                <div className="mt-6">
+                  <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">
+                    Who it's for
+                  </span>
+                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/70">
+                    {c.audience}
+                  </p>
+                </div>
+              </div>
+
+              {/* Sticky meta + CTA */}
+              <div className="relative mt-auto">
+                <div className="flex items-center justify-between border-t border-white/5 bg-white/[0.02] px-5 py-4">
                   <div>
-                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-                      Who it's for
-                    </dt>
-                    <dd className="mt-0.5 text-white/80">{c.audience}</dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-reps-border pt-2.5">
-                    <div>
-                      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-                        Status
-                      </dt>
-                      <dd className="mt-0.5 text-white/80">{c.status}</dd>
-                    </div>
-                    <span className="text-[13px] font-semibold text-white">
-                      {c.price}
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-white/45">
+                      Status
+                    </span>
+                    <span className="text-[13px] font-medium text-white/80">
+                      {c.status}
                     </span>
                   </div>
-                </dl>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  disabled
-                  className="w-full rounded-[10px] border-reps-border bg-reps-ink text-white/80 shadow-none hover:bg-reps-panel-soft"
-                >
-                  View course
-                </Button>
-              </CardFooter>
+                  <span className="text-[18px] font-bold tracking-tight text-white">
+                    {c.price}
+                  </span>
+                </div>
+                <div className="p-5 pt-3">
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full cursor-not-allowed rounded-[10px] border border-white/10 bg-white/5 py-3 text-[13px] font-bold text-white/80 shadow-none transition-all"
+                  >
+                    View course
+                  </button>
+                </div>
+              </div>
             </Card>
           ))}
         </div>
