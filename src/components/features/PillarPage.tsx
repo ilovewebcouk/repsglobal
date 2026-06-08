@@ -6,6 +6,10 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 import { MockupStage } from "@/components/marketing/MockupStage";
 import { DeviceMockup, type DeviceMockupProps } from "@/components/marketing/DeviceMockup";
+import {
+  CinematicCardStack,
+  type CinematicCardStackProps,
+} from "@/components/marketing/CinematicCardStack";
 import { ActIntro } from "@/components/marketing/ActIntro";
 
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -28,13 +32,21 @@ const GROUP_ROUTES = {
   growth: "/features/growth",
 } as const;
 
+/** Marker variant for the shared cinematic-photo + floating-cards layout. */
+export type CinematicMockup = { kind: "cinematic" } & CinematicCardStackProps;
+
 export type PillarFeature = {
   tag: string;
   title: string;
   body: string;
   bullets: string[];
-  /** Either a DeviceMockup config (preferred — renders a real REPs route inside a laptop/phone frame) or a custom React node. */
-  mockup: DeviceMockupProps | React.ReactNode;
+  /**
+   * Three options, in order of preference:
+   * - CinematicMockup `{ kind: 'cinematic', image, cards }` — shared photo + floating cards
+   * - DeviceMockupProps — real REPs route inside a laptop/phone frame
+   * - React node — escape hatch for bespoke mockups
+   */
+  mockup: CinematicMockup | DeviceMockupProps | React.ReactNode;
   learnMoreSlug?: string;
 };
 
@@ -262,6 +274,12 @@ export function PillarPage({
   );
 }
 
+function isCinematicMockup(m: PillarFeature["mockup"]): m is CinematicMockup {
+  if (typeof m !== "object" || m === null) return false;
+  const obj = m as unknown as Record<string, unknown>;
+  return obj.kind === "cinematic" && "image" in obj && "cards" in obj;
+}
+
 function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProps {
   if (typeof m !== "object" || m === null) return false;
   const obj = m as unknown as Record<string, unknown>;
@@ -269,7 +287,8 @@ function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProp
 }
 
 function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reverse: boolean }) {
-  const isDevice = isDeviceMockupConfig(feature.mockup);
+  const cinematic = isCinematicMockup(feature.mockup);
+  const isDevice = !cinematic && isDeviceMockupConfig(feature.mockup);
   return (
     <div
       className={`grid items-center gap-10 lg:gap-16 ${
@@ -305,7 +324,9 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
         )}
       </div>
       <div className={reverse ? "lg:order-1" : ""}>
-        {isDevice ? (
+        {cinematic ? (
+          <CinematicCardStack {...(feature.mockup as CinematicMockup)} />
+        ) : isDevice ? (
           <MockupStage variant={(feature.mockup as DeviceMockupProps).device}>
             <DeviceMockup {...(feature.mockup as DeviceMockupProps)} />
           </MockupStage>

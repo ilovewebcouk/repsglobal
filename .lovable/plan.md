@@ -1,53 +1,66 @@
-## Honest answer on "10/10"
+## Goal
 
-Not yet. Two real problems on `/features/visibility`:
+One shared 50/50 component every pillar page can drop in: cinematic hero photo on one side, real REPs UI floating over it as small dashboard cards. Reusable, configurable, and consistent — so all six pillar pages read as the same site.
 
-1. **Inconsistent with `/for-professionals`.** That page uses the `ProductBlock` 50/50 with a small-caps orange eyebrow (`Pillar 1 · Visibility`) and a real laptop iframe of an actual REPs route (`/pro/james-carter`, `/c/james-wilson`, `/dashboard/leads`). The visibility page uses a different component (`PillarPage` + bespoke `VisibilityMockups.tsx`), a different eyebrow style (orange pill chip with words like "Verified profile"), and hand-drawn fake UI. They don't look like the same site.
-2. **The mockups aren't cinematic and aren't the real product.** You're right — the strongest pattern is a cinematic photo with real dashboard cards/screens composed over it (what `/for-professionals` already does with `HeroDeviceCluster` and `DeviceMockup` iframes of live routes). The current `SearchResultsMockup`, `ReviewsMockup`, `SeoLandingMockup`, `ShareKitMockup` are pure Tailwind illustrations — they aren't pulled from `/dashboard` or `/find`, so they drift from the real product and have to be maintained separately.
+## Component
 
-## What to build
+**New:** `src/components/marketing/CinematicCardStack.tsx`
 
-Rebuild `/features/visibility` so every 50/50 block is the **same `ProductBlock` component** used on `/for-professionals`, pointed at the real REPs routes. No new components, no bespoke mockups, eyebrows aligned.
+### Props
 
-### Eyebrow scheme (matches `/for-professionals`)
+```ts
+type FloatingCard =
+  | { kind: "iframe"; src: string; title: string; scale?: number }   // live REPs route, scaled
+  | { kind: "stat"; label: string; value: string; delta?: string }   // KPI tile
+  | { kind: "node"; node: React.ReactNode };                         // escape hatch
 
-Drop the orange chip. Use the small-caps orange eyebrow from `ProductBlock`:
+type CinematicCardStackProps = {
+  image: { src: string; alt: string };
+  /** Anchor 2–3 floating cards. `position` chooses a preset slot so layouts stay consistent across pages. */
+  cards: Array<FloatingCard & { position: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center-right" }>;
+  /** Optional orange glow strength; defaults to 0.22. */
+  glow?: number;
+  /** Flip the photo to the right side. */
+  reverse?: boolean;
+  className?: string;
+};
+```
 
-- `Capability 1 · Verified profile`
-- `Capability 2 · Directory placement`
-- `Capability 3 · Reviews on the record`
-- `Capability 4 · City & specialism pages`
-- `Capability 5 · Share kit & social proof`
+### Visual recipe (locked)
 
-Same typographic treatment as `Pillar 1 · Visibility` on the for-pros page — instantly reads as the same site.
+- Outer wrapper: `relative w-full aspect-[4/5] lg:aspect-[5/4]` with `rounded-[22px] overflow-hidden`.
+- Background `<img>` covers the wrapper (`object-cover`), `loading="lazy"`, with `bg-reps-ink/40` legibility wash and a brand-orange radial glow (matches `HeroDeviceCluster`).
+- Floating cards are absolutely positioned to preset slots (no free coordinates — keeps every page consistent). Each card uses:
+  - `rounded-[16px] border border-reps-border bg-reps-panel/85 backdrop-blur shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]`
+  - For `iframe` kind: wraps `ScaledFrame` from `DeviceMockup.tsx` at a default `scale: 0.45` inside a `192–260px` wide chip.
+  - For `stat` kind: `12px` uppercase orange label + `28px` white value + optional emerald `delta` (status-only emerald rule).
+- Fade-in: same animation as for-pros hero cards (`animate-fade-in`, 560ms, 80/160/240ms staggered delays).
 
-### 50/50 blocks — reuse `ProductBlock` with real routes inside `DeviceMockup`
+### Layout integration
 
-| # | Capability | Device | Live route in the laptop frame |
-|---|---|---|---|
-| 1 | Verified profile | laptop | `/pro/james-carter` |
-| 2 | Directory placement | laptop | `/find?city=manchester&specialism=personal-trainer` |
-| 3 | Reviews on the record | laptop | `/pro/james-carter#reviews` |
-| 4 | City & specialism pages | laptop | `/in/manchester` |
-| 5 | Share kit & social proof | phone | `/c/james-wilson` (Pro shop-front renders as the share target) |
+**Extend** `PillarPage.tsx` `PillarFeature.mockup` to also accept a new config:
 
-This is exactly the "icons / sections / cards from the actual `/dashboard`" idea — except the laptop shows the **real REPs page** for that capability, so it stays in sync forever and is visually identical to the for-pros blocks.
+```ts
+| { kind: "cinematic"; image: {src;alt}; cards: [...] }
+```
 
-### Files
+When present, `PillarFeatureBlock` renders `<CinematicCardStack {...}/>` instead of `MockupStage + DeviceMockup`. The existing `DeviceMockupProps` and `ReactNode` paths stay — adoption is opt-in per feature block.
 
-- **Rewrite** `src/routes/features.visibility.tsx`
-  - Keep the existing `PillarPage` hero / ActIntro / Comparison / cross-links / CTA shell (those are already the shared chrome).
-  - Replace the `features` array's `mockup: <ReviewsMockup />` style with `mockup: { device: 'laptop', src: '/pro/james-carter', title: '…' }` and let `PillarFeatureBlock` render `DeviceMockup` the same way `ProductBlock` does. Smallest change: extend `PillarFeature` so `mockup` can be a `DeviceMockup` config (preferred) instead of `ReactNode`, and route through `DeviceMockup` inside `PillarPage.tsx`.
-  - Rename `tag` values to the `Capability N · …` scheme.
-- **Update** `src/components/features/PillarPage.tsx` — `PillarFeatureBlock` renders `MockupStage` + `DeviceMockup` when given a config object (matches `ProductBlock`); render the small-caps eyebrow instead of the chip pill.
-- **Delete** `src/components/mockups/VisibilityMockups.tsx` (no longer referenced; bespoke illustrations replaced by real routes).
+No changes to `/for-professionals` in this pass. Adoption happens pillar-by-pillar in future asks; we'll wire one example block on `/features/visibility` (Capability 1) to prove the pattern.
 
-### What I won't do
+## Files
 
-- No new mockup components, no new section components, no new hero variants.
-- No backend/data work — Phase 1 visual only.
-- No change to `/for-professionals` (it's the source of truth for the pattern).
+- **Create** `src/components/marketing/CinematicCardStack.tsx`
+- **Edit** `src/components/features/PillarPage.tsx` — add the `cinematic` branch to `PillarFeature.mockup` + `PillarFeatureBlock`
+- **Edit** `src/routes/features.visibility.tsx` — switch Capability 1 only to the new layout (cinematic trainer photo + floating verified-profile card + floating reviews stat tile), so the pattern is live and reviewable before we propagate
 
-### Future option (separate ask, not in this plan)
+## What I won't do
 
-If you later want the "cinematic photo + floating dashboard cards" composition (à la `HeroDeviceCluster`), we'd build **one** shared `CinematicCardStack` component and adopt it on both `/for-professionals` and every pillar page in the same pass — so it never drifts again. Flag it and I'll spin it up.
+- Won't change `/for-professionals` or any other pillar page in this pass.
+- Won't add new image assets — reuse `hero-visibility-bg.jpg` for the proof block.
+- No backend, no new mockup illustrations — floating cards reuse `ScaledFrame` of real routes plus a tiny stat tile.
+- No new radii (sticks to 16/22), no new colors (orange + emerald-for-status only).
+
+## Memory update (after build)
+
+Save `mem://design/cinematic-card-stack` describing this component as the shared cinematic 50/50 pattern, and add it to the marketing-primitives core rule so future pillar pages must use it instead of hand-rolling a photo + cards composition.
