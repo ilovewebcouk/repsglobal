@@ -6,8 +6,6 @@ import {
   BadgeCheck,
   BookOpen,
   Check,
-  Crosshair,
-  ExternalLink,
   Flag,
   GraduationCap,
   Heart,
@@ -15,15 +13,10 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  
-  TrendingUp,
-  Wand2,
   X,
 } from "lucide-react";
 
 import ctaTrainers from "@/assets/cta-band.jpg";
-import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
-import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
   Accordion,
@@ -41,7 +34,6 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 
-
 import heroCpdAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
 
@@ -51,9 +43,9 @@ const heroCpd = heroCpdAsset.url;
 
 const CANONICAL = "https://staging.repsuk.org/education";
 const META_TITLE =
-  "Fitness education that actually counts — qualifications, providers, CPD | REPs";
+  "Fitness qualifications, decoded — find a verified training provider | REPs";
 const META_DESC =
-  "Regulated qualifications, REPs-verified training providers, ongoing CPD — and how to spot a worthless course before you spend a penny.";
+  "Regulated qualifications, REPs-verified training providers, and CPD that's logged — explained in plain English so you spend on the right course, or hire the right professional.";
 
 export const Route = createFileRoute("/education")({
   head: () => ({
@@ -93,9 +85,6 @@ function FAQS_FOR_JSONLD() {
     acceptedAnswer: { "@type": "Answer", text: f.a },
   }));
 }
-
-
-
 
 /* ------------------------------------------------------------------ */
 /* Qualification ladder data                                           */
@@ -138,7 +127,8 @@ const FITNESS_LADDER: LadderRung[] = [
       {
         acronym: "REPs",
         full: "Register of Exercise Professionals",
-        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+        meaning:
+          "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
@@ -165,7 +155,8 @@ const FITNESS_LADDER: LadderRung[] = [
       {
         acronym: "REPs",
         full: "Register of Exercise Professionals",
-        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+        meaning:
+          "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
@@ -205,7 +196,8 @@ const FITNESS_LADDER: LadderRung[] = [
       {
         acronym: "REPs",
         full: "Register of Exercise Professionals",
-        meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
+        meaning:
+          "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
     ],
   },
@@ -234,7 +226,7 @@ const NUTRITION_LADDER: NutritionRow[] = [
   },
   {
     title: "Registered Nutritionist",
-    letters: "ANutr / RNutr (AfN)",
+    letters: "ANutr / RNutr — Association for Nutrition (AfN)",
     body:
       "Degree-led, register-checked nutritionists on the UK Voluntary Register of Nutritionists. The meaningful baseline if you want a 'nutritionist' worth the name.",
     protected: false,
@@ -246,9 +238,9 @@ const NUTRITION_LADDER: NutritionRow[] = [
   },
   {
     title: "Registered Dietitian",
-    letters: "RD (HCPC)",
+    letters: "RD — Health & Care Professions Council (HCPC)",
     body:
-      "The only legally protected title. Regulated by the Health & Care Professions Council. The only role that can assess, diagnose and treat clinical conditions with diet.",
+      "The only legally protected title. Regulated by the HCPC. The only role that can assess, diagnose and treat clinical conditions with diet.",
     protected: true,
     scope: [
       "Therapeutic diets for clinical conditions (IBS, kidney disease, eating disorders)",
@@ -304,86 +296,21 @@ const PROVIDER_CHECKS = [
   {
     icon: ShieldCheck,
     title: "Assessment integrity",
-    body: "Real external assessment — not 47 multiple-choice questions you can re-take until you pass.",
+    body: "Real external assessment, with re-sit rules published in writing.",
   },
   {
     icon: BookOpen,
     title: "Refunds & complaints",
-    body: "Published refund policy and a real complaints route — not a help-desk that goes silent once payment clears.",
+    body: "Published refund policy and a real complaints route — not a contact form that goes silent once payment clears.",
   },
 ];
-
-const REGISTERS = [
-  {
-    short: "Ofqual",
-    full: "Office of Qualifications & Examinations Regulation",
-    covers: "Regulated vocational qualifications (RQF — L2, L3, L4)",
-    meaning: "The independent regulator. If a fitness qualification isn't on the RQF, it doesn't count as a regulated qualification.",
-    href: "https://www.gov.uk/government/organisations/ofqual",
-  },
-  {
-    short: "REPs",
-    full: "Register of Exercise Professionals",
-    covers: "Endorses training providers, qualifications and CPD",
-    meaning: "Sets professional standards across the sport and physical-activity sector. REPs-endorsed CPD is the safe default.",
-    href: "/",
-  },
-  {
-    short: "Active IQ",
-    full: "Active IQ (Awarding Organisation)",
-    covers: "Awards regulated L2, L3 and L4 fitness qualifications",
-    meaning: "One of the largest Ofqual-regulated awarding bodies for active-leisure qualifications.",
-    href: "https://www.activeiq.co.uk/",
-  },
-  {
-    short: "YMCA Awards",
-    full: "YMCA Awards (Awarding Organisation)",
-    covers: "Regulated fitness and active-leisure qualifications",
-    meaning: "Long-established awarding body for personal training and instructor qualifications.",
-    href: "https://www.ymcaawards.co.uk/",
-  },
-  {
-    short: "Focus Awards",
-    full: "Focus Awards (Awarding Organisation)",
-    covers: "Regulated qualifications across fitness, education and care",
-    meaning: "Ofqual-recognised awarding organisation used by many fitness training providers.",
-    href: "https://focusawards.org.uk/",
-  },
-  {
-    short: "AfN",
-    full: "Association for Nutrition",
-    covers: "Nutritionists (ANutr, RNutr) and nutrition courses",
-    meaning: "Owner of the UK Voluntary Register of Nutritionists — the meaningful baseline for 'nutritionist'.",
-    href: "https://www.associationfornutrition.org/",
-  },
-  {
-    short: "HCPC",
-    full: "Health & Care Professions Council",
-    covers: "Registered Dietitians (RD) — legally protected title",
-    meaning: "Statutory regulator. The only register where 'dietitian' is legally protected.",
-    href: "https://www.hcpc-uk.org/",
-  },
-  {
-    short: "YAP",
-    full: "Yoga Alliance Professionals",
-    covers: "Yoga teachers, schools and training providers",
-    meaning: "Verifies teacher-training hours (200hr / 500hr) and standards across studios.",
-    href: "https://www.yogaalliance.com/",
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/* Dodgy-course red flags                                              */
-/* ------------------------------------------------------------------ */
 
 const RED_FLAGS = [
-  "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
   "Awarding body not Ofqual-regulated or REPs-endorsed (or no awarding body listed at all).",
-  "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
-  "High-pressure finance sales, “today-only” discounts and a sales rep on commission.",
+  "“Level 3 PT plus 40+ free CPDs” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
+  "Everything is in-house multiple-choice, with no real external assessment.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
-  "No refund policy. No complaints route. No external ombudsman.",
-  "Marketing leads with income claims instead of what you'll actually learn.",
+  "High-pressure finance sales, “today-only” discounts and an income-claim-led pitch.",
 ];
 
 const GOOD_SIGNS = [
@@ -391,12 +318,11 @@ const GOOD_SIGNS = [
   "REPs endorsement listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules in writing.",
-  "Published refund policy, complaints procedure and learner-outcome data.",
-  "Listed on REPs as a verified training provider — CPD hours auto-count toward your log.",
+  "Published refund policy and complaints procedure.",
 ];
 
 /* ------------------------------------------------------------------ */
-/* FAQ                                                                 */
+/* FAQ — trimmed to 6                                                  */
 /* ------------------------------------------------------------------ */
 
 const FAQS = [
@@ -406,46 +332,29 @@ const FAQS = [
   },
   {
     q: "What's a regulated qualification, and why does it matter?",
-    a: "A regulated qualification is one that sits on the official framework (in the UK, the Regulated Qualifications Framework, governed by Ofqual) and is awarded by an approved awarding body — Active IQ, YMCA Awards, Focus Awards and similar. Regulated means the course content, assessment and tutor standards are independently checked. An unregulated 'diploma' has no such check — anyone can print one. Insurers, employers and registers like REPs only recognise regulated qualifications.",
+    a: "A regulated qualification sits on the official framework (in the UK, the Regulated Qualifications Framework, governed by Ofqual) and is awarded by an approved awarding body — Active IQ, YMCA Awards, Focus Awards and similar. Regulated means the course content, assessment and tutor standards are independently checked. An unregulated 'diploma' has no such check. Insurers, employers and registers like REPs only recognise regulated qualifications.",
   },
   {
     q: "How do I know a training provider is legitimate before I pay them?",
-    a: "Four checks: (1) the qualification they offer is Ofqual-regulated or endorsed by a recognised body; (2) tutors are named with their own qualifications visible; (3) there is real external assessment, not in-house multiple-choice you can re-take until you pass; (4) refund and complaints policies are published. REPs-verified providers have already passed those checks — see the red-flag list on this page for what to avoid otherwise.",
-  },
-  {
-    q: "What is CPD?",
-    a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
-  },
-  {
-    q: "How many CPD hours do I need per year on REPs?",
-    a: "Every REPs professional commits to a meaningful annual minimum, logged quarterly in their dashboard and audited at random. Specific hour thresholds per tier are published in each member's onboarding pack and updated as standards evolve.",
-  },
-  {
-    q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
-    a: "If you want the qualification to mean anything on REPs — yes. Hours through a verified provider auto-count toward your CPD log once you're a member. Hours through unverified providers don't. More importantly, REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. If the provider isn't on REPs, ask them why.",
-  },
-  {
-    q: "Why are some big-name training providers not on REPs?",
-    a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as information.",
+    a: "Four checks: (1) the qualification they offer is Ofqual-regulated or endorsed by a recognised body; (2) tutors are named with their own qualifications visible; (3) there is real external assessment, with re-sit rules in writing; (4) refund and complaints policies are published. REPs-verified providers have already passed those checks.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
     a: "Anyone can call themselves a 'nutritionist' — the title isn't legally protected. On REPs we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). 'Dietitian' is legally protected and regulated by the HCPC — it's the only role that can assess, diagnose and treat clinical conditions with diet.",
   },
   {
-    q: "Can CPD upgrade me to a new specialism?",
-    a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPs profile once the awarding body confirms it.",
+    q: "What is CPD?",
+    a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the qualification on the wall stays current with the science, not frozen at the date it was passed. REPs members log CPD quarterly, and hours through a verified provider auto-count toward the log.",
   },
   {
-    q: "How do I report a predatory provider or coach?",
-    a: "Use the reporting route on this page. Every report is reviewed, evidence cross-checked, and where required, escalated to the relevant awarding body or register. Bad actors lose verification and lose listings.",
+    q: "Why are some big-name training providers not on REPs?",
+    a: "Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. If a provider isn't here, treat that as information and ask them why.",
   },
 ];
 
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
-
 
 function EducationPage() {
   return (
@@ -454,29 +363,12 @@ function EducationPage() {
         <PublicHeader variant="solid" />
 
         <Hero />
-
-        <ProfileScreenshot />
-
         <WhatEducationIs />
-
         <Qualifications />
-
+        <CpdInOneSection />
         <VerifiedProviders />
-
-        <RepsCpdSystem />
-
-        <DodgyCourses />
-
-        <RaiseTheStandard />
-
         <ProviderCtaBand />
-
-        <RegistersBlock />
-
-        <VerifyStrip />
-
         <FaqBlock />
-
         <JoinRepsCta />
 
         <PublicFooter />
@@ -511,7 +403,6 @@ function Hero() {
         aria-hidden
         className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
       />
-
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
@@ -530,16 +421,16 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
-            The honest providers are already here.{" "}
-            <span className="text-reps-orange">The rest are running a print shop for certificates.</span>
+            Know what the letters mean.{" "}
+            <span className="text-reps-orange">Then pick a provider that earns them.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[580px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs is the global standard for verified education in fitness, nutrition and movement —
-            regulated qualifications, vetted training providers, and CPD that's logged and audited.
+            Regulated qualifications, REPs-verified training providers, and CPD that's logged —
+            explained in plain English so you spend on the right course, or hire the right professional.
           </p>
 
           <div
@@ -553,30 +444,12 @@ function Hero() {
               Browse verified providers <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#how-the-standard-works"
+              href="#qualifications"
               className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
             >
-              How the standard works
+              Decode the qualifications
             </a>
           </div>
-
-          <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
-          >
-            <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" />
-              Identity, qualification & insurance verified
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-reps-orange" />
-              Quals, insurance & CPD all evidenced
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-reps-orange" />
-              Only verified-provider hours count
-            </li>
-          </ul>
 
           <div
             className="mt-10 w-full animate-fade-in border-t border-white/10 pt-5"
@@ -601,74 +474,6 @@ function Hero() {
   );
 }
 
-
-/* ------------------------------------------------------------------ */
-/* Section: Profile screenshot — what CPD looks like on a REPs profile */
-/* ------------------------------------------------------------------ */
-
-function ProfileScreenshot() {
-  const bullets = [
-    "Qualifications, insurance & CPD — all evidenced",
-    "Verified-provider hours auto-count toward CPD",
-    "Specialisms appear once the awarding body confirms",
-  ];
-  return (
-    <section className="relative overflow-hidden border-b border-reps-border bg-reps-ink">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_75%_45%,rgba(255,122,0,0.10),transparent_70%)]"
-      />
-      <div className="relative mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-14">
-          <div className="max-w-[520px]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-              On the profile
-            </span>
-            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              This is what verified credentials look like to your clients.
-            </h2>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Every qualification, insurance certificate and CPD entry shows up live on the
-              public REPs profile — with the awarding body, the provider and the date it was issued.
-              Unverified items sit in a separate column. Clients can see the difference at a glance.
-            </p>
-            <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
-              {bullets.map((b) => (
-                <li key={b} className="flex gap-2">
-                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="relative">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -inset-6 -z-10 rounded-[28px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
-            />
-            <BrowserFrame url="repsglobal.com/c/james-wilson">
-              <img
-                src={cpdProfileAsset.url}
-                alt="Screenshot of a REPs professional profile showing four verified credentials: Level 3 Personal Trainer, Level 3 Diploma in Personal Training, Professional Indemnity Insurance and First Aid & CPR."
-                width={1400}
-                height={416}
-                loading="lazy"
-                decoding="async"
-                className="block h-auto w-full"
-              />
-            </BrowserFrame>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-
-
-
 /* ------------------------------------------------------------------ */
 /* Section: What real education looks like                             */
 /* ------------------------------------------------------------------ */
@@ -683,9 +488,9 @@ function WhatEducationIs() {
   ];
   const doesnt = [
     "Unregulated 'diplomas' with no named awarding body",
-    "Vendor product demos dressed up as “education”",
+    "Vendor product demos dressed up as education",
     "Sales webinars from supplement or app companies",
-    "Free in-house “mini-CPDs” bundled with a sales course",
+    "Free in-house 'mini-CPDs' bundled with a sales course",
     "Anything self-marked with no external check",
   ];
   return (
@@ -701,7 +506,7 @@ function WhatEducationIs() {
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
             Three layers sit behind every REPs professional: a regulated qualification from a recognised
             awarding body, a training provider that's been checked end-to-end, and ongoing CPD that's
-            logged and audited. Miss any one and the standard breaks.
+            logged. Miss any one and the standard breaks.
           </p>
         </div>
 
@@ -711,7 +516,7 @@ function WhatEducationIs() {
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <Check className="h-5 w-5" />
               </span>
-              <h3 className="font-display text-[18px] font-bold text-white">What counts as real education</h3>
+              <h3 className="font-display text-[18px] font-bold text-white">What counts</h3>
             </div>
             <ul className="mt-5 flex flex-col gap-2.5 text-[14px] leading-relaxed text-white/80">
               {counts.map((c) => (
@@ -746,85 +551,12 @@ function WhatEducationIs() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: How REPs runs CPD                                          */
-/* ------------------------------------------------------------------ */
-
-function RepsCpdSystem() {
-  const pillars = [
-    {
-      icon: RefreshCw,
-      title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year, with evidence attached to every entry.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Verified-provider only",
-      body: "Hours through REPs-verified training providers auto-count. Hours from unverified providers don't — they go in a separate column the public can see.",
-    },
-    {
-      icon: Award,
-      title: "Specialism stacking",
-      body: "Stack CPD toward a recognised L4 credential and the new specialism appears on your public profile once the awarding body confirms it.",
-    },
-    {
-      icon: Crosshair,
-      title: "Audited annually",
-      body: "A random sample of members is fully audited each year. Faked logs lose verification. The badge means current — not historic.",
-    },
-  ];
-
-  return (
-    <section
-      id="how-the-standard-works"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
-    >
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How REPs runs CPD
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Four mechanics. No theatre.
-          </h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            Qualifications get you in the door. CPD keeps them current. Here's the system every
-            REPs professional signs up to.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {pillars.map((p) => {
-            const Icon = p.icon;
-            return (
-              <article key={p.title} className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-5 font-display text-[17px] font-bold text-white">{p.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{p.body}</p>
-              </article>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 flex flex-wrap items-center gap-3 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
-          <BadgeCheck className="h-5 w-5 text-reps-orange" />
-          <span className="text-[14px] font-semibold text-white">
-            Miss a quarter, the badge auto-suspends on your public profile until you bring CPD current.
-          </span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* Section: Qualification ladder                                       */
 /* ------------------------------------------------------------------ */
 
 function Qualifications() {
   return (
-    <section id="qualifications" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
+    <section id="qualifications" className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
@@ -834,8 +566,8 @@ function Qualifications() {
             Know what the letters mean — before you spend a penny.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The fitness industry runs on acronyms, and most buyers don't know the difference between
-            a Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
+            The industry runs on acronyms, and most buyers don't know the difference between a
+            Level 2, a Level 3 and a weekend “mastery” certificate. Here's the real ladder —
             for fitness, nutrition and movement disciplines.
           </p>
         </div>
@@ -919,8 +651,8 @@ function Qualifications() {
             <h3 className="font-display text-[20px] font-bold text-white">Nutrition pathway</h3>
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
-            This is where buyers get burned hardest. Anyone can call themselves a “nutritionist.”
-            Only one role is legally protected — and only that role can prescribe diets for disease.
+            Anyone can call themselves a “nutritionist.” Only one role is legally protected —
+            and only that role can prescribe diets for disease.
           </p>
 
           <div className="mt-6 grid gap-5 lg:grid-cols-3">
@@ -1001,18 +733,75 @@ function Qualifications() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: Verified training providers                                */
+/* Section: CPD in one block                                           */
 /* ------------------------------------------------------------------ */
 
+function CpdInOneSection() {
+  const mechanics = [
+    {
+      icon: RefreshCw,
+      title: "Logged quarterly",
+      body: "Members log every CPD activity in their REPs dashboard four times a year, with evidence attached to every entry.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Verified-provider hours auto-count",
+      body: "Hours through a REPs-verified training provider flow straight into the log. Unverified hours sit in a separate column the public can see.",
+    },
+    {
+      icon: Award,
+      title: "Stack toward Level 4",
+      body: "CPD can stack toward a recognised L4 credential — and the new specialism appears on the public profile once the awarding body confirms it.",
+    },
+  ];
+
+  return (
+    <section id="cpd" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="max-w-[760px]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+            Staying current
+          </span>
+          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+            Qualifications get you in the door. CPD keeps them current.
+          </h2>
+          <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+            Continuing Professional Development is the ongoing, evidenced learning a professional commits to
+            after their initial qualification. On REPs, it's logged in the dashboard and visible on the public profile.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {mechanics.map((m) => {
+            const Icon = m.icon;
+            return (
+              <article key={m.title} className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-5 font-display text-[17px] font-bold text-white">{m.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{m.body}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: Verified training providers (with red flags / good signs)  */
+/* ------------------------------------------------------------------ */
 
 function VerifiedProviders() {
   return (
     <section
       id="verified-providers"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
               Verified training providers
@@ -1023,17 +812,57 @@ function VerifiedProviders() {
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               A REPs-verified training provider has been checked at the points that actually matter —
               accrediting body recognition, tutor qualifications, assessment integrity, refund and
-              complaints policy. Every CPD hour you earn through them auto-counts toward your REPs
-              log. Hours from unverified providers don't. Full stop.
+              complaints policy. CPD hours earned through them auto-count toward your REPs log.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              The standard is industry-baseline. Verification is open to apply for. The only reason
-              a provider refuses or fails verification is the reason you should refuse them.
+              The standard is industry-baseline. Verification is open to apply for. If a provider isn't
+              listed, treat that as information.
             </p>
-
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <article className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/5 text-white/70">
+                  <Flag className="h-4 w-4" />
+                </span>
+                <h3 className="font-display text-[15px] font-bold text-white">Red flags</h3>
+              </div>
+              <ul className="mt-4 flex flex-col gap-2.5 text-[13px] leading-relaxed text-white/75">
+                {RED_FLAGS.map((r) => (
+                  <li key={r} className="flex gap-2">
+                    <X className="mt-[3px] h-3.5 w-3.5 shrink-0 text-white/40" />
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="rounded-[18px] border border-reps-orange-border bg-reps-panel p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <BadgeCheck className="h-4 w-4" />
+                </span>
+                <h3 className="font-display text-[15px] font-bold text-white">What good looks like</h3>
+              </div>
+              <ul className="mt-4 flex flex-col gap-2.5 text-[13px] leading-relaxed text-white/80">
+                {GOOD_SIGNS.map((g) => (
+                  <li key={g} className="flex gap-2">
+                    <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                    <span>{g}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        {/* Provider checks — 4-up row underneath */}
+        <div className="mt-14">
+          <h3 className="font-display text-[18px] font-bold text-white">
+            The four checks every verified provider passes
+          </h3>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PROVIDER_CHECKS.map((c) => {
               const Icon = c.icon;
               return (
@@ -1041,154 +870,15 @@ function VerifiedProviders() {
                   key={c.title}
                   className="rounded-[18px] border border-reps-border bg-reps-panel p-5"
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <h3 className="font-display text-[15px] font-bold text-white">{c.title}</h3>
-                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/70">{c.body}</p>
-                    </div>
-                  </div>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h4 className="mt-4 font-display text-[15px] font-bold text-white">{c.title}</h4>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-white/70">{c.body}</p>
                 </article>
               );
             })}
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Section: Dodgy courses                                              */
-/* ------------------------------------------------------------------ */
-
-function DodgyCourses() {
-  return (
-    <section
-      id="worthless-courses"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
-    >
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[820px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            Spot a worthless course
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            How to tell a real qualification from a bad one.
-          </h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            The most predatory training providers follow the same playbook — oversized claims, hidden tutors,
-            in-house assessment, finance pressure and a stack of “free” CPDs taped to the side.
-            Here's what to look for, and what good actually looks like.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/5 text-white/70">
-                <Flag className="h-5 w-5" />
-              </span>
-              <h3 className="font-display text-[18px] font-bold text-white">Red flags</h3>
-            </div>
-            <ul className="mt-5 flex flex-col gap-3 text-[14px] leading-relaxed text-white/80">
-              {RED_FLAGS.map((r) => (
-                <li key={r} className="flex gap-2.5">
-                  <X className="mt-[3px] h-4 w-4 shrink-0 text-white/45" />
-                  <span>{r}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-[18px] border border-reps-orange-border bg-reps-panel-soft p-7">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <BadgeCheck className="h-5 w-5" />
-              </span>
-              <h3 className="font-display text-[18px] font-bold text-white">What good looks like</h3>
-            </div>
-            <ul className="mt-5 flex flex-col gap-3 text-[14px] leading-relaxed text-white/80">
-              {GOOD_SIGNS.map((g) => (
-                <li key={g} className="flex gap-2.5">
-                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                  <span>{g}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Section: Raise the standard                                         */
-/* ------------------------------------------------------------------ */
-
-function RaiseTheStandard() {
-  const beats = [
-    {
-      n: "01",
-      title: "Cut the noise.",
-      body: "Unqualified 'online coaches' selling generic PDFs as programmes. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
-    },
-    {
-      n: "02",
-      title: "Make the profession look like a profession.",
-      body: "Identity check, qualification check, insurance check, CPD logged and audited. The same baseline a physio or dietitian meets — applied to fitness, properly and publicly.",
-    },
-    {
-      n: "03",
-      title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and an unverified one, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
-    },
-  ];
-
-  return (
-    <section
-      id="raise-the-standard"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink"
-    >
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[820px]">
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-            <TrendingUp className="h-3.5 w-3.5" /> Raise the standard
-          </span>
-          <h2 className="mt-4 font-display text-[32px] font-bold leading-[1.05] text-white lg:text-[44px]">
-            REPs exists for one reason: to raise the floor of this industry.
-          </h2>
-          <p className="mt-5 text-[15.5px] leading-relaxed text-white/75">
-            Standards have stayed low because nobody checks. REPs checks. That's the entire
-            product. Three things change when the standard goes up.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
-          {beats.map((b) => (
-            <article
-              key={b.n}
-              className="rounded-[18px] border border-reps-border bg-reps-panel p-7"
-            >
-              <span className="font-display text-[40px] font-bold leading-none text-reps-orange/70">
-                {b.n}
-              </span>
-              <h3 className="mt-4 font-display text-[20px] font-bold leading-snug text-white">
-                {b.title}
-              </h3>
-              <p className="mt-3 text-[14px] leading-relaxed text-white/75">{b.body}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-orange-soft px-6 py-6 lg:px-8">
-          <p className="font-display text-[20px] font-bold leading-tight text-white lg:text-[24px]">
-            Standards are low because nobody checks. REPs checks.
-            <span className="text-reps-orange"> Verified professionals should price accordingly.</span>
-          </p>
         </div>
       </div>
     </section>
@@ -1236,141 +926,18 @@ function ProviderCtaBand() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Registers block                                                     */
-/* ------------------------------------------------------------------ */
-
-function RegistersBlock() {
-  return (
-    <section className="border-b border-reps-border bg-reps-midnight">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            The regulators, awarding bodies & registers
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Every acronym, in plain English.
-          </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-white/70">
-            The industry runs on letters after people's names. Here's what each one actually means —
-            and which ones we cross-check before a profile or provider goes live on REPs.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {REGISTERS.map((r) => (
-            <article
-              key={r.short}
-              className="flex flex-col rounded-[18px] border border-reps-border bg-reps-panel-soft p-6"
-            >
-              <div className="flex items-center gap-2">
-                <span className="rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[12px] font-semibold text-reps-orange">
-                  {r.short}
-                </span>
-              </div>
-              <h3 className="mt-3 font-display text-[15px] font-bold leading-snug text-white">
-                {r.full}
-              </h3>
-              <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
-                {r.covers}
-              </p>
-              <p className="mt-3 text-[13.5px] leading-relaxed text-white/70">{r.meaning}</p>
-              {r.href && (
-                <a
-                  href={r.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-1 text-[12.5px] font-semibold text-reps-orange hover:underline"
-                >
-                  Visit register <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Verify strip                                                        */
-/* ------------------------------------------------------------------ */
-
-const VERIFY_STEPS = [
-  {
-    icon: Wand2,
-    title: "Identity",
-    body: "Government photo ID and a live selfie check before any badge is issued.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Qualifications",
-    body: "Every credential cross-checked against the body that issued it — Ofqual, REPs, AfN, HCPC, YAP.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Insurance & CPD",
-    body: "Public liability and professional indemnity confirmed current and scope-correct. CPD logged and audited.",
-  },
-];
-
-function VerifyStrip() {
-  return (
-    <section className="border-b border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How we verify every professional
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Three checks — every profile, every renewal.
-          </h2>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {VERIFY_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <div key={step.title} className="rounded-[18px] border border-reps-border bg-reps-panel p-7">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                    Step {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-display text-[18px] font-bold text-white">{step.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/70">{step.body}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 flex flex-wrap items-center gap-3 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
-          <BadgeCheck className="h-5 w-5 text-reps-orange" />
-          <span className="text-[14px] font-semibold text-white">
-            The result: a single Verified badge the public can actually trust.
-          </span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* FAQ block                                                           */
 /* ------------------------------------------------------------------ */
 
 function FaqBlock() {
   return (
-    <section id="faq" className="scroll-mt-[140px] border-b border-reps-border bg-reps-ink">
+    <section id="faq" className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight">
       <div className="mx-auto max-w-[920px] px-6 py-20 lg:px-10 lg:py-24">
         <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
           FAQ
         </span>
         <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          CPD, qualifications & providers — answered.
+          Qualifications, providers & CPD — answered.
         </h2>
 
         <Accordion type="single" collapsible className="mt-10">
@@ -1391,7 +958,7 @@ function FaqBlock() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Join REPs CTA — CPD-tuned variant of the homepage Pro CTA          */
+/* Join REPs CTA                                                       */
 /* ------------------------------------------------------------------ */
 
 function JoinRepsCta() {
