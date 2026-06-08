@@ -16,8 +16,6 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
-import { VerificationMoment } from "@/components/marketing/VerificationMoment";
-import proJames from "@/assets/pro-james.jpg";
 
 import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { PhoneFrame } from "@/components/marketing/PhoneFrame";
