@@ -316,7 +316,7 @@ function VerifyRecordPage() {
                 </div>
               </div>
               <Link
-                to="/cpd-v2"
+                to="/cpd"
                 className="inline-flex items-center gap-2 text-[13px] font-semibold text-white/80 hover:text-white"
               >
                 What counts as CPD
