@@ -1,26 +1,36 @@
-# Remove the public Verification pages
+# Extract a single shared FinalCta and use it on /cpd and /for-professionals
 
-Take down the public "How verification works" page (`/verify`) and the per-pro verified-ID lookup (`/verify/$id`), plus every place that links to them. Leave admin tools, auth email confirmation, and the in-page VerifySteps strip alone.
+Stop rebuilding the end-of-page CTA per route. Extract the `/for-professionals` version as the canonical component, then swap `/cpd` to use it. Per-page copy stays configurable via props — the shell (radius, padding, glow, pill, button styling) is identical everywhere.
 
-## Keep (out of scope)
-- `/verify-email` — auth email confirmation, unrelated.
-- `/admin/verification` — internal admin queue, not a public page.
-- `VerifySteps` marketing primitive — that's the inline "how we verify" strip used across marketing pages, not the `/verify` page.
+## Create
 
-## Delete
-- `src/routes/verify.tsx`
-- `src/routes/verify.$id.tsx`
-- `src/components/marketing/VerificationMoment.tsx` (only used on the homepage)
+`src/components/marketing/FinalCta.tsx` — lifted verbatim from `/for-professionals` lines 521–556. Props:
 
-## Edit — remove links and the homepage section
-- `src/routes/index.tsx` — drop the `VerificationMoment` import and the `<VerificationMoment …>` section (~line 429). No other homepage changes (locked-homepage memory respected — the only section touched is the one being removed at the user's request).
-- `src/components/public/nav-config.ts` — remove the two `/verify` entries (megamenu link at line 50, footer link at line 91) and drop `"/verify"` from the link-type union on line 76.
-- `src/components/public/PublicFooter.tsx` — remove the `{ label: "Verification", to: "/verify" }` entry (line 37).
-- `src/components/public/HeaderCommandPalette.tsx` — remove the command-palette item that navigates to `/verify` (line 45).
-- `src/routes/find-a-professional.tsx` — replace the `<Link to="/verify">How verification works</Link>` aside CTA (lines 1023–1029) with non-link copy, or remove the CTA entirely so the "Why REPs" trust panel still reads cleanly.
-- `src/routes/sitemap[.]xml.ts` — remove the `/verify` entry (line 24).
+- `eyebrow?: { icon?: LucideIcon; label: string }` — defaults to `{ icon: Star, label: "Founding pricing — locked for life" }`. Pass `null` to hide.
+- `heading: string` (required)
+- `lede?: string`
+- `primary: { to: string; label: string }` (required) — solid orange button.
+- `secondary?: { to: string; label: string }` — outline white/25 button.
 
-## Notes
-- `routeTree.gen.ts` is auto-generated; the TanStack Router plugin will regenerate it once the route files are deleted — no manual edit.
-- `c.$slug.tsx` line 1308 just contains the words "How we verify" as in-page copy with no link to `/verify`; leaving it alone.
-- After the edits, run a quick `rg "/verify\"|to=\"/verify"` sweep to confirm no stragglers, then verify the build is clean.
+Shell is fixed (do not expose via props): outer `<section>` with `max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28`, inner `rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 lg:p-16 text-center` with the radial orange glow overlay. Buttons use `h-12 rounded-[10px]` per the radius system; primary uses `bg-reps-orange … hover:bg-reps-orange-hover`, secondary uses `border border-white/25 hover:bg/white-10`. No shadows.
+
+## Edit
+
+- `src/routes/for-professionals.tsx` — replace the inline FINAL CTA block (lines 521–556) with `<FinalCta heading="Verified profile live today. Set up in 10 minutes." lede="Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch." primary={{ to: "/compare", label: "Compare platforms" }} secondary={{ to: "/pricing", label: "See pricing" }} />`. Add the import; drop any now-unused `Star` / `ArrowRight` imports only if nothing else in the file uses them.
+- `src/routes/cpd.tsx` — replace `<FinalCta />` at line 328 with `<FinalCta heading="Build your profile. Prove your standards." headingAccent="Grow your career." lede="Join REPs to connect your verification, education, profile and professional development in one platform." primary={{ to: "/signup", label: "Join REPs" }} />`. Delete the local `FinalCta` function (lines 1191–1221). Import the shared component from `@/components/marketing/FinalCta`.
+
+To keep the `/cpd` headline's orange accent ("Grow your career.") working under the shared component, add an optional `headingAccent?: string` prop that renders inline after `heading` with `text-reps-orange`. This is the only structural prop beyond the four above.
+
+## Out of scope (this pass)
+
+- `FeatureGroupLayout` and `PillarPage` also re-implement the same CTA. The user explicitly scoped this pass to `/cpd` + `/for-professionals` only. Follow-up pass to migrate the feature/pillar pages once this lands.
+- `cpd-legacy.tsx` is the archived old CPD page — leave alone.
+
+## QA
+
+- After the edits, eyeball both pages: the rounded `rounded-[24px]` panel, the Founding-pricing pill, the radial glow and the orange/outline button pair must be visually identical on `/cpd` and `/for-professionals`. Only the headline + body + button targets differ.
+- Run the REPs compliance audit script before signing off.
+
+## Memory update
+
+After the swap lands, save a small project memory at `mem://design/final-cta` referenced from the index: "Shared `FinalCta` in `src/components/marketing/FinalCta.tsx` is the only end-of-page CTA. Do not rebuild per route — pass copy via props." This prevents the next agent from re-introducing a local copy.
