@@ -14,6 +14,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Star,
   Stethoscope,
   TrendingUp,
   Wand2,
@@ -39,6 +40,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 
 import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
+import ctaTrainers from "@/assets/cta-band.jpg";
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
@@ -471,6 +473,8 @@ function CpdPage() {
         <VerifyStrip />
 
         <FaqBlock />
+
+        <ProCtaBand />
 
         <CrossLinkStrip />
 
