@@ -31,6 +31,7 @@ import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
+import { FinalCta } from "@/components/marketing/FinalCta";
 
 import {
   Accordion,
@@ -325,7 +326,12 @@ function CpdV2Page() {
         <SpecialistAreas />
         <TrainingProvidersBand />
         <FaqBlock />
-        <FinalCta />
+        <FinalCta
+          heading="Build your profile. Prove your standards."
+          headingAccent="Grow your career."
+          lede="Join REPs to connect your verification, education, profile and professional development in one platform."
+          primary={{ to: "/signup", label: "Join REPs" }}
+        />
 
         <PublicFooter />
         <StickyCtaPill />
@@ -1188,37 +1194,9 @@ function FaqBlock() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Final CTA                                                           */
-/* ------------------------------------------------------------------ */
+/* Final CTA now provided by @/components/marketing/FinalCta              */
+/* ---------------------------------------------------------------------- */
 
-function FinalCta() {
-  return (
-    <section className="relative overflow-hidden border-t border-reps-border bg-reps-ink">
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
-      />
-      <div className="relative mx-auto max-w-[920px] px-6 py-20 text-center lg:px-10 lg:py-28">
-        <h2 className="font-display text-[30px] font-bold leading-[1.05] text-white lg:text-[44px]">
-          Build your profile. Prove your standards.{" "}
-          <span className="text-reps-orange">Grow your career.</span>
-        </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/70">
-          Join REPs to connect your verification, education, profile and
-          professional development in one platform.
-        </p>
-        <div className="mt-8 flex justify-center">
-          <Link
-            to="/signup"
-            className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-8 text-[15px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
-          >
-            Join REPs <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Verified training providers — empty-state slot for paying providers */
