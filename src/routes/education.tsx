@@ -823,8 +823,8 @@ function HowTheStandardWorks() {
     {
       icon: RefreshCw,
       eyebrow: "Current",
-      title: "CPD logged and audited",
-      body: "Members log every CPD activity quarterly with evidence attached. A random sample is fully audited each year. Faked logs lose verification.",
+      title: "CPD must be REPs-accredited",
+      body: "Continuing professional development only counts toward a REPs profile if it's delivered by a REPs-accredited provider. Unaccredited 'certificates' don't update the profile.",
     },
   ];
 
