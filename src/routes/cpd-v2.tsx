@@ -1134,48 +1134,46 @@ function FinalCta() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Recognition strip — bodies that accredit the qualifications         */
+/* Verified training providers — empty-state slot for paying providers */
 /* ------------------------------------------------------------------ */
-
-const RECOGNITION = [
-  { name: "Ofqual", note: "UK regulator for vocational qualifications — including L2/L3/L4 fitness." },
-  { name: "CIMSPA", note: "Chartered Institute for the Management of Sport & Physical Activity." },
-  { name: "Yoga Alliance", note: "Global registry for yoga teachers and 200/500-hour trainings." },
-  { name: "BASI Pilates", note: "Body Arts & Science International — comprehensive Pilates teacher training." },
-  { name: "STOTT Pilates", note: "Merrithew's contemporary Pilates education — mat and apparatus." },
-  { name: "Les Mills", note: "Group fitness programmes and instructor certification, used worldwide." },
-];
 
 function RecognitionStrip() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
-          eyebrow="Recognition"
-          heading="Recognised by the bodies that issue the qualifications."
-          lede="REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile."
+          eyebrow="Verified training providers"
+          heading="Training providers, listed when they're verified by REPs."
+          lede="Verified training providers appear here once they've completed REPs verification — accrediting body checked, tutors named, refund and complaints policies published. We only list providers who meet the bar."
         />
 
-        <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {RECOGNITION.map((r) => (
-            <Card
-              key={r.name}
-              className="rounded-[16px] border-reps-border bg-reps-panel shadow-none transition hover:border-reps-orange-border"
-            >
-              <CardContent className="flex items-start gap-3 p-4">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <ShieldCheck className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <div className="text-[14px] font-semibold text-white">{r.name}</div>
-                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/70">
-                    {r.note}
-                  </div>
+        <Card className="mt-10 rounded-[18px] border-reps-border bg-reps-panel shadow-none">
+          <CardContent className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:p-8">
+            <div className="flex items-start gap-4">
+              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <div className="text-[15px] font-semibold text-white">
+                  First verified providers coming soon.
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-white/70">
+                  REPs is onboarding the first cohort of verified training
+                  providers. Once verified, their courses, CPD points and
+                  awarding body appear here — and feed automatically into
+                  member profiles.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/contact"
+              className="inline-flex h-11 flex-shrink-0 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13.5px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+            >
+              Apply to become a verified provider{" "}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

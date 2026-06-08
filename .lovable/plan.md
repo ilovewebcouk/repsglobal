@@ -1,82 +1,45 @@
-# Stop the drift — extract shared marketing primitives, force /cpd-v2 to use them
+## What changes
 
-You're right. I diffed the two pages line by line. The drift isn't subtle:
+### 1. Memory rule — never mention CIMSPA
+Add a Core rule and a small memory file:
+- **Core line:** "Never mention CIMSPA anywhere on the site — product, marketing, comparison, dashboard, FAQ. Use 'Ofqual-regulated' or 'recognised awarding body' instead."
+- **`mem://content/banned-orgs`** holding the rule and the reasoning (REPs does not endorse or promote CIMSPA).
 
-| Token | `/specialisms` | `/cpd-v2` |
-|---|---|---|
-| Hero lede `<p>` | `text-[16px]` | `text-[17px] sm:text-[18px]` |
-| Section H2 | `text-[30px] lg:text-[40px]`, `leading-tight`, no tracking | `text-[34px] sm:text-[40px]`, `leading-[1.1]`, `tracking-tight` |
-| Section H2 colour | Pure white, no orange word | Orange `<span>` split-phrase on **every** H2 (9 of them) |
-| Section eyebrow | Bare `<span>` `text-[11px] uppercase tracking-[0.22em] text-reps-orange` | shadcn `<Badge variant="outline">` pill with `bg-reps-panel` + icon |
-| Hero eyebrow | Animated bare-pill with plain orange `<span>` inside | `<Badge>` with `bg-reps-orange-soft` fill |
-| White opacity scale | 6 tokens (`/45 /55 /65 /70 /75 /80`) | 9 tokens (`/45 /50 /55 /60 /65 /70 /75 /80 /85`) |
-| FAQ | Bare `<Accordion>`, `max-w-[920px]` | Wrapped in Card panel, `max-w-4xl` |
-| VerifyStrip | Numbered "Step 1/2/3" cards + accent banner | Plain 3 icon tiles, no steps, no banner |
+Audit: only one current hit — `src/routes/cpd-v2.tsx:1142`. It's removed in step 2.
 
-This is one page diverging from another because I built bespoke markup every time. Fix is to extract `/specialisms`' patterns into shared components and force `/cpd-v2` to consume them. Both pages then change together, by design.
+### 2. Replace the Recognition section on `/cpd-v2`
+Currently `RecognitionStrip` (lines 1137–1182) lists 6 third-party orgs (Ofqual, CIMSPA, Yoga Alliance, BASI, STOTT, Les Mills). We're handing free brand placement to organisations that don't pay REPs — and to CIMSPA, which we don't promote at all.
 
-## Plan
+Replace it with a **Verified Training Providers** block in the same slot:
 
-### 1. Shared marketing primitives (new files under `src/components/marketing/`)
+- **Eyebrow:** "Verified training providers"
+- **Heading:** "Training providers, listed when they're verified by REPs."
+- **Lede:** "Verified training providers appear here once they've completed REPs verification — accrediting body checked, tutors named, refund and complaints policies published. We only list providers who meet the bar."
+- **Body (empty state today):** a single bordered panel (rounded-[18px], `border-reps-border bg-reps-panel`) with:
+  - Icon row + line: "First verified providers coming soon."
+  - Short paragraph: "REPs is onboarding the first cohort of verified training providers. Once verified, their logo, course catalogue and CPD points appear here and on member profiles automatically."
+  - Single CTA `Link to="/contact"`: "Apply to become a verified training provider →"
+- **No third-party logos. No CIMSPA. No free placement.**
 
-- **`SectionEyebrow.tsx`** — bare `<span class="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">`. No pill, no background.
-- **`SectionHeading.tsx`** — `<h2 class="font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">`. Single white colour, no orange split-word. No `tracking-tight`, no `leading-[1.1]`.
-- **`SectionHeader.tsx`** — wraps `SectionEyebrow` + `SectionHeading` + optional lede in the canonical 760-px column with the exact `mt-3` / `mt-4` rhythm `/specialisms` uses.
-- **`MarketingHeroEyebrow.tsx`** — the animated border-pill from `/specialisms` hero (bare orange span, no bg-fill). Hero-only variant.
-- **`VerifySteps.tsx`** — verbatim extract of `/specialisms` VerifyStrip: numbered Step 1/2/3 cards + the `bg-reps-orange-soft` accent banner closer. Accepts `eyebrow`, `heading`, `steps[]`, `bannerText`.
-- **`MarketingFaq.tsx`** — bare `<Accordion>`, `max-w-[920px]`, no Card wrapper. Accepts `eyebrow`, `heading`, `items[]`.
+When paying providers exist, the empty state becomes a logo/name grid in the same slot — no further layout changes needed.
 
-### 2. Refactor `/specialisms` to use them (zero pixel diff)
-- Hero eyebrow → `<MarketingHeroEyebrow>` (keep the `Sparkles` icon + label).
-- `RegistersBlock`, `VerifyStrip`, `FaqBlock` headers → `<SectionHeader>`.
-- `VerifyStrip` body → `<VerifySteps>`.
-- `FaqBlock` body → `<MarketingFaq>`.
-- Visual regression check after — must match the current screenshot pixel-for-pixel.
+### 3. Keep what already works
+- `TrainingProvidersBand` (the "Training providers will have a stronger place inside REPs" section) stays — it's the long-form pitch.
+- The new Verified Training Providers block sits in the old Recognition slot (between Specialism areas and TrainingProvidersBand) and acts as the proof slot for the section below.
 
-### 3. Force `/cpd-v2` onto the same components
+### 4. Quality bar (keeps the 9/10)
+- Uses existing `SectionHeader` primitive — no new components, no drift.
+- Single brand-orange accent, no emerald (no status semantic in play).
+- Card radius 18px (panel scale), button radius 10px — all on the locked radius scale.
+- Copy is honest about the empty state — no fake logos, no "coming soon" filler that reads as weak.
 
-For **every** section (`ProofCards`-area, `DevelopmentPassport`, `RegisterProofBand`, `LearningPathways`, `RecognitionStrip`, `CpdDiscovery`, `SpecialistAreas`, `AiRecommendations`, `TrainingProvidersBand`, `FaqBlock`, `VerifyStrip`, `FinalCta`):
-
-- Replace every `<Badge>` eyebrow with `<SectionEyebrow>` (text only, no icon).
-- Replace every `<h2>` with `<SectionHeading>` — **delete every orange-span split-word** in those H2s.
-- Hero `<h1>`: keep its existing orange phrase (heroes always allow it), but downsize the lede `<p>` from `text-[17px] sm:text-[18px]` → `text-[16px]` to match `/specialisms`.
-- Hero eyebrow: swap the shadcn `<Badge bg-reps-orange-soft>` for `<MarketingHeroEyebrow icon={GraduationCap}>Education & CPD</MarketingHeroEyebrow>`.
-- VerifyStrip → `<VerifySteps>` with REPs verification triad (Identity / Insurance / CPD on the public record), Step 1/2/3 + banner.
-- FaqBlock → `<MarketingFaq>`.
-
-### 4. Lock the opacity scale
-- Allowed body-text greys: `text-white/80` (primary body), `text-white/70` (secondary body), `text-white/55` (meta/labels), `text-white/45` (de-emphasised micro). That's it.
-- Sweep `/cpd-v2` and rewrite every `/50`, `/60`, `/65`, `/75`, `/85` to the nearest allowed value.
-
-### 5. Lock the font-size scale (matches `/specialisms`)
-- Hero lede: `text-[16px]`
-- Section lede: `text-[15px]` or `text-[15.5px]` only (no `text-[16px]` paragraphs outside hero)
-- Card titles: `text-[15px]`–`text-[18px]` `font-display font-bold`
-- Card body: `text-[13.5px]`–`text-[14px]`
-- Sweep `/cpd-v2` for `text-[16px]`/`text-[17px]`/`text-[18px]` paragraphs outside the hero and downsize.
-
-### 6. Audit + verify
-- Run `/tmp/audit.sh` — must remain clean.
-- `grep` `/cpd-v2.tsx` for `<Badge.*variant="outline".*uppercase` → must return zero hits (all moved to `SectionEyebrow`).
-- `grep` `/cpd-v2.tsx` for `<span class="text-reps-orange">` inside an `<h2>` → must return zero hits.
-- `grep` `text-white/(50|60|65|75|85)` in `/cpd-v2.tsx` → must return zero hits.
-- Compare `/specialisms` before/after — pixel-identical.
-- Compare `/cpd-v2` before/after — section headers, FAQ and VerifyStrip now read as the same component as `/specialisms`.
-
-### 7. Memory
-After this lands, save `mem://design/marketing-section-primitives` recording that:
-- `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingHeroEyebrow`, `VerifySteps`, `MarketingFaq` are the canonical marketing primitives.
-- No new marketing page may hand-roll a section header, hero eyebrow, FAQ block or verify-strip.
-- Allowed white-opacity scale: `/45 /55 /70 /80` only.
-- Allowed body font sizes: hero lede `16px`; section lede `15`/`15.5px`; card body `13.5`/`14px`.
-
-## Out of scope
-- No copy changes other than removing orange split-words from H2s.
-- No new sections, no image changes.
-- `/for-professionals` is not touched this pass — it gets the same primitives on its next dedicated pass.
-- Sticky in-page nav and cross-link strip stay removed.
+### Out of scope
+- Other CIMSPA sweeps (only one hit; covered).
+- Touching `/cpd` (the older route) — separate pass.
+- Designing the populated-state logo grid; the empty state is the only Phase 1 deliverable.
 
 ## Files
-- New: `SectionEyebrow.tsx`, `SectionHeading.tsx`, `SectionHeader.tsx`, `MarketingHeroEyebrow.tsx`, `VerifySteps.tsx`, `MarketingFaq.tsx` (all under `src/components/marketing/`).
-- Edited: `src/routes/specialisms.tsx`, `src/routes/cpd-v2.tsx`.
-- New memory: `mem://design/marketing-section-primitives` + index entry.
+
+- **edit** `mem://index.md` — add CIMSPA Core line + Memories entry
+- **create** `mem://content/banned-orgs` — full rule
+- **edit** `src/routes/cpd-v2.tsx` — replace `RECOGNITION` array + `RecognitionStrip` (lines 1137–1182) with a `VerifiedProvidersSlot` component using `SectionHeader` + a single empty-state panel
