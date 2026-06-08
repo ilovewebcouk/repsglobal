@@ -1,58 +1,66 @@
-## Goal
+## /cpd-v2 — rebuild using shadcn skill + REPs visual system
 
-Lift `/cpd` from a CPD-only page into the REPs **Education** hub it should be: REPs accredits *courses* — most of which are CPD, but the framing also covers initial qualifications and the Pilates/Yoga teacher-training market that's core to REPs' reach. Tone moves from punchy/marketing to professional.
+Two problems with the current `/cpd-v2`:
+1. It bypasses the **shadcn skill** — raw `<a>`/`<button>`/`<div>` markup instead of `Button`, `Card`, `Badge`, etc.
+2. It bypasses the **REPs design system** — uses ad-hoc `bg-white/[0.03] border-white/10` instead of the semantic tokens (`bg-reps-panel`, `border-reps-border`, `bg-reps-orange-soft`, `text-reps-muted`) that `/for-professionals`, `/specialisms`, `/c/$slug` and every other locked marketing page rely on. It also doesn't reuse the shared marketing components those pages share.
 
-No URL change. No new sections. Edits live in `src/routes/cpd.tsx` only.
-
----
-
-## 1. Hero — new image, new H1, single CTA
-
-**Image swap.** The current hero (`cpd-hero-v5.jpg`) is replaced by the editorial workshop photo currently used in `TutorMoment` (`cpd-tutor-moment.jpg.asset.json`). This is the image the user pointed at — a real teaching environment reads as "education", not "fitness marketing".
-
-**Copy rewrite (professional register).**
-
-- Eyebrow chip: `CPD & Education` → `Education & accredited courses`
-- H1: `A certificate is only as good as the people behind it.` → `The standard for accredited education in fitness, sport and movement.`
-- Sub: rewritten to name the three pillars REPs accredits — initial qualifications, ongoing CPD, and teacher training in Pilates and yoga. Drops the "isn't worth the paper it's printed on" line.
-- Trust chips: kept (Identity verified · CPD logged quarterly · Verified-provider hours count) but the third softened to `Accredited providers only`.
-- Body registers strip: kept (Ofqual · REPs · AfN · HCPC · YAP) — already covers Pilates/Yoga via YAP.
-
-**CTA simplification.** Two buttons collapse to one primary: **`Find verified training providers →`** anchored to `#verified-providers`. The secondary "How REPs runs CPD" button is removed (it competes with the primary action and reinforces the CPD-only framing).
+Keep the **content/section order** from the approved v2 plan; rebuild every component against the system.
 
 ---
 
-## 2. Remove the now-orphan TutorMoment band
+### Rules for the rebuild
 
-`TutorMoment` (the dark band with the pull-quote "The honest providers are already here…") used the image we're promoting to hero. With the image gone, the band is removed from the page stack in `CpdPage()`. The associated `cpdTutorMomentAsset` import becomes the new hero image source, so no asset is orphaned.
+- **shadcn skill on**:
+  - `Button` (variants: default = orange, outline, ghost, secondary) for every CTA. Icons use `data-icon="inline-end"`. Never raw `<a className="rounded-[10px]…">`.
+  - `Card` with full composition (`CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`) for proof cards, pathway cards, course cards, providers card.
+  - `Badge` (variants `secondary`, `outline`, plus the orange chip pattern used on `/specialisms`) for status pills, "Verified provider", "Preview", filter chips.
+  - `Tabs` + `TabsList` + `TabsTrigger` for the "Online / In-person" toggle.
+  - `Select` + `SelectGroup` + `SelectItem` for the discovery filter dropdowns (visually present but `disabled` — still keep proper composition).
+  - `Accordion` (already correct) for FAQ.
+  - `Avatar` + `AvatarFallback` for the passport mockup persona.
+  - `Progress` for the CPD cycle bar.
+  - `Separator` instead of borders where appropriate.
+  - `Alert` for the "Preview — illustrative examples" note.
+  - `Tooltip` for credential explainers where used.
+  - Spacing with `gap-*`, never `space-y-*`. `size-*` for square dimensions.
 
-(The old `cpd-hero-v5.jpg` asset stays in the codebase for now — not deleting in case other pages reference it; can prune in a follow-up.)
+- **REPs tokens only** (match `/for-professionals`, `/specialisms`):
+  - Backgrounds: `bg-reps-ink`, `bg-reps-panel`, `bg-reps-orange-soft`
+  - Borders: `border-reps-border`, hover `border-reps-orange-border`
+  - Text: `text-white`, `text-reps-muted`, `text-reps-orange`
+  - Buttons: `bg-reps-orange hover:bg-reps-orange-hover`
+  - Radius map per memory: button `rounded-[10px]`, std card `rounded-[16px]`, large card `rounded-[18px]`, panel `rounded-[22px]`. No `rounded-xl/2xl/3xl`, no `rounded-[14px]` outside the photo-shape exception.
+  - No `bg-white/[0.03]`, `border-white/8`, `text-white/65` etc. anywhere on this page.
 
----
+- **Reuse shared marketing components** so the page reads as one product:
+  - **Hero**: match the `for-professionals` / `specialisms` hero pattern (same chip → H1 → sub → CTAs → trust strip → optional `PressMarquee`). Keep the `cpd-tutor-moment` editorial photo as the bg.
+  - **Pathway cards** → render via `ProductBlock` (the 5-pillar component already used on `/for-professionals`). One ProductBlock per pathway, OR a tighter `Card` grid using the same visual recipe — pick `ProductBlock` so the rhythm matches the For-Pros page.
+  - **Specialism areas** → mirror the `SpecialismSection` chip pattern from `/specialisms` (orange-soft chips, `QualCard`-style explainers if relevant).
+  - **Register/proof strip** → drop in `RegisterProof` (already used on /for-pros) between Passport and Pathways.
+  - **Testimonial** → one `TestimonialFeature` block between AI Recommendations and Training Providers, with a quote from a member about CPD/profile credibility.
+  - **Sticky CTA** → `StickyCtaPill` for "Join REPs" on scroll, same as `/for-professionals`.
+  - **FAQ** → use `ForProsFaq`-style component (or keep local Accordion but wrap in the same card surface treatment used on `/for-professionals` so it matches visually). Prefer wrapping FAQs in the same panel treatment used elsewhere.
 
-## 3. Tone pass — "education", not just "CPD"
+- **Section-by-section component swaps in `src/routes/cpd-v2.tsx`**:
+  1. `Hero` — Buttons via shadcn `Button` (default orange + outline), trust pills via `Badge variant="outline"`. Pull layout from for-pros hero.
+  2. `ProofCards` — 4× `Card` with `CardHeader>CardTitle+CardDescription`, icon inside a `bg-reps-orange-soft` square.
+  3. `DevelopmentPassport` — 50/50 grid. Right column = `ProfessionalDevelopmentMockup` rebuilt with `Card`, `Avatar+AvatarFallback`, `Badge`, `Progress`, `Separator`, all on `bg-reps-panel border-reps-border rounded-[22px]`.
+  4. `RegisterProof` — drop-in shared component.
+  5. `LearningPathways` — `ProductBlock` (or matching Card grid) using `bg-reps-panel` cards, orange-soft icon tiles, "See courses" `Button variant="link"` with `data-icon`.
+  6. `CpdDiscovery` — filter row: `Select` for Category/Delivery/Points/Level/Provider/Specialism; `Tabs` for Online/In-person. Course grid: `Card` with `CardHeader`, `Badge` for "Verified provider"/level/points/format, `CardFooter` with `Button variant="outline" disabled`. `Alert variant="default"` underneath with the "Preview — illustrative" note.
+  7. `SpecialistAreas` — chip grid using orange-soft `Badge` and small icon, mirrors `/specialisms` styling. Footer note via `Alert` or muted text.
+  8. `AiRecommendations` — left copy, right `Card` "Suggested for you" panel using `Badge` for the Preview pill, three `RecRow` items rebuilt as `Card`-flavoured rows with `bg-reps-panel`. Wrap in a `Tooltip` explainer on "Preview".
+  9. `TestimonialFeature` — shared component, one member quote on CPD lifting profile credibility.
+  10. `TrainingProvidersBand` — split layout, right side = `Card` listing "What's coming" with `Check` rows; left = `Button` ("Register interest as a training provider").
+  11. `FaqBlock` — keep `Accordion`, wrap in a `Card` panel with `border-reps-border bg-reps-panel rounded-[22px]` so it matches for-pros visually.
+  12. `FinalCta` — same dark gradient pattern as the for-pros final CTA, `Button size="lg"`.
+  13. Add `StickyCtaPill` at the page root.
 
-Targeted copy edits, no structural changes:
+- **No new content, no copy rewrites** beyond what's already on v2. This is a presentational/system pass only.
 
-| Section | Change |
-|---|---|
-| `WhatCpdIs` heading | "What CPD actually is" → "What 'accredited' actually means" (CPD covered as one mode of accredited learning). |
-| `RepsCpdSystem` heading | "How REPs runs CPD" → "How REPs accredits education". Subcopy reframed: courses, CPD, teacher training. |
-| `Qualifications` intro | Tightened, drops "industry runs on acronyms" colloquialism; opens with "REPs accredits qualifications across four pathways" (Fitness, Nutrition, Pilates, Yoga). |
-| `VerifiedProviders` | Heading kept; subcopy reframed so Pilates/Yoga teacher-training schools are explicitly named alongside L2/L3 awarding bodies. |
-| `DodgyCourses` | Kept (this is the page's teeth) but two flippant lines softened: "earn £5k a month" example trimmed, "print shop for certificates" pull-quote removed (it left with TutorMoment anyway). |
-| `ProviderCtaBand` | CTA label aligned to "Find verified training providers". |
-| `FaqBlock` | First Q broadened: "What is CPD?" stays, but a new lead Q is added: "What does it mean for a course to be accredited by REPs?" — pulls Pilates/Yoga into the answer. |
-| `JoinRepsCta` | Final CTA aligned to "Find verified training providers" (primary) with "Apply to be a verified provider" as the professional-side secondary. |
+- **Out of scope**: real filtering logic, real AI calls, route changes, touching `/cpd` (kept as-is), adding new shared components to `src/components/marketing/`.
 
-Anywhere the page currently says "the CPD page" or "this is about CPD" implicitly, the language shifts to "accredited education" / "courses and CPD" / "training providers".
-
-No data arrays change (Fitness / Nutrition / Pilates / Yoga ladders, providers, FAQs all stay). No new components. No new assets. No route or nav-label changes.
-
----
-
-## Out of scope (flagged for later)
-
-- Renaming the route from `/cpd` → `/education` and updating header nav. Mentioning so you can decide separately; not doing it here unless you say so.
-- Pruning the unused `cpd-hero-v5.jpg` asset.
-- Long-form copy revisions inside `RED_FLAGS` / `GOOD_SIGNS` beyond the two flippant lines noted above.
+### Verification after build
+- Page renders with no console / runtime errors.
+- Spot-check radius (no rounded-xl, no white/* arbitrary surfaces).
+- Visual sanity-check against `/for-professionals` and `/specialisms` at 1342px and 390px.
