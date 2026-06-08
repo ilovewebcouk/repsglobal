@@ -1,61 +1,64 @@
-## Goal
+# /cpd hero swap + professionalism pass
 
-Lift `/cpd` from a long wall of dark sections to a page with real rhythm and one earned hero-grade visual moment mid-page — while confirming the two original empty bands are now closed.
+## 1. New hero (uses existing TutorMoment image + line)
 
-## A. Verify the empty bands are closed (no edit unless gap is found)
+Replace the current hero image and H1 with the existing TutorMoment asset (`cpd-tutor-moment.jpg`) and its quote line as the H1.
 
-Navigate to `/cpd`, take a full-page screenshot, and inspect the full section stack:
+- **H1:** "The honest providers are already here. The rest are running a print shop for certificates."
+  - Orange emphasis on "running a print shop for certificates."
+- **Image:** `cpd-tutor-moment.jpg` (the in-classroom tutor shot) — replaces `cpd-hero-v5.jpg` as the hero LCP image, with preload + fetchpriority="high".
+- Keep the rest of the hero scaffolding intact (eyebrow chip "CPD & Education", subhead, two CTAs, trust chips, regulator strip, staggered fade-up timings).
+- Subhead unchanged in spirit, lightly tightened to flow under the new H1:
+  > "REPs is the global standard for verified CPD. Every hour is logged quarterly, audited annually, and only counts when it's from a verified training provider."
+- Delete the standalone `TutorMoment()` component and its render from `CpdPage`, since the line and image now lead the page.
+- Delete the old `cpd-hero-v5.jpg.asset.json` after the swap (no other references).
 
-1. Hero → 2. ProfileScreenshot (new) → 3. WhatCpdIs → 4. RepsCpdSystem → 5. Qualifications → 6. GeneralistVsSpecialist → 7. VerifiedProviders → 8. DodgyCourses → 9. RaiseTheStandard → 10. ProviderCtaBand → 11. RegistersBlock → 12. VerifyStrip → 13. FaqBlock → 14. JoinRepsCta.
+## 2. Professionalism pass (cut the drift)
 
-- The upper gap (was VenueMarquee) is filled by ProfileScreenshot.
-- The lower gap (was PressMarquee, likely between FaqBlock and JoinRepsCta) needs visual confirmation. If a dead band of >120px is visible, tighten the `py-*` on `JoinRepsCta` (currently `py-16 lg:py-20`) so the dark hand-off reads as one section, not two.
+The user flagged the page is starting to read unprofessional. Concrete cuts:
 
-No code change unless the screenshot proves a gap.
+1. **Remove the `GeneralistVsSpecialist` section entirely.**
+   - The "GP / cardiologist / orthopaedic surgeon" analogy puts fitness next to surgery, which over-claims and lands as unserious. That logic already lives on `/specialisms`; CPD doesn't need it.
+   - Removes the section render + the `<GeneralistVsSpecialist />` slot in `CpdPage`.
 
-## B. Section rhythm (light/dark cadence)
+2. **De-slang the remaining body copy.** Targeted line edits only — no structural changes:
+   - `RepsCpdSystem` → "No 'trust me bro'." → "Evidence attached to every entry."
+   - `DodgyCourses` red flags → "a help-desk that ghosts you after the card clears" → "a help-desk that goes silent once payment clears."
+   - `DodgyCourses` red flags → "Marketing is all 'earn £5k a month' income claims" → "Marketing leads with income claims instead of what you'll actually learn."
+   - `RaiseTheStandard` → "Instagram 'online coaches' selling £400 PDFs" → "unqualified 'online coaches' selling generic PDFs as programmes."
+   - `RaiseTheStandard` → "a chancer" → "an unverified one" (twice).
+   - `RaiseTheStandard` final pull-quote → "Cheap coaching exists because nobody checks. REPs checks. Price accordingly." → "Standards are low because nobody checks. REPs checks. Verified professionals should price accordingly."
 
-Page currently alternates `bg-reps-ink` ↔ `bg-reps-panel-soft/40`. The `/40` opacity makes the "lifted" sections barely distinguishable — the page reads as one slab. Fix by swapping the four panel-soft sections to `bg-reps-midnight` (the same step the coach shop-front uses for its alternation), and lifting their inner cards from `bg-reps-panel` → `bg-reps-panel-soft` so card contrast holds.
+3. **Leave the H1 print-shop line alone** — it's editorial and on-brand for the hero, but we don't repeat that tone elsewhere on the page.
 
-Sections to convert (`bg-reps-panel-soft/40` → `bg-reps-midnight`):
+## 3. Out of scope (this pass)
 
-- `RepsCpdSystem` (line 783)
-- `GeneralistVsSpecialist` (line 1017)
-- `DodgyCourses` (line 1180)
-- `RegistersBlock` (line 1353)
+- No layout changes to `ProfileScreenshot`, `WhatCpdIs`, `Qualifications`, `VerifiedProviders`, `DodgyCourses` structure, `RegistersBlock`, `VerifyStrip`, `FaqBlock`, `JoinRepsCta`, footer.
+- No new images, no new sections, no design-token edits.
+- FAQ copy untouched.
 
-Inside each of those four sections, swap card `bg-reps-panel` → `bg-reps-panel-soft` so the cards don't disappear into the new midnight surface. Borders stay `border-reps-border`.
+## Section order after this pass
 
-No light/ivory section — the page is editorially heavy and the dark palette is intentional. Midnight gives genuine cadence without breaking the visual register.
+```
+Hero (new image + H1)
+ProfileScreenshot
+WhatCpdIs
+RepsCpdSystem
+Qualifications
+VerifiedProviders
+DodgyCourses
+RaiseTheStandard
+ProviderCtaBand
+RegistersBlock
+VerifyStrip
+FaqBlock
+JoinRepsCta
+```
 
-## C. One hero-grade visual moment mid-page
+(removed: standalone `TutorMoment` + `GeneralistVsSpecialist`.)
 
-Add a new full-bleed photo band, `<TutorMoment />`, placed between `<DodgyCourses />` and `<RaiseTheStandard />` in `CpdPage()`. This is the structural midpoint and breaks ~6 card-grid sections in a row.
+## Technical notes
 
-Layout: 60vh-ish band, full-bleed background image of a tutor teaching at a CPD workshop (small group, focused, REPS wordmark on the tutor's polo per project core rule). Dark gradient overlay bottom-left for legibility. Overlaid content:
-
-- Small orange eyebrow: "Inside a verified CPD course"
-- Large pulled quote (font-display, ~32-44px): "The honest providers are already here. The rest are running a print shop for certificates."
-- Caption row: "REPs — verified training providers"
-
-The blockquote currently buried in `VerifiedProviders` (line 1138-1142) is removed when this band lands, so the quote is not duplicated.
-
-Image source: generate via `imagegen--generate_image` (standard quality, 1920x1080, jpg). Save to `src/assets/cpd-tutor-moment.jpg`, then upload via `lovable-assets create` and write the `.asset.json` pointer. Prompt enforces: tutor in a fitness studio teaching 3-4 students at whiteboard or with anatomy chart, ALL-CAPS white REPS wordmark on left chest of polo (real print, not overlay), warm rim light from window, editorial photography, no on-image text.
-
-Section uses `bg-reps-ink`, `rounded-none`, full-width image with the same dark→orange micro-gradient overlay used in the hero so it reads as a continuation of brand atmosphere, not a stock-photo drop.
-
-## Implementation order
-
-1. Screenshot `/cpd` and confirm whether any visible gap remains. If yes, tighten the `JoinRepsCta` padding in the same edit batch as B.
-2. Edit `src/routes/cpd.tsx` — swap four section backgrounds + their inner card backgrounds (B).
-3. Generate tutor image, upload via `lovable-assets`, write `.asset.json`.
-4. Add `TutorMoment` component, remove the duplicate blockquote from `VerifiedProviders`, mount between `DodgyCourses` and `RaiseTheStandard` (C).
-5. Re-screenshot `/cpd` end-to-end to confirm: no dead bands, clear ink/midnight cadence, one cinematic moment mid-page.
-
-## Notes / constraints
-
-- All colours via semantic tokens (`bg-reps-ink`, `bg-reps-midnight`, `bg-reps-panel`, `bg-reps-panel-soft`, `border-reps-border`, `text-reps-orange`).
-- Radius rules preserved — no new radii introduced.
-- REPS wordmark rule enforced on the generated tutor image (white, ALL CAPS, left-chest embroidery).
-- No content/copy changes outside the moved blockquote.
-- No backend work.
+- Hero image swap: change `heroCpdAsset` import to point at `cpd-tutor-moment.jpg.asset.json`; update `og:image`, `twitter:image`, and `<link rel="preload">` automatically follow because they read `heroCpd`.
+- After delete, run `rg "cpd-hero-v5"` to confirm no stale references before removing the asset pointer.
+- `TutorMoment` is only used inside `cpd.tsx` — safe to delete the component definition along with its render.
