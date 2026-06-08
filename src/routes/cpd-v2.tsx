@@ -319,12 +319,15 @@ function CpdV2Page() {
         <DevelopmentPassport />
         <RegisterProofBand />
         <LearningPathways />
+        <RecognitionStrip />
         <CpdDiscovery />
         <SpecialistAreas />
         <AiRecommendations />
         <TrainingProvidersBand />
         <FaqBlock />
+        <VerifyStrip />
         <FinalCta />
+
         <PublicFooter />
         <StickyCtaPill />
       </div>
