@@ -14,11 +14,14 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Star,
   Stethoscope,
   TrendingUp,
   Wand2,
   X,
 } from "lucide-react";
+
+import ctaTrainers from "@/assets/cta-band.jpg";
 
 import {
   Accordion,
@@ -472,7 +475,7 @@ function CpdPage() {
 
         <FaqBlock />
 
-        <CrossLinkStrip />
+        <JoinRepsCta />
 
         <PublicFooter />
       </div>
@@ -1427,48 +1430,70 @@ function FaqBlock() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Cross-link strip                                                    */
+/* Join REPs CTA — CPD-tuned variant of the homepage Pro CTA          */
 /* ------------------------------------------------------------------ */
 
-function CrossLinkStrip() {
+function JoinRepsCta() {
   return (
-    <section className="bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="rounded-[22px] border border-reps-border bg-reps-panel p-8 lg:p-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <section className="bg-reps-ink py-16 lg:py-20">
+      <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+        <div className="relative isolate overflow-hidden rounded-[24px] border border-reps-border bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
+          <div className="relative w-full md:absolute md:inset-0">
+            <img
+              src={ctaTrainers}
+              alt=""
+              className="aspect-[5/4] w-full object-cover object-[100%_center] md:aspect-auto md:h-full md:object-[100%_top] lg:object-center"
+              loading="lazy"
+            />
+            <div
+              className="absolute inset-0 hidden md:block"
+              style={{ backgroundImage: "linear-gradient(to bottom, transparent 0%, transparent 18%, rgba(11,13,16,0.38) 42%, rgba(11,13,16,0.72) 65%, #0B0D10 88%)" }}
+            />
+            <div
+              className="absolute inset-0 hidden lg:block"
+              style={{ backgroundImage: "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 25%, rgba(11,13,16,0.55) 38%, rgba(11,13,16,0) 50%)" }}
+            />
+          </div>
+          <div className="relative px-6 py-10 md:min-h-[480px] md:px-10 md:py-12 lg:min-h-[440px] lg:px-14 lg:py-14">
             <div className="max-w-[520px]">
-              <h2 className="font-display text-[22px] font-bold leading-tight text-white lg:text-[26px]">
-                Looking for something else?
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                <Sparkles className="h-3 w-3 fill-reps-orange" /> For professionals
+              </span>
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[32px] lg:text-[38px]">
+                Turn your CPD into clients.
               </h2>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/65">
-                Jump into specialisms, find a verified pro, or read the rest of the REPs platform.
+              <p className="mt-3 max-w-[440px] text-[14.5px] leading-relaxed text-white/85">
+                Join the global register of verified fitness professionals. Showcase your qualifications, CPD and specialisms on a profile clients actually find.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/specialisms"
-                className="inline-flex h-9 items-center rounded-full border border-reps-border bg-reps-ink px-4 text-[13px] font-medium text-white shadow-none hover:border-reps-orange-border hover:text-reps-orange"
-              >
-                All specialisms
-              </Link>
-              <Link
-                to="/find-a-professional"
-                className="inline-flex h-9 items-center rounded-full border border-reps-border bg-reps-ink px-4 text-[13px] font-medium text-white shadow-none hover:border-reps-orange-border hover:text-reps-orange"
-              >
-                Find a professional
-              </Link>
-              <Link
-                to="/for-professionals"
-                className="inline-flex h-9 items-center rounded-full border border-reps-border bg-reps-ink px-4 text-[13px] font-medium text-white shadow-none hover:border-reps-orange-border hover:text-reps-orange"
-              >
-                For professionals
-              </Link>
-              <Link
-                to="/about"
-                className="inline-flex h-9 items-center rounded-full border border-reps-border bg-reps-ink px-4 text-[13px] font-medium text-white shadow-none hover:border-reps-orange-border hover:text-reps-orange"
-              >
-                About REPs
-              </Link>
+              <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                {[
+                  "Verified profile that ranks",
+                  "Qualifications & CPD on show",
+                  "Built-in bookings & payments",
+                  "Clients, CRM & messaging",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[14px] text-white">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
+                      <Star className="h-3 w-3 fill-reps-orange" />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link
+                  to="/for-professionals"
+                  className="inline-flex h-[48px] items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+                >
+                  Join REPs <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
+                >
+                  See plans
+                </Link>
+              </div>
             </div>
           </div>
         </div>
