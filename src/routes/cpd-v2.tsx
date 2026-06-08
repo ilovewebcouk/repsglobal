@@ -1197,7 +1197,7 @@ function FinalCta() {
         className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
       />
       <div className="relative mx-auto max-w-[920px] px-6 py-20 text-center lg:px-10 lg:py-28">
-        <h2 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[44px]">
+        <h2 className="font-display text-[30px] font-bold leading-[1.05] text-white lg:text-[44px]">
           Build your profile. Prove your standards.{" "}
           <span className="text-reps-orange">Grow your career.</span>
         </h2>
