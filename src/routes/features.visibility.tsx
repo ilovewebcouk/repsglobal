@@ -2,45 +2,38 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Globe } from "lucide-react";
 
 import { PillarPage, type PillarFeature } from "@/components/features/PillarPage";
-import { ProfileMockup } from "@/components/mockups/PlatformMockups";
-import {
-  ReviewsMockup,
-  SearchResultsMockup,
-  SeoLandingMockup,
-  ShareKitMockup,
-} from "@/components/mockups/VisibilityMockups";
 import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
 
 const FEATURES: PillarFeature[] = [
   {
-    tag: "Verified profile",
+    tag: "Capability 1 · Verified profile",
     title: "The profile clients actually trust before they enquire.",
     body:
-      "A REPs profile isn't a listing — it's a credential. Your qualifications, insurance and DBS are checked once and stamped, so prospects stop interrogating and start booking.",
+      "A REPs profile isn't a listing — it's a credential. Qualifications, insurance and DBS are checked once and stamped on the record, so prospects stop interrogating and start booking.",
     bullets: [
       "REPs Verified badge after credentials are checked",
       "Qualifications, insurance and DBS shown on the record",
       "Specialisms, services and pricing in one scan",
       "Mobile-first layout that converts on a phone, not just desktop",
     ],
-    mockup: <ProfileMockup />,
+    mockup: { device: "laptop", src: "/pro/james-carter", title: "Verified professional profile" },
     learnMoreSlug: "profile-and-reviews",
   },
   {
-    tag: "Directory placement",
+    tag: "Capability 2 · Directory placement",
     title: "Be the first verified pro a local client sees.",
     body:
-      "The REPs directory at /find is where the public already searches for a trusted fitness professional. Your profile is ranked on reviews, recency and proximity — not on who paid for ads.",
+      "The REPs directory at /find is where the public already searches for a trusted fitness professional. Profiles rank on reviews, recency and proximity — not on who paid for ads.",
     bullets: [
       "Indexed in /find by city, specialism and distance",
       "Verified-only filter — you're not buried under unchecked accounts",
       "Featured slots for Pro+ tiers when you're a strong match",
       "Live click and impression count on your dashboard",
     ],
-    mockup: <SearchResultsMockup />,
+    mockup: { device: "laptop", src: "/find", title: "REPs directory search results" },
   },
   {
-    tag: "Reviews on the record",
+    tag: "Capability 3 · Reviews on the record",
     title: "Reviews collected by REPs — and they stay on the record.",
     body:
       "Reviews are requested automatically after a real session and tied to a verified client record. You can reply. You can't delete. That's why prospects believe them.",
@@ -50,11 +43,11 @@ const FEATURES: PillarFeature[] = [
       "Public reply thread on every review",
       "Aggregate score feeds your search ranking",
     ],
-    mockup: <ReviewsMockup />,
+    mockup: { device: "laptop", src: "/pro/james-carter#reviews", title: "Reviews on the verified profile" },
     learnMoreSlug: "profile-and-reviews",
   },
   {
-    tag: "City & specialism pages",
+    tag: "Capability 4 · City & specialism pages",
     title: "REPs ranks for the searches your future clients are typing.",
     body:
       "Hundreds of city and specialism landing pages — \u201Cpilates instructors in Manchester\u201D, \u201Cstrength coach in Brixton\u201D — pull verified pros to the top of Google. You inherit that distribution the day you join.",
@@ -64,10 +57,10 @@ const FEATURES: PillarFeature[] = [
       "Featured card placement for Pro+ tiers",
       "Schema and Open Graph rendered for every profile",
     ],
-    mockup: <SeoLandingMockup />,
+    mockup: { device: "laptop", src: "/in/manchester", title: "City landing page — Manchester" },
   },
   {
-    tag: "Share kit & social proof",
+    tag: "Capability 5 · Share kit & social proof",
     title: "A polished share kit so every link looks like a brand, not a screenshot.",
     body:
       "Every Pro gets a generated share card, QR poster and social-ready assets — pre-branded with REPs Verified. Share once; look credible in every feed, DM and in-gym poster.",
@@ -77,7 +70,7 @@ const FEATURES: PillarFeature[] = [
       "Instagram story, LinkedIn header and email signature assets",
       "Profile-views and link-click count on your dashboard",
     ],
-    mockup: <ShareKitMockup />,
+    mockup: { device: "phone", src: "/c/james-wilson", title: "Pro shop-front — the link people share" },
   },
 ];
 

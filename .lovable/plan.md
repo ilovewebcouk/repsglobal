@@ -1,36 +1,53 @@
-# Extract a single shared FinalCta and use it on /cpd and /for-professionals
+## Honest answer on "10/10"
 
-Stop rebuilding the end-of-page CTA per route. Extract the `/for-professionals` version as the canonical component, then swap `/cpd` to use it. Per-page copy stays configurable via props — the shell (radius, padding, glow, pill, button styling) is identical everywhere.
+Not yet. Two real problems on `/features/visibility`:
 
-## Create
+1. **Inconsistent with `/for-professionals`.** That page uses the `ProductBlock` 50/50 with a small-caps orange eyebrow (`Pillar 1 · Visibility`) and a real laptop iframe of an actual REPs route (`/pro/james-carter`, `/c/james-wilson`, `/dashboard/leads`). The visibility page uses a different component (`PillarPage` + bespoke `VisibilityMockups.tsx`), a different eyebrow style (orange pill chip with words like "Verified profile"), and hand-drawn fake UI. They don't look like the same site.
+2. **The mockups aren't cinematic and aren't the real product.** You're right — the strongest pattern is a cinematic photo with real dashboard cards/screens composed over it (what `/for-professionals` already does with `HeroDeviceCluster` and `DeviceMockup` iframes of live routes). The current `SearchResultsMockup`, `ReviewsMockup`, `SeoLandingMockup`, `ShareKitMockup` are pure Tailwind illustrations — they aren't pulled from `/dashboard` or `/find`, so they drift from the real product and have to be maintained separately.
 
-`src/components/marketing/FinalCta.tsx` — lifted verbatim from `/for-professionals` lines 521–556. Props:
+## What to build
 
-- `eyebrow?: { icon?: LucideIcon; label: string }` — defaults to `{ icon: Star, label: "Founding pricing — locked for life" }`. Pass `null` to hide.
-- `heading: string` (required)
-- `lede?: string`
-- `primary: { to: string; label: string }` (required) — solid orange button.
-- `secondary?: { to: string; label: string }` — outline white/25 button.
+Rebuild `/features/visibility` so every 50/50 block is the **same `ProductBlock` component** used on `/for-professionals`, pointed at the real REPs routes. No new components, no bespoke mockups, eyebrows aligned.
 
-Shell is fixed (do not expose via props): outer `<section>` with `max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28`, inner `rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 lg:p-16 text-center` with the radial orange glow overlay. Buttons use `h-12 rounded-[10px]` per the radius system; primary uses `bg-reps-orange … hover:bg-reps-orange-hover`, secondary uses `border border-white/25 hover:bg/white-10`. No shadows.
+### Eyebrow scheme (matches `/for-professionals`)
 
-## Edit
+Drop the orange chip. Use the small-caps orange eyebrow from `ProductBlock`:
 
-- `src/routes/for-professionals.tsx` — replace the inline FINAL CTA block (lines 521–556) with `<FinalCta heading="Verified profile live today. Set up in 10 minutes." lede="Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch." primary={{ to: "/compare", label: "Compare platforms" }} secondary={{ to: "/pricing", label: "See pricing" }} />`. Add the import; drop any now-unused `Star` / `ArrowRight` imports only if nothing else in the file uses them.
-- `src/routes/cpd.tsx` — replace `<FinalCta />` at line 328 with `<FinalCta heading="Build your profile. Prove your standards." headingAccent="Grow your career." lede="Join REPs to connect your verification, education, profile and professional development in one platform." primary={{ to: "/signup", label: "Join REPs" }} />`. Delete the local `FinalCta` function (lines 1191–1221). Import the shared component from `@/components/marketing/FinalCta`.
+- `Capability 1 · Verified profile`
+- `Capability 2 · Directory placement`
+- `Capability 3 · Reviews on the record`
+- `Capability 4 · City & specialism pages`
+- `Capability 5 · Share kit & social proof`
 
-To keep the `/cpd` headline's orange accent ("Grow your career.") working under the shared component, add an optional `headingAccent?: string` prop that renders inline after `heading` with `text-reps-orange`. This is the only structural prop beyond the four above.
+Same typographic treatment as `Pillar 1 · Visibility` on the for-pros page — instantly reads as the same site.
 
-## Out of scope (this pass)
+### 50/50 blocks — reuse `ProductBlock` with real routes inside `DeviceMockup`
 
-- `FeatureGroupLayout` and `PillarPage` also re-implement the same CTA. The user explicitly scoped this pass to `/cpd` + `/for-professionals` only. Follow-up pass to migrate the feature/pillar pages once this lands.
-- `cpd-legacy.tsx` is the archived old CPD page — leave alone.
+| # | Capability | Device | Live route in the laptop frame |
+|---|---|---|---|
+| 1 | Verified profile | laptop | `/pro/james-carter` |
+| 2 | Directory placement | laptop | `/find?city=manchester&specialism=personal-trainer` |
+| 3 | Reviews on the record | laptop | `/pro/james-carter#reviews` |
+| 4 | City & specialism pages | laptop | `/in/manchester` |
+| 5 | Share kit & social proof | phone | `/c/james-wilson` (Pro shop-front renders as the share target) |
 
-## QA
+This is exactly the "icons / sections / cards from the actual `/dashboard`" idea — except the laptop shows the **real REPs page** for that capability, so it stays in sync forever and is visually identical to the for-pros blocks.
 
-- After the edits, eyeball both pages: the rounded `rounded-[24px]` panel, the Founding-pricing pill, the radial glow and the orange/outline button pair must be visually identical on `/cpd` and `/for-professionals`. Only the headline + body + button targets differ.
-- Run the REPs compliance audit script before signing off.
+### Files
 
-## Memory update
+- **Rewrite** `src/routes/features.visibility.tsx`
+  - Keep the existing `PillarPage` hero / ActIntro / Comparison / cross-links / CTA shell (those are already the shared chrome).
+  - Replace the `features` array's `mockup: <ReviewsMockup />` style with `mockup: { device: 'laptop', src: '/pro/james-carter', title: '…' }` and let `PillarFeatureBlock` render `DeviceMockup` the same way `ProductBlock` does. Smallest change: extend `PillarFeature` so `mockup` can be a `DeviceMockup` config (preferred) instead of `ReactNode`, and route through `DeviceMockup` inside `PillarPage.tsx`.
+  - Rename `tag` values to the `Capability N · …` scheme.
+- **Update** `src/components/features/PillarPage.tsx` — `PillarFeatureBlock` renders `MockupStage` + `DeviceMockup` when given a config object (matches `ProductBlock`); render the small-caps eyebrow instead of the chip pill.
+- **Delete** `src/components/mockups/VisibilityMockups.tsx` (no longer referenced; bespoke illustrations replaced by real routes).
 
-After the swap lands, save a small project memory at `mem://design/final-cta` referenced from the index: "Shared `FinalCta` in `src/components/marketing/FinalCta.tsx` is the only end-of-page CTA. Do not rebuild per route — pass copy via props." This prevents the next agent from re-introducing a local copy.
+### What I won't do
+
+- No new mockup components, no new section components, no new hero variants.
+- No backend/data work — Phase 1 visual only.
+- No change to `/for-professionals` (it's the source of truth for the pattern).
+
+### Future option (separate ask, not in this plan)
+
+If you later want the "cinematic photo + floating dashboard cards" composition (à la `HeroDeviceCluster`), we'd build **one** shared `CinematicCardStack` component and adopt it on both `/for-professionals` and every pillar page in the same pass — so it never drifts again. Flag it and I'll spin it up.
