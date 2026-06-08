@@ -6,7 +6,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 import { MockupStage } from "@/components/marketing/MockupStage";
 import { ActIntro } from "@/components/marketing/ActIntro";
-import { PressMarquee } from "@/components/marketing/PressMarquee";
+
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
 
 
@@ -169,8 +169,6 @@ export function PillarPage({
         </div>
       </section>
 
-      {/* PRESS MARQUEE — same ink continuum as hero + Act 1 */}
-      <PressMarquee />
 
       {/* ACT INTRO */}
       <section className="border-t border-reps-border/60">
