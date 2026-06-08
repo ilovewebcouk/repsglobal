@@ -1165,7 +1165,7 @@ function RaiseTheStandard() {
             REPs exists for one reason: to raise the floor of this industry.
           </h2>
           <p className="mt-5 text-[15.5px] leading-relaxed text-white/75">
-            Fitness has been cheap for too long because nobody checks. REPs checks. That's the entire
+            Standards have stayed low because nobody checks. REPs checks. That's the entire
             product. Three things change when the standard goes up.
           </p>
         </div>
