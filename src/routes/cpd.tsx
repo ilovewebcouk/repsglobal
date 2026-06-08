@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 import ctaTrainers from "@/assets/cta-band.jpg";
+import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
+import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
   Accordion,
@@ -452,7 +454,10 @@ function CpdPage() {
 
         <Hero />
 
+        <ProfileScreenshot />
+
         <WhatCpdIs />
+
 
 
         <RepsCpdSystem />
@@ -600,6 +605,71 @@ function Hero() {
     </section>
   );
 }
+
+
+/* ------------------------------------------------------------------ */
+/* Section: Profile screenshot — what CPD looks like on a REPs profile */
+/* ------------------------------------------------------------------ */
+
+function ProfileScreenshot() {
+  const bullets = [
+    "Logged quarterly, audited annually",
+    "Verified-provider hours auto-count",
+    "Specialisms appear once the awarding body confirms",
+  ];
+  return (
+    <section className="relative overflow-hidden border-b border-reps-border bg-reps-ink">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_75%_45%,rgba(255,122,0,0.10),transparent_70%)]"
+      />
+      <div className="relative mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-14">
+          <div className="max-w-[520px]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+              On the profile
+            </span>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+              This is what verified CPD looks like to your clients.
+            </h2>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
+              Every verified hour, qualification and insurance certificate shows up live on the
+              public REPs profile — with the provider, the awarding body and the date it was issued.
+              Unverified hours sit in a separate column. Clients can see the difference at a glance.
+            </p>
+            <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
+              {bullets.map((b) => (
+                <li key={b} className="flex gap-2">
+                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-[28px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+            />
+            <BrowserFrame url="repsglobal.com/c/james-wilson">
+              <img
+                src={cpdProfileAsset.url}
+                alt="Screenshot of a REPs professional profile showing four verified credentials: Level 3 Personal Trainer, Level 3 Diploma in Personal Training, Professional Indemnity Insurance and First Aid & CPR."
+                width={1400}
+                height={416}
+                loading="lazy"
+                decoding="async"
+                className="block h-auto w-full"
+              />
+            </BrowserFrame>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 
 
