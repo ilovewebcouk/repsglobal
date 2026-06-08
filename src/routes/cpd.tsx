@@ -1189,8 +1189,8 @@ function RaiseTheStandard() {
 
         <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-orange-soft px-6 py-6 lg:px-8">
           <p className="font-display text-[20px] font-bold leading-tight text-white lg:text-[24px]">
-            Cheap coaching exists because nobody checks. REPs checks.
-            <span className="text-reps-orange"> Price accordingly.</span>
+            Standards are low because nobody checks. REPs checks.
+            <span className="text-reps-orange"> Verified professionals should price accordingly.</span>
           </p>
         </div>
       </div>
