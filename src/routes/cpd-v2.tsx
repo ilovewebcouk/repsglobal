@@ -301,8 +301,8 @@ const FAQS = [
     a: "We're building learning recommendations that surface CPD relevant to your specialisms, goals and profile gaps. The recommendation preview on this page shows the direction.",
   },
   {
-    q: "Are specialist badges verified?",
-    a: "REPs shows specialism areas evidenced by recognised qualifications and CPD. We don't issue badges that aren't backed by a credential — that's the point.",
+    q: "How do specialism areas work?",
+    a: "REPs shows specialism areas evidenced by recognised qualifications and CPD. We don't award badges for things you haven't proven — your specialism areas appear on your profile when the credential behind them is verified.",
   },
   {
     q: "Can I use REPs without completing CPD?",
