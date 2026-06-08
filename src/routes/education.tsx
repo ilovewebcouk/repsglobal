@@ -462,15 +462,15 @@ const FAQS = [
   },
   {
     q: "What is CPD?",
-    a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
+    a: "Continuing Professional Development — ongoing learning a professional commits to after their initial qualification. For REPs, the rule is simple: CPD only counts toward your profile if it's delivered by a REPs-accredited provider. The exact framework (hours, points, cycle) is being finalised and will be published before launch.",
   },
   {
     q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
-    a: "If you want the qualification to mean anything on REPs — yes. Hours through a verified provider auto-count toward your CPD log once you're a member. Hours through unverified providers don't. More importantly, REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. If the provider isn't on REPs, ask them why.",
+    a: "If you want the qualification to mean anything on REPs — yes. REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. CPD delivered through a REPs-accredited provider is the only CPD that will update a REPs profile. If the provider isn't on REPs, ask them why.",
   },
   {
-    q: "Can CPD upgrade me to a new specialism?",
-    a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPs profile once the awarding body confirms it.",
+    q: "Can further training upgrade me to a new specialism?",
+    a: "Yes. Stack training toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes — and the new specialism appears on your REPs profile once the awarding body confirms it.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
