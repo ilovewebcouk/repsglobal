@@ -14,6 +14,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Star,
   Stethoscope,
   TrendingUp,
   Wand2,
@@ -39,6 +40,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 
 import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
+import ctaTrainers from "@/assets/cta-band.jpg";
 
 /* ------------------------------------------------------------------ */
 /* Page head                                                           */
@@ -471,6 +473,8 @@ function CpdPage() {
         <VerifyStrip />
 
         <FaqBlock />
+
+        <ProCtaBand />
 
         <CrossLinkStrip />
 
@@ -1425,6 +1429,75 @@ function FaqBlock() {
     </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Professional CTA band                                               */
+/* ------------------------------------------------------------------ */
+
+function ProCtaBand() {
+  return (
+    <section className="bg-reps-ivory py-16 lg:py-20">
+      <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
+        <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
+          <div className="relative w-full md:absolute md:inset-0">
+            <img src={ctaTrainers} alt="" className="aspect-[5/4] w-full object-cover object-[100%_center] md:aspect-auto md:h-full md:object-[100%_top] lg:object-center" loading="lazy" />
+            <div
+              className="absolute inset-0 hidden md:block"
+              style={{ backgroundImage: "linear-gradient(to bottom, transparent 0%, transparent 18%, rgba(11,13,16,0.38) 42%, rgba(11,13,16,0.72) 65%, #0B0D10 88%)" }}
+            />
+            <div
+              className="absolute inset-0 hidden lg:block"
+              style={{ backgroundImage: "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.95) 25%, rgba(11,13,16,0.55) 38%, rgba(11,13,16,0) 50%)" }}
+            />
+          </div>
+          <div className="relative px-6 py-10 md:min-h-[480px] md:px-10 md:py-12 lg:min-h-[440px] lg:px-14 lg:py-14">
+            <div className="max-w-[520px]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                <Sparkles className="h-3 w-3 fill-reps-orange" /> For fitness professionals
+              </span>
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[32px] lg:text-[38px]">
+                Make your CPD count where clients are looking.
+              </h2>
+              <p className="mt-3 max-w-[440px] text-[14.5px] leading-relaxed text-white/85">
+                List your verified profile on REPs, show your CPD and qualifications, and get found by clients searching in your city.
+              </p>
+              <ul className="mt-6 grid gap-2.5">
+                {[
+                  "Verified CPD + qualifications on your profile",
+                  "Found in city and specialism search",
+                  "Every feature in your tier included — no paid add-ons",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[14px] text-white">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-reps-orange/70 text-reps-orange">
+                      <Star className="h-3 w-3 fill-reps-orange" />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link
+                  to="/pricing"
+                  className="inline-flex h-[48px] items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+                >
+                  See pricing <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/for-professionals"
+                  className="inline-flex h-[48px] items-center rounded-[10px] border border-white/30 px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-white/10"
+                >
+                  How REPs works for pros
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
 
 /* ------------------------------------------------------------------ */
 /* Cross-link strip                                                    */
