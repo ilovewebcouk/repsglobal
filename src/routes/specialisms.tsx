@@ -894,48 +894,12 @@ const VERIFY_STEPS = [
 
 function VerifyStrip() {
   return (
-    <section className="border-b border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How we verify every specialism
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Three checks — every profile, every renewal.
-          </h2>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {VERIFY_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel p-7"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                    Step {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-display text-[18px] font-bold text-white">{step.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/70">{step.body}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 flex flex-wrap items-center gap-3 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
-          <BadgeCheck className="h-5 w-5 text-reps-orange" />
-          <span className="text-[14px] font-semibold text-white">
-            The result: a single Verified badge the public can actually trust.
-          </span>
-        </div>
-      </div>
-    </section>
+    <VerifySteps
+      eyebrow="How we verify every specialism"
+      heading="Three checks — every profile, every renewal."
+      steps={VERIFY_STEPS}
+      bannerText="The result: a single Verified badge the public can actually trust."
+    />
   );
 }
 
@@ -945,33 +909,10 @@ function VerifyStrip() {
 
 function FaqBlock() {
   return (
-    <section className="border-b border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[920px] px-6 py-20 lg:px-10 lg:py-24">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-          FAQ
-        </span>
-        <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          Specialisms, qualifications & registers — answered.
-        </h2>
-
-        <Accordion type="single" collapsible className="mt-10">
-          {FAQS.map((f, i) => (
-            <AccordionItem
-              key={i}
-              value={`item-${i}`}
-              className="border-b border-reps-border"
-            >
-              <AccordionTrigger className="text-left text-[15.5px] font-semibold text-white hover:no-underline">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-[14.5px] leading-relaxed text-white/75">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
-    </section>
+    <MarketingFaq
+      heading="Specialisms, qualifications & registers — answered."
+      items={FAQS}
+    />
   );
 }
 
