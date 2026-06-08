@@ -12,7 +12,7 @@ import {
   Dumbbell,
   GraduationCap,
   Heart,
-  Lightbulb,
+  Lock,
   Lock,
   Monitor,
   Rocket,
