@@ -32,7 +32,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
-import { PressMarquee } from "@/components/marketing/PressMarquee";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -538,8 +538,6 @@ function HomeV2() {
       </section>
 
 
-      {/* ============ PRESS STRIP — demoted to footer-adjacent (pro / investor / journalist trust) ============ */}
-      <PressMarquee />
 
       <PublicFooter />
     </div>
