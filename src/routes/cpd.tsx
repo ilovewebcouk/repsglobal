@@ -23,6 +23,7 @@ import {
 
 import ctaTrainers from "@/assets/cta-band.jpg";
 import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
+import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 
 import {
@@ -446,6 +447,63 @@ const FAQS = [
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
+function TutorMoment() {
+  return (
+    <section className="relative isolate overflow-hidden border-b border-reps-border bg-reps-ink">
+      <img
+        src={cpdTutorMomentAsset.url}
+        alt=""
+        loading="lazy"
+        width={1920}
+        height={1080}
+        className="absolute inset-0 h-full w-full object-cover object-[70%_center]"
+      />
+      {/* Mobile: bottom-anchored legibility gradient */}
+      <div
+        aria-hidden
+        className="absolute inset-0 md:hidden"
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, rgba(11,13,16,0.55) 0%, rgba(11,13,16,0.35) 35%, rgba(11,13,16,0.85) 70%, #0B0D10 100%)",
+        }}
+      />
+      {/* Desktop: left-anchored copy well */}
+      <div
+        aria-hidden
+        className="absolute inset-0 hidden md:block"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, #0B0D10 0%, rgba(11,13,16,0.92) 30%, rgba(11,13,16,0.55) 48%, rgba(11,13,16,0) 62%)",
+        }}
+      />
+      {/* Warm orange micro-glow tying to brand */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-70"
+        style={{
+          backgroundImage:
+            "radial-gradient(900px 500px at 10% 60%, rgba(255,107,53,0.10), transparent 60%)",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
+        <div className="max-w-[640px]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+            <BookOpen className="h-3.5 w-3.5" /> Inside a verified CPD course
+          </span>
+          <p className="mt-6 font-display text-[28px] font-bold leading-[1.1] text-white lg:text-[44px]">
+            “The honest providers are already here.
+            <span className="text-reps-orange"> The rest are running a print shop for certificates.”</span>
+          </p>
+          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[0.22em] text-white/55">
+            REPs — verified training providers
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CpdPage() {
   return (
     <TooltipProvider delayDuration={200}>
@@ -469,6 +527,8 @@ function CpdPage() {
         <VerifiedProviders />
 
         <DodgyCourses />
+
+        <TutorMoment />
 
         <RaiseTheStandard />
 
@@ -782,7 +842,7 @@ function RepsCpdSystem() {
   return (
     <section
       id="how-reps-runs-it"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
@@ -802,7 +862,7 @@ function RepsCpdSystem() {
           {pillars.map((p) => {
             const Icon = p.icon;
             return (
-              <article key={p.title} className="rounded-[18px] border border-reps-border bg-reps-panel p-6">
+              <article key={p.title} className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-6">
                 <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                   <Icon className="h-5 w-5" />
                 </span>
@@ -1014,7 +1074,7 @@ function GeneralistVsSpecialist() {
   return (
     <section
       id="specialist-vs-generalist"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
@@ -1031,7 +1091,7 @@ function GeneralistVsSpecialist() {
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel p-7">
+          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <Stethoscope className="h-5 w-5" />
@@ -1058,7 +1118,7 @@ function GeneralistVsSpecialist() {
             </ul>
           </article>
 
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel p-7">
+          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <BadgeCheck className="h-5 w-5" />
@@ -1135,11 +1195,6 @@ function VerifiedProviders() {
               a provider refuses or fails verification is the reason you should refuse them.
             </p>
 
-            <blockquote className="mt-8 border-l-2 border-reps-orange pl-5">
-              <p className="font-display text-[18px] leading-snug text-white lg:text-[20px]">
-                “The honest providers are already here. The rest are running a print shop for certificates.”
-              </p>
-            </blockquote>
           </div>
 
           <div className="grid gap-4">
@@ -1177,7 +1232,7 @@ function DodgyCourses() {
   return (
     <section
       id="worthless-courses"
-      className="scroll-mt-[140px] border-b border-reps-border bg-reps-panel-soft/40"
+      className="scroll-mt-[140px] border-b border-reps-border bg-reps-midnight"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[820px]">
@@ -1195,7 +1250,7 @@ function DodgyCourses() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          <article className="rounded-[18px] border border-reps-border bg-reps-panel p-7">
+          <article className="rounded-[18px] border border-reps-border bg-reps-panel-soft p-7">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/5 text-white/70">
                 <Flag className="h-5 w-5" />
@@ -1212,7 +1267,7 @@ function DodgyCourses() {
             </ul>
           </article>
 
-          <article className="rounded-[18px] border border-reps-orange-border bg-reps-panel p-7">
+          <article className="rounded-[18px] border border-reps-orange-border bg-reps-panel-soft p-7">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <BadgeCheck className="h-5 w-5" />
@@ -1350,7 +1405,7 @@ function ProviderCtaBand() {
 
 function RegistersBlock() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel-soft/40">
+    <section className="border-b border-reps-border bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
@@ -1369,7 +1424,7 @@ function RegistersBlock() {
           {REGISTERS.map((r) => (
             <article
               key={r.short}
-              className="flex flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6"
+              className="flex flex-col rounded-[18px] border border-reps-border bg-reps-panel-soft p-6"
             >
               <div className="flex items-center gap-2">
                 <span className="rounded-[6px] bg-reps-orange-soft px-2 py-0.5 text-[12px] font-semibold text-reps-orange">
