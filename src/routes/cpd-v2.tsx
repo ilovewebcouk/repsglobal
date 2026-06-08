@@ -349,35 +349,50 @@ function Hero() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[78%_38%] sm:object-[72%_42%] md:object-[68%_45%] lg:object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/35 via-reps-ink/60 to-reps-ink/85 lg:bg-reps-ink/40 lg:bg-none" />
+      <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/35" />
       <div
         aria-hidden
-        className="absolute inset-0 hidden lg:block bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
+        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_30%_45%,rgba(10,10,12,0.60),transparent_75%)] lg:bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
       />
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
+      />
 
-      <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-7xl flex-col items-start justify-start px-5 pt-24 sm:px-6 lg:px-8 lg:pt-28">
-        <div className="max-w-2xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
+      <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-[1320px] flex-col items-start justify-start px-6 pb-20 pt-24 lg:px-10 lg:pb-28 lg:pt-28">
+        <div className="max-w-[720px]">
+          <span
+            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange backdrop-blur"
+            style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Education & CPD
-          </Badge>
-          <h1 className="mt-5 font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]">
+            <GraduationCap className="h-3.5 w-3.5" /> Education & CPD
+          </span>
+
+          <h1
+            className="mt-6 animate-fade-in font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]"
+            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+          >
             Education, CPD and career growth{" "}
             <span className="text-reps-orange">for fitness professionals.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/80 sm:text-[18px]">
+
+          <p
+            className="mt-6 max-w-[560px] animate-fade-in text-[17px] leading-relaxed text-white/80 sm:text-[18px]"
+            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+          >
             Build your professional profile, track your development and find
             recognised education that helps you stay credible, visible and
             trusted through REPs.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <div
+            className="mt-8 flex animate-fade-in flex-wrap items-center gap-3"
+            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+          >
             <Link
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
@@ -398,25 +413,47 @@ function Hero() {
             </a>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/70">
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-              Accredited providers only
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5 text-reps-orange" />
-              Ofqual · Yoga Alliance · BASI · STOTT
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 text-reps-orange" />
-              Trusted by clients worldwide
-            </span>
+          <ul
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+          >
+            <li className="inline-flex items-center gap-1.5">
+              <BadgeCheck className="h-4 w-4 text-reps-orange" />
+              Identity, qualification & insurance verified
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-reps-orange" />
+              Recognised education partners
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-reps-orange" />
+              CPD tracked on your public profile
+            </li>
+          </ul>
+
+          <div
+            className="mt-10 w-full animate-fade-in border-t border-white/10 pt-5"
+            style={{ animationDuration: "640ms", animationDelay: "420ms", animationFillMode: "both" }}
+          >
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+              <span>Education</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>CPD</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Specialisms</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Pathways</span>
+              <span className="text-reps-orange/70">·</span>
+              <span>Career</span>
+              <span className="ml-2 text-reps-orange">— All in one place</span>
+            </p>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Proof cards                                                         */
