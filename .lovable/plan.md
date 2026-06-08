@@ -1,66 +1,82 @@
-## /cpd-v2 — rebuild using shadcn skill + REPs visual system
+# Stop the drift — extract shared marketing primitives, force /cpd-v2 to use them
 
-Two problems with the current `/cpd-v2`:
-1. It bypasses the **shadcn skill** — raw `<a>`/`<button>`/`<div>` markup instead of `Button`, `Card`, `Badge`, etc.
-2. It bypasses the **REPs design system** — uses ad-hoc `bg-white/[0.03] border-white/10` instead of the semantic tokens (`bg-reps-panel`, `border-reps-border`, `bg-reps-orange-soft`, `text-reps-muted`) that `/for-professionals`, `/specialisms`, `/c/$slug` and every other locked marketing page rely on. It also doesn't reuse the shared marketing components those pages share.
+You're right. I diffed the two pages line by line. The drift isn't subtle:
 
-Keep the **content/section order** from the approved v2 plan; rebuild every component against the system.
+| Token | `/specialisms` | `/cpd-v2` |
+|---|---|---|
+| Hero lede `<p>` | `text-[16px]` | `text-[17px] sm:text-[18px]` |
+| Section H2 | `text-[30px] lg:text-[40px]`, `leading-tight`, no tracking | `text-[34px] sm:text-[40px]`, `leading-[1.1]`, `tracking-tight` |
+| Section H2 colour | Pure white, no orange word | Orange `<span>` split-phrase on **every** H2 (9 of them) |
+| Section eyebrow | Bare `<span>` `text-[11px] uppercase tracking-[0.22em] text-reps-orange` | shadcn `<Badge variant="outline">` pill with `bg-reps-panel` + icon |
+| Hero eyebrow | Animated bare-pill with plain orange `<span>` inside | `<Badge>` with `bg-reps-orange-soft` fill |
+| White opacity scale | 6 tokens (`/45 /55 /65 /70 /75 /80`) | 9 tokens (`/45 /50 /55 /60 /65 /70 /75 /80 /85`) |
+| FAQ | Bare `<Accordion>`, `max-w-[920px]` | Wrapped in Card panel, `max-w-4xl` |
+| VerifyStrip | Numbered "Step 1/2/3" cards + accent banner | Plain 3 icon tiles, no steps, no banner |
 
----
+This is one page diverging from another because I built bespoke markup every time. Fix is to extract `/specialisms`' patterns into shared components and force `/cpd-v2` to consume them. Both pages then change together, by design.
 
-### Rules for the rebuild
+## Plan
 
-- **shadcn skill on**:
-  - `Button` (variants: default = orange, outline, ghost, secondary) for every CTA. Icons use `data-icon="inline-end"`. Never raw `<a className="rounded-[10px]…">`.
-  - `Card` with full composition (`CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`) for proof cards, pathway cards, course cards, providers card.
-  - `Badge` (variants `secondary`, `outline`, plus the orange chip pattern used on `/specialisms`) for status pills, "Verified provider", "Preview", filter chips.
-  - `Tabs` + `TabsList` + `TabsTrigger` for the "Online / In-person" toggle.
-  - `Select` + `SelectGroup` + `SelectItem` for the discovery filter dropdowns (visually present but `disabled` — still keep proper composition).
-  - `Accordion` (already correct) for FAQ.
-  - `Avatar` + `AvatarFallback` for the passport mockup persona.
-  - `Progress` for the CPD cycle bar.
-  - `Separator` instead of borders where appropriate.
-  - `Alert` for the "Preview — illustrative examples" note.
-  - `Tooltip` for credential explainers where used.
-  - Spacing with `gap-*`, never `space-y-*`. `size-*` for square dimensions.
+### 1. Shared marketing primitives (new files under `src/components/marketing/`)
 
-- **REPs tokens only** (match `/for-professionals`, `/specialisms`):
-  - Backgrounds: `bg-reps-ink`, `bg-reps-panel`, `bg-reps-orange-soft`
-  - Borders: `border-reps-border`, hover `border-reps-orange-border`
-  - Text: `text-white`, `text-reps-muted`, `text-reps-orange`
-  - Buttons: `bg-reps-orange hover:bg-reps-orange-hover`
-  - Radius map per memory: button `rounded-[10px]`, std card `rounded-[16px]`, large card `rounded-[18px]`, panel `rounded-[22px]`. No `rounded-xl/2xl/3xl`, no `rounded-[14px]` outside the photo-shape exception.
-  - No `bg-white/[0.03]`, `border-white/8`, `text-white/65` etc. anywhere on this page.
+- **`SectionEyebrow.tsx`** — bare `<span class="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">`. No pill, no background.
+- **`SectionHeading.tsx`** — `<h2 class="font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">`. Single white colour, no orange split-word. No `tracking-tight`, no `leading-[1.1]`.
+- **`SectionHeader.tsx`** — wraps `SectionEyebrow` + `SectionHeading` + optional lede in the canonical 760-px column with the exact `mt-3` / `mt-4` rhythm `/specialisms` uses.
+- **`MarketingHeroEyebrow.tsx`** — the animated border-pill from `/specialisms` hero (bare orange span, no bg-fill). Hero-only variant.
+- **`VerifySteps.tsx`** — verbatim extract of `/specialisms` VerifyStrip: numbered Step 1/2/3 cards + the `bg-reps-orange-soft` accent banner closer. Accepts `eyebrow`, `heading`, `steps[]`, `bannerText`.
+- **`MarketingFaq.tsx`** — bare `<Accordion>`, `max-w-[920px]`, no Card wrapper. Accepts `eyebrow`, `heading`, `items[]`.
 
-- **Reuse shared marketing components** so the page reads as one product:
-  - **Hero**: match the `for-professionals` / `specialisms` hero pattern (same chip → H1 → sub → CTAs → trust strip → optional `PressMarquee`). Keep the `cpd-tutor-moment` editorial photo as the bg.
-  - **Pathway cards** → render via `ProductBlock` (the 5-pillar component already used on `/for-professionals`). One ProductBlock per pathway, OR a tighter `Card` grid using the same visual recipe — pick `ProductBlock` so the rhythm matches the For-Pros page.
-  - **Specialism areas** → mirror the `SpecialismSection` chip pattern from `/specialisms` (orange-soft chips, `QualCard`-style explainers if relevant).
-  - **Register/proof strip** → drop in `RegisterProof` (already used on /for-pros) between Passport and Pathways.
-  - **Testimonial** → one `TestimonialFeature` block between AI Recommendations and Training Providers, with a quote from a member about CPD/profile credibility.
-  - **Sticky CTA** → `StickyCtaPill` for "Join REPs" on scroll, same as `/for-professionals`.
-  - **FAQ** → use `ForProsFaq`-style component (or keep local Accordion but wrap in the same card surface treatment used on `/for-professionals` so it matches visually). Prefer wrapping FAQs in the same panel treatment used elsewhere.
+### 2. Refactor `/specialisms` to use them (zero pixel diff)
+- Hero eyebrow → `<MarketingHeroEyebrow>` (keep the `Sparkles` icon + label).
+- `RegistersBlock`, `VerifyStrip`, `FaqBlock` headers → `<SectionHeader>`.
+- `VerifyStrip` body → `<VerifySteps>`.
+- `FaqBlock` body → `<MarketingFaq>`.
+- Visual regression check after — must match the current screenshot pixel-for-pixel.
 
-- **Section-by-section component swaps in `src/routes/cpd-v2.tsx`**:
-  1. `Hero` — Buttons via shadcn `Button` (default orange + outline), trust pills via `Badge variant="outline"`. Pull layout from for-pros hero.
-  2. `ProofCards` — 4× `Card` with `CardHeader>CardTitle+CardDescription`, icon inside a `bg-reps-orange-soft` square.
-  3. `DevelopmentPassport` — 50/50 grid. Right column = `ProfessionalDevelopmentMockup` rebuilt with `Card`, `Avatar+AvatarFallback`, `Badge`, `Progress`, `Separator`, all on `bg-reps-panel border-reps-border rounded-[22px]`.
-  4. `RegisterProof` — drop-in shared component.
-  5. `LearningPathways` — `ProductBlock` (or matching Card grid) using `bg-reps-panel` cards, orange-soft icon tiles, "See courses" `Button variant="link"` with `data-icon`.
-  6. `CpdDiscovery` — filter row: `Select` for Category/Delivery/Points/Level/Provider/Specialism; `Tabs` for Online/In-person. Course grid: `Card` with `CardHeader`, `Badge` for "Verified provider"/level/points/format, `CardFooter` with `Button variant="outline" disabled`. `Alert variant="default"` underneath with the "Preview — illustrative" note.
-  7. `SpecialistAreas` — chip grid using orange-soft `Badge` and small icon, mirrors `/specialisms` styling. Footer note via `Alert` or muted text.
-  8. `AiRecommendations` — left copy, right `Card` "Suggested for you" panel using `Badge` for the Preview pill, three `RecRow` items rebuilt as `Card`-flavoured rows with `bg-reps-panel`. Wrap in a `Tooltip` explainer on "Preview".
-  9. `TestimonialFeature` — shared component, one member quote on CPD lifting profile credibility.
-  10. `TrainingProvidersBand` — split layout, right side = `Card` listing "What's coming" with `Check` rows; left = `Button` ("Register interest as a training provider").
-  11. `FaqBlock` — keep `Accordion`, wrap in a `Card` panel with `border-reps-border bg-reps-panel rounded-[22px]` so it matches for-pros visually.
-  12. `FinalCta` — same dark gradient pattern as the for-pros final CTA, `Button size="lg"`.
-  13. Add `StickyCtaPill` at the page root.
+### 3. Force `/cpd-v2` onto the same components
 
-- **No new content, no copy rewrites** beyond what's already on v2. This is a presentational/system pass only.
+For **every** section (`ProofCards`-area, `DevelopmentPassport`, `RegisterProofBand`, `LearningPathways`, `RecognitionStrip`, `CpdDiscovery`, `SpecialistAreas`, `AiRecommendations`, `TrainingProvidersBand`, `FaqBlock`, `VerifyStrip`, `FinalCta`):
 
-- **Out of scope**: real filtering logic, real AI calls, route changes, touching `/cpd` (kept as-is), adding new shared components to `src/components/marketing/`.
+- Replace every `<Badge>` eyebrow with `<SectionEyebrow>` (text only, no icon).
+- Replace every `<h2>` with `<SectionHeading>` — **delete every orange-span split-word** in those H2s.
+- Hero `<h1>`: keep its existing orange phrase (heroes always allow it), but downsize the lede `<p>` from `text-[17px] sm:text-[18px]` → `text-[16px]` to match `/specialisms`.
+- Hero eyebrow: swap the shadcn `<Badge bg-reps-orange-soft>` for `<MarketingHeroEyebrow icon={GraduationCap}>Education & CPD</MarketingHeroEyebrow>`.
+- VerifyStrip → `<VerifySteps>` with REPs verification triad (Identity / Insurance / CPD on the public record), Step 1/2/3 + banner.
+- FaqBlock → `<MarketingFaq>`.
 
-### Verification after build
-- Page renders with no console / runtime errors.
-- Spot-check radius (no rounded-xl, no white/* arbitrary surfaces).
-- Visual sanity-check against `/for-professionals` and `/specialisms` at 1342px and 390px.
+### 4. Lock the opacity scale
+- Allowed body-text greys: `text-white/80` (primary body), `text-white/70` (secondary body), `text-white/55` (meta/labels), `text-white/45` (de-emphasised micro). That's it.
+- Sweep `/cpd-v2` and rewrite every `/50`, `/60`, `/65`, `/75`, `/85` to the nearest allowed value.
+
+### 5. Lock the font-size scale (matches `/specialisms`)
+- Hero lede: `text-[16px]`
+- Section lede: `text-[15px]` or `text-[15.5px]` only (no `text-[16px]` paragraphs outside hero)
+- Card titles: `text-[15px]`–`text-[18px]` `font-display font-bold`
+- Card body: `text-[13.5px]`–`text-[14px]`
+- Sweep `/cpd-v2` for `text-[16px]`/`text-[17px]`/`text-[18px]` paragraphs outside the hero and downsize.
+
+### 6. Audit + verify
+- Run `/tmp/audit.sh` — must remain clean.
+- `grep` `/cpd-v2.tsx` for `<Badge.*variant="outline".*uppercase` → must return zero hits (all moved to `SectionEyebrow`).
+- `grep` `/cpd-v2.tsx` for `<span class="text-reps-orange">` inside an `<h2>` → must return zero hits.
+- `grep` `text-white/(50|60|65|75|85)` in `/cpd-v2.tsx` → must return zero hits.
+- Compare `/specialisms` before/after — pixel-identical.
+- Compare `/cpd-v2` before/after — section headers, FAQ and VerifyStrip now read as the same component as `/specialisms`.
+
+### 7. Memory
+After this lands, save `mem://design/marketing-section-primitives` recording that:
+- `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingHeroEyebrow`, `VerifySteps`, `MarketingFaq` are the canonical marketing primitives.
+- No new marketing page may hand-roll a section header, hero eyebrow, FAQ block or verify-strip.
+- Allowed white-opacity scale: `/45 /55 /70 /80` only.
+- Allowed body font sizes: hero lede `16px`; section lede `15`/`15.5px`; card body `13.5`/`14px`.
+
+## Out of scope
+- No copy changes other than removing orange split-words from H2s.
+- No new sections, no image changes.
+- `/for-professionals` is not touched this pass — it gets the same primitives on its next dedicated pass.
+- Sticky in-page nav and cross-link strip stay removed.
+
+## Files
+- New: `SectionEyebrow.tsx`, `SectionHeading.tsx`, `SectionHeader.tsx`, `MarketingHeroEyebrow.tsx`, `VerifySteps.tsx`, `MarketingFaq.tsx` (all under `src/components/marketing/`).
+- Edited: `src/routes/specialisms.tsx`, `src/routes/cpd-v2.tsx`.
+- New memory: `mem://design/marketing-section-primitives` + index entry.
