@@ -254,8 +254,8 @@ function ForProsPage() {
               "Reviews on the public record — not screenshotted on Instagram",
               "Indexed by location, specialism and price band",
             ]}
-            imageLabel="Verified professional profile on the public register"
-            mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified professional profile preview" }}
+            imageLabel="Public verification page showing the scannable QR record"
+            mockup={{ device: "laptop", src: "/verify/reps-2024-08147", title: "Public verification record with scannable QR" }}
             ctaLabel="Explore Visibility"
             ctaHref="/features/visibility"
           />
