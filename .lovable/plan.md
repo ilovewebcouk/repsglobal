@@ -1,61 +1,80 @@
-# Swap PressMarquee → VenueStrip everywhere, with real gym logos
+# PressMarquee — swap typographic credits for real publisher logos
 
-Replace the dark "As featured in" press strip with the warmer "Where you'll find our trainers" venue strip on every page that currently uses it, and upgrade the venue marks from typographic stand-ins to the **11 real gym SVGs** the user uploaded — using the same `currentColor` normalisation trick as the recent press swap so the row stays one uniform charcoal/70 band on ivory.
+Replace the 6 hand-set typographic wordmarks in `src/components/marketing/PressWordmarks.tsx` with the 8 real publisher SVG marks the user uploaded. Track gets the same uniform-tint treatment so the strip still reads as a single editorial credit row, not a collage of brand colours.
 
-## Why this is a better strip than press
+Files touched: **only** `src/components/marketing/PressWordmarks.tsx`. PressMarquee.tsx and every consumer route stay untouched — same import surface, same tint mechanism.
 
-- `VenueStrip` already exists, already links each logo to `/find-a-professional?venue={slug}` — it's a search funnel, not decoration.
-- Verifiable: any open register has members training at named chains. No press-permission risk.
-- Legal hygiene line ("Independent REPs-verified professionals — not affiliated with the gyms shown") is already shipping in `VenueStrip` and stays untouched.
+## New mark roster (8, in scroll order)
 
-## Roster: 11 real gym SVGs (Bannatyne kept)
+```
+The Times · BBC Sport · Sky News · The Independent · GQ · Men's Health · Women's Fitness · Runner's World
+```
 
-| # | Brand | Source file | Slug |
-|---|---|---|---|
-| 1 | PureGym | `puregym.svg` | `puregym` |
-| 2 | The Gym Group | `the_gym_group.svg` | `gym-group` |
-| 3 | Virgin Active | `virgin_active.svg` | `virgin-active` |
-| 4 | David Lloyd | `david_lloyd.svg` | `david-lloyd` |
-| 5 | Nuffield Health | `nuffield_health.svg` | `nuffield-health` |
-| 6 | Third Space | `third_space.svg` | `third-space` |
-| 7 | Anytime Fitness | `anytime_fitness.svg` | `anytime-fitness` |
-| 8 | Fitness First | `fitness_first.svg` | `fitness-first` *(new slug)* |
-| 9 | Everyone Active | `everyone_active.svg` | `everyone-active` *(new slug)* |
-| 10 | énergie Fitness | `energie_fitness.svg` | `energie-fitness` *(new slug)* |
-| 11 | Bannatyne | `bannatyne.svg` | `bannatyne` |
+Adds Sky News + The Independent over the current 6.
 
-## Files touched
+## How each upload is integrated
 
-1. **`src/components/marketing/VenueWordmarks.tsx`** — rewrite. Same `?raw` import + normaliser pattern as `PressWordmarks.tsx`: strip width/height, flatten gradients and embedded `<style>`, replace every fill with `currentColor`, inject via `dangerouslySetInnerHTML`. Update `VENUES` roster to the 11 above. New `widthClass` values tuned per mark for uniform visual mass at `h-7 lg:h-8`.
+| File | Source | How it lands in the component |
+|---|---|---|
+| `the_times.svg` | uploaded | Inline `<svg>`, all `fill`s rewritten to `currentColor`. |
+| `bbc_sport.svg` | uploaded | Inline `<svg>`, `currentColor`. |
+| `sky_news.svg` | uploaded | Inline `<svg>`, **gradient stripped** (red→white gradient replaced with single `currentColor` fill on the background tile + paths). Without this it'd render as a coloured red badge in a row of greys. |
+| `the_independent.svg` | uploaded | Inline `<svg>`, `currentColor`. |
+| `gq.svg` | uploaded | Inline `<svg>`, `currentColor`. |
+| `mens_health.svg` | uploaded | Inline `<svg>`, baked `--primary: #D2232E` and red fills rewritten to `currentColor`. |
+| `runners_world.svg` | uploaded | Inline `<svg>`, baked `--primary: #000000` and black fills rewritten to `currentColor`. |
+| `womens_fitness.webp` | uploaded | **Raster** — can't be `currentColor`-tinted. Two options below; I recommend (a). |
 
-2. **`src/assets/venues/`** — copy the 11 uploaded SVGs here (mirroring the press setup). User-uploaded SVGs only; no asset-CDN round-trip since they're inlined.
+### Women's Fitness — raster handling
 
-3. **6 call sites** — one-line swap each, `PressMarquee` → `VenueStrip`:
-   - `src/routes/index.tsx:35,542`
-   - `src/routes/cpd.tsx:38,464`
-   - `src/routes/specialisms.tsx:34,519`
-   - `src/routes/for-professionals.tsx:30,205`
-   - `src/components/features/PillarPage.tsx:9,173`
-   - `src/components/features/FeatureGroupLayout.tsx:7,156`
+(a) **Recommended.** Re-create as a simple inline `<svg>` typographic wordmark in the same Cooper Black-ish style as the source webp, fill `currentColor`. Matches the strip exactly, ~1 KB. (~10 mins of path tracing for a 13-letter mark.)
 
-4. **PressMarquee.tsx + PressWordmarks.tsx + `src/assets/press/`** — banked, not deleted. Per the user: "We could always bank this as featured in." Files stay in the repo with zero imports.
+(b) Upload the webp via Lovable Assets and render `<img>` with `filter: brightness(0) invert(1) opacity(0.55)` to fake the tint. Works, but ~14 KB raster in a row of vector marks and the filter trick breaks if the strip ever changes colour.
 
-5. **Memory `mem://design/marketing-hero-template`** — update the line "PressMarquee with editorial wordmark SVGs" to "VenueStrip with real gym SVGs" once the build is green.
+I'll go with **(a)** unless you say otherwise.
+
+## Visual normalisation rules applied to every mark
+
+1. Strip `width`/`height` attributes — keep `viewBox` only, so `widthClass`/`h-*` in PressMarquee controls size.
+2. Remove embedded `<style>` blocks and CSS custom properties (`--primary`, etc.).
+3. Replace every `fill="#xxxxxx"` and `style="fill:..."` with `fill="currentColor"`.
+4. Remove `<linearGradient>`/`<radialGradient>` defs and any `fill="url(#...)"`. Replace with solid `currentColor`.
+5. Keep `<title>`/`<desc>` for a11y where present.
+
+This is exactly what the file's docstring already promised — "rendered as inline SVG using `currentColor`, so the track's text color tints every mark uniformly." We're just adding 8 new marks that follow the same rule.
+
+## widthClass tuning
+
+`h-6 sm:h-7 lg:h-8` (24/28/32 px) stays fixed for vertical rhythm. Each mark's `widthClass` is set so the visual mass reads consistently next to its neighbours — taller-than-square marks (BBC Sport, Sky News, Independent) get wider boxes; tight marks (GQ, Times) get narrower. Rough targets at desktop `h-8`:
+
+| Mark | widthClass |
+|---|---|
+| The Times | `w-[120px]` |
+| BBC Sport | `w-[58px]` *(square stack)* |
+| Sky News | `w-[130px]` |
+| The Independent | `w-[164px]` |
+| GQ | `w-[60px]` |
+| Men's Health | `w-[150px]` |
+| Women's Fitness | `w-[156px]` |
+| Runner's World | `w-[176px]` |
+
+Will eyeball-tune after first render — easy to nudge by ±10 px.
 
 ## Out of scope
 
-- No change to `VenueStrip.tsx` (copy, layout, link behaviour, animation all stay).
-- No `pro.venues[]` data backfill — that's a content task.
-- No `/find-a-professional` filter wiring (already accepts `?venue=` slug).
-
-## Visual call-out
-
-`VenueStrip` lives on `bg-reps-warm-white` (ivory), not the dark ink the press strip lives on. Every page that currently ends its hero on a dark strip will now have a warm ivory band there instead — deliberate move (supply/proximity reads warm). If the seam between any hero's dark gradient and the new ivory band looks abrupt, I'll flag it after first render rather than pre-emptively edit hero gradients.
+- No change to `PressMarquee.tsx` (animation, mask, "As featured in" label all stay).
+- No new memory rule — the existing `marketing-hero-template` memory already says "PressMarquee with editorial wordmark SVGs"; real-publisher SVGs still fit that description.
+- No layout, colour-token, or animation tweaks.
+- No edits to the 7 consuming routes/components.
 
 ## Verification
 
-1. `bun` build green.
-2. Visit `/`, `/cpd`, `/specialisms`, `/for-professionals`, one `PillarPage` route, one `FeatureGroupLayout` route — each shows the ivory venue strip with all 11 marks rendering uniformly tonal.
-3. `rg -n 'PressMarquee' src/routes src/components/features` → zero matches.
-4. `rg -c 'fill="#' src/components/marketing/VenueWordmarks.tsx` → zero.
-5. Click PureGym in the strip → lands on `/find-a-professional?venue=puregym`.
+After the edit:
+1. `bun` will compile — visit `/cpd`, `/`, `/for-professionals`, `/specialisms` and confirm the strip renders as 8 uniform white/55-tinted marks, no coloured outliers, no jumpy heights.
+2. Screenshot the strip at desktop + mobile widths.
+3. Confirm the marquee still loops seamlessly (8 marks duplicated = 16; gap rhythm preserved).
+4. `rg -n "fill=\"#" src/components/marketing/PressWordmarks.tsx` → must return zero (all fills should be `currentColor`).
+
+## One last call-out before I build
+
+You said you have permission for all 8. Worth confirming you have it in writing for each — **The Times** and **BBC** in particular almost always tie logo use to a specific press placement or partnership and revoke at will. If permission is verbal/informal, I'd at minimum keep this strip off any page that's indexed for SEO comparison ranking (it's currently on `/cpd`, `/`, `/for-professionals`, `/specialisms`, `PillarPage`, `FeatureGroupLayout`, `VenueStrip` — so basically the whole public site). Your call.

@@ -1,25 +1,26 @@
-import { VENUES } from "./VenueWordmarks";
+import { PRESS_WORDMARKS } from "./PressWordmarks";
 
 /**
- * Venue wordmark marquee — continuous R→L scroll, edges fade to ink via mask.
- * Same section shell as the original press marquee (dark `bg-reps-ink`, single
- * eyebrow line, 42s marquee, white/55 tint) — only the eyebrow copy and the
- * marks themselves have changed: 11 real gym wordmarks from VENUES.
+ * Press wordmark marquee — continuous R→L scroll, edges fade to ink via mask.
+ * Animation reuses the global `animate-marquee` keyframe (translateX 0 → -50%),
+ * so the duplicated track loops seamlessly. Respects prefers-reduced-motion.
  *
- * Each wordmark is rendered as inline SVG using `currentColor`, so the track's
- * text color tints every mark uniformly.
+ * Each wordmark is a typographic credit (not the publication's protected logo),
+ * rendered as inline SVG using `currentColor`, so the track's text color tints
+ * every mark uniformly.
  */
 export function PressMarquee() {
   return (
     <section className="relative bg-reps-ink py-14 lg:py-20">
       <p className="text-center text-[10.5px] font-semibold uppercase tracking-[0.32em] text-white/45">
-        Where you'll find our trainers
+        As featured in
       </p>
 
       <div className="mx-auto mt-9 max-w-7xl lg:mt-11">
         <div
           className="relative overflow-hidden"
           style={{
+            // Soft edge fades — wider on mobile so marks aren't clipped at the viewport edge.
             maskImage:
               "linear-gradient(to right, transparent 0, black 2.5rem, black calc(100% - 2.5rem), transparent 100%)",
             WebkitMaskImage:
@@ -27,12 +28,14 @@ export function PressMarquee() {
           }}
         >
           <div className="press-marquee-track flex w-max items-center gap-12 pl-12 text-white/55 sm:gap-16 sm:pl-16 lg:gap-24 lg:pl-24">
-            {[...VENUES, ...VENUES].map(({ key, Mark, widthClass }, i) => (
-              <Mark
-                key={`${key}-${i}`}
-                className={`h-6 shrink-0 sm:h-7 lg:h-8 ${widthClass}`}
-              />
-            ))}
+            {[...PRESS_WORDMARKS, ...PRESS_WORDMARKS].map(
+              ({ key, Mark, widthClass }, i) => (
+                <Mark
+                  key={`${key}-${i}`}
+                  className={`h-6 shrink-0 sm:h-7 lg:h-8 ${widthClass}`}
+                />
+              ),
+            )}
           </div>
         </div>
       </div>
