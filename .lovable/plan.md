@@ -1,49 +1,58 @@
-# Pathways → shadcn Tabs (line variant)
+## Goal
 
-Replace the 4 stacked pathway blocks in `Qualifications()` (`src/routes/cpd.tsx`) with a single shadcn `Tabs` component using an underline/line variant, so users switch between **Fitness · Nutrition · Pilates · Yoga** instead of scrolling four full sections.
+Lift `/cpd` from a CPD-only page into the REPs **Education** hub it should be: REPs accredits *courses* — most of which are CPD, but the framing also covers initial qualifications and the Pilates/Yoga teacher-training market that's core to REPs' reach. Tone moves from punchy/marketing to professional.
 
-## Scope (only `Qualifications()` in src/routes/cpd.tsx)
+No URL change. No new sections. Edits live in `src/routes/cpd.tsx` only.
 
-Keep above unchanged:
-- Eyebrow "Qualifications, decoded"
-- H2 "Every accredited pathway, in plain English."
-- Intro paragraph (4 pathways)
+---
 
-Replace below the intro:
-- The 4 sibling blocks (Fitness / Nutrition / Pilates / Yoga grids + their headings/intros) become one `Tabs` block.
+## 1. Hero — new image, new H1, single CTA
 
-## Tabs structure
+**Image swap.** The current hero (`cpd-hero-v5.jpg`) is replaced by the editorial workshop photo currently used in `TutorMoment` (`cpd-tutor-moment.jpg.asset.json`). This is the image the user pointed at — a real teaching environment reads as "education", not "fitness marketing".
 
-```text
-<Tabs defaultValue="fitness">
-  <TabsList> (line / underline variant, full-width, left-aligned, sticky-feeling chrome)
-    [Activity] Fitness   [Heart] Nutrition   [Disc] Pilates   [Flower2] Yoga
-  ─────────────────────────────────────────── (1px reps-border baseline)
+**Copy rewrite (professional register).**
 
-  <TabsContent value="fitness">    → intro line + 3-col LadderCard grid (FITNESS_LADDER)
-  <TabsContent value="nutrition">  → intro line + 3-col Nutrition cards + "Plain English" callout
-  <TabsContent value="pilates">    → intro line + 3-col LadderCard grid (PILATES_LADDER)
-  <TabsContent value="yoga">       → intro line + 3-col LadderCard grid (YOGA_LADDER)
-</Tabs>
-```
+- Eyebrow chip: `CPD & Education` → `Education & accredited courses`
+- H1: `A certificate is only as good as the people behind it.` → `The standard for accredited education in fitness, sport and movement.`
+- Sub: rewritten to name the three pillars REPs accredits — initial qualifications, ongoing CPD, and teacher training in Pilates and yoga. Drops the "isn't worth the paper it's printed on" line.
+- Trust chips: kept (Identity verified · CPD logged quarterly · Verified-provider hours count) but the third softened to `Accredited providers only`.
+- Body registers strip: kept (Ofqual · REPs · AfN · HCPC · YAP) — already covers Pilates/Yoga via YAP.
 
-Each `TabsContent` opens with the small per-pathway intro paragraph that currently sits under the H3 (e.g. "Pilates runs on hours-based teacher training…"), then the existing grid — no card markup changes.
+**CTA simplification.** Two buttons collapse to one primary: **`Find verified training providers →`** anchored to `#verified-providers`. The secondary "How REPs runs CPD" button is removed (it competes with the primary action and reinforces the CPD-only framing).
 
-## Line-variant styling
+---
 
-shadcn's default `TabsList` is a filled pill. For a line variant we override via `className` on `TabsList` / `TabsTrigger` (no new shadcn component needed):
+## 2. Remove the now-orphan TutorMoment band
 
-- `TabsList`: `h-auto bg-transparent p-0 gap-6 border-b border-reps-border rounded-none justify-start w-full`
-- `TabsTrigger`:
-  - base: `rounded-none bg-transparent px-1 pb-3 pt-2 text-[14px] font-semibold text-white/55 data-[state=active]:text-white data-[state=active]:shadow-none`
-  - underline: `relative after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-transparent data-[state=active]:after:bg-reps-orange`
-  - icon: lucide icon with `data-icon="inline-start"` (no manual sizing)
-- Horizontal scroll on small screens: wrap `TabsList` in `<div className="overflow-x-auto">`.
+`TutorMoment` (the dark band with the pull-quote "The honest providers are already here…") used the image we're promoting to hero. With the image gone, the band is removed from the page stack in `CpdPage()`. The associated `cpdTutorMomentAsset` import becomes the new hero image source, so no asset is orphaned.
 
-This keeps everything in semantic tokens (`reps-border`, `reps-orange`, `white/55`) and uses shadcn primitive — no custom Tabs component file.
+(The old `cpd-hero-v5.jpg` asset stays in the codebase for now — not deleting in case other pages reference it; can prune in a follow-up.)
 
-## Out of scope
+---
 
-- No copy changes, no LadderCard/NUTRITION card redesign, no icon swaps.
-- Eyebrow + H2 + intro paragraph stay as-is.
-- Other `/cpd` sections untouched.
+## 3. Tone pass — "education", not just "CPD"
+
+Targeted copy edits, no structural changes:
+
+| Section | Change |
+|---|---|
+| `WhatCpdIs` heading | "What CPD actually is" → "What 'accredited' actually means" (CPD covered as one mode of accredited learning). |
+| `RepsCpdSystem` heading | "How REPs runs CPD" → "How REPs accredits education". Subcopy reframed: courses, CPD, teacher training. |
+| `Qualifications` intro | Tightened, drops "industry runs on acronyms" colloquialism; opens with "REPs accredits qualifications across four pathways" (Fitness, Nutrition, Pilates, Yoga). |
+| `VerifiedProviders` | Heading kept; subcopy reframed so Pilates/Yoga teacher-training schools are explicitly named alongside L2/L3 awarding bodies. |
+| `DodgyCourses` | Kept (this is the page's teeth) but two flippant lines softened: "earn £5k a month" example trimmed, "print shop for certificates" pull-quote removed (it left with TutorMoment anyway). |
+| `ProviderCtaBand` | CTA label aligned to "Find verified training providers". |
+| `FaqBlock` | First Q broadened: "What is CPD?" stays, but a new lead Q is added: "What does it mean for a course to be accredited by REPs?" — pulls Pilates/Yoga into the answer. |
+| `JoinRepsCta` | Final CTA aligned to "Find verified training providers" (primary) with "Apply to be a verified provider" as the professional-side secondary. |
+
+Anywhere the page currently says "the CPD page" or "this is about CPD" implicitly, the language shifts to "accredited education" / "courses and CPD" / "training providers".
+
+No data arrays change (Fitness / Nutrition / Pilates / Yoga ladders, providers, FAQs all stay). No new components. No new assets. No route or nav-label changes.
+
+---
+
+## Out of scope (flagged for later)
+
+- Renaming the route from `/cpd` → `/education` and updating header nav. Mentioning so you can decide separately; not doing it here unless you say so.
+- Pruning the unused `cpd-hero-v5.jpg` asset.
+- Long-form copy revisions inside `RED_FLAGS` / `GOOD_SIGNS` beyond the two flippant lines noted above.
