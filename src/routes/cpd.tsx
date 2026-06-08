@@ -35,7 +35,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { VenueStrip } from "@/components/marketing/VenueStrip";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 
 import heroCpdAsset from "@/assets/cpd-hero-v5.jpg.asset.json";
 const heroCpd = heroCpdAsset.url;
@@ -461,7 +461,7 @@ function CpdPage() {
 
         <Hero />
 
-        <VenueStrip />
+        <PressMarquee />
 
         <StickyNav />
 

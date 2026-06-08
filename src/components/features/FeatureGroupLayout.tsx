@@ -4,7 +4,7 @@ import { ArrowRight, BadgeCheck, Check, Sparkles, Zap } from "lucide-react";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
-import { VenueStrip } from "@/components/marketing/VenueStrip";
+import { PressMarquee } from "@/components/marketing/PressMarquee";
 import {
   FEATURES,
   FEATURE_GROUPS,
@@ -153,7 +153,7 @@ export function FeatureGroupLayout({
       ) : null}
 
       {/* PRESS MARQUEE — only when running the photo-hero variant */}
-      {heroImage && heroLead && heroAccent && <VenueStrip />}
+      {heroImage && heroLead && heroAccent && <PressMarquee />}
 
       {!(heroImage && heroLead && heroAccent) && (
         <section className="relative overflow-hidden border-b border-reps-border">
