@@ -1,34 +1,24 @@
-# Fix CPD hero framing on tablet & mobile
+Update copy on `/cpd` to replace slang with hard-hitting, professional wording that matches the tone of `/specialisms` and `/for-professionals`.
 
-## Problem
+## Changes
 
-The `/cpd` hero is a 10/10 on desktop (≥1024px): both subjects sit in the right third, headline reads cleanly on dark amber space at the left.
+| Location | Current | New |
+|---|---|---|
+| Meta description (line 51) | "how to spot a dodgy training provider" | "how to spot a worthless training provider" |
+| Sticky nav label (line 102 area) | "Spot a dodgy course" | "Spot a worthless course" |
+| FAQ question (line 447 area) | "How do I report a dodgy provider or coach?" | "How do I report a predatory provider or coach?" |
+| Body copy (line 807 area) | "most punters don't know the difference" | "most buyers don't know the difference" |
+| Body copy (line 892 area) | "This is where punters get scammed most." | "This is where buyers get burned most." |
+| Section H2 (line 1149 area) | "Spot a dodgy course" | "Spot a worthless course" |
+| Subhead under H2 | (none / current subhead) | "How to tell a real qualification from a bad one" |
+| Body copy (line 1155 area) | "Most scammy training providers follow…" | "The most predatory training providers follow…" |
+| Step title (line 1209 area) | "Siphon out the bullshit." | "Cut the noise." |
 
-Below `lg`, the same image is cropped with `object-[75%_center]` and is letting the dark left-of-frame fill the viewport while the two subjects sit off-canvas to the right. Net result:
-- **Tablet (768px):** only background rig + a sliver of the assessor's arm visible — no faces, no REPS wordmarks.
-- **Mobile (390px):** essentially zero subject visible; just orange glow on equipment.
+## What's not changing
 
-Headline + CTA layer fine, but the hero stops *being* a hero — it reads as a flat gradient panel.
+- Section anchor `id="dodgy-courses"` stays as-is (internal slug only).
+- No structural, component, or image changes.
 
-## Fix (presentation-only, no image regen)
+## Verification
 
-Single file: `src/routes/cpd.tsx`, `Hero()` component (around line 502–528).
-
-1. **Reframe the image per breakpoint** on the `<img>` (line 513):
-   - Mobile (default): `object-[78%_38%]` — pulls the two subjects into frame, biased slightly up so faces land in the upper portion above the headline.
-   - Small / tablet (`sm:` and `md:`): `sm:object-[72%_42%] md:object-[68%_45%]` — progressively eases back toward centre as width grows so we keep both subjects framed.
-   - Desktop unchanged: `lg:object-center`.
-   - Also raise the mobile hero min-height so the subjects have room to breathe above the copy stack: add `min-h-[640px] sm:min-h-[680px]` to the `<section>` (currently only `lg:min-h-[680px]`).
-
-2. **Rebalance the dark overlay for narrow widths** (lines 515 + 518):
-   - Mobile/tablet currently uses `bg-reps-ink/55` plus a radial centred at `30% 45%` — that darkens the *subjects* on small screens. Switch the small-breakpoint scrim to a vertical gradient that darkens the **bottom half** (where the copy now sits) instead of the centre:
-     - Base scrim: `bg-gradient-to-b from-reps-ink/30 via-reps-ink/55 to-reps-ink/80 lg:bg-reps-ink/35 lg:bg-none` (keep current desktop behaviour).
-     - Remove the central radial below `lg` (wrap the current radial in `hidden lg:block` so it only applies on desktop).
-   - Keep the warm top-left orange glow as-is — it's working at every width.
-
-3. **Verify** by re-screenshotting at 390 / 768 / 1024 / 1440. Acceptance:
-   - Both subjects visible at every breakpoint with at least one REPS wordmark legible.
-   - Headline + body copy keep AA contrast on the new bottom-weighted scrim.
-   - No layout shift or content reflow elsewhere on the page.
-
-No image regeneration, no asset swap, no copy changes. Hero v5 stays the source image.
+After edits, `rg -n "punter|scammed|scammy|bullshit|Siphon" src/routes/cpd.tsx` returns zero matches.
