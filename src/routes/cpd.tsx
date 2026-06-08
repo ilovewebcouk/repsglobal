@@ -1004,10 +1004,10 @@ function Qualifications() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: Generalist vs specialist                                   */
+/* Section: Verified training providers                                */
 /* ------------------------------------------------------------------ */
 
-function _RemovedGeneralistVsSpecialist() { return null; }
+
 
 /* ------------------------------------------------------------------ */
 /* Section: Verified training providers                                */
