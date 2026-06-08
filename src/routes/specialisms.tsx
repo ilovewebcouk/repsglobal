@@ -17,12 +17,6 @@ import {
 } from "lucide-react";
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -31,7 +25,10 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-
+import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from "@/components/marketing/SectionHeader";
+import { VerifySteps } from "@/components/marketing/VerifySteps";
+import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import heroSpecialismsAsset from "@/assets/specialisms-hero-v2.jpg.asset.json";
 const heroSpecialisms = heroSpecialismsAsset.url;
@@ -577,12 +574,12 @@ function Hero() {
 
       <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-28 lg:pt-24">
         <div className="flex max-w-[720px] flex-col items-start">
-          <span
-            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur"
+          <MarketingHeroEyebrow
+            icon={Sparkles}
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Every specialism · One register
-          </span>
+            Every specialism · One register
+          </MarketingHeroEyebrow>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
@@ -830,18 +827,12 @@ function RegistersBlock() {
   return (
     <section className="border-b border-reps-border bg-reps-panel-soft/40">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            The registers, decoded
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Every acronym, in plain English.
-          </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-white/70">
-            The fitness industry is full of letters after people's names. Here's what each register
-            actually means — and which ones we cross-check before a profile goes live on REPs.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="The registers, decoded"
+          heading="Every acronym, in plain English."
+          lede="The fitness industry is full of letters after people's names. Here's what each register actually means — and which ones we cross-check before a profile goes live on REPs."
+        />
+
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {REGISTERS.map((r) => (
@@ -903,48 +894,12 @@ const VERIFY_STEPS = [
 
 function VerifyStrip() {
   return (
-    <section className="border-b border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-[760px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How we verify every specialism
-          </span>
-          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-            Three checks — every profile, every renewal.
-          </h2>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {VERIFY_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel p-7"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                    Step {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-display text-[18px] font-bold text-white">{step.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/70">{step.body}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 flex flex-wrap items-center gap-3 rounded-[18px] border border-reps-orange-border bg-reps-orange-soft px-5 py-4">
-          <BadgeCheck className="h-5 w-5 text-reps-orange" />
-          <span className="text-[14px] font-semibold text-white">
-            The result: a single Verified badge the public can actually trust.
-          </span>
-        </div>
-      </div>
-    </section>
+    <VerifySteps
+      eyebrow="How we verify every specialism"
+      heading="Three checks — every profile, every renewal."
+      steps={VERIFY_STEPS}
+      bannerText="The result: a single Verified badge the public can actually trust."
+    />
   );
 }
 
@@ -954,33 +909,10 @@ function VerifyStrip() {
 
 function FaqBlock() {
   return (
-    <section className="border-b border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[920px] px-6 py-20 lg:px-10 lg:py-24">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-          FAQ
-        </span>
-        <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
-          Specialisms, qualifications & registers — answered.
-        </h2>
-
-        <Accordion type="single" collapsible className="mt-10">
-          {FAQS.map((f, i) => (
-            <AccordionItem
-              key={i}
-              value={`item-${i}`}
-              className="border-b border-reps-border"
-            >
-              <AccordionTrigger className="text-left text-[15.5px] font-semibold text-white hover:no-underline">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-[14.5px] leading-relaxed text-white/75">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
-    </section>
+    <MarketingFaq
+      heading="Specialisms, qualifications & registers — answered."
+      items={FAQS}
+    />
   );
 }
 

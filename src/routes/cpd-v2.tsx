@@ -7,25 +7,20 @@ import {
   Brain,
   Briefcase,
   Check,
-  Compass,
   Crosshair,
   Dumbbell,
-  Globe,
   GraduationCap,
   Heart,
-  Layers,
   Lightbulb,
   Lock,
   Monitor,
   Rocket,
-  Search,
   ShieldCheck,
   Sparkles,
   Star,
   Target,
   TrendingUp,
   Users,
-  Wand2,
   Zap,
 } from "lucide-react";
 
@@ -35,6 +30,10 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
+import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from "@/components/marketing/SectionHeader";
+import { VerifySteps } from "@/components/marketing/VerifySteps";
+import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import {
   Accordion,
@@ -368,15 +367,15 @@ function Hero() {
 
       <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-[1320px] flex-col items-start justify-start px-6 pb-20 pt-24 lg:px-10 lg:pb-28 lg:pt-28">
         <div className="max-w-[720px]">
-          <span
-            className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange backdrop-blur"
+          <MarketingHeroEyebrow
+            icon={GraduationCap}
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            <GraduationCap className="h-3.5 w-3.5" /> Education & CPD
-          </span>
+            Education & CPD
+          </MarketingHeroEyebrow>
 
           <h1
-            className="mt-6 animate-fade-in font-display text-[40px] leading-[1.05] font-bold tracking-tight text-white sm:text-[52px] lg:text-[60px]"
+            className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
             Education, CPD and career growth{" "}
@@ -384,7 +383,7 @@ function Hero() {
           </h1>
 
           <p
-            className="mt-6 max-w-[560px] animate-fade-in text-[17px] leading-relaxed text-white/80 sm:text-[18px]"
+            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
             Build your professional profile, track your development and find
@@ -410,14 +409,14 @@ function Hero() {
             </a>
             <a
               href="#training-providers"
-              className="text-[13.5px] font-medium text-white/75 underline decoration-white/30 underline-offset-4 hover:text-white"
+              className="text-[13.5px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
             >
               Are you a training provider?
             </a>
           </div>
 
           <ul
-            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/75"
+            className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
@@ -478,7 +477,7 @@ function ProofCards() {
               <CardTitle className="mt-4 text-[15px] font-semibold text-white">
                 {title}
               </CardTitle>
-              <CardDescription className="text-[13.5px] leading-relaxed text-white/65">
+              <CardDescription className="text-[13.5px] leading-relaxed text-white/70">
                 {body}
               </CardDescription>
             </CardHeader>
@@ -499,24 +498,12 @@ function DevelopmentPassport() {
       <div className="absolute inset-0 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(255,122,0,0.10),transparent_70%)]" />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Layers className="mr-1.5 h-3.5 w-3.5" /> Professional Development Passport
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Your professional development,{" "}
-            <span className="text-reps-orange">
-              connected to your public profile.
-            </span>
-          </h2>
-          <p className="mt-5 max-w-lg text-[16px] leading-relaxed text-white/75">
-            Qualifications, CPD, insurance and specialist development don't
-            belong in a folder on your laptop. On REPs they support the public
-            profile clients see — so the work you put in shows up where it
-            matters.
-          </p>
+          <SectionHeader
+            eyebrow="Professional Development Passport"
+            heading="Your professional development, connected to your public profile."
+            lede="Qualifications, CPD, insurance and specialist development don't belong in a folder on your laptop. On REPs they support the public profile clients see — so the work you put in shows up where it matters."
+            className="max-w-none"
+          />
           <ul className="mt-6 flex flex-col gap-3 text-[14.5px] text-white/80">
             {[
               "Verification, CPD and insurance in one record",
@@ -603,7 +590,7 @@ function ProfessionalDevelopmentMockup() {
             <div className="text-[11px] uppercase tracking-wide text-white/55">
               Qualifications
             </div>
-            <ul className="mt-2 flex flex-col gap-1.5 text-[13px] text-white/85">
+            <ul className="mt-2 flex flex-col gap-1.5 text-[13px] text-white/80">
               <li className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
@@ -659,14 +646,14 @@ function ProfessionalDevelopmentMockup() {
             <div className="mt-1.5 text-[14px] font-semibold text-white">
               Behaviour Change in Practice
             </div>
-            <div className="mt-0.5 text-[12px] text-white/60">
+            <div className="mt-0.5 text-[12px] text-white/55">
               Coach Catalyst · 8 pts · Online · £89
             </div>
           </div>
 
           {/* Renewal */}
           <div className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink p-3.5">
-            <div className="flex items-center gap-2 text-[12.5px] text-white/75">
+            <div className="flex items-center gap-2 text-[12.5px] text-white/70">
               <Lock className="h-3.5 w-3.5 text-emerald-300" />
               REPs renewal
             </div>
@@ -688,16 +675,11 @@ function RegisterProofBand() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="mb-8 max-w-2xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            Why members renew
-          </Badge>
-          <h2 className="mt-4 font-display text-[28px] leading-[1.1] font-bold tracking-tight text-white sm:text-[34px]">
-            A register clients actually search.
-          </h2>
+        <div className="mb-8">
+          <SectionHeader
+            eyebrow="Why members renew"
+            heading="A register clients actually search."
+          />
         </div>
         <RegisterProof />
       </div>
@@ -713,22 +695,11 @@ function LearningPathways() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Compass className="mr-1.5 h-3.5 w-3.5" /> Pathways
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Choose the pathway that{" "}
-            <span className="text-reps-orange">matches your next stage.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            From day-one verification to specialist depth, REPs maps the
-            recognised education that fits where you are in your career.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Pathways"
+          heading="Choose the pathway that matches your next stage."
+          lede="From day-one verification to specialist depth, REPs maps the recognised education that fits where you are in your career."
+        />
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PATHWAYS.map(({ icon: Icon, title, outcome, topics }) => (
@@ -748,7 +719,7 @@ function LearningPathways() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 pt-0">
-                <ul className="flex flex-col gap-1.5 text-[12.5px] text-white/60">
+                <ul className="flex flex-col gap-1.5 text-[12.5px] text-white/55">
                   {topics.map((t) => (
                     <li key={t} className="flex items-center gap-1.5">
                       <span className="h-1 w-1 rounded-full bg-reps-orange" />
@@ -782,18 +753,10 @@ function CpdDiscovery() {
     <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <Badge
-              variant="outline"
-              className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-            >
-              <Search className="mr-1.5 h-3.5 w-3.5" /> CPD Discovery
-            </Badge>
-            <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-              Find CPD that supports{" "}
-              <span className="text-reps-orange">your professional goals.</span>
-            </h2>
-          </div>
+          <SectionHeader
+            eyebrow="CPD Discovery"
+            heading="Find CPD that supports your professional goals."
+          />
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
@@ -814,11 +777,11 @@ function CpdDiscovery() {
           <CardContent className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
             {FILTERS.map((f) => (
               <div key={f.label} className="flex min-w-0 flex-col gap-1">
-                <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+                <span className="text-[10.5px] uppercase tracking-wide text-white/55">
                   {f.label}
                 </span>
                 <Select disabled defaultValue={f.options[0]}>
-                  <SelectTrigger className="h-9 rounded-[8px] border-reps-border bg-reps-ink text-[12.5px] text-white/85">
+                  <SelectTrigger className="h-9 rounded-[8px] border-reps-border bg-reps-ink text-[12.5px] text-white/80">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -834,7 +797,7 @@ function CpdDiscovery() {
               </div>
             ))}
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[10.5px] uppercase tracking-wide text-white/50">
+              <span className="text-[10.5px] uppercase tracking-wide text-white/55">
                 Mode
               </span>
               <Tabs defaultValue="online">
@@ -888,13 +851,13 @@ function CpdDiscovery() {
                   {c.blurb}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.points} CPD pts
                   </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.level}
                   </Badge>
-                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/75">
+                  <Badge variant="secondary" className="rounded-full bg-reps-ink text-[11px] text-white/70">
                     {c.format}
                   </Badge>
                 </div>
@@ -932,23 +895,11 @@ function SpecialistAreas() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Award className="mr-1.5 h-3.5 w-3.5" /> Specialism areas
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Build credibility through{" "}
-            <span className="text-reps-orange">recognised specialisms.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            Specialism areas are evidenced through recognised qualifications and
-            CPD — not handed out. When you complete the right credentials, your
-            profile reflects them.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Specialism areas"
+          heading="Build credibility through recognised specialisms."
+          lede="Specialism areas are evidenced through recognised qualifications and CPD — not handed out. When you complete the right credentials, your profile reflects them."
+        />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {SPECIALISMS.map(({ icon: Icon, title }) => (
@@ -988,21 +939,12 @@ function AiRecommendations() {
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-2 lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange"
-          >
-            <Wand2 className="mr-1.5 h-3.5 w-3.5" /> AI · Preview
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Know what to learn{" "}
-            <span className="text-reps-orange">next.</span>
-          </h2>
-          <p className="mt-4 max-w-lg text-[15.5px] leading-relaxed text-white/75">
-            REPs is building learning recommendations that look at your
-            qualifications, specialisms and profile to suggest the next CPD that
-            actually moves your career forward. Here's the direction.
-          </p>
+          <SectionHeader
+            eyebrow="AI · Preview"
+            heading="Know what to learn next."
+            lede="REPs is building learning recommendations that look at your qualifications, specialisms and profile to suggest the next CPD that actually moves your career forward. Here's the direction."
+            className="max-w-none"
+          />
           <p className="mt-3 text-[12.5px] text-white/55">
             Preview only — recommendations are illustrative and not yet
             personalised.
@@ -1036,7 +978,7 @@ function AiRecommendations() {
                 <div className="mt-1.5 text-[16px] font-semibold text-white">
                   Coaching Lower Back Pain · Movement Mechanics
                 </div>
-                <div className="mt-0.5 text-[12px] text-white/60">
+                <div className="mt-0.5 text-[12px] text-white/55">
                   16 CPD pts · Level 4 · Blended
                 </div>
               </div>
@@ -1082,7 +1024,7 @@ function RecRow({
         <div className="text-[11px] uppercase tracking-wide text-white/55">
           {label}
         </div>
-        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/85">
+        <div className="mt-0.5 text-[13.5px] leading-relaxed text-white/80">
           {body}
         </div>
       </div>
@@ -1106,22 +1048,12 @@ function TrainingProvidersBand() {
       />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-14 lg:px-10 lg:py-24">
         <div>
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <GraduationCap className="mr-1.5 h-3.5 w-3.5" /> Training providers
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Training providers will have a{" "}
-            <span className="text-reps-orange">stronger place inside REPs.</span>
-          </h2>
-          <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/75">
-            REPs is being developed to give training providers clearer
-            visibility, stronger provider profiles and a better route to present
-            qualifications, CPD and professional education to the fitness
-            industry.
-          </p>
+          <SectionHeader
+            eyebrow="Training providers"
+            heading="Training providers will have a stronger place inside REPs."
+            lede="REPs is being developed to give training providers clearer visibility, stronger provider profiles and a better route to present qualifications, CPD and professional education to the fitness industry."
+            className="max-w-none"
+          />
           <div className="mt-7">
             <Link
               to="/contact"
@@ -1140,7 +1072,7 @@ function TrainingProvidersBand() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="flex flex-col gap-3 text-[14px] text-white/85">
+            <ul className="flex flex-col gap-3 text-[14px] text-white/80">
               {PROVIDER_BENEFITS.map((l) => (
                 <li key={l} className="flex items-start gap-2.5">
                   <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-reps-orange" />
@@ -1161,43 +1093,10 @@ function TrainingProvidersBand() {
 
 function FaqBlock() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-4xl px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
-        <div className="text-center">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            FAQ
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Questions, answered{" "}
-            <span className="text-reps-orange">honestly.</span>
-          </h2>
-        </div>
-
-        <Card className="mt-10 rounded-[22px] border-reps-border bg-reps-panel shadow-none">
-          <CardContent className="p-2 sm:p-4">
-            <Accordion type="single" collapsible className="w-full">
-              {FAQS.map((f, i) => (
-                <AccordionItem
-                  key={f.q}
-                  value={`q-${i}`}
-                  className="border-reps-border"
-                >
-                  <AccordionTrigger className="text-left text-[15px] font-semibold text-white hover:no-underline [&>svg]:text-white/60">
-                    {f.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-[14px] leading-relaxed text-white/70">
-                    {f.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+    <MarketingFaq
+      heading="Questions, answered honestly."
+      items={FAQS}
+    />
   );
 }
 
@@ -1212,12 +1111,12 @@ function FinalCta() {
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,122,0,0.18),transparent_70%)]"
       />
-      <div className="relative mx-auto max-w-4xl px-5 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-        <h2 className="font-display text-[34px] leading-[1.08] font-bold tracking-tight text-white sm:text-[44px]">
+      <div className="relative mx-auto max-w-[920px] px-6 py-20 text-center lg:px-10 lg:py-28">
+        <h2 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[44px]">
           Build your profile. Prove your standards.{" "}
           <span className="text-reps-orange">Grow your career.</span>
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
+        <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/70">
           Join REPs to connect your verification, education, profile and
           professional development in one platform.
         </p>
@@ -1251,21 +1150,11 @@ function RecognitionStrip() {
   return (
     <section className="border-t border-reps-border bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
-        <div className="max-w-3xl">
-          <Badge
-            variant="outline"
-            className="rounded-full border-reps-border bg-reps-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
-          >
-            <Globe className="mr-1.5 h-3.5 w-3.5" /> Recognition
-          </Badge>
-          <h2 className="mt-4 font-display text-[34px] leading-[1.1] font-bold tracking-tight text-white sm:text-[40px]">
-            Recognised by the bodies that{" "}
-            <span className="text-reps-orange">issue the qualifications.</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/75">
-            REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Recognition"
+          heading="Recognised by the bodies that issue the qualifications."
+          lede="REPs accepts education from the regulators and registries that fitness, sport and movement professionals already trust. If your credential comes from one of these, it belongs on your REPs profile."
+        />
 
         <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {RECOGNITION.map((r) => (
@@ -1279,7 +1168,7 @@ function RecognitionStrip() {
                 </span>
                 <div className="min-w-0">
                   <div className="text-[14px] font-semibold text-white">{r.name}</div>
-                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/65">
+                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-white/70">
                     {r.note}
                   </div>
                 </div>
@@ -1304,26 +1193,12 @@ const VERIFY = [
 
 function VerifyStrip() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
-      <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {VERIFY.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="flex items-start gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-5"
-            >
-              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <Icon className="h-5 w-5" />
-              </span>
-              <div>
-                <div className="text-[14.5px] font-semibold text-white">{title}</div>
-                <div className="mt-1 text-[13px] leading-relaxed text-white/70">{body}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <VerifySteps
+      eyebrow="How REPs verifies"
+      heading="Three checks — every profile, every renewal."
+      steps={VERIFY}
+      bannerText="The result: a single Verified badge the public can actually trust."
+    />
   );
 }
 
