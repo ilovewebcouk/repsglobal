@@ -444,18 +444,20 @@ function ProblemSection() {
               <Check className="h-3 w-3" /> With a REPs Shop Front
             </span>
             <BlockHeading className="mt-4">One URL. One clear offer. One workflow.</BlockHeading>
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-6 space-y-2.5">
               {[
                 "One link: /c/your-name — shareable everywhere",
                 "Services, packages and prices on the page",
                 "Verified badge, credentials and insurance built in",
                 "Reviews from real clients shown next to the offer",
                 "Enquire, book and pay without leaving the page",
-                "Every lead lands in your REPs pipeline — not your inbox",
+                "Every lead lands in your REPs pipeline, not your inbox",
+                "Branded, mobile-first and built for conversion",
+                "Updated in minutes from your REPs dashboard",
               ].map((line) => (
                 <li
                   key={line}
-                  className="flex items-start gap-2.5 text-[14.5px] leading-relaxed text-white/80"
+                  className="flex items-start gap-2.5 rounded-[16px] border border-reps-orange-border/60 bg-reps-orange-soft/40 px-4 py-2.5 text-[13.5px] text-white/80"
                 >
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                   {line}
