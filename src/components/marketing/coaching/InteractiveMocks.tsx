@@ -330,10 +330,17 @@ const LIBRARY: Exercise[] = [
   { name: "Row erg", cat: "cond", eq: "Machine" },
 ];
 
-export function ExerciseLibraryMock() {
+export function ExerciseLibraryMock({
+  curated,
+  featured,
+}: {
+  curated?: CuratedExerciseProp[];
+  featured?: FeaturedExerciseProp;
+} = {}) {
   const [state, setState] = useState<LibraryState>("all");
   const filtered =
     state === "all" ? LIBRARY : LIBRARY.filter((e) => e.cat === state);
+  const useReal = state === "all" && curated && curated.length > 0;
 
   return (
     <MockShell
@@ -346,34 +353,85 @@ export function ExerciseLibraryMock() {
         <div className="flex items-center gap-2">
           <div className="flex flex-1 items-center gap-1.5 rounded-[6px] border border-white/10 bg-reps-panel/40 px-2 py-1">
             <Search className="size-2.5 text-white/45" />
-            <span className="text-[8px] text-white/55">Search 600+ exercises…</span>
+            <span className="text-[8px] text-white/55">Search 10,000+ exercises…</span>
           </div>
           <div className="flex items-center gap-1 rounded-[6px] border border-white/10 bg-reps-panel/40 px-2 py-1 text-[8px] text-white/55">
-            <Filter className="size-2.5 text-reps-orange" /> {filtered.length} shown
+            <Filter className="size-2.5 text-reps-orange" />{" "}
+            {useReal ? curated!.length : filtered.length} shown
           </div>
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
-          {filtered.slice(0, 9).map((e) => (
-            <div key={e.name} className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5">
-              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-[5px] bg-gradient-to-br from-reps-panel/80 to-reps-ink">
-                <PlayCircle className="size-4 text-white/70" />
-                <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
-                  HD
-                </span>
-              </div>
-              <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
-              <div className="mt-0.5 flex items-center justify-between text-[6.5px] text-white/55">
-                <span>{e.eq}</span>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
-                >
-                  <Plus className="size-2" /> Add
-                </button>
-              </div>
+        {useReal && featured ? (
+          <div className="mt-2 overflow-hidden rounded-[6px] border border-reps-orange/30 bg-reps-panel/40 p-1.5">
+            <div className="overflow-hidden rounded-[5px] border border-white/10">
+              <video
+                src={featured.videoUrl}
+                poster={featured.posterUrl}
+                muted
+                loop
+                playsInline
+                autoPlay
+                className="aspect-video w-full bg-black object-cover"
+              />
             </div>
-          ))}
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="truncate text-[8px] font-semibold text-white">{featured.name}</p>
+              <span className="rounded-full bg-emerald-500/15 px-1.5 py-[1px] text-[6.5px] font-semibold text-emerald-300">
+                Live demo
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          {useReal
+            ? curated!.slice(0, 9).map((e) => (
+                <div
+                  key={e.exerciseId}
+                  className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5"
+                >
+                  <div className="relative aspect-video overflow-hidden rounded-[5px] bg-reps-ink">
+                    <img
+                      src={e.imageUrl}
+                      alt={e.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                    <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
+                      HD
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
+                  <div className="mt-0.5 flex items-center justify-end text-[6.5px] text-white/55">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
+                    >
+                      <Plus className="size-2" /> Add
+                    </button>
+                  </div>
+                </div>
+              ))
+            : filtered.slice(0, 9).map((e) => (
+                <div key={e.name} className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5">
+                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-[5px] bg-gradient-to-br from-reps-panel/80 to-reps-ink">
+                    <PlayCircle className="size-4 text-white/70" />
+                    <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
+                      HD
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
+                  <div className="mt-0.5 flex items-center justify-between text-[6.5px] text-white/55">
+                    <span>{e.eq}</span>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
+                    >
+                      <Plus className="size-2" /> Add
+                    </button>
+                  </div>
+                </div>
+              ))}
         </div>
 
         <p className="mt-2 text-[7px] text-white/45">
