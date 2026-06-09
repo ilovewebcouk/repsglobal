@@ -64,7 +64,7 @@ function CheckInsPage() {
 
           <div className="mt-5 grid grid-cols-3 gap-2">
             {["Front", "Side", "Back"].map((p) => (
-              <div key={p} className="aspect-[3/4] rounded-[14px] border border-dashed border-reps-border bg-reps-ink/60 p-3 text-center">
+              <div key={p} className="aspect-[3/4] rounded-[16px] border border-dashed border-reps-border bg-reps-ink/60 p-3 text-center">
                 <div className="flex h-full flex-col items-center justify-center text-white/45">
                   <Camera className="h-5 w-5" />
                   <div className="mt-2 text-[11.5px] font-medium">{p} photo</div>

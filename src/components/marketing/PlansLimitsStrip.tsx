@@ -45,7 +45,7 @@ function RepsCard() {
         Unlimited clients · Founding pricing locked for life
       </p>
 
-      <div className="mt-5 rounded-[14px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">
+      <div className="mt-5 rounded-[16px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
           <Check className="h-3.5 w-3.5" /> Everything in this comparison is included in Pro
         </div>
@@ -92,7 +92,7 @@ function CompetitorCard({ c }: { c: Competitor }) {
       </p>
       <p className="mt-1 text-[12px] text-white/45">{c.freeTrial}</p>
 
-      <div className="mt-5 rounded-[14px] border border-reps-border bg-reps-ink p-3.5">
+      <div className="mt-5 rounded-[16px] border border-reps-border bg-reps-ink p-3.5">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/55">
           <X className="h-3.5 w-3.5 text-white/40" /> Paid add-ons
         </div>
