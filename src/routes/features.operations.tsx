@@ -35,6 +35,7 @@ import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { TierCard } from "@/components/marketing/TierCard";
+import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { Separator } from "@/components/ui/separator";
 
 import heroOperations from "@/assets/hero-operations-bg.jpg.asset.json";
