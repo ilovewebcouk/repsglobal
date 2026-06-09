@@ -20,6 +20,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
