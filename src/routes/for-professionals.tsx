@@ -401,7 +401,7 @@ function ForProsPage() {
 
       {/* PRICING ANCHOR — compact 3-tier strip so visitors know the price without leaving */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Pricing
