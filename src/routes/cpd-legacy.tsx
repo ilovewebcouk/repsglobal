@@ -830,7 +830,7 @@ function ProfileScreenshot() {
           <div className="relative">
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-6 -z-10 rounded-[28px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(50%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
             />
             <BrowserFrame url="repsglobal.com/c/james-wilson">
               <img

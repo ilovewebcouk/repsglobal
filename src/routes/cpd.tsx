@@ -809,8 +809,8 @@ function TeardownCard({
       </div>
 
       <div className="relative flex items-center gap-4 px-6 py-5">
-        <Avatar className="h-14 w-14 rounded-[14px]">
-          <AvatarFallback className="rounded-[14px] bg-reps-ink text-[15px] font-bold text-white/80">
+        <Avatar className="h-14 w-14 rounded-[16px]">
+          <AvatarFallback className="rounded-[16px] bg-reps-ink text-[15px] font-bold text-white/80">
             {initials}
           </AvatarFallback>
         </Avatar>
