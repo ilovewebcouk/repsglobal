@@ -335,11 +335,11 @@ function Hero() {
       <div className="absolute inset-0 bg-reps-ink/55 lg:hidden" />
       <div
         aria-hidden
-        className="absolute inset-0 hidden lg:block bg-[linear-gradient(90deg,rgba(10,10,12,0.88)_0%,rgba(10,10,12,0.7)_35%,rgba(10,10,12,0.25)_60%,rgba(10,10,12,0)_80%)]"
+        className="absolute inset-0 hidden lg:block bg-[linear-gradient(90deg,rgba(10,10,12,0.72)_0%,rgba(10,10,12,0.55)_30%,rgba(10,10,12,0.20)_58%,rgba(10,10,12,0)_78%)]"
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[radial-gradient(55%_85%_at_15%_55%,rgba(10,10,12,0.55),transparent_72%)]"
+        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[radial-gradient(50%_80%_at_15%_55%,rgba(10,10,12,0.32),transparent_72%)]"
       />
       <div
         aria-hidden
