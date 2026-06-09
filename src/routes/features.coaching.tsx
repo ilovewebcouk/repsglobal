@@ -233,6 +233,7 @@ export const Route = createFileRoute("/features/coaching")({
 // -----------------------------------------------------------------------------
 
 function CoachingPage() {
+  const { curated, featured } = Route.useLoaderData();
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
@@ -240,8 +241,8 @@ function CoachingPage() {
       <Hero />
 
       <ProblemSection />
-      <ProgrammeSection />
-      <ExerciseLibrarySection />
+      <ProgrammeSection featured={featured} />
+      <ExerciseLibrarySection curated={curated} featured={featured} />
       <NutritionSection />
       <HabitsSection />
       <CheckInsSection />
