@@ -184,7 +184,18 @@ const PROGRAMME_DATA: Record<
   },
 };
 
-export function ProgrammeMock() {
+type FeaturedExerciseProp = {
+  exerciseId: string;
+  name: string;
+  videoUrl: string;
+  posterUrl: string;
+  bodyPart?: string;
+  equipment?: string;
+} | null | undefined;
+
+type CuratedExerciseProp = { exerciseId: string; name: string; imageUrl: string };
+
+export function ProgrammeMock({ featured }: { featured?: FeaturedExerciseProp } = {}) {
   const [state, setState] = useState<ProgrammeState>("w4");
   const d = PROGRAMME_DATA[state];
 
@@ -237,29 +248,52 @@ export function ProgrammeMock() {
           </div>
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <div className={cardTight}>
-            <div className={labelInline}>
-              <Target className="size-2 text-reps-orange" />
-              Goal
+        {featured ? (
+          <div className="mt-2 rounded-[8px] border border-white/10 bg-reps-panel/40 p-2">
+            <div className="flex items-center gap-1.5">
+              <PlayCircle className="size-2.5 text-reps-orange" />
+              <p className="text-[8px] font-semibold text-white">{featured.name}</p>
+              <span className="ml-auto rounded-full bg-emerald-500/15 px-1.5 py-[1px] text-[6.5px] font-semibold text-emerald-300">
+                Live demo
+              </span>
             </div>
-            <p className="mt-0.5 text-[8px] font-medium text-white">+5 kg squat</p>
-          </div>
-          <div className={cardTight}>
-            <div className={labelInline}>
-              <TrendingUp className="size-2 text-reps-orange" />
-              Progression
+            <div className="mt-1.5 overflow-hidden rounded-[6px] border border-white/5">
+              <video
+                src={featured.videoUrl}
+                poster={featured.posterUrl}
+                muted
+                loop
+                playsInline
+                autoPlay
+                className="aspect-video w-full bg-black object-cover"
+              />
             </div>
-            <p className="mt-0.5 text-[8px] font-medium text-white">{d.squat}</p>
           </div>
-          <div className={cardTight}>
-            <div className={labelInline}>
-              <Sparkles className="size-2 text-reps-orange" />
-              Note
+        ) : (
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            <div className={cardTight}>
+              <div className={labelInline}>
+                <Target className="size-2 text-reps-orange" />
+                Goal
+              </div>
+              <p className="mt-0.5 text-[8px] font-medium text-white">+5 kg squat</p>
             </div>
-            <p className="mt-0.5 text-[8px] font-medium text-white">Knee 9/10</p>
+            <div className={cardTight}>
+              <div className={labelInline}>
+                <TrendingUp className="size-2 text-reps-orange" />
+                Progression
+              </div>
+              <p className="mt-0.5 text-[8px] font-medium text-white">{d.squat}</p>
+            </div>
+            <div className={cardTight}>
+              <div className={labelInline}>
+                <Sparkles className="size-2 text-reps-orange" />
+                Note
+              </div>
+              <p className="mt-0.5 text-[8px] font-medium text-white">Knee 9/10</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </MockShell>
   );
