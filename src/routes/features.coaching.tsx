@@ -83,7 +83,7 @@ const PROBLEM_ORGANISED = [
 const PROGRAMME_BULLETS = [
   "Block, week and session structure — not a workout list",
   "Sets, reps, tempo, rest, load and exertion targets per exercise",
-  "600+ video demos from the exercise library",
+  "10,000+ video demos from the exercise library",
   "Client-specific adaptations stored on the programme",
   "Progression notes carried session to session",
   "Reusable templates so a new client never starts from a blank page",
