@@ -480,9 +480,9 @@ function ExerciseLibrarySection({
               "10,000+ exercises curated for coaching, not gym influencers",
               "Filter by lower, upper, conditioning, mobility, equipment",
               "HD video demos with cues, regressions and progressions",
+              "Upload your own exercises and videos — they sit alongside the library",
+              "Record once, reuse across every client and programme",
               "Add to programme in one click — no copy-paste",
-              "Shared at studio level so a team coaches consistently",
-              "Your own exercises and videos sit alongside the library",
             ]}
           />
         </div>
