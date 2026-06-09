@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { getCoachingExerciseShowcase } from "@/lib/exercisedb.functions";
 import {
   ArrowRight,
   BadgeCheck,
