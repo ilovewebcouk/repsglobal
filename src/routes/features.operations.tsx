@@ -331,14 +331,19 @@ function Hero() {
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
       />
-      <div className="absolute inset-0 bg-reps-ink/65 lg:bg-reps-ink/45" />
+      {/* Mobile: flat dim for legibility. Desktop: directional gradient that protects copy on the left and leaves the trainer fully visible on the right. */}
+      <div className="absolute inset-0 bg-reps-ink/55 lg:hidden" />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.62),transparent_75%)] lg:bg-[radial-gradient(60%_90%_at_18%_55%,rgba(10,10,12,0.82),transparent_72%)]"
+        className="absolute inset-0 hidden lg:block bg-[linear-gradient(90deg,rgba(10,10,12,0.88)_0%,rgba(10,10,12,0.7)_35%,rgba(10,10,12,0.25)_60%,rgba(10,10,12,0)_80%)]"
       />
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.12),transparent_70%)]"
+        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[radial-gradient(55%_85%_at_15%_55%,rgba(10,10,12,0.55),transparent_72%)]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
       />
       <div
         aria-hidden
