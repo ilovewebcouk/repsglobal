@@ -154,7 +154,7 @@ const USE_CASES = [
 
 const COMPARISON_ROWS = [
   { feature: "Programme builder (block / week / session)", verified: false, pro: true },
-  { feature: "Exercise library + 600+ video demos", verified: false, pro: true },
+  { feature: "Exercise library + 10,000+ video demos", verified: false, pro: true },
   { feature: "Nutrition: macros, food log, meal plans", verified: false, pro: true },
   { feature: "Habits + wearable sync (Apple / Garmin / Whoop)", verified: false, pro: true },
   { feature: "Weekly check-ins with goal review", verified: false, pro: true },
