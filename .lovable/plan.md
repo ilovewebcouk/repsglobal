@@ -1,87 +1,99 @@
-## You're right — receipts first
+# Marketing-page anti-drift governance
 
-Heading sizes are drifting across files. Audit:
+Source-of-truth enforcement pass only. No redesigns, no route changes, no token / colour / radius / typography / pricing / backend / auth / payments / DB / AI changes. Just docs + an audit script.
 
-| Where | h3 (mobile → lg) |
-| --- | --- |
-| `SectionHeading` primitive (the canonical one) | **30 → 40** |
-| `PillarPage` `PillarFeatureBlock` h3 (visibility today) | **30 → 40** |
-| `ProductBlock` h3 (every pillar block on `/for-professionals`) | **26 → 32** |
-| `FeaturePageLayout` block h3 | 28 → 34 |
-| `features.ai.tsx` block h3 | 28 → 34 |
-| `features.shop-front.tsx` block h3 | 30 → 38 |
+## 1. Create `src/components/marketing/README.md`
 
-So the "40 vs 32" you're seeing is real: `/features/visibility` renders the pillar block heading at **40px** via `PillarPage`, while the identical-looking block on `/for-professionals` renders it at **32px** via `ProductBlock`. Three other files invented their own sizes too. That's a system failure, not a one-off.
+A single canonical reference for every approved marketing primitive. For each, document **purpose / where used / what it replaces / permitted variants / what NOT to hand-roll**:
 
-The canonical scale already exists in the locked source of truth (`mem://design/marketing-section-primitives`): `SectionHeading` = 30 → 40, `SectionEyebrow` = 11px tracked orange. Everything else should resolve to that. It hasn't been enforced.
+- `SectionHeading` — section H2 (30 → 40px). Replaces hand-rolled `<h2 className="font-display text-[Npx]">`.
+- `SectionEyebrow` — small uppercase label above headings.
+- `SectionHeader` — eyebrow + heading + optional lede composite.
+- `BlockHeading` — 50/50 in-block H3 (28 → 36px). Replaces hand-rolled `<h3 className="font-display text-[Npx]">`.
+- `MarketingHeroEyebrow` — hero kicker.
+- `ProductBlock` — canonical 50/50 product/feature block (copy + media).
+- `MarketingFaq` — accordion FAQ block.
+- `FinalCta` — single end-of-page CTA (see `mem://design/final-cta`).
+- `VerifySteps` — 3-step verify strip.
+- `RegisterProof` — register stat / trust block.
+- `ReplacedStackBoard` — "replaces X tools" board.
+- `PillarTabs` — pillar tab nav.
+- `ComparisonStrip` — short comparison strip.
+- `TrainerToPlatformComposite` — cinematic trainer + REPs UI cards (3 compositions: card-trail / device-and-stats / single-hero). See `mem://design/trainer-to-platform-composite`.
+- `HeroDeviceCluster` — device cluster used in hero positions.
+- `UseCaseTriad` — 3-up use-case tile row.
+- `WeekWithReps` — "a week with REPs" narrative block.
+- `AiCommandCentreMock` — AI command-centre mock-up tile.
+- `PressMarquee` — editorial wordmark marquee.
 
-## What I'll do (one combined pass, no scope creep)
+Then a **Rules** section listing the explicit do/don't items from the brief (no hand-rolled headings; no `text-[32px]/[40px]/[48px]` in route files; use SectionHeading / BlockHeading / SectionEyebrow; 50/50 = ProductBlock; mockups = shared components; locked memories remain authoritative).
 
-### 1. Lock the type scale, then apply it everywhere a 50/50 block heading lives
+A short **Reading order** pointer to `mem://design/source-of-truth`, `mem://design/marketing-section-primitives`, and the locked-page memories.
 
-Single source: `SectionHeading` for section H2 (30 → 40), new `BlockHeading` primitive for the 50/50 in-block H3 (28 → 36 — mid-step on the same scale, smaller than a section H2 because it sits inside a section).
+I'll grep `src/components/marketing/` first to confirm every primitive listed actually exists; any that don't will be flagged in the report rather than invented.
 
-- **Create** `src/components/marketing/BlockHeading.tsx` — `font-display text-[28px] font-bold leading-[1.1] text-white lg:text-[36px]`.
-- **Rewrite** the heading line in every 50/50 block to consume `BlockHeading`:
-  - `src/components/marketing/ProductBlock.tsx` (drives `/for-professionals` pillars)
-  - `src/components/features/PillarPage.tsx` `PillarFeatureBlock`
-  - `src/components/features/FeaturePageLayout.tsx`
-  - `src/routes/features.shop-front.tsx` (3 occurrences)
-  - `src/routes/features.ai.tsx` (2 occurrences)
-- After this pass, every 50/50 block heading on every pillar/feature page = 28 → 36, full stop. No more divergence.
+## 2. Create `scripts/audit-marketing-primitives.mjs`
 
-I'm not touching hero H1s or section H2s in this pass — only the 50/50 block H3 that's actively wrong.
+Pure Node ESM script, no deps. Glob via `fs` + recursive walk.
 
-### 2. Rebuild the "Cinematic Product Composite" properly
+**Scan scope:**
+- `src/routes/for-professionals*.tsx`
+- `src/routes/features*.tsx`
+- `src/routes/cpd*.tsx`
+- `src/routes/compare*.tsx`
+- `src/components/marketing/**/*.tsx`
+- `src/components/features/**/*.tsx`
 
-Rename + replace `CinematicCardStack` with the right pattern. New component:
+**Hard violations (exit 1):**
+- Banned pricing copy (case-insensitive): `15% booking fee`, `booking commission`, `one flat plan`, `single flat plan`, `£29 Pro`, `Free Profile` (as a pricing card label).
+- In **route files only** (`src/routes/...`): `font-display text-[`, `font-heading text-[`, or any of `text-[32px]`, `text-[36px]`, `text-[40px]`, `text-[44px]`, `text-[48px]` co-occurring with `font-display` / `font-heading` on the same element.
+- Obvious placeholder panels in route files: `TODO`, `Placeholder`, `Coming soon` inside JSX text (allowlist a small set of legitimate uses if any are found during dry-run).
 
-**`src/components/marketing/TrainerToPlatformComposite.tsx`**
+**Soft warnings (exit 0, printed):**
+- Same heading patterns inside `src/components/marketing/` or `src/components/features/` (these primitives are allowed to define the canonical sizes).
+- Route-file `<h2>` / `<h3>` that don't reference `SectionHeading` / `BlockHeading` import.
 
-The composition you actually described:
+**Output format per finding:**
+```
+[HARD|WARN] path:line  <matched snippet>
+  → use <recommended primitive>
+```
 
-- Cinematic full-bleed trainer photo on one side of the 50/50 (not aspect-locked panel — bleeds to the edge).
-- Real REPs UI elements **emanating from the subject** with depth, not pinned to corner slots. Three preset compositions so it stays consistent page-to-page:
-  - `composition: "card-trail"` — two stacked cards descending diagonally from the trainer's torso (subject → card 1 overlapping shoulder → card 2 lower-right, larger, with subtle shadow ramp).
-  - `composition: "device-and-stats"` — one device mockup (phone or laptop, real `ScaledFrame` of a REPs route) emerging from one side + one stat tile floating beside it.
-  - `composition: "single-hero"` — one big floating device, photo subject framed behind it. For the "less is more" capabilities.
+Final summary: `N hard, M warn`. Non-zero exit only on hard violations.
 
-- Cards built on shadcn `Card` primitives (per the always-on shadcn rule) — no hand-rolled panel markup.
-- Stat cards reuse the orange-label / white-value / emerald-delta token triplet already in memory (`mem://design/status-colors`).
-- Real REPs routes inside device mockups via existing `ScaledFrame` / `LaptopFrame` / `PhoneFrame` — no new device chrome.
-- Depth treatment: each floating element gets a tiered shadow + a thin `ring-1 ring-reps-border` and `backdrop-blur-md` over a `bg-reps-panel/85`, so the cards feel like they're lifting off the photo.
-- Subtle "ray" gradient from the subject to the cards (single `radial-gradient` brand-orange tint at low opacity) — gives the "expanding from the scene" feel without becoming a Genially graphic.
-- Reuses my existing `PillarFeature.mockup = { kind: "cinematic", ... }` wiring on `PillarPage`, just changes the component it renders to and extends props with `composition`.
+## 3. Update `package.json`
 
-**Delete** `src/components/marketing/CinematicCardStack.tsx` (the corner-pinned version I built — it wasn't the right read).
+Append script (do not modify existing scripts, do not wire into build):
+```
+"audit:marketing": "node scripts/audit-marketing-primitives.mjs"
+```
 
-### 3. Source-of-truth + audit fixes
+## 4. Update build status doc
 
-- **Update memory** `mem://design/cinematic-card-stack` → rename to `mem://design/trainer-to-platform-composite`, rewrite to describe the new pattern + the three locked compositions + the H3 = `BlockHeading` rule. Update `mem://index.md` accordingly.
-- **Add a Core rule** to `mem://index.md`: *"50/50 block H3 = `BlockHeading` (28 → 36). Section H2 = `SectionHeading` (30 → 40). Hand-rolled `font-display text-[Npx]` for these is forbidden."*
-- **Run** the `doc-sync-source-of-truth` audit after the changes land — no doc rewrite needed, just confirm clean.
+Append a short section to `docs/06_build_status.md` (or whichever current build-status doc exists — I'll confirm during exploration) noting:
+- Marketing primitives are documented in `src/components/marketing/README.md`.
+- `npm run audit:marketing` checks for drift.
+- Future marketing pages must consume approved primitives.
+- Tailwind tokens alone don't enforce semantic typography — primitives + audit do.
 
-### 4. Proof on visibility only
+## 5. No ESLint rule
 
-- Wire the new `TrainerToPlatformComposite` into Capability 1 on `/features/visibility` using `composition: "card-trail"` so you can review the pattern live before I propagate it to the other capabilities or pages.
+Skip ESLint per brief.
 
-## What I will NOT do in this pass
+## Process
 
-- No changes to `/for-professionals` hero, section H2s, or section structure — only the in-block H3 size.
-- No changes to other pillar pages' content (shop-front, ai, operations, coaching, growth).
-- No new image assets generated — reuse `hero-visibility-bg`.
-- No backend/data, no animations beyond the existing 80/160/240ms stagger already in use.
-- No new radii, no new colors, no new shadow tokens.
+1. Explore `src/components/marketing/` to confirm exported primitive names.
+2. Dry-run the audit logic mentally against `src/routes/features.visibility.tsx`, `features.shop-front.tsx`, `features.ai.tsx`, `for-professionals.tsx`, `cpd.tsx`, `compare.*.tsx` to calibrate hard vs warn thresholds (avoid noisy first run).
+3. Write README → write script → update package.json → update build-status doc.
+4. Run `node scripts/audit-marketing-primitives.mjs` and capture real output for the report.
+5. If the first run produces hard violations, list them in the final report — do **not** fix them in this pass (that's a follow-up). The brief is governance-only.
 
-## Files touched
+## Final report sections
 
-- **Create** `src/components/marketing/BlockHeading.tsx`
-- **Create** `src/components/marketing/TrainerToPlatformComposite.tsx`
-- **Delete** `src/components/marketing/CinematicCardStack.tsx`
-- **Edit** `src/components/features/PillarPage.tsx` (swap import, swap heading)
-- **Edit** `src/components/marketing/ProductBlock.tsx` (swap heading)
-- **Edit** `src/components/features/FeaturePageLayout.tsx` (swap heading)
-- **Edit** `src/routes/features.shop-front.tsx` (3 headings)
-- **Edit** `src/routes/features.ai.tsx` (2 headings)
-- **Edit** `src/routes/features.visibility.tsx` (Cap 1 → new composite)
-- **Edit** `mem://index.md`, **rename** `mem://design/cinematic-card-stack` → `mem://design/trainer-to-platform-composite`
+1. Files created
+2. Files updated
+3. README coverage
+4. Audit checks
+5. Example output (real, from running the script)
+6. Current failures (if any)
+7. Confirmation: no visual or functional changes
