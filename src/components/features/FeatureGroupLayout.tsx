@@ -267,13 +267,13 @@ export function FeatureGroupLayout({
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
-              <Sparkles className="h-3.5 w-3.5" /> Founding pricing — locked for life
+              <Sparkles className="h-3.5 w-3.5" /> Founder pricing — stays while you stay
             </span>
             <h2 className="mt-5 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
               Built for fitness pros, not generic SaaS.
             </h2>
             <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
-              Start with Verified or Pro. Founding pricing on Pro locked for life — before public launch.
+              Start with Verified or Pro. Founder pricing on Pro stays active while your subscription stays active.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
