@@ -1,51 +1,48 @@
 ## Goal
 
-Make `/for-professionals` and `/features/visibility` use the same vertical rhythm so they line up when flicked side-by-side, and codify the rule so future marketing pages inherit it.
+Remove the gray hairline directly under the hero on `/features/visibility` by switching its chrome to the same `border-b` pattern used on `/for-professionals`. Lock the divider convention in memory so future marketing pages match.
 
-## Shared marketing rhythm (new standard)
+## Convention (new shared standard)
 
-| Slot | Mobile | Desktop |
-| --- | --- | --- |
-| Hero | `pt-24 pb-20` | `lg:pt-28 lg:pb-24` |
-| Standard section | `py-20` | `lg:py-28` |
-| Tight "proof strip" right under hero (optional) | `pt-10 pb-16` | `lg:pt-12 lg:pb-20` |
-| Final CTA | `py-20` | `lg:py-28` |
+- Hero `<section>`: no divider.
+- Every subsequent `<section>`: `border-b border-reps-border` (no `/60` opacity).
+- The page's final `<section>` (FinalCta wrapper) also gets `border-b border-reps-border`, so the page bottom feels intentional rather than fading out.
 
-Rules:
-- One tight proof strip allowed immediately after hero. Every other section uses the standard slot.
-- No more `py-24 lg:py-28`, no more `py-20 lg:py-24` — those are the two off-by-one rhythms causing the drift.
-- Hero anchoring memory (`lg:pt-24`–`lg:pt-28`) stays valid; we're locking the upper bound (`lg:pt-28`) as the standard.
+Rationale: this is exactly what `/for-professionals` does, and the hero's bottom-fade gradient flows into the first section seamlessly with no hairline visible. Borders below each subsequent section read as deliberate chapter breaks.
 
-## Changes
+## Changes in `src/routes/features.visibility.tsx`
 
-**`src/routes/for-professionals.tsx`**
-- Hero (line 122): `pb-20 pt-20 lg:pb-20 lg:pt-24` → `pt-24 pb-20 lg:pt-28 lg:pb-24`.
-- RegisterProof strip (line 210): keep tight, normalise to `pt-10 pb-16 lg:pt-12 lg:pb-20`.
-- First ProductBlock (line 231): `pt-16 pb-24 lg:pt-20 lg:pb-28` → `py-20 lg:py-28`.
-- ProductBlocks at lines 252 / 274 / 295: `py-24 lg:py-28` → `py-20 lg:py-28`.
-- TestimonialFeature (line 318): `py-20 lg:py-24` → `py-20 lg:py-28`.
-- Hero-style closer panel (line 329): leave as-is (it's a second hero/CTA panel, not a section — flag if you want it normalised too).
-- Next block (line 381): `pt-20 pb-24 lg:pt-20 lg:pb-28` → `py-20 lg:py-28`.
-- Lines 404 / 477 / 492 / 511 (`py-20 lg:py-24` and `py-24 lg:py-28`): all → `py-20 lg:py-28`.
+Swap every `border-t border-reps-border/60` to `border-b border-reps-border` on these 8 sections:
 
-**`src/routes/features.visibility.tsx`**
-- Hero (line 258): already `pt-24 pb-20 lg:pt-28 lg:pb-24` ✅ — no change.
-- Problem section (line 329): `py-20 lg:py-24` → `py-20 lg:py-28`.
-- All other sections: already `py-20 lg:py-28` ✅.
+| Line | Section |
+| --- | --- |
+| 328 | Problem |
+| 425 | AnnotatedProfile (`id="profile"` — keep `scroll-mt-24`) |
+| 454 | Discovery |
+| 504 | Trust |
+| 558 | Reviews |
+| 606 | SEO |
+| 637 | Segments |
+| 682 | TierComparison |
+
+FAQ + FinalCta wrappers: confirm they also get `border-b border-reps-border` if currently bare so the page ends cleanly (read first, then apply same swap).
+
+Hero section unchanged.
 
 ## Verification
 
-1. Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0.
-2. Screenshot both pages at 390 / 820 / 1280 and confirm the hero-to-first-section gap and section-to-section gaps line up when toggling between the two pages.
+1. Reload `/features/visibility` and confirm: no hairline directly under hero, dividers still present between subsequent sections, page bottom feels intentional.
+2. Side-by-side flick against `/for-professionals` — chrome should now read identically.
+3. Run `bash /tmp/audit.sh` — must exit clean (only the pre-existing documented 14px enquire-page exception).
 
 ## Memory updates
 
-- Update `mem://design/marketing-section-primitives` with the locked rhythm table above.
-- Add a one-liner to Core: "Marketing rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`; one optional `pt-10 pb-16 lg:pt-12 lg:pb-20` proof strip under hero. No other paddings."
-- Note the change in the `mem://design/locked-for-professionals` and `mem://design/locked-visibility` entries so the locks reflect the new rhythm.
+- Add a one-liner to Core under the rhythm rule:
+  "Marketing divider convention: hero has NO divider; every subsequent section uses `border-b border-reps-border`. Never `border-t`, never `/60` opacity on chrome borders."
+- Append the same convention to `mem://design/marketing-section-primitives` under the new "Locked vertical rhythm" table.
+- Note the chrome change in `mem://design/locked-visibility`.
 
 ## Out of scope
 
-- `/specialisms`, `/cpd`, `/pricing`, other `/features/*` — flagged for a future sweep, not touched in this pass.
-- Copy, imagery, component structure — unchanged.
-- Re-adding PressMarquee — still banked.
+- `/specialisms`, `/cpd`, other `/features/*` — flagged for future sweep.
+- Colors, copy, components, spacing — unchanged. Only the border direction + opacity changes.
