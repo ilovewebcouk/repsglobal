@@ -474,7 +474,7 @@ function ForProsPage() {
       {/* TRIAD TESTIMONIALS */}
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8 max-w-[640px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Loved by working pros
