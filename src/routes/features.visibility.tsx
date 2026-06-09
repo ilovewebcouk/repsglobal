@@ -325,7 +325,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="border-t border-reps-border/60">
+    <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The visibility problem"
@@ -422,7 +422,7 @@ function ScatteredCard({
 
 function ProfileSection() {
   return (
-    <section id="profile" className="scroll-mt-24 border-t border-reps-border/60">
+    <section id="profile" className="scroll-mt-24 border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Your public REPs profile"
@@ -451,7 +451,7 @@ function ProfileSection() {
 
 function DiscoverySection() {
   return (
-    <section className="border-t border-reps-border/60 bg-reps-panel/15">
+    <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="How clients discover you"
@@ -501,7 +501,7 @@ function DiscoverySection() {
 
 function TrustGridSection() {
   return (
-    <section className="border-t border-reps-border/60">
+    <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Trust signals that matter"
@@ -555,7 +555,7 @@ function TrustGridSection() {
 
 function ReviewsSection() {
   return (
-    <section className="border-t border-reps-border/60 bg-reps-panel/15">
+    <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Turn reviews into public proof"
@@ -603,7 +603,7 @@ function ReviewsSection() {
 
 function SeoReachSection() {
   return (
-    <section className="border-t border-reps-border/60">
+    <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Found beyond REPs too"
@@ -634,7 +634,7 @@ function SegmentsSection() {
   const current = SEGMENTS.find((s) => s.key === active) ?? SEGMENTS[0];
 
   return (
-    <section className="border-t border-reps-border/60 bg-reps-panel/15">
+    <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Visibility for every professional"
@@ -679,7 +679,7 @@ function SegmentsSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="border-t border-reps-border/60">
+    <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"
