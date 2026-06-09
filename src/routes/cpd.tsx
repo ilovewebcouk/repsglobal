@@ -357,19 +357,7 @@ function Hero() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[78%_38%] sm:object-[72%_42%] md:object-[68%_45%] lg:object-center"
       />
-      <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/35" />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_30%_45%,rgba(10,10,12,0.60),transparent_75%)] lg:bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
-      />
+      <HeroOverlay copySide="left" />
 
       <div className="relative mx-auto flex min-h-[640px] sm:min-h-[680px] lg:min-h-[700px] w-full max-w-[1320px] flex-col items-start justify-start px-6 pb-20 pt-24 lg:px-10 lg:pb-28 lg:pt-28">
         <div className="max-w-[720px]">
