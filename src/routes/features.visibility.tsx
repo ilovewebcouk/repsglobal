@@ -326,7 +326,7 @@ function Hero() {
 function ProblemSection() {
   return (
     <section className="border-t border-reps-border/60">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The visibility problem"
           heading="Most professionals are scattered. Clients are left guessing."
