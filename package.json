@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "audit:marketing": "node scripts/audit-marketing-primitives.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
