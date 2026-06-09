@@ -314,19 +314,7 @@ function Hero() {
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
       />
-      <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/30" />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.62),transparent_75%)] lg:bg-[radial-gradient(60%_90%_at_18%_55%,rgba(10,10,12,0.82),transparent_72%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.14),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.12),transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
-      />
+      <HeroOverlay copySide="left" />
 
       <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
         <div className="max-w-[640px]">
