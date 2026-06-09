@@ -75,6 +75,7 @@ All live in `src/components/marketing/`.
 | `TestimonialFeature` | Quote + stat tiles |
 | `FinalCta` | End-of-page CTA — pass copy via props, never rebuild |
 | `MarketingFaq` | FAQ accordion in a 920px column |
+| `AnnotatedMock` | Anatomy primitive — live REPs route inside a device frame with up to 6 numbered orange callouts + matching legend. Use to teach what each part of a screen does. Never anchor a pill over a face or critical text. |
 
 ---
 

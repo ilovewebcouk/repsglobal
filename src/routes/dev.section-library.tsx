@@ -13,6 +13,7 @@ import { RegisterProof } from "@/components/marketing/RegisterProof";
 import { TestimonialFeature } from "@/components/marketing/TestimonialFeature";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
+import { AnnotatedMock } from "@/components/marketing/AnnotatedMock";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/dev/section-library")({
@@ -29,6 +30,7 @@ const GROUPS = [
   { id: "headings", label: "Headings & eyebrows" },
   { id: "heroes", label: "Hero eyebrow" },
   { id: "blocks", label: "50/50 blocks" },
+  { id: "annotated", label: "Annotated mock" },
   { id: "proof", label: "Trust & proof" },
   { id: "cta", label: "CTA" },
   { id: "faq", label: "FAQ" },
@@ -159,8 +161,34 @@ function SectionLibrary() {
         </div>
       </Group>
 
+      <Group id="annotated" title="Annotated mock — anatomy primitive">
+        <p className="text-[14px] text-white/65">
+          Use <code>AnnotatedMock</code> when the goal is to teach the reader what each part of a
+          REPs screen does. Live route inside a device, up to 6 numbered orange pills, matching
+          legend column. Max 6 callouts. Never anchor a pill over a face or critical text.
+        </p>
+        <div className="mt-8">
+          <AnnotatedMock
+            mockup={{
+              device: "laptop",
+              src: "/pro/james-carter",
+              title: "Verified profile anatomy",
+            }}
+            callouts={[
+              { x: "11%", y: "20%", title: "Verified badge", body: "Awarded after a human check." },
+              { x: "84%", y: "22%", title: "Specialisms", body: "What you're best suited for." },
+              { x: "16%", y: "50%", title: "Credentials", body: "Qualifications + insurance + CPD." },
+              { x: "82%", y: "58%", title: "Services & pricing", body: "Clients self-qualify." },
+              { x: "14%", y: "80%", title: "Reviews", body: "Verified clients only. You can reply." },
+              { x: "84%", y: "82%", title: "Enquiry CTA", body: "One action. Into your REPs inbox." },
+            ]}
+          />
+        </div>
+      </Group>
+
       <Group id="proof" title="Trust & proof strips">
         <Demo label="VerifySteps — numbered 3-step strip with banner">
+
           <VerifySteps
             eyebrow="How verification works"
             heading="Three checks, one verified badge"

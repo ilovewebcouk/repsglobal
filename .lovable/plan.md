@@ -1,119 +1,95 @@
-# Design-system pass — full
+## Goal
 
-Goal: make REPs visually coherent across every marketing page by (a) fixing what's broken now, (b) giving us a single dev-only gallery of every reusable block, (c) auditing existing pages so nothing hand-rolls headings/sections, and (d) writing the rules down once in `docs/`.
+Rebuild `/features/visibility` as the definitive REPs visibility pillar page: the client's path from public directory → profile → verification → reviews → specialisms → enquiry, told from both the trainer's and the client's POV, using live REPs routes inside DeviceMockup frames and only the locked marketing primitives.
 
-Scope this pass: **marketing pages only** (`/`, `/for-professionals`, `/features/*`, `/professions/*`, `/in/*`, `/cpd`, `/pricing`, `/specialisms`, comparison pages, FAQ). Directory/profile/dashboard/forms are out of scope — separate pass later.
+## Strategic positioning (locked into hero + Section 1)
 
----
+> "Most fitness software helps you manage clients after they sign up. REPs helps you become visible *before* they choose who to contact."
 
-## 1. Fix the broken preview (must come first)
+Visibility = public profile, directory presence, verification, reviews, specialisms, enquiry. Not CPD, not Growth, not generic marketing.
 
-The current preview is throwing two runtime errors:
+## Final section order
 
-- `500 on /src/components/marketing/BlockHeading.tsx` — file is imported (by `/features/visibility` and others per memory) but missing/broken.
-- `Failed to load /src/routes/dev.section-library.tsx` — referenced in `routeTree.gen.ts` but file doesn't exist.
+```
+Hero                  — top-anchored, 3 trust chips, PressMarquee
+Section 1  Problem    — 50/50 "scattered today" vs "one REPs profile"
+Section 2  Profile    — AnnotatedMock of /pro/james-carter (client's POV)
+Section 3  Discovery  — DeviceMockup of /find + filter explainer
+Section 4  Trust grid — 6 dark cards (verification / quals / insurance / CPD / reviews / specialisms)
+Section 5  Reviews    — DeviceMockup of /pro/...#reviews + authenticity rules
+Section 6  SEO reach  — DeviceMockup of /in/manchester (off-platform indexable visibility)
+Section 7  Segments   — tabbed selector swaps example profile across 7 pro types
+Section 8  Verified vs Pro — reuse ComparisonStrip-style visibility-only matrix
+Section 9  FAQ        — MarketingFaq, 6 questions
+Section 10 FinalCta   — shared FinalCta component
+```
 
-Steps:
-1. Read `src/components/marketing/SectionHeading.tsx` to match conventions, then (re)create `BlockHeading.tsx` per the locked spec: in-block H3, 28px → 36px at `lg`, `font-display`, pure-white headline, no orange split. Export typed `BlockHeading({ children, className })`.
-2. Create the new route file in step 2 below, which clears the routeTree error.
+The current 5-capability `PillarPage` flow is replaced. We stop using `PillarPage` for visibility and build the route directly so sections aren't forced into the rigid alternating 50/50 grid. Other pillars keep `PillarPage` untouched.
 
-Verification: preview loads, no console 500s, `/features/visibility` H3s render.
+## New reusable primitive
 
----
+**`src/components/marketing/AnnotatedMock.tsx`**
 
-## 2. Build `/dev/section-library` (the gallery)
+A `DeviceMockup` (laptop or phone) wrapped in `MockupStage` with absolutely-positioned numbered orange pills (1–6) anchored to percentage coordinates, each connected to a legend list beside/below the mock. Used in Section 2 (profile anatomy) and reusable on future pages (shop-front anatomy, dashboard anatomy). Added to `/dev/section-library` with a "What NOT to do" note (no more than 6 call-outs, never cover faces or text).
 
-New route `src/routes/dev.section-library.tsx`:
+No other new primitives. Section 7's segment selector uses existing shadcn `Tabs` + `DeviceMockup` — no new component.
 
-- `head()` sets `<meta name="robots" content="noindex,nofollow">` and a `<title>` like "Section Library — REPs (internal)".
-- No nav link from anywhere user-facing. Reachable only by typing the URL.
-- Top of page: small banner explaining the rules (use these primitives, never hand-roll, link to `docs/07_design_system.md`).
-- Sticky in-page nav (reusing the same pattern as `/specialisms`) with anchors to each group.
+## Per-section content + primitive map
 
-Sections rendered, each with a heading, a one-line "when to use", and a live example:
+| Section | Primitive(s) | Live route(s) inside DeviceMockup |
+|---|---|---|
+| Hero | hero scaffold from `PillarPage` cloned inline, `MarketingHeroEyebrow`, `PressMarquee` | — |
+| 1 Problem | `SectionEyebrow` + `SectionHeading` + `BlockHeading` × 2, two flat panels | — (static "before" collage of fake IG bio / Linktree / WhatsApp screenshot vs "after" REPs profile thumbnail) |
+| 2 Profile | `SectionHeader` + new `AnnotatedMock` | `/pro/james-carter` (laptop) |
+| 3 Discovery | `SectionHeader` + `DeviceMockup` + 4 filter chips | `/find` (laptop) |
+| 4 Trust grid | `SectionHeader` + 6 cards (existing card pattern from `/specialisms` `RegistersBlock` style) | — |
+| 5 Reviews | `SectionHeader` + `DeviceMockup` + `BlockHeading` authenticity panel | `/pro/james-carter#reviews` (laptop) |
+| 6 SEO reach | `SectionHeader` + `DeviceMockup` | `/in/manchester` (laptop) |
+| 7 Segments | `SectionHeader` + shadcn `Tabs` + `DeviceMockup` swap | `/pro/james-carter`, `/pro/sarah-mitchell`, etc. (laptop) — uses existing seeded pros |
+| 8 Verified vs Pro | `SectionHeader` + small 2-col matrix (reuses `PlansLimitsStrip` card pattern, scoped to visibility rows only) | — |
+| 9 FAQ | `MarketingFaq` | — |
+| 10 FinalCta | `FinalCta` | — |
 
-1. **Headings & eyebrows**
-   - `MarketingHeroEyebrow` (with and without icon)
-   - `SectionEyebrow` (orange small-caps)
-   - `SectionHeading` (H2, 30→40)
-   - `BlockHeading` (H3, 28→36)
-   - `SectionHeader` (eyebrow + heading + lede composite)
-2. **Heroes**
-   - Marketing hero template (top-anchored copy + 3 trust chips + `PressMarquee`) — single live instance using placeholder copy.
-3. **50/50 blocks**
-   - `ProductBlock` with `DeviceMockup` laptop (real `/pro/james-carter` iframe)
-   - `ProductBlock` with `DeviceMockup` phone (real `/c/james-wilson`)
-   - `ProductBlock` with image variant
-4. **Trust / proof strips**
-   - `VerifySteps`
-   - `PressMarquee`
-   - `RegisterProof` (from `/for-professionals`)
-   - `TestimonialFeature` stat tiles
-5. **CTAs**
-   - `FinalCta` with sample copy
-6. **FAQ**
-   - `MarketingFaq` with 3 sample items
-7. **Status accents**
-   - Verified badge using the locked emerald triplet
-   - "What NOT to do" — short red-bordered callouts showing forbidden patterns (decorative emerald, hand-rolled `<h2 className="text-[40px]">`, `rounded-2xl`, gold rating stars). Pure documentation, not used in product.
+## Copy (locked)
 
-No new components are introduced in this route — it only *renders* the existing primitives. If a section is missing a primitive (e.g. trust chips aren't yet a component), flag it under "Remaining work" in the response rather than inventing one.
+- **H1**: "Be found by clients looking for trusted fitness professionals."
+- **Sub**: "Create a verified REPs profile that brings your credentials, reviews, specialisms and contact options into one public place clients can understand and act on."
+- **Hero CTAs**: Join REPs / See how profiles work (→ `#profile`)
+- **Hero chips**: Verified credentials · 10-minute setup · Every feature in your tier included
+- **Section eyebrows** (must match `/for-professionals` casing/style via `SectionEyebrow`): "The visibility problem", "Your public REPs profile", "How clients discover you", "Trust signals that matter", "Turn reviews into public proof", "Found beyond REPs too", "Visibility for every professional", "Verified vs Pro", "Common questions".
+- **FAQ Qs**: Will I rank top? · Can I hide my profile? · Who can leave a review? · Do I need Pro to be visible? · Is my profile indexed by search engines? · Can I reply to reviews?
+- **Forbidden phrasing**: "guaranteed leads", "rank higher on Google", "booking fee/commission", "UK", any 15% or flat-plan language. Use "designed to help clients search, compare and contact suitable professionals with more confidence."
 
----
+## Compliance contract (must pass)
 
-## 3. Audit existing marketing pages, refactor any hand-rolling
+- All H2s → `SectionHeading` (30→40). All in-block H3s → `BlockHeading` (28→36). Zero hand-rolled `font-display text-[Npx]` headings.
+- All eyebrows → `SectionEyebrow` (chip style identical to `/for-professionals`).
+- Radii: cards 18px, panels 22px, hero 24px, buttons 10px, inputs 12px. No 14/20/28/32, no `rounded-xl/2xl/3xl`.
+- Buttons: `shadow-none`.
+- Emerald only on the "Verified" trust-grid card; orange brand elsewhere.
+- White opacities only /45 /55 /70 /80. Hero lede 16px, section lede 15–15.5px.
+- All mocks are live REPs routes wrapped in `DeviceMockup` + `MockupStage`. No screenshots.
+- `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` must exit 0.
 
-Run `rg` across `src/routes/` and `src/components/marketing/` for these violations:
+## Out of scope
 
-- `<h2 className="font-display text-\[`  → should be `SectionHeading`
-- `<h3 className="font-display text-\[`  → should be `BlockHeading`
-- `rounded-xl|rounded-2xl|rounded-3xl|rounded-\[14px\]|rounded-\[20px\]|rounded-\[28px\]|rounded-\[32px\]` (14px allowed only at the documented enquire-page exception)
-- Raw orange hex (`#FF7A00`, `#F28C38`, `#D87322`) in components
-- `space-y-` (shadcn rule — use `gap-*`)
-- Hand-rolled FAQ disclosures instead of `MarketingFaq`
-- Hand-rolled hero eyebrows instead of `MarketingHeroEyebrow`
+- Touching `PillarPage` or any other pillar route.
+- New backend, search ranking logic, real review pipeline.
+- New seeded pros (use what's already in `/pro/*`).
+- iframe→static-screenshot migration (tracked separately).
+- Editing locked routes (`/in/$location`, `/pro/$slug`, `/c/$slug`, homepage, `/for-professionals`, `/specialisms`).
 
-For each hit, swap to the primitive. Do NOT touch locked pages' structure — only swap hand-rolled atoms for primitives (this is what the lock allows). If a swap requires a structural change, list it under "Remaining work" and leave the code alone.
+## Files changed
 
-Scope of files to audit (marketing only):
-- `src/routes/index.tsx`
-- `src/routes/for-professionals.tsx`
-- `src/routes/features.*.tsx`
-- `src/routes/professions.$profession.tsx`
-- `src/routes/in.$location.tsx`
-- `src/routes/cpd.tsx`
-- `src/routes/pricing.tsx`
-- `src/routes/specialisms.tsx`
-- `src/routes/compare.*.tsx`
-- `src/routes/faq.tsx`
-- everything under `src/components/marketing/`
+- **NEW** `src/components/marketing/AnnotatedMock.tsx`
+- **EDIT** `src/routes/features.visibility.tsx` — full rewrite, no longer uses `PillarPage`
+- **EDIT** `src/routes/dev.section-library.tsx` — add `AnnotatedMock` example
+- **EDIT** `docs/07_design_system.md` — document `AnnotatedMock`
+- **EDIT** `mem://index.md` + new `mem://design/locked-visibility` — lock this page once approved
 
----
+## Technical notes
 
-## 4. Write `docs/07_design_system.md`
-
-One file, ~300 lines max, structured as:
-
-1. **Tokens** — orange scale, surfaces, radius scale, status emerald. Link to `src/styles.css`.
-2. **Type scale** — H1 (hero), H2 (`SectionHeading`), H3 (`BlockHeading`), lede sizes (hero 16px, section 15–15.5px), allowed white opacities (/45 /55 /70 /80).
-3. **Primitives** — table of every marketing primitive, its location, when to use it, when NOT to use it.
-4. **Heroes** — the canonical marketing hero template (top-anchored, staggered fade-up, 3 trust chips, `PressMarquee`).
-5. **50/50 blocks** — `ProductBlock` + `DeviceMockup` is the only allowed pattern for feature pages.
-6. **CTAs / FAQ / proof** — `FinalCta`, `MarketingFaq`, `VerifySteps`, `PressMarquee`.
-7. **Forbidden patterns** — hand-rolled headings, banned radii, raw hex, decorative emerald, gold stars, button shadows, country qualifiers.
-8. **Link** — "See live: `/dev/section-library`" at the top.
-
-Mirrors memory rules so a fresh session can read this file and be in sync without loading every `mem://` doc.
-
----
-
-## 5. Closing
-
-After steps 1–4:
-- Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0.
-- Reply with: files fixed, primitives swapped, audit result, link to `/dev/section-library` and `docs/07_design_system.md`.
-
-Out of scope this pass (call out, don't do):
-- Directory / profile / dashboard / forms gallery
-- Iframe → static screenshot migration for `DeviceMockup`
-- Any new primitives (e.g. trust-chip component) — list as "Remaining work"
+- Section 7 tabs: client-side `useState`, `DeviceMockup` `src` swaps via key prop so the iframe reloads cleanly. No router changes.
+- Section 2 `AnnotatedMock`: call-out coordinates passed as `{ x: '12%', y: '18%', label: '1', text: 'Verified badge' }[]` so the same primitive serves future anatomy sections.
+- Hero retains the `PillarPage` animation timings (560/640ms, 0/80/180/260/340ms delays) per `mem://design/marketing-hero-template`.
+- Section 1 "before" panel: small static composed cards (fake IG bio header, Linktree-style list, WhatsApp bubble) — pure JSX, design-token colors, no images.
