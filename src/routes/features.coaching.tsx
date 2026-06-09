@@ -224,6 +224,7 @@ export const Route = createFileRoute("/features/coaching")({
     ],
     links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/coaching" }],
   }),
+  loader: () => getCoachingExerciseShowcase(),
   component: CoachingPage,
 });
 
