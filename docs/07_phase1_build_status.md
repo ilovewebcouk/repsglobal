@@ -184,3 +184,13 @@ To stop typography/layout drift across marketing routes (`/for-professionals`, `
 - **Why Tailwind tokens alone are not enough:** `src/styles.css` defines colour / radius / font-family tokens. It cannot enforce that "an H3 inside a 50/50 block is 28→36px", because `text-[32px]` and `text-[40px]` are both valid arbitrary utilities. Semantic typography rules live in the primitives (`SectionHeading`, `BlockHeading`) and the audit script — not in the token layer.
 - Initial run (2026-06-09): 32 hard / 45 warn — pre-existing drift across `for-professionals.tsx`, `cpd.tsx`, `cpd-legacy.tsx`, `compare.tsx`. Tracked as a separate clean-up pass; no visual changes made in this governance pass.
 - ESLint rule deferred — README + audit script first. Revisit if drift recurs after the clean-up pass.
+
+## Marketing-page clean-up Phase A + B (2026-06-09)
+
+- **Deleted:** `src/routes/cpd-legacy.tsx` (orphaned, no inbound links, was 16 hard violations).
+- **Kept as redirect stub:** `src/routes/cpd-v2.tsx` → `/cpd` (zero violations, safe until launch).
+- **New primitives:** `src/components/marketing/HeroHeading.tsx` (canonical marketing `<h1>`) and `src/components/marketing/StatValue.tsx` (numeric stat `<span>`). Both accept className overrides via twMerge so locked-page hero/stat sizes remain visually identical while drift is gated through a single primitive.
+- **Migrated:** all hand-rolled `font-display text-[Npx]` headings in `src/routes/for-professionals.tsx` (8), `src/routes/cpd.tsx` (3), `src/routes/compare.tsx` (4), and the banned "Booking commission" Fact in `src/components/marketing/PlansLimitsStrip.tsx` (replaced with "Per-client charges").
+- **Audit calibration:** `scripts/audit-marketing-primitives.mjs` now skips lines that already use an approved heading primitive (`HeroHeading` / `SectionHeading` / `BlockHeading` / `StatValue`). The hand-rolled detector still fires on any `<h1>`/`<h2>`/`<h3>`/`<span>` that wraps `font-display + text-[Npx]` without one of those primitives.
+- **Final audit:** **0 hard / 42 warn** (all warnings in `src/components/marketing/*` or `src/components/features/*` — the primitive library is allowed to define canonical sizes).
+- No visual redesign. No route changes beyond the legacy delete. No token / colour / radius / pricing / backend / auth / DB / Stripe / Supabase / AI changes.

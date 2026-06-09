@@ -31,6 +31,20 @@ Locked memories that govern this layer:
 - **Variants:** size locked at `28 → 36px`.
 - **Don't:** use for section-level headings, use for hero H1s, or override sizes.
 
+#### `HeroHeading`
+- **Purpose:** the canonical marketing hero `<h1>`.
+- **Where:** `/for-professionals`, `/cpd`, `/compare` heroes — and any future marketing hero.
+- **Replaces:** hand-rolled `<h1 className="font-display text-[Npx] ... lg:text-[Npx]">` in route files.
+- **Variants:** default size `36 → 46 → 60px`. Per-page hero sizes remain frozen by the locked-page memories, so callers may pass a `className` (twMerge handles the override) to keep the exact visual output. `style`, animation classes, and accent `<span class="text-reps-orange">…</span>` fragments pass through.
+- **Don't:** introduce new arbitrary `<h1>` markup in route files — always go through this primitive.
+
+#### `StatValue`
+- **Purpose:** display-typography numeric stat (`<span>` semantically — looks like a heading but is a value).
+- **Where:** pricing tier figures, dashboard mockup stats, scorecards.
+- **Replaces:** hand-rolled `<span className="font-display text-[Npx] font-bold text-white tabular-nums">…</span>` in route files.
+- **Variants:** default `28px`. Pass `tabular` for tabular-nums; override size via `className` (e.g. `text-[36px]` for pricing tier figures).
+- **Don't:** wrap in `<h2>` / `<h3>` — these are values, not headings.
+
 #### `SectionEyebrow`
 - **Purpose:** small uppercase eyebrow label above a heading.
 - **Where:** every section that needs a kicker.
