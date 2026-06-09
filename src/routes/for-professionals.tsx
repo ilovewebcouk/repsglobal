@@ -228,7 +228,7 @@ function ForProsPage() {
 
       {/* PILLAR 1 — VISIBILITY */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 1 · Visibility"
             title="Become the obvious choice in your area."
