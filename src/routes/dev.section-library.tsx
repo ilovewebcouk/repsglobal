@@ -186,7 +186,9 @@ function SectionLibrary() {
         </div>
       </Group>
 
+      <Group id="proof" title="Trust & proof strips">
         <Demo label="VerifySteps — numbered 3-step strip with banner">
+
           <VerifySteps
             eyebrow="How verification works"
             heading="Three checks, one verified badge"
