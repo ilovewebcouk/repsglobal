@@ -1,8 +1,8 @@
 // Public server functions for the coaching page to pull a real, curated
-// exercise set + a featured video clip from Ascend ExerciseDB v2.
+// exercise set + a featured video clip from the upstream exercise media API.
 //
-// On failure (missing key, network error, rate limit) these return null so
-// the marketing page can fall back to its static mock without breaking.
+// On failure (missing key, network error, rate limit) these return empty
+// state so the marketing page can fall back gracefully without breaking.
 
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -11,10 +11,13 @@ import {
   type ExerciseDetail,
 } from "./exercisedb.server";
 
+export type ExerciseCategory = "lower" | "upper" | "cond";
+
 export type CuratedExercise = {
   exerciseId: string;
   name: string;
   imageUrl: string;
+  category: ExerciseCategory;
 };
 
 export type FeaturedExercise = {
@@ -26,24 +29,30 @@ export type FeaturedExercise = {
   equipment?: string;
 };
 
-// 12 curated terms — broad coverage of lower / upper / conditioning.
-const CURATED_TERMS = [
-  "bench press",
-  "back squat",
-  "romanian deadlift",
-  "pull up",
-  "overhead press",
-  "bulgarian split squat",
-  "hip thrust",
-  "bent over row",
-  "lat pulldown",
-  "plank",
-  "kettlebell swing",
-  "assault bike",
+// Curated terms tagged with a coaching category so the library tabs are
+// always populated, even with only 12-15 fetched records.
+const CURATED_TERMS: { term: string; category: ExerciseCategory }[] = [
+  // Lower
+  { term: "back squat", category: "lower" },
+  { term: "romanian deadlift", category: "lower" },
+  { term: "bulgarian split squat", category: "lower" },
+  { term: "hip thrust", category: "lower" },
+  { term: "walking lunge", category: "lower" },
+  // Upper
+  { term: "bench press", category: "upper" },
+  { term: "pull up", category: "upper" },
+  { term: "overhead press", category: "upper" },
+  { term: "bent over row", category: "upper" },
+  { term: "lat pulldown", category: "upper" },
+  // Conditioning
+  { term: "kettlebell swing", category: "cond" },
+  { term: "assault bike", category: "cond" },
+  { term: "burpee", category: "cond" },
+  { term: "box jump", category: "cond" },
+  { term: "battle rope", category: "cond" },
 ];
 
-// Bench Press — picked as the featured demo because it's universally
-// recognisable and renders cleanly as a looping video.
+// Bench Press — featured demo (universally recognisable, loops cleanly).
 const FEATURED_EXERCISE_ID = "exr_41n2hxnFMotsXTj3";
 
 export const getCoachingExerciseShowcase = createServerFn({ method: "GET" }).handler(
@@ -52,24 +61,24 @@ export const getCoachingExerciseShowcase = createServerFn({ method: "GET" }).han
     featured: FeaturedExercise | null;
   }> => {
     try {
-      // Fire all curated searches in parallel; one bad term shouldn't kill the page.
       const settled = await Promise.allSettled(
-        CURATED_TERMS.map((t) => searchExercisesRaw(t)),
+        CURATED_TERMS.map((t) => searchExercisesRaw(t.term)),
       );
 
       const curated: CuratedExercise[] = [];
       const seen = new Set<string>();
-      for (const r of settled) {
-        if (r.status !== "fulfilled") continue;
+      settled.forEach((r, i) => {
+        if (r.status !== "fulfilled") return;
         const first = r.value[0];
-        if (!first || seen.has(first.exerciseId)) continue;
+        if (!first || seen.has(first.exerciseId)) return;
         seen.add(first.exerciseId);
         curated.push({
           exerciseId: first.exerciseId,
           name: first.name.trim(),
           imageUrl: first.imageUrl,
+          category: CURATED_TERMS[i].category,
         });
-      }
+      });
 
       let featured: FeaturedExercise | null = null;
       try {

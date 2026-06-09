@@ -193,7 +193,12 @@ type FeaturedExerciseProp = {
   equipment?: string;
 } | null | undefined;
 
-type CuratedExerciseProp = { exerciseId: string; name: string; imageUrl: string };
+type CuratedExerciseProp = {
+  exerciseId: string;
+  name: string;
+  imageUrl: string;
+  category: "lower" | "upper" | "cond";
+};
 
 export function ProgrammeMock({ featured }: { featured?: FeaturedExerciseProp } = {}) {
   const [state, setState] = useState<ProgrammeState>("w4");
@@ -300,7 +305,7 @@ export function ProgrammeMock({ featured }: { featured?: FeaturedExerciseProp } 
 }
 
 // =============================================================================
-// 2. EXERCISE LIBRARY — All / Lower / Upper / Conditioning
+// 2. EXERCISE LIBRARY — All / Lower / Upper / Conditioning (real media)
 // =============================================================================
 
 const LIBRARY_STATES = [
@@ -311,25 +316,6 @@ const LIBRARY_STATES = [
 ] as const;
 type LibraryState = (typeof LIBRARY_STATES)[number]["id"];
 
-type Exercise = { name: string; cat: "lower" | "upper" | "cond"; eq: string };
-const LIBRARY: Exercise[] = [
-  { name: "Back squat", cat: "lower", eq: "Barbell" },
-  { name: "Front squat", cat: "lower", eq: "Barbell" },
-  { name: "Romanian deadlift", cat: "lower", eq: "Barbell" },
-  { name: "Bulgarian split squat", cat: "lower", eq: "Dumbbell" },
-  { name: "Hip thrust", cat: "lower", eq: "Barbell" },
-  { name: "Calf raise", cat: "lower", eq: "BW" },
-  { name: "Bench press", cat: "upper", eq: "Barbell" },
-  { name: "Pull-up", cat: "upper", eq: "BW" },
-  { name: "Strict press", cat: "upper", eq: "Barbell" },
-  { name: "Dumbbell row", cat: "upper", eq: "Dumbbell" },
-  { name: "Push-up", cat: "upper", eq: "BW" },
-  { name: "Face pull", cat: "upper", eq: "Cable" },
-  { name: "Assault bike", cat: "cond", eq: "Machine" },
-  { name: "Sled push", cat: "cond", eq: "Sled" },
-  { name: "Row erg", cat: "cond", eq: "Machine" },
-];
-
 export function ExerciseLibraryMock({
   curated,
   featured,
@@ -338,9 +324,9 @@ export function ExerciseLibraryMock({
   featured?: FeaturedExerciseProp;
 } = {}) {
   const [state, setState] = useState<LibraryState>("all");
-  const filtered =
-    state === "all" ? LIBRARY : LIBRARY.filter((e) => e.cat === state);
-  const useReal = state === "all" && curated && curated.length > 0;
+  const list = curated ?? [];
+  const filtered = state === "all" ? list : list.filter((e) => e.category === state);
+  const total = list.length;
 
   return (
     <MockShell
@@ -357,11 +343,11 @@ export function ExerciseLibraryMock({
           </div>
           <div className="flex items-center gap-1 rounded-[6px] border border-white/10 bg-reps-panel/40 px-2 py-1 text-[8px] text-white/55">
             <Filter className="size-2.5 text-reps-orange" />{" "}
-            {useReal ? curated!.length : filtered.length} shown
+            {filtered.length} of {total || "10,000+"}
           </div>
         </div>
 
-        {useReal && featured ? (
+        {state === "all" && featured ? (
           <div className="mt-2 overflow-hidden rounded-[6px] border border-reps-orange/30 bg-reps-panel/40 p-1.5">
             <div className="overflow-hidden rounded-[5px] border border-white/10">
               <video
@@ -384,63 +370,60 @@ export function ExerciseLibraryMock({
         ) : null}
 
         <div className="mt-2 grid grid-cols-3 gap-1.5">
-          {useReal
-            ? curated!.slice(0, 9).map((e) => (
-                <div
-                  key={e.exerciseId}
-                  className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5"
+          {filtered.slice(0, state === "all" ? 8 : 9).map((e) => (
+            <div
+              key={e.exerciseId}
+              className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5"
+            >
+              <div className="relative aspect-video overflow-hidden rounded-[5px] bg-reps-ink">
+                <img
+                  src={e.imageUrl}
+                  alt={e.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
+                  HD
+                </span>
+              </div>
+              <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
+              <div className="mt-0.5 flex items-center justify-end text-[6.5px] text-white/55">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
                 >
-                  <div className="relative aspect-video overflow-hidden rounded-[5px] bg-reps-ink">
-                    <img
-                      src={e.imageUrl}
-                      alt={e.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                    <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
-                      HD
-                    </span>
-                  </div>
-                  <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
-                  <div className="mt-0.5 flex items-center justify-end text-[6.5px] text-white/55">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
-                    >
-                      <Plus className="size-2" /> Add
-                    </button>
-                  </div>
-                </div>
-              ))
-            : filtered.slice(0, 9).map((e) => (
-                <div key={e.name} className="rounded-[6px] border border-white/10 bg-reps-panel/40 p-1.5">
-                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-[5px] bg-gradient-to-br from-reps-panel/80 to-reps-ink">
-                    <PlayCircle className="size-4 text-white/70" />
-                    <span className="absolute right-1 top-1 rounded-full bg-black/50 px-1 py-[1px] text-[6px] font-semibold text-white/80">
-                      HD
-                    </span>
-                  </div>
-                  <p className="mt-1 truncate text-[8px] font-semibold text-white">{e.name}</p>
-                  <div className="mt-0.5 flex items-center justify-between text-[6.5px] text-white/55">
-                    <span>{e.eq}</span>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-0.5 rounded-full bg-reps-orange/15 px-1 py-[1px] font-semibold text-reps-orange"
-                    >
-                      <Plus className="size-2" /> Add
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  <Plus className="size-2" /> Add
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Upload-your-own tile — always present, always last */}
+          <button
+            type="button"
+            className="group flex flex-col items-stretch rounded-[6px] border border-dashed border-reps-orange/40 bg-reps-orange/[0.06] p-1.5 text-left transition-colors hover:bg-reps-orange/[0.12]"
+          >
+            <div className="flex aspect-video items-center justify-center rounded-[5px] bg-reps-ink/60">
+              <Video className="size-4 text-reps-orange" />
+            </div>
+            <p className="mt-1 truncate text-[8px] font-semibold text-white">Upload your own</p>
+            <div className="mt-0.5 flex items-center justify-between text-[6.5px] text-white/55">
+              <span>Your clip · your cues</span>
+              <span className="inline-flex items-center gap-0.5 font-semibold text-reps-orange">
+                <Plus className="size-2" /> New
+              </span>
+            </div>
+          </button>
         </div>
 
         <p className="mt-2 text-[7px] text-white/45">
-          Video demos · technique cues · regressions and progressions baked in.
+          HD video demos with cues, regressions and progressions — plus your own uploads alongside.
         </p>
       </div>
     </MockShell>
   );
 }
+
 
 // =============================================================================
 // 3. NUTRITION — Today's log / Week / Meal plan / Photo meal
