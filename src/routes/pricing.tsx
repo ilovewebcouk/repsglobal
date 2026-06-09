@@ -7,7 +7,6 @@ import { FoundingBanner } from "@/components/pricing/FoundingBanner";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
 import { PricingCompare } from "@/components/pricing/PricingCompare";
-import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -57,8 +56,6 @@ function PricingPage() {
           </p>
         </div>
       </section>
-
-      <FounderAccessBanner />
 
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
@@ -116,11 +113,8 @@ function PricingPage() {
             <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
               Join 25,000+ verified pros.
             </h2>
-            <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
-              Founder pricing is available during beta and remains active while your subscription
-              stays active. Some advanced Pro features are released in stages — follow them on
-              the <Link to="/roadmap" className="font-semibold text-reps-orange hover:underline">roadmap</Link> and{" "}
-              <Link to="/changelog" className="font-semibold text-reps-orange hover:underline">changelog</Link>.
+            <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
+              Founding pricing is locked for life — but only available before public launch.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link

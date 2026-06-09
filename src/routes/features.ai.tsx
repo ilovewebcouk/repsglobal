@@ -17,7 +17,6 @@ import {
   AINarrativeCard,
 } from "@/components/features/FeatureGroupLayout";
 import { AI_FEATURES } from "@/components/features/feature-config";
-import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 import heroAi from "@/assets/hero-ai-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/ai")({
@@ -95,8 +94,6 @@ function AIGroupPage() {
         alt: "REPs-verified coach reviewing an AI-drafted programme on a tablet at a premium boutique gym at dusk",
       }}
     >
-      <FounderAccessBanner />
-
       {/* NARRATIVE — 6 cards */}
       <section className="border-b border-reps-border">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">

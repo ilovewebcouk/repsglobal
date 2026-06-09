@@ -26,7 +26,7 @@ export const DATA_VERIFIED_DATE = "3 June 2026";
  */
 export const REPS_TIER_REFERENCE = {
   tiers: [
-    { name: "Pro", price: "£59/mo", note: "Full software platform, founder pricing stays while your subscription stays active (was £79/mo)" },
+    { name: "Pro", price: "£59/mo", note: "Full software platform, founding pricing locked for life (was £79/mo)" },
   ],
   summary:
     "REPs Pro is £59/mo (founding, was £79/mo) and includes the full software platform — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPs AI. No paid add-on stack or per-client charges.",
@@ -194,7 +194,7 @@ export const COMPETITORS: Record<Competitor["slug"], Competitor> = {
       },
       {
         q: "Does Trainerize have a free plan?",
-        a: "Yes — a free Basic plan for 1 client. Paid plans start at $9/mo (Grow, up to 2 clients). REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founder pricing stays while your subscription stays active for early members before public launch.",
+        a: "Yes — a free Basic plan for 1 client. Paid plans start at $9/mo (Grow, up to 2 clients). REPs Pro is £59/mo founding (was £79/mo), with the full software platform included and founding pricing locked for life for early members before public launch.",
       },
       {
         q: "Does Trainerize include AI?",

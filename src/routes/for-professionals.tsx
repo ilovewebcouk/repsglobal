@@ -426,7 +426,7 @@ function ForProsPage() {
                 tagline: "Shop-front, operations, coaching and the AI layer that runs the rest.",
                 href: "/pricing",
                 featured: true,
-                badge: "Founder — stays while you stay",
+                badge: "Founding — locked for life",
               },
               {
                 name: "Studio",
@@ -522,7 +522,7 @@ function ForProsPage() {
       {/* FINAL CTA */}
       <FinalCta
         heading="Verified profile live today. Set up in 10 minutes."
-        lede="Join the register the public already searches — and the AI operating system that runs the rest of your business. Founder Pro pricing stays active while your subscription stays active."
+        lede="Join the register the public already searches — and the AI operating system that runs the rest of your business. Founding Pro pricing locked for life, available only before public launch."
         primary={{ to: "/compare", label: "Compare platforms" }}
         secondary={{ to: "/pricing", label: "See pricing" }}
       />
