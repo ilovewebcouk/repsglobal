@@ -26,6 +26,7 @@ import {
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { VerifySteps } from "@/components/marketing/VerifySteps";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
@@ -553,23 +554,7 @@ function Hero() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[70%_center] lg:object-center"
       />
-      {/* Base wash — photo-first, matches /for-professionals weight */}
-      <div className="absolute inset-0 bg-reps-ink/55 lg:bg-reps-ink/35" />
-      {/* Left-anchored darken behind copy column (no horizontal curtain — keeps room visible) */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(95%_75%_at_30%_45%,rgba(10,10,12,0.60),transparent_75%)] lg:bg-[radial-gradient(50%_75%_at_18%_55%,rgba(10,10,12,0.72),transparent_70%)]"
-      />
-      {/* Orange top glow */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
-      />
-      {/* Floor seal */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-reps-ink/55 to-reps-ink lg:h-40 lg:via-reps-ink/60"
-      />
+      <HeroOverlay copySide="left" />
 
 
       <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-28 lg:pt-24">
