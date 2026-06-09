@@ -1,107 +1,71 @@
 ## Goal
 
-Rebuild `src/routes/features.shop-front.tsx` from a 5-section, compliance-violating page into a **10-section world-class pillar page** that matches the bar of `/features/visibility`, executes your brief faithfully, and locks as `mem://design/locked-shop-front`.
+Replace the current thin `/features/operations` (117-line `PillarPage` template) with a full standalone pillar page that matches the quality of the locked `/features/visibility` and `/features/shop-front` pages, framed around one clear idea:
 
-## Positioning (locked for this page)
+> **Operations = the back office for the fitness business.** It keeps every lead, enquiry, booking, form, payment, client record, task and follow-up connected to one professional workspace — distinct from Shop-front (client-facing), Coaching (delivery) and Growth (marketing).
 
-- **One-line message:** *Your fitness business website, built into REPs.*
-- **Distinction from Visibility:** Visibility gets you found and trusted. Shop-front helps clients understand the offer, decide and take action.
-- **Tier scope:** Pro and Studio only. Verified is mentioned only in the Verified-vs-Pro matrix to make the upsell. No Verified-lite Shop Front.
-- **Avoid:** "build any website", "drag-and-drop", "replace Webflow/Wix/Squarespace", "rank higher on Google", "guaranteed leads", "15%", "booking fee", "flat plan", any UK qualifier, CIMSPA.
+H1: **Run your fitness business from one organised workspace.**
+Subhead: Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPs profile and Shop Front.
 
-## Section structure (10 + chrome)
+## Scope
 
-Mirrors `/features/visibility` rhythm exactly. Each `<section>` uses `border-b border-reps-border` + `py-20 lg:py-28`.
+- Full rewrite of `src/routes/features.operations.tsx`. Drop `PillarPage` wrapper, render `PublicHeader` + 12 sections + `PublicFooter` standalone (same pattern as shop-front).
+- No new functionality. Reuses existing live routes for `AnnotatedMock` + `DeviceMockup` previews — `/dashboard`, `/dashboard/leads`, `/dashboard/bookings`, `/dashboard/payments`, `/dashboard/clients/$slug`.
+- No new screenshots, no new hero photo — reuses an existing trainer/desk asset from `src/assets`.
+- Lock the page into project memory once complete.
 
-1. **Hero**
-   - MarketingHeroEyebrow: "Shop-front · Your client-facing page"
-   - H1: *Your fitness business website,* <accent>built into REPs.</accent>
-   - Lede (16px): "Create a professional Shop Front that shows your services, credentials, reviews, packages and booking options in one client-ready page — connected to your enquiries, bookings and clients."
-   - Primary CTA → `/signup` "Create your Shop Front" · Secondary `#anatomy` "See how it works"
-   - 3 trust chips: "Pro & Studio", "10-minute setup", "Connected to your REPs workflow"
+Out of scope: `/features/coaching` and `/features/growth` rebuilds; any change to the dashboard routes themselves; any backend or data work.
 
-2. **Problem — "The scattered setup"**
-   - SectionHeader: "Most fitness pros don't have a website. They have a tangle."
-   - Two-column 50/50: "Today, without a Shop Front" (X chip, list: Instagram bio · Linktree · old Wix · Google Form · Calendly · Stripe link · WhatsApp · Google reviews elsewhere) vs "With a REPs Shop Front" (Check chip, list: one URL · clear offer · proof on the page · enquire/book/pay · everything lands in your REPs inbox).
+## Page structure (12 sections)
 
-3. **Anatomy — `id="anatomy"`**
-   - `AnnotatedMock` of live `/c/james-wilson` (laptop frame) with 6 callouts: outcome hero, three-tier services, methodology, transformations, verified reviews, contact panel.
-   - Lede: "This is an actual Pro Shop Front running on REPs — not a template preview."
+1. **Hero** — `pt-24 pb-20 lg:pt-28 lg:pb-24`. Headline, subhead, primary "Start using REPs Pro" + secondary "See how operations works", 3 universal trust chips (Pro & Studio · Connected to your REPs profile · No extra add-ons).
+2. **Problem** — "Most fitness businesses are run across too many disconnected tools." Two-column today's-mess vs REPs-organised list (mirrors shop-front problem card styling: 8 items per side, `rounded-[16px]` cards on the REPs side).
+3. **AnnotatedMock — Inside the workspace** — `AnnotatedMock` over a live `/dashboard` route with 6 callouts (Today's sessions, New leads, Pending forms, Unpaid invoices, Upcoming bookings, Tasks needing attention).
+4. **One place for every enquiry** — pipeline strip (6 statuses: New enquiry → Consultation booked → Awaiting form → Payment pending → Onboarded → Follow-up needed) as a horizontally-flowing card row. Side copy: "Every enquiry should have a status, a next step and a place to live."
+5. **Bookings & schedule** — `DeviceMockup` of live `/dashboard/bookings` in a 50/50 `ProductBlock`. Bullets: consultations, assessments, 1:1, group, online calls, recurring bookings, availability, reminders, confirmations.
+6. **Forms, waivers & onboarding** — 50/50 with form-stack illustration card (PAR-Q, health screening, consultation forms, goal-setting, consent forms, waivers, onboarding questionnaires, client agreements). Copy: "Collect the information you need before the first session, then keep it attached to the client record."
+7. **Payments & packages** — `DeviceMockup` of `/dashboard/payments` (reverse 50/50). Bullets: paid consultations, coaching packages, memberships, one-off payments, payment status, receipts, failed/pending payments, package visibility. Includes the cautious commission line: "REPs does not take a platform commission on your client payments. Standard payment processing fees may apply."
+8. **Client records & notes** — `DeviceMockup` of `/dashboard/clients/$slug` (e.g. `james-carter`). Bullets: contact details, forms, bookings, payment status, goals, notes, programme status, review-request status, communication history. Keep admin-focused — explicitly avoid programme/check-in depth.
+9. **Tasks, reminders & next actions** — 8-card grid of action cards (Follow up new enquiry, Chase incomplete form, Confirm consultation, Review unpaid payment, Send onboarding link, Request review, Check inactive client, CPD/profile renewal). Each card uses a small lucide icon in `bg-reps-orange-soft` chip + short body.
+10. **Replace the admin stack** — `ReplacedStackBoard`-style 2-column list: REPs replaces (form builder, booking link, payment link, spreadsheet CRM, notes app, manual reminders, scattered documents, client folders) vs what stays (your coaching tools, your tone of voice). Soft framing: "Replace the disconnected admin stack most trainers build by accident."
+11. **Verified vs Pro** — shared `TierCard` x2 + a Verified/Pro feature matrix (10 rows: enquiry inbox, pipeline statuses, booking page, calendar sync, deposits, forms & waivers, payments & packages, client records, tasks & reminders, follow-up automations). Pro = ✓ across the board; Verified = profile + reviews only. Reinforces that **Operations is a Pro pillar.**
+12. **Use cases** — 5 cards: Personal trainer, Online coach, Small-group coach, Studio/gym team, Specialist coach — each with the exact one-liner from the brief.
 
-4. **Sell services clearly**
-   - SectionHeader: "Stop sending clients to a vague bio. Send them to a page that explains the offer."
-   - 9 service-type cards in a 3-col grid: 1:1 coaching · Online coaching · Small-group training · Assessments & screening · Transformation programmes · Sports performance · Specialist services · Studio classes · Gym memberships. Each card: title + one-sentence "what your Shop Front shows for this service".
+Plus:
+- **FAQ** — `MarketingFaq` with 6 questions (Where do my leads go? / Can clients book themselves? / Do I have to use REPs for payments? / Can I keep using Google Calendar? / What about my existing client list? / Is Operations included in Verified or only Pro?).
+- **FinalCta** — H2 "Run the business behind your coaching with less admin and more control." + "Start using REPs Pro" / "Explore all features".
 
-5. **Enquiry → booking → payment → CRM**
-   - SectionHeader: "When someone clicks Enquire, they don't disappear into your inbox."
-   - Visual: horizontal 4-step flow (Click on Shop Front → Lands in REPs leads pipeline → Booking confirmed / payment captured → Onboarded as a client). Use shadcn `Card` per step + connector arrows.
-   - Right rail: 5 capability bullets (enquiry forms, booking links, consultation requests, payments, automated follow-up). Strong line at the bottom.
+## Compliance contract (must pass)
 
-6. **Proof built into the page**
-   - SectionHeader: "Your website shouldn't just look good. It should prove why clients can trust you."
-   - 6-card grid: Verified badge (emerald accent — per status-colors rule), Credentials, CPD, Specialisms, Reviews, Insurance status. Each card pulls a real REPs concept.
+- Hero padding `pt-24 pb-20 lg:pt-28 lg:pb-24`, every other section `py-20 lg:py-28`. No `lg:py-24`.
+- Hero has no divider; every subsequent section uses `border-b border-reps-border`.
+- Section H2s via `SectionHeading` / `SectionHeader`; in-block H3s via `BlockHeading`. No hand-rolled `<h2/h3 className="font-display text-[Npx]...">`.
+- Radii: button 10, card 16, AnnotatedMock/feature 18, large panel 22, hero 24. No 14/20/28/32, no `rounded-xl/2xl/3xl`.
+- Emerald used only for status semantics (Pro tick row, "included" pills).
+- Banned phrases avoided: no "15%", "booking fee", "Stripe surcharge", "one flat plan", "UK", "CIMSPA".
+- All copy global ("clients worldwide" / "wherever you train"), £ pricing where pricing appears.
+- `audit.sh` must exit `0` (allowing the existing 14px enquire-page exception).
 
-7. **Purpose-built, not a blank page**
-   - SectionHeader: "Designed for fitness pros — not generic websites."
-   - Two-column: left = `BlockHeading` "A page built around the client journey" + 5-step horizontal mini-flow (Discover → Trust → Understand offer → Enquire → Book / pay / onboard). Right = bullet contrast: "Generic builders give you templates · REPs gives you the journey already designed".
+## Components (all existing, no new primitives)
 
-8. **Verified vs Pro**
-   - Two `TierCard`s (re-use the visibility-page pattern) + 8-row comparison matrix scoped to Shop-front capabilities (public page at /c/, services, reviews, qualifications display, enquiry form, booking, payments, CRM pipeline). Verified column mostly em-dashes; Pro all ticks. Pro card is `highlighted`.
+`PublicHeader`, `PublicFooter`, `MarketingHeroEyebrow`, `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `BlockHeading`, `AnnotatedMock`, `DeviceMockup`, `ProductBlock`, `TierCard`, `MarketingFaq`, `FinalCta`, plus `Badge`/`Separator` from shadcn and lucide icons (`Inbox`, `Workflow`, `Calendar`, `CreditCard`, `ClipboardList`, `Bell`, `Users`, `LayoutDashboard`, `ListChecks`, `Receipt`, etc.).
 
-9. **Use cases**
-   - SectionHeader: "What your Shop Front looks like for…"
-   - 8 cards (shadcn `Card`): PT · Online coach · Strength coach · Pilates instructor · Yoga teacher · Small studio · Sports coach · Specialist coach. Each card: 1-line offer description + 2 example service rows. Cards link to /c/james-wilson when relevant (placeholder for now).
+## Files touched
 
-10. **FAQ**
-    - `MarketingFaq`, 6 Qs: Do I need design skills? · Can I use my own brand colour? · Is this a separate website or part of my profile? · What happens when someone enquires? · Do I need Pro to publish a Shop Front? · Can I share one URL on Instagram? Answers in plain voice, no "guaranteed".
+- `src/routes/features.operations.tsx` — full rewrite (target ~750–850 lines, in line with shop-front).
+- `mem://design/locked-operations` — new memory file freezing the 12-section structure, positioning sentence, Pro-only tier scope, banned-phrase reminders, dated 2026-06-09.
+- `mem://index.md` — add the new locked-operations entry under Memories.
 
-11. **FinalCta** (shared component)
-    - heading: "Build a Shop Front clients can" · accent: "understand, trust and act on."
-    - lede: "Create a professional website page connected to your REPs profile, services, bookings and client workflow."
-    - primary `/signup` "Create your Shop Front" · secondary `/pricing` "Explore REPs Pro"
+No other files change. `PillarPage` and `PlatformMockups` imports are dropped from this route only; both remain in use elsewhere.
 
-## Components reused (no new primitives)
+## Verification before handing back
 
-- `MarketingHeroEyebrow`, `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `BlockHeading`
-- `AnnotatedMock` + `DeviceMockup` (laptop iframe of `/c/james-wilson`)
-- `MarketingFaq`, `FinalCta`
-- `TierCard` — extract the existing one from `features.visibility.tsx` into `src/components/marketing/TierCard.tsx` so both pages share it (small refactor; visibility import path updates).
-- shadcn: `Card`, `Badge`, `Separator` where appropriate.
+1. `bash /tmp/audit.sh` exits `0`.
+2. Visual flip-through at 390 / 820 / 1280 in the preview — hero, AnnotatedMock, each 50/50, pipeline row, tasks grid, Verified-vs-Pro matrix, FAQ, FinalCta.
+3. AnnotatedMock + DeviceMockup iframes load `/dashboard`, `/dashboard/bookings`, `/dashboard/payments`, `/dashboard/clients/james-carter` without console errors.
+4. OG metadata reads "Operations — Run your fitness business from one organised workspace · REPs".
 
-## Compliance (REPs build compliance)
+## Risks / open questions
 
-- Rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; every section `py-20 lg:py-28`. No `lg:py-24`.
-- Dividers: hero no border; every other section `border-b border-reps-border`.
-- Radii: cards 18px, panels 22px, buttons 10px, pills full. No 14/20/28/32px or rounded-xl/2xl/3xl.
-- Tokens: only `bg-reps-orange*`, `text-reps-orange*`, semantic emerald-for-status. No hex.
-- Type: all section headings via `SectionHeading`/`SectionHeader`/`BlockHeading`. No hand-rolled `<h2 className="font-display text-[30px]...">`.
-- White opacities: only /45 /55 /70 /80.
-- Buttons: `shadow-none`.
-
-## File changes
-
-| File | Change |
-| --- | --- |
-| `src/routes/features.shop-front.tsx` | Full rewrite (drop `FeatureGroupLayout`, render PublicHeader + 10 sections + PublicFooter standalone like visibility). |
-| `src/components/marketing/TierCard.tsx` | New — extract from visibility. |
-| `src/routes/features.visibility.tsx` | Import TierCard from new shared module; remove inline copy. |
-
-## Verification
-
-1. `bash /tmp/audit.sh` exits 0 (allow the documented 14px enquire exception).
-2. Visual flip-through 390 / 820 / 1280: hero rhythm, dividers, anatomy callouts, matrix, FAQ chevrons all line up with `/features/visibility`.
-3. The AnnotatedMock iframe loads `/c/james-wilson` correctly (laptop frame, scale 0.5).
-4. Open graph metadata: title "Shop-front — Your fitness business website, built into REPs · REPs", description rewritten to match new positioning, `og:image` = a real screenshot or `coachJamesCoaching` asset.
-
-## Memory updates
-
-- **New file `mem://design/locked-shop-front`** — locks 11-block structure, positioning sentence, banned phrases, Pro+Studio-only tier scope, TierCard shared-component note. Dated 2026-06-09.
-- **`mem://index.md` → Memories list** — add bullet linking to the new locked file.
-- **Core: nothing new** — page consumes existing rules.
-
-## Out of scope
-
-- No new functionality, no auth, no real enquiry submission.
-- No new screenshots / generated trainer imagery in this turn — page reuses `coachJamesCoaching` and live `/c/james-wilson` iframe.
-- `/features/operations`, `/features/coaching`, `/features/growth` rebuilds — flagged as future work in the same pillar-quality bar.
-- No changes to `/c/james-wilson` itself (locked).
+- Hero image: plan is to reuse an existing trainer/desk shot from `src/assets` (something like `hero-operations-bg.jpg.asset.json` if still appropriate; otherwise the same coach image used on shop-front but with a heavier dark overlay so the two pages don't feel identical). If neither works visually, fall back to a dark gradient hero with no photo — no new image generation in this pass.
+- `/dashboard` route must actually render content inside an iframe at small sizes for the AnnotatedMock to read well; if it doesn't, swap that section's mockup for `/dashboard/leads` which is denser.
