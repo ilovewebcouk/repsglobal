@@ -271,7 +271,7 @@ function ForProsPage() {
 
       {/* PILLAR 3 — OPERATIONS (leads + bookings + payments) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 3 · Operations"
             title="Leads, bookings and payments — one tool."
