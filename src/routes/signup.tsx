@@ -689,6 +689,8 @@ function SignupPage() {
         </div>
       </section>
 
+      <FounderAccessBanner />
+
       {/* ============ STATS STRIP ============ */}
       <section className="bg-reps-midnight">
         <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-6 px-6 py-8 sm:grid-cols-4 lg:px-10">
