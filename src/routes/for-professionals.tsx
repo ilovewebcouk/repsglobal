@@ -119,7 +119,7 @@ function ForProsPage() {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-reps-ink/65 to-reps-ink lg:h-56 lg:via-reps-ink/70"
         />
-        <div className="relative mx-auto max-w-[1320px] px-6 pb-20 pt-20 lg:px-10 lg:pb-20 lg:pt-24">
+        <div className="relative mx-auto max-w-[1320px] px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
           <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             {/* Left: copy */}
             <div>
@@ -207,7 +207,7 @@ function ForProsPage() {
       {/* WHY COACHES SWITCH — competitive proof */}
       <section className="border-b border-reps-border bg-reps-ink">
 
-        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-16 lg:pb-20">
+        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Why coaches switch
@@ -228,7 +228,7 @@ function ForProsPage() {
 
       {/* PILLAR 1 — VISIBILITY */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 1 · Visibility"
             title="Become the obvious choice in your area."
@@ -249,7 +249,7 @@ function ForProsPage() {
 
       {/* PILLAR 2 — SHOP-FRONT */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 2 · Shop-front"
             title="The page that turns visitors into clients."
@@ -271,7 +271,7 @@ function ForProsPage() {
 
       {/* PILLAR 3 — OPERATIONS (leads + bookings + payments) */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 3 · Operations"
             title="Leads, bookings and payments — one tool."
@@ -292,7 +292,7 @@ function ForProsPage() {
 
       {/* PILLAR 4 — COACHING */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 4 · Coaching"
             title="Programmes, check-ins and the full client record — in one tool."
@@ -315,7 +315,7 @@ function ForProsPage() {
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <TestimonialFeature />
         </div>
       </section>
@@ -378,7 +378,7 @@ function ForProsPage() {
 
       {/* PILLAR 6 — GROWTH */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 pt-20 pb-24 lg:px-10 lg:pt-20 lg:pb-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 6 · Growth"
             title="The work that compounds, done for you."
@@ -401,7 +401,7 @@ function ForProsPage() {
 
       {/* PRICING ANCHOR — compact 3-tier strip so visitors know the price without leaving */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Pricing
@@ -474,7 +474,7 @@ function ForProsPage() {
       {/* TRIAD TESTIMONIALS */}
 
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8 max-w-[640px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Loved by working pros
@@ -489,7 +489,7 @@ function ForProsPage() {
 
       {/* USE CASES */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Who it's for
@@ -508,7 +508,7 @@ function ForProsPage() {
 
       {/* FAQ */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[820px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>
             <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
