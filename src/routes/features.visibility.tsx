@@ -33,6 +33,7 @@ import { FinalCta } from "@/components/marketing/FinalCta";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { TierCard } from "@/components/marketing/TierCard";
 
 import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
 
@@ -743,46 +744,3 @@ function TierComparisonSection() {
   );
 }
 
-function TierCard({
-  badge,
-  price,
-  blurb,
-  cta,
-  highlighted,
-}: {
-  badge: string;
-  price: string;
-  blurb: string;
-  cta: { to: string; label: string };
-  highlighted?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-[22px] p-7 ${
-        highlighted
-          ? "border border-reps-orange-border bg-reps-panel/70"
-          : "border border-reps-border bg-reps-panel/40"
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={
-            highlighted
-              ? "rounded-full bg-reps-orange px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white"
-              : "rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange"
-          }
-        >
-          {badge}
-        </span>
-        <span className="text-[12.5px] font-semibold text-white/55">{price}</span>
-      </div>
-      <p className="mt-4 text-[15.5px] leading-relaxed text-white/80">{blurb}</p>
-      <Link
-        to={cta.to}
-        className="mt-6 inline-flex h-11 items-center gap-2 rounded-[10px] border border-white/20 px-5 text-[13.5px] font-semibold text-white shadow-none hover:bg-white/10"
-      >
-        {cta.label} <ArrowRight className="h-4 w-4" />
-      </Link>
-    </div>
-  );
-}
