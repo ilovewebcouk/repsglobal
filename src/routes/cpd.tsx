@@ -32,8 +32,6 @@ import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebro
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
-import { HeroHeading } from "@/components/marketing/HeroHeading";
-import { StatValue } from "@/components/marketing/StatValue";
 
 import {
   Accordion,
@@ -382,14 +380,14 @@ function Hero() {
             Education & CPD
           </MarketingHeroEyebrow>
 
-          <HeroHeading
-            className="mt-6 animate-fade-in leading-[1.04]"
+          <h1
+            className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
           >
             Education and CPD that
             <br />
             <span className="text-reps-orange">strengthens your REPs profile.</span>
-          </HeroHeading>
+          </h1>
 
           <p
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
@@ -571,7 +569,9 @@ function ProfessionalDevelopmentMockup() {
                 CPD this cycle
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
-                <StatValue tabular>18</StatValue>
+                <span className="font-display text-[28px] font-bold text-white tabular-nums">
+                  18
+                </span>
                 <span className="text-[13px] text-white/55">/ 20 pts</span>
               </div>
               <Progress value={90} className="mt-3 h-1.5 bg-reps-border [&>div]:bg-reps-orange" />
@@ -581,7 +581,9 @@ function ProfessionalDevelopmentMockup() {
                 Profile trust score
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
-                <StatValue tabular>92</StatValue>
+                <span className="font-display text-[28px] font-bold text-white tabular-nums">
+                  92
+                </span>
                 <span className="text-[13px] text-white/55">/ 100</span>
               </div>
               <div className="mt-3 flex items-center gap-1.5 text-[11.5px] text-emerald-300">

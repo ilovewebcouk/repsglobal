@@ -6,11 +6,6 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
 import { MockupStage } from "@/components/marketing/MockupStage";
 import { DeviceMockup, type DeviceMockupProps } from "@/components/marketing/DeviceMockup";
-import {
-  TrainerToPlatformComposite,
-  type TrainerToPlatformCompositeProps,
-} from "@/components/marketing/TrainerToPlatformComposite";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { ActIntro } from "@/components/marketing/ActIntro";
 
 import { ComparisonStrip } from "@/components/marketing/ComparisonStrip";
@@ -33,21 +28,13 @@ const GROUP_ROUTES = {
   growth: "/features/growth",
 } as const;
 
-/** Marker variant for the shared trainer-to-platform composite layout. */
-export type CinematicMockup = { kind: "cinematic" } & TrainerToPlatformCompositeProps;
-
 export type PillarFeature = {
   tag: string;
   title: string;
   body: string;
   bullets: string[];
-  /**
-   * Three options, in order of preference:
-   * - CinematicMockup `{ kind: 'cinematic', image, composition?, device?, stats? }` — shared trainer-to-platform composite
-   * - DeviceMockupProps — real REPs route inside a laptop/phone frame
-   * - React node — escape hatch for bespoke mockups
-   */
-  mockup: CinematicMockup | DeviceMockupProps | React.ReactNode;
+  /** Either a DeviceMockup config (preferred — renders a real REPs route inside a laptop/phone frame) or a custom React node. */
+  mockup: DeviceMockupProps | React.ReactNode;
   learnMoreSlug?: string;
 };
 
@@ -275,12 +262,6 @@ export function PillarPage({
   );
 }
 
-function isCinematicMockup(m: PillarFeature["mockup"]): m is CinematicMockup {
-  if (typeof m !== "object" || m === null) return false;
-  const obj = m as unknown as Record<string, unknown>;
-  return obj.kind === "cinematic" && "image" in obj;
-}
-
 function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProps {
   if (typeof m !== "object" || m === null) return false;
   const obj = m as unknown as Record<string, unknown>;
@@ -288,8 +269,7 @@ function isDeviceMockupConfig(m: PillarFeature["mockup"]): m is DeviceMockupProp
 }
 
 function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reverse: boolean }) {
-  const cinematic = isCinematicMockup(feature.mockup);
-  const isDevice = !cinematic && isDeviceMockupConfig(feature.mockup);
+  const isDevice = isDeviceMockupConfig(feature.mockup);
   return (
     <div
       className={`grid items-center gap-10 lg:gap-16 ${
@@ -300,7 +280,9 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
           {feature.tag}
         </span>
-        <BlockHeading className="mt-3">{feature.title}</BlockHeading>
+        <h3 className="mt-3 font-display text-[30px] font-bold leading-[1.1] text-white lg:text-[40px]">
+          {feature.title}
+        </h3>
         <p className="mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
           {feature.body}
         </p>
@@ -323,9 +305,7 @@ function PillarFeatureBlock({ feature, reverse }: { feature: PillarFeature; reve
         )}
       </div>
       <div className={reverse ? "lg:order-1" : ""}>
-        {cinematic ? (
-          <TrainerToPlatformComposite {...(feature.mockup as CinematicMockup)} />
-        ) : isDevice ? (
+        {isDevice ? (
           <MockupStage variant={(feature.mockup as DeviceMockupProps).device}>
             <DeviceMockup {...(feature.mockup as DeviceMockupProps)} />
           </MockupStage>

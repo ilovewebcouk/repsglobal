@@ -32,6 +32,7 @@ import { Route as FindAProfessionalRouteImport } from './routes/find-a-professio
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CpdV2RouteImport } from './routes/cpd-v2'
+import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -62,7 +63,6 @@ import { Route as FeaturesCoachingRouteImport } from './routes/features.coaching
 import { Route as FeaturesAiRouteImport } from './routes/features.ai'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as DevSectionLibraryRouteImport } from './routes/dev.section-library'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
 import { Route as DashboardReportsRouteImport } from './routes/dashboard_.reports'
@@ -218,6 +218,11 @@ const CpdV2Route = CpdV2RouteImport.update({
   path: '/cpd-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CpdLegacyRoute = CpdLegacyRouteImport.update({
+  id: '/cpd-legacy',
+  path: '/cpd-legacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CpdRoute = CpdRouteImport.update({
   id: '/cpd',
   path: '/cpd',
@@ -366,11 +371,6 @@ const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DevSectionLibraryRoute = DevSectionLibraryRouteImport.update({
-  id: '/dev/section-library',
-  path: '/dev/section-library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
@@ -585,6 +585,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
@@ -639,7 +640,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
-  '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/features/ai': typeof FeaturesAiRoute
@@ -680,6 +680,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
@@ -734,7 +735,6 @@ export interface FileRoutesByTo {
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/reviews': typeof DashboardReviewsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
-  '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/features/ai': typeof FeaturesAiRoute
@@ -775,6 +775,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
@@ -829,7 +830,6 @@ export interface FileRoutesById {
   '/dashboard_/reports': typeof DashboardReportsRoute
   '/dashboard_/reviews': typeof DashboardReviewsRoute
   '/dashboard_/settings': typeof DashboardSettingsRoute
-  '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/features/ai': typeof FeaturesAiRoute
@@ -872,6 +872,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
     | '/faq'
@@ -926,7 +927,6 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
-    | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
     | '/features/ai'
@@ -967,6 +967,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
     | '/faq'
@@ -1021,7 +1022,6 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/reviews'
     | '/dashboard/settings'
-    | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
     | '/features/ai'
@@ -1061,6 +1061,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
     | '/faq'
@@ -1115,7 +1116,6 @@ export interface FileRouteTypes {
     | '/dashboard_/reports'
     | '/dashboard_/reviews'
     | '/dashboard_/settings'
-    | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
     | '/features/ai'
@@ -1157,6 +1157,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
+  CpdLegacyRoute: typeof CpdLegacyRoute
   CpdV2Route: typeof CpdV2Route
   DashboardRoute: typeof DashboardRoute
   FaqRoute: typeof FaqRoute
@@ -1211,7 +1212,6 @@ export interface RootRouteChildren {
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardReviewsRoute: typeof DashboardReviewsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
-  DevSectionLibraryRoute: typeof DevSectionLibraryRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
   FeaturesAiRoute: typeof FeaturesAiRoute
@@ -1399,6 +1399,13 @@ declare module '@tanstack/react-router' {
       path: '/cpd-v2'
       fullPath: '/cpd-v2'
       preLoaderRoute: typeof CpdV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cpd-legacy': {
+      id: '/cpd-legacy'
+      path: '/cpd-legacy'
+      fullPath: '/cpd-legacy'
+      preLoaderRoute: typeof CpdLegacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd': {
@@ -1609,13 +1616,6 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dev/section-library': {
-      id: '/dev/section-library'
-      path: '/dev/section-library'
-      fullPath: '/dev/section-library'
-      preLoaderRoute: typeof DevSectionLibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard_/settings': {
@@ -1930,6 +1930,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
+  CpdLegacyRoute: CpdLegacyRoute,
   CpdV2Route: CpdV2Route,
   DashboardRoute: DashboardRoute,
   FaqRoute: FaqRoute,
@@ -1984,7 +1985,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
-  DevSectionLibraryRoute: DevSectionLibraryRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
   FeaturesAiRoute: FeaturesAiRoute,

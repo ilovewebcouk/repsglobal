@@ -4,7 +4,6 @@ import { ArrowRight, Check, Sparkles, Star } from "lucide-react";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { FEATURES, type FeatureLink } from "./feature-config";
 import { PLANS } from "@/components/pricing/pricing-data";
 
@@ -125,7 +124,9 @@ export function FeaturePageLayout(props: FeaturePageProps) {
                       {s.eyebrow}
                     </span>
                   )}
-                  <BlockHeading as="h2" className="mt-2">{s.title}</BlockHeading>
+                  <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[34px]">
+                    {s.title}
+                  </h2>
                   <p className="mt-3 text-[15px] leading-relaxed text-white/70">{s.body}</p>
                   {s.bullets && (
                     <ul className="mt-4 space-y-2">

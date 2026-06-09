@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Check, Globe, LayoutTemplate, Palette, Sparkles, Star, Zap } from "lucide-react";
 
-import { SectionHeading } from "@/components/marketing/SectionHeading";
-
 import { FeatureGroupLayout } from "@/components/features/FeatureGroupLayout";
 import coachJamesCoaching from "@/assets/coach-james-coaching.jpg";
 
@@ -47,7 +45,9 @@ function ShopFrontPillar() {
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Live example
               </span>
-              <SectionHeading className="mt-5">See an actual REPs shop-front.</SectionHeading>
+              <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
+                See an actual REPs shop-front.
+              </h2>
               <p className="mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
                 This isn't a template preview — it's a fully-built Pro-tier page running on REPs. Open it in a new tab and scroll: outcome-led hero, three tier services, a methodology section, real transformations, reviews, FAQ and a contact panel — all wired into the same enquiry inbox you use in your dashboard.
               </p>
@@ -94,7 +94,9 @@ function ShopFrontPillar() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               What's on the page
             </span>
-            <SectionHeading className="mt-3">Nine sections. Every one of them earning its place.</SectionHeading>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
+              Nine sections. Every one of them earning its place.
+            </h2>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {[
@@ -124,7 +126,9 @@ function ShopFrontPillar() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Your brand, lightly
             </span>
-            <SectionHeading className="mt-3">Personalised — without becoming a Wix project.</SectionHeading>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
+              Personalised — without becoming a Wix project.
+            </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
               You pick an accent colour from the REPs palette. You upload a coaching-action hero photo, a portrait for the about section, and three transformation images. You write your method, your tiers, your bio. REPs takes care of the rest — typography, spacing, dark theme, mobile, performance, SEO.
             </p>
@@ -154,7 +158,9 @@ function ShopFrontPillar() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Wired into REPs
             </span>
-            <SectionHeading className="mt-3">Not a separate website. Part of the operating system.</SectionHeading>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
+              Not a separate website. Part of the operating system.
+            </h2>
           </div>
           <ul className="mt-8 grid gap-4 md:grid-cols-2">
             {[
@@ -181,7 +187,9 @@ function ShopFrontPillar() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               How it compares
             </span>
-            <SectionHeading className="mt-3">Other platforms give you a client portal. REPs gives you a shop-front.</SectionHeading>
+            <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[38px]">
+              Other platforms give you a client portal. REPs gives you a shop-front.
+            </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
               Trainerize, MyPTHub and PT Distinction give you a login-walled app where existing clients track sessions. None of them publish a public single-page site at your own URL. That's the gap REPs Pro closes.
             </p>

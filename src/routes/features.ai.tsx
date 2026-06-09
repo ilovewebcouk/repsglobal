@@ -12,8 +12,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { SectionHeading } from "@/components/marketing/SectionHeading";
-
 import {
   FeatureGroupLayout,
   AINarrativeCard,
@@ -103,7 +101,9 @@ function AIGroupPage() {
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
               <Brain className="h-3.5 w-3.5" /> The AI operating layer
             </span>
-            <SectionHeading className="mt-4">The AI layer behind your fitness business.</SectionHeading>
+            <h2 className="mt-4 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+              The AI layer behind your fitness business.
+            </h2>
             <p className="mt-3 text-[15.5px] leading-relaxed text-white/70">
               REPs isn't an app with AI bolted on. It's an operating layer that drafts your
               programmes, reads your check-ins, scores your leads, flags your risks and
@@ -125,7 +125,9 @@ function AIGroupPage() {
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Every AI capability
             </span>
-            <SectionHeading className="mt-2">14 AI capabilities, one platform.</SectionHeading>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[34px]">
+              14 AI capabilities, one platform.
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {AI_FEATURES.map((f) => (
@@ -165,7 +167,9 @@ function AIGroupPage() {
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               How REPs AI compares
             </span>
-            <SectionHeading className="mt-2">Nobody else runs your business on AI.</SectionHeading>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[34px]">
+              Nobody else runs your business on AI.
+            </h2>
             <p className="mt-3 text-[14.5px] leading-relaxed text-white/65">
               The competition has form-builders with an AI button. REPs has an AI operating
               layer that touches every part of your day.

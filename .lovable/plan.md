@@ -1,99 +1,53 @@
-# Marketing-page anti-drift governance
+## Honest answer on "10/10"
 
-Source-of-truth enforcement pass only. No redesigns, no route changes, no token / colour / radius / typography / pricing / backend / auth / payments / DB / AI changes. Just docs + an audit script.
+Not yet. Two real problems on `/features/visibility`:
 
-## 1. Create `src/components/marketing/README.md`
+1. **Inconsistent with `/for-professionals`.** That page uses the `ProductBlock` 50/50 with a small-caps orange eyebrow (`Pillar 1 · Visibility`) and a real laptop iframe of an actual REPs route (`/pro/james-carter`, `/c/james-wilson`, `/dashboard/leads`). The visibility page uses a different component (`PillarPage` + bespoke `VisibilityMockups.tsx`), a different eyebrow style (orange pill chip with words like "Verified profile"), and hand-drawn fake UI. They don't look like the same site.
+2. **The mockups aren't cinematic and aren't the real product.** You're right — the strongest pattern is a cinematic photo with real dashboard cards/screens composed over it (what `/for-professionals` already does with `HeroDeviceCluster` and `DeviceMockup` iframes of live routes). The current `SearchResultsMockup`, `ReviewsMockup`, `SeoLandingMockup`, `ShareKitMockup` are pure Tailwind illustrations — they aren't pulled from `/dashboard` or `/find`, so they drift from the real product and have to be maintained separately.
 
-A single canonical reference for every approved marketing primitive. For each, document **purpose / where used / what it replaces / permitted variants / what NOT to hand-roll**:
+## What to build
 
-- `SectionHeading` — section H2 (30 → 40px). Replaces hand-rolled `<h2 className="font-display text-[Npx]">`.
-- `SectionEyebrow` — small uppercase label above headings.
-- `SectionHeader` — eyebrow + heading + optional lede composite.
-- `BlockHeading` — 50/50 in-block H3 (28 → 36px). Replaces hand-rolled `<h3 className="font-display text-[Npx]">`.
-- `MarketingHeroEyebrow` — hero kicker.
-- `ProductBlock` — canonical 50/50 product/feature block (copy + media).
-- `MarketingFaq` — accordion FAQ block.
-- `FinalCta` — single end-of-page CTA (see `mem://design/final-cta`).
-- `VerifySteps` — 3-step verify strip.
-- `RegisterProof` — register stat / trust block.
-- `ReplacedStackBoard` — "replaces X tools" board.
-- `PillarTabs` — pillar tab nav.
-- `ComparisonStrip` — short comparison strip.
-- `TrainerToPlatformComposite` — cinematic trainer + REPs UI cards (3 compositions: card-trail / device-and-stats / single-hero). See `mem://design/trainer-to-platform-composite`.
-- `HeroDeviceCluster` — device cluster used in hero positions.
-- `UseCaseTriad` — 3-up use-case tile row.
-- `WeekWithReps` — "a week with REPs" narrative block.
-- `AiCommandCentreMock` — AI command-centre mock-up tile.
-- `PressMarquee` — editorial wordmark marquee.
+Rebuild `/features/visibility` so every 50/50 block is the **same `ProductBlock` component** used on `/for-professionals`, pointed at the real REPs routes. No new components, no bespoke mockups, eyebrows aligned.
 
-Then a **Rules** section listing the explicit do/don't items from the brief (no hand-rolled headings; no `text-[32px]/[40px]/[48px]` in route files; use SectionHeading / BlockHeading / SectionEyebrow; 50/50 = ProductBlock; mockups = shared components; locked memories remain authoritative).
+### Eyebrow scheme (matches `/for-professionals`)
 
-A short **Reading order** pointer to `mem://design/source-of-truth`, `mem://design/marketing-section-primitives`, and the locked-page memories.
+Drop the orange chip. Use the small-caps orange eyebrow from `ProductBlock`:
 
-I'll grep `src/components/marketing/` first to confirm every primitive listed actually exists; any that don't will be flagged in the report rather than invented.
+- `Capability 1 · Verified profile`
+- `Capability 2 · Directory placement`
+- `Capability 3 · Reviews on the record`
+- `Capability 4 · City & specialism pages`
+- `Capability 5 · Share kit & social proof`
 
-## 2. Create `scripts/audit-marketing-primitives.mjs`
+Same typographic treatment as `Pillar 1 · Visibility` on the for-pros page — instantly reads as the same site.
 
-Pure Node ESM script, no deps. Glob via `fs` + recursive walk.
+### 50/50 blocks — reuse `ProductBlock` with real routes inside `DeviceMockup`
 
-**Scan scope:**
-- `src/routes/for-professionals*.tsx`
-- `src/routes/features*.tsx`
-- `src/routes/cpd*.tsx`
-- `src/routes/compare*.tsx`
-- `src/components/marketing/**/*.tsx`
-- `src/components/features/**/*.tsx`
+| # | Capability | Device | Live route in the laptop frame |
+|---|---|---|---|
+| 1 | Verified profile | laptop | `/pro/james-carter` |
+| 2 | Directory placement | laptop | `/find?city=manchester&specialism=personal-trainer` |
+| 3 | Reviews on the record | laptop | `/pro/james-carter#reviews` |
+| 4 | City & specialism pages | laptop | `/in/manchester` |
+| 5 | Share kit & social proof | phone | `/c/james-wilson` (Pro shop-front renders as the share target) |
 
-**Hard violations (exit 1):**
-- Banned pricing copy (case-insensitive): `15% booking fee`, `booking commission`, `one flat plan`, `single flat plan`, `£29 Pro`, `Free Profile` (as a pricing card label).
-- In **route files only** (`src/routes/...`): `font-display text-[`, `font-heading text-[`, or any of `text-[32px]`, `text-[36px]`, `text-[40px]`, `text-[44px]`, `text-[48px]` co-occurring with `font-display` / `font-heading` on the same element.
-- Obvious placeholder panels in route files: `TODO`, `Placeholder`, `Coming soon` inside JSX text (allowlist a small set of legitimate uses if any are found during dry-run).
+This is exactly the "icons / sections / cards from the actual `/dashboard`" idea — except the laptop shows the **real REPs page** for that capability, so it stays in sync forever and is visually identical to the for-pros blocks.
 
-**Soft warnings (exit 0, printed):**
-- Same heading patterns inside `src/components/marketing/` or `src/components/features/` (these primitives are allowed to define the canonical sizes).
-- Route-file `<h2>` / `<h3>` that don't reference `SectionHeading` / `BlockHeading` import.
+### Files
 
-**Output format per finding:**
-```
-[HARD|WARN] path:line  <matched snippet>
-  → use <recommended primitive>
-```
+- **Rewrite** `src/routes/features.visibility.tsx`
+  - Keep the existing `PillarPage` hero / ActIntro / Comparison / cross-links / CTA shell (those are already the shared chrome).
+  - Replace the `features` array's `mockup: <ReviewsMockup />` style with `mockup: { device: 'laptop', src: '/pro/james-carter', title: '…' }` and let `PillarFeatureBlock` render `DeviceMockup` the same way `ProductBlock` does. Smallest change: extend `PillarFeature` so `mockup` can be a `DeviceMockup` config (preferred) instead of `ReactNode`, and route through `DeviceMockup` inside `PillarPage.tsx`.
+  - Rename `tag` values to the `Capability N · …` scheme.
+- **Update** `src/components/features/PillarPage.tsx` — `PillarFeatureBlock` renders `MockupStage` + `DeviceMockup` when given a config object (matches `ProductBlock`); render the small-caps eyebrow instead of the chip pill.
+- **Delete** `src/components/mockups/VisibilityMockups.tsx` (no longer referenced; bespoke illustrations replaced by real routes).
 
-Final summary: `N hard, M warn`. Non-zero exit only on hard violations.
+### What I won't do
 
-## 3. Update `package.json`
+- No new mockup components, no new section components, no new hero variants.
+- No backend/data work — Phase 1 visual only.
+- No change to `/for-professionals` (it's the source of truth for the pattern).
 
-Append script (do not modify existing scripts, do not wire into build):
-```
-"audit:marketing": "node scripts/audit-marketing-primitives.mjs"
-```
+### Future option (separate ask, not in this plan)
 
-## 4. Update build status doc
-
-Append a short section to `docs/06_build_status.md` (or whichever current build-status doc exists — I'll confirm during exploration) noting:
-- Marketing primitives are documented in `src/components/marketing/README.md`.
-- `npm run audit:marketing` checks for drift.
-- Future marketing pages must consume approved primitives.
-- Tailwind tokens alone don't enforce semantic typography — primitives + audit do.
-
-## 5. No ESLint rule
-
-Skip ESLint per brief.
-
-## Process
-
-1. Explore `src/components/marketing/` to confirm exported primitive names.
-2. Dry-run the audit logic mentally against `src/routes/features.visibility.tsx`, `features.shop-front.tsx`, `features.ai.tsx`, `for-professionals.tsx`, `cpd.tsx`, `compare.*.tsx` to calibrate hard vs warn thresholds (avoid noisy first run).
-3. Write README → write script → update package.json → update build-status doc.
-4. Run `node scripts/audit-marketing-primitives.mjs` and capture real output for the report.
-5. If the first run produces hard violations, list them in the final report — do **not** fix them in this pass (that's a follow-up). The brief is governance-only.
-
-## Final report sections
-
-1. Files created
-2. Files updated
-3. README coverage
-4. Audit checks
-5. Example output (real, from running the script)
-6. Current failures (if any)
-7. Confirmation: no visual or functional changes
+If you later want the "cinematic photo + floating dashboard cards" composition (à la `HeroDeviceCluster`), we'd build **one** shared `CinematicCardStack` component and adopt it on both `/for-professionals` and every pillar page in the same pass — so it never drifts again. Flag it and I'll spin it up.
