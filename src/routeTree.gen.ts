@@ -31,6 +31,7 @@ import { Route as ForProfessionalsRouteImport } from './routes/for-professionals
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CpdV2RouteImport } from './routes/cpd-v2'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -209,6 +210,11 @@ const FaqRoute = FaqRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CpdV2Route = CpdV2RouteImport.update({
+  id: '/cpd-v2',
+  path: '/cpd-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CpdRoute = CpdRouteImport.update({
@@ -573,6 +579,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -666,6 +673,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -759,6 +767,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
+  '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
   '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
@@ -854,6 +863,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-v2'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -947,6 +957,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-v2'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -1039,6 +1050,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
+    | '/cpd-v2'
     | '/dashboard'
     | '/faq'
     | '/find-a-professional'
@@ -1133,6 +1145,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
+  CpdV2Route: typeof CpdV2Route
   DashboardRoute: typeof DashboardRoute
   FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
@@ -1366,6 +1379,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cpd-v2': {
+      id: '/cpd-v2'
+      path: '/cpd-v2'
+      fullPath: '/cpd-v2'
+      preLoaderRoute: typeof CpdV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd': {
@@ -1890,6 +1910,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
+  CpdV2Route: CpdV2Route,
   DashboardRoute: DashboardRoute,
   FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
