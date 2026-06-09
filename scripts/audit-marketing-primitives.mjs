@@ -48,7 +48,9 @@ const PRIMITIVE_NAMES = new Set([
   "BlockHeading",
   "SectionEyebrow",
   "SectionHeader",
+  "HeroHeading",
   "MarketingHeroEyebrow",
+  "StatValue",
   "ProductBlock",
   "MarketingFaq",
   "FinalCta",
@@ -114,9 +116,13 @@ function scan(file, { isRoute }) {
     }
   }
 
-  // Heading-size drift.
+  // Heading-size drift. Skip lines that already use an approved heading
+  // primitive (HeroHeading/SectionHeading/BlockHeading/StatValue) — those
+  // are the sanctioned way to apply a size override on a locked page.
+  const APPROVED_HEADING_RE = /<(?:HeroHeading|SectionHeading|BlockHeading|StatValue)\b/;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (APPROVED_HEADING_RE.test(line)) continue;
     const hit = HEADING_FONT_RE.test(line) || (HEADING_SIZE_RE.test(line) && /font-(display|heading)/.test(line));
     if (!hit) continue;
     const entry = {
@@ -124,7 +130,7 @@ function scan(file, { isRoute }) {
       line: i + 1,
       snippet: line.trim().slice(0, 140),
       msg: "hand-rolled marketing heading (font-display/heading + arbitrary size)",
-      fix: "use <SectionHeading /> for H2 or <BlockHeading /> for in-block H3",
+      fix: "use <SectionHeading /> for H2, <BlockHeading /> for in-block H3, <HeroHeading /> for hero H1, or <StatValue /> for numeric stats",
     };
     if (isRoute) findings.hard.push(entry);
     else findings.warn.push(entry);
