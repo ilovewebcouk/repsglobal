@@ -193,7 +193,12 @@ type FeaturedExerciseProp = {
   equipment?: string;
 } | null | undefined;
 
-type CuratedExerciseProp = { exerciseId: string; name: string; imageUrl: string };
+type CuratedExerciseProp = {
+  exerciseId: string;
+  name: string;
+  imageUrl: string;
+  category: "lower" | "upper" | "cond";
+};
 
 export function ProgrammeMock({ featured }: { featured?: FeaturedExerciseProp } = {}) {
   const [state, setState] = useState<ProgrammeState>("w4");
