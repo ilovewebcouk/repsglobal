@@ -33,6 +33,7 @@ import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { AnnotatedMock, type Callout } from "@/components/marketing/AnnotatedMock";
 import { ProductBlock } from "@/components/marketing/ProductBlock";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
+import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { TierCard } from "@/components/marketing/TierCard";
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
