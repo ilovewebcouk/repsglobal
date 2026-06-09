@@ -207,7 +207,7 @@ function ForProsPage() {
       {/* WHY COACHES SWITCH — competitive proof */}
       <section className="border-b border-reps-border bg-reps-ink">
 
-        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-16 lg:pb-20">
+        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
           <div className="max-w-[720px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Why coaches switch
