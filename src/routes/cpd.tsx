@@ -29,6 +29,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { StickyCtaPill } from "@/components/marketing/StickyCtaPill";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
