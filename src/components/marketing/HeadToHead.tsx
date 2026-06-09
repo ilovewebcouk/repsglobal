@@ -389,7 +389,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
               Start free, get REPs verified, and run your whole practice on one
-              platform. Founding pricing locked for life on paid plans — before
+              platform. Founder pricing on paid plans stays active while your subscription stays active —
               public launch.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">

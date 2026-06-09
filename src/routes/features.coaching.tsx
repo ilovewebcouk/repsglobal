@@ -36,6 +36,7 @@ import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebro
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
+import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { TierCard } from "@/components/marketing/TierCard";
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
@@ -239,6 +240,8 @@ function CoachingPage() {
       <PublicHeader variant="solid" />
 
       <Hero />
+
+      <FounderAccessBanner />
 
       <ProblemSection />
       <ProgrammeSection featured={featured} />
