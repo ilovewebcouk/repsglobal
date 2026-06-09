@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BadgeCheck, ShieldCheck, Sparkles } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { PublicHeader } from "@/components/public/PublicHeader";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { BlockHeading } from "@/components/marketing/BlockHeading";
