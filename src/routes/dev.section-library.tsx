@@ -39,7 +39,7 @@ const GROUPS = [
 function SectionLibrary() {
   return (
     <div className="min-h-screen bg-reps-ink text-white">
-      <SiteHeader />
+      <PublicHeader />
 
       {/* Banner */}
       <div className="border-b border-reps-border bg-reps-panel/40">
