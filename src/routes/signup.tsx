@@ -631,6 +631,17 @@ function SignupPage() {
                 </div>
               )}
 
+              {/* Founder Access acknowledgement */}
+              <div className="rounded-[12px] border border-reps-orange/30 bg-reps-orange-soft/40 px-3 py-2.5 text-[12px] leading-relaxed text-reps-charcoal">
+                <span className="font-semibold text-reps-orange">Founder Access:</span>{" "}
+                By continuing, you understand REPs Pro is launching in beta and some advanced
+                features are being released in stages — see the{" "}
+                <Link to="/roadmap" className="font-semibold text-reps-orange hover:underline">roadmap</Link>{" "}
+                and{" "}
+                <Link to="/changelog" className="font-semibold text-reps-orange hover:underline">changelog</Link>.
+                Your founder rate remains active while your subscription stays active.
+              </div>
+
               {/* Submit */}
               <button
                 type="submit"
