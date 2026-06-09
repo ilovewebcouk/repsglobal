@@ -1,61 +1,67 @@
-## FatSecret integration — scaffold now, flip on when Premier is live
 
-Goal: build the full server-side wiring + UI hook-up using the same shape as `exercisedb.server.ts`, but keep it gated behind a feature flag so nothing hits FatSecret until your Premier keys arrive. The mock UI on `/features/coaching` stays static today; the moment you paste in keys + flip the flag, the same component starts serving real food data.
+## What Ascend ExerciseDB v2 gives us
 
-### What gets built (Phase A — before keys)
+11,000+ exercises via RapidAPI. Each exercise returns:
+- `name`, `bodyParts`, `targetMuscles`, `secondaryMuscles`, `equipments`, `exerciseType`
+- 4 image resolutions (360/480/720/1080p, webp)
+- MP4 `videoUrl` demo
+- `overview`, `instructions[]`, `exerciseTips[]`, `variations[]`, `relatedExerciseIds[]`
 
-1. **`src/lib/fatsecret.server.ts`** — server-only OAuth 1.0a HMAC-SHA1 signing helper (FatSecret doesn't use bearer tokens; every call must be signed). Wraps:
-   - `foods.search.v3` → typed `FoodSummary[]` (id, brand, name, serving, calories preview)
-   - `food.get.v4` → typed `FoodDetail` (servings array with kcal/P/C/F/fibre/sugar)
-   - `food.find_id_for_barcode` → barcode → food_id
-   - 24h in-memory cache, identical pattern to `exercisedb.server.ts`
-   - Reads `FATSECRET_CONSUMER_KEY` / `FATSECRET_CONSUMER_SECRET` from `process.env`; throws a clear "not configured" error if missing.
+Auth: two headers — `X-RapidAPI-Key` (our key) + `X-RapidAPI-Host: edb-with-videos-and-images-by-ascendapi.p.rapidapi.com`.
 
-2. **`src/lib/fatsecret.functions.ts`** — `createServerFn` wrappers (`searchFoods`, `getFoodById`, `lookupBarcode`) with Zod input validators. Safe to import from client components.
+Free tier = watermarked video/images. Paid tier = clean. We'll start on whichever tier you subscribe to.
 
-3. **Feature flag** — `NUTRITION_API_ENABLED` env var (default off). The NutritionMock on `/features/coaching` stays as your locked design today; when flagged on, the search field becomes live.
+## What the user has to do (one-off)
 
-4. **Better NutritionMock** (separate, optional) — refactor the empty tabs the same way we just did Exercise Library: real search results, sample diary day, macro ring driven from FatSecret data. No "Powered by FatSecret" attribution (per your earlier ExerciseDB instruction).
+1. Subscribe at https://rapidapi.com/ascendapi/api/edb-with-videos-and-images-by-ascendapi (free tier is fine for now — videos will have an Ascend watermark until upgraded).
+2. Copy the `X-RapidAPI-Key` from the RapidAPI dashboard.
+3. I'll then prompt for it via `add_secret` and store it as `RAPIDAPI_EXERCISEDB_KEY` (server-only, never exposed to the browser).
 
-5. **No DB tables, no auth, no client diary persistence yet** — Phase 1 marketing only. Real user food logging gets its own plan when we leave Phase 1.
+## What I'll build (this turn)
 
-### Phase B — when your Premier email arrives
+### 1. Server boundary — never expose the RapidAPI key
 
-You paste Consumer Key + Secret into `add_secret` (`FATSECRET_CONSUMER_KEY`, `FATSECRET_CONSUMER_SECRET`), I flip `NUTRITION_API_ENABLED=true`, done. No code changes.
+`src/lib/exercisedb.server.ts` — thin fetch wrapper that injects both headers and base URL.
 
-### What to put in the FatSecret "Inquiry" box
+`src/lib/exercisedb.functions.ts` — two `createServerFn` endpoints:
+- `searchExercises({ query?, bodyPart?, equipment?, limit })` → list view (name + 480p image + bodyPart + equipment)
+- `getExercise({ exerciseId })` → full record including `videoUrl`
 
-Paste this — it's what they need to approve a Premier upgrade quickly. Edit the bracketed bits:
+Both server fns add a 24h in-memory cache keyed by params. The CDN media URLs are public and safe to render directly in the browser — only the JSON metadata goes through our server.
 
-> Hi FatSecret team,
->
-> I'm building **REPs** ([repsglobal.lovable.app](https://repsglobal.lovable.app)) — a verified register and coaching workspace for personal trainers, online coaches and fitness studios. We're launching in the UK first and want to use the Platform API to power the nutrition side of our coaching product, replacing the need for our pros' clients to log food in MyFitnessPal.
->
-> **Use case:** trainers build macro/meal plans for their clients inside REPs; clients log food against that plan via REPs (web + future mobile). We'd use `foods.search`, `food.get.v4`, autocomplete, food categories and barcode lookup. White-labelled (no FatSecret branding shown to end users), which is why we need Premier rather than Premier Free.
->
-> **Markets:** UK at launch, expanding to EU and US within 12 months — happy to start with UK-only data and add regions as we grow.
->
-> **Volumes (year 1 estimate):** ~2,000 trainers, ~20,000 active clients, peak ~500k API calls/month.
->
-> **Hosting:** serverless edge (Cloudflare Workers), so we need IP-allowlist-free access — another reason Premier is the right tier.
->
-> **Company:** [your registered company name + country], [your role]. Happy to sign your standard Premier agreement. Could you send pricing for UK data + a route to add EU/US later?
->
-> Thanks,
-> [Your name]
+### 2. Wire the Coaching page mock to real data
 
-That hits every question Premier sales normally come back with (use case, white-label, region, volume, why-not-Basic, company), which usually halves the back-and-forth.
+On `/features/coaching` the `ProgrammeMock` + `ExerciseLibraryMock` currently show hard-coded exercise names. I'll:
+- Add a route loader that calls `searchExercises({ limit: 12 })` for a curated set (Bench Press, Squat, Deadlift, Pull-up, Romanian Deadlift, Overhead Press, Lunge, Plank, Bent-Over Row, Hip Thrust, Bulgarian Split Squat, Lat Pulldown).
+- Render their real 480p webp thumbnails + names in the library grid.
+- On click, swap the mock's right-hand "preview" pane to the real MP4 `videoUrl` in a muted, looped `<video>` (autoplay, `playsInline`, `loop`, `muted`). This makes the "600+ exercises with video demos" claim provably real on the marketing page itself.
+- Add a small "Powered by ExerciseDB" attribution line under the mock — keeps us honest, no brand-logo grid (per banned-orgs rule).
 
-### Files this plan touches
+If the API key is missing or the call fails, the mock falls back to the current static state (no marketing-page breakage).
 
-- new: `src/lib/fatsecret.server.ts`
-- new: `src/lib/fatsecret.functions.ts`
-- edit: `src/components/marketing/coaching/InteractiveMocks.tsx` (NutritionMock — empty tabs → real data when flag is on, design unchanged when off)
-- edit: `src/routes/features.coaching.tsx` (only if NutritionMock signature changes)
+### 3. Copy + counts
 
-### Out of scope (call out explicitly)
+- Change "600+ exercises" → "10,000+ exercise demos" (we now have a real 11k library to back it).
+- Keep "Pros can upload their own clips" as a roadmap line — it's the differentiator vs Trainerize charging extra.
 
-- Client diary persistence in our DB
-- Trainer-built meal plan builder UI
-- Photo logging / image recognition (we can add later from Premier — separate plan)
-- Any FatSecret branding on the page
+## What I'm NOT building yet (separate plan)
+
+- Real Programme Builder UI inside the authenticated dashboard (exercise picker, set/rep editor, drag-reorder, assign to client, mobile client view of the video). That's a 2–3 day product build, not a marketing-page fix.
+- Mirroring the catalogue into our DB. Until we have paying Pros, hitting the API on demand with caching is enough.
+- Paid-tier upgrade — start free + watermarked, upgrade when we ship the dashboard feature.
+
+## Failure modes I've planned for
+
+- **Missing key** → server fn throws a typed "not configured" error; coaching page renders the static fallback; no white screen.
+- **Rate limit (RapidAPI free tier)** → 24h cache means a single curated set is ~12 requests on first deploy then 0; well under any free-tier ceiling.
+- **Watermark on free tier** → acceptable for now; documented above.
+- **CDN video blocked / slow** → `<video>` has a `poster` from the 720p image so the still always renders.
+
+## Order of operations
+
+1. You confirm the plan.
+2. I prompt for `RAPIDAPI_EXERCISEDB_KEY` via `add_secret` (you paste it from RapidAPI).
+3. I build the server fns + wire the Coaching mock + update copy.
+4. We verify a real Bench Press video plays inside the mock on `/features/coaching`.
+
+Shall I proceed?
