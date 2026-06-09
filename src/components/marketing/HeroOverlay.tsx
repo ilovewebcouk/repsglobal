@@ -23,59 +23,42 @@
  * mem://design/hero-overlay-system.
  */
 
-type Side = "left" | "right";
-
 export interface HeroOverlayProps {
-  copySide?: Side;
+  copySide?: "left" | "right";
   intensity?: "standard" | "soft";
 }
 
-const LINEAR_STOPS = {
-  standard: {
-    left: "linear-gradient(90deg,rgba(10,10,12,0.72)_0%,rgba(10,10,12,0.55)_30%,rgba(10,10,12,0.20)_58%,rgba(10,10,12,0)_78%)",
-    right: "linear-gradient(270deg,rgba(10,10,12,0.72)_0%,rgba(10,10,12,0.55)_30%,rgba(10,10,12,0.20)_58%,rgba(10,10,12,0)_78%)",
-  },
-  soft: {
-    left: "linear-gradient(90deg,rgba(10,10,12,0.62)_0%,rgba(10,10,12,0.45)_30%,rgba(10,10,12,0.15)_58%,rgba(10,10,12,0)_78%)",
-    right: "linear-gradient(270deg,rgba(10,10,12,0.62)_0%,rgba(10,10,12,0.45)_30%,rgba(10,10,12,0.15)_58%,rgba(10,10,12,0)_78%)",
-  },
-} as const;
-
-const RADIAL_ANCHOR = {
-  left: "radial-gradient(50%_80%_at_15%_55%,rgba(10,10,12,0.32),transparent_72%)",
-  right: "radial-gradient(50%_80%_at_85%_55%,rgba(10,10,12,0.32),transparent_72%)",
-} as const;
-
-const BRAND_GLOW = {
-  left: "radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)",
-  right: "radial-gradient(40%_45%_at_85%_20%,rgba(255,122,0,0.10),transparent_70%)",
-} as const;
-
 export function HeroOverlay({ copySide = "left", intensity = "standard" }: HeroOverlayProps) {
-  const linear = LINEAR_STOPS[intensity][copySide];
-  const radial = RADIAL_ANCHOR[copySide];
-  const glow = BRAND_GLOW[copySide];
+  // Class strings must be static for Tailwind's JIT, so branch on full strings.
+  const linearClass =
+    copySide === "left"
+      ? intensity === "standard"
+        ? "hidden lg:block absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,12,0.72)_0%,rgba(10,10,12,0.55)_30%,rgba(10,10,12,0.20)_58%,rgba(10,10,12,0)_78%)]"
+        : "hidden lg:block absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,12,0.62)_0%,rgba(10,10,12,0.45)_30%,rgba(10,10,12,0.15)_58%,rgba(10,10,12,0)_78%)]"
+      : intensity === "standard"
+        ? "hidden lg:block absolute inset-0 bg-[linear-gradient(270deg,rgba(10,10,12,0.72)_0%,rgba(10,10,12,0.55)_30%,rgba(10,10,12,0.20)_58%,rgba(10,10,12,0)_78%)]"
+        : "hidden lg:block absolute inset-0 bg-[linear-gradient(270deg,rgba(10,10,12,0.62)_0%,rgba(10,10,12,0.45)_30%,rgba(10,10,12,0.15)_58%,rgba(10,10,12,0)_78%)]";
+
+  const radialClass =
+    copySide === "left"
+      ? "absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[radial-gradient(50%_80%_at_15%_55%,rgba(10,10,12,0.32),transparent_72%)]"
+      : "absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[radial-gradient(50%_80%_at_85%_55%,rgba(10,10,12,0.32),transparent_72%)]";
+
+  const glowClass =
+    copySide === "left"
+      ? "absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_15%_20%,rgba(255,122,0,0.10),transparent_70%)]"
+      : "absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[radial-gradient(40%_45%_at_85%_20%,rgba(255,122,0,0.10),transparent_70%)]";
 
   return (
     <>
       {/* Mobile: flat dim for legibility (copy spans the full width). */}
       <div aria-hidden className="absolute inset-0 bg-reps-ink/55 lg:hidden" />
-
       {/* Desktop: directional gradient on the copy side, photo side stays clear. */}
-      <div aria-hidden className={`absolute inset-0 hidden lg:block bg-[${linear}]`} />
-
+      <div aria-hidden className={linearClass} />
       {/* Soft anchor behind the headline. */}
-      <div
-        aria-hidden
-        className={`absolute inset-0 bg-[radial-gradient(95%_75%_at_50%_45%,rgba(10,10,12,0.55),transparent_75%)] lg:bg-[${radial}]`}
-      />
-
+      <div aria-hidden className={radialClass} />
       {/* Warm brand glow on the copy-side top corner. */}
-      <div
-        aria-hidden
-        className={`absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(60%_50%_at_50%_15%,rgba(255,122,0,0.12),transparent_72%)] lg:bg-[${glow}]`}
-      />
-
+      <div aria-hidden className={glowClass} />
       {/* Bottom fade to reps-ink for section handoff. */}
       <div
         aria-hidden
