@@ -215,7 +215,7 @@ function SectionLibrary() {
         <FinalCta
           heading="Get on the verified register"
           headingAccent=" today."
-          lede="Founding pricing locked for life. Cancel anytime."
+          lede="Founder pricing stays while your subscription stays active. Cancel anytime."
           primary={{ to: "/signup", label: "Verify my profile" }}
           secondary={{ to: "/pricing", label: "See pricing" }}
         />
