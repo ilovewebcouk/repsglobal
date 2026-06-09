@@ -424,7 +424,11 @@ function ProblemSection() {
 // 02. Programme delivery
 // -----------------------------------------------------------------------------
 
-function ProgrammeSection() {
+function ProgrammeSection({
+  featured,
+}: {
+  featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
+}) {
   return (
     <section id="programme-delivery" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
@@ -435,7 +439,7 @@ function ProgrammeSection() {
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
-          <ProgrammeMock />
+          <ProgrammeMock featured={featured} />
           <BulletColumn
             heading="The coaching command centre, not a workout list."
             body="You open a client and see the whole block — where they are, what's next, how the last week went, what to progress. The programme lives next to the client record, not in an app that doesn't know about your bookings or payments."
@@ -451,23 +455,29 @@ function ProgrammeSection() {
 // 03. Exercise library
 // -----------------------------------------------------------------------------
 
-function ExerciseLibrarySection() {
+function ExerciseLibrarySection({
+  curated,
+  featured,
+}: {
+  curated: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["curated"];
+  featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
+}) {
   return (
     <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Exercise library"
-          heading="600+ exercises with video demos — built into the programme builder."
+          heading="10,000+ exercises with video demos — built into the programme builder."
           lede="Filter by movement, equipment or muscle group. Add to a programme in one click. Every exercise carries cues, regressions and progressions so the client knows what 'good' looks like — without you re-recording the same video ten times."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
-          <ExerciseLibraryMock />
+          <ExerciseLibraryMock curated={curated} featured={featured} />
           <BulletColumn
             heading="One library. Every programme. Every client."
             body="Search by name, filter by category, drop straight into Thursday's session. The same library powers programme building, the client portal demos and AI programme drafts — so the cueing stays consistent across every coach in the studio."
             bullets={[
-              "600+ exercises curated for coaching, not gym influencers",
+              "10,000+ exercises curated for coaching, not gym influencers",
               "Filter by lower, upper, conditioning, mobility, equipment",
               "HD video demos with cues, regressions and progressions",
               "Add to programme in one click — no copy-paste",
@@ -476,6 +486,18 @@ function ExerciseLibrarySection() {
             ]}
           />
         </div>
+        <p className="mt-6 text-[12px] text-white/45">
+          Exercise media powered by{" "}
+          <a
+            href="https://ascendapi.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/70 underline-offset-4 hover:underline"
+          >
+            ExerciseDB
+          </a>
+          . Pros can also upload their own clips.
+        </p>
       </div>
     </section>
   );
