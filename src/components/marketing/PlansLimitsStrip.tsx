@@ -57,7 +57,7 @@ function RepsCard() {
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 text-[12px]">
-        <Fact label="Booking commission" value="None" tone="good" />
+        <Fact label="Per-client charges" value="None" tone="good" />
         <Fact label="Add-on stack" value="None" tone="good" />
       </div>
 

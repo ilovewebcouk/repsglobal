@@ -28,6 +28,9 @@ import { ForProsFaq } from "@/components/marketing/ForProsFaq";
 import { HeroDeviceCluster } from "@/components/marketing/HeroDeviceCluster";
 import { UseCaseTriad } from "@/components/marketing/UseCaseTriad";
 import { FinalCta } from "@/components/marketing/FinalCta";
+import { HeroHeading } from "@/components/marketing/HeroHeading";
+import { SectionHeading } from "@/components/marketing/SectionHeading";
+import { StatValue } from "@/components/marketing/StatValue";
 
 
 
@@ -129,14 +132,14 @@ function ForProsPage() {
               >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Verified · Trusted · Booked
               </span>
-              <h1
-                className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
+              <HeroHeading
+                className="mt-6 animate-fade-in text-[34px] leading-[1.05] sm:text-[44px] lg:text-[64px]"
                 style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
               >
                 Not just software.
                 <br />
                 <span className="text-reps-orange">An AI operating system for fitness professionals.</span>
-              </h1>
+              </HeroHeading>
               <p
                 className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
                 style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
@@ -212,9 +215,9 @@ function ForProsPage() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Why coaches switch
             </span>
-            <h2 className="mt-3 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+            <SectionHeading className="mt-3 text-[32px] leading-tight lg:text-[44px]">
               Software that also brings you clients.
-            </h2>
+            </SectionHeading>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{" "}
               <em>and</em> the clients to fill it — because the public already lands here when they're searching for a trusted pro.
@@ -332,9 +335,9 @@ function ForProsPage() {
               <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
                 <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPs AI
               </span>
-              <h2 className="mt-4 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
+              <SectionHeading className="mt-4 text-[36px] leading-tight lg:text-[52px]">
                 The AI layer behind your fitness business.
-              </h2>
+              </SectionHeading>
               <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/75">
                 An AI layer working across programmes, check-ins, leads, risk and
                 growth — drafting work, scoring intent, flagging churn, ranking the
@@ -406,9 +409,9 @@ function ForProsPage() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Pricing
             </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            <SectionHeading className="mt-3 text-[28px] leading-tight lg:text-[36px]">
               Three tiers. Every feature in your tier included — no paid add-ons.
-            </h2>
+            </SectionHeading>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {[
@@ -453,7 +456,7 @@ function ForProsPage() {
                   {t.name}
                 </div>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="font-display text-[36px] font-bold text-white">{t.price}</span>
+                  <StatValue className="text-[36px]">{t.price}</StatValue>
                   <span className="text-[13px] text-white/60">{t.cadence}</span>
                 </div>
                 <p className="mt-3 text-[13.5px] leading-relaxed text-white/70">{t.tagline}</p>
@@ -479,9 +482,9 @@ function ForProsPage() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Loved by working pros
             </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+            <SectionHeading className="mt-3 text-[28px] lg:text-[36px]">
               Coaches who made the switch.
-            </h2>
+            </SectionHeading>
           </div>
           <TestimonialTriad />
         </div>
@@ -494,9 +497,9 @@ function ForProsPage() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
               Who it's for
             </span>
-            <h2 className="mt-3 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            <SectionHeading className="mt-3 text-[28px] leading-tight lg:text-[36px]">
               Built for every serious fitness professional.
-            </h2>
+            </SectionHeading>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               One platform, three ways to run a fitness business. Pick the shape that fits you.
             </p>
@@ -511,9 +514,9 @@ function ForProsPage() {
         <div className="mx-auto max-w-[820px] px-6 py-24 lg:px-10 lg:py-28">
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>
-            <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
+            <SectionHeading className="mt-3 text-[28px] lg:text-[36px]">
               The straight answers.
-            </h2>
+            </SectionHeading>
           </div>
           <ForProsFaq />
         </div>
