@@ -4,6 +4,8 @@ import { ArrowRight, Sparkles, ShieldCheck, Brain, Layers, MapPin } from "lucide
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { CompetitorCompare } from "@/components/marketing/CompetitorCompare";
+import { HeroHeading } from "@/components/marketing/HeroHeading";
+import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { COMPETITOR_LIST } from "@/data/competitor-data";
 
 const URL = "https://repsglobal.lovable.app/compare";
@@ -77,9 +79,9 @@ function ComparePage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Personal trainer software
           </span>
-          <h1 className="mx-auto mt-5 max-w-[860px] font-display text-[44px] font-bold leading-tight text-white lg:text-[60px]">
+          <HeroHeading className="mx-auto mt-5 max-w-[860px] text-[44px] leading-tight sm:text-[44px] lg:text-[60px]">
             Compare personal trainer software.
-          </h1>
+          </HeroHeading>
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
             your own clients to — then top up with paid add-ons. REPs Pro is
@@ -117,9 +119,9 @@ function ComparePage() {
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Head-to-head
             </span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
+            <SectionHeading className="mt-2 text-[32px] leading-tight lg:text-[40px]">
               Deep-dive comparisons.
-            </h2>
+            </SectionHeading>
             <p className="mt-3 text-[15px] text-white/65">
               Side-by-side pricing, the real cost once add-ons are stacked, and
               feature parity row by row.
@@ -163,9 +165,9 @@ function ComparePage() {
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Where REPs is different
             </span>
-            <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
+            <SectionHeading className="mt-2 text-[32px] leading-tight lg:text-[40px]">
               Not another coaching app.
-            </h2>
+            </SectionHeading>
             <p className="mt-3 text-[15px] text-white/65">
               Other platforms compete on features. REPs is a different category — built
               around the public register, not the workout builder.
@@ -194,9 +196,9 @@ function ComparePage() {
       <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
-            <h2 className="font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            <SectionHeading className="text-[28px] leading-tight lg:text-[36px]">
               Ready to switch?
-            </h2>
+            </SectionHeading>
             <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
               Start free, get verified, and run your whole practice on REPs. Founding
               pricing locked for life on paid plans — before public launch.
