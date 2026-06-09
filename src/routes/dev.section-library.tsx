@@ -224,7 +224,7 @@ function SectionLibrary() {
           {[
             "Hand-roll <h2 className=\"font-display text-[40px]...\"> — use <SectionHeading>.",
             "Hand-roll <h3 className=\"font-display text-[36px]...\"> inside a 50/50 — use <BlockHeading>.",
-            "rounded-xl / rounded-2xl / rounded-3xl / rounded-[14|20|28|32]px — use the 9-step scale.",
+            "Banned radii (rounded-2/3xl or [14|20|28|32]px) — use the 9-step scale.",
             "Decorative emerald or any non-orange accent outside status semantics.",
             "Gold/yellow rating stars — stars are brand orange.",
             "shadow-* on buttons — buttons are flat.",
