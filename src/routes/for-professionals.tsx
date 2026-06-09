@@ -315,7 +315,7 @@ function ForProsPage() {
 
       {/* FEATURE TESTIMONIAL */}
       <section className="border-b border-reps-border">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <TestimonialFeature />
         </div>
       </section>
