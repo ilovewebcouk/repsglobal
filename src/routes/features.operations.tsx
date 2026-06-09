@@ -287,6 +287,8 @@ function OperationsPage() {
 
       <Hero />
 
+      <FounderAccessBanner />
+
       <ProblemSection />
       <WorkspaceSection />
       <PipelineSection />

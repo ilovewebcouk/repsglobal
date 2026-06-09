@@ -240,6 +240,8 @@ function CoachingPage() {
 
       <Hero />
 
+      <FounderAccessBanner />
+
       <ProblemSection />
       <ProgrammeSection featured={featured} />
       <ExerciseLibrarySection curated={curated} featured={featured} />

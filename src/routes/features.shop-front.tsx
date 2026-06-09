@@ -273,6 +273,8 @@ function ShopFrontPage() {
 
       <Hero />
 
+      <FounderAccessBanner />
+
       <ProblemSection />
       <AnatomySection />
       <ServicesSection />
