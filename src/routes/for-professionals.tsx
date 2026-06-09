@@ -508,7 +508,7 @@ function ForProsPage() {
 
       {/* FAQ */}
       <section className="border-b border-reps-border bg-reps-panel/20">
-        <div className="mx-auto max-w-[820px] px-6 py-24 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>
             <h2 className="mt-3 font-display text-[28px] font-bold text-white lg:text-[36px]">
