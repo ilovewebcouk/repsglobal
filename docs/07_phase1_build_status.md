@@ -173,3 +173,14 @@ Top-level public nav (`PublicHeader`): **Find a Professional · For Professional
 - 2026-06-05 — City landing pages `/in/$location` LOCKED (Phase 1 approved). Unified to shared `FeaturedProCard` (extracted to `src/components/public/FeaturedProCard.tsx` and adopted by professions page too), added FAQ + related cities, de-UK'd region copy. Full visual + copy QA on all 4 mapped slugs (London, Manchester, Birmingham, Edinburgh) + fallback. See `mem://design/locked-cities`.
 - 2026-06-05 — Enquire page `/pro/$slug/enquire` LOCKED (Phase 1 approved). Migrated every form control to shadcn primitives (RadioGroup, ToggleGroup multi-select capped at 3, Select, Textarea, Input, Checkbox, Badge, Button with `data-icon`). Layout/section order unchanged. Radius scale clean; the single 14px on the summary pro photo is the documented memory-allowed exception. See `mem://design/locked-enquire`.
 - 2026-06-05 — Enquire page polish: aside is now sticky on desktop (`lg:sticky lg:top-24 lg:self-start`); trust block + "what happens next" step 3 rewritten as verification-led copy, dropping payment/refund promises the product can't yet keep. Heading caption tightened (no "no payment until you accept"). Lock memory updated.
+
+## Marketing-page governance (2026-06-09)
+
+To stop typography/layout drift across marketing routes (`/for-professionals`, `/features/*`, `/cpd`, `/compare/*`):
+
+- Approved primitives are documented in `src/components/marketing/README.md` — single source of truth for `SectionHeading`, `BlockHeading`, `SectionEyebrow`, `ProductBlock`, `MarketingFaq`, `FinalCta`, `TrainerToPlatformComposite`, `HeroDeviceCluster`, `UseCaseTriad`, `WeekWithReps`, `AiCommandCentreMock`, etc.
+- A new audit script `scripts/audit-marketing-primitives.mjs` (run with `npm run audit:marketing`) scans marketing routes + shared components for hand-rolled `font-display text-[Npx]` headings, banned pricing copy, banned org names, and placeholder panels. Hard violations fail the script (exit 1); soft warnings print.
+- Future REPs marketing pages MUST consume the approved primitives — no new hand-rolled section headings, no bespoke 50/50 grids in route files, no ad-hoc FAQs or footer CTAs.
+- **Why Tailwind tokens alone are not enough:** `src/styles.css` defines colour / radius / font-family tokens. It cannot enforce that "an H3 inside a 50/50 block is 28→36px", because `text-[32px]` and `text-[40px]` are both valid arbitrary utilities. Semantic typography rules live in the primitives (`SectionHeading`, `BlockHeading`) and the audit script — not in the token layer.
+- Initial run (2026-06-09): 32 hard / 45 warn — pre-existing drift across `for-professionals.tsx`, `cpd.tsx`, `cpd-legacy.tsx`, `compare.tsx`. Tracked as a separate clean-up pass; no visual changes made in this governance pass.
+- ESLint rule deferred — README + audit script first. Revisit if drift recurs after the clean-up pass.
