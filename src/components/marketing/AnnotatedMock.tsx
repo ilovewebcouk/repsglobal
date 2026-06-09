@@ -55,7 +55,7 @@ export function AnnotatedMock({
           {callouts.map((c, i) => (
             <span
               key={i}
-              className="absolute inline-flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-reps-orange text-[12px] font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,122,0,0.55)] ring-2 ring-reps-ink"
+              className="absolute hidden h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-reps-orange text-[12px] font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,122,0,0.55)] ring-2 ring-reps-ink sm:inline-flex"
               style={{ top: c.y, left: c.x }}
             >
               {i + 1}
@@ -75,7 +75,7 @@ export function AnnotatedMock({
             </span>
             <div>
               <p className="text-[14.5px] font-semibold text-white">{c.title}</p>
-              <p className="mt-1 text-[13.5px] leading-relaxed text-white/65">{c.body}</p>
+              <p className="mt-1 text-[13.5px] leading-relaxed text-white/70">{c.body}</p>
             </div>
           </li>
         ))}

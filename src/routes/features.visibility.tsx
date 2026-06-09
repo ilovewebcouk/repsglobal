@@ -273,7 +273,7 @@ function Hero() {
           </h1>
 
           <p
-            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/75"
+            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
             Create a verified REPs profile that brings your credentials, reviews, specialisms and
@@ -377,7 +377,7 @@ function ProblemSection() {
               ].map((line) => (
                 <li
                   key={line}
-                  className="flex items-start gap-2.5 text-[14.5px] leading-relaxed text-white/85"
+                  className="flex items-start gap-2.5 text-[14.5px] leading-relaxed text-white/80"
                 >
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                   {line}
@@ -385,9 +385,8 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              <span className="font-semibold text-white">The strategic difference:</span> most
-              fitness software helps you manage clients <em>after</em> they sign up. REPs helps you
-              become visible <em>before</em> they choose who to contact.
+              Most fitness software helps you manage clients <em>after</em> they sign up. REPs makes
+              you visible <em>before</em> they choose who to contact.
             </p>
           </div>
         </div>
@@ -457,7 +456,7 @@ function DiscoverySection() {
         <SectionHeader
           eyebrow="How clients discover you"
           heading="The directory the public already uses to find a trusted professional."
-          lede="REPs is designed to help clients search, compare and contact suitable professionals with more confidence — filtered by what actually matters."
+          lede="Search, compare and contact suitable pros with more confidence — filtered by what actually matters."
         />
 
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
@@ -485,7 +484,7 @@ function DiscoverySection() {
                 </span>
                 <div>
                   <p className="text-[15px] font-semibold text-white">{title}</p>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-white/65">{body}</p>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-white/70">{body}</p>
                 </div>
               </div>
             ))}
@@ -609,7 +608,7 @@ function SeoReachSection() {
         <SectionHeader
           eyebrow="Found beyond REPs too"
           heading="A verified REPs profile is a public, indexable page."
-          lede="Hundreds of city and specialism landing pages — “personal trainers in Manchester”, “pilates instructor in Brixton” — surface verified pros to the wider web. You inherit that distribution the day you join."
+          lede="Hundreds of city and specialism landing pages surface verified pros to the wider web — with proper metadata and structured data, so search engines understand who you are, where you work and what you do."
         />
 
         <div className="mt-12">
@@ -621,11 +620,6 @@ function SeoReachSection() {
             />
           </MockupStage>
         </div>
-
-        <p className="mx-auto mt-8 max-w-[680px] text-center text-[13.5px] leading-relaxed text-white/55">
-          Every profile renders proper metadata and structured data, so search engines understand
-          who you are, where you work and what you do.
-        </p>
       </div>
     </section>
   );
@@ -649,17 +643,19 @@ function SegmentsSection() {
         />
 
         <Tabs value={active} onValueChange={setActive} className="mt-10 w-full">
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
-            {SEGMENTS.map((s) => (
-              <TabsTrigger
-                key={s.key}
-                value={s.key}
-                className="rounded-full border border-reps-border bg-reps-panel/60 px-4 py-2 text-[13px] font-semibold text-white/70 shadow-none data-[state=active]:border-reps-orange-border data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange"
-              >
-                {s.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="-mx-6 overflow-x-auto px-6 pb-1 lg:mx-0 lg:overflow-visible lg:px-0">
+            <TabsList className="flex h-auto w-max flex-nowrap justify-start gap-2 bg-transparent p-0 lg:w-full lg:flex-wrap">
+              {SEGMENTS.map((s) => (
+                <TabsTrigger
+                  key={s.key}
+                  value={s.key}
+                  className="shrink-0 rounded-full border border-reps-border bg-reps-panel/60 px-4 py-2 text-[13px] font-semibold text-white/70 shadow-none data-[state=active]:border-reps-orange-border data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange"
+                >
+                  {s.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           <TabsContent value={active} forceMount className="mt-10">
             <MockupStage variant="laptop">
@@ -708,35 +704,39 @@ function TierComparisonSection() {
         </div>
 
         <div className="mt-10 overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel/40">
-          <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
-            <span>Visibility capability</span>
-            <span className="text-center">Verified</span>
-            <span className="text-center">Pro</span>
-          </div>
-          {COMPARISON_ROWS.map((row, i) => (
-            <div
-              key={row.feature}
-              className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
-                i % 2 === 0 ? "bg-white/[0.02]" : ""
-              }`}
-            >
-              <span>{row.feature}</span>
-              <span className="text-center">
-                {row.verified ? (
-                  <Check className="mx-auto h-4 w-4 text-reps-orange" />
-                ) : (
-                  <span className="text-white/30">—</span>
-                )}
-              </span>
-              <span className="text-center">
-                {row.pro ? (
-                  <Check className="mx-auto h-4 w-4 text-reps-orange" />
-                ) : (
-                  <span className="text-white/30">—</span>
-                )}
-              </span>
+          <div className="overflow-x-auto">
+            <div className="min-w-[420px]">
+              <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                <span>Visibility capability</span>
+                <span className="text-center">Verified</span>
+                <span className="text-center">Pro</span>
+              </div>
+              {COMPARISON_ROWS.map((row, i) => (
+                <div
+                  key={row.feature}
+                  className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
+                    i % 2 === 0 ? "bg-white/[0.02]" : ""
+                  }`}
+                >
+                  <span>{row.feature}</span>
+                  <span className="text-center">
+                    {row.verified ? (
+                      <Check className="mx-auto h-4 w-4 text-reps-orange" />
+                    ) : (
+                      <span className="text-white/30">—</span>
+                    )}
+                  </span>
+                  <span className="text-center">
+                    {row.pro ? (
+                      <Check className="mx-auto h-4 w-4 text-reps-orange" />
+                    ) : (
+                      <span className="text-white/30">—</span>
+                    )}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
