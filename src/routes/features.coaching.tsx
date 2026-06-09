@@ -486,18 +486,6 @@ function ExerciseLibrarySection({
             ]}
           />
         </div>
-        <p className="mt-6 text-[12px] text-white/45">
-          Exercise media powered by{" "}
-          <a
-            href="https://ascendapi.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white/70 underline-offset-4 hover:underline"
-          >
-            ExerciseDB
-          </a>
-          . Pros can also upload their own clips.
-        </p>
       </div>
     </section>
   );
