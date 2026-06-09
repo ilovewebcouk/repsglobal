@@ -1,57 +1,82 @@
 ---
-name: Locked /features/coaching
-description: Frozen 2026-06-09. 12-section Coaching Delivery pillar page — programmes, check-ins, progress, client view, notes, accountability, templates. Pro pillar. Do not redesign without explicit section-named request.
+name: locked-coaching
+description: /features/coaching frozen 2026-06-09 — 16-section interactive Pro pillar that out-features Trainerize / PT Distinction on coaching delivery
 type: design
 ---
 
-# Locked /features/coaching
+# /features/coaching — LOCKED 2026-06-09
 
-Frozen 2026-06-09. The Coaching pillar page is the canonical statement of what REPs Pro delivers **after** a client signs on. Narrow scope: programme delivery, check-ins, progress, client view, notes, accountability, templates. NOT visibility, NOT shop-front, NOT operations admin, NOT a workout-builder, NOT nutrition, NOT AI hype.
+The Coaching pillar page is the **most feature-dense page on the site** and the proof that REPs Pro delivers an end-to-end coaching workspace world-class trainers actually want. Do not redesign without an explicit, section-named request.
 
-## Hard scope rules (do not violate)
+## Tier
 
-- **NOT a profile / SEO / discovery page** → that's `/features/visibility`.
-- **NOT a shop-front / enquire-book-pay page** → that's `/features/shop-front`.
-- **NOT admin / pipeline / payments / forms** → that's `/features/operations`.
-- **NOT an AI pillar page** — AI gets a single one-card callout, not a section. Full AI story lives at `/features/ai`.
-- **NOT a nutrition app** — nutrition appears only as one optional bullet inside check-ins.
-- **NOT a generic workout builder** — frame as professional programme delivery.
-
-The page owns one sentence: **"Deliver better coaching from one connected platform."**
+Pro (£59/mo Founding) and Studio only. Verified is excluded from every coaching-delivery row in the comparison matrix.
 
 ## Section order (LOCKED)
 
-1. Hero — `HeroOverlay copySide="left"`, hero image right (`hero-coaching-bg`), H1 `Deliver better coaching from one connected platform.`, dual CTA, 3 trust chips.
-2. Problem — split card (scattered vs organised) with 4 fragmentation chips and 6 organised lines. Close line: *"Operations gets the client organised. Coaching helps you deliver the result."*
-3. Programme delivery — `CoachingDashboardMock` + bullets. Anchor: *"Build structured coaching plans clients can actually follow."*
-4. Client check-ins — static check-in card (mock) + bullets. Anchor: *"Check-ins turn coaching from a programme into a relationship."*
-5. Progress tracking — 4-card grid (measurements / strength / adherence / milestones). Anchor: *"Clients stay engaged when they can see progress, not just feel it."*
-6. Client view — `ClientPortalMock` + bullets. Framed as **browser portal via magic link**, not a native app.
-7. Coaching notes & client context — bullets + `ClientRecordMock`. Anchor: *"Coach with context, not guesswork."*
-8. Accountability — 8 alert chips + summary card. Anchor: *"The best coaching systems show you who needs support before they disappear."*
-9. Templates — 6-tile grid. Anchor: *"Create a repeatable coaching standard without making every client feel generic."*
-10. AI callout — inline card with link to `/features/ai`. NOT a full section.
-11. Verified vs Pro — `TierCard` × 2 + 10-row comparison matrix. Verified row is intentionally all empty except final "verified profile" row.
-12. Use cases — 6-card grid (PT, online, strength, transformation, small-group, studio team).
-13. FAQ — `MarketingFaq` × 6.
-14. `FinalCta` — *"Deliver coaching clients can follow, track and stay engaged with."*
+```text
+Hero (HeroOverlay copySide="left")
+01. Problem               — 6-app fragmented stack vs one workspace
+02. Programme delivery    — INTERACTIVE: Wk 1 / Wk 4 / Wk 8 (ProgrammeMock)
+03. Exercise library      — INTERACTIVE: All / Lower / Upper / Cond. (ExerciseLibraryMock)
+04. Nutrition             — INTERACTIVE: Today / Week / Plan / Photo (NutritionMock) — explicit MFP replacement
+05. Habits & wearables    — INTERACTIVE: Sleep / Steps / Water / Training (HabitsMock) + Apple/Garmin/Whoop/Fitbit chips
+06. Check-ins             — INTERACTIVE: Pending / Replied / Flagged (CheckInsInboxMock)
+07. Progress              — INTERACTIVE: Strength / Body / Adherence / Photos (ProgressMock); Photos tab has consent line
+08. Messaging             — INTERACTIVE: Text / Voice / Form (MessagingMock); voice notes up to 3 min
+09. Client view           — INTERACTIVE: Today / Programme / Check-in / Progress (ClientPortalInteractiveMock); browser portal
+10. Client record & notes — static ClientRecordMock (kept from previous build)
+11. Accountability        — INTERACTIVE: scenario chip drives the featured flag (AccountabilityMock)
+12. Automations           — INTERACTIVE: Onboarding / Re-engage / Reminders (AutomationsMock)
+13. Templates             — 6 cards inc. Nutrition plan template + Automation template
+14. AI assist             — AiAssistMock + bullets; "drafts the first version, you coach the result"; links to /features/ai
+15. Verified vs Pro       — TierCard + 13-row matrix (every coaching row Verified=—, Pro=✓)
+16. Use cases             — 6 coaching archetypes
+FAQ                       — 6 items inc. Trainerize comparison, MFP replacement, wearables, AI hype
+FinalCta
+```
 
-## Components
+## Interactivity (LOCKED)
 
-- New: `src/components/marketing/CoachingMocks.tsx` exporting `CoachingDashboardMock`, `ClientPortalMock`, `ClientRecordMock` — pure static JSX inside `LaptopFrame` + `MockupStage`. No iframes (the live routes don't exist yet). Replace with `AnnotatedMock` + real routes when the product ships them.
-- Reuses: `HeroOverlay`, `MarketingHeroEyebrow`, `SectionHeader`, `BlockHeading`, `TierCard`, `MarketingFaq`, `FinalCta`.
-- Does NOT use `FeatureGroupLayout` — route is standalone like `/features/operations`.
+All 10 interactive mocks live in `src/components/marketing/coaching/InteractiveMocks.tsx` and share the `MockShell` component:
 
-## Tier positioning
+- **Toggle UI**: segmented pill control INSIDE the laptop chrome (top bar), right side
+- **State change**: instant swap (no animation, no crossfade)
+- **State**: local `useState` per mock, no router/URL/persistence
+- **Accessibility**: real `<button>` with `aria-pressed` + `role="tab"`; toggle group has `role="tablist"`
+- **Default state** is chosen so the section reads correctly with zero clicks
+- Each mock has 3–4 named states max (Accountability has 5)
 
-Coaching is a **Pro** pillar. Verified is genuinely excluded from coaching delivery (Verified = profile + reviews only). The Verified column in the matrix is empty except the final "verified public profile" row.
+No other interactivity pattern is permitted on this page.
 
-## What NOT to add later without an explicit, section-named request
+## Scope decisions (LOCKED)
 
-- Nutrition section / macro tracker
-- Progress photo gallery
-- Native mobile app claim
-- AI section (the one-card callout is the cap)
-- Marketing growth angle
-- Workout-builder framing
-- "Guaranteed results" / transformation promises
+- **Nutrition: full MyFitnessPal-replacement story** — macros, food database, barcode, meal plans, photo meal review, weekly compliance. Headline: *"Replace the food-tracking app with something built for coaching."*
+- **Wearables**: Apple Health / Garmin / Whoop / Fitbit named as text only with emerald "live" chip — NO third-party logos rendered. These are device platforms, not partner brands.
+- **Progress photos**: in-scope but inside Progress tab with explicit consent + "client-only by default" line, encrypted, never on public profile.
+- **AI**: positioned as "drafts, you coach" — no buzzwords, every output is an editable draft.
+- **Client view**: framed as browser portal accessed by magic link. No native mobile app promise.
+- **Messaging**: voice notes max 3 min; replaces WhatsApp/IG/text juggle.
+- **Automations**: pre-built sequences you edit before send — "never blasted".
+
+## Forbidden on this page
+
+- Booking commission / booking fee / flat plan / one flat price language
+- CIMSPA name; any third-party brand placement (training providers, registries)
+- "UK" / "United Kingdom" qualifiers in copy
+- Native mobile app claims
+- Any "AI does coaching for you" framing
+- Re-implementing HeroOverlay inline (use `<HeroOverlay copySide="left" />`)
+- Hand-rolled section H2s (must use `SectionHeader` / `SectionHeading` / `BlockHeading`)
+- Decorative emerald — emerald is for status semantics only (Live sync, Active, Online, Connected)
+
+## Components owned by this page
+
+- `src/components/marketing/coaching/InteractiveMocks.tsx` — all 10 interactive mocks + `MockShell` wrapper
+- `src/components/marketing/CoachingMocks.tsx` — retains `ClientRecordMock` (used in section 10) and legacy `CoachingDashboardMock`/`ClientPortalMock` (not currently consumed by the route; kept for backwards compat)
+
+## Files touched
+
+- `src/routes/features.coaching.tsx`
+- `src/components/marketing/coaching/InteractiveMocks.tsx` (new)
+- `src/components/marketing/CoachingMocks.tsx` (kept)
