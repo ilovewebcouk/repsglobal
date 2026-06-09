@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 import { createCheckoutSession } from "@/lib/billing/billing.functions";
+import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
