@@ -4,11 +4,8 @@ import {
   BadgeCheck,
   Brain,
   Check,
-  CheckCircle2,
-  Lightbulb,
   ListChecks,
   Megaphone,
-  PenTool,
   Shield,
   Store,
   Users,
@@ -186,29 +183,6 @@ const PROFILE_BULLETS = [
   "On-brand copy across profile, Shop Front and posts",
 ];
 
-const CONTROL_TILES = [
-  {
-    icon: Shield,
-    title: "AI suggests. You decide.",
-    body: "Every AI output is a draft. Nothing ships to a client without you reviewing and approving it.",
-  },
-  {
-    icon: Utensils,
-    title: "Nutrition stays your call.",
-    body: "Meal plans are flagged for trainer review. AI does not give medical advice or override scope of practice.",
-  },
-  {
-    icon: PenTool,
-    title: "Your voice, not a robot's.",
-    body: "Drafts learn from the messages and posts you actually publish — so replies sound like you, not a template.",
-  },
-  {
-    icon: Lightbulb,
-    title: "You can turn it off.",
-    body: "Every AI surface can be disabled per area. Run REPs Pro without any AI assistance if you prefer.",
-  },
-];
-
 const USE_CASES = [
   {
     icon: Users,
@@ -342,7 +316,6 @@ function AIPage() {
       <OperationsSection />
       <ProfileSection />
       <CommandCentreSection />
-      <ControlSection />
       <UseCasesSection />
       <TierComparisonSection />
 
@@ -794,55 +767,6 @@ function CommandCentreSection() {
   );
 }
 
-// -----------------------------------------------------------------------------
-// 10. Human control and professional boundaries
-// -----------------------------------------------------------------------------
-
-function ControlSection() {
-  return (
-    <section className="bg-reps-panel/15">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-        <SectionHeader
-          eyebrow="Human control and boundaries"
-          heading="AI suggests. The professional decides."
-          lede="REPs AI is built to give qualified fitness professionals leverage — not to replace them, automate around them or push them beyond their scope of practice."
-        />
-
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          {CONTROL_TILES.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-7"
-            >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <Icon className="h-5 w-5" />
-              </span>
-              <p className="mt-4 font-display text-[17px] font-bold text-white lg:text-[18px]">{title}</p>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">{body}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-[22px] border border-reps-border bg-reps-panel/60 p-7 lg:p-10">
-          <div className="flex items-start gap-4">
-            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-              <CheckCircle2 className="h-5 w-5" />
-            </span>
-            <div>
-              <BlockHeading>An operating layer, not an autopilot.</BlockHeading>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
-                The point of REPs AI is to give you back the hour you lose to admin every day — not
-                to send messages, write programmes or push nutrition advice to your clients without
-                you. Every output is reviewable. Every surface is optional. You are still the coach
-                on the record.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // -----------------------------------------------------------------------------
 // 11. Use cases
