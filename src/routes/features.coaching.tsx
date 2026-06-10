@@ -875,7 +875,7 @@ function CheckinsSection() {
               <ul className="mt-2 space-y-1.5 text-[13.5px] text-white/80">
                 <li className="flex items-start gap-2"><Check className="mt-0.5 h-3.5 w-3.5 text-reps-orange" /> Hold programme — strong adherence week.</li>
                 <li className="flex items-start gap-2"><Check className="mt-0.5 h-3.5 w-3.5 text-reps-orange" /> Add 1 swap for Friday breakfast (low time).</li>
-                <li className="flex items-start gap-2"><Check className "mt-0.5 h-3.5 w-3.5 text-reps-orange" /> Voice note on photo expectations — week 6 is normal.</li>
+                <li className="flex items-start gap-2"><Check className="mt-0.5 h-3.5 w-3.5 text-reps-orange" /> Voice note on photo expectations — week 6 is normal.</li>
               </ul>
             </div>
           </div>
