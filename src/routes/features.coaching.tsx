@@ -89,16 +89,6 @@ const PROGRAMME_BULLETS = [
   "Reusable templates so a new client never starts from a blank page",
 ];
 
-const NUTRITION_BULLETS = [
-  "Pick a client target — calories, macros, days, dietary rules — in seconds",
-  "REPs drafts a plan from your approved library only — never random food database results",
-  "Swap any meal, edit portions, add coaching notes inline",
-  "Nothing reaches the client until you sign it off — every plan is your decision",
-  "Approved plans land on the client record alongside programmes, check-ins and progress",
-  "Clients log meals, photos, water and notes against the plan you assigned",
-  "Optional: clients attach a public MyFitnessPal or Cronometer link for review — no sync promised",
-  "Every AI draft, swap and approval is logged so you can show your working",
-];
 
 const HABITS_BULLETS = [
   "Sleep, steps and hydration tracked daily",
@@ -502,19 +492,19 @@ const NUTRITION_PARTS = [
     n: "1",
     icon: BookOpen,
     title: "Build a library you trust",
-    body: "Recipes, ingredients, meals and templates you've already approved. Nothing the AI suggests comes from outside this set.",
+    body: "Recipes, ingredients, meals and templates you've already approved. Nothing the AI suggests comes from outside this set — never a random food database.",
   },
   {
     n: "2",
     icon: Sparkles,
     title: "AI assembles the draft",
-    body: "Set a client target — calories, macros, days, dietary rules — and REPs drafts a plan from your library only. Never a random food database.",
+    body: "Set a client target — calories, macros, days, dietary rules — and REPs drafts a plan from your library only. Coach reviews next, nothing is sent yet.",
   },
   {
     n: "3",
     icon: Check,
     title: "You approve & assign",
-    body: "Swap meals, edit portions, leave notes, sign off. Only approved plans reach the client — and every decision is logged on the record.",
+    body: "Swap meals, edit portions, leave notes, sign off. Only approved plans reach the client — every decision logged on the record.",
   },
 ];
 
@@ -528,13 +518,14 @@ function NutritionSection() {
           lede="Build your nutrition library once, then let REPs assemble client-ready plans from your approved recipes, calorie targets and coaching rules. Nothing reaches the client until you sign it off."
         />
 
-        <div className="mt-10 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-3">
+        <div className="mt-12 mx-auto max-w-[960px]">
+          <NutritionMock />
+        </div>
+
+        <div className="mt-14 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-3">
           {NUTRITION_PARTS.flatMap(({ n, icon: Icon, title, body }, i) => {
             const card = (
-              <div
-                key={n}
-                className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
-              >
+              <div key={n} className="flex h-full flex-col">
                 <div className="flex items-center gap-3">
                   <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange/15 text-[12px] font-bold text-reps-orange">
                     {n}
@@ -561,16 +552,6 @@ function NutritionSection() {
               </div>,
             ];
           })}
-        </div>
-
-
-        <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
-          <NutritionMock />
-          <BulletColumn
-            heading="Build your nutrition library once, then let REPs help assemble client-ready plans from your approved recipes, calorie targets and coaching rules."
-            body="Coaches build the library. AI drafts the plan from your approved recipes only. You swap, edit and sign off — and every decision is logged on the client record alongside programmes, check-ins and progress."
-            bullets={NUTRITION_BULLETS}
-          />
         </div>
       </div>
     </section>

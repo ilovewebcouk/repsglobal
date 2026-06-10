@@ -470,7 +470,7 @@ const APPROVE_MEALS: {
 ];
 
 export function NutritionMock() {
-  const [state, setState] = useState<NutritionState>("draft");
+  const [state, setState] = useState<NutritionState>("library");
 
   return (
     <MockShell
@@ -479,7 +479,7 @@ export function NutritionMock() {
       active={state}
       onChange={setState}
     >
-      <div className="h-full overflow-hidden p-3 text-left">
+      <div className="flex h-full min-h-[340px] flex-col overflow-hidden p-3 text-left">
         {state === "library" && (
           <>
             <div className="flex items-center justify-between">
