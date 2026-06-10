@@ -1,41 +1,68 @@
-## Goal
-Replace the **About page hero image only** with a stronger, world-class image that matches the locked visual register and uses the **exact REPS header logo from `logo.svg`** on the garment.
+# Simplify `mem://design/trainer-imagery`
 
-## What I’ll change
-1. **Regenerate the hero image** in a tighter documentary-real / premium editorial register.
-2. **Use the exact header logo treatment** from `src/assets/brand/logo.svg` on the garment — not a typed wordmark approximation.
-3. **Keep the current page layout, overlay system, copy, CTAs, and other About images unchanged** unless the new hero framing requires a minor crop adjustment.
-4. **Replace only `src/assets/about/about-hero.jpg.asset.json`** with the new uploaded asset pointer.
+The current file over-specifies "wordmark" letterform geometry (R/E/P/S chamfer notes) that the image model can't reliably follow from prose and that contradicts the actual instruction: composite the real `src/assets/brand/logo.svg` onto the garment. We're stripping all wordmark-description content and locking two things only:
 
-## Creative direction to match
-- Golden-hour rim light
-- Urban / industrial training backdrop
-- Calm, self-possessed expression
-- Realistic textile rendering
-- No graphic overlays baked into the image
-- Muted film palette
-- Soft grain
-- Shallow depth of field
-- Must feel cohesive with **Built for Independence** and the stronger About imagery set
+1. **Logo source** = `src/assets/brand/logo.svg` (rasterised + composited, never described)
+2. **Visual style** = matches `src/assets/about/about-independence.jpg`
 
-## Quality bar
-The new hero needs to improve on the current one by:
-- making the logo read as the **actual REPS header mark**, not just “REPS” text
-- feeling less generic and more premium/editorial
-- giving the left-side headline cleaner visual support
-- preserving strong subject clarity on the right without awkward crop pressure near the top edge
-- keeping the industrial warmth and orange-adjacent glow without looking staged or over-processed
+## New file contents (`.lovable/mem/design/trainer-imagery.md`)
 
-## Technical details
-- Source-of-truth logo reference: `src/assets/brand/logo.svg`
-- Page route consuming the asset: `src/routes/about.tsx`
-- Asset to replace: `src/assets/about/about-hero.jpg.asset.json`
-- No route redesign or copy changes planned
-- I’ll QA the final hero in the About preview for:
-  - exact logo treatment
-  - tonal match with the rest of the page
-  - headline legibility on the left
-  - framing/crop quality at the current desktop viewport
+```md
+---
+name: Trainer imagery
+description: Locked visual style + logo source for any generated trainer/coach image across the app
+type: design
+---
 
-## Deliverable
-A single new hero asset, wired into the About page, with the existing page structure preserved.
+# Trainer imagery
+
+Any generated image of a trainer/coach MUST carry the REPS logo on the garment and match the Built For Independence visual style.
+
+## Logo source (LOCKED — single source of truth)
+
+The ONLY canonical REPS logo file is `src/assets/brand/logo.svg`. Always composite the real file onto the garment — never describe it in prose.
+
+Workflow for every apparel render:
+1. Rasterise `src/assets/brand/logo.svg` to a high-res white-on-transparent PNG:
+   `nix run nixpkgs#librsvg -- --width=1600 --keep-aspect-ratio src/assets/brand/logo.svg -o /tmp/reps-logo.png`
+2. ALWAYS use `imagegen--edit_image` (never `generate_image` alone) and pass BOTH `src/assets/about/about-independence.jpg` (style benchmark) AND the rasterised logo PNG as references.
+3. Render the logo as real embroidery / print on fabric — follows folds, picks up rim light, **always pure white** regardless of garment colour.
+4. Placement: small left-chest for editorial / single-subject; centred chest for wide / group shots.
+
+Do NOT use `/mnt/user-uploads/logo*` or any other logo file.
+
+## Visual style (LOCKED — source of truth)
+
+`src/assets/about/about-independence.jpg` is THE benchmark. Every trainer image must match:
+
+- Cinematic editorial documentary photography
+- Urban-industrial backdrop (warehouse / loading bay / exposed brick + raw steel / city skyline beyond)
+- Golden-hour rim light, dawn or low sun
+- Heather charcoal grey premium performance t-shirt
+- Muted film palette, soft anamorphic grain, shallow DoF, creamy bokeh
+- Premium athletic editorial mood (A24-meets-Lululemon)
+- Photo-realistic, no text overlays, no extra logos
+
+## About-page image set
+
+- `about-independence.jpg` — solo trainer, dawn studio (BENCHMARK)
+- `about-hero.jpg` — fitness pro, urban dawn, low golden rim
+- `about-heritage.jpg` — solo female trainer, chalked hands, kit rack
+- `about-professionals.jpg` — two trainers conferring at loading-bay doorway
+
+Re-generate any image whose chest logo drifts from the actual `logo.svg`.
+```
+
+## What's removed and why
+
+- Entire "Wordmark geometry" section (lines 11–25): describing R/E/P/S chamfer details in prose doesn't work — that's exactly why earlier hero attempts looked like "Inter extra bold". The fix is compositing `logo.svg`, not better prose.
+- `RepsWordmark.tsx` references: not relevant — the source of truth is the SVG file, full stop.
+- "Re-generate if drifts from RepsWordmark geometry" → "drifts from actual logo.svg".
+
+## Also updates `mem://index.md`
+
+The index line for trainer imagery currently says "REPS wordmark placement (ALL CAPS), color, and execution rules". Update to:
+
+`- [Trainer imagery](mem://design/trainer-imagery) — Locked logo source (src/assets/brand/logo.svg, composited via edit_image) + Built For Independence visual style for any trainer/coach image`
+
+No other files change. No code, route, or component changes.
