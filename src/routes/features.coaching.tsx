@@ -177,7 +177,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Does it actually replace MyFitnessPal for nutrition?",
-    a: "Yes — for coached clients. You set macros, your client logs food from a searchable database with barcode scan, snaps a photo when it's easier, follows the meal plan you built, and the weekly check-in pulls compliance in automatically. The coach sees it. The plan adapts. No more screenshots of someone else's app.",
+    a: "For coach-led nutrition — yes. You build a library of recipes, ingredients, meals and meal plan templates, assign them to clients, and review their food log, photos and weekly check-in in one place. Clients can also attach a public MyFitnessPal, Cronometer or other tracker link if they prefer to log there — REPs treats it as evidence on the client record. Barcode scan, a food database and AI meal recognition are on the roadmap, not the beta.",
   },
   {
     q: "Which wearables does it sync with?",
