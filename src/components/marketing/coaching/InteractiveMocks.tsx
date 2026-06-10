@@ -526,9 +526,25 @@ export function NutritionMock() {
               ))}
             </div>
 
-            <p className="mt-2 text-[7px] text-white/45">
-              The AI only suggests meals from this approved set — never a random food database.
-            </p>
+            <div className="mt-auto pt-3">
+              <div className="grid grid-cols-3 gap-1.5">
+                <div className="rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1.5">
+                  <p className="text-[6.5px] uppercase tracking-[0.14em] text-white/45">Recipes</p>
+                  <p className="text-[10px] font-bold text-white">248</p>
+                </div>
+                <div className="rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1.5">
+                  <p className="text-[6.5px] uppercase tracking-[0.14em] text-white/45">Plan templates</p>
+                  <p className="text-[10px] font-bold text-white">17</p>
+                </div>
+                <div className="rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1.5">
+                  <p className="text-[6.5px] uppercase tracking-[0.14em] text-white/45">Ingredients</p>
+                  <p className="text-[10px] font-bold text-white">412</p>
+                </div>
+              </div>
+              <p className="mt-2 text-[7px] text-white/45">
+                The AI only suggests meals from this approved set — never a random food database.
+              </p>
+            </div>
           </>
         )}
 
