@@ -6,12 +6,9 @@ import {
   BookOpen,
   Camera,
   Check,
-  ClipboardList,
   Dumbbell,
   Eye,
   FileText,
-  HeartPulse,
-  LineChart,
   MessageSquare,
   ShieldCheck,
   Sparkles,
@@ -709,7 +706,3 @@ function BulletColumn({
   );
 }
 
-// Suppress unused-import lint warnings for icons that may be reintroduced
-void LineChart;
-void HeartPulse;
-void ClipboardList;
