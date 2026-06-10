@@ -1,26 +1,26 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, ShieldCheck, Brain, Layers, MapPin } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { ArrowRight, Sparkles, ShieldCheck, Brain, Layers, MapPin } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { CompetitorCompare } from "@/components/marketing/CompetitorCompare";
-import { COMPETITOR_LIST } from "@/data/competitor-data";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { CompetitorCompare } from"@/components/marketing/CompetitorCompare";
+import { COMPETITOR_LIST } from"@/data/competitor-data";
 
-const URL = "https://repsglobal.lovable.app/compare";
-const TITLE = "Personal Trainer Software — REPs vs Trainerize, MyPTHub & PT Distinction";
+const URL ="https://repsglobal.lovable.app/compare";
+const TITLE ="Personal Trainer Software — REPs vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-  "Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
+"Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
       { title: TITLE },
-      { name: "description", content: DESC },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESC },
-      { property: "og:url", content: URL },
+      { name:"description", content: DESC },
+      { property:"og:title", content: TITLE },
+      { property:"og:description", content: DESC },
+      { property:"og:url", content: URL },
     ],
-    links: [{ rel: "canonical", href: URL }],
+    links: [{ rel:"canonical", href: URL }],
   }),
   component: ComparePage,
 });
@@ -28,41 +28,41 @@ export const Route = createFileRoute("/compare")({
 const DIFFERENTIATORS = [
   {
     icon: MapPin,
-    title: "A public register, not just an app",
-    body: "REPs is the verified directory the public already searches. Trainerize, MyPTHub and PT Distinction are private software — they don't bring you clients.",
+    title:"A public register, not just an app",
+    body:"REPs is the verified directory the public already searches. Trainerize, MyPTHub and PT Distinction are private software — they don't bring you clients.",
   },
   {
     icon: ShieldCheck,
-    title: "Verification built in",
-    body: "Qualifications, insurance and DBS checked once and shown on every profile. Trust without screenshots in your DMs.",
+    title:"Verification built in",
+    body:"Qualifications, insurance and DBS checked once and shown on every profile. Trust without screenshots in your DMs.",
   },
   {
     icon: Brain,
-    title: "AI as the operating system",
-    body: "Programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked. Not a chatbot bolted on — it runs through the whole platform.",
+    title:"AI as the operating system",
+    body:"Programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked. Not a chatbot bolted on — it runs through the whole platform.",
   },
   {
     icon: Layers,
-    title: "All-in-one, not a stack of six",
-    body: "Discovery, booking, payments, messaging, programmes, nutrition and AI in one record. Replace Trainerize + Calendly + Stripe + Mailchimp + Canva + ChatGPT.",
+    title:"All-in-one, not a stack of six",
+    body:"Discovery, booking, payments, messaging, programmes, nutrition and AI in one record. Replace Trainerize + Calendly + Stripe + Mailchimp + Canva + ChatGPT.",
   },
 ];
 
 const HEAD_TO_HEAD_CARDS = [
   {
-    href: "/compare/reps-vs-trainerize" as const,
+    href:"/compare/reps-vs-trainerize" as const,
     competitor: COMPETITOR_LIST[0],
-    headline: "Trainerize charges extra for payments, nutrition and branded app. REPs doesn't.",
+    headline:"Trainerize charges extra for payments, nutrition and branded app. REPs doesn't.",
   },
   {
-    href: "/compare/reps-vs-mypthub" as const,
+    href:"/compare/reps-vs-mypthub" as const,
     competitor: COMPETITOR_LIST[1],
-    headline: "MyPTHub's AI, branded app and Zapier are all paid add-ons. REPs includes everything.",
+    headline:"MyPTHub's AI, branded app and Zapier are all paid add-ons. REPs includes everything.",
   },
   {
-    href: "/compare/reps-vs-pt-distinction" as const,
+    href:"/compare/reps-vs-pt-distinction" as const,
     competitor: COMPETITOR_LIST[2],
-    headline: "PT Distinction charges per extra client. REPs doesn't.",
+    headline:"PT Distinction charges per extra client. REPs doesn't.",
   },
 ];
 
@@ -71,7 +71,7 @@ function ComparePage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
@@ -104,14 +104,14 @@ function ComparePage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <CompetitorCompare />
         </div>
       </section>
 
       {/* Head-to-head cards — links into each /compare/reps-vs-* page */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -157,7 +157,7 @@ function ComparePage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

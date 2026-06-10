@@ -1,26 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Building2, LifeBuoy, Mail, MessageSquare, Phone, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { createFileRoute } from"@tanstack/react-router";
+import { ArrowRight, Building2, LifeBuoy, Mail, MessageSquare, Phone, ShieldCheck, Sparkles, Users } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact REPs" },
+      { title:"Contact REPs" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Talk to the REPs team — general enquiries, professional support, verification questions and press.",
+"Talk to the REPs team — general enquiries, professional support, verification questions and press.",
       },
-      { property: "og:title", content: "Contact REPs" },
+      { property:"og:title", content:"Contact REPs" },
       {
-        property: "og:description",
-        content: "Get in touch with REPs — we typically reply within one business day.",
+        property:"og:description",
+        content:"Get in touch with REPs — we typically reply within one business day.",
       },
-      { property: "og:url", content: "/contact" },
+      { property:"og:url", content:"/contact" },
     ],
-    links: [{ rel: "canonical", href: "/contact" }],
+    links: [{ rel:"canonical", href:"/contact" }],
   }),
   component: ContactPage,
 });
@@ -28,27 +28,27 @@ export const Route = createFileRoute("/contact")({
 const CHANNELS = [
   {
     icon: Users,
-    title: "Client support",
-    body: "Help with finding a pro, bookings, or your account.",
-    contact: "support@repsglobal.com",
+    title:"Client support",
+    body:"Help with finding a pro, bookings, or your account.",
+    contact:"support@repsglobal.com",
   },
   {
     icon: ShieldCheck,
-    title: "Professional support",
-    body: "Verification, payouts, profile and CPD questions.",
-    contact: "pros@repsglobal.com",
+    title:"Professional support",
+    body:"Verification, payouts, profile and CPD questions.",
+    contact:"pros@repsglobal.com",
   },
   {
     icon: Building2,
-    title: "Press & partnerships",
-    body: "Media, sponsorships and integrations.",
-    contact: "press@repsglobal.com",
+    title:"Press & partnerships",
+    body:"Media, sponsorships and integrations.",
+    contact:"press@repsglobal.com",
   },
 ];
 
 const OFFICES = [
-  { city: "London", line1: "1 Pancras Square", line2: "London N1C 4AG", phone: "+44 20 7946 0000" },
-  { city: "Manchester", line1: "10 Whitworth St West", line2: "Manchester M1 5WG", phone: "+44 161 503 2000" },
+  { city:"London", line1:"1 Pancras Square", line2:"London N1C 4AG", phone:"+44 20 7946 0000" },
+  { city:"Manchester", line1:"10 Whitworth St West", line2:"Manchester M1 5WG", phone:"+44 161 503 2000" },
 ];
 
 function ContactPage() {
@@ -56,7 +56,7 @@ function ContactPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Contact
@@ -71,7 +71,7 @@ function ContactPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <div className="grid gap-5 md:grid-cols-3">
             {CHANNELS.map((c) => (
@@ -110,7 +110,7 @@ function ContactPage() {
                 <Field label="Email" type="email" placeholder="you@example.com" />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Select label="Reason" options={["Client support", "Professional support", "Press & partnerships", "Other"]} />
+                <Select label="Reason" options={["Client support","Professional support","Press & partnerships","Other"]} />
                 <Field label="Subject" placeholder="What's this about?" />
               </div>
               <div>
@@ -172,7 +172,7 @@ function ContactPage() {
   );
 }
 
-function Field({ label, type = "text", placeholder }: { label: string; type?: string; placeholder?: string }) {
+function Field({ label, type ="text", placeholder }: { label: string; type?: string; placeholder?: string }) {
   return (
     <label className="block">
       <span className="text-[12px] font-semibold text-white/75">{label}</span>

@@ -1,30 +1,30 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { ArrowRight, Sparkles } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { FoundingBanner } from "@/components/pricing/FoundingBanner";
-import { PricingPlans } from "@/components/pricing/PricingPlans";
-import { PricingFAQ } from "@/components/pricing/PricingFAQ";
-import { PricingCompare } from "@/components/pricing/PricingCompare";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { FoundingBanner } from"@/components/pricing/FoundingBanner";
+import { PricingPlans } from"@/components/pricing/PricingPlans";
+import { PricingFAQ } from"@/components/pricing/PricingFAQ";
+import { PricingCompare } from"@/components/pricing/PricingCompare";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Verified, Pro, Studio · REPs" },
+      { title:"Pricing — Verified, Pro, Studio · REPs" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack.",
+"Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack.",
       },
-      { property: "og:title", content: "REPs pricing" },
+      { property:"og:title", content:"REPs pricing" },
       {
-        property: "og:description",
-        content: "Verified to be trusted. Pro to run your practice. Studio to scale your team.",
+        property:"og:description",
+        content:"Verified to be trusted. Pro to run your practice. Studio to scale your team.",
       },
-      { property: "og:url", content: "https://repsglobal.lovable.app/pricing" },
+      { property:"og:url", content:"https://repsglobal.lovable.app/pricing" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/pricing" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/pricing" }],
   }),
   component: PricingPage,
 });
@@ -57,7 +57,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <PricingPlans />
         </div>
@@ -83,7 +83,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
           <PricingFAQ />
         </div>

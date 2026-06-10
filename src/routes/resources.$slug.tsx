@@ -1,9 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
+import { createFileRoute, Link, notFound } from"@tanstack/react-router";
+import { ArrowLeft, ArrowRight, ChevronRight } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { getArticle, getRelated, type ResourceArticle } from "@/lib/resources";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { getArticle, getRelated, type ResourceArticle } from"@/lib/resources";
 
 export const Route = createFileRoute("/resources/$slug")({
   loader: ({ params }) => {
@@ -13,58 +13,58 @@ export const Route = createFileRoute("/resources/$slug")({
   },
   head: ({ params, loaderData }) => {
     const article = loaderData?.article;
-    if (!article) return { meta: [{ title: "Resource not found — REPs" }] };
-    const baseUrl = "https://staging.repsuk.org";
+    if (!article) return { meta: [{ title:"Resource not found — REPs" }] };
+    const baseUrl ="https://staging.repsuk.org";
     const url = `${baseUrl}/resources/${params.slug}`;
     const imageUrl = article.cover.startsWith("http") ? article.cover : `${baseUrl}${article.cover}`;
     return {
       meta: [
         { title: `${article.title} — REPs Resources` },
-        { name: "description", content: article.excerpt },
-        { property: "og:title", content: article.title },
-        { property: "og:description", content: article.excerpt },
-        { property: "og:url", content: url },
-        { property: "og:type", content: "article" },
-        { property: "og:image", content: imageUrl },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: article.title },
-        { name: "twitter:description", content: article.excerpt },
-        { name: "twitter:image", content: imageUrl },
-        { property: "article:published_time", content: article.date },
-        { property: "article:author", content: article.author },
-        { property: "article:section", content: article.category },
+        { name:"description", content: article.excerpt },
+        { property:"og:title", content: article.title },
+        { property:"og:description", content: article.excerpt },
+        { property:"og:url", content: url },
+        { property:"og:type", content:"article" },
+        { property:"og:image", content: imageUrl },
+        { name:"twitter:card", content:"summary_large_image" },
+        { name:"twitter:title", content: article.title },
+        { name:"twitter:description", content: article.excerpt },
+        { name:"twitter:image", content: imageUrl },
+        { property:"article:published_time", content: article.date },
+        { property:"article:author", content: article.author },
+        { property:"article:section", content: article.category },
       ],
-      links: [{ rel: "canonical", href: url }],
+      links: [{ rel:"canonical", href: url }],
       scripts: [
         {
-          type: "application/ld+json",
+          type:"application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
+"@context":"https://schema.org",
+"@type":"Article",
             headline: article.title,
             description: article.excerpt,
             image: [imageUrl],
             datePublished: article.date,
             dateModified: article.date,
-            author: { "@type": "Person", name: article.author },
+            author: {"@type":"Person", name: article.author },
             publisher: {
-              "@type": "Organization",
-              name: "REPs",
+"@type":"Organization",
+              name:"REPs",
               url: baseUrl,
             },
-            mainEntityOfPage: { "@type": "WebPage", "@id": url },
+            mainEntityOfPage: {"@type":"WebPage","@id": url },
             articleSection: article.category,
           }),
         },
         {
-          type: "application/ld+json",
+          type:"application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Resources", item: `${baseUrl}/resources` },
-              { "@type": "ListItem", position: 2, name: article.category, item: `${baseUrl}/resources?category=${encodeURIComponent(article.category)}` },
-              { "@type": "ListItem", position: 3, name: article.title, item: url },
+              {"@type":"ListItem", position: 1, name:"Resources", item: `${baseUrl}/resources` },
+              {"@type":"ListItem", position: 2, name: article.category, item: `${baseUrl}/resources?category=${encodeURIComponent(article.category)}` },
+              {"@type":"ListItem", position: 3, name: article.title, item: url },
             ],
           }),
         },
@@ -126,7 +126,7 @@ function ArticlePage() {
       <PublicHeader variant="solid" />
 
       {/* Breadcrumb */}
-      <nav className="border-b border-reps-border">
+      <nav className="">
         <div className="mx-auto flex max-w-[880px] items-center gap-2 px-6 py-4 text-[12px] text-white/55 lg:px-10">
           <Link to="/resources" className="hover:text-white">
             Resources
@@ -183,7 +183,7 @@ function ArticlePage() {
 
       {/* Related */}
       {related.length > 0 && (
-        <section className="border-t border-reps-border bg-reps-panel/30">
+        <section className="bg-reps-panel/30">
           <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
             <h2 className="font-display text-[24px] font-bold text-white lg:text-[28px]">
               Related articles
@@ -254,7 +254,7 @@ function ArticleBody({ blocks }: { blocks: ResourceArticle["body"] }) {
   return (
     <div className="space-y-6">
       {blocks.map((b, i) => {
-        if (b.type === "h2") {
+        if (b.type ==="h2") {
           return (
             <h2
               key={i}
@@ -264,14 +264,14 @@ function ArticleBody({ blocks }: { blocks: ResourceArticle["body"] }) {
             </h2>
           );
         }
-        if (b.type === "p") {
+        if (b.type ==="p") {
           return (
             <p key={i} className="text-[16px] leading-relaxed text-white/80">
               {b.text}
             </p>
           );
         }
-        if (b.type === "ul") {
+        if (b.type ==="ul") {
           return (
             <ul key={i} className="space-y-3 pl-1">
               {b.items.map((it, j) => (
@@ -283,7 +283,7 @@ function ArticleBody({ blocks }: { blocks: ResourceArticle["body"] }) {
             </ul>
           );
         }
-        if (b.type === "quote") {
+        if (b.type ==="quote") {
           return (
             <blockquote
               key={i}

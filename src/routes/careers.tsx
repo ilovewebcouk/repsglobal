@@ -1,40 +1,40 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Heart, Globe2, Rocket, Users, Sparkles, Mail } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { ArrowRight, Heart, Globe2, Rocket, Users, Sparkles, Mail } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGym from "@/assets/hero-gym-bg.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroGym from"@/assets/hero-gym-bg.jpg";
 
 export const Route = createFileRoute("/careers")({
   head: () => ({
     meta: [
-      { title: "Careers at REPs — Build the Global Standard for Fitness" },
+      { title:"Careers at REPs — Build the Global Standard for Fitness" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Help build the global trust layer for the fitness industry. Open roles, our values and what it's like to work at REPs.",
+"Help build the global trust layer for the fitness industry. Open roles, our values and what it's like to work at REPs.",
       },
-      { property: "og:title", content: "Careers at REPs" },
-      { property: "og:description", content: "Open roles and what it's like to work at REPs." },
-      { property: "og:url", content: "https://repsglobal.lovable.app/careers" },
+      { property:"og:title", content:"Careers at REPs" },
+      { property:"og:description", content:"Open roles and what it's like to work at REPs." },
+      { property:"og:url", content:"https://repsglobal.lovable.app/careers" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/careers" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/careers" }],
   }),
   component: CareersPage,
 });
 
 const VALUES = [
-  { icon: Heart, title: "Trust, by default", body: "We protect both sides of the marketplace — clients and pros — every decision, every day." },
-  { icon: Globe2, title: "Global ambition", body: "REPs is built for every market where someone trains. Local enough to matter, global enough to scale." },
-  { icon: Rocket, title: "Shipping over talking", body: "Small teams, short feedback loops, no theatre. We ship and learn." },
-  { icon: Users, title: "Industry insiders", body: "We hire coaches, ex-coaches and people who'd happily train at 6am. Lived experience matters." },
+  { icon: Heart, title:"Trust, by default", body:"We protect both sides of the marketplace — clients and pros — every decision, every day." },
+  { icon: Globe2, title:"Global ambition", body:"REPs is built for every market where someone trains. Local enough to matter, global enough to scale." },
+  { icon: Rocket, title:"Shipping over talking", body:"Small teams, short feedback loops, no theatre. We ship and learn." },
+  { icon: Users, title:"Industry insiders", body:"We hire coaches, ex-coaches and people who'd happily train at 6am. Lived experience matters." },
 ];
 
 const ROLES = [
-  { team: "Engineering", title: "Senior Full-Stack Engineer", location: "Remote (Global)" },
-  { team: "Design", title: "Product Designer", location: "Remote (Global)" },
-  { team: "Industry", title: "Head of Professional Standards", location: "London / Hybrid" },
-  { team: "Growth", title: "SEO & Content Lead", location: "Remote (Global)" },
+  { team:"Engineering", title:"Senior Full-Stack Engineer", location:"Remote (Global)" },
+  { team:"Design", title:"Product Designer", location:"Remote (Global)" },
+  { team:"Industry", title:"Head of Professional Standards", location:"London / Hybrid" },
+  { team:"Growth", title:"SEO & Content Lead", location:"Remote (Global)" },
 ];
 
 function CareersPage() {
@@ -59,7 +59,7 @@ function CareersPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">How we work</span>
@@ -121,7 +121,7 @@ function CareersPage() {
                 <h3 className="font-display text-[20px] font-bold text-white">Don't see your role?</h3>
                 <p className="mt-2 text-[14px] leading-relaxed text-white/65">
                   We're always open to hearing from exceptional people in engineering, design,
-                  industry and growth. Email us at{" "}
+                  industry and growth. Email us at{""}
                   <a href="mailto:careers@repsglobal.com" className="text-reps-orange hover:underline">
                     careers@repsglobal.com
                   </a>.

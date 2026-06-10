@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -23,22 +23,22 @@ import {
   Workflow,
   X,
   Zap,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
-import { AnnotatedMock, type Callout } from "@/components/marketing/AnnotatedMock";
-import { ProductBlock } from "@/components/marketing/ProductBlock";
-import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FinalCta } from "@/components/marketing/FinalCta";
-import { TierCard } from "@/components/marketing/TierCard";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
-import { Separator } from "@/components/ui/separator";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { MarketingHeroEyebrow } from"@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from"@/components/marketing/SectionHeader";
+import { BlockHeading } from"@/components/marketing/BlockHeading";
+import { AnnotatedMock, type Callout } from"@/components/marketing/AnnotatedMock";
+import { ProductBlock } from"@/components/marketing/ProductBlock";
+import { MarketingFaq } from"@/components/marketing/MarketingFaq";
+import { FinalCta } from"@/components/marketing/FinalCta";
+import { TierCard } from"@/components/marketing/TierCard";
+import { HeroOverlay } from"@/components/marketing/HeroOverlay";
+import { Separator } from"@/components/ui/separator";
 
-import heroOperations from "@/assets/hero-operations-bg.jpg.asset.json";
+import heroOperations from"@/assets/hero-operations-bg.jpg.asset.json";
 
 // -----------------------------------------------------------------------------
 // Data
@@ -46,202 +46,202 @@ import heroOperations from "@/assets/hero-operations-bg.jpg.asset.json";
 
 const DASHBOARD_CALLOUTS: Callout[] = [
   {
-    x: "16%",
-    y: "16%",
-    title: "Today's sessions",
-    body: "Every booking, consultation and assessment for the day — in the order they happen.",
+    x:"16%",
+    y:"16%",
+    title:"Today's sessions",
+    body:"Every booking, consultation and assessment for the day — in the order they happen.",
   },
   {
-    x: "84%",
-    y: "20%",
-    title: "New leads",
-    body: "Enquiries from your profile, Shop Front and DMs — scored and ready to action.",
+    x:"84%",
+    y:"20%",
+    title:"New leads",
+    body:"Enquiries from your profile, Shop Front and DMs — scored and ready to action.",
   },
   {
-    x: "14%",
-    y: "44%",
-    title: "Pending forms",
-    body: "PAR-Qs, consents and onboarding forms still waiting on a client signature.",
+    x:"14%",
+    y:"44%",
+    title:"Pending forms",
+    body:"PAR-Qs, consents and onboarding forms still waiting on a client signature.",
   },
   {
-    x: "84%",
-    y: "50%",
-    title: "Unpaid invoices",
-    body: "Late, failed or pending payments — surfaced before they become awkward.",
+    x:"84%",
+    y:"50%",
+    title:"Unpaid invoices",
+    body:"Late, failed or pending payments — surfaced before they become awkward.",
   },
   {
-    x: "16%",
-    y: "76%",
-    title: "Upcoming bookings",
-    body: "The next two weeks at a glance — confirmed, tentative and awaiting deposit.",
+    x:"16%",
+    y:"76%",
+    title:"Upcoming bookings",
+    body:"The next two weeks at a glance — confirmed, tentative and awaiting deposit.",
   },
   {
-    x: "84%",
-    y: "82%",
-    title: "Tasks needing attention",
-    body: "Follow up, chase, confirm, review — surfaced before something slips.",
+    x:"84%",
+    y:"82%",
+    title:"Tasks needing attention",
+    body:"Follow up, chase, confirm, review — surfaced before something slips.",
   },
 ];
 
 const PROBLEM_SCATTERED = [
-  "Instagram DMs for enquiries",
-  "WhatsApp threads for clients",
-  "Google Forms for PAR-Qs",
-  "Calendly for consultations",
-  "Stripe links for payments",
-  "Spreadsheet CRM, sort of",
-  "Paper waivers in a folder",
-  "Notes app for everything else",
+"Instagram DMs for enquiries",
+"WhatsApp threads for clients",
+"Google Forms for PAR-Qs",
+"Calendly for consultations",
+"Stripe links for payments",
+"Spreadsheet CRM, sort of",
+"Paper waivers in a folder",
+"Notes app for everything else",
 ];
 
 const PROBLEM_ORGANISED = [
-  "Every enquiry in one inbox, scored and tagged",
-  "Bookings, consultations and recurring sessions in one calendar",
-  "PAR-Qs, waivers and onboarding forms attached to the client",
-  "Payments, packages and memberships visible on the dashboard",
-  "Client records with history, notes and next step in one view",
-  "Tasks and reminders flag what needs attention before it slips",
-  "Documents and agreements stored against the right person",
-  "Everything connected to your REPs profile and Shop Front",
+"Every enquiry in one inbox, scored and tagged",
+"Bookings, consultations and recurring sessions in one calendar",
+"PAR-Qs, waivers and onboarding forms attached to the client",
+"Payments, packages and memberships visible on the dashboard",
+"Client records with history, notes and next step in one view",
+"Tasks and reminders flag what needs attention before it slips",
+"Documents and agreements stored against the right person",
+"Everything connected to your REPs profile and Shop Front",
 ];
 
 const PIPELINE_STAGES = [
-  { title: "New enquiry", body: "Captured from your profile, Shop Front, DMs or referral." },
-  { title: "Consultation booked", body: "Discovery call or in-person meeting on the calendar." },
-  { title: "Awaiting form", body: "PAR-Q, screening or goal-setting form still to complete." },
-  { title: "Payment pending", body: "Package or first invoice sent — waiting on the client." },
-  { title: "Onboarded", body: "Forms in, payment cleared, first session scheduled." },
-  { title: "Follow-up needed", body: "Inactive, lapsed or overdue check-in — back on the list." },
+  { title:"New enquiry", body:"Captured from your profile, Shop Front, DMs or referral." },
+  { title:"Consultation booked", body:"Discovery call or in-person meeting on the calendar." },
+  { title:"Awaiting form", body:"PAR-Q, screening or goal-setting form still to complete." },
+  { title:"Payment pending", body:"Package or first invoice sent — waiting on the client." },
+  { title:"Onboarded", body:"Forms in, payment cleared, first session scheduled." },
+  { title:"Follow-up needed", body:"Inactive, lapsed or overdue check-in — back on the list." },
 ];
 
 const BOOKINGS_BULLETS = [
-  "Consultations, assessments and intro calls",
-  "1:1 sessions, group sessions and online calls",
-  "Recurring bookings with one-tap reschedule",
-  "Availability windows by service and venue",
-  "Automated reminders and client confirmations",
+"Consultations, assessments and intro calls",
+"1:1 sessions, group sessions and online calls",
+"Recurring bookings with one-tap reschedule",
+"Availability windows by service and venue",
+"Automated reminders and client confirmations",
 ];
 
 const FORMS_LIST = [
-  { title: "PAR-Q", body: "Standard physical activity readiness questionnaire." },
-  { title: "Health screening", body: "Conditions, medications and red flags before the first session." },
-  { title: "Consultation forms", body: "Goals, history, training experience and availability." },
-  { title: "Goal-setting forms", body: "Outcome, timeline, motivation and review schedule." },
-  { title: "Consent forms", body: "Photography, data, communication and session conduct consent." },
-  { title: "Waivers", body: "Liability and assumption-of-risk waivers, signed and stored." },
-  { title: "Onboarding questionnaires", body: "Lifestyle, nutrition, sleep, stress and starting baseline." },
-  { title: "Client agreements", body: "Package terms, cancellation policy and rescheduling rules." },
+  { title:"PAR-Q", body:"Standard physical activity readiness questionnaire." },
+  { title:"Health screening", body:"Conditions, medications and red flags before the first session." },
+  { title:"Consultation forms", body:"Goals, history, training experience and availability." },
+  { title:"Goal-setting forms", body:"Outcome, timeline, motivation and review schedule." },
+  { title:"Consent forms", body:"Photography, data, communication and session conduct consent." },
+  { title:"Waivers", body:"Liability and assumption-of-risk waivers, signed and stored." },
+  { title:"Onboarding questionnaires", body:"Lifestyle, nutrition, sleep, stress and starting baseline." },
+  { title:"Client agreements", body:"Package terms, cancellation policy and rescheduling rules." },
 ];
 
 const PAYMENTS_BULLETS = [
-  "Paid consultations and one-off sessions",
-  "Coaching packages and block bookings",
-  "Memberships and recurring billing",
-  "Payment status — paid, pending, failed",
-  "Receipts and invoices issued automatically",
-  "Package usage and renewal visibility",
+"Paid consultations and one-off sessions",
+"Coaching packages and block bookings",
+"Memberships and recurring billing",
+"Payment status — paid, pending, failed",
+"Receipts and invoices issued automatically",
+"Package usage and renewal visibility",
 ];
 
 const CLIENT_RECORD_BULLETS = [
-  "Contact details and emergency contacts",
-  "Forms, waivers and signed agreements",
-  "Bookings, attendance and session history",
-  "Payment status, package usage and renewal date",
-  "Goals, training notes and key milestones",
-  "Programme status — without the programme depth",
-  "Review-request status and response history",
-  "Communication history in one timeline",
+"Contact details and emergency contacts",
+"Forms, waivers and signed agreements",
+"Bookings, attendance and session history",
+"Payment status, package usage and renewal date",
+"Goals, training notes and key milestones",
+"Programme status — without the programme depth",
+"Review-request status and response history",
+"Communication history in one timeline",
 ];
 
 const TASK_CARDS = [
-  { icon: Inbox, title: "Follow up new enquiry", body: "Hot enquiry waiting on a first reply." },
-  { icon: FileText, title: "Chase incomplete form", body: "Client started a PAR-Q but didn't finish." },
-  { icon: Calendar, title: "Confirm consultation", body: "Booked consultation needs a confirmation message." },
-  { icon: Receipt, title: "Review unpaid payment", body: "Invoice overdue or card payment failed." },
-  { icon: Mail, title: "Send onboarding link", body: "New client ready for the welcome flow." },
-  { icon: MessageSquare, title: "Request review", body: "Long-standing client hasn't been asked yet." },
-  { icon: UserCheck, title: "Check inactive client", body: "Two weeks without a session — check in." },
-  { icon: BadgeCheck, title: "Renew CPD or profile", body: "Verification or CPD entry approaching expiry." },
+  { icon: Inbox, title:"Follow up new enquiry", body:"Hot enquiry waiting on a first reply." },
+  { icon: FileText, title:"Chase incomplete form", body:"Client started a PAR-Q but didn't finish." },
+  { icon: Calendar, title:"Confirm consultation", body:"Booked consultation needs a confirmation message." },
+  { icon: Receipt, title:"Review unpaid payment", body:"Invoice overdue or card payment failed." },
+  { icon: Mail, title:"Send onboarding link", body:"New client ready for the welcome flow." },
+  { icon: MessageSquare, title:"Request review", body:"Long-standing client hasn't been asked yet." },
+  { icon: UserCheck, title:"Check inactive client", body:"Two weeks without a session — check in." },
+  { icon: BadgeCheck, title:"Renew CPD or profile", body:"Verification or CPD entry approaching expiry." },
 ];
 
 const REPLACES_ITEMS = [
-  "Form builder for PAR-Qs and waivers",
-  "Standalone booking link",
-  "Payment link and invoice tool",
-  "Spreadsheet CRM and contact list",
-  "Notes app for client history",
-  "Manual reminder messages",
-  "Scattered document folders",
-  "Per-client folder system",
+"Form builder for PAR-Qs and waivers",
+"Standalone booking link",
+"Payment link and invoice tool",
+"Spreadsheet CRM and contact list",
+"Notes app for client history",
+"Manual reminder messages",
+"Scattered document folders",
+"Per-client folder system",
 ];
 
 const STAYS_ITEMS = [
-  "Your coaching tools — programmes, nutrition, check-ins live in the Coaching pillar",
-  "Your tone of voice — every template starts as a draft you edit",
-  "Your existing calendar — two-way sync with Google, Apple and Outlook",
-  "Your payment processor — connect Stripe, payouts on its normal schedule",
+"Your coaching tools — programmes, nutrition, check-ins live in the Coaching pillar",
+"Your tone of voice — every template starts as a draft you edit",
+"Your existing calendar — two-way sync with Google, Apple and Outlook",
+"Your payment processor — connect Stripe, payouts on its normal schedule",
 ];
 
 const COMPARISON_ROWS: Array<{ feature: string; verified: boolean; pro: boolean }> = [
-  { feature: "Public verified profile and reviews", verified: true, pro: true },
-  { feature: "Basic enquiry inbox", verified: true, pro: true },
-  { feature: "Lead pipeline with statuses", verified: false, pro: true },
-  { feature: "Bookings page and calendar sync", verified: false, pro: true },
-  { feature: "Deposits and payment capture", verified: false, pro: true },
-  { feature: "PAR-Qs, waivers and onboarding forms", verified: false, pro: true },
-  { feature: "Packages, memberships and recurring billing", verified: false, pro: true },
-  { feature: "Client records with notes and history", verified: false, pro: true },
-  { feature: "Tasks, reminders and next-action queue", verified: false, pro: true },
-  { feature: "Follow-up sequences and review requests", verified: false, pro: true },
+  { feature:"Public verified profile and reviews", verified: true, pro: true },
+  { feature:"Basic enquiry inbox", verified: true, pro: true },
+  { feature:"Lead pipeline with statuses", verified: false, pro: true },
+  { feature:"Bookings page and calendar sync", verified: false, pro: true },
+  { feature:"Deposits and payment capture", verified: false, pro: true },
+  { feature:"PAR-Qs, waivers and onboarding forms", verified: false, pro: true },
+  { feature:"Packages, memberships and recurring billing", verified: false, pro: true },
+  { feature:"Client records with notes and history", verified: false, pro: true },
+  { feature:"Tasks, reminders and next-action queue", verified: false, pro: true },
+  { feature:"Follow-up sequences and review requests", verified: false, pro: true },
 ];
 
 const USE_CASES = [
   {
-    title: "Personal trainer",
-    body: "Manage consultations, PAR-Qs, bookings, payment status and client records — without the apps stack.",
+    title:"Personal trainer",
+    body:"Manage consultations, PAR-Qs, bookings, payment status and client records — without the apps stack.",
   },
   {
-    title: "Online coach",
-    body: "Capture enquiries, collect onboarding forms, organise payments and track client status worldwide.",
+    title:"Online coach",
+    body:"Capture enquiries, collect onboarding forms, organise payments and track client status worldwide.",
   },
   {
-    title: "Small-group coach",
-    body: "Manage recurring sessions, attendees, payments and follow-ups in one shared schedule.",
+    title:"Small-group coach",
+    body:"Manage recurring sessions, attendees, payments and follow-ups in one shared schedule.",
   },
   {
-    title: "Studio or gym team",
-    body: "Keep team enquiries, bookings and client admin in one shared workspace.",
+    title:"Studio or gym team",
+    body:"Keep team enquiries, bookings and client admin in one shared workspace.",
   },
   {
-    title: "Specialist coach",
-    body: "Keep forms, notes, risk information and client history organised around each person.",
+    title:"Specialist coach",
+    body:"Keep forms, notes, risk information and client history organised around each person.",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "Where do my leads go?",
-    a: "Every enquiry — from your REPs profile, Shop Front, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
+    q:"Where do my leads go?",
+    a:"Every enquiry — from your REPs profile, Shop Front, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
   },
   {
-    q: "Can my clients book themselves?",
-    a: "Yes. Share a booking link or let them book directly from your Shop Front. You set availability by service, venue and session length. Two-way calendar sync keeps your week clean.",
+    q:"Can my clients book themselves?",
+    a:"Yes. Share a booking link or let them book directly from your Shop Front. You set availability by service, venue and session length. Two-way calendar sync keeps your week clean.",
   },
   {
-    q: "Do I have to use REPs for payments?",
-    a: "No. You can run Operations without payments and keep using whatever you use today. If you do connect a processor like Stripe, payouts go on its normal schedule. REPs does not take a platform commission on your client payments — standard payment processing fees may apply.",
+    q:"Do I have to use REPs for payments?",
+    a:"No. You can run Operations without payments and keep using whatever you use today. If you do connect a processor like Stripe, payouts go on its normal schedule. REPs does not take a platform commission on your client payments — standard payment processing fees may apply.",
   },
   {
-    q: "Can I keep using Google Calendar?",
-    a: "Yes. REPs syncs both ways with Google, Apple and Outlook calendars. Bookings created in REPs appear in your calendar; busy time from your calendar blocks new bookings.",
+    q:"Can I keep using Google Calendar?",
+    a:"Yes. REPs syncs both ways with Google, Apple and Outlook calendars. Bookings created in REPs appear in your calendar; busy time from your calendar blocks new bookings.",
   },
   {
-    q: "What about my existing client list?",
-    a: "Import contacts from a CSV or your current CRM. Match them to existing enquiries, attach historical notes, then carry on from one record per client instead of five places per client.",
+    q:"What about my existing client list?",
+    a:"Import contacts from a CSV or your current CRM. Match them to existing enquiries, attach historical notes, then carry on from one record per client instead of five places per client.",
   },
   {
-    q: "Is Operations included in Verified or only Pro?",
-    a: "Operations is a Pro feature. Verified gives you a trusted public profile, verification, visibility and reviews. Pro adds the operational system behind that profile — enquiries, bookings, forms, payments, client records and follow-ups.",
+    q:"Is Operations included in Verified or only Pro?",
+    a:"Operations is a Pro feature. Verified gives you a trusted public profile, verification, visibility and reviews. Pro adds the operational system behind that profile — enquiries, bookings, forms, payments, client records and follow-ups.",
   },
 ];
 
@@ -253,25 +253,25 @@ export const Route = createFileRoute("/features/operations")({
   head: () => ({
     meta: [
       {
-        title: "Operations — Run your fitness business from one organised workspace · REPs",
+        title:"Operations — Run your fitness business from one organised workspace · REPs",
       },
       {
-        name: "description",
+        name:"description",
         content:
-          "Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPs profile and Shop Front. Included in REPs Pro.",
+"Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPs profile and Shop Front. Included in REPs Pro.",
       },
       {
-        property: "og:title",
-        content: "Operations — Run your fitness business from one organised workspace",
+        property:"og:title",
+        content:"Operations — Run your fitness business from one organised workspace",
       },
       {
-        property: "og:description",
+        property:"og:description",
         content:
-          "The back office for your fitness business. Leads, bookings, forms, payments, client records and tasks — connected to your REPs profile.",
+"The back office for your fitness business. Leads, bookings, forms, payments, client records and tasks — connected to your REPs profile.",
       },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/operations" },
+      { property:"og:url", content:"https://repsglobal.lovable.app/features/operations" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/operations" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/operations" }],
   }),
   component: OperationsPage,
 });
@@ -309,8 +309,8 @@ function OperationsPage() {
         heading="Run the business behind your coaching with"
         headingAccent=" less admin and more control."
         lede="Manage enquiries, bookings, forms, payments and client records from the same platform that powers your REPs profile and Shop Front."
-        primary={{ to: "/signup", label: "Start using REPs Pro" }}
-        secondary={{ to: "/for-professionals", label: "Explore all features" }}
+        primary={{ to:"/signup", label:"Start using REPs Pro" }}
+        secondary={{ to:"/for-professionals", label:"Explore all features" }}
       />
 
       <PublicFooter />
@@ -338,22 +338,22 @@ function Hero() {
         <div className="max-w-[680px]">
           <MarketingHeroEyebrow
             icon={LayoutDashboard}
-            style={{ animationDuration: "560ms", animationFillMode: "both" }}
+            style={{ animationDuration:"560ms", animationFillMode:"both" }}
           >
             Operations · Your business back office
           </MarketingHeroEyebrow>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[60px]"
-            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
-            Run your fitness business from{" "}
+            Run your fitness business from{""}
             <span className="text-reps-orange">one organised workspace.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
-            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             Manage enquiries, bookings, forms, payments, client records and follow-ups in the same
             platform that powers your REPs profile and Shop Front — without stitching together five
@@ -362,7 +362,7 @@ function Hero() {
 
           <div
             className="mt-8 flex animate-fade-in flex-wrap gap-3"
-            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"260ms", animationFillMode:"both" }}
           >
             <Link
               to="/signup"
@@ -380,7 +380,7 @@ function Hero() {
 
           <ul
             className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
@@ -404,7 +404,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The scattered admin stack"
@@ -484,9 +484,9 @@ function WorkspaceSection() {
         <div className="mt-12">
           <AnnotatedMock
             mockup={{
-              device: "laptop",
-              src: "/dashboard",
-              title: "Live REPs Pro dashboard",
+              device:"laptop",
+              src:"/dashboard",
+              title:"Live REPs Pro dashboard",
             }}
             callouts={DASHBOARD_CALLOUTS}
           />
@@ -518,7 +518,7 @@ function WorkspaceSection() {
 
 function PipelineSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="One place for every enquiry"
@@ -588,9 +588,9 @@ function BookingsSection() {
             bullets={BOOKINGS_BULLETS}
             imageLabel="REPs bookings dashboard"
             mockup={{
-              device: "laptop",
-              src: "/dashboard/bookings",
-              title: "Live REPs bookings dashboard",
+              device:"laptop",
+              src:"/dashboard/bookings",
+              title:"Live REPs bookings dashboard",
             }}
           />
         </div>
@@ -605,7 +605,7 @@ function BookingsSection() {
 
 function FormsSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Forms, waivers and onboarding"
@@ -676,9 +676,9 @@ function PaymentsSection() {
             bullets={PAYMENTS_BULLETS}
             imageLabel="REPs payments dashboard"
             mockup={{
-              device: "laptop",
-              src: "/dashboard/payments",
-              title: "Live REPs payments dashboard",
+              device:"laptop",
+              src:"/dashboard/payments",
+              title:"Live REPs payments dashboard",
             }}
           />
         </div>
@@ -693,7 +693,7 @@ function PaymentsSection() {
 
 function ClientRecordsSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Client records and notes"
@@ -709,9 +709,9 @@ function ClientRecordsSection() {
             bullets={CLIENT_RECORD_BULLETS}
             imageLabel="REPs client record"
             mockup={{
-              device: "laptop",
-              src: "/dashboard/clients/james-carter",
-              title: "Live REPs client record",
+              device:"laptop",
+              src:"/dashboard/clients/james-carter",
+              title:"Live REPs client record",
             }}
           />
         </div>
@@ -775,7 +775,7 @@ function TasksSection() {
 
 function ReplacesSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Replace the admin stack"
@@ -847,14 +847,14 @@ function TierComparisonSection() {
             badge="Verified"
             price="£99 / year"
             blurb="Public verified profile, directory presence, reviews and a basic enquiry inbox. No pipeline, bookings, forms, payments or client records."
-            cta={{ to: "/features/visibility", label: "See what Verified covers" }}
+            cta={{ to:"/features/visibility", label:"See what Verified covers" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
             blurb="Everything in Verified, plus the full Operations workspace — pipeline, bookings, forms, payments, client records, tasks and follow-ups."
             highlighted
-            cta={{ to: "/pricing", label: "See Pro pricing" }}
+            cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
         </div>
 
@@ -870,7 +870,7 @@ function TierComparisonSection() {
                 <div
                   key={row.feature}
                   className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
-                    i % 2 === 0 ? "bg-white/[0.02]" : ""
+                    i % 2 === 0 ?"bg-white/[0.02]" :""
                   }`}
                 >
                   <span>{row.feature}</span>
@@ -904,7 +904,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"
@@ -915,13 +915,13 @@ function UseCasesSection() {
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {USE_CASES.map((u) => {
             const Icon =
-              u.title === "Personal trainer"
+              u.title ==="Personal trainer"
                 ? Users
-                : u.title === "Online coach"
+                : u.title ==="Online coach"
                 ? StickyNote
-                : u.title === "Small-group coach"
+                : u.title ==="Small-group coach"
                 ? ListChecks
-                : u.title === "Studio or gym team"
+                : u.title ==="Studio or gym team"
                 ? LayoutDashboard
                 : UserCheck;
             return (

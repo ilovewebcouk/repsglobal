@@ -1,29 +1,29 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { Link } from"@tanstack/react-router";
+import { ArrowRight, Check, Sparkles, ShieldCheck, Zap } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { CellIcon } from "@/components/marketing/CompetitorCompare";
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
-import { CostCalculator } from "@/components/marketing/CostCalculator";
-import { DayInTheLife } from "@/components/marketing/DayInTheLife";
-import { UiSideBySide } from "@/components/marketing/UiSideBySide";
-import { ScenarioCards } from "@/components/marketing/ScenarioCards";
-import { VerdictScorecard } from "@/components/marketing/VerdictScorecard";
-import { MigrationChecklist } from "@/components/marketing/MigrationChecklist";
-import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { CellIcon } from"@/components/marketing/CompetitorCompare";
+import { RepsWordmark } from"@/components/brand/RepsWordmark";
+import { CostCalculator } from"@/components/marketing/CostCalculator";
+import { DayInTheLife } from"@/components/marketing/DayInTheLife";
+import { UiSideBySide } from"@/components/marketing/UiSideBySide";
+import { ScenarioCards } from"@/components/marketing/ScenarioCards";
+import { VerdictScorecard } from"@/components/marketing/VerdictScorecard";
+import { MigrationChecklist } from"@/components/marketing/MigrationChecklist";
+import { MethodologyNotice } from"@/components/marketing/MethodologyNotice";
 
 import {
   COMPETITORS,
   DATA_VERIFIED_DATE,
   type Competitor,
-} from "@/data/competitor-data";
-import { EDITORIAL } from "@/data/competitor-editorial";
+} from"@/data/competitor-data";
+import { EDITORIAL } from"@/data/competitor-editorial";
 import {
   FEATURE_GROUPS,
   FEATURE_INDEX,
   type CompetitorSlug,
-} from "@/data/feature-matrix";
+} from"@/data/feature-matrix";
 
 export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
   const c = COMPETITORS[slug];
@@ -125,7 +125,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* DAY IN THE LIFE */}
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -163,7 +163,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* SCENARIOS */}
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -206,7 +206,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* FEATURE PARITY TABLE (the receipts) */}
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -265,7 +265,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* WHEN COMPETITOR IS RIGHT */}
-      <section className="border-b border-reps-border">
+      <section className="">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-10">
@@ -289,10 +289,10 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </h3>
               <ul className="mt-4 space-y-3 text-[14px] text-white/80">
                 {[
-                  "The public register clients already search — verified, since 2009.",
-                  "Tier-based, but every feature in your tier is included. No add-on stack.",
-                  "AI as the operating layer, not a $12/mo add-on.",
-                  "GDPR-first, GBP pricing, REPs credential displayed on profile.",
+"The public register clients already search — verified, since 2009.",
+"Tier-based, but every feature in your tier is included. No add-on stack.",
+"AI as the operating layer, not a $12/mo add-on.",
+"GDPR-first, GBP pricing, REPs credential displayed on profile.",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
@@ -338,12 +338,12 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
+"@context":"https://schema.org",
+"@type":"FAQPage",
                 mainEntity: e.faqs.map((f) => ({
-                  "@type": "Question",
+"@type":"Question",
                   name: f.q,
-                  acceptedAnswer: { "@type": "Answer", text: f.a },
+                  acceptedAnswer: {"@type":"Answer", text: f.a },
                 })),
               }),
             }}
@@ -358,11 +358,11 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
             {others.map((s) => {
               const o = COMPETITORS[s];
               const href =
-                s === "trainerize"
-                  ? "/compare/reps-vs-trainerize"
-                  : s === "mypthub"
-                    ? "/compare/reps-vs-mypthub"
-                    : "/compare/reps-vs-pt-distinction";
+                s ==="trainerize"
+                  ?"/compare/reps-vs-trainerize"
+                  : s ==="mypthub"
+                    ?"/compare/reps-vs-mypthub"
+                    :"/compare/reps-vs-pt-distinction";
               return (
                 <Link
                   key={s}
@@ -435,7 +435,7 @@ function Editorial({
   paragraphs: string[];
 }) {
   return (
-    <section className="border-b border-reps-border">
+    <section className="">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="max-w-[760px]">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

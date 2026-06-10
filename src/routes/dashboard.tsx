@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import { Activity,
   Calendar,
   CheckCircle2,
@@ -19,29 +19,29 @@ import { Activity,
   Trophy,
   Wallet,
   type LucideIcon
-} from "lucide-react";
+} from"lucide-react";
 
-import proJames from "@/assets/pro-james.jpg";
-import { ProShell } from "@/components/dashboard/ProShell";
-import proSophie from "@/assets/pro-sophie.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import holoFigure from "@/assets/dashboard-holo-figure.png";
+import proJames from"@/assets/pro-james.jpg";
+import { ProShell } from"@/components/dashboard/ProShell";
+import proSophie from"@/assets/pro-sophie.jpg";
+import proLaura from"@/assets/pro-laura.jpg";
+import proDaniel from"@/assets/pro-daniel.jpg";
+import holoFigure from"@/assets/dashboard-holo-figure.png";
 
 export const Route = createFileRoute("/dashboard")({ head: () => ({ meta: [
-      { title: "Dashboard — REPs Professional" },
-      { name: "description",
+      { title:"Dashboard — REPs Professional" },
+      { name:"description",
         content:
-          "Your REPs professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place."
+"Your REPs professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place."
 },
-      { property: "og:title", content: "REPs Professional Dashboard" },
-      { property: "og:description",
+      { property:"og:title", content:"REPs Professional Dashboard" },
+      { property:"og:description",
         content:
-          "Manage your clients, schedule, revenue and career — the REPs Professional Dashboard."
+"Manage your clients, schedule, revenue and career — the REPs Professional Dashboard."
 },
-      { property: "og:url", content: "/dashboard" },
+      { property:"og:url", content:"/dashboard" },
     ],
-    links: [{ rel: "canonical", href: "/dashboard" }]
+    links: [{ rel:"canonical", href:"/dashboard" }]
 }),
   component: DashboardPage
 });
@@ -51,12 +51,12 @@ export const Route = createFileRoute("/dashboard")({ head: () => ({ meta: [
    ============================================================ */
 
 function Card({ children,
-  className = "",
-  size = "card"
+  className ="",
+  size ="card"
 }: { children: React.ReactNode;
   className?: string;
-  size?: "card" | "panel";
-}) { const radius = size === "panel" ? "rounded-[22px]" : "rounded-[18px]";
+  size?:"card" |"panel";
+}) { const radius = size ==="panel" ?"rounded-[22px]" :"rounded-[18px]";
   return (
     <div
       className={`${radius} border border-reps-border bg-reps-panel p-5 ${className}`}
@@ -111,7 +111,7 @@ function Delta({ value,
 }: { value: string;
   positive?: boolean;
 }) { const Icon = positive ? TrendingUp : TrendingDown;
-  const color = positive ? "text-reps-green" : "text-reps-red";
+  const color = positive ?"text-reps-green" :"text-reps-red";
   return (
     <span className={`inline-flex items-center gap-1 text-[12px] font-semibold ${color}`}>
       <Icon className="h-3 w-3" /> {value}
@@ -119,10 +119,10 @@ function Delta({ value,
   );
 }
 
-function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) { const path =
-    trend === "up"
-      ? "M0 28 L10 24 L20 26 L30 18 L40 20 L50 12 L60 16 L70 8 L80 14 L90 6 L100 10"
-      : "M0 6 L10 10 L20 8 L30 16 L40 14 L50 22 L60 18 L70 26 L80 20 L90 28 L100 24";
+function Sparkline({ trend ="up" }: { trend?:"up" |"down" }) { const path =
+    trend ==="up"
+      ?"M0 28 L10 24 L20 26 L30 18 L40 20 L50 12 L60 16 L70 8 L80 14 L90 6 L100 10"
+      :"M0 6 L10 10 L20 8 L30 16 L40 14 L50 22 L60 18 L70 26 L80 20 L90 28 L100 24";
   return (
     <svg
       viewBox="0 0 100 32"
@@ -244,29 +244,29 @@ function KpiTile({ label,
    ============================================================ */
 
 const SCHEDULE = [
-  { time: "09:00", title: "PT Session", sub: "Sarah Mitchell" },
-  { time: "11:00", title: "Pilates Class", sub: "Group Session" },
-  { time: "14:00", title: "Online Check-Ins", sub: "8 Clients" },
-  { time: "17:00", title: "Consultation Call", sub: "New Lead: Tom" },
-  { time: "19:00", title: "Strength Class", sub: "Group Session" },
+  { time:"09:00", title:"PT Session", sub:"Sarah Mitchell" },
+  { time:"11:00", title:"Pilates Class", sub:"Group Session" },
+  { time:"14:00", title:"Online Check-Ins", sub:"8 Clients" },
+  { time:"17:00", title:"Consultation Call", sub:"New Lead: Tom" },
+  { time:"19:00", title:"Strength Class", sub:"Group Session" },
 ];
 
 const AI_INSIGHTS = [
   { icon: TrendingUp,
-    title: "Revenue is up 14% this month",
-    sub: "Great work! You are on track to hit £15k this month."
+    title:"Revenue is up 14% this month",
+    sub:"Great work! You are on track to hit £15k this month."
 },
   { icon: Activity,
-    title: "3 clients are at cancellation risk",
-    sub: "We recommend reaching out to them this week."
+    title:"3 clients are at cancellation risk",
+    sub:"We recommend reaching out to them this week."
 },
   { icon: ClipboardList,
-    title: "8 check-ins require your review",
-    sub: "Clients are waiting for your feedback."
+    title:"8 check-ins require your review",
+    sub:"Clients are waiting for your feedback."
 },
   { icon: Target,
-    title: "2 leads are likely to convert today",
-    sub: "High intent leads ready for your follow up."
+    title:"2 leads are likely to convert today",
+    sub:"High intent leads ready for your follow up."
 },
 ];
 
@@ -381,7 +381,7 @@ function ScheduleAndAi() { return (
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-reps-border">
               <div
                 className="h-full rounded-full bg-reps-orange"
-                style={{ width: "90%" }}
+                style={{ width:"90%" }}
               />
             </div>
           </li>
@@ -454,74 +454,74 @@ function PillRow({ icon: Icon,
 
 const CLIENT_ALERTS = [
   { avatar: proSophie,
-    name: "Sarah Mitchell",
-    risk: "High Risk",
-    riskColor: "bg-reps-red/15 text-reps-red",
-    note: "Weight loss has stalled for 14 days. Adherence down 23%."
+    name:"Sarah Mitchell",
+    risk:"High Risk",
+    riskColor:"bg-reps-red/15 text-reps-red",
+    note:"Weight loss has stalled for 14 days. Adherence down 23%."
 },
   { avatar: proDaniel,
-    name: "Mike Johnson",
-    risk: "Medium Risk",
-    riskColor: "bg-reps-orange-soft text-reps-orange",
-    note: "Recovery score is low. Injury risk is elevated."
+    name:"Mike Johnson",
+    risk:"Medium Risk",
+    riskColor:"bg-reps-orange-soft text-reps-orange",
+    note:"Recovery score is low. Injury risk is elevated."
 },
   { avatar: proLaura,
-    name: "Emma Davis",
-    risk: "Medium Risk",
-    riskColor: "bg-reps-orange-soft text-reps-orange",
-    note: "Missed 2 workouts this week. Engagement declining."
+    name:"Emma Davis",
+    risk:"Medium Risk",
+    riskColor:"bg-reps-orange-soft text-reps-orange",
+    note:"Missed 2 workouts this week. Engagement declining."
 },
 ];
 
 const LEAD_PIPELINE = [
-  { stage: "Leads", value: 32, color: "text-white" },
-  { stage: "Call Booked", value: 18, color: "text-white" },
-  { stage: "Proposal Sent", value: 11, color: "text-white" },
-  { stage: "Trial", value: 7, color: "text-white" },
-  { stage: "Client", value: 5, color: "text-reps-green" },
+  { stage:"Leads", value: 32, color:"text-white" },
+  { stage:"Call Booked", value: 18, color:"text-white" },
+  { stage:"Proposal Sent", value: 11, color:"text-white" },
+  { stage:"Trial", value: 7, color:"text-white" },
+  { stage:"Client", value: 5, color:"text-reps-green" },
 ];
 
 const LEADS = [
   { avatar: proDaniel,
-    name: "Tom Harris",
-    sub: "Enquired 2h ago",
-    intent: "High intent",
-    intentColor: "bg-reps-green/15 text-reps-green"
+    name:"Tom Harris",
+    sub:"Enquired 2h ago",
+    intent:"High intent",
+    intentColor:"bg-reps-green/15 text-reps-green"
 },
   { avatar: proLaura,
-    name: "Lucy Green",
-    sub: "Enquired 1d ago",
-    intent: "Medium intent",
-    intentColor: "bg-reps-orange-soft text-reps-orange"
+    name:"Lucy Green",
+    sub:"Enquired 1d ago",
+    intent:"Medium intent",
+    intentColor:"bg-reps-orange-soft text-reps-orange"
 },
   { avatar: proJames,
-    name: "David Wilson",
-    sub: "Enquired 2d ago",
-    intent: "High intent",
-    intentColor: "bg-reps-green/15 text-reps-green"
+    name:"David Wilson",
+    sub:"Enquired 2d ago",
+    intent:"High intent",
+    intentColor:"bg-reps-green/15 text-reps-green"
 },
 ];
 
 const CONTENT_ITEMS = [
-  { title: "7 Breakfast Ideas for Fat Loss",
-    sub: "Instagram Post",
-    status: "Scheduled for Tomorrow",
-    statusColor: "bg-reps-blue/15 text-reps-blue"
+  { title:"7 Breakfast Ideas for Fat Loss",
+    sub:"Instagram Post",
+    status:"Scheduled for Tomorrow",
+    statusColor:"bg-reps-blue/15 text-reps-blue"
 },
-  { title: "5 Tips to Improve Your Sleep",
-    sub: "Email",
-    status: "Scheduled for 19 May",
-    statusColor: "bg-reps-blue/15 text-reps-blue"
+  { title:"5 Tips to Improve Your Sleep",
+    sub:"Email",
+    status:"Scheduled for 19 May",
+    statusColor:"bg-reps-blue/15 text-reps-blue"
 },
-  { title: "Full Body Strength Workout",
-    sub: "YouTube Video",
-    status: "Draft",
-    statusColor: "bg-reps-panel-soft text-white/70"
+  { title:"Full Body Strength Workout",
+    sub:"YouTube Video",
+    status:"Draft",
+    statusColor:"bg-reps-panel-soft text-white/70"
 },
-  { title: "May Challenge | 10K Steps",
-    sub: "Challenge",
-    status: "Active",
-    statusColor: "bg-reps-green/15 text-reps-green"
+  { title:"May Challenge | 10K Steps",
+    sub:"Challenge",
+    status:"Active",
+    statusColor:"bg-reps-green/15 text-reps-green"
 },
 ];
 
@@ -533,14 +533,14 @@ function PerformanceRow() { return (
           title="Client Performance Overview"
           right={<GhostButton>This Month</GhostButton>}
         />
-        <div className="flex items-center gap-4 border-b border-reps-border pb-2 text-[12px]">
-          {["Adherence", "Retention", "Results", "Revenue"].map((t, i) => (
+        <div className="flex items-center gap-4 pb-2 text-[12px]">
+          {["Adherence","Retention","Results","Revenue"].map((t, i) => (
             <button
               key={t}
               type="button"
               className={`pb-2 ${ i === 0
-                  ? "border-b-2 border-reps-orange font-semibold text-reps-orange"
-                  : "text-white/55 hover:text-white"
+                  ?"border-b-2 border-reps-orange font-semibold text-reps-orange"
+                  :"text-white/55 hover:text-white"
               }`}
             >
               {t}
@@ -658,14 +658,14 @@ function PerformanceRow() { return (
             </button>
           }
         />
-        <div className="flex items-center gap-4 border-b border-reps-border pb-2 text-[12px]">
-          {["Recent", "Scheduled", "Drafts"].map((t, i) => (
+        <div className="flex items-center gap-4 pb-2 text-[12px]">
+          {["Recent","Scheduled","Drafts"].map((t, i) => (
             <button
               key={t}
               type="button"
               className={`pb-2 ${ i === 0
-                  ? "border-b-2 border-reps-orange font-semibold text-reps-orange"
-                  : "text-white/55 hover:text-white"
+                  ?"border-b-2 border-reps-orange font-semibold text-reps-orange"
+                  :"text-white/55 hover:text-white"
               }`}
             >
               {t}
@@ -763,11 +763,11 @@ function LineChartSvg() { return (
    ============================================================ */
 
 const PROGRAMS = [
-  { name: "Strength Program", pct: 87, color: "var(--reps-orange)" },
-  { name: "Fat Loss Plan", pct: 74, color: "var(--reps-orange)" },
-  { name: "Muscle Building", pct: 68, color: "var(--reps-orange)" },
-  { name: "Mobility & Recovery", pct: 61, color: "var(--reps-orange)" },
-  { name: "HIIT Program", pct: 52, color: "var(--reps-red)" },
+  { name:"Strength Program", pct: 87, color:"var(--reps-orange)" },
+  { name:"Fat Loss Plan", pct: 74, color:"var(--reps-orange)" },
+  { name:"Muscle Building", pct: 68, color:"var(--reps-orange)" },
+  { name:"Mobility & Recovery", pct: 61, color:"var(--reps-orange)" },
+  { name:"HIIT Program", pct: 52, color:"var(--reps-red)" },
 ];
 
 function RevenueRow() { return (
@@ -973,23 +973,23 @@ function DonutLegend({ color,
    ============================================================ */
 
 const SPOTLIGHT = [
-  { avatar: proSophie, name: "Sarah Mitchell", program: "Weight Loss Plan", delta: "-4.2kg", adherence: "94%" },
-  { avatar: proJames, name: "James Wilson", program: "Muscle Building", delta: "+2.8kg", adherence: "91%" },
-  { avatar: proLaura, name: "Emma Davis", program: "Strength Program", delta: "+15%", adherence: "89%" },
+  { avatar: proSophie, name:"Sarah Mitchell", program:"Weight Loss Plan", delta:"-4.2kg", adherence:"94%" },
+  { avatar: proJames, name:"James Wilson", program:"Muscle Building", delta:"+2.8kg", adherence:"91%" },
+  { avatar: proLaura, name:"Emma Davis", program:"Strength Program", delta:"+15%", adherence:"89%" },
 ];
 
 const TASKS = [
-  { title: "Review 8 client check-ins", pill: "High Priority", color: "bg-reps-red/15 text-reps-red" },
-  { title: "Follow up with 2 leads", pill: "Due Today", color: "bg-reps-orange-soft text-reps-orange" },
-  { title: "Update program for Sarah M.", pill: "Due Today", color: "bg-reps-orange-soft text-reps-orange" },
-  { title: "Send progress reports", pill: "Due Tomorrow", color: "bg-reps-blue/15 text-reps-blue" },
-  { title: "Plan content for next week", pill: "Due Tomorrow", color: "bg-reps-blue/15 text-reps-blue" },
+  { title:"Review 8 client check-ins", pill:"High Priority", color:"bg-reps-red/15 text-reps-red" },
+  { title:"Follow up with 2 leads", pill:"Due Today", color:"bg-reps-orange-soft text-reps-orange" },
+  { title:"Update program for Sarah M.", pill:"Due Today", color:"bg-reps-orange-soft text-reps-orange" },
+  { title:"Send progress reports", pill:"Due Tomorrow", color:"bg-reps-blue/15 text-reps-blue" },
+  { title:"Plan content for next week", pill:"Due Tomorrow", color:"bg-reps-blue/15 text-reps-blue" },
 ];
 
 const EVENTS = [
-  { month: "MAY", day: "17", title: "Group HIIT Class", sub: "Saturday, 09:00", trailing: "5 Attending" },
-  { month: "MAY", day: "19", title: "Webinar: Building Your Brand", sub: "Monday, 19:00", trailing: "12 Registered" },
-  { month: "MAY", day: "21", title: "CPD Workshop: Nutrition", sub: "Wednesday, 10:00", trailing: "8 Registered" },
+  { month:"MAY", day:"17", title:"Group HIIT Class", sub:"Saturday, 09:00", trailing:"5 Attending" },
+  { month:"MAY", day:"19", title:"Webinar: Building Your Brand", sub:"Monday, 19:00", trailing:"12 Registered" },
+  { month:"MAY", day:"21", title:"CPD Workshop: Nutrition", sub:"Wednesday, 10:00", trailing:"8 Registered" },
 ];
 
 function SpotlightRow() { return (
@@ -1102,21 +1102,21 @@ function SpotlightRow() { return (
    ============================================================ */
 
 const REVIEWS = [
-  { avatar: proSophie, name: "Sarah Mitchell", quote: "James is an exceptional trainer! He really listens and tailors everything to my needs. I've never felt better." },
-  { avatar: proDaniel, name: "Mike Johnson", quote: "The programs are challenging but effective. Great communication and support every step of the way." },
-  { avatar: proLaura, name: "Emma Davis", quote: "Professional, knowledgeable and motivating. Highly recommend!" },
+  { avatar: proSophie, name:"Sarah Mitchell", quote:"James is an exceptional trainer! He really listens and tailors everything to my needs. I've never felt better." },
+  { avatar: proDaniel, name:"Mike Johnson", quote:"The programs are challenging but effective. Great communication and support every step of the way." },
+  { avatar: proLaura, name:"Emma Davis", quote:"Professional, knowledgeable and motivating. Highly recommend!" },
 ];
 
 const CPD = [
-  { title: "Advanced Nutrition Strategies", sub: "CPD Course • 10 pts", status: "In Progress", color: "bg-reps-orange-soft text-reps-orange" },
-  { title: "Strength & Conditioning Principles", sub: "CPD Course • 15 pts", status: "Completed", color: "bg-reps-green/15 text-reps-green" },
-  { title: "Mental Health in Fitness", sub: "CPD Course • 8 pts", status: "Not Started", color: "bg-reps-panel-soft text-white/65" },
+  { title:"Advanced Nutrition Strategies", sub:"CPD Course • 10 pts", status:"In Progress", color:"bg-reps-orange-soft text-reps-orange" },
+  { title:"Strength & Conditioning Principles", sub:"CPD Course • 15 pts", status:"Completed", color:"bg-reps-green/15 text-reps-green" },
+  { title:"Mental Health in Fitness", sub:"CPD Course • 8 pts", status:"Not Started", color:"bg-reps-panel-soft text-white/65" },
 ];
 
 const TIPS = [
-  { icon: Wallet, title: "Offer online coaching", sub: "Expand your reach and increase flexibility." },
-  { icon: Mail, title: "Create a referral program", sub: "Turn your clients into your biggest advocates." },
-  { icon: Inbox, title: "Bundle your services", sub: "Increase revenue with service packages." },
+  { icon: Wallet, title:"Offer online coaching", sub:"Expand your reach and increase flexibility." },
+  { icon: Mail, title:"Create a referral program", sub:"Turn your clients into your biggest advocates." },
+  { icon: Inbox, title:"Bundle your services", sub:"Increase revenue with service packages." },
 ];
 
 function BottomRow() { return (
@@ -1232,7 +1232,7 @@ function BottomRow() { return (
    ============================================================ */
 
 function DashboardFooter() { return (
-    <footer className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-reps-border px-8 py-6 text-[12px] text-white/55 sm:flex-row">
+    <footer className="mt-8 flex flex-col items-center justify-between gap-3 px-8 py-6 text-[12px] text-white/55 sm:flex-row">
       <div className="flex items-center gap-3">
         <span className="font-display text-[18px] font-bold tracking-tight text-white">
           REPs
