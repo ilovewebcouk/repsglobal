@@ -1377,7 +1377,7 @@ function CommandCentreSection() {
                 className="rounded-[16px] border border-reps-border bg-reps-panel p-4"
               >
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <c.icon className="h-4.5 w-4.5" />
+                  <c.icon className="h-5 w-5" />
                 </span>
                 <h3 className="mt-3 text-[14.5px] font-bold text-white">
                   {c.title}
