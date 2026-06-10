@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "purpose": "Static sample for /features/coaching mock-ups (Phase 1, visuals only).",
+    "source": "Hand-curated representative set; data shape mirrors AscendAPI EDB. No runtime API call.",
+    "count": 30
+  },
+  "muscles": ["Chest", "Back", "Shoulders", "Quads", "Hamstrings", "Glutes", "Core", "Arms", "Calves", "Full body"],
+  "equipment": ["Barbell", "Dumbbell", "Kettlebell", "Cable", "Machine", "Bodyweight", "Bands", "Plate"],
+  "levels": ["Beginner", "Intermediate", "Advanced"],
+  "exercises": [
+    { "id": "ex-001", "name": "Barbell Back Squat", "muscle": "Quads", "equipment": "Barbell", "level": "Intermediate", "cue": "Brace, sit between hips, drive through midfoot." },
+    { "id": "ex-002", "name": "Romanian Deadlift", "muscle": "Hamstrings", "equipment": "Barbell", "level": "Intermediate", "cue": "Long spine, hinge until tension, push floor away." },
+    { "id": "ex-003", "name": "Conventional Deadlift", "muscle": "Back", "equipment": "Barbell", "level": "Advanced", "cue": "Hips and shoulders rise together." },
+    { "id": "ex-004", "name": "Bench Press", "muscle": "Chest", "equipment": "Barbell", "level": "Intermediate", "cue": "Tuck elbows ~45°, bar to lower sternum." },
+    { "id": "ex-005", "name": "Overhead Press", "muscle": "Shoulders", "equipment": "Barbell", "level": "Intermediate", "cue": "Ribs down, lock biceps by ears." },
+    { "id": "ex-006", "name": "Pull-up", "muscle": "Back", "equipment": "Bodyweight", "level": "Intermediate", "cue": "Chest to bar, full hang each rep." },
+    { "id": "ex-007", "name": "Chin-up", "muscle": "Back", "equipment": "Bodyweight", "level": "Intermediate", "cue": "Underhand grip, elbows down and back." },
+    { "id": "ex-008", "name": "Goblet Squat", "muscle": "Quads", "equipment": "Dumbbell", "level": "Beginner", "cue": "Elbows inside knees at the bottom." },
+    { "id": "ex-009", "name": "Dumbbell Incline Press", "muscle": "Chest", "equipment": "Dumbbell", "level": "Beginner", "cue": "30° bench, control eccentric." },
+    { "id": "ex-010", "name": "Single-arm DB Row", "muscle": "Back", "equipment": "Dumbbell", "level": "Beginner", "cue": "Pull elbow to hip, ribs flat." },
+    { "id": "ex-011", "name": "Walking Lunge", "muscle": "Glutes", "equipment": "Dumbbell", "level": "Beginner", "cue": "Long step, vertical shin." },
+    { "id": "ex-012", "name": "Bulgarian Split Squat", "muscle": "Quads", "equipment": "Dumbbell", "level": "Intermediate", "cue": "Most weight on front foot." },
+    { "id": "ex-013", "name": "Hip Thrust", "muscle": "Glutes", "equipment": "Barbell", "level": "Intermediate", "cue": "Ribs down, chin tucked at lockout." },
+    { "id": "ex-014", "name": "Kettlebell Swing", "muscle": "Hamstrings", "equipment": "Kettlebell", "level": "Beginner", "cue": "Hike, snap hips, float to chest height." },
+    { "id": "ex-015", "name": "Kettlebell Goblet Carry", "muscle": "Core", "equipment": "Kettlebell", "level": "Beginner", "cue": "Tall, slow, breathe behind the brace." },
+    { "id": "ex-016", "name": "Lat Pulldown", "muscle": "Back", "equipment": "Cable", "level": "Beginner", "cue": "Elbows down, not back." },
+    { "id": "ex-017", "name": "Seated Cable Row", "muscle": "Back", "equipment": "Cable", "level": "Beginner", "cue": "Pause at sternum, no torso swing." },
+    { "id": "ex-018", "name": "Cable Triceps Pushdown", "muscle": "Arms", "equipment": "Cable", "level": "Beginner", "cue": "Elbows pinned to ribs." },
+    { "id": "ex-019", "name": "Face Pull", "muscle": "Shoulders", "equipment": "Cable", "level": "Beginner", "cue": "Pull to forehead, externally rotate." },
+    { "id": "ex-020", "name": "Leg Press", "muscle": "Quads", "equipment": "Machine", "level": "Beginner", "cue": "Knees track over middle toes." },
+    { "id": "ex-021", "name": "Leg Curl", "muscle": "Hamstrings", "equipment": "Machine", "level": "Beginner", "cue": "Drive heels to glutes, pause." },
+    { "id": "ex-022", "name": "Chest Supported Row", "muscle": "Back", "equipment": "Machine", "level": "Beginner", "cue": "Squeeze and hold one count." },
+    { "id": "ex-023", "name": "Push-up", "muscle": "Chest", "equipment": "Bodyweight", "level": "Beginner", "cue": "Full plank, elbows ~45°." },
+    { "id": "ex-024", "name": "Plank", "muscle": "Core", "equipment": "Bodyweight", "level": "Beginner", "cue": "Ribs to hips, glutes on." },
+    { "id": "ex-025", "name": "Dead Bug", "muscle": "Core", "equipment": "Bodyweight", "level": "Beginner", "cue": "Low back glued to floor." },
+    { "id": "ex-026", "name": "Glute Bridge", "muscle": "Glutes", "equipment": "Bodyweight", "level": "Beginner", "cue": "Posterior pelvic tilt at top." },
+    { "id": "ex-027", "name": "Banded Pull-Apart", "muscle": "Shoulders", "equipment": "Bands", "level": "Beginner", "cue": "Lead with pinkies." },
+    { "id": "ex-028", "name": "Standing Calf Raise", "muscle": "Calves", "equipment": "Machine", "level": "Beginner", "cue": "Pause at top, full stretch at bottom." },
+    { "id": "ex-029", "name": "Farmer's Carry", "muscle": "Full body", "equipment": "Dumbbell", "level": "Beginner", "cue": "Tall posture, even tempo, breathe." },
+    { "id": "ex-030", "name": "Dumbbell Bicep Curl", "muscle": "Arms", "equipment": "Dumbbell", "level": "Beginner", "cue": "Elbows still, full ROM, no swing." }
+  ]
+}
