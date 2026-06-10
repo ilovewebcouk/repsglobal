@@ -126,7 +126,7 @@ function ArticlePage() {
       <PublicHeader variant="solid" />
 
       {/* Breadcrumb */}
-      <nav className="">
+      <nav>
         <div className="mx-auto flex max-w-[880px] items-center gap-2 px-6 py-4 text-[12px] text-white/55 lg:px-10">
           <Link to="/resources" className="hover:text-white">
             Resources

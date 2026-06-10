@@ -58,7 +58,7 @@ function PressPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Fast facts</span>
@@ -107,7 +107,7 @@ function PressPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-8 lg:p-10">
             <div className="flex items-start gap-4">

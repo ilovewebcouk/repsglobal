@@ -87,7 +87,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
             <div>
@@ -128,7 +128,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10">
           <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
             Since 2009

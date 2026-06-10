@@ -137,7 +137,7 @@ function HowItWorksPage() {
       </section>
 
       {/* Journey */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">The client journey</span>
@@ -254,7 +254,7 @@ function HowItWorksPage() {
       </section>
 
       {/* FAQ */}
-      <section className="">
+      <section>
         <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.4fr] lg:px-10">
           <div>
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">FAQs</span>
@@ -283,7 +283,7 @@ function HowItWorksPage() {
       </section>
 
       {/* CTA */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <h2 className="font-display text-[32px] font-bold leading-tight text-white lg:text-[42px]">

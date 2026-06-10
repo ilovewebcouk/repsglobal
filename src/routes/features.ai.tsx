@@ -95,7 +95,7 @@ function AIGroupPage() {
       }}
     >
       {/* NARRATIVE — 6 cards */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
@@ -161,7 +161,7 @@ function AIGroupPage() {
       </section>
 
       {/* MINI COMPARE */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[620px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

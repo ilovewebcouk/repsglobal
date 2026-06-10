@@ -387,7 +387,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The scattered setup"
@@ -516,7 +516,7 @@ function AnatomySection() {
 
 function ServicesSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Sell services clearly"
@@ -598,7 +598,7 @@ function FlowSection() {
 
 function ProofSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Proof built into the page"
@@ -738,7 +738,7 @@ function PurposeBuiltSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"

@@ -57,7 +57,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <PricingPlans />
         </div>
@@ -83,7 +83,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10">
           <PricingFAQ />
         </div>

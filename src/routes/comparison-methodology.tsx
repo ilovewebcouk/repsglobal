@@ -78,7 +78,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[820px] px-6 py-16 lg:px-10 lg:py-20">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             How we compile a comparison
@@ -142,7 +142,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[820px] px-6 py-16 lg:px-10 lg:py-20">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             What this page is — and isn&apos;t

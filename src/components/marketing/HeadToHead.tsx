@@ -125,7 +125,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* DAY IN THE LIFE */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -163,7 +163,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* SCENARIOS */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -206,7 +206,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* FEATURE PARITY TABLE (the receipts) */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -265,7 +265,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* WHEN COMPETITOR IS RIGHT */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="rounded-[22px] border border-reps-border bg-reps-panel p-6 lg:p-10">
@@ -435,7 +435,7 @@ function Editorial({
   paragraphs: string[];
 }) {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
         <div className="max-w-[760px]">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

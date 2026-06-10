@@ -404,7 +404,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The scattered admin stack"
@@ -518,7 +518,7 @@ function WorkspaceSection() {
 
 function PipelineSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="One place for every enquiry"
@@ -605,7 +605,7 @@ function BookingsSection() {
 
 function FormsSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Forms, waivers and onboarding"
@@ -693,7 +693,7 @@ function PaymentsSection() {
 
 function ClientRecordsSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Client records and notes"
@@ -775,7 +775,7 @@ function TasksSection() {
 
 function ReplacesSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Replace the admin stack"
@@ -904,7 +904,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"

@@ -136,7 +136,7 @@ function ResourcesPage() {
       </section>
 
       {/* Category filter pills + sort */}
-      <section className="">
+      <section>
         <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap">
             {(["All", ...RESOURCE_CATEGORIES] as Filter[]).map((c) => {
@@ -181,7 +181,7 @@ function ResourcesPage() {
 
       {/* Featured article */}
       {!isFiltering && (
-        <section className="">
+        <section>
           <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
               Featured

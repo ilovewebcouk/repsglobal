@@ -104,7 +104,7 @@ function ComparePage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <CompetitorCompare />
         </div>
@@ -157,7 +157,7 @@ function ComparePage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

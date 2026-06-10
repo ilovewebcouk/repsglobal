@@ -350,7 +350,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The fragmented coaching stack"
@@ -451,7 +451,7 @@ function ExerciseLibrarySection({
   featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
 }) {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Exercise library"
@@ -662,7 +662,7 @@ function CheckInsSection() {
 
 function ProgressSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Progress tracking"
@@ -723,7 +723,7 @@ function MessagingSection() {
 
 function ClientViewSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The client view"
@@ -792,7 +792,7 @@ function ClientRecordSection() {
 function AccountabilitySection() {
   const [scenario, setScenario] = useState<AccId>(ACC_SCENARIOS[0].id);
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Accountability &amp; next actions"
@@ -871,7 +871,7 @@ function AutomationsSection() {
 
 function TemplatesSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Templates &amp; repeatable delivery"
@@ -958,7 +958,7 @@ function AiAssistSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"

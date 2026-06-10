@@ -143,7 +143,7 @@ function StandardsPage() {
       </section>
 
       {/* What we verify */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Verification</span>
@@ -195,7 +195,7 @@ function StandardsPage() {
       </section>
 
       {/* How clients know */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Reading a profile</span>

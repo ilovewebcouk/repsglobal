@@ -227,7 +227,7 @@ function ForProsPage() {
 
 
       {/* PILLAR 1 — VISIBILITY */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 1 · Visibility"
@@ -248,7 +248,7 @@ function ForProsPage() {
       </section>
 
       {/* PILLAR 2 — SHOP-FRONT */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 2 · Shop-front"
@@ -291,7 +291,7 @@ function ForProsPage() {
       </section>
 
       {/* PILLAR 4 — COACHING */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 4 · Coaching"
@@ -314,7 +314,7 @@ function ForProsPage() {
 
 
       {/* FEATURE TESTIMONIAL */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <TestimonialFeature />
         </div>
@@ -377,7 +377,7 @@ function ForProsPage() {
       </section>
 
       {/* PILLAR 6 — GROWTH */}
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 6 · Growth"
@@ -473,7 +473,7 @@ function ForProsPage() {
 
       {/* TRIAD TESTIMONIALS */}
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8 max-w-[640px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">

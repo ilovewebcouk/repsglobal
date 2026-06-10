@@ -315,7 +315,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The visibility problem"
@@ -491,7 +491,7 @@ function DiscoverySection() {
 
 function TrustGridSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Trust signals that matter"
@@ -593,7 +593,7 @@ function ReviewsSection() {
 
 function SeoReachSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Found beyond REPs too"
@@ -669,7 +669,7 @@ function SegmentsSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"

@@ -56,7 +56,7 @@ function ContactPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Contact
@@ -71,7 +71,7 @@ function ContactPage() {
         </div>
       </section>
 
-      <section className="">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <div className="grid gap-5 md:grid-cols-3">
             {CHANNELS.map((c) => (
