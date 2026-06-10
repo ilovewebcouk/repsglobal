@@ -73,7 +73,7 @@ const PROBLEM_FRAGMENTS = [
 
 const PROBLEM_ORGANISED = [
   "Programmes built next to the client record",
-  "Nutrition, macros and meals tracked in the same workspace",
+  "Recipes, meals and plan templates kept in your own nutrition library",
   "Sleep, steps and training data flow in from their wearable",
   "Check-ins arrive in one inbox, scored against the goal",
   "Messages, voice notes and form replies in one thread per client",
