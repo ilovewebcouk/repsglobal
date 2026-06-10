@@ -1,75 +1,61 @@
-# Nutrition section — full visual rework
 
-Scope: `/features/coaching` Nutrition section only. No other section touched. No shared primitives changed (BulletColumn stays as-is — 9 other sections use it).
+# Coaching pillar — full rebuild
 
-## What's wrong today
+The current page is a 1,000+ line scrapyard of 17 overlapping sections built around "we have exercises and AI meals." We throw it out and rebuild around one positioning:
 
-1. **Mock has a huge dead zone.** The shared `MockShell` lets each state size itself, so the Library state (4 small recipe cards + filter row) leaves ~60% of the laptop frame black. The Draft/Approve/Assigned states fill it; Library doesn't.
-2. **Right column is a tower of 8 bordered pills.** Each `NUTRITION_BULLETS` item renders as its own card via `BulletColumn`. The column ends up ~2× the height of the mock — the block reads as "half-empty laptop next to a wall of pills."
-3. **Workflow strip + tabs + bullets all repeat the same story** — `Build library → AI drafts → Approve` lives in the 3-card strip, in the 4 mock tabs, AND in the bullets. Triple-stated.
-4. **Tab labels still showed old "Library / Plan / Client log / Diary"** in the screenshot — code is already updated to Library/Draft/Approve/Assigned, so this is a stale-build artifact. New layout will make the change unmistakable.
+**H1: Coach clients with structured training and nutrition plans.**
 
-## New layout
+Coaching is the *delivery* pillar (programmes, exercises, sessions, check-ins, progress, habits, nutrition, adjustments). Operations is the *business* pillar. We will not blur the two.
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  EYEBROW                                                 │
-│  AI drafts the meal plan.                                │
-│  You approve the coaching decision.                      │
-│  [lede]                                                  │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│     ┌──────────────────────────────────────────┐         │
-│     │  ● ● ●   Nutrition · James Carter        │         │
-│     │  [ Library ] [ Draft ] [ Approve ] [Assigned]      │
-│     │                                          │         │
-│     │     full-bleed mock content              │         │
-│     │     (fixed min-height, every state       │         │
-│     │      pads up to match the tallest)       │         │
-│     │                                          │         │
-│     └──────────────────────────────────────────┘         │
-│                                                          │
-│  ── Build ──────→  Draft ──────→  Approve ──────→  ──    │
-│  Library you trust   AI assembles   You sign off          │
-│  Recipes, meals,     Pulls from your  Swap, edit, note,   │
-│  templates you've    library only —   approve. Logged     │
-│  approved.           never a random   on the record.      │
-│                      food database.                       │
-└─────────────────────────────────────────────────────────┘
-```
+## Positioning rules (locked for this rebuild)
 
-Concretely:
+- Page is about a connected coaching workspace, not a feature list.
+- ExerciseDB is never named publicly — it shows up as "a structured exercise library inside your programme builder."
+- Nutrition is **AI-assisted, coach-reviewed**. Never "AI writes diets." Hard ban (page-level) on: medical, clinical, dietitian, disease-specific, diabetes, eating disorder, treatment plan. We will say "coach-reviewed nutrition guidance, meal plan templates and client habit targets within your professional scope."
+- AI is a *coaching assistant*, never a replacement coach.
+- Pro+Studio tier feature (matches shop-front/operations pillar tier rules).
 
-1. **Replace the `lg:grid-cols-[1.15fr_0.85fr]` mock+bullets row** with a single centered `NutritionMock` capped at `max-w-[920px]` with `mx-auto`. The mock becomes the section's hero, not a sidekick.
-2. **Move the existing 3-step workflow strip (`NUTRITION_PARTS`)** to sit *under* the mock instead of above it — it becomes the "what just happened" recap of the 4 tab states, not a prelude. Keep the arrow connectors but lighten visual weight (smaller card padding, no border, just dim divider lines).
-3. **Delete the `BulletColumn` + `NUTRITION_BULLETS` block from this section entirely.** Those 8 lines are absorbed into:
-   - The mock states (which already show pick-target / AI-suggests / swap-edit / sign-off / audit-trail visually)
-   - The 3 workflow recap cards (which already cover library / draft / approve)
-   - Two of the most important lines ("never random food database results", "every decision is logged") move into the workflow card bodies if not already there.
-4. **Fix the mock frame.** Inside `NutritionMock`, add `min-h-[320px]` (or equivalent) to the inner content wrapper so the Library state pads to match Draft/Approve height. Library state gets an unobtrusive footer note that fills the slack — e.g. an "Approved by you · 248" callout already exists; expand it to a 1-line summary strip at the bottom of the Library state so the frame is balanced.
-5. **Default mock state**: switch from `"draft"` to `"library"` so the narrative arc on first view matches the section header ("build your library once, *then* let REPs assemble plans").
+## New page structure (10 sections, in order)
 
-## Files touched
+1. **Hero** — H1 above. Sub: "Build programmes, assign workouts, support nutrition, track progress and keep every client moving toward their goal from one connected coaching workspace." Standard `HeroOverlay`, top-anchored copy per the marketing hero template, 3 universal trust chips, PressMarquee. Visual: the existing `ProgrammeMock` (programme builder is the strongest single shot).
 
-- `src/routes/features.coaching.tsx`
-  - `NutritionSection()` (lines 521-578): restructure JSX — header → centered mock → workflow recap strip. Remove the `BulletColumn` call and the `lg:grid-cols-[1.15fr_0.85fr]` grid.
-  - `NUTRITION_BULLETS` (lines 92-101): delete (no longer referenced).
-  - `NUTRITION_PARTS` copy: light edit so "never random food database" + "every decision is logged" land in the right cards.
+2. **The problem** — disconnected tools: spreadsheets, link dumps, copy-pasted meal docs, check-ins lost in DMs. Reuse the strikethrough/clean two-column pattern already used on `/features/operations` and `/features/shop-front` (no new primitive).
 
-- `src/components/marketing/coaching/InteractiveMocks.tsx`
-  - `NutritionMock()` (lines 472-685): wrap inner content area in a `min-h-[320px]` container; default `useState` to `"library"`; add a balanced footer block to the Library state so it stops looking empty.
+3. **Programme builder** — first product section, the spine of the page. Reuse `ProgrammeMock` in an `AnnotatedMock`. Bullets: training blocks, weekly schedule, sets/reps/tempo/rest, coach notes, progression, goal-linked. Tagline: "Build the plan once, then adjust it as the client progresses."
 
-## Out of scope
+4. **Exercise library** — `ExerciseLibraryMock` inside the programme workflow framing. Filters called out: body part, target muscle, equipment, difficulty, goal, movement pattern. Never names ExerciseDB.
 
-- No changes to `BulletColumn`, `SectionHeader`, `MockShell`, or any other section.
-- No new components, no shared primitives.
-- No copy rewrite on the locked phrase or lede.
-- The stale "old tabs" rendering in the screenshot is a refresh artifact; no code action needed beyond the rework above.
+5. **Client workout delivery** — what the client sees. Reuse `ClientPortalInteractiveMock`. Tagline: "Clients shouldn't have to search through messages to know what to do next." Today's session, instructions, sets/reps, coach notes, completion, feedback, history.
 
-## Acceptance check
+6. **Progress tracking & check-ins** — combines current Progress + Check-ins into one outcome-credibility block. Reuse `ProgressMock` + `CheckInsInboxMock` side-by-side. Covers weight, measurements, photos, performance, adherence, mood/energy, sleep, pain notes, weekly check-ins, coach feedback.
 
-After the change, viewing `/features/coaching` at desktop width:
-- Nutrition section is visibly centered, not lopsided.
-- Mock frame has no large black dead zone in any of the 4 tab states.
-- No tower of 8 stacked pills. The right column doesn't exist.
-- The story reads: header → live mock you can tab through → 3 short recap cards. Three beats, not three repetitions.
+7. **Nutrition coaching** — `NutritionMock` (already centred + 3-beat strip from last pass). Rewrite the copy to the coach-reviewed framing. Feature list: meal plan templates, calorie/macro targets, dietary preferences, allergies/exclusions, shopping list, meal swaps, habit targets, **coach approval before sending**, client feedback, adherence tracking. Pinned line: "AI helps draft the plan. The coach stays in control." Add a small scope-of-practice line (no medical/clinical claims).
+
+8. **AI coaching assistant** — `AiAssistMock`. Reframe as practical assistant, not hype. Concrete uses: draft a training block, suggest regressions/progressions, adapt around equipment, summarise check-ins, draft client feedback, generate meal plan drafts, suggest habit targets, flag clients needing attention. Tagline: "A coaching assistant, not a replacement coach."
+
+9. **Connected to the full REPs platform** — narrative band tying Visibility → Shop Front → Operations → Coaching as one client journey. 4 small linked tiles back to those pillar pages. No new visual — text + tile grid.
+
+10. **Final CTA** — shared `FinalCta` primitive. Title: "Deliver training and nutrition coaching from one connected workspace." Sub: "Build programmes, assign workouts, support nutrition and track client progress inside REPs Pro." Primary: Start using REPs Pro. Secondary: Explore all features.
+
+## Sections being dropped
+
+These exist today and are cut: Habits (folded into §6 progress/check-ins), Messaging, Client record, Accountability, Automations, Templates, Tier comparison matrix, Use cases, separate Check-ins, separate Progress. The page becomes a delivery-system story, not a feature inventory.
+
+## Implementation notes (technical)
+
+- `src/routes/features.coaching.tsx` — rewrite the route. Keep `Route` definition, `head()`, JSON-LD shape, and route-level structure compliant with the locked marketing primitives:
+  - `HeroOverlay`, `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingHeroEyebrow`, `VerifySteps` (where relevant), `MarketingFaq` (FAQ section optional — confirm below), `FinalCta`.
+  - Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`, sections `py-20 lg:py-28`, `border-b border-reps-border` on every post-hero section.
+  - Type scale: `SectionHeading` / `BlockHeading` — no hand-rolled `text-[Npx]` H2s.
+  - Tokens only (`bg-brand-orange`, `text-brand-orange`), radius from the 9-step scale, no `rounded-xl/2xl/3xl`, no button shadows. Emerald only for status semantics.
+- `src/components/marketing/coaching/InteractiveMocks.tsx` — keep `ProgrammeMock`, `ExerciseLibraryMock`, `NutritionMock`, `ClientPortalInteractiveMock`, `ProgressMock`, `CheckInsInboxMock`, `AiAssistMock`. Remove or stop exporting unused ones (`HabitsMock`, `MessagingMock`, `AccountabilityMock`, `AutomationsMock`) only if nothing else in the repo imports them — verify with `rg` before deletion; otherwise leave the file alone and just don't import them.
+- `head()` metadata: title ≤ 60 chars with "coaching" + REPs; meta description ≤ 160 chars; og:title / og:description matching new H1; og:image = the hero composite if available, else omit.
+- Update `mem://design/locked-...` only after the user signs off visually — not in this pass.
+
+## Open question before I touch code
+
+I want one confirmation before I write a single line, because they materially change the page:
+
+- **FAQ at the bottom?** Other pillar pages end on FAQ → FinalCta. Adding §11 FAQ keeps that pattern; skipping it makes Coaching the only pillar without one. Default: include FAQ (6 items, scope/safety/tier/data) just before FinalCta.
+
+If you say "do it" without answering, I will include the FAQ and ship the 10-section plan above with FAQ inserted as §11.
