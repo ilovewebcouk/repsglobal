@@ -138,7 +138,7 @@ const AUTOMATIONS_BULLETS = [
 
 const TEMPLATE_CARDS = [
   { icon: BookOpen, title: "Programme templates", body: "Block, week and session frameworks ready to clone and personalise." },
-  { icon: Utensils, title: "Nutrition plan templates", body: "Macro splits and meal plans you can drop onto a client in one click." },
+  { icon: Utensils, title: "Nutrition plan templates", body: "Build a library of recipes, meals and templates. Assign in one click. Review the client's log on the same record." },
   { icon: ClipboardList, title: "Onboarding templates", body: "Welcome, expectations, screening and first-session prep — sent once, repeatable." },
   { icon: HeartPulse, title: "Check-in templates", body: "Weekly, monthly and post-block check-ins shaped for coaching, not generic surveys." },
   { icon: Workflow, title: "Automation templates", body: "Onboarding, re-engagement and reminder sequences ready to switch on." },
