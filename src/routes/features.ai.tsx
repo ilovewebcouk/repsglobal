@@ -993,33 +993,3 @@ function TierComparisonSection() {
   );
 }
 
-// Reserved icon imports kept for type-check clarity (used inline by data above).
-void [
-  AlertTriangle,
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  Brain,
-  Check,
-  CheckCircle2,
-  ClipboardCheck,
-  Compass,
-  Dumbbell,
-  FileText,
-  Inbox,
-  Lightbulb,
-  ListChecks,
-  Megaphone,
-  PenTool,
-  ScanLine,
-  Shield,
-  Sparkles,
-  Star,
-  Store,
-  Users,
-  UserCheck,
-  Utensils,
-  Workflow,
-  X,
-  Zap,
-];
