@@ -15,7 +15,7 @@ import { ReactNode, useState } from "react";
 import {
   Apple,
   Award,
-  Barcode,
+  
   Bell,
   Calendar,
   Camera,
