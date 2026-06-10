@@ -678,10 +678,7 @@ function StickyNav() {
 function SpecialismSection({ spec, isLast }: { spec: Specialism; isLast: boolean }) {
   const Icon = spec.icon;
   return (
-    <section
-      id={spec.anchor}
-      className={`scroll-mt-28 ${isLast ?"" :""}`}
-    >
+    <section id={spec.anchor} className="scroll-mt-28">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-14">
           {/* Left: narrative */}
