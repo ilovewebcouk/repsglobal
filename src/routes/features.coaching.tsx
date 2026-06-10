@@ -94,14 +94,6 @@ const PROGRAMME_BULLETS = [
   "Reusable templates so a new client never starts from a blank page",
 ];
 
-const NUTRITION_BULLETS = [
-  "Coach-set macro targets per client and per phase",
-  "Food database with barcode scan, fast logging and search",
-  "Meal plans built once, swapped item-by-item, macros recalculated",
-  "Photo meal logging — client snaps it, you review it",
-  "Weekly compliance scored against target, not vibes",
-  "All of it lives next to the programme, not in another app",
-];
 
 const HABITS_BULLETS = [
   "Sleep, steps and hydration tracked daily",
