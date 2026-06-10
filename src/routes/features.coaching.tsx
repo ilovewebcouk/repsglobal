@@ -369,7 +369,7 @@ function ProblemSection() {
         <SectionHeader
           eyebrow="The fragmented coaching stack"
           heading="Most coaches don't struggle to coach. They struggle to deliver consistently."
-          lede="Programmes in Trainerize, nutrition in MyFitnessPal, check-ins in WhatsApp, sleep data on the watch, photos in a camera roll, notes in DMs, accountability in your head. Your coaching shouldn't depend on six apps and a good memory."
+          lede="Programmes in Trainerize, nutrition in PDFs, screenshots and WhatsApp, check-ins in DMs, sleep data on the watch, photos in a camera roll, notes buried somewhere. Your coaching shouldn't depend on six apps and a good memory."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
