@@ -501,20 +501,20 @@ const NUTRITION_PARTS = [
   {
     n: "1",
     icon: BookOpen,
-    title: "REPs Nutrition Library",
-    body: "Ingredients, recipes, meals, recipe books and meal plan templates. Use the REPs library or build your own — saved once, reusable forever.",
+    title: "Build a library you trust",
+    body: "Recipes, ingredients, meals and templates you've already approved. Nothing the AI suggests comes from outside this set.",
   },
   {
     n: "2",
-    icon: ClipboardList,
-    title: "Meal plan templates",
-    body: "7-day fat loss, high-protein meal prep, vegan muscle gain, athlete fuelling, family low-prep, shift-worker, maintenance. Assign in one click and adapt per client.",
+    icon: Sparkles,
+    title: "AI assembles the draft",
+    body: "Set a client target — calories, macros, days, dietary rules — and REPs drafts a plan from your library only. Never a random food database.",
   },
   {
     n: "3",
-    icon: FileText,
-    title: "Client food log + external diary",
-    body: "Clients log meals, photos, water and notes in REPs — or attach a public MyFitnessPal / Cronometer link, screenshot or CSV export for review.",
+    icon: Check,
+    title: "You approve & assign",
+    body: "Swap meals, edit portions, leave notes, sign off. Only approved plans reach the client — and every decision is logged on the record.",
   },
 ];
 
@@ -524,44 +524,51 @@ function NutritionSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Nutrition coaching"
-          heading="Nutrition coaching built around your own library."
-          lede="Create recipes, build meal plan templates, assign recipe books, review client food logs, and keep nutrition feedback connected to check-ins, progress and accountability."
+          heading="AI drafts the meal plan. You approve the coaching decision."
+          lede="Build your nutrition library once, then let REPs assemble client-ready plans from your approved recipes, calorie targets and coaching rules. Nothing reaches the client until you sign it off."
         />
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-5">
-          {NUTRITION_PARTS.map(({ n, icon: Icon, title, body }) => (
-            <div
-              key={n}
-              className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange/15 text-[12px] font-bold text-reps-orange">
-                  {n}
-                </span>
-                <Icon className="size-4 text-white/70" />
+        <div className="mt-10 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-3">
+          {NUTRITION_PARTS.map(({ n, icon: Icon, title, body }, i) => (
+            <>
+              <div
+                key={n}
+                className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange/15 text-[12px] font-bold text-reps-orange">
+                    {n}
+                  </span>
+                  <Icon className="size-4 text-white/70" />
+                </div>
+                <h3 className="mt-4 font-display text-[18px] font-semibold text-white">
+                  {title}
+                </h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                  {body}
+                </p>
               </div>
-              <h3 className="mt-4 font-display text-[18px] font-semibold text-white">
-                {title}
-              </h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
-                {body}
-              </p>
-            </div>
+              {i < NUTRITION_PARTS.length - 1 && (
+                <div
+                  key={`arrow-${n}`}
+                  className="hidden items-center justify-center md:flex"
+                  aria-hidden="true"
+                >
+                  <ArrowRight className="size-4 text-white/35" />
+                </div>
+              )}
+            </>
           ))}
         </div>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
           <NutritionMock />
           <BulletColumn
-            heading="Build your own nutrition library, assign meal plans, review food logs, and keep every nutrition decision connected to the client record."
-            body="Nutrition belongs next to programmes, check-ins and progress — not in someone else's app. Coaches build the library, clients log against it, and every meal, photo and note lands on the same record."
+            heading="Build your nutrition library once, then let REPs help assemble client-ready plans from your approved recipes, calorie targets and coaching rules."
+            body="Coaches build the library. AI drafts the plan from your approved recipes only. You swap, edit and sign off — and every decision is logged on the client record alongside programmes, check-ins and progress."
             bullets={NUTRITION_BULLETS}
           />
         </div>
-
-        <p className="mt-10 text-center text-[13px] text-white/55">
-          On the nutrition roadmap: barcode scan, food database search, AI meal recognition and deeper tracker imports.
-        </p>
       </div>
     </section>
   );
