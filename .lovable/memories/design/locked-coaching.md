@@ -1,75 +1,46 @@
 ---
 name: Locked /features/coaching
-description: 15-section coaching pillar page — bespoke route, threads "Sarah K." client story across programme/nutrition/check-ins/progress, AI-trainer-approved rule, safety scope. Frozen 2026-06-10.
+description: Frozen 2026-06-10. 17-section coaching pillar built to PDF spec. Section 5 reuses the locked NutritionSection verbatim (Sarah K. ribbon + Manual/Templates/AI-draft triad + ApprovalStrip) — do not redesign without explicit, section-named request.
 type: design
 ---
 
-# `/features/coaching` — LOCKED 2026-06-10
+# /features/coaching — locked 2026-06-10
 
-Bespoke pillar route at `src/routes/features.coaching.tsx`. Replaces the prior generic `FeatureGroupLayout` stub. Sits alongside the other locked pillars (`operations`, `visibility`, `shop-front`) and follows the same architecture, primitives, type scale, vertical rhythm, dividers and hero-overlay system.
+Source of truth: `Coaching---Deliver-better-coaching-from-one-connected-platform.pdf` (rebuilt to spec on 2026-06-10). Standalone route — not PillarPage.
 
-## Final section order (do not reorder without explicit request)
+## Section order (17 + FAQ + FinalCta)
 
-1. **Hero** — image (`hero-coaching-bg.jpg`), `HeroOverlay copySide="left"`, H1 "Deliver better coaching from one connected platform.", trust-chip row (Pro-tier coaches · Training+nutrition+check-ins · One client record)
-2. **Problem** — fragmented delivery, 5 scattered-tool tiles + orange pull-line panel
-3. **Workflow** (`#workflow`) — 7-stage pipeline: Assess → Plan → Deliver → Check in → Track → Adjust → Retain (mirrors Operations' 6-stage pattern)
-4. **Programme delivery + exercise library** — bespoke side-by-side mock (programme card + library card) using `src/data/exercise-library.sample.json`; "+ Add custom exercise" CTA mandatory
-5. **Meal planning + nutrition support** — 3-mode triad (Manual / Templates / AI-assisted draft = highlighted) + approval ribbon with emerald "Trainer approves" badge
-6. **Client portal** — phone-frame mock + numbered callouts list (6 callouts)
-7. **Check-ins + accountability** — check-in review mock + pull-quote *"Check-ins turn a plan into a coaching relationship."*
-8. **Progress tracking** — 6-stat grid with sparklines; cautious copy line *"REPs reports adherence and trend — it doesn't promise transformations."*
-9. **Coaching notes + client context** — profile-card + 6-event client timeline
-10. **AI coaching support** — 8-tile grid + emerald rule panel **"AI drafts. The trainer reviews. The trainer approves."**
-11. **Templates + repeatable systems** — 8-template grid
-12. **Verified vs Pro** — `TierCard` pair (Pro highlighted)
-13. **Use cases** — 6 cards (PT / online / strength / transformation / small group / studio)
-14. **Safety + scope** — two-column: "REPs is not a replacement for" vs "What the platform asks the coach to handle"
-15. **MarketingFaq** → **FinalCta** (heading "Deliver coaching clients can follow," + accent "track and stay engaged with.")
+1. Hero — "Deliver better coaching from one connected platform." HeroOverlay copySide="left". Three trust chips: REPs Pro · Connected to your client record · No extra add-ons.
+2. Problem split — "Six apps. One overwhelmed coach." vs "One workspace. Every client connected." Two checklist columns (6 lines each).
+3. Programme delivery — block/week/session. Bullet column + programme builder mock with Sarah K. week 6 lower body.
+4. Exercise library — 10,000+ exercises. Library mock with filter chips + 8 cards + custom-add CTA, bullet column.
+5. **Nutrition — LOCKED, UNCHANGED.** `NutritionSection` reuses Sarah ribbon, three `MealModeCard`s (Manual / Templates / AI-draft highlighted), the "AI should speed up meal planning…" quote and the `ApprovalStrip` emerald-status workflow.
+6. Habits & wearables — 4 vendor chips (Apple Health / Garmin / Whoop / Fitbit) + bullets + weekly summary mock with sleep/steps/HR/sessions tiles.
+7. Client check-ins — inbox mock (Pending/Replied/Flagged tabs, 5 clients) + bullets. Emerald "Replied" status pill, orange "Flagged" pill.
+8. Progress tracking — 4 lens tabs (Strength / Body / Adherence / Photos) + 6-stat sparkline grid.
+9. Messaging — bullets + single-thread mock with text, voice and form-reply bubbles. Mic affordance.
+10. Client portal view — phone mock + 4 portal tiles + bullets.
+11. Coaching notes & client context — profile card with 8-field dl + bullets + 6-event timeline.
+12. Accountability & next actions — 5 scenario rows (overdue, low adherence, quiet, milestone, programme ending).
+13. Automations — 4 cards + emerald "Set it once, edit before it sends" pull-quote.
+14. Templates — 6-tile grid matching PDF (programme, nutrition, onboarding, check-in, automation, message).
+15. AI assist — 6 cards + emerald "An assistant, not a substitute" pull-quote with AI drafts → Coach reviews → Coach approves → Client sees output strip.
+16. Verified vs Pro — two TierCards (Verified £99/yr, Pro Founding £59/mo) + 13-row capability matrix.
+17. Built for every coaching model — 6 use-case cards (PT, online, strength, transformation, small-group, studio teams).
+18. MarketingFaq — 6 questions from PDF.
+19. FinalCta — "Deliver coaching clients can follow, track and stay engaged with."
 
-## Threaded client story
+## Guardrails
 
-Sections 4, 5, 7, 8 lead with a `SarahRibbon` chip:
-> Following **Sarah K.** · 12-week fat-loss client · 3×/week · 145g protein target
+- Pricing is locked at Verified £99/yr, Pro £59/mo Founding (PDF's £90 / £50 was stale).
+- "10,000+ exercises" is marketing copy only — current sample library has 30. Acceptable for a mock.
+- Coaching is a Pro pillar — no Studio-only or Verified-only positioning anywhere in the page.
+- Emerald-only-for-status rule respected: status pills (On track / Replied / Approved) + ApprovalStrip + the two pull-quote panels in Automations + AI assist. Nothing decorative.
+- Marketing primitives only (SectionHeader, BlockHeading, MarketingFaq, FinalCta, TierCard, HeroOverlay, MarketingHeroEyebrow). No hand-rolled H2/H3.
+- Vertical rhythm + dividers per locked rules (hero pt-24 pb-20 lg:pt-28 lg:pb-24; sections py-20 lg:py-28 + border-b border-reps-border).
+- Radii from locked scale (16/18/22/24, full pills, button 10, input 12). No 14/20/28/32.
+- No CIMSPA. No UK qualifiers. No booking commission claims.
 
-Every adherence number, programme name, meal note and check-in entry on the page references Sarah for continuity. Do not introduce a second named client.
+## Hands-off rule
 
-## Data dependencies
-
-- `src/data/exercise-library.sample.json` — 30 hand-curated exercises, AscendAPI-compatible shape. Static, Phase 1 only. **No runtime AscendAPI / RapidAPI call** — if a Phase-2 live integration is added later, route via a server function with a runtime secret; never inline keys.
-
-## Primitives used (no new shared primitives)
-
-`HeroOverlay`, `SectionHeader`, `SectionHeading`, `BlockHeading`, `MarketingHeroEyebrow`, `TierCard`, `MarketingFaq`, `FinalCta`, `PublicHeader`, `PublicFooter`.
-
-## Local-only sub-components (inside the route file)
-
-`Hero`, `ProblemSection`, `WorkflowSection`, `SarahRibbon`, `ProgrammeSection`, `NutritionSection` + `MealModeCard` + `ApprovalStrip`, `PortalSection` + `PortalTile`, `CheckinsSection`, `ProgressSection`, `NotesSection`, `AISection`, `TemplatesSection`, `TierMatrixSection`, `UseCasesSection`, `SafetySection`.
-
-## Style guardrails (must hold)
-
-- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; every other section `py-20 lg:py-28`
-- Every non-hero section: `border-b border-reps-border` (no `/60`, no `border-t`)
-- All H2s via `SectionHeader` → `SectionHeading` (pure white, no orange split)
-- Pull-quote H2s use `font-display text-[Npx]` ONLY in pull-quote panels (not section headers)
-- Emerald (`border-emerald-400/30 bg-emerald-500/15 text-emerald-300`) used ONLY on: "Trainer approves" badge in the approval ribbon (sections 5 + AI rule panel) and "On track" check-in badge. Status only.
-- Radii: cards 16/18, panels 22, hero 24, buttons 10, inputs/tiles 12-14. No 20/28/32 or `rounded-xl/2xl/3xl`.
-
-## Pricing / tier copy (locked)
-
-- Verified: £99 / yr
-- Pro: Founding £59 / mo (includes Verified)
-- Coaching delivery = Pro+Studio only. Never offered on Verified.
-- Never repeat pricing elsewhere on the page; canonical pricing lives on `/pricing`.
-
-## Out of scope (do not add without explicit request)
-
-- Real programme/meal/AI/portal logic — visuals only
-- Runtime AscendAPI call
-- Replays from `/dashboard` or `/c/$slug` (this page uses bespoke mocks, not live AnnotatedMock)
-- Pricing tables (live on `/pricing`)
-- Transformation claims, before/after photos, weight-loss promises
-- CIMSPA, third-party awarding-body names, UK qualifiers, booking-fee / 15% language
-
-## Lock conditions
-
-Do not redesign, reorder sections, change H1, swap hero image, or remove Sarah threading without an explicit, section-named request from the user.
+Never restructure these sections, change the section order, or replace the NutritionSection without an explicit, section-named request from the user.
