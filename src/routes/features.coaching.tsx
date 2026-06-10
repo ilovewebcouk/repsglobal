@@ -132,10 +132,8 @@ const AI_ASSISTS: { icon: LucideIcon; title: string; body: string }[] = [
   { icon: Activity, title: "Spot adherence patterns", body: "Sessions usually missed, meals usually skipped." },
   { icon: MessageSquare, title: "Draft coach feedback", body: "Starting points you edit — never sent without you." },
   { icon: Target, title: "Suggest review points", body: "Programme phase end, plateau, deload triggers." },
-  { icon: ListIcon, title: "Turn notes into next actions", body: "Free-text becomes a checklist on the client record." },
+  { icon: ClipboardList, title: "Turn notes into next actions", body: "Free-text becomes a checklist on the client record." },
 ];
-
-// Lucide doesn't export "ListIcon" by alias here — re-use ClipboardList for that slot at render time.
 
 const TEMPLATES: { icon: LucideIcon; title: string; body: string }[] = [
   { icon: Dumbbell, title: "Programme templates", body: "Reusable training plans by goal and level." },
