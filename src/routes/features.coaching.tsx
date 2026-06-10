@@ -55,7 +55,7 @@ import {
   ExerciseLibraryMock,
   HabitsMock,
   MessagingMock,
-  NutritionMock,
+  
   ProgrammeMock,
   ProgressMock,
   type AccId,
