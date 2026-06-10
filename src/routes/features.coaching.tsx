@@ -323,7 +323,7 @@ const AI_ASSISTS: { icon: LucideIcon; title: string; body: string }[] = [
     body: "AI lives inside the workspace — not a separate tool you log into.",
   },
   {
-    icon: ShieldOff,
+    icon: Power,
     title: "Off-switch per client",
     body: "Turn AI off for a client or for your whole account whenever you want.",
   },
