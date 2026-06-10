@@ -10,16 +10,23 @@ Any generated image of a trainer/coach MUST carry the REPS logo on the garment a
 
 ## Logo source (LOCKED — single source of truth)
 
-The ONLY canonical REPS logo file is `src/assets/brand/logo.svg`. Always composite the real file onto the garment — never describe it in prose.
+The ONLY canonical REPS logo file is `src/assets/brand/logo.svg`. The brand identity IS the four-letter REPS wordmark with custom letterforms (specific R counter, curved S, unique E/P proportions). Always composite the real SVG raster onto the garment — never let the image model render it.
 
-Workflow for every apparel render:
-1. Rasterise `src/assets/brand/logo.svg` to a high-res white-on-transparent PNG:
-   `nix run nixpkgs#librsvg -- --width=1600 --keep-aspect-ratio src/assets/brand/logo.svg -o /tmp/reps-logo.png`
-2. ALWAYS use `imagegen--edit_image` (never `generate_image` alone) and pass BOTH `src/assets/about/about-independence.jpg` (style benchmark) AND the rasterised logo PNG as references.
-3. Render the logo as real embroidery / print on fabric — follows folds, picks up rim light, **always pure white** regardless of garment colour.
-4. Placement: small left-chest for editorial / single-subject; centred chest for wide / group shots.
+**Image models CANNOT reproduce exact letterforms.** Even with the SVG passed as a reference image, they will redraw the letters in a generic sans-serif approximation. The only acceptable method is **deterministic post-composite via Python/Pillow**:
 
-Do NOT use `/mnt/user-uploads/logo*` or any other logo file.
+1. Generate the base photo with `imagegen--generate_image` (premium tier) referencing the style of `src/assets/about/about-independence.jpg`. **The tee chest must be completely blank** — explicitly prompt "no logo, no graphics, no text on the shirt".
+2. Rasterise the SVG: `nix run nixpkgs#librsvg -- --width 1200 src/assets/brand/logo.svg -o /tmp/reps-logo-white.png`
+3. Run a PIL composite script (see `/tmp/compose-logo.py` as canonical template) that:
+   - Resizes the logo to ~130px wide for single-subject editorial shots (~3 fingertips)
+   - Applies ~0.6px gaussian blur (integrates with photo grain)
+   - Applies a horizontal tint gradient matching the scene's rim-light direction
+   - Sets alpha to ~0.88 so the tee weave shows through (embroidery feel)
+   - Pastes at small left-chest (wearer's left = camera-right of torso, near collarbone height)
+4. Zoom-verify at 4× — letterforms must be pixel-identical to `logo.svg`.
+
+**Never** use `imagegen--edit_image` to "composite" the logo — it will redraw. Never use `/mnt/user-uploads/logo*` or any other logo file.
+
+Placement: small left-chest for editorial / single-subject; centred chest for wide / group shots. Always pure white regardless of garment colour.
 
 ## Visual style (LOCKED — source of truth)
 
