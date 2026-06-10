@@ -1,41 +1,33 @@
 ## Goal
-Replace the **About page hero image only** with a stronger, world-class image that matches the locked visual register and uses the **exact REPS header logo from `logo.svg`** on the garment.
 
-## What I’ll change
-1. **Regenerate the hero image** in a tighter documentary-real / premium editorial register.
-2. **Use the exact header logo treatment** from `src/assets/brand/logo.svg` on the garment — not a typed wordmark approximation.
-3. **Keep the current page layout, overlay system, copy, CTAs, and other About images unchanged** unless the new hero framing requires a minor crop adjustment.
-4. **Replace only `src/assets/about/about-hero.jpg.asset.json`** with the new uploaded asset pointer.
+Replace the current portrait image in section 4 of `/about` ("A new kind of register") so it sits in the same photographer lookbook as `Built for Independence` and the new About hero — instead of feeling like a different shoot.
 
-## Creative direction to match
-- Golden-hour rim light
-- Urban / industrial training backdrop
-- Calm, self-possessed expression
-- Realistic textile rendering
-- No graphic overlays baked into the image
-- Muted film palette
-- Soft grain
-- Shallow depth of field
-- Must feel cohesive with **Built for Independence** and the stronger About imagery set
+Target asset: `src/assets/about/heritage.jpg.asset.json` (rendered at `aspect-[4/5]` portrait, ~1024×1280).
 
-## Quality bar
-The new hero needs to improve on the current one by:
-- making the logo read as the **actual REPS header mark**, not just “REPS” text
-- feeling less generic and more premium/editorial
-- giving the left-side headline cleaner visual support
-- preserving strong subject clarity on the right without awkward crop pressure near the top edge
-- keeping the industrial warmth and orange-adjacent glow without looking staged or over-processed
+## Scene direction
 
-## Technical details
-- Source-of-truth logo reference: `src/assets/brand/logo.svg`
-- Page route consuming the asset: `src/routes/about.tsx`
-- Asset to replace: `src/assets/about/about-hero.jpg.asset.json`
-- No route redesign or copy changes planned
-- I’ll QA the final hero in the About preview for:
-  - exact logo treatment
-  - tonal match with the rest of the page
-  - headline legibility on the left
-  - framing/crop quality at the current desktop viewport
+- **Subject:** one calm, credible fitness professional (different person from the About hero so the page doesn't repeat the same face — e.g. mid-30s male coach with a quiet, considered look). Mid-consultation / post-session moment: standing on an urban pavement at dawn with a clipboard/phone in hand, or hands-on-hips in a quiet listening posture. Reads instantly as "professional", not "mid-rep".
+- **Wardrobe:** charcoal heather REPS performance tee + technical joggers + trainers — same wardrobe language as About hero & Independence.
+- **Backdrop:** same Independence universe — dark cladding + glass curtain wall, low sun raking down a wet pavement, soft city bokeh receding. Portrait crop tighter than the hero (more architecture above the head, less negative space).
+- **Light:** low golden-hour sun side/back, warm amber rim on shoulder/hair/jawline, deep architectural shadow filling the rest of the frame.
+- **Composition:** 4:5 portrait, subject anchored slightly right, architectural negative space top-left. Tight enough that the chest logo is legible at the rendered size.
+- **Finish:** muted film palette, deep blacks, warm amber highlights only on rim/pavement, realistic textile, shallow DoF, soft 35mm grain. No graphic overlays, no extra text, no extra logos.
 
-## Deliverable
-A single new hero asset, wired into the About page, with the existing page structure preserved.
+## Logo
+
+- Source of truth: `src/assets/brand/logo.svg` (the header mark, NOT the wordmark).
+- Placement: small **left-chest** embroidery (wearer's left).
+- Execution: pure-white embroidery thread, visible stitch texture, follows fabric folds, picks up rim light subtly. Exact `logo.svg` letterforms. ALL CAPS. Always white.
+
+## Process
+
+1. Generate 4:5 base image with a completely blank upper-left-chest area on the tee (no typed logo, no placeholder).
+2. Composite real `logo.svg` (rendered to PNG) onto the chest via `imagegen--edit_image` as embroidered patch — fabric warp, stitch detail, white thread.
+3. If stitch quality isn't world-class on the first pass, run a tightening edit pass (smaller, cleaner, exact letterforms).
+4. Upload final via `lovable-assets create --file ... --filename heritage.jpg` and overwrite `src/assets/about/heritage.jpg.asset.json`.
+5. QA on `/about` against About hero + Independence — must read as the same photographer, same morning, different frame.
+
+## Out of scope
+
+- No copy, layout, section-order or other-asset changes on `/about`.
+- No changes to About hero, Independence, or any other route.
