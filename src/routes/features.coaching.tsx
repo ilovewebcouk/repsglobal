@@ -25,6 +25,7 @@ import {
   Mic,
   Moon,
   NotebookPen,
+  Power,
   RefreshCw,
   Repeat,
   Salad,
