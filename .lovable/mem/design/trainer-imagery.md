@@ -24,13 +24,14 @@ Color: **always pure WHITE** regardless of garment colour. Never orange, never t
 
 Placement: small left-chest for editorial / premium / single-subject shots; centred chest for wide / group / team shots.
 
-## Reference assets (use with `imagegen--edit_image` for accuracy)
+## Reference assets (LOCKED — single source of truth)
 
-For best fidelity, pass the actual logo file as a reference image when generating/editing trainer shots:
-- `/mnt/user-uploads/logo.png` — white wordmark on transparent
-- `/mnt/user-uploads/logo.svg` / `logo-4.svg` — vector source
+The ONLY canonical REPS logo file is `src/assets/brand/logo.svg` — it matches `src/components/brand/RepsWordmark.tsx` exactly (viewBox `0 0 267.34 48.17`, fill `#fff`). Do NOT use any `/mnt/user-uploads/logo*.{svg,png}` — those are legacy/uncontrolled.
 
-When generating from scratch with `imagegen--generate_image`, describe the geometry above explicitly — generic "REPS in bold sans-serif" produces the wrong letterforms.
+Workflow for every apparel render:
+1. Rasterise `src/assets/brand/logo.svg` to a high-resolution white-on-transparent PNG (e.g. `nix run nixpkgs#librsvg -- --width=1600 --keep-aspect-ratio src/assets/brand/logo.svg -o /tmp/reps-wordmark-reference.png`).
+2. ALWAYS call `imagegen--edit_image` (never `generate_image`) and pass BOTH `src/assets/about/about-independence.jpg` (tone benchmark) AND the rasterised wordmark PNG as references.
+3. Never describe the wordmark from prose alone — generic "REPS in bold sans-serif" produces the wrong letterforms.
 
 ## Canonical visual style (LOCKED — source of truth)
 
