@@ -19,6 +19,7 @@ import {
   Bell,
   Calendar,
   Camera,
+  Check,
   CheckCircle2,
   Circle,
   ClipboardCheck,
@@ -426,71 +427,50 @@ export function ExerciseLibraryMock({
 
 
 // =============================================================================
-// 3. NUTRITION — Library / Plan template / Client log / External diary
+// 3. NUTRITION — Library → Draft → Approve → Assigned (AI-draft / coach-approve)
 // =============================================================================
 
 const NUTRITION_STATES = [
   { id: "library", label: "Library" },
-  { id: "plan", label: "Plan" },
-  { id: "log", label: "Client log" },
-  { id: "diary", label: "Diary" },
+  { id: "draft", label: "Draft" },
+  { id: "approve", label: "Approve" },
+  { id: "assigned", label: "Assigned" },
 ] as const;
 type NutritionState = (typeof NUTRITION_STATES)[number]["id"];
 
 const LIBRARY_FILTERS = ["Recipes", "Ingredients", "Meals", "Recipe books", "Templates"];
 
 const LIBRARY_RECIPES = [
-  {
-    title: "High-protein chicken rice bowl",
-    macros: "640 kcal · 48P / 70C / 14F",
-    tag: "HP",
-    ings: "12 ingredients",
-  },
-  {
-    title: "Tofu peanut noodles",
-    macros: "560 kcal · 28P / 72C / 18F",
-    tag: "V",
-    ings: "9 ingredients",
-  },
-  {
-    title: "Overnight oats + berries",
-    macros: "420 kcal · 22P / 58C / 12F",
-    tag: "GF",
-    ings: "6 ingredients",
-  },
-  {
-    title: "Salmon traybake",
-    macros: "580 kcal · 42P / 38C / 24F",
-    tag: "HP",
-    ings: "10 ingredients",
-  },
+  { title: "High-protein chicken rice bowl", macros: "640 kcal · 48P / 70C / 14F", tag: "HP", ings: "12 ingredients" },
+  { title: "Tofu peanut noodles", macros: "560 kcal · 28P / 72C / 18F", tag: "V", ings: "9 ingredients" },
+  { title: "Overnight oats + berries", macros: "420 kcal · 22P / 58C / 12F", tag: "GF", ings: "6 ingredients" },
+  { title: "Salmon traybake", macros: "580 kcal · 42P / 38C / 24F", tag: "HP", ings: "10 ingredients" },
 ];
 
-const PLAN_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const BRIEF_CHIPS = ["James C", "1,800 kcal", "High protein", "7 days", "No dairy"];
 
-const PLAN_MEALS = [
+const DRAFT_MEALS = [
   { meal: "Breakfast", item: "Overnight oats + berries", k: 420 },
   { meal: "Lunch", item: "Chicken rice bowl", k: 640 },
   { meal: "Snack", item: "Greek yogurt + almonds", k: 240 },
-  { meal: "Dinner", item: "Salmon traybake", k: 500 },
+  { meal: "Dinner", item: "Tofu peanut noodles", k: 500 },
 ];
 
-const LOG_MEALS = [
-  { meal: "Breakfast", item: "Oats + berries", k: "420 kcal", done: true },
-  { meal: "Lunch", item: "Chicken rice bowl", k: "640 kcal", done: true },
-  { meal: "Snack", item: "—", k: "—", done: false },
-  { meal: "Dinner", item: "—", k: "—", done: false },
-];
-
-const DIARY_SOURCES = [
-  { icon: Apple, kind: "MyFitnessPal", detail: "myfitnesspal.com/food/diary/jamesc", note: "Public diary link" },
-  { icon: FileText, kind: "Cronometer report", detail: "report-week-6.cronometer.com", note: "Read-only" },
-  { icon: FileText, kind: "Week 6 export.csv", detail: "uploaded · 142 entries", note: "CSV export" },
-  { icon: ImageIcon, kind: "Screenshot · Fri", detail: "tracker home screen", note: "Image" },
+const APPROVE_MEALS: {
+  meal: string;
+  item: string;
+  k: number;
+  flag?: "swap" | "note";
+  flagText?: string;
+}[] = [
+  { meal: "Breakfast", item: "Overnight oats + berries", k: 420 },
+  { meal: "Lunch", item: "Chicken rice bowl", k: 640, flag: "note", flagText: "+30g rice on training days" },
+  { meal: "Snack", item: "Greek yogurt + almonds", k: 240 },
+  { meal: "Dinner", item: "Salmon traybake", k: 500, flag: "swap", flagText: "Swapped → Salmon traybake" },
 ];
 
 export function NutritionMock() {
-  const [state, setState] = useState<NutritionState>("library");
+  const [state, setState] = useState<NutritionState>("draft");
 
   return (
     <MockShell
@@ -511,9 +491,9 @@ export function NutritionMock() {
                   Recipes &nbsp;·&nbsp; 248 in your library
                 </p>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
-                <Search className="size-2.5 text-white/55" /> Search
-              </div>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-semibold text-emerald-300">
+                Approved by you · 248
+              </span>
             </div>
 
             <div className="mt-2 flex flex-wrap gap-1">
@@ -547,189 +527,163 @@ export function NutritionMock() {
             </div>
 
             <p className="mt-2 text-[7px] text-white/45">
-              Use the REPs library or save your own recipes, ingredients and templates.
+              The AI only suggests meals from this approved set — never a random food database.
             </p>
           </>
         )}
 
-        {state === "plan" && (
+        {state === "draft" && (
           <>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-                  Meal plan template
+                  AI draft · brief
                 </p>
                 <p className="mt-0.5 text-[11px] font-bold text-white">
-                  7-day fat loss &nbsp;·&nbsp; 1,800 kcal · 150 P / 170 C / 55 F
+                  Draft a plan from your library
                 </p>
               </div>
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-semibold text-emerald-300">
-                Assign to client
+              <span className="flex items-center gap-1 rounded-full border border-reps-orange/30 bg-reps-orange/15 px-1.5 py-0.5 text-[7px] font-semibold text-reps-orange">
+                <Sparkles className="size-2.5" /> Generate draft
               </span>
             </div>
 
-            <div className="mt-2 flex gap-1">
-              {PLAN_DAYS.map((d) => (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {BRIEF_CHIPS.map((c) => (
                 <span
-                  key={d}
-                  className={`flex-1 rounded-[4px] px-1 py-1 text-center text-[7px] font-semibold ${
-                    d === "Wed"
-                      ? "bg-reps-orange text-white"
-                      : "border border-white/10 bg-reps-panel/40 text-white/65"
-                  }`}
+                  key={c}
+                  className="rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] font-semibold text-white/75"
                 >
-                  {d}
+                  {c}
                 </span>
               ))}
             </div>
 
-            <div className="mt-2 grid grid-cols-[1.4fr_1fr] gap-2">
-              <div className="space-y-1">
-                {PLAN_MEALS.map((m) => (
-                  <div
-                    key={m.meal}
-                    className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
-                  >
-                    <Utensils className="size-2.5 text-reps-orange" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[7.5px] font-semibold text-white">{m.meal}</p>
-                      <p className="truncate text-[7px] text-white/60">{m.item}</p>
-                    </div>
-                    <span className="text-[7.5px] font-semibold text-reps-orange">
-                      {m.k} kcal
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-1">
-                <div className={cardTight}>
-                  <p className={label}>Substitutions</p>
-                  <p className="mt-0.5 text-[7.5px] text-white/75">Swap rice → quinoa, salmon → cod</p>
-                </div>
-                <div className={cardTight}>
-                  <p className={label}>Shopping list</p>
-                  <p className="mt-0.5 text-[7.5px] text-white/75">28 items · sent to client</p>
-                </div>
-                <div className={cardTight}>
-                  <p className={label}>Coach notes</p>
-                  <p className="mt-0.5 text-[7.5px] text-white/75">Carbs around training only</p>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {state === "log" && (
-          <>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-                  Client food log · Wednesday
-                </p>
-                <p className="mt-0.5 text-[11px] font-bold text-white">
-                  Today &nbsp;·&nbsp; 1,060 / 1,800 kcal logged
-                </p>
-              </div>
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
-                <Plus className="size-2.5 text-reps-orange" /> Log a meal
-              </div>
-            </div>
-
-            <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
-              <div className="space-y-1">
-                {LOG_MEALS.map((r) => (
-                  <div
-                    key={r.meal}
-                    className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
-                  >
-                    {r.done ? (
-                      <CheckCircle2 className="size-2.5 text-emerald-400" />
-                    ) : (
-                      <Circle className="size-2.5 text-white/30" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[7.5px] font-semibold text-white">{r.meal}</p>
-                      <p className="truncate text-[7px] text-white/60">{r.item}</p>
-                    </div>
-                    <span className="text-[7.5px] font-semibold text-white/65">{r.k}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-1">
-                <div className={cardTight}>
-                  <p className={labelInline}>
-                    <Droplets className="size-2 text-reps-orange" /> Water
-                  </p>
-                  <p className="mt-0.5 text-[8px] font-semibold text-white">6 / 8 glasses</p>
-                </div>
-                <div className="flex aspect-[3/2] items-center justify-center rounded-[6px] border border-white/10 bg-gradient-to-br from-amber-500/20 via-reps-panel/60 to-emerald-500/15">
-                  <ImageIcon className="size-5 text-white/40" />
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  <div className={cardTight}>
-                    <p className={label}>Hunger</p>
-                    <p className="mt-0.5 text-[8px] font-semibold text-white">3 / 5</p>
-                  </div>
-                  <div className={cardTight}>
-                    <p className={label}>Energy</p>
-                    <p className="mt-0.5 text-[8px] font-semibold text-white">4 / 5</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2 rounded-[6px] border border-white/10 bg-reps-panel/40 p-2">
-              <p className={label}>Adherence note</p>
-              <p className="mt-0.5 text-[8px] text-white/80">
-                "Skipped snack — long meeting. Will hit it tomorrow."
-              </p>
-            </div>
-          </>
-        )}
-
-        {state === "diary" && (
-          <>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-                  External food diary
-                </p>
-                <p className="mt-0.5 text-[11px] font-bold text-white">
-                  Linked sources &nbsp;·&nbsp; read-only, opens in new tab
-                </p>
-              </div>
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
-                <Plus className="size-2.5 text-reps-orange" /> Add link
-              </div>
-            </div>
-
             <div className="mt-2 space-y-1">
-              {DIARY_SOURCES.map(({ icon: Icon, kind, detail, note }) => (
+              {DRAFT_MEALS.map((m) => (
                 <div
-                  key={kind}
-                  className="flex items-center gap-2 rounded-[5px] border border-white/10 bg-reps-panel/40 px-2 py-1.5"
+                  key={m.meal}
+                  className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
                 >
-                  <Icon className="size-2.5 text-reps-orange" />
+                  <Utensils className="size-2.5 text-reps-orange" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[7.5px] font-semibold text-white">{kind}</p>
-                    <p className="truncate text-[7px] text-white/60">{detail}</p>
+                    <p className="text-[7.5px] font-semibold text-white">{m.meal}</p>
+                    <p className="truncate text-[7px] text-white/60">{m.item}</p>
                   </div>
-                  <span className="rounded-[3px] border border-white/10 bg-reps-ink/40 px-1 py-px text-[6.5px] font-semibold text-white/55">
-                    {note}
+                  <span className="flex items-center gap-1 rounded-[3px] border border-reps-orange/30 bg-reps-orange/10 px-1 py-px text-[6.5px] font-semibold text-reps-orange">
+                    <Sparkles className="size-2" /> AI suggested
                   </span>
+                  <span className="text-[7.5px] font-semibold text-white/65">{m.k} kcal</span>
                 </div>
               ))}
             </div>
 
             <p className="mt-2 text-[7px] text-white/45">
-              Connect an external food diary link — automatic imports planned for later releases.
+              Draft only — not sent to client. Coach reviews next.
             </p>
+          </>
+        )}
+
+        {state === "approve" && (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
+                  Coach review
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold text-white">
+                  Awaiting sign-off &nbsp;·&nbsp; 2 edits made
+                </p>
+              </div>
+              <div className="flex gap-1">
+                <span className="rounded-[4px] border border-white/15 bg-reps-panel/60 px-1.5 py-0.5 text-[7px] font-semibold text-white/75">
+                  Edit
+                </span>
+                <span className="flex items-center gap-1 rounded-[4px] border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-semibold text-emerald-300">
+                  <Check className="size-2.5" /> Approve
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-2 space-y-1">
+              {APPROVE_MEALS.map((m) => (
+                <div
+                  key={m.meal}
+                  className="rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Utensils className="size-2.5 text-reps-orange" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[7.5px] font-semibold text-white">{m.meal}</p>
+                      <p className="truncate text-[7px] text-white/60">{m.item}</p>
+                    </div>
+                    <span className="text-[7.5px] font-semibold text-white/65">{m.k} kcal</span>
+                  </div>
+                  {m.flag === "swap" && (
+                    <p className="mt-1 ml-4 inline-block rounded-[3px] border border-emerald-400/30 bg-emerald-500/10 px-1 py-px text-[6.5px] font-semibold text-emerald-300">
+                      {m.flagText}
+                    </p>
+                  )}
+                  {m.flag === "note" && (
+                    <p className="mt-1 ml-4 inline-block rounded-[3px] border border-white/10 bg-reps-ink/40 px-1 py-px text-[6.5px] font-semibold text-white/70">
+                      Coach note · {m.flagText}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-2 text-[7px] text-white/55">
+              Nothing reaches the client until you sign it off.
+            </p>
+          </>
+        )}
+
+        {state === "assigned" && (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="flex items-center gap-1 text-[8px] font-medium uppercase tracking-[0.18em] text-emerald-300">
+                  <CheckCircle2 className="size-3" /> Approved &amp; assigned
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold text-white">
+                  Assigned to James &nbsp;·&nbsp; Mon 10 Jun
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-semibold text-emerald-300">
+                Signed off by you
+              </span>
+            </div>
+
+            <div className="mt-2 space-y-1 opacity-90">
+              {APPROVE_MEALS.map((m) => (
+                <div
+                  key={m.meal}
+                  className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
+                >
+                  <CheckCircle2 className="size-2.5 text-emerald-400" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[7.5px] font-semibold text-white">{m.meal}</p>
+                    <p className="truncate text-[7px] text-white/60">{m.item}</p>
+                  </div>
+                  <span className="text-[7.5px] font-semibold text-white/65">{m.k} kcal</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-2 rounded-[6px] border border-white/10 bg-reps-panel/40 p-2">
+              <p className={label}>Audit trail</p>
+              <p className="mt-0.5 text-[7.5px] text-white/75">
+                Generated by AI · 2 swaps · 1 coach note · approved by coach · saved to client record
+              </p>
+            </div>
           </>
         )}
       </div>
     </MockShell>
   );
 }
+
 
 // =============================================================================
 // 4. HABITS & WEARABLES — Sleep / Steps / Water / Workouts
