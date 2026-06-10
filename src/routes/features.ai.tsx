@@ -382,8 +382,8 @@ function Hero() {
       />
       <HeroOverlay copySide="left" />
 
-      <div className="relative mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-12 px-6 pt-24 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:px-10 lg:pt-28 lg:pb-24">
-        <div className="max-w-[640px]">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col justify-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
+        <div className="max-w-[680px]">
           <MarketingHeroEyebrow
             icon={Brain}
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
@@ -400,7 +400,7 @@ function Hero() {
           </h1>
 
           <p
-            className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
+            className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
             Not a chatbot. Not an AI personal trainer. REPs AI runs across your whole Pro
@@ -440,17 +440,6 @@ function Hero() {
               <Zap className="h-4 w-4 text-reps-orange" /> No extra add-ons
             </li>
           </ul>
-        </div>
-
-        <div
-          className="animate-fade-in"
-          style={{ animationDuration: "720ms", animationDelay: "260ms", animationFillMode: "both" }}
-        >
-          <LaptopFrame>
-            <div className="absolute inset-0 overflow-hidden bg-reps-ink p-4 sm:p-6">
-              <AiCommandCentreMock />
-            </div>
-          </LaptopFrame>
         </div>
       </div>
     </section>
@@ -534,22 +523,20 @@ function WorkflowSection() {
           lede="REPs AI isn't a feature you open. It runs across the entire Pro workspace — every stage of the day, drafting and ranking quietly in the background."
         />
 
-        <div className="mt-12 overflow-x-auto pb-2">
-          <ol className="grid min-w-[1280px] grid-cols-10 gap-3 lg:min-w-0">
-            {WORKFLOW_STAGES.map((stage, i) => (
-              <li
-                key={stage.title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel/60 p-4"
-              >
-                <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <p className="mt-2 font-display text-[14px] font-bold text-white">{stage.title}</p>
-                <p className="mt-1.5 text-[12px] leading-relaxed text-white/65">{stage.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+        <ol className="mt-12 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          {WORKFLOW_STAGES.map((stage, i) => (
+            <li
+              key={stage.title}
+              className="rounded-[18px] border border-reps-border bg-reps-panel/60 p-5"
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p className="mt-3 font-display text-[15px] font-bold text-white">{stage.title}</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-white/70">{stage.body}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
@@ -676,23 +663,6 @@ function NutritionSection() {
               title: "REPs AI nutrition draft",
             }}
           />
-
-          <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-orange-soft/30 p-7 lg:p-8">
-            <div className="flex items-start gap-4">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <AlertTriangle className="h-5 w-5" />
-              </span>
-              <div>
-                <BlockHeading>AI suggests. The professional decides.</BlockHeading>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-white/80">
-                  REPs AI does not provide medical advice and is not a substitute for a registered
-                  dietitian, clinician or qualified nutrition professional. Nutrition outputs are
-                  drafts only and must be reviewed by a qualified trainer before being shared with
-                  a client. Always work within your scope of practice.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -848,7 +818,7 @@ function ControlSection() {
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <Icon className="h-5 w-5" />
               </span>
-              <BlockHeading className="mt-4">{title}</BlockHeading>
+              <p className="mt-4 font-display text-[17px] font-bold text-white lg:text-[18px]">{title}</p>
               <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">{body}</p>
             </div>
           ))}
