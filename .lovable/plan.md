@@ -1,73 +1,45 @@
-## Goal
+# /features/ai — four targeted fixes
 
-Kill the hairline `border-b border-reps-border` divider that currently slices every marketing/feature page (and the navbar) into stacked panels. Replace with a softer separation: keep the alternating `bg-reps-panel/15`-style background tint that's already there for rhythm, and use a subtle drop-shadow on the sticky navbar/mobile menu chrome instead of a 1px line.
+Scope: `src/routes/features.ai.tsx` only. No new components, no copy rewrites elsewhere, no memory changes.
 
-## Scope
+## 1. Hero — drop the laptop mock-up
 
-In-scope (all dividers between full-bleed page sections):
+Match the other marketing pillar heroes (`/features/operations`, `/features/visibility`, `/features/shop-front`), which are copy-only over the hero photo.
 
-- `src/routes/index.tsx` (home — locked, only the dividers are touched)
-- `src/routes/features.coaching.tsx`
-- `src/routes/features.visibility.tsx`
-- `src/routes/features.shop-front.tsx`
-- `src/routes/features.operations.tsx`
-- `src/routes/for-professionals.tsx`
-- `src/routes/specialisms.tsx`
-- `src/routes/pricing.tsx`
-- `src/routes/cpd.tsx`
-- `src/routes/about.tsx`
-- `src/routes/contact.tsx`
-- `src/routes/careers.tsx`
-- `src/routes/complaints.tsx`
-- `src/routes/comparison-methodology.tsx`
-- `src/routes/c.$slug.tsx` (sticky header + sticky sub-nav hairlines only)
-- `src/components/marketing/HeadToHead.tsx`
-- `src/components/marketing/VerifySteps.tsx`
-- `src/components/marketing/MarketingFaq.tsx` (outer section only; keep the per-question `border-b` inside the accordion — that's a list separator, not a section divider)
+- Remove the right-hand `<LaptopFrame><AiCommandCentreMock /></LaptopFrame>` column.
+- Switch the hero grid back to a single copy column: same `max-w-[680px]` block, same eyebrow + H1 + lede + CTA row + trust-chip row, same staggered fade-up.
+- Keep `HeroOverlay copySide="left"`, the hero image, and the locked vertical rhythm (`pt-24 pb-20 lg:pt-28 lg:pb-24`).
+- Drop the now-unused `LaptopFrame` import. `AiCommandCentreMock` stays — still used in the AI Command Centre section further down the page.
 
-Chrome:
+## 2. "Across the whole workspace" — rebuild the 10-stage strip
 
-- `src/components/public/PublicHeader.tsx` — sticky navbar bottom border + mobile sheet header / user block / login block dividers
+The current `grid-cols-10` row produces ten cramped cards that don't read. Replace with a denser two-row layout that holds the same ten stages but actually scans.
 
-Out of scope (intentionally left alone — these are *content* borders, not section dividers):
+- Swap the 10-column overflow scroller for a responsive grid: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-5` (two rows on desktop, five up / five down).
+- Increase per-card padding back to `p-5`, stage label `text-[11px]`, title `text-[15px]`, body `text-[13px]`.
+- Keep the same 10 `WORKFLOW_STAGES` data and the same orange numeric eyebrow.
+- Keep section background `bg-reps-panel/15` and the existing `SectionHeader`.
 
-- Card outlines (`border border-reps-border` around cards/panels)
-- Table row separators inside dashboards, admin, and pricing comparison
-- Tab-strip underlines, input borders, message-thread headers
-- Mobile menu nav list (will keep the existing gap spacing; no line)
-- Anything inside `/dashboard`, `/admin*`, `/portal`, `/c/$slug` body (not chrome)
+## 3. Nutrition — remove the standalone safety callout
 
-## Visual treatment
+Drop the orange `AlertTriangle` panel ("AI suggests. The professional decides. … not a substitute for a registered dietitian…") that sits under the nutrition `ProductBlock`.
 
-1. **Section dividers** — delete `border-b border-reps-border` from full-bleed `<section>` wrappers. Keep every existing `bg-reps-panel/15` / `bg-reps-panel/20` / `bg-reps-panel/30` background alternation so the page still has rhythm via tone, not a line.
-2. **Navbar (scrolled state)** — replace `border-b border-reps-border` with a soft elevation shadow: `shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]`. At-rest navbar keeps no border (unchanged).
-3. **Coach shop-front sticky chrome (`c.$slug.tsx`)** — same treatment: drop the hairline, add the same soft shadow on the scroll-stuck header and sub-nav.
-4. **Mobile menu (`PublicHeader.tsx` sheet)** — remove the 3 divider lines on the header row, user block, and login block. Rely on the existing padding + a one-time `shadow-[0_6px_16px_-12px_rgba(0,0,0,0.6)]` under the sticky top row to anchor it visually.
+- Removes one full sub-block from `NutritionSection`; the `ProductBlock` itself (with its "Drafts. Trainer reviews. Trainer approves." body and bullets) stays as the section's only content.
+- The same "AI suggests, professional decides" message is already covered in the Control & Boundaries section and the FAQ, so nothing is lost.
+- If `AlertTriangle` becomes unused after this edit, remove it from the lucide import list.
 
-## Memory update
+## 4. Human Control & Boundaries — shrink tile typography
 
-Rewrite the Core rule currently locked as:
+The 2×2 tile grid currently uses `BlockHeading` (28 → 36px), which is the locked 50/50 in-block H3 scale and is too large for a 4-up tile.
 
-> Marketing divider convention (LOCKED): hero has NO divider; every subsequent section uses `border-b border-reps-border`.
+- Replace `<BlockHeading className="mt-4">{title}</BlockHeading>` in each tile with `<p className="mt-4 font-display text-[17px] font-bold text-white lg:text-[18px]">{title}</p>`.
+- Body text stays at `text-[14.5px] text-white/75`.
+- Tile padding stays `p-7`, radius stays `rounded-[22px]`, icon chip unchanged.
+- Leave the closing summary panel ("An operating layer, not an autopilot.") untouched — it's a full-width panel where `BlockHeading` is correct.
 
-To:
+## Out of scope
 
-> Marketing divider convention (LOCKED): no hairline dividers between marketing/feature page sections. Section rhythm comes from alternating `bg-reps-panel/15`–`/30` tints only. Sticky chrome (navbar, coach sub-nav) uses a soft drop-shadow (`shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]`) on scroll, never a border.
-
-## Technical details
-
-- Edits are pure className changes — no component restructuring, no new files.
-- Where a section currently uses `relative overflow-hidden border-b border-reps-border` (hero variants), only the `border-b border-reps-border` tokens are removed; `relative overflow-hidden` stays.
-- `cpd.tsx` uses `border-y` / `border-t border-reps-border` between sections — those count as section dividers and are removed.
-- `PublicHeader.tsx` line 201/202 conditional: `border-b border-reps-border` → swapped for the shadow class; the `border-b border-transparent` fallback (line 202) is deleted as it's no longer needed for layout stability.
-
-## Out of scope (per your message)
-
-- No changes to `/features/coaching` content/structure — only the divider removal applies there along with every other page.
-- No new mock-ups, no copy edits, no layout reflows.
-
-## Verification
-
-After edits:
-1. `rg "border-b border-reps-border" src/routes src/components/marketing src/components/public` should return zero hits except inside `MarketingFaq` per-question rows.
-2. Spot-check 3 pages in preview at desktop + mobile: `/features/coaching`, `/pricing`, `/for-professionals`. Confirm sections still feel separated via tint alternation, no visible hairlines, navbar shows a soft elevation when scrolled, mobile sheet has no line under the header row.
+- No changes to other sections (Problem split, AnnotatedMock, ProductBlocks for check-ins / programmes / ops / profile, AI Command Centre, Use cases, Tier comparison, FAQ, FinalCta).
+- No content rewrites.
+- No new shared components.
+- No memory file updates — the page is still pre-lock.
