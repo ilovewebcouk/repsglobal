@@ -237,7 +237,7 @@ function AboutPage() {
             <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
               <img
                 src={heritageAsset.url}
-                alt="A REPs-registered trainer in conversation with a client during a consultation."
+                alt="A REPs-registered trainer pauses on a wet dawn street after a hill session."
                 className="aspect-[4/5] w-full object-cover"
               />
             </div>
