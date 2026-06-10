@@ -42,7 +42,7 @@ function RepsCard() {
         <span className="text-[12px] text-white/40 line-through">£79</span>
       </div>
       <p className="text-[12.5px] text-white/55">
-        Unlimited clients · Founder pricing stays while you stay
+        Unlimited clients · Founding pricing locked for life
       </p>
 
       <div className="mt-5 rounded-[16px] border border-reps-orange/35 bg-reps-orange/10 p-3.5">

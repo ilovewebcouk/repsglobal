@@ -231,7 +231,7 @@ export function PillarPage({
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
-              <Sparkles className="h-3.5 w-3.5" /> Founder pricing — stays while you stay
+              <Sparkles className="h-3.5 w-3.5" /> Founding pricing — locked for life
             </span>
             <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[42px]">
               Built for fitness pros, not generic SaaS.

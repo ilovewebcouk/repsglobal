@@ -28,7 +28,6 @@ import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { BlockHeading } from "@/components/marketing/BlockHeading";
 import { AnnotatedMock, type Callout } from "@/components/marketing/AnnotatedMock";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FounderAccessBanner } from "@/components/marketing/FounderAccessBanner";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { TierCard } from "@/components/marketing/TierCard";
 import { Separator } from "@/components/ui/separator";
@@ -273,8 +272,6 @@ function ShopFrontPage() {
       <PublicHeader variant="solid" />
 
       <Hero />
-
-      <FounderAccessBanner />
 
       <ProblemSection />
       <AnatomySection />
