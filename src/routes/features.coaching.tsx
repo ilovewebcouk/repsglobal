@@ -173,7 +173,7 @@ const COMPARISON_ROWS = [
 const FAQ_ITEMS = [
   {
     q: "Is REPs Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
-    a: "For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
+    a: "For coaching delivery — yes. Programmes, exercise library with video, a nutrition library and food log, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
   },
   {
     q: "Does it actually replace MyFitnessPal for nutrition?",
