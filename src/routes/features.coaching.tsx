@@ -1053,11 +1053,6 @@ function NotesSection() {
 // =============================================================================
 
 function AISection() {
-  // Swap the placeholder ListIcon ref for ClipboardList without re-typing data
-  const items = AI_ASSISTS.map((a) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (a.icon as unknown) === (ListIcon as unknown) ? { ...a, icon: ClipboardList } : a,
-  );
   return (
     <section className="border-b border-reps-border">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
@@ -1068,7 +1063,7 @@ function AISection() {
         />
 
         <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((a) => {
+          {AI_ASSISTS.map((a) => {
             const Icon = a.icon;
             return (
               <li
