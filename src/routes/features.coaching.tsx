@@ -1094,8 +1094,6 @@ function AISection() {
   );
 }
 
-// Local alias used inside AI_ASSISTS — points at ClipboardList by default.
-const ListIcon = ClipboardList;
 
 // =============================================================================
 // 11. Templates
