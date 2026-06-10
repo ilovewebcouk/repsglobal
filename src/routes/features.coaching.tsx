@@ -9,21 +9,26 @@ import {
   Camera,
   Check,
   CheckCircle2,
+  CircleCheck,
   ClipboardCheck,
   ClipboardList,
   Dumbbell,
   FileText,
   HeartPulse,
+  Layers,
   LayoutDashboard,
   LineChart,
   ListChecks,
   MessageSquare,
+  NotebookPen,
   PlayCircle,
+  Smartphone,
   Sparkles,
   Target,
   Trophy,
   Users,
   Utensils,
+  UtensilsCrossed,
   Watch,
   Workflow,
   X,
@@ -50,7 +55,7 @@ import {
   ExerciseLibraryMock,
   HabitsMock,
   MessagingMock,
-  NutritionMock,
+  
   ProgrammeMock,
   ProgressMock,
   type AccId,
@@ -89,14 +94,6 @@ const PROGRAMME_BULLETS = [
   "Reusable templates so a new client never starts from a blank page",
 ];
 
-const NUTRITION_BULLETS = [
-  "Coach-set macro targets per client and per phase",
-  "Food database with barcode scan, fast logging and search",
-  "Meal plans built once, swapped item-by-item, macros recalculated",
-  "Photo meal logging — client snaps it, you review it",
-  "Weekly compliance scored against target, not vibes",
-  "All of it lives next to the programme, not in another app",
-];
 
 const HABITS_BULLETS = [
   "Sleep, steps and hydration tracked daily",
@@ -495,23 +492,145 @@ function ExerciseLibrarySection({
 // 04. Nutrition (the MFP-replacement section)
 // -----------------------------------------------------------------------------
 
+type MealOption = {
+  label: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  icon: typeof Utensils;
+  highlighted?: boolean;
+};
+
+const MEAL_OPTIONS: MealOption[] = [
+  {
+    label: "Manual",
+    title: "Manual builder",
+    body: "Build the plan yourself from the REPs meal library or your own custom meals. Full control, full ownership.",
+    bullets: ["Drag meals into the day", "Live macro totals", "Save as a personal template"],
+    icon: UtensilsCrossed,
+  },
+  {
+    label: "Templates",
+    title: "Templates",
+    body: "Reusable plan structures for common goals — fat loss, muscle gain, high-protein, vegetarian, low-prep, busy professional.",
+    bullets: ["Clone and personalise in seconds", "Tag by goal and dietary style", "Studio-wide template library"],
+    icon: Layers,
+  },
+  {
+    label: "AI draft",
+    title: "AI-assisted draft",
+    body: "AI drafts a plan from intake, goal, food preferences, allergies, schedule and cooking ability. You edit and approve.",
+    bullets: ["Draft in under 30 seconds", "Respects allergies and exclusions", "Always opens in edit mode"],
+    icon: Sparkles,
+    highlighted: true,
+  },
+];
+
+const PIPELINE_STEPS: { label: string; icon: typeof Utensils; emerald?: boolean }[] = [
+  { label: "Client intake", icon: ClipboardList },
+  { label: "AI draft", icon: Sparkles },
+  { label: "Trainer edits", icon: NotebookPen },
+  { label: "Trainer approves", icon: CircleCheck, emerald: true },
+  { label: "Client sees plan", icon: Smartphone },
+];
+
 function NutritionSection() {
   return (
     <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-        <SectionHeader
-          eyebrow="Nutrition coaching"
-          heading="Replace the food-tracking app with something built for coaching."
-          lede="Coach-set macros, food database with barcode scan, meal plans, photo meals and weekly compliance — all on the client record. Stop chasing screenshots from MyFitnessPal. Your client logs, you coach, the system carries the weekly story."
-        />
+        <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-reps-border bg-reps-panel/60 px-4 py-2 text-[12.5px] text-white/70">
+          <span className="inline-flex size-6 items-center justify-center rounded-full bg-reps-orange-soft text-[11px] font-bold text-reps-orange">
+            SK
+          </span>
+          Following <span className="font-semibold text-white">Sarah K.</span>
+          <span className="hidden text-white/45 sm:inline">
+            · 12-week fat-loss client · 3×/week · 145g protein target
+          </span>
+        </div>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
-          <NutritionMock />
-          <BulletColumn
-            heading="Nutrition belongs next to the programme — not in someone else's app."
-            body="MyFitnessPal was built for individuals, not coaches. REPs Nutrition was built so you can set the plan, your client can log against it, and you can see the week without asking. Macros, meals, photo logging and compliance — in one workspace."
-            bullets={NUTRITION_BULLETS}
-          />
+        <div className="max-w-[760px]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+            Meal planning + nutrition support
+          </span>
+          <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
+            Meal planning, built into coaching — not bolted on.
+          </h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/70">
+            Create meal plans manually, use saved templates, or generate AI-assisted drafts based on the client's
+            goals, intake answers, preferences and dietary requirements. You review and approve the final plan
+            before it reaches the client.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {MEAL_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            return (
+              <div
+                key={opt.label}
+                className={
+                  "rounded-[22px] p-6 " +
+                  (opt.highlighted
+                    ? "border border-reps-orange-border bg-reps-panel/70"
+                    : "border border-reps-border bg-reps-panel/40")
+                }
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={
+                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] " +
+                      (opt.highlighted
+                        ? "bg-reps-orange text-white"
+                        : "bg-reps-orange-soft text-reps-orange")
+                    }
+                  >
+                    {opt.label}
+                  </span>
+                  <Icon className="h-5 w-5 text-reps-orange" aria-hidden="true" />
+                </div>
+                <p className="mt-4 text-[18px] font-semibold text-white">{opt.title}</p>
+                <p className="mt-2 text-[14px] leading-relaxed text-white/70">{opt.body}</p>
+                <ul className="mt-5 flex flex-col gap-2">
+                  {opt.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-[13px] text-white/70">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" aria-hidden="true" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
+          <p className="font-display text-[22px] font-bold leading-[1.2] text-white lg:text-[26px]">
+            "AI should speed up meal planning, not replace professional judgement."
+          </p>
+          <ol className="mt-6 flex flex-wrap items-center gap-2">
+            {PIPELINE_STEPS.map((step, i) => {
+              const Icon = step.icon;
+              const isLast = i === PIPELINE_STEPS.length - 1;
+              return (
+                <li key={step.label} className="flex items-center gap-2">
+                  <span
+                    className={
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] " +
+                      (step.emerald
+                        ? "border border-emerald-400/30 bg-emerald-500/15 font-semibold text-emerald-300"
+                        : "border border-reps-border bg-reps-ink/70 font-medium text-white/70")
+                    }
+                  >
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    {step.label}
+                  </span>
+                  {!isLast && (
+                    <ArrowRight className="h-3.5 w-3.5 text-white/30" aria-hidden="true" />
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     </section>
