@@ -7,7 +7,7 @@ type Eyebrow = { icon?: LucideIcon; label: string };
 
 type FinalCtaProps = {
   /**
-   * Pill above the headline. Defaults to "Founding pricing — locked for life".
+   * Pill above the headline. Defaults to "Founder pricing — stays while you stay".
    * Pass `null` to hide the pill entirely.
    */
   eyebrow?: Eyebrow | null;
@@ -21,7 +21,7 @@ type FinalCtaProps = {
 
 const DEFAULT_EYEBROW: Eyebrow = {
   icon: Star,
-  label: "Founding pricing — locked for life",
+  label: "Founder pricing — stays while you stay",
 };
 
 /**

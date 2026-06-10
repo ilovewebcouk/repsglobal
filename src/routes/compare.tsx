@@ -199,7 +199,7 @@ function ComparePage() {
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
               Start free, get verified, and run your whole practice on REPs. Founding
-              pricing locked for life on paid plans — before public launch.
+              pricing on paid plans stays active while your subscription stays active — before public launch.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link

@@ -16,6 +16,7 @@ import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -39,6 +40,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
@@ -137,6 +139,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoadmapRoute = RoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewsRoute = ReviewsRouteImport.update({
@@ -252,6 +259,11 @@ const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -585,6 +597,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/careers': typeof CareersRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
@@ -608,6 +621,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/roadmap': typeof RoadmapRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -681,6 +695,7 @@ export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/careers': typeof CareersRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
@@ -704,6 +719,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/roadmap': typeof RoadmapRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -777,6 +793,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/careers': typeof CareersRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/complaints': typeof ComplaintsRoute
@@ -800,6 +817,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
+  '/roadmap': typeof RoadmapRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -875,6 +893,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/careers'
+    | '/changelog'
     | '/compare'
     | '/comparison-methodology'
     | '/complaints'
@@ -898,6 +917,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/roadmap'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -971,6 +991,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/careers'
+    | '/changelog'
     | '/compare'
     | '/comparison-methodology'
     | '/complaints'
@@ -994,6 +1015,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/roadmap'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -1066,6 +1088,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/careers'
+    | '/changelog'
     | '/compare'
     | '/comparison-methodology'
     | '/complaints'
@@ -1089,6 +1112,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/reviews'
+    | '/roadmap'
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
@@ -1163,6 +1187,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
   CareersRoute: typeof CareersRoute
+  ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ComplaintsRoute: typeof ComplaintsRoute
@@ -1186,6 +1211,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReviewsRoute: typeof ReviewsRoute
+  RoadmapRoute: typeof RoadmapRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
@@ -1300,6 +1326,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roadmap': {
+      id: '/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof RoadmapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviews': {
@@ -1461,6 +1494,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers': {
@@ -1944,6 +1984,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
   CareersRoute: CareersRoute,
+  ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ComplaintsRoute: ComplaintsRoute,
@@ -1967,6 +2008,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReviewsRoute: ReviewsRoute,
+  RoadmapRoute: RoadmapRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
@@ -2034,13 +2076,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
