@@ -64,7 +64,7 @@ import heroCoaching from "@/assets/hero-coaching-bg.jpg.asset.json";
 
 const PROBLEM_FRAGMENTS = [
   { icon: Dumbbell, label: "Programmes in a workout app" },
-  { icon: Utensils, label: "Nutrition in MyFitnessPal" },
+  { icon: Utensils, label: "Nutrition in PDFs and screenshots" },
   { icon: MessageSquare, label: "Check-ins on WhatsApp" },
   { icon: Camera, label: "Progress photos in camera rolls" },
   { icon: Watch, label: "Sleep & steps in another app" },
