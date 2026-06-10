@@ -1,76 +1,75 @@
-# Nutrition section redesign — draft → approve → assign
+# Nutrition section — full visual rework
 
-Goal: make the Nutrition section on `/features/coaching` unmistakably tell the locked story — **"AI drafts the meal plan. You approve the coaching decision."** — instead of reading as a generic 3-card feature list.
+Scope: `/features/coaching` Nutrition section only. No other section touched. No shared primitives changed (BulletColumn stays as-is — 9 other sections use it).
 
-Scope is the Nutrition section only. No new route, no DB, no real AI calls, no changes to `/dashboard_.nutrition.tsx` or `/portal_.nutrition.tsx`, no nav. All AI is mock UI.
+## What's wrong today
 
-## 1. Section heading + lede (features.coaching.tsx ~525)
+1. **Mock has a huge dead zone.** The shared `MockShell` lets each state size itself, so the Library state (4 small recipe cards + filter row) leaves ~60% of the laptop frame black. The Draft/Approve/Assigned states fill it; Library doesn't.
+2. **Right column is a tower of 8 bordered pills.** Each `NUTRITION_BULLETS` item renders as its own card via `BulletColumn`. The column ends up ~2× the height of the mock — the block reads as "half-empty laptop next to a wall of pills."
+3. **Workflow strip + tabs + bullets all repeat the same story** — `Build library → AI drafts → Approve` lives in the 3-card strip, in the 4 mock tabs, AND in the bullets. Triple-stated.
+4. **Tab labels still showed old "Library / Plan / Client log / Diary"** in the screenshot — code is already updated to Library/Draft/Approve/Assigned, so this is a stale-build artifact. New layout will make the change unmistakable.
 
-- **Eyebrow:** `Nutrition coaching`
-- **Heading (new):** `AI drafts the meal plan. You approve the coaching decision.`
-- **Lede (new):** `Build your nutrition library once, then let REPs assemble client-ready plans from your approved recipes, calorie targets and coaching rules. Nothing reaches the client until you sign it off.`
-
-## 2. Replace the 3 generic feature cards with a 3-step workflow strip
-
-Same 3-column grid, but each card becomes a labelled step with an arrow connector on desktop:
+## New layout
 
 ```text
-[ 1. Build your library ] → [ 2. AI drafts the plan ] → [ 3. You approve & assign ]
+┌─────────────────────────────────────────────────────────┐
+│  EYEBROW                                                 │
+│  AI drafts the meal plan.                                │
+│  You approve the coaching decision.                      │
+│  [lede]                                                  │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│     ┌──────────────────────────────────────────┐         │
+│     │  ● ● ●   Nutrition · James Carter        │         │
+│     │  [ Library ] [ Draft ] [ Approve ] [Assigned]      │
+│     │                                          │         │
+│     │     full-bleed mock content              │         │
+│     │     (fixed min-height, every state       │         │
+│     │      pads up to match the tallest)       │         │
+│     │                                          │         │
+│     └──────────────────────────────────────────┘         │
+│                                                          │
+│  ── Build ──────→  Draft ──────→  Approve ──────→  ──    │
+│  Library you trust   AI assembles   You sign off          │
+│  Recipes, meals,     Pulls from your  Swap, edit, note,   │
+│  templates you've    library only —   approve. Logged     │
+│  approved.           never a random   on the record.      │
+│                      food database.                       │
+└─────────────────────────────────────────────────────────┘
 ```
 
-- **Step 1 — Library you trust.** Recipes, ingredients, meals and templates you've already approved. Nothing the AI suggests comes from outside this set.
-- **Step 2 — AI assembles the draft.** Pick a client target (e.g. 1,800 kcal, high protein, 7 days, no dairy). REPs assembles a draft plan from your approved recipes — never from a random food database.
-- **Step 3 — Coach approves & assigns.** Swap meals, edit portions, leave notes, then sign off. Only approved plans reach the client. The decision is logged on the record.
+Concretely:
 
-Number badge stays orange. Add a small `ArrowRight` between cards at `lg:` (hidden on mobile). Cards keep `rounded-[18px] border border-reps-border bg-reps-panel/40`.
-
-## 3. Rework the interactive mock (InteractiveMocks.tsx ~432)
-
-Replace the 4 tabs (Library / Plan / Client log / Diary) with 4 tabs that **tell the workflow** in order:
-
-```
-[ Library ] [ Draft ] [ Approve ] [ Assigned ]
-```
-
-- **Library** — keep current grid of approved recipes; add a small chip `Approved by you · 248` to underline source-of-truth.
-- **Draft (NEW — the hero state)** — top bar shows the coach's brief as input chips: `Client: James C` · `1,800 kcal` · `High protein` · `7 days` · `No dairy`. Then a button row: `[✨ Generate draft]`. Below: 7-day grid pre-filled with meals pulled from the library, each meal labelled with a small `AI suggested` pill in orange/10. Footer line: `Draft only — not sent to client.`
-- **Approve (NEW)** — same 7-day plan but with coach actions visible: one meal shows a `Swapped → Salmon traybake` chip, one shows a coach note `+30g rice on training days`, one row has `[ Approve ] [ Edit ]` buttons with the Approve button highlighted. Top status: `Awaiting coach sign-off · 2 edits made`.
-- **Assigned** — confirmation state: green check, `Assigned to James · Mon 10 Jun`, plus the same plan rendered read-only with `Signed off by you` watermark and an audit line: `Generated by AI · 2 swaps · 1 note · approved by coach`.
-
-Remove the **Diary** tab entirely (external diary links live in bullets + FAQ, not the hero mock). Remove the `Apple`/MFP import row from the mock.
-
-## 4. Bullet column (NUTRITION_BULLETS) — rewrite around draft/approve
-
-- `Pick a client target — calories, macros, days, dietary rules — in seconds`
-- `REPs drafts a plan from your approved library only — never random food database results`
-- `Swap any meal, edit portions, add coaching notes inline`
-- `Nothing reaches the client until you sign it off — every plan is your decision`
-- `Approved plans land on the client record alongside programmes, check-ins and progress`
-- `Clients log meals, photos, water and notes against the plan you assigned`
-- `Optional: clients attach a public MyFitnessPal or Cronometer link for review — no sync promised`
-- `Every AI draft, swap and approval is logged so you can show your working`
-
-Update the column heading to the locked phrase verbatim:
-> **Build your nutrition library once, then let REPs help assemble client-ready plans from your approved recipes, calorie targets and coaching rules.**
-
-## 5. Remove the roadmap disclaimer
-
-Delete the centred line `On the nutrition roadmap: barcode scan, food database search...`. It currently reads as "this isn't finished." The honest scope is already communicated by the bullets and FAQ.
-
-## 6. Tiny supporting copy edits (same file)
-
-- **TEMPLATE_CARDS nutrition entry (~141):** update body to `AI-drafted meal plans built from your approved recipes — you swap, edit and sign off before anything reaches the client.`
-- **COMPARISON_ROWS (~160):** change feature label to `AI-assisted meal plans from your approved library + client food log`.
-- **FAQ "Does it replace MyFitnessPal?"** — keep current honest answer; no change needed.
-
-## 7. Out of scope
-
-- No real AI generation, no edge function, no DB schema, no new shared component.
-- No changes to dashboard/portal nutrition routes.
-- No new icons beyond `Sparkles`, `ArrowRight`, `Check` (all already used elsewhere in the file or in lucide-react).
-- No changes to other coaching sections, hero, problem strip, or page chrome.
+1. **Replace the `lg:grid-cols-[1.15fr_0.85fr]` mock+bullets row** with a single centered `NutritionMock` capped at `max-w-[920px]` with `mx-auto`. The mock becomes the section's hero, not a sidekick.
+2. **Move the existing 3-step workflow strip (`NUTRITION_PARTS`)** to sit *under* the mock instead of above it — it becomes the "what just happened" recap of the 4 tab states, not a prelude. Keep the arrow connectors but lighten visual weight (smaller card padding, no border, just dim divider lines).
+3. **Delete the `BulletColumn` + `NUTRITION_BULLETS` block from this section entirely.** Those 8 lines are absorbed into:
+   - The mock states (which already show pick-target / AI-suggests / swap-edit / sign-off / audit-trail visually)
+   - The 3 workflow recap cards (which already cover library / draft / approve)
+   - Two of the most important lines ("never random food database results", "every decision is logged") move into the workflow card bodies if not already there.
+4. **Fix the mock frame.** Inside `NutritionMock`, add `min-h-[320px]` (or equivalent) to the inner content wrapper so the Library state pads to match Draft/Approve height. Library state gets an unobtrusive footer note that fills the slack — e.g. an "Approved by you · 248" callout already exists; expand it to a 1-line summary strip at the bottom of the Library state so the frame is balanced.
+5. **Default mock state**: switch from `"draft"` to `"library"` so the narrative arc on first view matches the section header ("build your library once, *then* let REPs assemble plans").
 
 ## Files touched
 
-1. `src/routes/features.coaching.tsx` — `NutritionSection`, `NUTRITION_PARTS`, `NUTRITION_BULLETS`, the matching `TEMPLATE_CARDS` and `COMPARISON_ROWS` rows.
-2. `src/components/marketing/coaching/InteractiveMocks.tsx` — `NUTRITION_STATES`, `NutritionMock`, drop `DIARY_SOURCES`, add `Draft` + `Approve` + `Assigned` state markup.
+- `src/routes/features.coaching.tsx`
+  - `NutritionSection()` (lines 521-578): restructure JSX — header → centered mock → workflow recap strip. Remove the `BulletColumn` call and the `lg:grid-cols-[1.15fr_0.85fr]` grid.
+  - `NUTRITION_BULLETS` (lines 92-101): delete (no longer referenced).
+  - `NUTRITION_PARTS` copy: light edit so "never random food database" + "every decision is logged" land in the right cards.
+
+- `src/components/marketing/coaching/InteractiveMocks.tsx`
+  - `NutritionMock()` (lines 472-685): wrap inner content area in a `min-h-[320px]` container; default `useState` to `"library"`; add a balanced footer block to the Library state so it stops looking empty.
+
+## Out of scope
+
+- No changes to `BulletColumn`, `SectionHeader`, `MockShell`, or any other section.
+- No new components, no shared primitives.
+- No copy rewrite on the locked phrase or lede.
+- The stale "old tabs" rendering in the screenshot is a refresh artifact; no code action needed beyond the rework above.
+
+## Acceptance check
+
+After the change, viewing `/features/coaching` at desktop width:
+- Nutrition section is visibly centered, not lopsided.
+- Mock frame has no large black dead zone in any of the 4 tab states.
+- No tower of 8 stacked pills. The right column doesn't exist.
+- The story reads: header → live mock you can tab through → 3 short recap cards. Three beats, not three repetitions.
