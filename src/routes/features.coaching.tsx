@@ -53,7 +53,7 @@ import {
   CheckInsInboxMock,
   ClientPortalInteractiveMock,
   ExerciseLibraryMock,
-  HabitsMock,
+  
   MessagingMock,
   
   ProgrammeMock,
@@ -94,15 +94,6 @@ const PROGRAMME_BULLETS = [
   "Reusable templates so a new client never starts from a blank page",
 ];
 
-
-const HABITS_BULLETS = [
-  "Sleep, steps and hydration tracked daily",
-  "Apple Health, Garmin, Whoop, Fitbit sync — automatic",
-  "Training sessions logged from the watch on the wrist",
-  "Patterns surfaced into the check-in, not buried in another tab",
-  "Habit streaks for the things that move the goal",
-  "Coach sees the week without asking 'how's sleep been?'",
-];
 
 const CHECKIN_BULLETS = [
   "Weekly cadence with goal review baked in",
@@ -241,7 +232,7 @@ function CoachingPage() {
       <ProgrammeSection featured={featured} />
       <ExerciseLibrarySection curated={curated} featured={featured} />
       <NutritionSection />
-      <HabitsSection />
+      
       <CheckInsSection />
       <ProgressSection />
       <MessagingSection />
@@ -637,32 +628,6 @@ function NutritionSection() {
   );
 }
 
-// -----------------------------------------------------------------------------
-// 05. Habits & wearables
-// -----------------------------------------------------------------------------
-
-function HabitsSection() {
-  return (
-    <section className="border-b border-reps-border">
-      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-        <SectionHeader
-          eyebrow="Habits &amp; wearables"
-          heading="Sleep, steps and training data flow into the check-in — automatically."
-          lede="Apple Health, Garmin, Whoop and Fitbit sync directly into the client's record. You see the week without asking 'how's sleep been?' Habits become trackable, patterns become visible, and the conversation moves from chasing data to coaching the person."
-        />
-
-        <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
-          <HabitsMock />
-          <BulletColumn
-            heading="The week shows up on its own. You spend the call coaching."
-            body="When sleep, steps, hydration and sessions sync from the wrist, you stop spending half the check-in chasing data. You start the call already knowing the week — and use the conversation to coach the response, not collect the inputs."
-            bullets={HABITS_BULLETS}
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // -----------------------------------------------------------------------------
 // 06. Check-ins
