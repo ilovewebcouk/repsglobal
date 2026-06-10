@@ -90,14 +90,14 @@ const PROGRAMME_BULLETS = [
 ];
 
 const NUTRITION_BULLETS = [
-  "Build recipes from ingredients with portion, macros and prep notes — save once, reuse forever",
-  "Meal plan templates for fat loss, hypertrophy, vegan, athlete, family and shift-worker scenarios",
-  "Assign a plan, swap meals per client, send a shopping list",
-  "Recipe books give clients structured options without you writing a new plan every week",
-  "Clients log meals, photos, water, hunger and energy inside REPs",
-  "Attach a MyFitnessPal or Cronometer public link, screenshot or CSV export for review",
-  "Every nutrition action lands on the client record, next to programmes, check-ins and progress",
-  "Deeper tracker imports, barcode scan and AI meal recognition are on the later roadmap",
+  "Pick a client target — calories, macros, days, dietary rules — in seconds",
+  "REPs drafts a plan from your approved library only — never random food database results",
+  "Swap any meal, edit portions, add coaching notes inline",
+  "Nothing reaches the client until you sign it off — every plan is your decision",
+  "Approved plans land on the client record alongside programmes, check-ins and progress",
+  "Clients log meals, photos, water and notes against the plan you assigned",
+  "Optional: clients attach a public MyFitnessPal or Cronometer link for review — no sync promised",
+  "Every AI draft, swap and approval is logged so you can show your working",
 ];
 
 const HABITS_BULLETS = [
