@@ -1,67 +1,75 @@
+## Goal
 
-## What Ascend ExerciseDB v2 gives us
+Rebuild the existing Nutrition section on `/features/coaching` (not a new page) as the honest beta product: **REPs Nutrition Library + meal plan templates + in-house client food log + optional external food diary link**. Strip every overpromise (food database, barcode scan, AI photo recognition, MyFitnessPal/Cronometer "sync") from the page and the mock.
 
-11,000+ exercises via RapidAPI. Each exercise returns:
-- `name`, `bodyParts`, `targetMuscles`, `secondaryMuscles`, `equipments`, `exerciseType`
-- 4 image resolutions (360/480/720/1080p, webp)
-- MP4 `videoUrl` demo
-- `overview`, `instructions[]`, `exerciseTips[]`, `variations[]`, `relatedExerciseIds[]`
+## Why on `/features/coaching`
 
-Auth: two headers — `X-RapidAPI-Key` (our key) + `X-RapidAPI-Host: edb-with-videos-and-images-by-ascendapi.p.rapidapi.com`.
+Coaching pillar already owns Programmes / Nutrition / Habits / Check-ins / Client View / Templates as one continuous workspace. Splitting nutrition off would break that narrative and force a near-duplicate page. Keep one pillar, rewrite the one section.
 
-Free tier = watermarked video/images. Paid tier = clean. We'll start on whichever tier you subscribe to.
+## Files touched
 
-## What the user has to do (one-off)
+1. **`src/routes/features.coaching.tsx`** — rewrite `NutritionSection` only. Update copy on a handful of surrounding strings (hero subhead, problem strip, FAQ "Does it replace MyFitnessPal?", Verified-vs-Pro matrix row, related Pro/Verified copy) to match the new honest framing. Leave the rest of the page (Programmes, Habits, Check-ins, Client View, Templates, Use cases, Tier matrix, FAQ frame) untouched.
+2. **`src/components/marketing/coaching/InteractiveMocks.tsx`** — replace `NutritionMock` and its `NUTRITION_STATES`/`NUTRITION_BULLETS` with the new beta-honest version. Remove the `Barcode` chip, the "database recalculates macros automatically" line, and the "Photo meal · AI-identified · Estimate" tab entirely.
+3. **No new files, no new route, no nav change.**
 
-1. Subscribe at https://rapidapi.com/ascendapi/api/edb-with-videos-and-images-by-ascendapi (free tier is fine for now — videos will have an Ascend watermark until upgraded).
-2. Copy the `X-RapidAPI-Key` from the RapidAPI dashboard.
-3. I'll then prompt for it via `add_secret` and store it as `RAPIDAPI_EXERCISEDB_KEY` (server-only, never exposed to the browser).
+## New section structure (single `NutritionSection`, ~2× current height)
 
-## What I'll build (this turn)
+Eyebrow: `Nutrition coaching` (unchanged)
+Heading: **"Nutrition coaching built around your own library."**
+Lede: "Create recipes, build meal plan templates, assign recipe books, review client food logs, and keep nutrition feedback connected to check-ins, progress and accountability."
 
-### 1. Server boundary — never expose the RapidAPI key
+Then a **3-column "three core parts"** card row directly under the lede — short, scannable, sets the architecture:
 
-`src/lib/exercisedb.server.ts` — thin fetch wrapper that injects both headers and base URL.
+- **1 · REPs Nutrition Library** — Ingredients, recipes, meals, recipe books and meal plan templates. Use the REPs library or build your own.
+- **2 · Meal plan templates** — 7-day fat loss, high-protein meal prep, vegan muscle gain, athlete fuelling, family low-prep, shift-worker, maintenance. Assign and adapt.
+- **3 · Client food log + external diary** — Clients log meals, photos, water and notes in REPs — or attach a public MyFitnessPal / Cronometer link for review.
 
-`src/lib/exercisedb.functions.ts` — two `createServerFn` endpoints:
-- `searchExercises({ query?, bodyPart?, equipment?, limit })` → list view (name + 480p image + bodyPart + equipment)
-- `getExercise({ exerciseId })` → full record including `videoUrl`
+Then the existing 60/40 mock + bullet column, but the mock now has **4 new tabs** matching the architecture:
 
-Both server fns add a 24h in-memory cache keyed by params. The CDN media URLs are public and safe to render directly in the browser — only the JSON metadata goes through our server.
+`Library` · `Plan template` · `Client log` · `External diary`
 
-### 2. Wire the Coaching page mock to real data
+### Mock content per tab (rebuild in `InteractiveMocks.tsx`)
 
-On `/features/coaching` the `ProgrammeMock` + `ExerciseLibraryMock` currently show hard-coded exercise names. I'll:
-- Add a route loader that calls `searchExercises({ limit: 12 })` for a curated set (Bench Press, Squat, Deadlift, Pull-up, Romanian Deadlift, Overhead Press, Lunge, Plank, Bent-Over Row, Hip Thrust, Bulgarian Split Squat, Lat Pulldown).
-- Render their real 480p webp thumbnails + names in the library grid.
-- On click, swap the mock's right-hand "preview" pane to the real MP4 `videoUrl` in a muted, looped `<video>` (autoplay, `playsInline`, `loop`, `muted`). This makes the "600+ exercises with video demos" claim provably real on the marketing page itself.
-- Add a small "Powered by ExerciseDB" attribution line under the mock — keeps us honest, no brand-logo grid (per banned-orgs rule).
+- **Library** — Grid of recipe cards (High-protein chicken rice bowl · Tofu peanut noodles · Overnight oats · Salmon traybake). Each card: macros chip, dietary tag (HP / V / GF), "12 ingredients". Top filter chips: Recipes / Ingredients / Meals / Recipe books / Templates. Footer line: "Use the REPs library or save your own."
+- **Plan template** — "7-day fat loss · 1,800 kcal · 150 P / 170 C / 55 F". Day-strip Mon–Sun, expanded Wed showing 4 meals (Breakfast / Lunch / Snack / Dinner) with portion + kcal. Side panel: substitutions, shopping list link, coach-only notes, client instructions. Footer chip: "Assign to client".
+- **Client log** — Today view: assigned meals checklist (Breakfast ✓, Lunch ✓, Snack —, Dinner —), water 6/8 glasses, photo thumbnail of lunch, hunger 3/5, energy 4/5, adherence note. Manual-add row "Log a meal" with mini fields (name + kcal). No barcode chip. No AI identify.
+- **External diary** — Card list of attached sources: MyFitnessPal public diary link (URL preview), Cronometer report link, "Week 6 export.csv" file, screenshot thumbnail, free-text client note. Tiny status pill: "Read-only · opens in new tab". Helper line: "Connect an external food diary link — automatic imports planned for later releases."
 
-If the API key is missing or the call fails, the mock falls back to the current static state (no marketing-page breakage).
+### Right-column bullets (replaces NUTRITION_BULLETS)
 
-### 3. Copy + counts
+- Build recipes from ingredients with portion, macros and prep notes — save once, reuse forever
+- Meal plan templates for fat loss, hypertrophy, vegan, athlete, family and shift-worker scenarios
+- Assign a plan, swap meals per client, send a shopping list
+- Recipe books give clients structured options without you writing a new plan every week
+- Clients log meals, photos, water, hunger and energy inside REPs
+- Attach a MyFitnessPal or Cronometer public link, screenshot or CSV export for review
+- Every nutrition action lands on the client record, next to programmes, check-ins and progress
+- Deeper tracker imports, barcode scan and AI meal recognition are on the later roadmap
 
-- Change "600+ exercises" → "10,000+ exercise demos" (we now have a real 11k library to back it).
-- Keep "Pros can upload their own clips" as a roadmap line — it's the differentiator vs Trainerize charging extra.
+### "Coming later" caption strip
 
-## What I'm NOT building yet (separate plan)
+A single small line under the section (muted, white/55): *"On the nutrition roadmap: barcode scan, food database search, AI meal recognition and deeper tracker imports."* — sets honest expectations without burying the value.
 
-- Real Programme Builder UI inside the authenticated dashboard (exercise picker, set/rep editor, drag-reorder, assign to client, mobile client view of the video). That's a 2–3 day product build, not a marketing-page fix.
-- Mirroring the catalogue into our DB. Until we have paying Pros, hitting the API on demand with caching is enough.
-- Paid-tier upgrade — start free + watermarked, upgrade when we ship the dashboard feature.
+## Copy edits elsewhere on the page (surgical, same file)
 
-## Failure modes I've planned for
+- **Problem strip** (line ~67): change `{ icon: Utensils, label: "Nutrition in MyFitnessPal" }` → `{ icon: Utensils, label: "Nutrition in PDFs and screenshots" }`.
+- **Problem strip lede** (line ~370): replace `"nutrition in MyFitnessPal"` with `"nutrition in PDFs, screenshots and WhatsApp"`.
+- **FAQ "Does it actually replace MyFitnessPal for nutrition?"** (line ~177): rewrite answer to: *"For coach-led nutrition — yes. You build a library of recipes, ingredients, meals and meal plan templates, assign them to clients, and review their food log, photos and weekly check-in in one place. Clients can also attach a public MyFitnessPal, Cronometer or other tracker link if they prefer to log there — REPs treats it as evidence on the client record. Barcode scan, a food database and AI meal recognition are on the roadmap, not the beta."*
+- **FAQ "Is REPs really one workspace?"** (line ~174): drop "nutrition with a food database" → "nutrition library and food log".
+- **Verified-vs-Pro matrix row** (line ~158): rename `"Nutrition: macros, food log, meal plans"` → `"Nutrition library, meal plan templates, client food log"`.
+- **`NUTRITION_FEATURES`** card (line ~139): keep the tile but change body to *"Build a library of recipes, meals and templates. Assign in one click. Review the client's log on the same record."*
 
-- **Missing key** → server fn throws a typed "not configured" error; coaching page renders the static fallback; no white screen.
-- **Rate limit (RapidAPI free tier)** → 24h cache means a single curated set is ~12 requests on first deploy then 0; well under any free-tier ceiling.
-- **Watermark on free tier** → acceptable for now; documented above.
-- **CDN video blocked / slow** → `<video>` has a `poster` from the 720p image so the still always renders.
+## Out of scope (do NOT add this turn)
 
-## Order of operations
+- No new route `/features/nutrition`
+- No "Founder Access" banner inside this section (founder messaging stays on `/founder-access`)
+- No DB/migration, no real MFP/Cronometer parsing, no AI scanning
+- No changes to `/dashboard_.nutrition.tsx` or `/portal_.nutrition.tsx` (separate mockups, separate scope)
+- No nav changes
+- No new shared component — the 3-column "three parts" row is plain markup inside `NutritionSection`
 
-1. You confirm the plan.
-2. I prompt for `RAPIDAPI_EXERCISEDB_KEY` via `add_secret` (you paste it from RapidAPI).
-3. I build the server fns + wire the Coaching mock + update copy.
-4. We verify a real Bench Press video plays inside the mock on `/features/coaching`.
+## Locked phrase
 
-Shall I proceed?
+> **Build your own nutrition library, assign meal plans, review food logs, and keep every nutrition decision connected to the client record.**
+
+Used as the section lede or as a closing line above the bullets — exact wording.
