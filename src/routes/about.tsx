@@ -1,51 +1,51 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Award, Globe, Heart, ShieldCheck, Sparkles, Target, Users } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { Award, Globe, Heart, ShieldCheck, Sparkles, Target, Users } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroCoaching from "@/assets/hero-coaching-moment";
-import ctaBand from "@/assets/cta-band.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroCoaching from"@/assets/hero-coaching-moment";
+import ctaBand from"@/assets/cta-band.jpg";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About REPs — The Register of Exercise Professionals" },
+      { title:"About REPs — The Register of Exercise Professionals" },
       {
-        name: "description",
+        name:"description",
         content:
-          "REPs is the global register of verified exercise professionals — a single, trusted home for qualified PTs, coaches, instructors and nutritionists.",
+"REPs is the global register of verified exercise professionals — a single, trusted home for qualified PTs, coaches, instructors and nutritionists.",
       },
-      { property: "og:title", content: "About REPs" },
+      { property:"og:title", content:"About REPs" },
       {
-        property: "og:description",
-        content: "The global register of verified exercise professionals.",
+        property:"og:description",
+        content:"The global register of verified exercise professionals.",
       },
-      { property: "og:url", content: "/about" },
+      { property:"og:url", content:"/about" },
     ],
-    links: [{ rel: "canonical", href: "/about" }],
+    links: [{ rel:"canonical", href:"/about" }],
   }),
   component: AboutPage,
 });
 
 const VALUES = [
-  { icon: ShieldCheck, title: "Verified by default", body: "Every professional on REPs is checked for qualifications, insurance and ongoing CPD." },
-  { icon: Heart, title: "Built around clients", body: "Honest reviews, transparent pricing, and the freedom to choose who you train with." },
-  { icon: Target, title: "Standards that grow", body: "We continually raise the bar on what it means to be a registered exercise professional." },
-  { icon: Globe, title: "Global, local, online", body: "Search across cities or online sessions — REPs works wherever you do." },
+  { icon: ShieldCheck, title:"Verified by default", body:"Every professional on REPs is checked for qualifications, insurance and ongoing CPD." },
+  { icon: Heart, title:"Built around clients", body:"Honest reviews, transparent pricing, and the freedom to choose who you train with." },
+  { icon: Target, title:"Standards that grow", body:"We continually raise the bar on what it means to be a registered exercise professional." },
+  { icon: Globe, title:"Global, local, online", body:"Search across cities or online sessions — REPs works wherever you do." },
 ];
 
 const STATS = [
-  { v: "25,000+", k: "Verified professionals" },
-  { v: "1M+", k: "Sessions booked" },
-  { v: "120+", k: "Countries" },
-  { v: "4.8★", k: "Avg. client rating" },
+  { v:"25,000+", k:"Verified professionals" },
+  { v:"1M+", k:"Sessions booked" },
+  { v:"120+", k:"Countries" },
+  { v:"4.8★", k:"Avg. client rating" },
 ];
 
 const TIMELINE = [
-  { yr: "2009", t: "Body & Discipline founded", body: "Our predecessor register builds the foundation of recognised fitness standards." },
-  { yr: "2018", t: "Global standards programme", body: "Cross-border CPD frameworks aligned with EuropeActive and ICREPs." },
-  { yr: "2024", t: "REPs relaunches", body: "A modern register: verified, searchable, client-first." },
-  { yr: "2026", t: "REPs goes global", body: "BD members migrate to REPs as we open new regions." },
+  { yr:"2009", t:"Body & Discipline founded", body:"Our predecessor register builds the foundation of recognised fitness standards." },
+  { yr:"2018", t:"Global standards programme", body:"Cross-border CPD frameworks aligned with EuropeActive and ICREPs." },
+  { yr:"2024", t:"REPs relaunches", body:"A modern register: verified, searchable, client-first." },
+  { yr:"2026", t:"REPs goes global", body:"BD members migrate to REPs as we open new regions." },
 ];
 
 function AboutPage() {
@@ -53,7 +53,7 @@ function AboutPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img
           src={heroCoaching}
           alt=""
@@ -76,7 +76,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/40">
+      <section className="bg-reps-panel/40">
         <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4 px-6 my-12 lg:px-10">
           {STATS.map((s) => (
             <div key={s.k} className="bg-reps-panel p-6 text-center">
@@ -87,7 +87,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
             <div>
@@ -108,7 +108,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <h2 className="font-display text-[28px] font-bold text-white">What we stand for</h2>
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -128,7 +128,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10">
           <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
             Since 2009

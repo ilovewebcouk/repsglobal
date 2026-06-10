@@ -1,40 +1,40 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, AlertTriangle, Mail, ClipboardList, Search, Gavel, Shield } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { ArrowRight, Sparkles, AlertTriangle, Mail, ClipboardList, Search, Gavel, Shield } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGym from "@/assets/hero-gym-bg.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroGym from"@/assets/hero-gym-bg.jpg";
 
 export const Route = createFileRoute("/complaints")({
   head: () => ({
     meta: [
-      { title: "Complaints & Conduct — REPs" },
+      { title:"Complaints & Conduct — REPs" },
       {
-        name: "description",
+        name:"description",
         content:
-          "How to raise a complaint about a REPs-verified professional. Our process, timelines and the sanctions we can apply.",
+"How to raise a complaint about a REPs-verified professional. Our process, timelines and the sanctions we can apply.",
       },
-      { property: "og:title", content: "Complaints & Conduct — REPs" },
-      { property: "og:description", content: "How REPs handles complaints about its members." },
-      { property: "og:url", content: "https://repsglobal.lovable.app/complaints" },
+      { property:"og:title", content:"Complaints & Conduct — REPs" },
+      { property:"og:description", content:"How REPs handles complaints about its members." },
+      { property:"og:url", content:"https://repsglobal.lovable.app/complaints" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/complaints" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/complaints" }],
   }),
   component: ComplaintsPage,
 });
 
 const STEPS = [
-  { icon: ClipboardList, title: "1. Submit", body: "Tell us what happened using the complaints form or by email. Include dates, names and any evidence." },
-  { icon: Search, title: "2. Review", body: "Our Standards team acknowledges within 2 working days and opens a case file." },
-  { icon: Mail, title: "3. Respond", body: "The professional is given a fair chance to respond. Both sides are heard." },
-  { icon: Gavel, title: "4. Decide", body: "We close the case with a written outcome — typically within 21 days for most complaints." },
+  { icon: ClipboardList, title:"1. Submit", body:"Tell us what happened using the complaints form or by email. Include dates, names and any evidence." },
+  { icon: Search, title:"2. Review", body:"Our Standards team acknowledges within 2 working days and opens a case file." },
+  { icon: Mail, title:"3. Respond", body:"The professional is given a fair chance to respond. Both sides are heard." },
+  { icon: Gavel, title:"4. Decide", body:"We close the case with a written outcome — typically within 21 days for most complaints." },
 ];
 
 const SANCTIONS = [
-  { title: "Advisory note", body: "A formal note placed on the member's record. Visible internally for future audits." },
-  { title: "Required training", body: "Member must complete specific CPD before continuing to practise on REPs." },
-  { title: "Suspension", body: "Verified badge removed and profile hidden from search while the case is active." },
-  { title: "Removal", body: "Permanent removal from the register. Profile delisted and badge revoked." },
+  { title:"Advisory note", body:"A formal note placed on the member's record. Visible internally for future audits." },
+  { title:"Required training", body:"Member must complete specific CPD before continuing to practise on REPs." },
+  { title:"Suspension", body:"Verified badge removed and profile hidden from search while the case is active." },
+  { title:"Removal", body:"Permanent removal from the register. Profile delisted and badge revoked." },
 ];
 
 function ComplaintsPage() {
@@ -42,7 +42,7 @@ function ComplaintsPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img src={heroGym} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
@@ -59,7 +59,7 @@ function ComplaintsPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">The process</span>
@@ -81,7 +81,7 @@ function ComplaintsPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Possible outcomes</span>
@@ -103,7 +103,7 @@ function ComplaintsPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-orange-soft p-8 lg:p-10">
             <div className="flex items-start gap-4">

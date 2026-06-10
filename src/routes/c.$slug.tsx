@@ -390,7 +390,7 @@ function CoachShopFrontPage() {
 
 function ChromeBar({ coach }: { coach: Coach }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-reps-border/70 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70">
+    <header className="sticky top-0 z-40 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
       <div className="mx-auto flex h-14 max-w-[1320px] items-center justify-between gap-4 px-6 lg:px-10">
         <Link to="/" className="flex items-center gap-3 text-reps-text">
           <RepsWordmark className="h-4 w-auto text-reps-text" />
@@ -425,7 +425,7 @@ function SectionNav() {
   return (
     <nav
       aria-label="On this page"
-      className="sticky top-14 z-30 hidden border-b border-reps-border/60 bg-reps-ink/80 backdrop-blur md:block"
+      className="sticky top-14 z-30 hidden bg-reps-ink/80 backdrop-blur shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)] md:block"
     >
       <div className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
         {NAV_ITEMS.map((item) => (

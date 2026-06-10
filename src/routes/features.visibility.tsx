@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from"react";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -15,28 +15,28 @@ import {
   Globe,
   Zap,
   X,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { MarketingHeroEyebrow } from"@/components/marketing/MarketingHeroEyebrow";
+import { HeroOverlay } from"@/components/marketing/HeroOverlay";
 
-import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
-import { SectionHeading } from "@/components/marketing/SectionHeading";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
-import { MockupStage } from "@/components/marketing/MockupStage";
-import { DeviceMockup } from "@/components/marketing/DeviceMockup";
-import { AnnotatedMock, type Callout } from "@/components/marketing/AnnotatedMock";
-import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FinalCta } from "@/components/marketing/FinalCta";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { TierCard } from "@/components/marketing/TierCard";
+import { SectionEyebrow } from"@/components/marketing/SectionEyebrow";
+import { SectionHeading } from"@/components/marketing/SectionHeading";
+import { SectionHeader } from"@/components/marketing/SectionHeader";
+import { BlockHeading } from"@/components/marketing/BlockHeading";
+import { MockupStage } from"@/components/marketing/MockupStage";
+import { DeviceMockup } from"@/components/marketing/DeviceMockup";
+import { AnnotatedMock, type Callout } from"@/components/marketing/AnnotatedMock";
+import { MarketingFaq } from"@/components/marketing/MarketingFaq";
+import { FinalCta } from"@/components/marketing/FinalCta";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from"@/components/ui/tabs";
+import { Badge } from"@/components/ui/badge";
+import { Separator } from"@/components/ui/separator";
+import { TierCard } from"@/components/marketing/TierCard";
 
-import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
+import heroVisibility from"@/assets/hero-visibility-bg.jpg.asset.json";
 
 // -----------------------------------------------------------------------------
 // Data
@@ -44,122 +44,122 @@ import heroVisibility from "@/assets/hero-visibility-bg.jpg.asset.json";
 
 const PROFILE_CALLOUTS: Callout[] = [
   {
-    x: "11%",
-    y: "18%",
-    title: "Verified badge",
-    body: "Awarded after a human checks qualifications, insurance and DBS. Clients see it before anything else.",
+    x:"11%",
+    y:"18%",
+    title:"Verified badge",
+    body:"Awarded after a human checks qualifications, insurance and DBS. Clients see it before anything else.",
   },
   {
-    x: "84%",
-    y: "22%",
-    title: "Specialisms at a glance",
-    body: "What you're best suited for — fat loss, postnatal, strength, rehab — not a wall of tags.",
+    x:"84%",
+    y:"22%",
+    title:"Specialisms at a glance",
+    body:"What you're best suited for — fat loss, postnatal, strength, rehab — not a wall of tags.",
   },
   {
-    x: "16%",
-    y: "48%",
-    title: "Credentials on the record",
-    body: "Recognised awarding-body qualifications, CPD and insurance — surfaced, not hidden in a PDF.",
+    x:"16%",
+    y:"48%",
+    title:"Credentials on the record",
+    body:"Recognised awarding-body qualifications, CPD and insurance — surfaced, not hidden in a PDF.",
   },
   {
-    x: "82%",
-    y: "56%",
-    title: "Services & pricing",
-    body: "Clear options and price ranges, so clients self-qualify before they get in touch.",
+    x:"82%",
+    y:"56%",
+    title:"Services & pricing",
+    body:"Clear options and price ranges, so clients self-qualify before they get in touch.",
   },
   {
-    x: "14%",
-    y: "78%",
-    title: "Reviews from real clients",
-    body: "Aggregate rating plus written feedback. Only verified clients can post — you can reply.",
+    x:"14%",
+    y:"78%",
+    title:"Reviews from real clients",
+    body:"Aggregate rating plus written feedback. Only verified clients can post — you can reply.",
   },
   {
-    x: "84%",
-    y: "82%",
-    title: "Enquire / contact CTA",
-    body: "One clear action. Drops straight into your REPs inbox — no DMs, no missed leads.",
+    x:"84%",
+    y:"82%",
+    title:"Enquire / contact CTA",
+    body:"One clear action. Drops straight into your REPs inbox — no DMs, no missed leads.",
   },
 ];
 
 const TRUST_SIGNALS = [
   {
     icon: ShieldCheck,
-    title: "REPs Verified",
-    body: "Identity and credentials checked by a human. Status, the public badge — and the only marker REPs guarantees.",
-    accent: "emerald" as const,
+    title:"REPs Verified",
+    body:"Identity and credentials checked by a human. Status, the public badge — and the only marker REPs guarantees.",
+    accent:"emerald" as const,
   },
   {
     icon: Award,
-    title: "Qualifications",
-    body: "Recognised awarding-body qualifications shown on the record, named and dated. No mystery acronyms.",
+    title:"Qualifications",
+    body:"Recognised awarding-body qualifications shown on the record, named and dated. No mystery acronyms.",
   },
   {
     icon: Stethoscope,
-    title: "Insurance",
-    body: "Public-liability cover surfaced on the profile — checked annually so it never silently lapses.",
+    title:"Insurance",
+    body:"Public-liability cover surfaced on the profile — checked annually so it never silently lapses.",
   },
   {
     icon: BadgeCheck,
-    title: "Continuing professional development",
-    body: "Recent CPD entries appear next to qualifications — proof you're still investing in your craft.",
+    title:"Continuing professional development",
+    body:"Recent CPD entries appear next to qualifications — proof you're still investing in your craft.",
   },
   {
     icon: Star,
-    title: "Reviews",
-    body: "Star rating plus written feedback from verified clients. Replies are public. Deletions aren't possible.",
+    title:"Reviews",
+    body:"Star rating plus written feedback from verified clients. Replies are public. Deletions aren't possible.",
   },
   {
     icon: Tag,
-    title: "Specialisms",
-    body: "Plain-language strengths — postnatal, older adults, rehab support, fat loss — so the right client recognises you.",
+    title:"Specialisms",
+    body:"Plain-language strengths — postnatal, older adults, rehab support, fat loss — so the right client recognises you.",
   },
 ];
 
 const SEGMENTS = [
-  { key: "pt", label: "Personal trainer", src: "/pro/james-carter", device: "laptop" as const, title: "PT profile" },
-  { key: "online", label: "Online coach", src: "/professions/online-coach", device: "laptop" as const, title: "Online coach landing" },
-  { key: "strength", label: "Strength coach", src: "/professions/strength-coach", device: "laptop" as const, title: "Strength coach landing" },
-  { key: "pilates", label: "Pilates", src: "/professions/pilates-instructor", device: "laptop" as const, title: "Pilates instructor landing" },
-  { key: "yoga", label: "Yoga", src: "/professions/yoga-teacher", device: "laptop" as const, title: "Yoga teacher landing" },
-  { key: "group", label: "Group ex", src: "/professions/group-exercise", device: "laptop" as const, title: "Group exercise landing" },
-  { key: "studio", label: "Studio team", src: "/c/james-wilson", device: "laptop" as const, title: "Studio shop-front" },
+  { key:"pt", label:"Personal trainer", src:"/pro/james-carter", device:"laptop" as const, title:"PT profile" },
+  { key:"online", label:"Online coach", src:"/professions/online-coach", device:"laptop" as const, title:"Online coach landing" },
+  { key:"strength", label:"Strength coach", src:"/professions/strength-coach", device:"laptop" as const, title:"Strength coach landing" },
+  { key:"pilates", label:"Pilates", src:"/professions/pilates-instructor", device:"laptop" as const, title:"Pilates instructor landing" },
+  { key:"yoga", label:"Yoga", src:"/professions/yoga-teacher", device:"laptop" as const, title:"Yoga teacher landing" },
+  { key:"group", label:"Group ex", src:"/professions/group-exercise", device:"laptop" as const, title:"Group exercise landing" },
+  { key:"studio", label:"Studio team", src:"/c/james-wilson", device:"laptop" as const, title:"Studio shop-front" },
 ];
 
 const COMPARISON_ROWS = [
-  { feature: "Public verified profile", verified: true, pro: true },
-  { feature: "Reviews from verified clients", verified: true, pro: true },
-  { feature: "City + specialism landing pages", verified: true, pro: true },
-  { feature: "Enquiry inbox", verified: true, pro: true },
-  { feature: "Branded shop-front at /c/your-name", verified: false, pro: true },
-  { feature: "Bookings, forms, payments", verified: false, pro: true },
-  { feature: "Client CRM & onboarding", verified: false, pro: true },
-  { feature: "Profile-views & enquiry analytics", verified: false, pro: true },
+  { feature:"Public verified profile", verified: true, pro: true },
+  { feature:"Reviews from verified clients", verified: true, pro: true },
+  { feature:"City + specialism landing pages", verified: true, pro: true },
+  { feature:"Enquiry inbox", verified: true, pro: true },
+  { feature:"Branded shop-front at /c/your-name", verified: false, pro: true },
+  { feature:"Bookings, forms, payments", verified: false, pro: true },
+  { feature:"Client CRM & onboarding", verified: false, pro: true },
+  { feature:"Profile-views & enquiry analytics", verified: false, pro: true },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "Will my profile rank at the top of search?",
-    a: "REPs is designed to help clients search, compare and contact suitable professionals with more confidence — not to promise a top slot. A complete, verified profile with real reviews is consistently more discoverable than an empty one.",
+    q:"Will my profile rank at the top of search?",
+    a:"REPs is designed to help clients search, compare and contact suitable professionals with more confidence — not to promise a top slot. A complete, verified profile with real reviews is consistently more discoverable than an empty one.",
   },
   {
-    q: "Can I hide my profile if I'm fully booked?",
-    a: "Yes. You can set your profile to private from your dashboard at any time. Existing clients keep their access; new enquiries pause.",
+    q:"Can I hide my profile if I'm fully booked?",
+    a:"Yes. You can set your profile to private from your dashboard at any time. Existing clients keep their access; new enquiries pause.",
   },
   {
-    q: "Who is allowed to leave a review?",
-    a: "Only clients with a verified booking or session record on REPs can post a review. There are no anonymous drive-by ratings.",
+    q:"Who is allowed to leave a review?",
+    a:"Only clients with a verified booking or session record on REPs can post a review. There are no anonymous drive-by ratings.",
   },
   {
-    q: "Do I need Pro to be visible?",
-    a: "No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded shop-front and the client management tools that turn enquiries into a working business.",
+    q:"Do I need Pro to be visible?",
+    a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded shop-front and the client management tools that turn enquiries into a working business.",
   },
   {
-    q: "Is my REPs profile indexed by search engines?",
-    a: "Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPs and beyond it.",
+    q:"Is my REPs profile indexed by search engines?",
+    a:"Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPs and beyond it.",
   },
   {
-    q: "Can I reply to reviews?",
-    a: "Yes. Every review has a public reply thread so you can thank a client, add context, or address feedback in the open.",
+    q:"Can I reply to reviews?",
+    a:"Yes. Every review has a public reply thread so you can thank a client, add context, or address feedback in the open.",
   },
 ];
 
@@ -170,22 +170,22 @@ const FAQ_ITEMS = [
 export const Route = createFileRoute("/features/visibility")({
   head: () => ({
     meta: [
-      { title: "Visibility — Get found by clients before they choose · REPs" },
+      { title:"Visibility — Get found by clients before they choose · REPs" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Build a verified REPs profile clients can find, trust and contact. Public profile, directory presence, reviews, specialisms and an enquiry inbox in one place.",
+"Build a verified REPs profile clients can find, trust and contact. Public profile, directory presence, reviews, specialisms and an enquiry inbox in one place.",
       },
-      { property: "og:title", content: "Visibility — REPs for Professionals" },
+      { property:"og:title", content:"Visibility — REPs for Professionals" },
       {
-        property: "og:description",
+        property:"og:description",
         content:
-          "Be found before clients choose who to contact. Verified profile, reviews, directory placement and specialism pages.",
+"Be found before clients choose who to contact. Verified profile, reviews, directory placement and specialism pages.",
       },
-      { property: "og:image", content: heroVisibility.url },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/visibility" },
+      { property:"og:image", content: heroVisibility.url },
+      { property:"og:url", content:"https://repsglobal.lovable.app/features/visibility" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/visibility" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/visibility" }],
   }),
   component: VisibilityPage,
 });
@@ -220,8 +220,8 @@ function VisibilityPage() {
         heading="Build a profile clients can find,"
         headingAccent="trust and contact."
         lede="Join the verified register and create a professional presence that works beyond social media."
-        primary={{ to: "/signup", label: "Join REPs" }}
-        secondary={{ to: "/pricing", label: "See pricing" }}
+        primary={{ to:"/signup", label:"Join REPs" }}
+        secondary={{ to:"/pricing", label:"See pricing" }}
       />
 
       <PublicFooter />
@@ -249,22 +249,22 @@ function Hero() {
         <div className="max-w-[640px]">
           <MarketingHeroEyebrow
             icon={Sparkles}
-            style={{ animationDuration: "560ms", animationFillMode: "both" }}
+            style={{ animationDuration:"560ms", animationFillMode:"both" }}
           >
             Visibility · The verified register
           </MarketingHeroEyebrow>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
-            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
-            Be found by clients looking for{" "}
+            Be found by clients looking for{""}
             <span className="text-reps-orange">trusted fitness professionals.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
-            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             Create a verified REPs profile that brings your credentials, reviews, specialisms and
             contact options into one public place clients can understand and act on — before they
@@ -273,7 +273,7 @@ function Hero() {
 
           <div
             className="mt-8 flex animate-fade-in flex-wrap gap-3"
-            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"260ms", animationFillMode:"both" }}
           >
             <Link
               to="/signup"
@@ -291,7 +291,7 @@ function Hero() {
 
           <ul
             className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-reps-orange" /> Verified credentials
@@ -315,7 +315,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The visibility problem"
@@ -333,11 +333,11 @@ function ProblemSection() {
             <div className="mt-6 space-y-3">
               <ScatteredCard
                 tag="Instagram bio"
-                lines={["Coach · PT · Strength · DM for prices", "linkin.bio/coachjamie"]}
+                lines={["Coach · PT · Strength · DM for prices","linkin.bio/coachjamie"]}
               />
               <ScatteredCard
                 tag="Linktree"
-                lines={["Book a call", "Join the Patreon", "WhatsApp me", "Old PDF programme"]}
+                lines={["Book a call","Join the Patreon","WhatsApp me","Old PDF programme"]}
               />
               <ScatteredCard
                 tag="WhatsApp"
@@ -358,12 +358,12 @@ function ProblemSection() {
             <BlockHeading className="mt-4">One verified professional record.</BlockHeading>
             <ul className="mt-6 space-y-3">
               {[
-                "Verified badge — checked by a human",
-                "Qualifications, insurance and CPD on the record",
-                "Specialisms in plain language",
-                "Reviews from verified clients (with replies)",
-                "Services, pricing and an enquiry inbox",
-                "Public, indexable URL you can share anywhere",
+"Verified badge — checked by a human",
+"Qualifications, insurance and CPD on the record",
+"Specialisms in plain language",
+"Reviews from verified clients (with replies)",
+"Services, pricing and an enquiry inbox",
+"Public, indexable URL you can share anywhere",
               ].map((line) => (
                 <li
                   key={line}
@@ -397,7 +397,7 @@ function ScatteredCard({
   return (
     <div className="rounded-[16px] border border-reps-border/70 bg-reps-ink/60 p-4">
       <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white/45">{tag}</p>
-      <div className={`mt-2 space-y-1 text-[13.5px] text-white/70 ${italic ? "italic" : ""}`}>
+      <div className={`mt-2 space-y-1 text-[13.5px] text-white/70 ${italic ?"italic" :""}`}>
         {lines.map((l) => (
           <p key={l}>{l}</p>
         ))}
@@ -412,7 +412,7 @@ function ScatteredCard({
 
 function ProfileSection() {
   return (
-    <section id="profile" className="scroll-mt-24 border-b border-reps-border">
+    <section id="profile" className="scroll-mt-24">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Your public REPs profile"
@@ -423,9 +423,9 @@ function ProfileSection() {
         <div className="mt-12">
           <AnnotatedMock
             mockup={{
-              device: "laptop",
-              src: "/pro/james-carter",
-              title: "Verified professional profile",
+              device:"laptop",
+              src:"/pro/james-carter",
+              title:"Verified professional profile",
             }}
             callouts={PROFILE_CALLOUTS}
           />
@@ -441,7 +441,7 @@ function ProfileSection() {
 
 function DiscoverySection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="How clients discover you"
@@ -460,10 +460,10 @@ function DiscoverySection() {
 
           <div className="space-y-4">
             {[
-              { icon: Search, title: "Filter by what matters", body: "Location, profession, specialism, services offered, in-person vs online — not vanity metrics." },
-              { icon: ShieldCheck, title: "Verified-only by default", body: "Unverified accounts don't pollute the top of the page. You're not buried under noise." },
-              { icon: Star, title: "Real-review ranking", body: "Reviews come from clients with a verified session record. They count toward how prospects rank you." },
-              { icon: Tag, title: "Specialism-led shortlists", body: "Postnatal, rehab, strength, older adults — clients self-qualify before they enquire." },
+              { icon: Search, title:"Filter by what matters", body:"Location, profession, specialism, services offered, in-person vs online — not vanity metrics." },
+              { icon: ShieldCheck, title:"Verified-only by default", body:"Unverified accounts don't pollute the top of the page. You're not buried under noise." },
+              { icon: Star, title:"Real-review ranking", body:"Reviews come from clients with a verified session record. They count toward how prospects rank you." },
+              { icon: Tag, title:"Specialism-led shortlists", body:"Postnatal, rehab, strength, older adults — clients self-qualify before they enquire." },
             ].map(({ icon: Icon, title, body }) => (
               <div
                 key={title}
@@ -491,7 +491,7 @@ function DiscoverySection() {
 
 function TrustGridSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Trust signals that matter"
@@ -501,21 +501,21 @@ function TrustGridSection() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {TRUST_SIGNALS.map(({ icon: Icon, title, body, accent }) => {
-            const isVerified = accent === "emerald";
+            const isVerified = accent ==="emerald";
             return (
               <div
                 key={title}
                 className={
                   isVerified
-                    ? "rounded-[18px] border border-emerald-400/30 bg-emerald-500/[0.06] p-6"
-                    : "rounded-[18px] border border-reps-border bg-reps-panel/60 p-6"
+                    ?"rounded-[18px] border border-emerald-400/30 bg-emerald-500/[0.06] p-6"
+                    :"rounded-[18px] border border-reps-border bg-reps-panel/60 p-6"
                 }
               >
                 <span
                   className={
                     isVerified
-                      ? "inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                      : "inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange"
+                      ?"inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      :"inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange"
                   }
                 >
                   <Icon className="h-5 w-5" />
@@ -545,7 +545,7 @@ function TrustGridSection() {
 
 function ReviewsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Turn reviews into public proof"
@@ -567,12 +567,12 @@ function ReviewsSection() {
             <Separator className="my-5 bg-reps-border" />
             <ul className="space-y-3.5">
               {[
-                "Only verified clients with a session record can post.",
-                "Auto-requested 24 hours after a completed booking.",
-                "Star rating + written feedback. Replies are public.",
-                "You can flag — you can't silently delete.",
-                "Aggregate score feeds your directory ranking.",
-                "Every review timestamped and shown in plain English.",
+"Only verified clients with a session record can post.",
+"Auto-requested 24 hours after a completed booking.",
+"Star rating + written feedback. Replies are public.",
+"You can flag — you can't silently delete.",
+"Aggregate score feeds your directory ranking.",
+"Every review timestamped and shown in plain English.",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2.5 text-[14.5px] text-white/80">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
@@ -593,7 +593,7 @@ function ReviewsSection() {
 
 function SeoReachSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Found beyond REPs too"
@@ -624,7 +624,7 @@ function SegmentsSection() {
   const current = SEGMENTS.find((s) => s.key === active) ?? SEGMENTS[0];
 
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Visibility for every professional"
@@ -669,7 +669,7 @@ function SegmentsSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"
@@ -682,14 +682,14 @@ function TierComparisonSection() {
             badge="Verified"
             price="£99 / year"
             blurb="For professionals who want a trusted public register profile and enquiry inbox."
-            cta={{ to: "/pricing", label: "Start with Verified" }}
+            cta={{ to:"/pricing", label:"Start with Verified" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
             blurb="Everything in Verified, plus bookings, payments, branded shop-front, CRM and client management."
             highlighted
-            cta={{ to: "/features/shop-front", label: "See the Pro shop-front" }}
+            cta={{ to:"/features/shop-front", label:"See the Pro shop-front" }}
           />
         </div>
 
@@ -705,7 +705,7 @@ function TierComparisonSection() {
                 <div
                   key={row.feature}
                   className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
-                    i % 2 === 0 ? "bg-white/[0.02]" : ""
+                    i % 2 === 0 ?"bg-white/[0.02]" :""
                   }`}
                 >
                   <span>{row.feature}</span>

@@ -1,39 +1,39 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, FileText, Image as ImageIcon, Mail, Quote, Download } from "lucide-react";
+import { createFileRoute } from"@tanstack/react-router";
+import { Sparkles, FileText, Image as ImageIcon, Mail, Quote, Download } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGym from "@/assets/hero-gym-bg.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroGym from"@/assets/hero-gym-bg.jpg";
 
 export const Route = createFileRoute("/press")({
   head: () => ({
     meta: [
-      { title: "Press & Media — REPs" },
+      { title:"Press & Media — REPs" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Press releases, brand assets, fast facts and media contact for REPs — the global Register of Exercise Professionals.",
+"Press releases, brand assets, fast facts and media contact for REPs — the global Register of Exercise Professionals.",
       },
-      { property: "og:title", content: "Press & Media — REPs" },
-      { property: "og:description", content: "Press kit, releases and media contact for REPs." },
-      { property: "og:url", content: "https://repsglobal.lovable.app/press" },
+      { property:"og:title", content:"Press & Media — REPs" },
+      { property:"og:description", content:"Press kit, releases and media contact for REPs." },
+      { property:"og:url", content:"https://repsglobal.lovable.app/press" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/press" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/press" }],
   }),
   component: PressPage,
 });
 
 const FACTS = [
-  { label: "Founded", value: "2024" },
-  { label: "Verified professionals", value: "12,400+" },
-  { label: "Specialisms covered", value: "5 core + growing" },
-  { label: "Headquarters", value: "London" },
+  { label:"Founded", value:"2024" },
+  { label:"Verified professionals", value:"12,400+" },
+  { label:"Specialisms covered", value:"5 core + growing" },
+  { label:"Headquarters", value:"London" },
 ];
 
 const ASSETS = [
-  { icon: ImageIcon, title: "Logo pack", body: "REPs wordmark and monogram in SVG and PNG, light and dark." },
-  { icon: FileText, title: "Brand guidelines", body: "Colour, typography and badge usage rules — one PDF." },
-  { icon: Quote, title: "Boilerplate", body: "Standard about-REPs paragraph for press releases and articles." },
+  { icon: ImageIcon, title:"Logo pack", body:"REPs wordmark and monogram in SVG and PNG, light and dark." },
+  { icon: FileText, title:"Brand guidelines", body:"Colour, typography and badge usage rules — one PDF." },
+  { icon: Quote, title:"Boilerplate", body:"Standard about-REPs paragraph for press releases and articles." },
 ];
 
 function PressPage() {
@@ -41,7 +41,7 @@ function PressPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img src={heroGym} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
@@ -58,7 +58,7 @@ function PressPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Fast facts</span>
@@ -79,7 +79,7 @@ function PressPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Press kit</span>
@@ -107,7 +107,7 @@ function PressPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-8 lg:p-10">
             <div className="flex items-start gap-4">
@@ -117,10 +117,10 @@ function PressPage() {
               <div>
                 <h3 className="font-display text-[22px] font-bold text-white">Media enquiries</h3>
                 <p className="mt-2 text-[14px] leading-relaxed text-white/65">
-                  For interviews, comment requests or anything else, email{" "}
+                  For interviews, comment requests or anything else, email{""}
                   <a href="mailto:press@repsglobal.com" className="text-reps-orange hover:underline">
                     press@repsglobal.com
-                  </a>{" "}
+                  </a>{""}
                   with your deadline. We reply within one working day.
                 </p>
               </div>

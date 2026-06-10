@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -11,91 +11,91 @@ import {
   Sparkles,
   Star,
   Target,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroTrainer from "@/assets/hero-trainer.jpg";
-import proJames from "@/assets/pro-james.jpg";
-import proSophie from "@/assets/pro-sophie.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroTrainer from"@/assets/hero-trainer.jpg";
+import proJames from"@/assets/pro-james.jpg";
+import proSophie from"@/assets/pro-sophie.jpg";
+import proLaura from"@/assets/pro-laura.jpg";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How REPs works — Find, enquire, train" },
+      { title:"How REPs works — Find, enquire, train" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Find a verified exercise professional, enquire in minutes and start training. Here's how REPs works for clients.",
+"Find a verified exercise professional, enquire in minutes and start training. Here's how REPs works for clients.",
       },
-      { property: "og:title", content: "How REPs works" },
+      { property:"og:title", content:"How REPs works" },
       {
-        property: "og:description",
-        content: "Find, enquire, train — the simple way to work with a verified REPs professional.",
+        property:"og:description",
+        content:"Find, enquire, train — the simple way to work with a verified REPs professional.",
       },
-      { property: "og:url", content: "/how-it-works" },
+      { property:"og:url", content:"/how-it-works" },
     ],
-    links: [{ rel: "canonical", href: "/how-it-works" }],
+    links: [{ rel:"canonical", href:"/how-it-works" }],
   }),
   component: HowItWorksPage,
 });
 
 const JOURNEY = [
   {
-    n: "01",
-    tag: "Find",
+    n:"01",
+    tag:"Find",
     icon: Search,
-    title: "Search the verified register",
+    title:"Search the verified register",
     body:
-      "Browse 25,000+ REPs-verified professionals by speciality, location or goal. Every profile shows qualifications, insurance and real client reviews — checked by our team.",
-    bullets: ["Filter by discipline, price and availability", "See verified credentials at a glance", "Compare reviews from real clients"],
-    cta: { to: "/find-a-professional", label: "Find a professional" },
+"Browse 25,000+ REPs-verified professionals by speciality, location or goal. Every profile shows qualifications, insurance and real client reviews — checked by our team.",
+    bullets: ["Filter by discipline, price and availability","See verified credentials at a glance","Compare reviews from real clients"],
+    cta: { to:"/find-a-professional", label:"Find a professional" },
   },
   {
-    n: "02",
-    tag: "Enquire",
+    n:"02",
+    tag:"Enquire",
     icon: MessageSquare,
-    title: "Send a quick enquiry",
+    title:"Send a quick enquiry",
     body:
-      "Share your goals, schedule and any considerations in a short form. Your chosen pro typically replies within a few hours with the right next step — a call, consult or first session.",
-    bullets: ["No account needed to enquire", "Direct message with the professional", "Free until you book a session"],
-    cta: { to: "/find-a-professional", label: "Browse and enquire" },
+"Share your goals, schedule and any considerations in a short form. Your chosen pro typically replies within a few hours with the right next step — a call, consult or first session.",
+    bullets: ["No account needed to enquire","Direct message with the professional","Free until you book a session"],
+    cta: { to:"/find-a-professional", label:"Browse and enquire" },
   },
   {
-    n: "03",
-    tag: "Train",
+    n:"03",
+    tag:"Train",
     icon: Target,
-    title: "Start training with confidence",
+    title:"Start training with confidence",
     body:
-      "Book sessions, pay securely and track progress in one place. Programmes, check-ins and nutrition all live in your client portal — so the focus stays on your goals.",
-    bullets: ["Secure payments and clear receipts", "Programme, check-ins and messaging in one app", "Cancel or change pros any time"],
-    cta: { to: "/signup", label: "Create a client account" },
+"Book sessions, pay securely and track progress in one place. Programmes, check-ins and nutrition all live in your client portal — so the focus stays on your goals.",
+    bullets: ["Secure payments and clear receipts","Programme, check-ins and messaging in one app","Cancel or change pros any time"],
+    cta: { to:"/signup", label:"Create a client account" },
   },
 ];
 
 const TRUST = [
-  { icon: BadgeCheck, title: "Verified credentials", body: "Every pro's qualifications, insurance and ID are checked before they appear in search." },
-  { icon: ShieldCheck, title: "Safeguarding standards", body: "REPs members sign and uphold our code of conduct — with a clear complaints process." },
-  { icon: Star, title: "Real reviews only", body: "Reviews come from clients with verified bookings. No anonymous ratings, no fakes." },
+  { icon: BadgeCheck, title:"Verified credentials", body:"Every pro's qualifications, insurance and ID are checked before they appear in search." },
+  { icon: ShieldCheck, title:"Safeguarding standards", body:"REPs members sign and uphold our code of conduct — with a clear complaints process." },
+  { icon: Star, title:"Real reviews only", body:"Reviews come from clients with verified bookings. No anonymous ratings, no fakes." },
 ];
 
 const FAQS = [
   {
-    q: "Is it free to use REPs as a client?",
-    a: "Yes. Searching, viewing profiles and enquiring is completely free. You only pay for the sessions you book with a professional.",
+    q:"Is it free to use REPs as a client?",
+    a:"Yes. Searching, viewing profiles and enquiring is completely free. You only pay for the sessions you book with a professional.",
   },
   {
-    q: "How quickly will a professional reply?",
-    a: "Most pros respond within a few hours during working days. You'll get an email and an in-app notification as soon as they do.",
+    q:"How quickly will a professional reply?",
+    a:"Most pros respond within a few hours during working days. You'll get an email and an in-app notification as soon as they do.",
   },
   {
-    q: "What if it's not the right match?",
-    a: "No problem — enquire with a few pros, or switch any time. There's no commitment until you book your first session.",
+    q:"What if it's not the right match?",
+    a:"No problem — enquire with a few pros, or switch any time. There's no commitment until you book your first session.",
   },
   {
-    q: "How are professionals verified?",
-    a: "Our team manually checks qualifications, insurance and ID before activating a profile. Look for the orange verified badge.",
+    q:"How are professionals verified?",
+    a:"Our team manually checks qualifications, insurance and ID before activating a profile. Look for the orange verified badge.",
   },
 ];
 
@@ -105,7 +105,7 @@ function HowItWorksPage() {
       <PublicHeader variant="solid" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img src={heroTrainer} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
         <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/80 via-reps-ink/90 to-reps-ink" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-32">
@@ -137,7 +137,7 @@ function HowItWorksPage() {
       </section>
 
       {/* Journey */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">The client journey</span>
@@ -222,7 +222,7 @@ function HowItWorksPage() {
       </section>
 
       {/* Trust */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPs</span>
@@ -254,7 +254,7 @@ function HowItWorksPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1fr_1.4fr] lg:px-10">
           <div>
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">FAQs</span>
@@ -283,7 +283,7 @@ function HowItWorksPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <h2 className="font-display text-[32px] font-bold leading-tight text-white lg:text-[42px]">

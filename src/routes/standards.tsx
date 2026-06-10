@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -12,31 +12,31 @@ import {
   Star,
   UserCheck,
   Users,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import heroGym from "@/assets/hero-gym-bg.jpg";
-import ctaBand from "@/assets/cta-band.jpg";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import heroGym from"@/assets/hero-gym-bg.jpg";
+import ctaBand from"@/assets/cta-band.jpg";
 
 export const Route = createFileRoute("/standards")({
   head: () => ({
     meta: [
-      { title: "Safeguarding & standards — REPs verification" },
+      { title:"Safeguarding & standards — REPs verification" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Every professional on REPs is verified for qualifications, insurance, ID and ongoing CPD. Learn how we uphold safeguarding and trust standards.",
+"Every professional on REPs is verified for qualifications, insurance, ID and ongoing CPD. Learn how we uphold safeguarding and trust standards.",
       },
-      { property: "og:title", content: "Safeguarding & standards — REPs" },
+      { property:"og:title", content:"Safeguarding & standards — REPs" },
       {
-        property: "og:description",
+        property:"og:description",
         content:
-          "How REPs verifies professionals and keeps clients safe.",
+"How REPs verifies professionals and keeps clients safe.",
       },
-      { property: "og:url", content: "/standards" },
+      { property:"og:url", content:"/standards" },
     ],
-    links: [{ rel: "canonical", href: "/standards" }],
+    links: [{ rel:"canonical", href:"/standards" }],
   }),
   component: StandardsPage,
 });
@@ -44,59 +44,59 @@ export const Route = createFileRoute("/standards")({
 const VERIFICATIONS = [
   {
     icon: FileCheck,
-    title: "Qualifications checked",
-    body: "We verify certificates against awarding-body registers. Every claim is backed by documentation — not just a tick box.",
+    title:"Qualifications checked",
+    body:"We verify certificates against awarding-body registers. Every claim is backed by documentation — not just a tick box.",
   },
   {
     icon: ShieldCheck,
-    title: "Insurance verified",
-    body: "Professionals must hold current public liability and professional indemnity cover. We check expiry dates and renewal records.",
+    title:"Insurance verified",
+    body:"Professionals must hold current public liability and professional indemnity cover. We check expiry dates and renewal records.",
   },
   {
     icon: Fingerprint,
-    title: "Identity confirmed",
-    body: "Government-issued photo ID is matched against the person on the profile. No aliases, no borrowed credentials.",
+    title:"Identity confirmed",
+    body:"Government-issued photo ID is matched against the person on the profile. No aliases, no borrowed credentials.",
   },
   {
     icon: RefreshCw,
-    title: "Ongoing CPD tracking",
-    body: "Members log continuing professional development quarterly. Lapses trigger a profile suspension until evidence is re-submitted.",
+    title:"Ongoing CPD tracking",
+    body:"Members log continuing professional development quarterly. Lapses trigger a profile suspension until evidence is re-submitted.",
   },
 ];
 
 const SAFEGUARDS = [
   {
     icon: HeartPulse,
-    title: "Safeguarding by design",
-    body: "All members agree to our Safeguarding & Professional Conduct code before joining. It covers physical safety, data protection, boundaries and duty of care.",
+    title:"Safeguarding by design",
+    body:"All members agree to our Safeguarding & Professional Conduct code before joining. It covers physical safety, data protection, boundaries and duty of care.",
   },
   {
     icon: Users,
-    title: "Complaints process",
-    body: "Clients can raise concerns directly through REPs. Every complaint is reviewed within 48 hours, escalated where necessary, and logged transparently.",
+    title:"Complaints process",
+    body:"Clients can raise concerns directly through REPs. Every complaint is reviewed within 48 hours, escalated where necessary, and logged transparently.",
   },
   {
     icon: UserCheck,
-    title: "Continuous monitoring",
-    body: "Profiles are re-audited every six months. Insurance lapses, qualification gaps or conduct flags automatically hide the profile from search.",
+    title:"Continuous monitoring",
+    body:"Profiles are re-audited every six months. Insurance lapses, qualification gaps or conduct flags automatically hide the profile from search.",
   },
 ];
 
 const TRUST = [
   {
     icon: BadgeCheck,
-    title: "Verified badge",
-    body: "The orange badge on a profile means every claim has been checked by our team — not self-declared.",
+    title:"Verified badge",
+    body:"The orange badge on a profile means every claim has been checked by our team — not self-declared.",
   },
   {
     icon: Star,
-    title: "Verified reviews only",
-    body: "Reviews come from clients with confirmed bookings. Anonymous ratings and bulk submissions are blocked.",
+    title:"Verified reviews only",
+    body:"Reviews come from clients with confirmed bookings. Anonymous ratings and bulk submissions are blocked.",
   },
   {
     icon: BookOpen,
-    title: "Transparent history",
-    body: "Professional profiles show CPD logs, insurance renewals and any past complaints — so you can choose with confidence.",
+    title:"Transparent history",
+    body:"Professional profiles show CPD logs, insurance renewals and any past complaints — so you can choose with confidence.",
   },
 ];
 
@@ -106,7 +106,7 @@ function StandardsPage() {
       <PublicHeader variant="solid" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img
           src={heroGym}
           alt=""
@@ -118,7 +118,7 @@ function StandardsPage() {
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Trust & safety
           </span>
           <h1 className="mt-5 max-w-[860px] font-display text-[44px] font-bold leading-tight text-white lg:text-[60px]">
-            Verified. Insured. Accountable.{" "}
+            Verified. Insured. Accountable.{""}
             <span className="text-reps-orange">That's the REPs standard.</span>
           </h1>
           <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
@@ -143,7 +143,7 @@ function StandardsPage() {
       </section>
 
       {/* What we verify */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Verification</span>
@@ -169,7 +169,7 @@ function StandardsPage() {
       </section>
 
       {/* Safeguarding */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Safeguarding</span>
@@ -195,7 +195,7 @@ function StandardsPage() {
       </section>
 
       {/* How clients know */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Reading a profile</span>
@@ -221,7 +221,7 @@ function StandardsPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img src={ctaBand} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-reps-ink/85" />
         <div className="relative mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10">

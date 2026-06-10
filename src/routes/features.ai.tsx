@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   AlertTriangle,
   Brain,
@@ -10,33 +10,33 @@ import {
   X,
   Check,
   ArrowRight,
-} from "lucide-react";
+} from"lucide-react";
 
 import {
   FeatureGroupLayout,
   AINarrativeCard,
-} from "@/components/features/FeatureGroupLayout";
-import { AI_FEATURES } from "@/components/features/feature-config";
-import heroAi from "@/assets/hero-ai-bg.jpg.asset.json";
+} from"@/components/features/FeatureGroupLayout";
+import { AI_FEATURES } from"@/components/features/feature-config";
+import heroAi from"@/assets/hero-ai-bg.jpg.asset.json";
 
 export const Route = createFileRoute("/features/ai")({
   head: () => ({
     meta: [
-      { title: "REPs AI Operating System — The AI layer behind your fitness business" },
+      { title:"REPs AI Operating System — The AI layer behind your fitness business" },
       {
-        name: "description",
+        name:"description",
         content:
-          "Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
+"Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
       },
-      { property: "og:title", content: "REPs AI Operating System" },
+      { property:"og:title", content:"REPs AI Operating System" },
       {
-        property: "og:description",
-        content: "Not just AI features. An AI operating layer for your fitness business.",
+        property:"og:description",
+        content:"Not just AI features. An AI operating layer for your fitness business.",
       },
-      { property: "og:image", content: heroAi.url },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/ai" },
+      { property:"og:image", content: heroAi.url },
+      { property:"og:url", content:"https://repsglobal.lovable.app/features/ai" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/ai" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/ai" }],
   }),
   component: AIGroupPage,
 });
@@ -44,38 +44,38 @@ export const Route = createFileRoute("/features/ai")({
 const NARRATIVE = [
   {
     icon: Dumbbell,
-    title: "Programmes, drafted in seconds",
-    body: "Describe the client in one line. REPs writes the 12-week plan with the right exercises, sets and video demos. You tweak. You publish.",
+    title:"Programmes, drafted in seconds",
+    body:"Describe the client in one line. REPs writes the 12-week plan with the right exercises, sets and video demos. You tweak. You publish.",
   },
   {
     icon: ClipboardCheck,
-    title: "Check-ins, read for you",
-    body: "Six check-ins summarised into one card: the headline, the change to make, and who needs a human reply this week.",
+    title:"Check-ins, read for you",
+    body:"Six check-ins summarised into one card: the headline, the change to make, and who needs a human reply this week.",
   },
   {
     icon: ScanLine,
-    title: "Leads, scored and answered",
-    body: "Every enquiry scored on intent. Hot leads bumped to the top with a personalised first-draft reply ready to send.",
+    title:"Leads, scored and answered",
+    body:"Every enquiry scored on intent. Hot leads bumped to the top with a personalised first-draft reply ready to send.",
   },
   {
     icon: Sparkles,
-    title: "Next Move, every Monday",
-    body: "The single highest-leverage action this week — which package to push, which client to call, which day to open up.",
+    title:"Next Move, every Monday",
+    body:"The single highest-leverage action this week — which package to push, which client to call, which day to open up.",
   },
   {
     icon: AlertTriangle,
-    title: "Risk, flagged before it churns",
-    body: "AI watches adherence, mood and check-in cadence — and tells you who's about to ghost before they do.",
+    title:"Risk, flagged before it churns",
+    body:"AI watches adherence, mood and check-in cadence — and tells you who's about to ghost before they do.",
   },
   {
     icon: PenTool,
-    title: "Content, on tap and on-brand",
-    body: "Posts, captions and lead magnets drafted in your tone of voice from a one-line brief. Approve and ship.",
+    title:"Content, on tap and on-brand",
+    body:"Posts, captions and lead magnets drafted in your tone of voice from a one-line brief. Approve and ship.",
   },
 ];
 
 const COMPARE_ROWS = [
-  ["AI programme writer", true, "Limited", "Limited", false, false],
+  ["AI programme writer", true,"Limited","Limited", false, false],
   ["AI check-in summariser", true, false, false, false, false],
   ["AI lead scoring + reply drafts", true, false, false, false, false],
   ["AI client risk alerts", true, false, false, false, false],
@@ -91,11 +91,11 @@ function AIGroupPage() {
       heroAccent="An AI operating layer for your whole business."
       heroImage={{
         src: heroAi.url,
-        alt: "REPs-verified coach reviewing an AI-drafted programme on a tablet at a premium boutique gym at dusk",
+        alt:"REPs-verified coach reviewing an AI-drafted programme on a tablet at a premium boutique gym at dusk",
       }}
     >
       {/* NARRATIVE — 6 cards */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
             <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
@@ -119,7 +119,7 @@ function AIGroupPage() {
       </section>
 
       {/* 14-ITEM GRID */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[620px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -161,7 +161,7 @@ function AIGroupPage() {
       </section>
 
       {/* MINI COMPARE */}
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[620px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

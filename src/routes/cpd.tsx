@@ -459,7 +459,7 @@ function Hero() {
 
 function ProofCards() {
   return (
-    <section className="border-y border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-5 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-14">
         {PROOF_CARDS.map(({ icon: Icon, title, body }) => (
           <Card
@@ -691,7 +691,7 @@ const TEARDOWN_AFTER: TeardownLine[] = [
 
 function BeforeAfterTeardown() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Outcome"
@@ -771,7 +771,7 @@ function TeardownCard({
         />
       ) : null}
 
-      <div className="relative flex items-center justify-between border-b border-reps-border px-6 py-4">
+      <div className="relative flex items-center justify-between px-6 py-4">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
             stateTone === "active"
@@ -847,7 +847,7 @@ function TeardownCard({
 
 function LearningPathways() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Pathways"
@@ -904,7 +904,7 @@ function LearningPathways() {
 
 function CpdDiscovery() {
   return (
-    <section id="cpd-discovery" className="border-t border-reps-border bg-reps-ink">
+    <section id="cpd-discovery" className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHeader
@@ -1076,7 +1076,7 @@ function CpdDiscovery() {
 
 function SpecialistAreas() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Specialism areas"
@@ -1122,7 +1122,7 @@ function TrainingProvidersBand() {
   return (
     <section
       id="training-providers"
-      className="relative overflow-hidden border-t border-reps-border bg-reps-ink"
+      className="relative overflow-hidden bg-reps-ink"
     >
       <div
         aria-hidden
@@ -1193,7 +1193,7 @@ function FaqBlock() {
 
 function RecognitionStrip() {
   return (
-    <section className="border-t border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Verified training providers"

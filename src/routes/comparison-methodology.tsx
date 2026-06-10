@@ -1,25 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, FileSearch, RefreshCw, MailQuestion, Scale } from "lucide-react";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { ArrowRight, ShieldCheck, FileSearch, RefreshCw, MailQuestion, Scale } from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { DATA_VERIFIED_DATE } from "@/data/competitor-data";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { DATA_VERIFIED_DATE } from"@/data/competitor-data";
 
-const URL = "https://repsglobal.lovable.app/comparison-methodology";
-const TITLE = "Comparison Methodology — How REPs Compares Competitor Software";
+const URL ="https://repsglobal.lovable.app/comparison-methodology";
+const TITLE ="Comparison Methodology — How REPs Compares Competitor Software";
 const DESC =
-  "How REPs compiles, reviews and maintains its competitor comparisons. Based on publicly available information, with a stated 'last checked' date and an open correction-request process.";
+"How REPs compiles, reviews and maintains its competitor comparisons. Based on publicly available information, with a stated 'last checked' date and an open correction-request process.";
 
 export const Route = createFileRoute("/comparison-methodology")({
   head: () => ({
     meta: [
       { title: TITLE },
-      { name: "description", content: DESC },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESC },
-      { property: "og:url", content: URL },
+      { name:"description", content: DESC },
+      { property:"og:title", content: TITLE },
+      { property:"og:description", content: DESC },
+      { property:"og:url", content: URL },
     ],
-    links: [{ rel: "canonical", href: URL }],
+    links: [{ rel:"canonical", href: URL }],
   }),
   component: MethodologyPage,
 });
@@ -27,28 +27,28 @@ export const Route = createFileRoute("/comparison-methodology")({
 const PRINCIPLES = [
   {
     icon: FileSearch,
-    title: "Publicly available information only",
-    body: "Competitor pricing, tiers, client limits, add-ons and feature lists are taken from each vendor's publicly available pricing and feature pages. We do not use leaked, confidential or paywalled material, and we do not claim privileged access to any competitor's internal data.",
+    title:"Publicly available information only",
+    body:"Competitor pricing, tiers, client limits, add-ons and feature lists are taken from each vendor's publicly available pricing and feature pages. We do not use leaked, confidential or paywalled material, and we do not claim privileged access to any competitor's internal data.",
   },
   {
     icon: ShieldCheck,
-    title: "Source records are kept internally",
-    body: "We keep internal evidence of the page state on the date we checked it — purely so we can defend a specific claim if a competitor challenges it. We do not republish raw scraped HTML or full vendor screenshots on this site. The on-page comparison itself is the published artefact.",
+    title:"Source records are kept internally",
+    body:"We keep internal evidence of the page state on the date we checked it — purely so we can defend a specific claim if a competitor challenges it. We do not republish raw scraped HTML or full vendor screenshots on this site. The on-page comparison itself is the published artefact.",
   },
   {
     icon: RefreshCw,
-    title: "Re-checked on a stated date",
-    body: `Every comparison page shows a "Last checked" date. That date reflects the most recent review of the underlying vendor pricing page. Pricing and features change — when we re-check, the date moves and any affected claims are updated or removed.`,
+    title:"Re-checked on a stated date",
+    body: `Every comparison page shows a"Last checked" date. That date reflects the most recent review of the underlying vendor pricing page. Pricing and features change — when we re-check, the date moves and any affected claims are updated or removed.`,
   },
   {
     icon: Scale,
-    title: "Honest where the competitor wins",
-    body: 'Each head-to-head page includes a "When [competitor] is the right choice" section. If your needs fit a competitor better, we say so. The goal is a comparison a reader can trust, not a sales sheet.',
+    title:"Honest where the competitor wins",
+    body: 'Each head-to-head page includes a"When [competitor] is the right choice" section. If your needs fit a competitor better, we say so. The goal is a comparison a reader can trust, not a sales sheet.',
   },
   {
     icon: MailQuestion,
-    title: "Corrections welcome",
-    body: "If a claim is out of date, incomplete or wrong, we'd rather know. Email a correction request and we'll review the source page, update the claim or remove it.",
+    title:"Corrections welcome",
+    body:"If a claim is out of date, incomplete or wrong, we'd rather know. Email a correction request and we'll review the source page, update the claim or remove it.",
   },
 ];
 
@@ -57,7 +57,7 @@ function MethodologyPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
         <div className="relative mx-auto max-w-[820px] px-6 py-20 lg:px-10 lg:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
@@ -78,7 +78,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[820px] px-6 py-16 lg:px-10 lg:py-20">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             How we compile a comparison
@@ -100,7 +100,7 @@ function MethodologyPage() {
               can verify it directly.
             </p>
             <p>
-              REPs&apos; own pricing is taken from the live REPs{" "}
+              REPs&apos; own pricing is taken from the live REPs{""}
               <Link to="/pricing" className="text-reps-orange underline underline-offset-2 hover:text-white">
                 pricing page
               </Link>
@@ -113,7 +113,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1100px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[640px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -142,7 +142,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border">
+      <section>
         <div className="mx-auto max-w-[820px] px-6 py-16 lg:px-10 lg:py-20">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             What this page is — and isn&apos;t
@@ -179,7 +179,7 @@ function MethodologyPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[820px] px-6 py-16 lg:px-10 lg:py-20">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
             Corrections & contact

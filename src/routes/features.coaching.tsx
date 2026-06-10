@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { getCoachingExerciseShowcase } from "@/lib/exercisedb.functions";
+import { createFileRoute, Link } from"@tanstack/react-router";
+import { useState } from"react";
+import { getCoachingExerciseShowcase } from"@/lib/exercisedb.functions";
 import {
   ArrowRight,
   BadgeCheck,
@@ -33,18 +33,18 @@ import {
   Workflow,
   X,
   Zap,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
-import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FinalCta } from "@/components/marketing/FinalCta";
-import { TierCard } from "@/components/marketing/TierCard";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
-import { ClientRecordMock } from "@/components/marketing/CoachingMocks";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { MarketingHeroEyebrow } from"@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from"@/components/marketing/SectionHeader";
+import { BlockHeading } from"@/components/marketing/BlockHeading";
+import { MarketingFaq } from"@/components/marketing/MarketingFaq";
+import { FinalCta } from"@/components/marketing/FinalCta";
+import { TierCard } from"@/components/marketing/TierCard";
+import { HeroOverlay } from"@/components/marketing/HeroOverlay";
+import { ClientRecordMock } from"@/components/marketing/CoachingMocks";
 import {
   ACC_SCENARIOS,
   AccountabilityMock,
@@ -59,127 +59,127 @@ import {
   ProgrammeMock,
   ProgressMock,
   type AccId,
-} from "@/components/marketing/coaching/InteractiveMocks";
+} from"@/components/marketing/coaching/InteractiveMocks";
 
-import heroCoaching from "@/assets/hero-coaching-bg.jpg.asset.json";
+import heroCoaching from"@/assets/hero-coaching-bg.jpg.asset.json";
 
 // -----------------------------------------------------------------------------
 // Data
 // -----------------------------------------------------------------------------
 
 const PROBLEM_FRAGMENTS = [
-  { icon: Dumbbell, label: "Programmes in a workout app" },
-  { icon: Utensils, label: "Nutrition in MyFitnessPal" },
-  { icon: MessageSquare, label: "Check-ins on WhatsApp" },
-  { icon: Camera, label: "Progress photos in camera rolls" },
-  { icon: Watch, label: "Sleep & steps in another app" },
-  { icon: FileText, label: "Notes buried in DMs" },
+  { icon: Dumbbell, label:"Programmes in a workout app" },
+  { icon: Utensils, label:"Nutrition in MyFitnessPal" },
+  { icon: MessageSquare, label:"Check-ins on WhatsApp" },
+  { icon: Camera, label:"Progress photos in camera rolls" },
+  { icon: Watch, label:"Sleep & steps in another app" },
+  { icon: FileText, label:"Notes buried in DMs" },
 ];
 
 const PROBLEM_ORGANISED = [
-  "Programmes built next to the client record",
-  "Nutrition, macros and meals tracked in the same workspace",
-  "Sleep, steps and training data flow in from their wearable",
-  "Check-ins arrive in one inbox, scored against the goal",
-  "Messages, voice notes and form replies in one thread per client",
-  "Accountability surfaces clients before they go quiet",
+"Programmes built next to the client record",
+"Nutrition, macros and meals tracked in the same workspace",
+"Sleep, steps and training data flow in from their wearable",
+"Check-ins arrive in one inbox, scored against the goal",
+"Messages, voice notes and form replies in one thread per client",
+"Accountability surfaces clients before they go quiet",
 ];
 
 const PROGRAMME_BULLETS = [
-  "Block, week and session structure — not a workout list",
-  "Sets, reps, tempo, rest, load and exertion targets per exercise",
-  "10,000+ video demos from the exercise library",
-  "Client-specific adaptations stored on the programme",
-  "Progression notes carried session to session",
-  "Reusable templates so a new client never starts from a blank page",
+"Block, week and session structure — not a workout list",
+"Sets, reps, tempo, rest, load and exertion targets per exercise",
+"10,000+ video demos from the exercise library",
+"Client-specific adaptations stored on the programme",
+"Progression notes carried session to session",
+"Reusable templates so a new client never starts from a blank page",
 ];
 
 
 const CHECKIN_BULLETS = [
-  "Weekly cadence with goal review baked in",
-  "Mood, energy, sleep and adherence on a simple scale",
-  "Bodyweight or measurements with deltas vs last week",
-  "Training feedback per session: easy / right / hard",
-  "Nutrition and habit data pulled in automatically",
-  "Coach response and next action saved on the record",
+"Weekly cadence with goal review baked in",
+"Mood, energy, sleep and adherence on a simple scale",
+"Bodyweight or measurements with deltas vs last week",
+"Training feedback per session: easy / right / hard",
+"Nutrition and habit data pulled in automatically",
+"Coach response and next action saved on the record",
 ];
 
 const MESSAGING_BULLETS = [
-  "One thread per client — text, voice and form replies",
-  "Voice notes up to 3 minutes for cueing or context",
-  "Check-in form replies appear inline with the conversation",
-  "Search the whole history without scrolling chat apps",
-  "Templated replies for common questions, edited per client",
-  "Read receipts so you know what's landed",
+"One thread per client — text, voice and form replies",
+"Voice notes up to 3 minutes for cueing or context",
+"Check-in form replies appear inline with the conversation",
+"Search the whole history without scrolling chat apps",
+"Templated replies for common questions, edited per client",
+"Read receipts so you know what's landed",
 ];
 
 const AUTOMATIONS_BULLETS = [
-  "Onboarding sequences for new clients — welcome, screening, first session",
-  "Re-engagement sequences for clients going quiet",
-  "Session reminders, check-in prompts, milestone messages",
-  "Pre-written drafts you edit before they send — never blasted",
-  "Drip content delivered to the right client at the right week",
-  "All triggered from real coaching events, not generic timers",
+"Onboarding sequences for new clients — welcome, screening, first session",
+"Re-engagement sequences for clients going quiet",
+"Session reminders, check-in prompts, milestone messages",
+"Pre-written drafts you edit before they send — never blasted",
+"Drip content delivered to the right client at the right week",
+"All triggered from real coaching events, not generic timers",
 ];
 
 const TEMPLATE_CARDS = [
-  { icon: BookOpen, title: "Programme templates", body: "Block, week and session frameworks ready to clone and personalise." },
-  { icon: Utensils, title: "Nutrition plan templates", body: "Macro splits and meal plans you can drop onto a client in one click." },
-  { icon: ClipboardList, title: "Onboarding templates", body: "Welcome, expectations, screening and first-session prep — sent once, repeatable." },
-  { icon: HeartPulse, title: "Check-in templates", body: "Weekly, monthly and post-block check-ins shaped for coaching, not generic surveys." },
-  { icon: Workflow, title: "Automation templates", body: "Onboarding, re-engagement and reminder sequences ready to switch on." },
-  { icon: MessageSquare, title: "Message templates", body: "Pre-written nudges, congrats and re-engagement messages — edited, not blasted." },
+  { icon: BookOpen, title:"Programme templates", body:"Block, week and session frameworks ready to clone and personalise." },
+  { icon: Utensils, title:"Nutrition plan templates", body:"Macro splits and meal plans you can drop onto a client in one click." },
+  { icon: ClipboardList, title:"Onboarding templates", body:"Welcome, expectations, screening and first-session prep — sent once, repeatable." },
+  { icon: HeartPulse, title:"Check-in templates", body:"Weekly, monthly and post-block check-ins shaped for coaching, not generic surveys." },
+  { icon: Workflow, title:"Automation templates", body:"Onboarding, re-engagement and reminder sequences ready to switch on." },
+  { icon: MessageSquare, title:"Message templates", body:"Pre-written nudges, congrats and re-engagement messages — edited, not blasted." },
 ];
 
 const USE_CASES = [
-  { icon: Users, title: "Personal trainers", body: "Plan sessions, track attendance, deliver programmes and nutrition — all connected to the booking." },
-  { icon: LayoutDashboard, title: "Online coaches", body: "Run remote clients end-to-end: programmes, check-ins, nutrition, messaging and progress from one place." },
-  { icon: Dumbbell, title: "Strength coaches", body: "Block periodisation, RPE logging, PR tracking and athlete feedback without a spreadsheet stack." },
-  { icon: LineChart, title: "Transformation coaches", body: "Macros, weekly check-ins, measurements, photos and habits — with proper continuity." },
-  { icon: ListChecks, title: "Small-group coaches", body: "Deliver structured programming while still tracking individual progress, not just the class." },
-  { icon: Workflow, title: "Studio teams", body: "Coaching standards stay consistent across multiple coaches and shared clients." },
+  { icon: Users, title:"Personal trainers", body:"Plan sessions, track attendance, deliver programmes and nutrition — all connected to the booking." },
+  { icon: LayoutDashboard, title:"Online coaches", body:"Run remote clients end-to-end: programmes, check-ins, nutrition, messaging and progress from one place." },
+  { icon: Dumbbell, title:"Strength coaches", body:"Block periodisation, RPE logging, PR tracking and athlete feedback without a spreadsheet stack." },
+  { icon: LineChart, title:"Transformation coaches", body:"Macros, weekly check-ins, measurements, photos and habits — with proper continuity." },
+  { icon: ListChecks, title:"Small-group coaches", body:"Deliver structured programming while still tracking individual progress, not just the class." },
+  { icon: Workflow, title:"Studio teams", body:"Coaching standards stay consistent across multiple coaches and shared clients." },
 ];
 
 const COMPARISON_ROWS = [
-  { feature: "Programme builder (block / week / session)", verified: false, pro: true },
-  { feature: "Exercise library + 10,000+ video demos", verified: false, pro: true },
-  { feature: "Nutrition: macros, food log, meal plans", verified: false, pro: true },
-  { feature: "Habits + wearable sync (Apple / Garmin / Whoop)", verified: false, pro: true },
-  { feature: "Weekly check-ins with goal review", verified: false, pro: true },
-  { feature: "Progress tracking (strength, body, adherence, photos)", verified: false, pro: true },
-  { feature: "Messaging — text, voice notes, form replies", verified: false, pro: true },
-  { feature: "Client portal view (browser, no app install)", verified: false, pro: true },
-  { feature: "Coaching notes & client history timeline", verified: false, pro: true },
-  { feature: "Accountability & next-action queue", verified: false, pro: true },
-  { feature: "Automations & onboarding sequences", verified: false, pro: true },
-  { feature: "AI assist for drafting and summaries", verified: false, pro: true },
-  { feature: "Verified public profile & reviews", verified: true, pro: true },
+  { feature:"Programme builder (block / week / session)", verified: false, pro: true },
+  { feature:"Exercise library + 10,000+ video demos", verified: false, pro: true },
+  { feature:"Nutrition: macros, food log, meal plans", verified: false, pro: true },
+  { feature:"Habits + wearable sync (Apple / Garmin / Whoop)", verified: false, pro: true },
+  { feature:"Weekly check-ins with goal review", verified: false, pro: true },
+  { feature:"Progress tracking (strength, body, adherence, photos)", verified: false, pro: true },
+  { feature:"Messaging — text, voice notes, form replies", verified: false, pro: true },
+  { feature:"Client portal view (browser, no app install)", verified: false, pro: true },
+  { feature:"Coaching notes & client history timeline", verified: false, pro: true },
+  { feature:"Accountability & next-action queue", verified: false, pro: true },
+  { feature:"Automations & onboarding sequences", verified: false, pro: true },
+  { feature:"AI assist for drafting and summaries", verified: false, pro: true },
+  { feature:"Verified public profile & reviews", verified: true, pro: true },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "Is REPs Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
-    a: "For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
+    q:"Is REPs Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
+    a:"For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
   },
   {
-    q: "Does it actually replace MyFitnessPal for nutrition?",
-    a: "Yes — for coached clients. You set macros, your client logs food from a searchable database with barcode scan, snaps a photo when it's easier, follows the meal plan you built, and the weekly check-in pulls compliance in automatically. The coach sees it. The plan adapts. No more screenshots of someone else's app.",
+    q:"Does it actually replace MyFitnessPal for nutrition?",
+    a:"Yes — for coached clients. You set macros, your client logs food from a searchable database with barcode scan, snaps a photo when it's easier, follows the meal plan you built, and the weekly check-in pulls compliance in automatically. The coach sees it. The plan adapts. No more screenshots of someone else's app.",
   },
   {
-    q: "Which wearables does it sync with?",
-    a: "Apple Health, Garmin, Whoop and Fitbit at launch — covering sleep, steps, hydration and training sessions. The data flows into the weekly check-in so you don't have to ask 'how's sleep been?' every Sunday.",
+    q:"Which wearables does it sync with?",
+    a:"Apple Health, Garmin, Whoop and Fitbit at launch — covering sleep, steps, hydration and training sessions. The data flows into the weekly check-in so you don't have to ask 'how's sleep been?' every Sunday.",
   },
   {
-    q: "Can clients use this without downloading an app?",
-    a: "Yes. The client view is a browser portal accessed by magic link from their check-in email or invite. No app install required. A dedicated mobile app may follow later; the portal is the supported v1 experience.",
+    q:"Can clients use this without downloading an app?",
+    a:"Yes. The client view is a browser portal accessed by magic link from their check-in email or invite. No app install required. A dedicated mobile app may follow later; the portal is the supported v1 experience.",
   },
   {
-    q: "How does AI show up — is this another AI-hype product?",
-    a: "No. AI drafts the first version, you coach the result. It drafts programmes from goals and screening, summarises a week of check-ins so you can scan 14 clients in a minute, and suggests reply wording you can edit. Every output is a draft for you to review — nothing sent without you.",
+    q:"How does AI show up — is this another AI-hype product?",
+    a:"No. AI drafts the first version, you coach the result. It drafts programmes from goals and screening, summarises a week of check-ins so you can scan 14 clients in a minute, and suggests reply wording you can edit. Every output is a draft for you to review — nothing sent without you.",
   },
   {
-    q: "Can I migrate from Trainerize, TrueCoach or PT Distinction?",
-    a: "Yes. Import client contacts and basic history via CSV, recreate your programmes and meal plans as templates (often faster than importing messy data), and carry on. The team can help with a structured migration for Pro and Studio accounts.",
+    q:"Can I migrate from Trainerize, TrueCoach or PT Distinction?",
+    a:"Yes. Import client contacts and basic history via CSV, recreate your programmes and meal plans as templates (often faster than importing messy data), and carry on. The team can help with a structured migration for Pro and Studio accounts.",
   },
 ];
 
@@ -191,26 +191,26 @@ export const Route = createFileRoute("/features/coaching")({
   head: () => ({
     meta: [
       {
-        title: "Coaching — Deliver better coaching from one connected platform · REPs",
+        title:"Coaching — Deliver better coaching from one connected platform · REPs",
       },
       {
-        name: "description",
+        name:"description",
         content:
-          "Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging, progress, automations and AI assist — every coaching delivery tool a world-class trainer needs, in one workspace. Included in REPs Pro.",
+"Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging, progress, automations and AI assist — every coaching delivery tool a world-class trainer needs, in one workspace. Included in REPs Pro.",
       },
       {
-        property: "og:title",
-        content: "Coaching — Deliver better coaching from one connected platform",
+        property:"og:title",
+        content:"Coaching — Deliver better coaching from one connected platform",
       },
       {
-        property: "og:description",
+        property:"og:description",
         content:
-          "Programmes, nutrition, check-ins, progress, messaging and automations — every coaching delivery tool a world-class trainer needs, in one workspace.",
+"Programmes, nutrition, check-ins, progress, messaging and automations — every coaching delivery tool a world-class trainer needs, in one workspace.",
       },
-      { property: "og:image", content: heroCoaching.url },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/coaching" },
+      { property:"og:image", content: heroCoaching.url },
+      { property:"og:url", content:"https://repsglobal.lovable.app/features/coaching" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/coaching" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/coaching" }],
   }),
   loader: () => getCoachingExerciseShowcase(),
   component: CoachingPage,
@@ -255,8 +255,8 @@ function CoachingPage() {
         heading="Deliver coaching clients can follow,"
         headingAccent="track and stay engaged with."
         lede="Use REPs Pro to programme, feed, check in, track, message and support every client from one connected coaching workspace."
-        primary={{ to: "/signup", label: "Start using REPs Pro" }}
-        secondary={{ to: "/for-professionals", label: "Explore all features" }}
+        primary={{ to:"/signup", label:"Start using REPs Pro" }}
+        secondary={{ to:"/for-professionals", label:"Explore all features" }}
       />
 
       <PublicFooter />
@@ -284,22 +284,22 @@ function Hero() {
         <div className="max-w-[680px]">
           <MarketingHeroEyebrow
             icon={Dumbbell}
-            style={{ animationDuration: "560ms", animationFillMode: "both" }}
+            style={{ animationDuration:"560ms", animationFillMode:"both" }}
           >
             Coaching · Delivery, support &amp; outcomes
           </MarketingHeroEyebrow>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[60px]"
-            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
-            Deliver better coaching from{" "}
+            Deliver better coaching from{""}
             <span className="text-reps-orange">one connected platform.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
-            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging,
             progress and automations — every delivery tool a world-class coach needs, in one
@@ -308,7 +308,7 @@ function Hero() {
 
           <div
             className="mt-8 flex animate-fade-in flex-wrap gap-3"
-            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"260ms", animationFillMode:"both" }}
           >
             <Link
               to="/signup"
@@ -326,7 +326,7 @@ function Hero() {
 
           <ul
             className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
@@ -350,7 +350,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The fragmented coaching stack"
@@ -398,7 +398,7 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              Operations gets the client organised. Coaching helps you{" "}
+              Operations gets the client organised. Coaching helps you{""}
               <em>deliver the result.</em>
             </p>
           </div>
@@ -418,7 +418,7 @@ function ProgrammeSection({
   featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
 }) {
   return (
-    <section id="programme-delivery" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15">
+    <section id="programme-delivery" className="scroll-mt-24 bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Programme delivery"
@@ -451,7 +451,7 @@ function ExerciseLibrarySection({
   featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
 }) {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Exercise library"
@@ -465,12 +465,12 @@ function ExerciseLibrarySection({
             heading="One library. Every programme. Every client."
             body="Search by name, filter by category, drop straight into Thursday's session. The same library powers programme building, the client portal demos and AI programme drafts — so the cueing stays consistent across every coach in the studio."
             bullets={[
-              "10,000+ exercises curated for coaching, not gym influencers",
-              "Filter by lower, upper, conditioning, mobility, equipment",
-              "HD video demos with cues, regressions and progressions",
-              "Upload your own exercises and videos — they sit alongside the library",
-              "Record once, reuse across every client and programme",
-              "Add to programme in one click — no copy-paste",
+"10,000+ exercises curated for coaching, not gym influencers",
+"Filter by lower, upper, conditioning, mobility, equipment",
+"HD video demos with cues, regressions and progressions",
+"Upload your own exercises and videos — they sit alongside the library",
+"Record once, reuse across every client and programme",
+"Add to programme in one click — no copy-paste",
             ]}
           />
         </div>
@@ -494,40 +494,40 @@ type MealOption = {
 
 const MEAL_OPTIONS: MealOption[] = [
   {
-    label: "Manual",
-    title: "Manual builder",
-    body: "Build the plan yourself from the REPs meal library or your own custom meals. Full control, full ownership.",
-    bullets: ["Drag meals into the day", "Live macro totals", "Save as a personal template"],
+    label:"Manual",
+    title:"Manual builder",
+    body:"Build the plan yourself from the REPs meal library or your own custom meals. Full control, full ownership.",
+    bullets: ["Drag meals into the day","Live macro totals","Save as a personal template"],
     icon: UtensilsCrossed,
   },
   {
-    label: "Templates",
-    title: "Templates",
-    body: "Reusable plan structures for common goals — fat loss, muscle gain, high-protein, vegetarian, low-prep, busy professional.",
-    bullets: ["Clone and personalise in seconds", "Tag by goal and dietary style", "Studio-wide template library"],
+    label:"Templates",
+    title:"Templates",
+    body:"Reusable plan structures for common goals — fat loss, muscle gain, high-protein, vegetarian, low-prep, busy professional.",
+    bullets: ["Clone and personalise in seconds","Tag by goal and dietary style","Studio-wide template library"],
     icon: Layers,
   },
   {
-    label: "AI draft",
-    title: "AI-assisted draft",
-    body: "AI drafts a plan from intake, goal, food preferences, allergies, schedule and cooking ability. You edit and approve.",
-    bullets: ["Draft in under 30 seconds", "Respects allergies and exclusions", "Always opens in edit mode"],
+    label:"AI draft",
+    title:"AI-assisted draft",
+    body:"AI drafts a plan from intake, goal, food preferences, allergies, schedule and cooking ability. You edit and approve.",
+    bullets: ["Draft in under 30 seconds","Respects allergies and exclusions","Always opens in edit mode"],
     icon: Sparkles,
     highlighted: true,
   },
 ];
 
 const PIPELINE_STEPS: { label: string; icon: typeof Utensils; emerald?: boolean }[] = [
-  { label: "Client intake", icon: ClipboardList },
-  { label: "AI draft", icon: Sparkles },
-  { label: "Trainer edits", icon: NotebookPen },
-  { label: "Trainer approves", icon: CircleCheck, emerald: true },
-  { label: "Client sees plan", icon: Smartphone },
+  { label:"Client intake", icon: ClipboardList },
+  { label:"AI draft", icon: Sparkles },
+  { label:"Trainer edits", icon: NotebookPen },
+  { label:"Trainer approves", icon: CircleCheck, emerald: true },
+  { label:"Client sees plan", icon: Smartphone },
 ];
 
 function NutritionSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-reps-border bg-reps-panel/60 px-4 py-2 text-[12.5px] text-white/70">
           <span className="inline-flex size-6 items-center justify-center rounded-full bg-reps-orange-soft text-[11px] font-bold text-reps-orange">
@@ -560,19 +560,19 @@ function NutritionSection() {
               <div
                 key={opt.label}
                 className={
-                  "rounded-[22px] p-6 " +
+"rounded-[22px] p-6" +
                   (opt.highlighted
-                    ? "border border-reps-orange-border bg-reps-panel/70"
-                    : "border border-reps-border bg-reps-panel/40")
+                    ?"border border-reps-orange-border bg-reps-panel/70"
+                    :"border border-reps-border bg-reps-panel/40")
                 }
               >
                 <div className="flex items-center justify-between">
                   <span
                     className={
-                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] " +
+"rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]" +
                       (opt.highlighted
-                        ? "bg-reps-orange text-white"
-                        : "bg-reps-orange-soft text-reps-orange")
+                        ?"bg-reps-orange text-white"
+                        :"bg-reps-orange-soft text-reps-orange")
                     }
                   >
                     {opt.label}
@@ -596,7 +596,7 @@ function NutritionSection() {
 
         <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
           <p className="font-display text-[22px] font-bold leading-[1.2] text-white lg:text-[26px]">
-            "AI should speed up meal planning, not replace professional judgement."
+"AI should speed up meal planning, not replace professional judgement."
           </p>
           <ol className="mt-6 flex flex-wrap items-center gap-2">
             {PIPELINE_STEPS.map((step, i) => {
@@ -606,10 +606,10 @@ function NutritionSection() {
                 <li key={step.label} className="flex items-center gap-2">
                   <span
                     className={
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] " +
+"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px]" +
                       (step.emerald
-                        ? "border border-emerald-400/30 bg-emerald-500/15 font-semibold text-emerald-300"
-                        : "border border-reps-border bg-reps-ink/70 font-medium text-white/70")
+                        ?"border border-emerald-400/30 bg-emerald-500/15 font-semibold text-emerald-300"
+                        :"border border-reps-border bg-reps-ink/70 font-medium text-white/70")
                     }
                   >
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -635,7 +635,7 @@ function NutritionSection() {
 
 function CheckInsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Client check-ins"
@@ -662,7 +662,7 @@ function CheckInsSection() {
 
 function ProgressSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Progress tracking"
@@ -676,12 +676,12 @@ function ProgressSection() {
             heading="Four lenses on one client. One source of truth."
             body="Lifts, weight, compliance and visible change — each told as a story over time, not a screenshot. Progress photos are encrypted, client-consented and never appear on your public profile."
             bullets={[
-              "Strength: PBs, working weights and 1RM trends per lift",
-              "Body: bodyweight and circumference trends with deltas",
-              "Adherence: sessions completed, check-ins submitted, streaks",
-              "Photos: opt-in, encrypted, client-only by default",
-              "Milestones saved automatically — first PB, first 100 kg",
-              "Shareable with the client in their portal — same numbers",
+"Strength: PBs, working weights and 1RM trends per lift",
+"Body: bodyweight and circumference trends with deltas",
+"Adherence: sessions completed, check-ins submitted, streaks",
+"Photos: opt-in, encrypted, client-only by default",
+"Milestones saved automatically — first PB, first 100 kg",
+"Shareable with the client in their portal — same numbers",
             ]}
           />
         </div>
@@ -696,7 +696,7 @@ function ProgressSection() {
 
 function MessagingSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Messaging"
@@ -723,7 +723,7 @@ function MessagingSection() {
 
 function ClientViewSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The client view"
@@ -737,12 +737,12 @@ function ClientViewSection() {
             heading="What the client sees, on purpose."
             body="The portal is intentionally small. Four things every week: what's next, my programme, my check-in, my progress. No social feed, no leaderboard, no noise — just enough to make the coaching tangible between sessions."
             bullets={[
-              "Their current programme, week and next session",
-              "Check-in form, pre-filled to last week's answers",
-              "Progress they can see — lifts, weight, adherence",
-              "Direct line to you, not a generic inbox",
-              "Package and session status pulled from Operations",
-              "Mobile-friendly browser portal — no app store, no install",
+"Their current programme, week and next session",
+"Check-in form, pre-filled to last week's answers",
+"Progress they can see — lifts, weight, adherence",
+"Direct line to you, not a generic inbox",
+"Package and session status pulled from Operations",
+"Mobile-friendly browser portal — no app store, no install",
             ]}
           />
         </div>
@@ -757,7 +757,7 @@ function ClientViewSection() {
 
 function ClientRecordSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Coaching notes &amp; client context"
@@ -770,12 +770,12 @@ function ClientRecordSection() {
             heading="One record per client. Every session, every note."
             body="Operations holds the admin side — contact, bookings, payments, forms. Coaching adds the delivery side: programmes run, check-ins submitted, lifts tracked, meals logged, milestones hit, notes you took at 6am that you'd otherwise forget."
             bullets={[
-              "Goals and original brief stored at the top",
-              "Injury, screening and considerations always visible",
-              "Coach notes timestamped and searchable",
-              "Programme, nutrition and check-in history without scrolling chat",
-              "Progress timeline — what changed, when, why",
-              "Next-action prompt so nothing slips between sessions",
+"Goals and original brief stored at the top",
+"Injury, screening and considerations always visible",
+"Coach notes timestamped and searchable",
+"Programme, nutrition and check-in history without scrolling chat",
+"Progress timeline — what changed, when, why",
+"Next-action prompt so nothing slips between sessions",
             ]}
           />
           <ClientRecordMock />
@@ -792,7 +792,7 @@ function ClientRecordSection() {
 function AccountabilitySection() {
   const [scenario, setScenario] = useState<AccId>(ACC_SCENARIOS[0].id);
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Accountability &amp; next actions"
@@ -819,12 +819,12 @@ function AccountabilitySection() {
                   aria-pressed={scenario === s.id}
                   className={`flex items-center gap-2.5 rounded-[16px] border px-4 py-2.5 text-left text-[13.5px] transition-colors ${
                     scenario === s.id
-                      ? "border-reps-orange-border bg-reps-orange-soft/40 text-white"
-                      : "border-reps-border bg-reps-panel/40 text-white/75 hover:bg-reps-panel/60"
+                      ?"border-reps-orange-border bg-reps-orange-soft/40 text-white"
+                      :"border-reps-border bg-reps-panel/40 text-white/75 hover:bg-reps-panel/60"
                   }`}
                 >
                   <Bell
-                    className={`h-4 w-4 shrink-0 ${scenario === s.id ? "text-reps-orange" : "text-white/45"}`}
+                    className={`h-4 w-4 shrink-0 ${scenario === s.id ?"text-reps-orange" :"text-white/45"}`}
                   />
                   <span className="font-semibold">{s.label}</span>
                   <span className="ml-auto text-[11.5px] text-white/45">See flag</span>
@@ -844,7 +844,7 @@ function AccountabilitySection() {
 
 function AutomationsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Automations"
@@ -871,7 +871,7 @@ function AutomationsSection() {
 
 function TemplatesSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Templates &amp; repeatable delivery"
@@ -904,7 +904,7 @@ function TemplatesSection() {
 
 function AiAssistSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="AI assist"
@@ -923,12 +923,12 @@ function AiAssistSection() {
             </p>
             <ul className="mt-5 space-y-2.5">
               {[
-                "Programme drafts from goals, screening and last block's results",
-                "Weekly check-in summary across your whole client list",
-                "Suggested reply wording — always editable, never auto-sent",
-                "Trend spotting: 'three clients flat-lined this week'",
-                "Built into the workspace, not a separate tool",
-                "Off-switch per client and per coach if you want it off",
+"Programme drafts from goals, screening and last block's results",
+"Weekly check-in summary across your whole client list",
+"Suggested reply wording — always editable, never auto-sent",
+"Trend spotting: 'three clients flat-lined this week'",
+"Built into the workspace, not a separate tool",
+"Off-switch per client and per coach if you want it off",
               ].map((b) => (
                 <li
                   key={b}
@@ -958,7 +958,7 @@ function AiAssistSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"
@@ -971,14 +971,14 @@ function TierComparisonSection() {
             badge="Verified"
             price="£99 / year"
             blurb="Public verified profile, directory presence, reviews and a basic enquiry inbox. No programme builder, nutrition, check-ins, progress tracking or client view."
-            cta={{ to: "/features/visibility", label: "See what Verified covers" }}
+            cta={{ to:"/features/visibility", label:"See what Verified covers" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
             blurb="Everything in Verified, plus the full Coaching workspace — programmes, exercise library, nutrition, habits & wearables, check-ins, progress, messaging, client view, accountability, automations and AI assist."
             highlighted
-            cta={{ to: "/pricing", label: "See Pro pricing" }}
+            cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
         </div>
 
@@ -994,7 +994,7 @@ function TierComparisonSection() {
                 <div
                   key={row.feature}
                   className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
-                    i % 2 === 0 ? "bg-white/[0.02]" : ""
+                    i % 2 === 0 ?"bg-white/[0.02]" :""
                   }`}
                 >
                   <span>{row.feature}</span>
@@ -1028,7 +1028,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every coaching model"

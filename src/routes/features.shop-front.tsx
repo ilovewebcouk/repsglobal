@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from"@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,22 +18,22 @@ import {
   Tag,
   Palette,
   LayoutTemplate,
-} from "lucide-react";
+} from"lucide-react";
 
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { BlockHeading } from "@/components/marketing/BlockHeading";
-import { AnnotatedMock, type Callout } from "@/components/marketing/AnnotatedMock";
-import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FinalCta } from "@/components/marketing/FinalCta";
-import { TierCard } from "@/components/marketing/TierCard";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { PublicHeader } from"@/components/public/PublicHeader";
+import { PublicFooter } from"@/components/public/PublicFooter";
+import { MarketingHeroEyebrow } from"@/components/marketing/MarketingHeroEyebrow";
+import { HeroOverlay } from"@/components/marketing/HeroOverlay";
+import { SectionHeader } from"@/components/marketing/SectionHeader";
+import { BlockHeading } from"@/components/marketing/BlockHeading";
+import { AnnotatedMock, type Callout } from"@/components/marketing/AnnotatedMock";
+import { MarketingFaq } from"@/components/marketing/MarketingFaq";
+import { FinalCta } from"@/components/marketing/FinalCta";
+import { TierCard } from"@/components/marketing/TierCard";
+import { Separator } from"@/components/ui/separator";
+import { Badge } from"@/components/ui/badge";
 
-import coachJamesCoaching from "@/assets/coach-james-coaching.jpg";
+import coachJamesCoaching from"@/assets/coach-james-coaching.jpg";
 
 // -----------------------------------------------------------------------------
 // Data
@@ -41,192 +41,192 @@ import coachJamesCoaching from "@/assets/coach-james-coaching.jpg";
 
 const SHOPFRONT_CALLOUTS: Callout[] = [
   {
-    x: "12%",
-    y: "14%",
-    title: "Outcome-led hero",
-    body: "Your headline is the promise, not your name. One photo, one CTA, the proof that you deliver.",
+    x:"12%",
+    y:"14%",
+    title:"Outcome-led hero",
+    body:"Your headline is the promise, not your name. One photo, one CTA, the proof that you deliver.",
   },
   {
-    x: "84%",
-    y: "20%",
-    title: "Verified card",
-    body: "REPs Verified badge, credentials and insurance — live-pulled from your standards record.",
+    x:"84%",
+    y:"20%",
+    title:"Verified card",
+    body:"REPs Verified badge, credentials and insurance — live-pulled from your standards record.",
   },
   {
-    x: "14%",
-    y: "45%",
-    title: "Three tier services",
-    body: "Online, Hybrid and In-person. Middle tier marked Most popular in your accent colour.",
+    x:"14%",
+    y:"45%",
+    title:"Three tier services",
+    body:"Online, Hybrid and In-person. Middle tier marked Most popular in your accent colour.",
   },
   {
-    x: "82%",
-    y: "52%",
-    title: "Methodology",
-    body: "Three numbered pillars in your voice — the reason clients pick you over a cheaper coach.",
+    x:"82%",
+    y:"52%",
+    title:"Methodology",
+    body:"Three numbered pillars in your voice — the reason clients pick you over a cheaper coach.",
   },
   {
-    x: "16%",
-    y: "76%",
-    title: "Real transformations",
-    body: "Verified client results with metric overlays. No stock smiles, no fake before-and-afters.",
+    x:"16%",
+    y:"76%",
+    title:"Real transformations",
+    body:"Verified client results with metric overlays. No stock smiles, no fake before-and-afters.",
   },
   {
-    x: "84%",
-    y: "84%",
-    title: "Enquire panel",
-    body: "Every CTA on the page lands here. Drops straight into your REPs leads pipeline — never your inbox.",
+    x:"84%",
+    y:"84%",
+    title:"Enquire panel",
+    body:"Every CTA on the page lands here. Drops straight into your REPs leads pipeline — never your inbox.",
   },
 ];
 
 const SERVICE_TYPES = [
-  { title: "1:1 coaching", body: "Session structure, what's included, who it suits, price range or 'from' anchor." },
-  { title: "Online coaching", body: "Programme cadence, check-in frequency, app/portal access, suitability filters." },
-  { title: "Small-group training", body: "Group size, schedule, member journey, drop-in vs block options." },
-  { title: "Assessments & screening", body: "Movement, strength, postural or readiness assessments — clearly priced." },
-  { title: "Transformation programmes", body: "12-week, body-comp or rehab packages with milestones and pricing." },
-  { title: "Sports performance", body: "Sport-specific blocks for runners, lifters, climbers, team-sport athletes." },
-  { title: "Specialist services", body: "Pre/postnatal, older adults, rehab support, chronic-condition coaching." },
-  { title: "Studio classes", body: "Class schedule, instructors, location, class-pack or membership options." },
-  { title: "Gym memberships", body: "Tiered membership, access, contract length and onboarding details." },
+  { title:"1:1 coaching", body:"Session structure, what's included, who it suits, price range or 'from' anchor." },
+  { title:"Online coaching", body:"Programme cadence, check-in frequency, app/portal access, suitability filters." },
+  { title:"Small-group training", body:"Group size, schedule, member journey, drop-in vs block options." },
+  { title:"Assessments & screening", body:"Movement, strength, postural or readiness assessments — clearly priced." },
+  { title:"Transformation programmes", body:"12-week, body-comp or rehab packages with milestones and pricing." },
+  { title:"Sports performance", body:"Sport-specific blocks for runners, lifters, climbers, team-sport athletes." },
+  { title:"Specialist services", body:"Pre/postnatal, older adults, rehab support, chronic-condition coaching." },
+  { title:"Studio classes", body:"Class schedule, instructors, location, class-pack or membership options." },
+  { title:"Gym memberships", body:"Tiered membership, access, contract length and onboarding details." },
 ];
 
 const FLOW_STEPS = [
   {
     icon: Inbox,
-    title: "Client clicks Enquire",
-    body: "Every CTA on the Shop Front — hero, tier card, contact panel — opens the same locked enquiry form.",
+    title:"Client clicks Enquire",
+    body:"Every CTA on the Shop Front — hero, tier card, contact panel — opens the same locked enquiry form.",
   },
   {
     icon: Workflow,
-    title: "Lands in your REPs pipeline",
-    body: "Scored by AI, tagged by service and intent. No more leads lost between DMs and inbox.",
+    title:"Lands in your REPs pipeline",
+    body:"Scored by AI, tagged by service and intent. No more leads lost between DMs and inbox.",
   },
   {
     icon: Calendar,
-    title: "Booking or consultation confirmed",
-    body: "Send a one-click booking link. Capture payment or hold a consultation call before money changes hands.",
+    title:"Booking or consultation confirmed",
+    body:"Send a one-click booking link. Capture payment or hold a consultation call before money changes hands.",
   },
   {
     icon: CreditCard,
-    title: "Onboarded as a client",
-    body: "Welcome flow, intake form, programme assignment — handled inside REPs. They never leave the platform.",
+    title:"Onboarded as a client",
+    body:"Welcome flow, intake form, programme assignment — handled inside REPs. They never leave the platform.",
   },
 ];
 
 const CONNECTED_BULLETS = [
-  "Enquiry forms branded to your accent colour, with the service preselected.",
-  "Booking links for consultations, intro sessions or full programmes.",
-  "Payments captured through your connected processor — no extra surcharge.",
-  "Automated follow-up sequences for hot, warm and cold leads.",
-  "Lead-to-client conversion shown on your dashboard — not a vanity metric.",
+"Enquiry forms branded to your accent colour, with the service preselected.",
+"Booking links for consultations, intro sessions or full programmes.",
+"Payments captured through your connected processor — no extra surcharge.",
+"Automated follow-up sequences for hot, warm and cold leads.",
+"Lead-to-client conversion shown on your dashboard — not a vanity metric.",
 ];
 
 const PROOF_BLOCKS = [
   {
     icon: ShieldCheck,
-    title: "Verified badge",
-    body: "The REPs Verified mark — checked by a human, displayed at the top of your Shop Front.",
-    accent: "emerald" as const,
+    title:"Verified badge",
+    body:"The REPs Verified mark — checked by a human, displayed at the top of your Shop Front.",
+    accent:"emerald" as const,
   },
   {
     icon: Award,
-    title: "Qualifications",
-    body: "Recognised awarding-body qualifications shown on the page, named and dated. No mystery acronyms.",
+    title:"Qualifications",
+    body:"Recognised awarding-body qualifications shown on the page, named and dated. No mystery acronyms.",
   },
   {
     icon: BadgeCheck,
-    title: "CPD",
-    body: "Recent continuing-professional-development entries surface beside your qualifications.",
+    title:"CPD",
+    body:"Recent continuing-professional-development entries surface beside your qualifications.",
   },
   {
     icon: Tag,
-    title: "Specialisms",
-    body: "Plain-language strengths — postnatal, rehab, fat loss, strength — so the right client recognises you.",
+    title:"Specialisms",
+    body:"Plain-language strengths — postnatal, rehab, fat loss, strength — so the right client recognises you.",
   },
   {
     icon: Star,
-    title: "Reviews",
-    body: "Verified-client reviews mirrored from your directory profile. Public replies, no silent deletions.",
+    title:"Reviews",
+    body:"Verified-client reviews mirrored from your directory profile. Public replies, no silent deletions.",
   },
   {
     icon: Stethoscope,
-    title: "Insurance",
-    body: "Public-liability cover surfaced on the page — checked annually so it never silently lapses.",
+    title:"Insurance",
+    body:"Public-liability cover surfaced on the page — checked annually so it never silently lapses.",
   },
 ];
 
-const JOURNEY_STEPS = ["Discover", "Trust", "Understand offer", "Enquire", "Book / pay / onboard"];
+const JOURNEY_STEPS = ["Discover","Trust","Understand offer","Enquire","Book / pay / onboard"];
 
 const COMPARISON_ROWS = [
-  { feature: "Public page at /c/your-name", verified: false, pro: true },
-  { feature: "Services & tier cards", verified: false, pro: true },
-  { feature: "Methodology & about section", verified: false, pro: true },
-  { feature: "Verified reviews on the page", verified: false, pro: true },
-  { feature: "Credentials & insurance display", verified: false, pro: true },
-  { feature: "Enquiry form (branded)", verified: false, pro: true },
-  { feature: "Booking & payments wired in", verified: false, pro: true },
-  { feature: "Leads in your REPs pipeline", verified: false, pro: true },
+  { feature:"Public page at /c/your-name", verified: false, pro: true },
+  { feature:"Services & tier cards", verified: false, pro: true },
+  { feature:"Methodology & about section", verified: false, pro: true },
+  { feature:"Verified reviews on the page", verified: false, pro: true },
+  { feature:"Credentials & insurance display", verified: false, pro: true },
+  { feature:"Enquiry form (branded)", verified: false, pro: true },
+  { feature:"Booking & payments wired in", verified: false, pro: true },
+  { feature:"Leads in your REPs pipeline", verified: false, pro: true },
 ];
 
 const USE_CASES = [
   {
-    title: "Personal trainer",
-    body: "1:1 coaching, intro session, transformation block — with venues and times.",
+    title:"Personal trainer",
+    body:"1:1 coaching, intro session, transformation block — with venues and times.",
   },
   {
-    title: "Online coach",
-    body: "Monthly online programme, check-in cadence, app access — fully remote.",
+    title:"Online coach",
+    body:"Monthly online programme, check-in cadence, app access — fully remote.",
   },
   {
-    title: "Strength coach",
-    body: "Strength-block programming, technique sessions, competition prep.",
+    title:"Strength coach",
+    body:"Strength-block programming, technique sessions, competition prep.",
   },
   {
-    title: "Pilates instructor",
-    body: "Reformer or mat blocks, group classes, 1:1 sessions, studio venue.",
+    title:"Pilates instructor",
+    body:"Reformer or mat blocks, group classes, 1:1 sessions, studio venue.",
   },
   {
-    title: "Yoga teacher",
-    body: "Class schedule, workshops, retreats and private sessions.",
+    title:"Yoga teacher",
+    body:"Class schedule, workshops, retreats and private sessions.",
   },
   {
-    title: "Small studio",
-    body: "Class timetable, instructor roster, membership tiers and intro offer.",
+    title:"Small studio",
+    body:"Class timetable, instructor roster, membership tiers and intro offer.",
   },
   {
-    title: "Sports coach",
-    body: "Sport-specific programmes for runners, lifters, climbers, team athletes.",
+    title:"Sports coach",
+    body:"Sport-specific programmes for runners, lifters, climbers, team athletes.",
   },
   {
-    title: "Specialist coach",
-    body: "Pre/postnatal, rehab support, older adults, chronic-condition coaching.",
+    title:"Specialist coach",
+    body:"Pre/postnatal, rehab support, older adults, chronic-condition coaching.",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "Do I need design skills to build a Shop Front?",
-    a: "No. The layout, typography, dark theme and mobile behaviour are designed once. You pick an accent colour, upload a hero photo, three transformations and a portrait, and write your method, tiers and bio. REPs handles the rest.",
+    q:"Do I need design skills to build a Shop Front?",
+    a:"No. The layout, typography, dark theme and mobile behaviour are designed once. You pick an accent colour, upload a hero photo, three transformations and a portrait, and write your method, tiers and bio. REPs handles the rest.",
   },
   {
-    q: "Can I use my own brand colour?",
-    a: "You pick an accent from the REPs palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPs dark theme so every Shop Front feels premium and consistent.",
+    q:"Can I use my own brand colour?",
+    a:"You pick an accent from the REPs palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPs dark theme so every Shop Front feels premium and consistent.",
   },
   {
-    q: "Is the Shop Front separate from my directory profile?",
-    a: "It's a separate public page at /c/your-name, connected to the same REPs record. Your verified badge, credentials, reviews and insurance status all read live from the same source — no duplication, no drift.",
+    q:"Is the Shop Front separate from my directory profile?",
+    a:"It's a separate public page at /c/your-name, connected to the same REPs record. Your verified badge, credentials, reviews and insurance status all read live from the same source — no duplication, no drift.",
   },
   {
-    q: "What happens when someone clicks Enquire?",
-    a: "They open the same locked enquiry flow shown on your directory profile. Their answers land in your REPs leads pipeline, scored by AI and tagged by the service they were viewing — not your personal inbox.",
+    q:"What happens when someone clicks Enquire?",
+    a:"They open the same locked enquiry flow shown on your directory profile. Their answers land in your REPs leads pipeline, scored by AI and tagged by the service they were viewing — not your personal inbox.",
   },
   {
-    q: "Do I need Pro to publish a Shop Front?",
-    a: "Yes. A branded Shop Front at /c/your-name is included in Pro (£59/month — Founding pricing) and Studio (£149/month). Verified gives you the public directory profile and an enquiry inbox, but not the dedicated Shop Front page.",
+    q:"Do I need Pro to publish a Shop Front?",
+    a:"Yes. A branded Shop Front at /c/your-name is included in Pro (£59/month — Founding pricing) and Studio (£149/month). Verified gives you the public directory profile and an enquiry inbox, but not the dedicated Shop Front page.",
   },
   {
-    q: "Can I share one URL on Instagram and WhatsApp?",
-    a: "Yes — your Shop Front URL is /c/your-name. Replace your Linktree, your old Wix site and the half-dozen booking links with a single clean URL clients can act on.",
+    q:"Can I share one URL on Instagram and WhatsApp?",
+    a:"Yes — your Shop Front URL is /c/your-name. Replace your Linktree, your old Wix site and the half-dozen booking links with a single clean URL clients can act on.",
   },
 ];
 
@@ -238,26 +238,26 @@ export const Route = createFileRoute("/features/shop-front")({
   head: () => ({
     meta: [
       {
-        title: "Shop-front — Your fitness business website, built into REPs · REPs",
+        title:"Shop-front — Your fitness business website, built into REPs · REPs",
       },
       {
-        name: "description",
+        name:"description",
         content:
-          "A professional Shop Front for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPs enquiries, bookings and clients.",
+"A professional Shop Front for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPs enquiries, bookings and clients.",
       },
       {
-        property: "og:title",
-        content: "Shop-front — Your fitness business website, built into REPs",
+        property:"og:title",
+        content:"Shop-front — Your fitness business website, built into REPs",
       },
       {
-        property: "og:description",
+        property:"og:description",
         content:
-          "Bring your offer, proof, bookings, enquiries and client journey into one professional website page. Included in Pro and Studio.",
+"Bring your offer, proof, bookings, enquiries and client journey into one professional website page. Included in Pro and Studio.",
       },
-      { property: "og:image", content: coachJamesCoaching },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/shop-front" },
+      { property:"og:image", content: coachJamesCoaching },
+      { property:"og:url", content:"https://repsglobal.lovable.app/features/shop-front" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/shop-front" }],
+    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/shop-front" }],
   }),
   component: ShopFrontPage,
 });
@@ -292,8 +292,8 @@ function ShopFrontPage() {
         heading="Build a Shop Front clients can"
         headingAccent="understand, trust and act on."
         lede="Create a professional website page connected to your REPs profile, services, bookings and client workflow."
-        primary={{ to: "/signup", label: "Create your Shop Front" }}
-        secondary={{ to: "/pricing", label: "Explore REPs Pro" }}
+        primary={{ to:"/signup", label:"Create your Shop Front" }}
+        secondary={{ to:"/pricing", label:"Explore REPs Pro" }}
       />
 
       <PublicFooter />
@@ -321,22 +321,22 @@ function Hero() {
         <div className="max-w-[640px]">
           <MarketingHeroEyebrow
             icon={Sparkles}
-            style={{ animationDuration: "560ms", animationFillMode: "both" }}
+            style={{ animationDuration:"560ms", animationFillMode:"both" }}
           >
             Shop-front · Your client-facing page
           </MarketingHeroEyebrow>
 
           <h1
             className="mt-6 animate-fade-in font-display text-[34px] font-bold leading-[1.05] text-white sm:text-[44px] lg:text-[64px]"
-            style={{ animationDuration: "640ms", animationDelay: "80ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
-            Your fitness business website,{" "}
+            Your fitness business website,{""}
             <span className="text-reps-orange">built into REPs.</span>
           </h1>
 
           <p
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
-            style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             A professional Shop Front that shows your services, credentials, reviews, packages and
             booking options in one client-ready page — connected to your enquiries, bookings and
@@ -345,7 +345,7 @@ function Hero() {
 
           <div
             className="mt-8 flex animate-fade-in flex-wrap gap-3"
-            style={{ animationDuration: "640ms", animationDelay: "260ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"260ms", animationFillMode:"both" }}
           >
             <Link
               to="/signup"
@@ -363,7 +363,7 @@ function Hero() {
 
           <ul
             className="mt-7 flex animate-fade-in flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-medium text-white/70"
-            style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
+            style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-reps-orange" /> Pro &amp; Studio
@@ -387,7 +387,7 @@ function Hero() {
 
 function ProblemSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="The scattered setup"
@@ -404,14 +404,14 @@ function ProblemSection() {
             <BlockHeading className="mt-4">Eight tools. One confused client.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
               {[
-                "Instagram bio with one cramped link",
-                "Linktree with eight competing CTAs",
-                "Old Wix site nobody updates",
-                "Google Form for enquiries",
-                "Calendly for consultations",
-                "Stripe link for payments",
-                "WhatsApp for everything else",
-                "Google reviews on a separate page",
+"Instagram bio with one cramped link",
+"Linktree with eight competing CTAs",
+"Old Wix site nobody updates",
+"Google Form for enquiries",
+"Calendly for consultations",
+"Stripe link for payments",
+"WhatsApp for everything else",
+"Google reviews on a separate page",
               ].map((line) => (
                 <li
                   key={line}
@@ -435,14 +435,14 @@ function ProblemSection() {
             <BlockHeading className="mt-4">One URL. One clear offer. One workflow.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
               {[
-                "One link: /c/your-name — shareable everywhere",
-                "Services, packages and prices on the page",
-                "Verified badge, credentials and insurance built in",
-                "Reviews from real clients shown next to the offer",
-                "Enquire, book and pay without leaving the page",
-                "Every lead lands in your REPs pipeline, not your inbox",
-                "Branded, mobile-first and built for conversion",
-                "Updated in minutes from your REPs dashboard",
+"One link: /c/your-name — shareable everywhere",
+"Services, packages and prices on the page",
+"Verified badge, credentials and insurance built in",
+"Reviews from real clients shown next to the offer",
+"Enquire, book and pay without leaving the page",
+"Every lead lands in your REPs pipeline, not your inbox",
+"Branded, mobile-first and built for conversion",
+"Updated in minutes from your REPs dashboard",
               ].map((line) => (
                 <li
                   key={line}
@@ -454,7 +454,7 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              Visibility gets you found. The Shop Front helps clients <em>decide</em> and{" "}
+              Visibility gets you found. The Shop Front helps clients <em>decide</em> and{""}
               <em>take action</em>.
             </p>
           </div>
@@ -470,7 +470,7 @@ function ProblemSection() {
 
 function AnatomySection() {
   return (
-    <section id="anatomy" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15">
+    <section id="anatomy" className="scroll-mt-24 bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Anatomy of a Shop Front"
@@ -481,9 +481,9 @@ function AnatomySection() {
         <div className="mt-12">
           <AnnotatedMock
             mockup={{
-              device: "laptop",
-              src: "/c/james-wilson",
-              title: "Live REPs Pro Shop Front for James Wilson",
+              device:"laptop",
+              src:"/c/james-wilson",
+              title:"Live REPs Pro Shop Front for James Wilson",
             }}
             callouts={SHOPFRONT_CALLOUTS}
           />
@@ -492,7 +492,7 @@ function AnatomySection() {
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
             to="/c/$slug"
-            params={{ slug: "james-wilson" }}
+            params={{ slug:"james-wilson" }}
             target="_blank"
             className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
           >
@@ -516,7 +516,7 @@ function AnatomySection() {
 
 function ServicesSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Sell services clearly"
@@ -546,7 +546,7 @@ function ServicesSection() {
 
 function FlowSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Enquire · Book · Pay · Onboard"
@@ -598,7 +598,7 @@ function FlowSection() {
 
 function ProofSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Proof built into the page"
@@ -608,21 +608,21 @@ function ProofSection() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {PROOF_BLOCKS.map(({ icon: Icon, title, body, accent }) => {
-            const isVerified = accent === "emerald";
+            const isVerified = accent ==="emerald";
             return (
               <div
                 key={title}
                 className={
                   isVerified
-                    ? "rounded-[18px] border border-emerald-400/30 bg-emerald-500/[0.06] p-6"
-                    : "rounded-[18px] border border-reps-border bg-reps-panel/60 p-6"
+                    ?"rounded-[18px] border border-emerald-400/30 bg-emerald-500/[0.06] p-6"
+                    :"rounded-[18px] border border-reps-border bg-reps-panel/60 p-6"
                 }
               >
                 <span
                   className={
                     isVerified
-                      ? "inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                      : "inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange"
+                      ?"inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      :"inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange"
                   }
                 >
                   <Icon className="h-5 w-5" />
@@ -652,7 +652,7 @@ function ProofSection() {
 
 function PurposeBuiltSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Purpose-built for fitness pros"
@@ -738,7 +738,7 @@ function PurposeBuiltSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="border-b border-reps-border">
+    <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"
@@ -751,14 +751,14 @@ function TierComparisonSection() {
             badge="Verified"
             price="£99 / year"
             blurb="Public verified profile, directory presence, reviews and an enquiry inbox. No dedicated Shop Front page."
-            cta={{ to: "/features/visibility", label: "See what Verified covers" }}
+            cta={{ to:"/features/visibility", label:"See what Verified covers" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
             blurb="Everything in Verified, plus a branded Shop Front, bookings, payments, CRM and client management."
             highlighted
-            cta={{ to: "/pricing", label: "See Pro pricing" }}
+            cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
         </div>
 
@@ -774,7 +774,7 @@ function TierComparisonSection() {
                 <div
                   key={row.feature}
                   className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 text-[14px] text-white/80 ${
-                    i % 2 === 0 ? "bg-white/[0.02]" : ""
+                    i % 2 === 0 ?"bg-white/[0.02]" :""
                   }`}
                 >
                   <span>{row.feature}</span>
@@ -808,7 +808,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"
