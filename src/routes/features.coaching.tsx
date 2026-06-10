@@ -90,12 +90,14 @@ const PROGRAMME_BULLETS = [
 ];
 
 const NUTRITION_BULLETS = [
-  "Coach-set macro targets per client and per phase",
-  "Food database with barcode scan, fast logging and search",
-  "Meal plans built once, swapped item-by-item, macros recalculated",
-  "Photo meal logging — client snaps it, you review it",
-  "Weekly compliance scored against target, not vibes",
-  "All of it lives next to the programme, not in another app",
+  "Build recipes from ingredients with portion, macros and prep notes — save once, reuse forever",
+  "Meal plan templates for fat loss, hypertrophy, vegan, athlete, family and shift-worker scenarios",
+  "Assign a plan, swap meals per client, send a shopping list",
+  "Recipe books give clients structured options without you writing a new plan every week",
+  "Clients log meals, photos, water, hunger and energy inside REPs",
+  "Attach a MyFitnessPal or Cronometer public link, screenshot or CSV export for review",
+  "Every nutrition action lands on the client record, next to programmes, check-ins and progress",
+  "Deeper tracker imports, barcode scan and AI meal recognition are on the later roadmap",
 ];
 
 const HABITS_BULLETS = [
