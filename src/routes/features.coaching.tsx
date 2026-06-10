@@ -64,7 +64,7 @@ import heroCoaching from "@/assets/hero-coaching-bg.jpg.asset.json";
 
 const PROBLEM_FRAGMENTS = [
   { icon: Dumbbell, label: "Programmes in a workout app" },
-  { icon: Utensils, label: "Nutrition in MyFitnessPal" },
+  { icon: Utensils, label: "Nutrition in PDFs and screenshots" },
   { icon: MessageSquare, label: "Check-ins on WhatsApp" },
   { icon: Camera, label: "Progress photos in camera rolls" },
   { icon: Watch, label: "Sleep & steps in another app" },
@@ -73,7 +73,7 @@ const PROBLEM_FRAGMENTS = [
 
 const PROBLEM_ORGANISED = [
   "Programmes built next to the client record",
-  "Nutrition, macros and meals tracked in the same workspace",
+  "Recipes, meals and plan templates kept in your own nutrition library",
   "Sleep, steps and training data flow in from their wearable",
   "Check-ins arrive in one inbox, scored against the goal",
   "Messages, voice notes and form replies in one thread per client",
@@ -90,12 +90,14 @@ const PROGRAMME_BULLETS = [
 ];
 
 const NUTRITION_BULLETS = [
-  "Coach-set macro targets per client and per phase",
-  "Food database with barcode scan, fast logging and search",
-  "Meal plans built once, swapped item-by-item, macros recalculated",
-  "Photo meal logging — client snaps it, you review it",
-  "Weekly compliance scored against target, not vibes",
-  "All of it lives next to the programme, not in another app",
+  "Build recipes from ingredients with portion, macros and prep notes — save once, reuse forever",
+  "Meal plan templates for fat loss, hypertrophy, vegan, athlete, family and shift-worker scenarios",
+  "Assign a plan, swap meals per client, send a shopping list",
+  "Recipe books give clients structured options without you writing a new plan every week",
+  "Clients log meals, photos, water, hunger and energy inside REPs",
+  "Attach a MyFitnessPal or Cronometer public link, screenshot or CSV export for review",
+  "Every nutrition action lands on the client record, next to programmes, check-ins and progress",
+  "Deeper tracker imports, barcode scan and AI meal recognition are on the later roadmap",
 ];
 
 const HABITS_BULLETS = [
@@ -136,7 +138,7 @@ const AUTOMATIONS_BULLETS = [
 
 const TEMPLATE_CARDS = [
   { icon: BookOpen, title: "Programme templates", body: "Block, week and session frameworks ready to clone and personalise." },
-  { icon: Utensils, title: "Nutrition plan templates", body: "Macro splits and meal plans you can drop onto a client in one click." },
+  { icon: Utensils, title: "Nutrition plan templates", body: "Build a library of recipes, meals and templates. Assign in one click. Review the client's log on the same record." },
   { icon: ClipboardList, title: "Onboarding templates", body: "Welcome, expectations, screening and first-session prep — sent once, repeatable." },
   { icon: HeartPulse, title: "Check-in templates", body: "Weekly, monthly and post-block check-ins shaped for coaching, not generic surveys." },
   { icon: Workflow, title: "Automation templates", body: "Onboarding, re-engagement and reminder sequences ready to switch on." },
@@ -155,7 +157,7 @@ const USE_CASES = [
 const COMPARISON_ROWS = [
   { feature: "Programme builder (block / week / session)", verified: false, pro: true },
   { feature: "Exercise library + 10,000+ video demos", verified: false, pro: true },
-  { feature: "Nutrition: macros, food log, meal plans", verified: false, pro: true },
+  { feature: "Nutrition library, meal plan templates, client food log", verified: false, pro: true },
   { feature: "Habits + wearable sync (Apple / Garmin / Whoop)", verified: false, pro: true },
   { feature: "Weekly check-ins with goal review", verified: false, pro: true },
   { feature: "Progress tracking (strength, body, adherence, photos)", verified: false, pro: true },
@@ -171,11 +173,11 @@ const COMPARISON_ROWS = [
 const FAQ_ITEMS = [
   {
     q: "Is REPs Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
-    a: "For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
+    a: "For coaching delivery — yes. Programmes, exercise library with video, a nutrition library and food log, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
   },
   {
     q: "Does it actually replace MyFitnessPal for nutrition?",
-    a: "Yes — for coached clients. You set macros, your client logs food from a searchable database with barcode scan, snaps a photo when it's easier, follows the meal plan you built, and the weekly check-in pulls compliance in automatically. The coach sees it. The plan adapts. No more screenshots of someone else's app.",
+    a: "For coach-led nutrition — yes. You build a library of recipes, ingredients, meals and meal plan templates, assign them to clients, and review their food log, photos and weekly check-in in one place. Clients can also attach a public MyFitnessPal, Cronometer or other tracker link if they prefer to log there — REPs treats it as evidence on the client record. Barcode scan, a food database and AI meal recognition are on the roadmap, not the beta.",
   },
   {
     q: "Which wearables does it sync with?",
@@ -367,7 +369,7 @@ function ProblemSection() {
         <SectionHeader
           eyebrow="The fragmented coaching stack"
           heading="Most coaches don't struggle to coach. They struggle to deliver consistently."
-          lede="Programmes in Trainerize, nutrition in MyFitnessPal, check-ins in WhatsApp, sleep data on the watch, photos in a camera roll, notes in DMs, accountability in your head. Your coaching shouldn't depend on six apps and a good memory."
+          lede="Programmes in Trainerize, nutrition in PDFs, screenshots and WhatsApp, check-ins in DMs, sleep data on the watch, photos in a camera roll, notes buried somewhere. Your coaching shouldn't depend on six apps and a good memory."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
@@ -495,24 +497,71 @@ function ExerciseLibrarySection({
 // 04. Nutrition (the MFP-replacement section)
 // -----------------------------------------------------------------------------
 
+const NUTRITION_PARTS = [
+  {
+    n: "1",
+    icon: BookOpen,
+    title: "REPs Nutrition Library",
+    body: "Ingredients, recipes, meals, recipe books and meal plan templates. Use the REPs library or build your own — saved once, reusable forever.",
+  },
+  {
+    n: "2",
+    icon: ClipboardList,
+    title: "Meal plan templates",
+    body: "7-day fat loss, high-protein meal prep, vegan muscle gain, athlete fuelling, family low-prep, shift-worker, maintenance. Assign in one click and adapt per client.",
+  },
+  {
+    n: "3",
+    icon: FileText,
+    title: "Client food log + external diary",
+    body: "Clients log meals, photos, water and notes in REPs — or attach a public MyFitnessPal / Cronometer link, screenshot or CSV export for review.",
+  },
+];
+
 function NutritionSection() {
   return (
     <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Nutrition coaching"
-          heading="Replace the food-tracking app with something built for coaching."
-          lede="Coach-set macros, food database with barcode scan, meal plans, photo meals and weekly compliance — all on the client record. Stop chasing screenshots from MyFitnessPal. Your client logs, you coach, the system carries the weekly story."
+          heading="Nutrition coaching built around your own library."
+          lede="Create recipes, build meal plan templates, assign recipe books, review client food logs, and keep nutrition feedback connected to check-ins, progress and accountability."
         />
+
+        <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-5">
+          {NUTRITION_PARTS.map(({ n, icon: Icon, title, body }) => (
+            <div
+              key={n}
+              className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange/15 text-[12px] font-bold text-reps-orange">
+                  {n}
+                </span>
+                <Icon className="size-4 text-white/70" />
+              </div>
+              <h3 className="mt-4 font-display text-[18px] font-semibold text-white">
+                {title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                {body}
+              </p>
+            </div>
+          ))}
+        </div>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
           <NutritionMock />
           <BulletColumn
-            heading="Nutrition belongs next to the programme — not in someone else's app."
-            body="MyFitnessPal was built for individuals, not coaches. REPs Nutrition was built so you can set the plan, your client can log against it, and you can see the week without asking. Macros, meals, photo logging and compliance — in one workspace."
+            heading="Build your own nutrition library, assign meal plans, review food logs, and keep every nutrition decision connected to the client record."
+            body="Nutrition belongs next to programmes, check-ins and progress — not in someone else's app. Coaches build the library, clients log against it, and every meal, photo and note lands on the same record."
             bullets={NUTRITION_BULLETS}
           />
         </div>
+
+        <p className="mt-10 text-center text-[13px] text-white/55">
+          On the nutrition roadmap: barcode scan, food database search, AI meal recognition and deeper tracker imports.
+        </p>
       </div>
     </section>
   );

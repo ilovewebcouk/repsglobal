@@ -15,7 +15,7 @@ import { ReactNode, useState } from "react";
 import {
   Apple,
   Award,
-  Barcode,
+  
   Bell,
   Calendar,
   Camera,
@@ -426,19 +426,71 @@ export function ExerciseLibraryMock({
 
 
 // =============================================================================
-// 3. NUTRITION — Today's log / Week / Meal plan / Photo meal
+// 3. NUTRITION — Library / Plan template / Client log / External diary
 // =============================================================================
 
 const NUTRITION_STATES = [
-  { id: "today", label: "Today" },
-  { id: "week", label: "Week" },
+  { id: "library", label: "Library" },
   { id: "plan", label: "Plan" },
-  { id: "photo", label: "Photo" },
+  { id: "log", label: "Client log" },
+  { id: "diary", label: "Diary" },
 ] as const;
 type NutritionState = (typeof NUTRITION_STATES)[number]["id"];
 
+const LIBRARY_FILTERS = ["Recipes", "Ingredients", "Meals", "Recipe books", "Templates"];
+
+const LIBRARY_RECIPES = [
+  {
+    title: "High-protein chicken rice bowl",
+    macros: "640 kcal · 48P / 70C / 14F",
+    tag: "HP",
+    ings: "12 ingredients",
+  },
+  {
+    title: "Tofu peanut noodles",
+    macros: "560 kcal · 28P / 72C / 18F",
+    tag: "V",
+    ings: "9 ingredients",
+  },
+  {
+    title: "Overnight oats + berries",
+    macros: "420 kcal · 22P / 58C / 12F",
+    tag: "GF",
+    ings: "6 ingredients",
+  },
+  {
+    title: "Salmon traybake",
+    macros: "580 kcal · 42P / 38C / 24F",
+    tag: "HP",
+    ings: "10 ingredients",
+  },
+];
+
+const PLAN_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const PLAN_MEALS = [
+  { meal: "Breakfast", item: "Overnight oats + berries", k: 420 },
+  { meal: "Lunch", item: "Chicken rice bowl", k: 640 },
+  { meal: "Snack", item: "Greek yogurt + almonds", k: 240 },
+  { meal: "Dinner", item: "Salmon traybake", k: 500 },
+];
+
+const LOG_MEALS = [
+  { meal: "Breakfast", item: "Oats + berries", k: "420 kcal", done: true },
+  { meal: "Lunch", item: "Chicken rice bowl", k: "640 kcal", done: true },
+  { meal: "Snack", item: "—", k: "—", done: false },
+  { meal: "Dinner", item: "—", k: "—", done: false },
+];
+
+const DIARY_SOURCES = [
+  { icon: Apple, kind: "MyFitnessPal", detail: "myfitnesspal.com/food/diary/jamesc", note: "Public diary link" },
+  { icon: FileText, kind: "Cronometer report", detail: "report-week-6.cronometer.com", note: "Read-only" },
+  { icon: FileText, kind: "Week 6 export.csv", detail: "uploaded · 142 entries", note: "CSV export" },
+  { icon: ImageIcon, kind: "Screenshot · Fri", detail: "tracker home screen", note: "Image" },
+];
+
 export function NutritionMock() {
-  const [state, setState] = useState<NutritionState>("today");
+  const [state, setState] = useState<NutritionState>("library");
 
   return (
     <MockShell
@@ -448,183 +500,230 @@ export function NutritionMock() {
       onChange={setState}
     >
       <div className="h-full overflow-hidden p-3 text-left">
-        {state === "today" && (
+        {state === "library" && (
           <>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-                  Today · Wednesday
+                  REPs Nutrition Library
                 </p>
                 <p className="mt-0.5 text-[11px] font-bold text-white">
-                  1,840 / 2,200 kcal &nbsp;·&nbsp; on target
+                  Recipes &nbsp;·&nbsp; 248 in your library
                 </p>
               </div>
               <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
-                <Barcode className="size-2.5 text-reps-orange" /> Barcode
+                <Search className="size-2.5 text-white/55" /> Search
               </div>
             </div>
 
-            <div className="mt-2 grid grid-cols-4 gap-1.5">
-              {[
-                { l: "Protein", v: "168 g", t: "180 g", c: "emerald" },
-                { l: "Carbs", v: "210 g", t: "240 g", c: "orange" },
-                { l: "Fat", v: "62 g", t: "70 g", c: "white" },
-                { l: "Fibre", v: "28 g", t: "30 g", c: "white" },
-              ].map((m) => (
-                <div key={m.l} className={cardTight}>
-                  <p className={label}>{m.l}</p>
-                  <p className="mt-0.5 text-[9px] font-bold text-white">{m.v}</p>
-                  <p className="text-[6.5px] text-white/45">of {m.t}</p>
-                  <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className={`h-full ${
-                        m.c === "emerald"
-                          ? "bg-emerald-400"
-                          : m.c === "orange"
-                          ? "bg-reps-orange"
-                          : "bg-white/60"
-                      }`}
-                      style={{ width: "85%" }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-2 space-y-1">
-              {[
-                { meal: "Breakfast", item: "Greek yogurt, oats, blueberries", k: "420 kcal" },
-                { meal: "Lunch", item: "Chicken, rice, broccoli, olive oil", k: "640 kcal" },
-                { meal: "Snack", item: "Whey shake + banana", k: "280 kcal" },
-                { meal: "Dinner", item: "Salmon, sweet potato, salad", k: "500 kcal" },
-              ].map((r) => (
-                <div
-                  key={r.meal}
-                  className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
+            <div className="mt-2 flex flex-wrap gap-1">
+              {LIBRARY_FILTERS.map((f, i) => (
+                <span
+                  key={f}
+                  className={`rounded-full px-1.5 py-0.5 text-[7px] font-semibold ${
+                    i === 0
+                      ? "bg-reps-orange text-white"
+                      : "border border-white/10 bg-reps-panel/40 text-white/65"
+                  }`}
                 >
-                  <Utensils className="size-2.5 text-reps-orange" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[7.5px] font-semibold text-white">{r.meal}</p>
-                    <p className="truncate text-[7px] text-white/60">{r.item}</p>
-                  </div>
-                  <span className="text-[7.5px] font-semibold text-reps-orange">{r.k}</span>
-                </div>
+                  {f}
+                </span>
               ))}
             </div>
-          </>
-        )}
-
-        {state === "week" && (
-          <>
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-              Week compliance
-            </p>
-            <p className="mt-0.5 text-[11px] font-bold text-white">
-              6 / 7 days on target &nbsp;·&nbsp; avg 2,140 kcal
-            </p>
-
-            <div className="mt-3 flex h-[110px] items-end gap-2">
-              {[
-                { d: "Mon", v: 92, k: "2,180" },
-                { d: "Tue", v: 88, k: "2,090" },
-                { d: "Wed", v: 95, k: "2,200" },
-                { d: "Thu", v: 78, k: "1,890" },
-                { d: "Fri", v: 65, k: "1,640" },
-                { d: "Sat", v: 96, k: "2,210" },
-                { d: "Sun", v: 90, k: "2,140" },
-              ].map((b) => (
-                <div key={b.d} className="flex flex-1 flex-col items-center gap-1">
-                  <span className="text-[6.5px] font-semibold text-white/70">{b.v}%</span>
-                  <div
-                    className={`w-full rounded-t-[3px] ${
-                      b.v >= 85 ? "bg-emerald-400/70" : b.v >= 75 ? "bg-reps-orange/70" : "bg-white/30"
-                    }`}
-                    style={{ height: `${b.v}%` }}
-                  />
-                  <span className="text-[6.5px] text-white/55">{b.d}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-2 rounded-[6px] border border-reps-orange/30 bg-reps-orange/10 p-2">
-              <p className={labelInline}>
-                <Sparkles className="size-2 text-reps-orange" /> Coach insight
-              </p>
-              <p className="mt-1 text-[8px] text-white/80">
-                Friday dipped — note the late finish. Worth a check-in question?
-              </p>
-            </div>
-          </>
-        )}
-
-        {state === "plan" && (
-          <>
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-              Meal plan · Hypertrophy block
-            </p>
-            <p className="mt-0.5 text-[11px] font-bold text-white">2,200 kcal · 180 P / 240 C / 70 F</p>
 
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              {[
-                { meal: "Breakfast", items: ["Oats 80g", "Greek yogurt 200g", "Blueberries 100g"], k: 420 },
-                { meal: "Lunch", items: ["Chicken 180g", "Rice 200g cooked", "Broccoli + olive oil"], k: 640 },
-                { meal: "Pre-train", items: ["Banana", "Whey 30g"], k: 280 },
-                { meal: "Dinner", items: ["Salmon 180g", "Sweet potato 250g", "Mixed salad"], k: 500 },
-              ].map((m) => (
-                <div key={m.meal} className={card}>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[8px] font-bold text-white">{m.meal}</p>
-                    <span className="text-[7.5px] font-semibold text-reps-orange">{m.k} kcal</span>
+              {LIBRARY_RECIPES.map((r) => (
+                <div key={r.title} className={card}>
+                  <div className="flex items-start justify-between gap-1.5">
+                    <p className="text-[8.5px] font-semibold text-white">{r.title}</p>
+                    <span className="rounded-[3px] border border-reps-orange/30 bg-reps-orange/10 px-1 py-px text-[6px] font-bold uppercase text-reps-orange">
+                      {r.tag}
+                    </span>
                   </div>
-                  <ul className="mt-1 space-y-0.5">
-                    {m.items.map((i) => (
-                      <li key={i} className="text-[7px] text-white/70">
-                        · {i}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="mt-1 text-[7.5px] text-white/65">{r.macros}</p>
+                  <p className="mt-0.5 text-[6.5px] text-white/45">{r.ings}</p>
                 </div>
               ))}
             </div>
 
             <p className="mt-2 text-[7px] text-white/45">
-              Swap any item — the database recalculates macros automatically.
+              Use the REPs library or save your own recipes, ingredients and templates.
             </p>
           </>
         )}
 
-        {state === "photo" && (
+        {state === "plan" && (
           <>
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
-              Photo meal · Lunch
-            </p>
-            <p className="mt-0.5 text-[11px] font-bold text-white">
-              Client snapped it — you review.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
+                  Meal plan template
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold text-white">
+                  7-day fat loss &nbsp;·&nbsp; 1,800 kcal · 150 P / 170 C / 55 F
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-semibold text-emerald-300">
+                Assign to client
+              </span>
+            </div>
 
-            <div className="mt-2 grid grid-cols-[1fr_1.2fr] gap-2">
-              <div className="flex aspect-square items-center justify-center rounded-[6px] border border-white/10 bg-gradient-to-br from-amber-500/20 via-reps-panel/60 to-emerald-500/15">
-                <ImageIcon className="size-6 text-white/40" />
+            <div className="mt-2 flex gap-1">
+              {PLAN_DAYS.map((d) => (
+                <span
+                  key={d}
+                  className={`flex-1 rounded-[4px] px-1 py-1 text-center text-[7px] font-semibold ${
+                    d === "Wed"
+                      ? "bg-reps-orange text-white"
+                      : "border border-white/10 bg-reps-panel/40 text-white/65"
+                  }`}
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-2 grid grid-cols-[1.4fr_1fr] gap-2">
+              <div className="space-y-1">
+                {PLAN_MEALS.map((m) => (
+                  <div
+                    key={m.meal}
+                    className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
+                  >
+                    <Utensils className="size-2.5 text-reps-orange" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[7.5px] font-semibold text-white">{m.meal}</p>
+                      <p className="truncate text-[7px] text-white/60">{m.item}</p>
+                    </div>
+                    <span className="text-[7.5px] font-semibold text-reps-orange">
+                      {m.k} kcal
+                    </span>
+                  </div>
+                ))}
               </div>
               <div className="space-y-1">
-                <div className="rounded-[5px] border border-white/10 bg-reps-panel/40 p-1.5">
-                  <p className={label}>Identified</p>
-                  <p className="mt-0.5 text-[8px] font-medium text-white">
-                    Grilled chicken · brown rice · broccoli
-                  </p>
+                <div className={cardTight}>
+                  <p className={label}>Substitutions</p>
+                  <p className="mt-0.5 text-[7.5px] text-white/75">Swap rice → quinoa, salmon → cod</p>
                 </div>
-                <div className="rounded-[5px] border border-white/10 bg-reps-panel/40 p-1.5">
-                  <p className={label}>Estimate</p>
-                  <p className="mt-0.5 text-[8px] font-medium text-white">~ 620 kcal · 48P / 70C / 14F</p>
+                <div className={cardTight}>
+                  <p className={label}>Shopping list</p>
+                  <p className="mt-0.5 text-[7.5px] text-white/75">28 items · sent to client</p>
                 </div>
-                <div className="rounded-[5px] border border-emerald-400/30 bg-emerald-500/10 p-1.5">
-                  <p className="text-[6.5px] font-semibold uppercase tracking-wider text-emerald-300">
-                    Coach approved
-                  </p>
-                  <p className="mt-0.5 text-[8px] text-white/85">Nice plate. Keep this on training days.</p>
+                <div className={cardTight}>
+                  <p className={label}>Coach notes</p>
+                  <p className="mt-0.5 text-[7.5px] text-white/75">Carbs around training only</p>
                 </div>
               </div>
             </div>
+          </>
+        )}
+
+        {state === "log" && (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
+                  Client food log · Wednesday
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold text-white">
+                  Today &nbsp;·&nbsp; 1,060 / 1,800 kcal logged
+                </p>
+              </div>
+              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
+                <Plus className="size-2.5 text-reps-orange" /> Log a meal
+              </div>
+            </div>
+
+            <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
+              <div className="space-y-1">
+                {LOG_MEALS.map((r) => (
+                  <div
+                    key={r.meal}
+                    className="flex items-center gap-2 rounded-[5px] border border-white/5 bg-reps-panel/40 px-2 py-1"
+                  >
+                    {r.done ? (
+                      <CheckCircle2 className="size-2.5 text-emerald-400" />
+                    ) : (
+                      <Circle className="size-2.5 text-white/30" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[7.5px] font-semibold text-white">{r.meal}</p>
+                      <p className="truncate text-[7px] text-white/60">{r.item}</p>
+                    </div>
+                    <span className="text-[7.5px] font-semibold text-white/65">{r.k}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-1">
+                <div className={cardTight}>
+                  <p className={labelInline}>
+                    <Droplets className="size-2 text-reps-orange" /> Water
+                  </p>
+                  <p className="mt-0.5 text-[8px] font-semibold text-white">6 / 8 glasses</p>
+                </div>
+                <div className="flex aspect-[3/2] items-center justify-center rounded-[6px] border border-white/10 bg-gradient-to-br from-amber-500/20 via-reps-panel/60 to-emerald-500/15">
+                  <ImageIcon className="size-5 text-white/40" />
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  <div className={cardTight}>
+                    <p className={label}>Hunger</p>
+                    <p className="mt-0.5 text-[8px] font-semibold text-white">3 / 5</p>
+                  </div>
+                  <div className={cardTight}>
+                    <p className={label}>Energy</p>
+                    <p className="mt-0.5 text-[8px] font-semibold text-white">4 / 5</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-2 rounded-[6px] border border-white/10 bg-reps-panel/40 p-2">
+              <p className={label}>Adherence note</p>
+              <p className="mt-0.5 text-[8px] text-white/80">
+                "Skipped snack — long meeting. Will hit it tomorrow."
+              </p>
+            </div>
+          </>
+        )}
+
+        {state === "diary" && (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-reps-orange">
+                  External food diary
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold text-white">
+                  Linked sources &nbsp;·&nbsp; read-only, opens in new tab
+                </p>
+              </div>
+              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-reps-panel/40 px-1.5 py-0.5 text-[7px] text-white/70">
+                <Plus className="size-2.5 text-reps-orange" /> Add link
+              </div>
+            </div>
+
+            <div className="mt-2 space-y-1">
+              {DIARY_SOURCES.map(({ icon: Icon, kind, detail, note }) => (
+                <div
+                  key={kind}
+                  className="flex items-center gap-2 rounded-[5px] border border-white/10 bg-reps-panel/40 px-2 py-1.5"
+                >
+                  <Icon className="size-2.5 text-reps-orange" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[7.5px] font-semibold text-white">{kind}</p>
+                    <p className="truncate text-[7px] text-white/60">{detail}</p>
+                  </div>
+                  <span className="rounded-[3px] border border-white/10 bg-reps-ink/40 px-1 py-px text-[6.5px] font-semibold text-white/55">
+                    {note}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-2 text-[7px] text-white/45">
+              Connect an external food diary link — automatic imports planned for later releases.
+            </p>
           </>
         )}
       </div>
