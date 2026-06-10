@@ -1,191 +1,439 @@
-import { createFileRoute, Link } from"@tanstack/react-router";
-import { Award, Globe, Heart, ShieldCheck, Sparkles, Target, Users } from"lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 
-import { PublicHeader } from"@/components/public/PublicHeader";
-import { PublicFooter } from"@/components/public/PublicFooter";
-import heroCoaching from"@/assets/hero-coaching-moment";
-import ctaBand from"@/assets/cta-band.jpg";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
+import { HeroOverlay } from "@/components/marketing/HeroOverlay";
+import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
+import { SectionHeading } from "@/components/marketing/SectionHeading";
+import { BlockHeading } from "@/components/marketing/BlockHeading";
+import { FinalCta } from "@/components/marketing/FinalCta";
+
+import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
+import heritageAsset from "@/assets/about/about-heritage.jpg.asset.json";
+import professionalsAsset from "@/assets/about/about-professionals.jpg.asset.json";
+import independenceAsset from "@/assets/about/about-independence.jpg.asset.json";
+
+import proJames from "@/assets/pro-james.jpg";
+import proSophie from "@/assets/pro-sophie.jpg";
+import proDaniel from "@/assets/pro-daniel.jpg";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title:"About REPs — The Register of Exercise Professionals" },
+      { title: "About REPs — The professional platform for the modern fitness industry" },
       {
-        name:"description",
+        name: "description",
         content:
-"REPs is the global register of verified exercise professionals — a single, trusted home for qualified PTs, coaches, instructors and nutritionists.",
+          "REPs is building a new professional home for fitness professionals — combining public trust, professional visibility, education, reviews and business software in one connected platform.",
       },
-      { property:"og:title", content:"About REPs" },
+      { property: "og:title", content: "About REPs" },
       {
-        property:"og:description",
-        content:"The global register of verified exercise professionals.",
+        property: "og:description",
+        content: "The professional platform for the modern fitness industry.",
       },
-      { property:"og:url", content:"/about" },
+      { property: "og:image", content: heroAsset.url },
+      { property: "og:url", content: "/about" },
     ],
-    links: [{ rel:"canonical", href:"/about" }],
+    links: [{ rel: "canonical", href: "/about" }],
   }),
   component: AboutPage,
 });
 
-const VALUES = [
-  { icon: ShieldCheck, title:"Verified by default", body:"Every professional on REPs is checked for qualifications, insurance and ongoing CPD." },
-  { icon: Heart, title:"Built around clients", body:"Honest reviews, transparent pricing, and the freedom to choose who you train with." },
-  { icon: Target, title:"Standards that grow", body:"We continually raise the bar on what it means to be a registered exercise professional." },
-  { icon: Globe, title:"Global, local, online", body:"Search across cities or online sessions — REPs works wherever you do." },
-];
+/* ---------------------------------------------------------------- */
+/* Static content                                                    */
+/* ---------------------------------------------------------------- */
 
 const STATS = [
-  { v:"25,000+", k:"Verified professionals" },
-  { v:"1M+", k:"Sessions booked" },
-  { v:"120+", k:"Countries" },
-  { v:"4.8★", k:"Avg. client rating" },
+  { v: "25,000+", k: "Verified professionals" },
+  { v: "1M+", k: "Sessions booked" },
+  { v: "120+", k: "Countries" },
+  { v: "4.8★", k: "Average client rating" },
 ];
 
-const TIMELINE = [
-  { yr:"2009", t:"Body & Discipline founded", body:"Our predecessor register builds the foundation of recognised fitness standards." },
-  { yr:"2018", t:"Global standards programme", body:"Cross-border CPD frameworks aligned with EuropeActive and ICREPs." },
-  { yr:"2024", t:"REPs relaunches", body:"A modern register: verified, searchable, client-first." },
-  { yr:"2026", t:"REPs goes global", body:"BD members migrate to REPs as we open new regions." },
+const PILLARS: Array<{ label: string; body: string; to: string }> = [
+  {
+    label: "Visibility",
+    body: "Get found and trusted — a verified profile that shows your full picture.",
+    to: "/features/visibility",
+  },
+  {
+    label: "Shop Front",
+    body: "A client-facing page that presents your services with clarity.",
+    to: "/features/shop-front",
+  },
+  {
+    label: "Operations",
+    body: "Enquiries, bookings, forms, payments and admin in one place.",
+    to: "/features/operations",
+  },
+  {
+    label: "Coaching",
+    body: "Programmes, nutrition, check-ins and progress tracking for real client work.",
+    to: "/features/coaching",
+  },
+  {
+    label: "REPs AI",
+    body: "Surfaces what needs attention before it becomes a problem.",
+    to: "/features/ai",
+  },
+  {
+    label: "Growth",
+    body: "Reviews, retention, reactivation and business performance.",
+    to: "/features/growth",
+  },
 ];
+
+const FEATURED_PROS: FeaturedPro[] = [
+  {
+    name: "James Wilson",
+    role: "Personal Trainer",
+    city: "Shoreditch",
+    rating: 5.0,
+    reviews: 128,
+    mode: "In-person & Online",
+    tags: ["Strength", "Fat Loss", "Hypertrophy"],
+    image: proJames,
+  },
+  {
+    name: "Sophie Taylor",
+    role: "Pilates Instructor",
+    city: "Clapham",
+    rating: 5.0,
+    reviews: 96,
+    mode: "In-person & Online",
+    tags: ["Reformer", "Posture", "Pre & Postnatal"],
+    image: proSophie,
+  },
+  {
+    name: "Liam Roberts",
+    role: "Strength Coach",
+    city: "Hackney",
+    rating: 4.9,
+    reviews: 74,
+    mode: "In-person",
+    tags: ["Powerlifting", "Hypertrophy"],
+    image: proDaniel,
+  },
+];
+
+/* ---------------------------------------------------------------- */
+/* Page                                                              */
+/* ---------------------------------------------------------------- */
 
 function AboutPage() {
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
+      {/* 1. Cinematic hero ----------------------------------------- */}
       <section className="relative overflow-hidden">
         <img
-          src={heroCoaching}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          src={heroAsset.url}
+          alt="A REPs-registered coach mid-session with a client in a sunlit warehouse gym."
+          className="absolute inset-0 h-full w-full object-cover"
+          fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-reps-ink/70 via-reps-ink/85 to-reps-ink" />
-        <div className="relative mx-auto max-w-[1100px] px-6 py-24 text-center lg:px-10 lg:py-32">
-          <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
-            <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> About REPs
-          </span>
-          <h1 className="mt-5 font-display text-[44px] font-bold leading-tight text-white lg:text-[60px]">
-            The global register for
-            <br />
-            <span className="text-reps-orange">verified exercise professionals.</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-[640px] text-[16px] leading-relaxed text-white/70">
-            REPs exists so people can find, trust and train with qualified professionals — and so professionals
-            can build their reputation on a register that means something.
-          </p>
-        </div>
-      </section>
-
-      <section className="bg-reps-panel/40">
-        <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4 px-6 my-12 lg:px-10">
-          {STATS.map((s) => (
-            <div key={s.k} className="bg-reps-panel p-6 text-center">
-              <div className="font-display text-[28px] font-bold text-white">{s.v}</div>
-              <div className="mt-1 text-[12px] text-white/55">{s.k}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
-            <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                Our mission
-              </span>
-              <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
-                Make finding a great trainer feel as safe as booking a doctor.
-              </h2>
-            </div>
-            <p className="text-[15px] leading-relaxed text-white/70">
-              Anyone can call themselves a personal trainer. We think clients deserve more than that. REPs verifies
-              qualifications, insurance and continuing professional development — then surfaces honest reviews
-              alongside transparent pricing and availability. The result: less guessing, more training, and a
-              register the industry can be proud of.
+        <HeroOverlay copySide="left" />
+        <div className="relative mx-auto flex max-w-[1320px] flex-col items-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
+          <div className="max-w-[640px]">
+            <MarketingHeroEyebrow icon={Sparkles}>About REPs</MarketingHeroEyebrow>
+            <h1
+              className="mt-5 font-display text-[44px] font-bold leading-[1.05] text-white animate-fade-in lg:text-[64px]"
+              style={{ animationDelay: "80ms", animationDuration: "640ms" }}
+            >
+              The professional platform for the modern fitness industry.
+            </h1>
+            <p
+              className="mt-5 max-w-[560px] text-[16px] leading-relaxed text-white/80 animate-fade-in"
+              style={{ animationDelay: "180ms", animationDuration: "560ms" }}
+            >
+              A new professional home for fitness professionals — combining public trust, visibility,
+              education, reviews and business software in one connected platform.
             </p>
+            <div
+              className="mt-8 flex flex-wrap gap-3 animate-fade-in"
+              style={{ animationDelay: "260ms", animationDuration: "560ms" }}
+            >
+              <Link
+                to="/find-a-professional"
+                className="inline-flex h-12 items-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+              >
+                Find a professional
+              </Link>
+              <Link
+                to="/for-professionals"
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
+              >
+                Join as a professional
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-reps-panel/30">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
-          <h2 className="font-display text-[28px] font-bold text-white">What we stand for</h2>
-          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {VALUES.map((v) => (
-              <div
-                key={v.title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel p-6"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <v.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 font-display text-[17px] font-bold text-white">{v.title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/65">{v.body}</p>
+      {/* 2. Stat band (tight under hero) --------------------------- */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4">
+            {STATS.map((s) => (
+              <div key={s.k} className="bg-reps-panel px-6 py-8 text-center">
+                <div className="font-display text-[32px] font-bold leading-none text-white lg:text-[40px]">
+                  {s.v}
+                </div>
+                <div className="mt-3 text-[12px] uppercase tracking-[0.18em] text-white/55">{s.k}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section>
-        <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-            Since 2009
-          </span>
-          <h2 className="mt-2 font-display text-[28px] font-bold text-white lg:text-[34px]">
-            A short history.
-          </h2>
-          <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-white/65">
-            REPs was built on the register the public has trusted since 2009 — rebuilt for a global, verified,
-            AI-powered fitness profession.
-          </p>
-
-          <ol className="mt-8 space-y-6">
-            {TIMELINE.map((t) => (
-              <li
-                key={t.yr}
-                className="flex gap-6 rounded-[18px] border border-reps-border bg-reps-panel p-6"
-              >
-                <span className="w-20 shrink-0 font-display text-[22px] font-bold text-reps-orange">
-                  {t.yr}
-                </span>
-                <div>
-                  <h3 className="font-display text-[17px] font-bold text-white">{t.t}</h3>
-                  <p className="mt-1 text-[13px] leading-relaxed text-white/65">{t.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden">
-        <img src={ctaBand} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-reps-ink/85" />
-        <div className="relative mx-auto max-w-[1100px] px-6 py-20 text-center lg:px-10">
-          <h2 className="font-display text-[34px] font-bold leading-tight text-white lg:text-[44px]">
-            Join the register that means something.
-          </h2>
-          <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
-            Whether you're looking for a trainer or you are one, REPs is built around trust, quality and growth.
-          </p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-12 items-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
-            >
-              Find a professional
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white hover:bg-white/10"
-            >
-              Join as a professional
-            </Link>
+      {/* 3. Manifesto moment --------------------------------------- */}
+      <section className="bg-reps-panel/15">
+        <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionEyebrow>Why REPs exists</SectionEyebrow>
+          <div className="mt-6 space-y-4 font-display text-[32px] font-bold leading-[1.15] text-white lg:text-[52px] lg:leading-[1.1]">
+            <p>The fitness industry has changed.</p>
+            <p className="text-white/70">
+              Clients search, compare, read reviews and expect a clear route to enquire and start.
+            </p>
+            <p className="text-white/70">
+              Professionals juggle profiles, payments, bookings, programmes, check-ins and content
+              across too many disconnected tools.
+            </p>
+            <p>
+              REPs exists to bring that professional journey{" "}
+              <span className="text-reps-orange">into one place.</span>
+            </p>
           </div>
         </div>
       </section>
+
+      {/* 4. A new kind of professional register -------------------- */}
+      <section>
+        <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-10 lg:py-28">
+          <div>
+            <SectionEyebrow>A new kind of register</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              Heritage in the name. Modern in everything else.
+            </SectionHeading>
+            <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
+              The REPs name has long been associated with professional registration, standards and
+              recognition in the fitness sector. Today, REPs is being rebuilt for the modern fitness
+              industry.
+            </p>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+              That means moving beyond a static register and creating a platform that reflects how
+              fitness professionals actually work now: online and in person, independently and in
+              teams, through coaching programmes, specialist services, public profiles and
+              professional development.
+            </p>
+          </div>
+          <div className="relative">
+            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+              <img
+                src={heritageAsset.url}
+                alt="A REPs-registered trainer in conversation with a client during a consultation."
+                className="aspect-[4/5] w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-x-6 -bottom-6 -z-10 h-32 rounded-[24px] bg-[radial-gradient(60%_80%_at_50%_50%,rgba(255,122,0,0.20),transparent_70%)] blur-2xl"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Built around trust — real proof ------------------------ */}
+      <section className="bg-reps-panel/30">
+        <div className="mx-auto grid max-w-[1320px] gap-12 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-10 lg:py-28">
+          <div>
+            <SectionEyebrow>Built around trust</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              A profile that proves more than a name.
+            </SectionHeading>
+            <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
+              A professional profile should do more than say someone is a trainer. It should help the
+              public understand who they are, what they're qualified to do, what services they
+              provide and why they may be suitable.
+            </p>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+              REPs profiles support clearer professional presentation through qualifications,
+              insurance status, CPD, reviews, specialist areas, service information and public
+              contact routes.
+            </p>
+            <p className="mt-4 text-[14px] leading-relaxed text-white/55">
+              The goal is simple: make it easier for clients to make informed decisions, and easier
+              for professionals to prove their credibility.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-3">
+            {FEATURED_PROS.map((pro) => (
+              <FeaturedProCard key={pro.name} pro={pro} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. More than a directory. More than software. ------------- */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <div className="mx-auto max-w-[820px] text-center">
+            <SectionEyebrow>What REPs is</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              More than a directory. More than software.
+            </SectionHeading>
+          </div>
+          <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <BlockHeading>For the public.</BlockHeading>
+              <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+                A clearer way to find and compare qualified fitness professionals. Browse profiles,
+                read honest reviews, understand services and take the next step with more confidence
+                — wherever you train.
+              </p>
+            </div>
+            <div>
+              <BlockHeading>For professionals.</BlockHeading>
+              <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+                The infrastructure to build a credible profile, showcase services, collect reviews,
+                manage enquiries, deliver coaching and grow a stronger business — in one connected
+                platform.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Built for fitness professionals — zigzag --------------- */}
+      <section className="bg-reps-panel/15">
+        <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-10 lg:py-28">
+          <div className="order-2 lg:order-1">
+            <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+              <img
+                src={professionalsAsset.url}
+                alt="An online coach reviewing a client plan from a home studio."
+                className="aspect-[4/5] w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+          <div className="order-1 lg:order-2">
+            <SectionEyebrow>Built for fitness professionals</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              The system behind the listing.
+            </SectionHeading>
+            <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
+              REPs supports the people building real careers in fitness — personal trainers, gym
+              instructors, online coaches, strength coaches, Pilates instructors, yoga teachers,
+              specialist coaches, studio owners and education providers.
+            </p>
+            <ul className="mt-8 divide-y divide-reps-border border-y border-reps-border">
+              {PILLARS.map((p) => (
+                <li key={p.label}>
+                  <Link
+                    to={p.to}
+                    className="group flex items-center gap-6 py-4 transition-colors hover:bg-reps-panel/40"
+                  >
+                    <span className="font-display text-[18px] font-bold text-white lg:text-[20px]">
+                      {p.label}
+                    </span>
+                    <span className="flex-1 text-[13.5px] leading-snug text-white/55">
+                      {p.body}
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 shrink-0 text-white/40 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-reps-orange" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Built for independence --------------------------------- */}
+      <section>
+        <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-10 lg:py-28">
+          <div>
+            <SectionEyebrow>Built for independence</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              A stronger foundation for independent operators.
+            </SectionHeading>
+            <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
+              Many fitness professionals are independent operators. They aren't backed by a head
+              office, an admin team, a marketing department or a software budget.
+            </p>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+              REPs is being built to give those professionals a stronger foundation: a public
+              profile, a Shop Front, a place to manage enquiries, a system for bookings, payments
+              and onboarding, tools for coaching delivery, and support for reviews, referrals, CPD
+              and growth.
+            </p>
+            <p className="mt-4 text-[14px] leading-relaxed text-white/55">
+              Look more credible. Operate more clearly. Build a business with more control.
+            </p>
+          </div>
+          <div className="relative">
+            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+              <img
+                src={independenceAsset.url}
+                alt="An independent personal trainer at dawn with a kit bag in an open park."
+                className="aspect-[3/4] w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. The future of REPs — horizon band ---------------------- */}
+      <section className="relative overflow-hidden bg-reps-ink">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_120%,rgba(255,122,0,0.18),transparent_70%)]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reps-border to-transparent"
+        />
+        <div className="relative mx-auto max-w-[1100px] px-6 py-24 text-center lg:px-10 lg:py-32">
+          <SectionEyebrow>The future of REPs</SectionEyebrow>
+          <h2 className="mt-6 font-display text-[34px] font-bold leading-[1.15] text-white lg:text-[56px] lg:leading-[1.1]">
+            A trusted public platform for clients.
+            <br />
+            A professional operating system for fitness professionals.
+            <br />
+            <span className="relative inline-block text-white">
+              A{" "}
+              <span className="relative">
+                <span className="relative z-10">stronger ecosystem</span>
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 bottom-1 z-0 h-[6px] rounded-full bg-reps-orange/70 lg:h-[10px]"
+                />
+              </span>{" "}
+              for the industry.
+            </span>
+          </h2>
+          <p className="mx-auto mt-8 max-w-[560px] text-[15.5px] leading-relaxed text-white/55">
+            REPs is not trying to recreate the past — it's building the next version of professional
+            infrastructure for the fitness industry.
+          </p>
+        </div>
+      </section>
+
+      {/* 10. Final CTA --------------------------------------------- */}
+      <FinalCta
+        eyebrow={null}
+        heading="Build your professional presence with"
+        headingAccent="REPs."
+        lede="Whether you're looking for a trusted fitness professional or building your own career in fitness, REPs is designed to make the professional journey clearer."
+        primary={{ to: "/for-professionals", label: "Join as a professional" }}
+        secondary={{ to: "/find-a-professional", label: "Find a professional" }}
+      />
 
       <PublicFooter />
     </div>
