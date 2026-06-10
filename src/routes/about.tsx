@@ -132,7 +132,7 @@ function AboutPage() {
       <section className="relative overflow-hidden">
         <img
           src={heroAsset.url}
-          alt="A REPs-registered coach mid-cue inside a sunlit warehouse training floor."
+          alt="A REPs-registered strength coach mid-cue inside a cavernous warehouse training floor, golden window-light raking across his forearms, a second athlete silhouetted in the background."
           className="absolute inset-0 h-full w-full object-cover"
           fetchPriority="high"
         />
