@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight, Briefcase, Sparkles, Users } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
@@ -125,7 +125,7 @@ const FEATURED_PROS: FeaturedPro[] = [
 
 function AboutPage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
+    <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
       {/* 1. Cinematic hero ----------------------------------------- */}
@@ -177,13 +177,13 @@ function AboutPage() {
       {/* 2. Stat band (tight under hero) --------------------------- */}
       <section>
         <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border lg:grid-cols-4">
             {STATS.map((s) => (
               <div key={s.k} className="bg-reps-panel px-6 py-8 text-center">
                 <div className="font-display text-[32px] font-bold leading-none text-white lg:text-[40px]">
                   {s.v}
                 </div>
-                <div className="mt-3 text-[12px] uppercase tracking-[0.18em] text-white/55">{s.k}</div>
+                <div className="mt-3 text-[12px] uppercase tracking-[0.14em] text-white/55 lg:tracking-[0.18em]">{s.k}</div>
               </div>
             ))}
           </div>
@@ -195,15 +195,17 @@ function AboutPage() {
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-28">
           <SectionEyebrow>Why REPs exists</SectionEyebrow>
           <div className="mt-6 space-y-4 font-display text-[32px] font-bold leading-[1.15] text-white lg:text-[52px] lg:leading-[1.1]">
-            <p>The fitness industry has changed.</p>
-            <p className="text-white/70">
+            <p className="animate-fade-in" style={{ animationDelay: "0ms", animationDuration: "640ms" }}>
+              The fitness industry has changed.
+            </p>
+            <p className="text-white/70 animate-fade-in" style={{ animationDelay: "120ms", animationDuration: "640ms" }}>
               Clients search, compare, read reviews and expect a clear route to enquire and start.
             </p>
-            <p className="text-white/70">
+            <p className="text-white/70 animate-fade-in" style={{ animationDelay: "240ms", animationDuration: "640ms" }}>
               Professionals juggle profiles, payments, bookings, programmes, check-ins and content
               across too many disconnected tools.
             </p>
-            <p>
+            <p className="animate-fade-in" style={{ animationDelay: "360ms", animationDuration: "640ms" }}>
               REPs exists to bring that professional journey{" "}
               <span className="text-reps-orange">into one place.</span>
             </p>
@@ -231,18 +233,17 @@ function AboutPage() {
               professional development.
             </p>
           </div>
-          <div className="relative">
-            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+          <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
               <img
                 src={heritageAsset.url}
                 alt="A REPs-registered trainer in conversation with a client during a consultation."
                 className="aspect-[4/5] w-full object-cover"
-                loading="lazy"
               />
             </div>
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-x-6 -bottom-6 -z-10 h-32 rounded-[24px] bg-[radial-gradient(60%_80%_at_50%_50%,rgba(255,122,0,0.20),transparent_70%)] blur-2xl"
+              className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_90%,rgba(255,122,0,0.20),transparent_70%)] blur-2xl"
             />
           </div>
         </div>
@@ -288,17 +289,27 @@ function AboutPage() {
               More than a directory. More than software.
             </SectionHeading>
           </div>
-          <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
-            <div>
-              <BlockHeading>For the public.</BlockHeading>
+          <div className="mt-12 grid overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel/30 lg:grid-cols-2">
+            <div className="relative p-8 lg:p-12">
+              <div className="flex items-center gap-3">
+                <span className="font-display text-[13px] font-bold tracking-[0.18em] text-reps-orange">01</span>
+                <span className="h-px flex-1 bg-reps-border" />
+                <Users className="h-5 w-5 text-reps-orange" strokeWidth={1.75} />
+              </div>
+              <BlockHeading className="mt-5">For the public.</BlockHeading>
               <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
                 A clearer way to find and compare qualified fitness professionals. Browse profiles,
                 read honest reviews, understand services and take the next step with more confidence
                 — wherever you train.
               </p>
             </div>
-            <div>
-              <BlockHeading>For professionals.</BlockHeading>
+            <div className="relative border-t border-reps-border p-8 lg:border-l lg:border-t-0 lg:p-12">
+              <div className="flex items-center gap-3">
+                <span className="font-display text-[13px] font-bold tracking-[0.18em] text-reps-orange">02</span>
+                <span className="h-px flex-1 bg-reps-border" />
+                <Briefcase className="h-5 w-5 text-reps-orange" strokeWidth={1.75} />
+              </div>
+              <BlockHeading className="mt-5">For professionals.</BlockHeading>
               <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
                 The infrastructure to build a credible profile, showcase services, collect reviews,
                 manage enquiries, deliver coaching and grow a stronger business — in one connected
@@ -322,6 +333,7 @@ function AboutPage() {
               />
             </div>
           </div>
+          {/* spacer kept for grid balance */}
           <div className="order-1 lg:order-2">
             <SectionEyebrow>Built for fitness professionals</SectionEyebrow>
             <SectionHeading className="mt-3">
@@ -337,9 +349,9 @@ function AboutPage() {
                 <li key={p.label}>
                   <Link
                     to={p.to}
-                    className="group flex items-center gap-6 py-4 transition-colors hover:bg-reps-panel/40"
+                    className="group relative flex items-center gap-6 py-5 pl-4 transition-colors hover:bg-reps-panel/40 before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-full before:bg-reps-orange before:opacity-0 before:transition-opacity group-hover:before:opacity-100"
                   >
-                    <span className="font-display text-[18px] font-bold text-white lg:text-[20px]">
+                    <span className="font-display text-[18px] font-bold text-white lg:text-[22px]">
                       {p.label}
                     </span>
                     <span className="flex-1 text-[13.5px] leading-snug text-white/55">
@@ -376,15 +388,19 @@ function AboutPage() {
               Look more credible. Operate more clearly. Build a business with more control.
             </p>
           </div>
-          <div className="relative">
-            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
+          <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
               <img
                 src={independenceAsset.url}
-                alt="An independent personal trainer at dawn with a kit bag in an open park."
-                className="aspect-[3/4] w-full object-cover"
+                alt="An independent personal trainer leaving a studio at dawn with a kit bag."
+                className="aspect-[4/5] w-full object-cover"
                 loading="lazy"
               />
             </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(55%_55%_at_50%_85%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+            />
           </div>
         </div>
       </section>
