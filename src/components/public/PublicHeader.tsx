@@ -887,7 +887,7 @@ function MobileDrawer({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
+      <div className="flex items-center justify-between px-5 py-4 shadow-[0_6px_16px_-12px_rgba(0,0,0,0.6)]">
         <Link to="/" onClick={onNavigate} className="flex items-center gap-2" aria-label="REPs home">
           <RepsWordmark className="h-[19px] text-white" />
         </Link>
@@ -903,7 +903,7 @@ function MobileDrawer({
       </div>
 
       {user ? (
-        <div className="border-b border-reps-border px-5 py-4">
+        <div className="px-5 py-4">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-[999px] bg-reps-orange text-[13px] font-semibold text-white">
               {user.name
@@ -920,7 +920,7 @@ function MobileDrawer({
           </div>
         </div>
       ) : (
-        <div className="border-b border-reps-border px-5 py-4">
+        <div className="px-5 py-4">
           <div className="grid grid-cols-2 gap-2">
             <Link
               to="/login"
