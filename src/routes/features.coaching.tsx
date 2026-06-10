@@ -497,24 +497,71 @@ function ExerciseLibrarySection({
 // 04. Nutrition (the MFP-replacement section)
 // -----------------------------------------------------------------------------
 
+const NUTRITION_PARTS = [
+  {
+    n: "1",
+    icon: BookOpen,
+    title: "REPs Nutrition Library",
+    body: "Ingredients, recipes, meals, recipe books and meal plan templates. Use the REPs library or build your own — saved once, reusable forever.",
+  },
+  {
+    n: "2",
+    icon: ClipboardList,
+    title: "Meal plan templates",
+    body: "7-day fat loss, high-protein meal prep, vegan muscle gain, athlete fuelling, family low-prep, shift-worker, maintenance. Assign in one click and adapt per client.",
+  },
+  {
+    n: "3",
+    icon: FileText,
+    title: "Client food log + external diary",
+    body: "Clients log meals, photos, water and notes in REPs — or attach a public MyFitnessPal / Cronometer link, screenshot or CSV export for review.",
+  },
+];
+
 function NutritionSection() {
   return (
     <section className="border-b border-reps-border bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Nutrition coaching"
-          heading="Replace the food-tracking app with something built for coaching."
-          lede="Coach-set macros, food database with barcode scan, meal plans, photo meals and weekly compliance — all on the client record. Stop chasing screenshots from MyFitnessPal. Your client logs, you coach, the system carries the weekly story."
+          heading="Nutrition coaching built around your own library."
+          lede="Create recipes, build meal plan templates, assign recipe books, review client food logs, and keep nutrition feedback connected to check-ins, progress and accountability."
         />
+
+        <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-5">
+          {NUTRITION_PARTS.map(({ n, icon: Icon, title, body }) => (
+            <div
+              key={n}
+              className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange/15 text-[12px] font-bold text-reps-orange">
+                  {n}
+                </span>
+                <Icon className="size-4 text-white/70" />
+              </div>
+              <h3 className="mt-4 font-display text-[18px] font-semibold text-white">
+                {title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                {body}
+              </p>
+            </div>
+          ))}
+        </div>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
           <NutritionMock />
           <BulletColumn
-            heading="Nutrition belongs next to the programme — not in someone else's app."
-            body="MyFitnessPal was built for individuals, not coaches. REPs Nutrition was built so you can set the plan, your client can log against it, and you can see the week without asking. Macros, meals, photo logging and compliance — in one workspace."
+            heading="Build your own nutrition library, assign meal plans, review food logs, and keep every nutrition decision connected to the client record."
+            body="Nutrition belongs next to programmes, check-ins and progress — not in someone else's app. Coaches build the library, clients log against it, and every meal, photo and note lands on the same record."
             bullets={NUTRITION_BULLETS}
           />
         </div>
+
+        <p className="mt-10 text-center text-[13px] text-white/55">
+          On the nutrition roadmap: barcode scan, food database search, AI meal recognition and deeper tracker imports.
+        </p>
       </div>
     </section>
   );
