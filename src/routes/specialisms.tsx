@@ -517,7 +517,7 @@ function SpecialismsPage() {
 
         <StickyNav />
 
-        <div className="border-b border-reps-border bg-reps-ink">
+        <div className="bg-reps-ink">
           {SPECIALISMS.map((s, i) => (
             <SpecialismSection key={s.slug} spec={s} isLast={i === SPECIALISMS.length - 1} />
           ))}
@@ -654,7 +654,7 @@ function StickyNav() {
   return (
     <nav
       aria-label="Specialisms"
-      className="sticky top-[72px] z-30 border-t border-white/10 border-b border-reps-border/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
+      className="sticky top-[72px] z-30 border-t border-white/10/60 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70"
     >
       <div className="mx-auto flex h-[52px] max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
         {SPECIALISMS.map((s) => (
@@ -810,7 +810,7 @@ function SpecialismSection({ spec, isLast }: { spec: Specialism; isLast: boolean
 
 function RegistersBlock() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel-soft/40">
+    <section className="bg-reps-panel-soft/40">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="The registers, decoded"

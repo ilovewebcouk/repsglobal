@@ -418,7 +418,7 @@ function ProgrammeSection({
   featured: Awaited<ReturnType<typeof getCoachingExerciseShowcase>>["featured"];
 }) {
   return (
-    <section id="programme-delivery" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15">
+    <section id="programme-delivery" className="scroll-mt-24 bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Programme delivery"
@@ -527,7 +527,7 @@ const PIPELINE_STEPS: { label: string; icon: typeof Utensils; emerald?: boolean 
 
 function NutritionSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-reps-border bg-reps-panel/60 px-4 py-2 text-[12.5px] text-white/70">
           <span className="inline-flex size-6 items-center justify-center rounded-full bg-reps-orange-soft text-[11px] font-bold text-reps-orange">
@@ -635,7 +635,7 @@ function NutritionSection() {
 
 function CheckInsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Client check-ins"
@@ -696,7 +696,7 @@ function ProgressSection() {
 
 function MessagingSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Messaging"
@@ -757,7 +757,7 @@ function ClientViewSection() {
 
 function ClientRecordSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Coaching notes &amp; client context"
@@ -844,7 +844,7 @@ function AccountabilitySection() {
 
 function AutomationsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Automations"
@@ -904,7 +904,7 @@ function TemplatesSection() {
 
 function AiAssistSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="AI assist"
@@ -1028,7 +1028,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every coaching model"

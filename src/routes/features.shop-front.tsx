@@ -470,7 +470,7 @@ function ProblemSection() {
 
 function AnatomySection() {
   return (
-    <section id="anatomy" className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15">
+    <section id="anatomy" className="scroll-mt-24 bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Anatomy of a Shop Front"
@@ -546,7 +546,7 @@ function ServicesSection() {
 
 function FlowSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Enquire · Book · Pay · Onboard"
@@ -652,7 +652,7 @@ function ProofSection() {
 
 function PurposeBuiltSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Purpose-built for fitness pros"
@@ -808,7 +808,7 @@ function TierComparisonSection() {
 
 function UseCasesSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"

@@ -27,7 +27,7 @@ export function VerifySteps({
   bannerText,
 }: VerifyStepsProps) {
   return (
-    <section className="border-b border-reps-border bg-reps-ink">
+    <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader eyebrow={eyebrow} heading={heading} />
 

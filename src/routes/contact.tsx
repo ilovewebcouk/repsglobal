@@ -96,7 +96,7 @@ function ContactPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr] lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel p-8">
             <h2 className="font-display text-[24px] font-bold text-white">Send us a message</h2>

@@ -205,7 +205,7 @@ function ForProsPage() {
 
 
       {/* WHY COACHES SWITCH — competitive proof */}
-      <section className="border-b border-reps-border bg-reps-ink">
+      <section className="bg-reps-ink">
 
         <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
           <div className="max-w-[720px]">
@@ -270,7 +270,7 @@ function ForProsPage() {
       </section>
 
       {/* PILLAR 3 — OPERATIONS (leads + bookings + payments) */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
             eyebrow="Pillar 3 · Operations"
@@ -321,7 +321,7 @@ function ForProsPage() {
       </section>
 
       {/* PILLAR 5 — REPS AI (HERO MOMENT) */}
-      <section className="relative overflow-hidden border-b border-reps-border bg-reps-panel/20">
+      <section className="relative overflow-hidden bg-reps-panel/20">
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(55%_50%_at_75%_40%,rgba(255,122,0,0.12),transparent_70%)]"
@@ -400,7 +400,7 @@ function ForProsPage() {
 
 
       {/* PRICING ANCHOR — compact 3-tier strip so visitors know the price without leaving */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
@@ -488,7 +488,7 @@ function ForProsPage() {
       </section>
 
       {/* USE CASES */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-10 max-w-[680px]">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
@@ -507,7 +507,7 @@ function ForProsPage() {
 
 
       {/* FAQ */}
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[820px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-reps-orange">FAQ</span>

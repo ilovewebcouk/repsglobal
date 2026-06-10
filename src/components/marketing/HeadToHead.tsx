@@ -36,7 +36,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       <PublicHeader variant="solid" />
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -107,7 +107,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       />
 
       {/* THE HIDDEN COST STORY + CALCULATOR */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -146,7 +146,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* SIDE-BY-SIDE UI */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -184,7 +184,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* VERDICT SCORECARD */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -258,7 +258,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* MIGRATION GUIDE */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <MigrationChecklist competitorName={c.name} steps={e.migration} />
         </div>
@@ -306,7 +306,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
       </section>
 
       {/* FAQ */}
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[920px] px-6 py-16 lg:px-10 lg:py-20">
           <div>
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">

@@ -53,7 +53,7 @@ function AboutPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <img
           src={heroCoaching}
           alt=""
@@ -76,7 +76,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/40">
+      <section className="bg-reps-panel/40">
         <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border md:grid-cols-4 px-6 my-12 lg:px-10">
           {STATS.map((s) => (
             <div key={s.k} className="bg-reps-panel p-6 text-center">
@@ -108,7 +108,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <h2 className="font-display text-[28px] font-bold text-white">What we stand for</h2>
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">

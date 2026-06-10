@@ -412,7 +412,7 @@ function ScatteredCard({
 
 function ProfileSection() {
   return (
-    <section id="profile" className="scroll-mt-24 border-b border-reps-border">
+    <section id="profile" className="scroll-mt-24">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Your public REPs profile"
@@ -441,7 +441,7 @@ function ProfileSection() {
 
 function DiscoverySection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="How clients discover you"
@@ -545,7 +545,7 @@ function TrustGridSection() {
 
 function ReviewsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Turn reviews into public proof"
@@ -624,7 +624,7 @@ function SegmentsSection() {
   const current = SEGMENTS.find((s) => s.key === active) ?? SEGMENTS[0];
 
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Visibility for every professional"

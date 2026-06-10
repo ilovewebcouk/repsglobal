@@ -472,7 +472,7 @@ function WorkspaceSection() {
   return (
     <section
       id="workspace"
-      className="scroll-mt-24 border-b border-reps-border bg-reps-panel/15"
+      className="scroll-mt-24 bg-reps-panel/15"
     >
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
@@ -572,7 +572,7 @@ function PipelineSection() {
 
 function BookingsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Bookings and schedule"
@@ -659,7 +659,7 @@ function FormsSection() {
 
 function PaymentsSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Payments and packages"
@@ -726,7 +726,7 @@ function ClientRecordsSection() {
 
 function TasksSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Tasks, reminders and next actions"
@@ -834,7 +834,7 @@ function ReplacesSection() {
 
 function TierComparisonSection() {
   return (
-    <section className="border-b border-reps-border bg-reps-panel/15">
+    <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Verified vs Pro"

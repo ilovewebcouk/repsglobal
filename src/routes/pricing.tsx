@@ -34,11 +34,11 @@ function PricingPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      <section className="border-b border-reps-border bg-reps-panel/40">
+      <section className="bg-reps-panel/40">
         <FoundingBanner />
       </section>
 
-      <section className="relative overflow-hidden border-b border-reps-border">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,122,0,0.10),transparent)]" />
         <div className="relative mx-auto max-w-[1320px] px-6 py-16 text-center lg:px-10 lg:py-20">
           <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
@@ -63,7 +63,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/20">
+      <section className="bg-reps-panel/20">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
           <div className="mx-auto max-w-[760px] text-center">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
@@ -89,7 +89,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="border-b border-reps-border bg-reps-panel/30">
+      <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-14 text-center lg:px-10">
           <h2 className="font-display text-[24px] font-bold text-white">
             Looking at other coaching platforms?
