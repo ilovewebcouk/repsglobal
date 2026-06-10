@@ -1,166 +1,68 @@
+## Goal
 
-## Brutal honest answer
+Rebuild `src/routes/features.coaching.tsx` to follow the PDF spec end-to-end, but **keep the existing `NutritionSection`** (Sarah K. ribbon → Manual / Templates / AI-draft triad → "AI should speed up…" quote → Client intake → AI draft → Trainer edits → Trainer approves → Client sees plan strip) exactly as it is today.
 
-Your spec is **strategically 9/10**. It correctly repositions Coaching from "workout builder" to "client delivery layer" — that's the right position to outflank Trainerize / My PT Hub / PT Distinction without sounding like a clone.
+The PDF expands Coaching from a "static screens" pillar into the full client-delivery layer of REPs Pro, with 16 distinct sections (vs. today's 11–12). Most of the PDF copy is sharper than what's live now — we use it verbatim where it doesn't break memory rules.
 
-Shipped exactly as written it lands at ~8.5/10. To make it a true 10/10 I'm baking in three additions the best coaching pages (PT Distinction 2025, Everfit, CoachAccountable) all do:
+## Final section order
 
-1. **One hero composition that earns the page** — a single anchored mock showing training + nutrition + check-in feeding the *same* client record, with a real name and real adherence number. Not three separate panels floating.
-2. **One named end-to-end client story** ("Sarah — 12-week fat-loss client") threaded through sections 4, 5, 7, 8 so the reader sees one person being assessed → programmed → meal-planned → checked in → adjusted. That's what makes a coaching page *feel* like coaching instead of SaaS.
-3. **Explicit "what REPs refuses to be"** in the safety section, plus a quiet "compared to a workout-only app" line. A 10/10 page is as confident about its boundaries as its features.
+1. Hero — "Deliver better coaching from **one connected platform.**" + 3 trust chips (REPs Pro · Connected to your client record · No extra add-ons). Uses `HeroOverlay copySide="left"` over an existing coach photo.
+2. Problem split — "Most coaches don't struggle to coach. They struggle to deliver consistently." with the two-column "Six apps. One overwhelmed coach." vs "One workspace. Every client connected." card pair.
+3. Programme delivery — "Build structured coaching plans clients can actually follow." + 6-bullet capability list + AnnotatedMock of the programme builder (block / week / session).
+4. Exercise library — "10,000+ exercises with video demos — built into the programme builder." + filter/category grid mock + 6-bullet list.
+5. **Nutrition — UNCHANGED.** Existing `NutritionSection` (Sarah K. ribbon, 3 MealModeCards, quote, ApprovalStrip). Re-using the locked component byte-for-byte.
+6. Habits & wearables — "Sleep, steps and training data flow into the check-in — automatically." + Apple Health / Garmin / Whoop / Fitbit chips + weekly-view mock.
+7. Client check-ins — "One inbox. Every client's week, in order of priority." + tabbed Pending / Replied / Flagged inbox mock + bullet list.
+8. Progress tracking — "Four lenses on one client. One source of truth." + 4 lens tabs (Strength / Body / Adherence / Photos) with the sparkline grid we already have, lightly relabelled.
+9. Messaging — "One thread per client." + thread mock (text + voice-note + form-reply chips).
+10. Client portal view — "What the client sees, on purpose." + 4-tile mobile-portal mock (What's next / My programme / My check-in / My progress).
+11. Coaching notes & client context — "One record per client. Every session, every note." + timeline mock (goals → injuries → notes → programme → progress).
+12. Accountability & next actions — "Retention is built between sessions, not during them." + 5 scenario chips (Check-in overdue, Low adherence, Quiet client, Milestone hit, Programme ending).
+13. Automations — "Set it once, edit before it sends — never blasted." + onboarding / re-engagement / reminder cards.
+14. Templates & repeatable delivery — 6-tile grid (programme, nutrition, onboarding, check-in, automation, message templates).
+15. AI assist — "An assistant, not a substitute." + 6 bullets, emerald "Trainer reviews · Trainer approves" status chip strip (re-uses the emerald-status token already used in NutritionSection).
+16. Verified vs Pro matrix — 13-row capability table using the shared `TierCard` + comparison-matrix primitive from `/features/shop-front`. Pricing comes from memory (Verified £99/yr, Pro £59/mo Founding) — **NOT the PDF's £90 / £50, which is stale.**
+17. Built for every coaching model — 6 use-case cards (PT, Online, Strength, Transformation, Small-group, Studio teams).
+18. FAQ — `MarketingFaq` with the 6 PDF questions.
+19. FinalCta — "Deliver coaching clients can follow, track and stay engaged with." + Start using REPs Pro / Explore all features buttons.
 
-Everything else in your spec is preserved verbatim.
+## Reuse vs. new
 
----
+Reuse (no changes):
+- `HeroOverlay`, `SectionHeader`, `SectionEyebrow`, `MarketingFaq`, `FinalCta` from `src/components/marketing/`.
+- `TierCard` + matrix primitive from the shop-front pillar.
+- Current `NutritionSection`, `MealModeCard`, `SarahRibbon`, `ApprovalStrip` — moved unchanged into the new file order.
+- Existing programme / check-in / progress / portal mock blocks where they already match the PDF spec; copy refreshed only.
 
-## Exercise data — Option A (confirmed)
+New (local to this route, not promoted to shared primitives yet):
+- `FragmentedStackSplit` — two-column "Six apps vs One workspace" comparator.
+- `ExerciseLibraryMock` — filter-rail + 6-tile video-card grid.
+- `WearablesStrip` — 4 vendor chips + weekly-view mock card.
+- `MessagingThreadMock` — single client thread with voice-note + form-reply chips.
+- `ClientPortalMock` — 4-tile mobile portal frame.
+- `ClientContextTimeline` — timestamped timeline mock.
+- `AccountabilityQueue` — 5 scenario flag chips.
+- `AutomationsGrid`, `TemplatesGrid`, `AiAssistBlock`, `UseCasesGrid` — small content grids built from the marketing primitives.
 
-- Use the RapidAPI AscendAPI EDB **once, offline**, to pull ~30 representative exercises (mix of compounds, accessories, machine, dumbbell, kettlebell, bodyweight, mobility) covering all major muscle groups + equipment filters.
-- Save as static `src/data/exercise-library.sample.json` — name, primary muscle, equipment, level, GIF/image URL, cue notes.
-- Mock-ups in sections 4 + 6 + 9 read from this JSON, so the exercise library, programme builder and client portal show *real* exercises, not lorem-ipsum.
-- **No runtime API call, no key in the repo, no server function.** Live integration deferred to Phase 2.
-- **Action for you:** rotate the RapidAPI key you pasted (it's now in chat logs) before any Phase-2 work starts.
+## Guardrails applied during the rebuild
 
-## What we're building
+- All section headers via `SectionHeader` / `SectionEyebrow` (no hand-rolled H2/H3 sizes).
+- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; every other section `py-20 lg:py-28`; one optional proof strip directly under hero only.
+- Dividers: hero has none; every later section uses `border-b border-reps-border`.
+- Hero overlay uses `<HeroOverlay copySide="left" />` — no inline 5-layer wash.
+- Radii pulled from the locked scale (button 10, input 12, card 16, large panel 22, hero 24). No 14/20/28/32 anywhere except the existing 14px photo exception.
+- Colours: brand orange via tokens; emerald only on the approval / on-track / "Trainer approves" status chips (NutritionSection + AI Assist). Nothing decorative.
+- Copy: drop "UK" qualifiers; never name CIMSPA; never claim booking commissions; no "10,000+" inflated against reality — keep the PDF's "10,000+" only if we already display a library that scales (acceptable for a mock).
+- Pricing: Verified £99/yr, Pro £59/mo Founding (memory wins over PDF's £90 / £50). Studio £149/mo not referenced because Coaching is Pro-only.
+- shadcn primitives for any tabbed mock (Tabs), any tooltip, any badge.
 
-A bespoke `/features/coaching` route, replacing today's 36-line `FeatureGroupLayout` stub. Same architecture, primitives, type scale, vertical rhythm, dividers, hero overlay, FAQ and FinalCta as the three locked pillars — so it slots cleanly into the marketing system.
+## Out of scope
 
-After approval this page becomes **LOCKED** as `mem://design/locked-coaching` with a Core line in the index.
+- No new shared primitives promoted to `src/components/marketing/` in this pass.
+- No real wearable / messaging / AI integrations — Phase-1 static mocks only.
+- No changes to `/features/shop-front`, `/features/operations`, `/features/visibility`, `/for-professionals` or the locked `/c/$slug`.
+- No imagery regeneration unless an existing hero asset can't carry the new headline; if needed, I'll flag it and stop before generating.
 
-## Page structure (final, in build order)
+## Memory update on completion
 
-```text
-1.  Hero — image-backed, HeroOverlay copySide="left"
-2.  The problem — fragmented delivery
-3.  One connected coaching workflow — 7-step pipeline (Assess → Retain)
-4.  Programme delivery + exercise library — AnnotatedMock of builder
-5.  Meal planning + nutrition support — Manual / Templates / AI draft triad
-6.  Client portal experience — desktop coach + phone client side-by-side
-7.  Check-ins + accountability — AnnotatedMock of check-in review
-8.  Progress tracking — dashboard mock
-9.  Coaching notes + client context — client record timeline
-10. AI coaching support — "AI drafts. Trainer reviews. Trainer approves."
-11. Templates + repeatable coaching systems — 8-template grid
-12. Verified vs Pro matrix — TierCard pair
-13. Use cases — 6 cards (PT / online / strength / transformation / small group / studio)
-14. Safety + scope — calm, professional
-15. MarketingFaq → FinalCta
-```
-
-Threaded through sections 4, 5, 7, 8: **"Sarah K. — 12-week fat-loss client, 3×/week, 145g protein target."** Same adherence numbers, same meal plan, same check-in entry referenced across the page.
-
-## Section-by-section spec
-
-**1. Hero**
-- H1: *Deliver better coaching* / *from one connected platform.* (white + orange split via the locked pattern)
-- Sub: your exact subheading
-- CTAs: "Start using REPs Pro" → `/for-professionals`, "Explore coaching tools" → `#workflow`
-- Background: full-bleed coaching scene (coach + tablet showing REPs UI; REPS wordmark white on tee per `mem://design/trainer-imagery`). Reuses or replaces `hero-coaching-bg.jpg` depending on quality check.
-- Overlay: `<HeroOverlay copySide="left" />`
-- Trust chips: "Used by Pro-tier coaches" · "Training + nutrition + check-ins" · "One client record"
-
-**2. The problem**
-- Eyebrow "The reality of delivery", H2 from your spec, your exact paragraph
-- Pull-line in a panel: *"Your coaching should not depend on scattered messages, screenshots and five different tools."*
-- Visual: 5 greyed-out tiles (WhatsApp / Notes app / PDF / Camera Roll / Spreadsheet) → one orange-bordered REPs panel
-
-**3. One connected coaching workflow** (`id="workflow"`)
-- 7-stage horizontal pipeline, same visual language as the Operations 6-stage pipeline
-- Stages: Assess → Plan → Deliver → Check in → Track → Adjust → Retain
-- Each stage chips the REPs features you listed (assessment, programme builder, exercise library, meal builder, check-ins, progress, notes, AI next actions, client portal)
-- This section is the page's TOC
-
-**4. Programme delivery + exercise library**
-- `AnnotatedMock` of Programme Builder using real exercises from `exercise-library.sample.json`
-- Callouts: search, muscle filter, equipment filter, video/image, sets/reps/tempo/rest, coaching notes, alternatives, favourites, **custom trainer exercises**
-- One-line frame: *"A deep exercise library you can extend — every coach can add their own exercises and cues."* (AscendAPI not named on the marketing page — it's an implementation detail)
-
-**5. Meal planning + nutrition support**
-- 3-column comparison: **Manual builder · Templates · AI-assisted draft**, each a mini mock
-- Pull-quote: *"AI should speed up meal planning, not replace professional judgement."*
-- Approval flow ribbon: Client intake → AI draft → Trainer edits → **Trainer approves** (emerald status badge) → Client sees plan
-
-**6. Client portal experience**
-- Split mock: desktop coach view + phone client view using `LaptopFrame` + `PhoneFrame`
-- Phone callouts: today's workout, weekly programme, meal plan + swaps, check-in form, coach feedback, tasks, documents, next steps
-
-**7. Check-ins + accountability**
-- `AnnotatedMock` of a check-in review for Sarah (training adherence, meal adherence, mood/energy/sleep, weight, measurements, photos, habits, coach notes, next actions)
-- Pull-quote: *"Check-ins turn a plan into a coaching relationship."*
-
-**8. Progress tracking**
-- Sarah's progress dashboard mock: strength trend, attendance, workout adherence, meal adherence, weight trend, measurement trend, habits, milestones, check-in history, client timeline
-- Cautious line: *"When progress is visible, coaching decisions become clearer."* — no transformation claims
-
-**9. Coaching notes + client context**
-- Client record timeline mock: goals, onboarding answers, dietary prefs, allergies, training history, injuries, programme history, meal plan history, check-in history, coach notes, upcoming review
-- Frame: *"Coach with context, not guesswork."*
-
-**10. AI coaching support**
-- Sub: *"AI support for the coach, not instead of the coach."*
-- 8-tile grid (drafts, swaps, summaries, attention-needed clients, adherence patterns, feedback drafts, review points, structured next actions)
-- Standalone rule panel: **"AI drafts. The trainer reviews. The trainer approves."**
-
-**11. Templates + repeatable coaching systems**
-- 8-template grid: programme, exercise, meal plan, check-in, onboarding, assessment, feedback, workflow
-- Frame: scaling quality without making every client feel generic
-
-**12. Verified vs Pro matrix**
-- Two `TierCard`s — copy exactly per your spec. No pricing repetition beyond the canonical "Founding £59/mo".
-
-**13. Use cases**
-- 6 cards, exact copy from your spec.
-
-**14. Safety + scope**
-- Calm, professional. Three sub-blocks:
-  - Statement of scope
-  - **"REPs is not a replacement for"** list (medical diagnosis, treatment, registered nutrition advice for diagnosed conditions, eating disorder care)
-  - Trainer-controlled safeguards (allergies, medical flags, ED history, pregnancy, diabetes, referral, trainer approval before client delivery)
-
-**15. FAQ → FinalCta**
-- `MarketingFaq` — 6 Qs: Does REPs replace Trainerize / My PT Hub? Can I bring my own exercises? How does the AI meal-plan workflow work? What can clients see vs what stays internal? Do I need Pro for nutrition? Is this medical nutrition advice?
-- `FinalCta` with your exact H2 + sub + dual CTAs.
-
-## Components — reuse vs new
-
-**Reuse (no new shared primitives):**
-- `HeroOverlay`, `SectionHeader`, `SectionHeading`, `BlockHeading`, `AnnotatedMock`, `TierCard`, `MarketingFaq`, `FinalCta`, `PhoneFrame`, `LaptopFrame`, `BrowserFrame`, `MarketingHeroEyebrow`
-
-**New, scoped to this route file:**
-- `CoachingWorkflowPipeline` — 7-stage stepper (mirrors Operations 6-stage)
-- `MealPlanModesTriad` — 3-column block
-- `AIApprovalStrip` — small approval ribbon used twice (sections 5 + 10)
-- `ScatteredStackVisual` — section 2 problem visual
-- `SarahClientRibbon` — tiny chip rendered above sections 4/5/7/8 saying *"Following Sarah K. — 12-week fat-loss client"* so the threaded story is explicit
-
-## Technical details
-
-- Rewrite in place: `src/routes/features.coaching.tsx` (36 → ~900 lines)
-- New data file: `src/data/exercise-library.sample.json` (offline pull, committed)
-- `head()` updated: new title *"Coaching delivery — One connected platform · REPs"*, new meta description matching the new positioning, og:image points at hero asset
-- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; every other section `py-20 lg:py-28`; `border-b border-reps-border` on each non-hero section
-- Type scale: `SectionHeading` for section H2s, `BlockHeading` for in-block H3s — no hand-rolled font-display sizes
-- Emerald only on "Trainer approves" badge (sections 5 + 10) — meets the status-only rule
-- All tokens from `src/styles.css`; radii per the locked system
-- shadcn primitives for any chrome (Card, Badge, Tooltip, Separator)
-- After build: create `mem://design/locked-coaching` + add a Core line to the index
-
-## Validation before declaring done
-
-1. Build passes (typecheck + Vite)
-2. Live preview screenshots at 1440×900 and 390×844 for hero + sections 3, 5, 6, 8, 12, 15
-3. Hero overlay legibility zoom-checked per the locked overlay rule
-4. Divider hairline check at hero bottom
-5. Memory + index updated
-
-## Out of scope (explicit)
-
-- No runtime AscendAPI call, no RapidAPI key in the repo
-- No real programme/meal/AI/portal logic — visuals only
-- No pricing changes — pricing lives on `/pricing`
-- No edits to other pillar pages or new shared primitives
-- No CIMSPA / banned-org names; no UK qualifiers; no booking-fee / 15% copy
-
----
-
-If you approve, I'll build it top-to-bottom in one pass, screenshot-verify each section, then lock it in memory.
+Replace `mem://design/locked-coaching` with the new 19-section order and explicitly record that section 5 reuses the locked `NutritionSection` so future passes don't overwrite it.
