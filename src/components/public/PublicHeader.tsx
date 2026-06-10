@@ -198,8 +198,8 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
     "z-50 transition-colors duration-200",
     variant === "transparent" ? "fixed inset-x-0 top-0" : "sticky top-0",
     isSolid
-      ? "bg-reps-ink/95 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/80 border-b border-reps-border"
-      : "bg-transparent border-b border-transparent",
+      ? "bg-reps-ink/95 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/80 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]"
+      : "bg-transparent",
   );
 
   return (
