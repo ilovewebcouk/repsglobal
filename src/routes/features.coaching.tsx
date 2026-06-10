@@ -529,8 +529,8 @@ function NutritionSection() {
         />
 
         <div className="mt-10 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-3">
-          {NUTRITION_PARTS.map(({ n, icon: Icon, title, body }, i) => (
-            <>
+          {NUTRITION_PARTS.flatMap(({ n, icon: Icon, title, body }, i) => {
+            const card = (
               <div
                 key={n}
                 className="flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
@@ -548,18 +548,21 @@ function NutritionSection() {
                   {body}
                 </p>
               </div>
-              {i < NUTRITION_PARTS.length - 1 && (
-                <div
-                  key={`arrow-${n}`}
-                  className="hidden items-center justify-center md:flex"
-                  aria-hidden="true"
-                >
-                  <ArrowRight className="size-4 text-white/35" />
-                </div>
-              )}
-            </>
-          ))}
+            );
+            if (i === NUTRITION_PARTS.length - 1) return [card];
+            return [
+              card,
+              <div
+                key={`arrow-${n}`}
+                className="hidden items-center justify-center md:flex"
+                aria-hidden="true"
+              >
+                <ArrowRight className="size-4 text-white/35" />
+              </div>,
+            ];
+          })}
         </div>
+
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
           <NutritionMock />
