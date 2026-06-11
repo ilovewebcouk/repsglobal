@@ -59,9 +59,9 @@ const PLAN_SUMMARIES: Record<
     monthly: {
       name: "REPS Verified",
       tagline: "Monetise your professional trust.",
-      price: "£12",
-      unit: "/month",
-      meta: "30-day free trial · card required · then £59/month unless cancelled",
+      price: "£99",
+      unit: "/year",
+      meta: "Annual membership · charged today",
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
@@ -80,7 +80,7 @@ const PLAN_SUMMARIES: Record<
       price: "£59",
       was: "£79",
       unit: "/month",
-      meta: "Billed monthly",
+      meta: "30-day free trial · card required · then £59/month unless cancelled",
       founding: true,
       highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
@@ -101,11 +101,13 @@ const PLAN_SUMMARIES: Record<
 export const Route = createFileRoute("/signup")({
   validateSearch: (search: Record<string, unknown>): SignupSearch => {
     const tier = search.tier as SignupSearch["tier"];
-    const period = search.period as SignupSearch["period"];
+    const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
+    const validTier = ["verified", "pro"].includes(tier as string) ? tier : undefined;
+    const period = validTier === "verified" ? "annual" : validTier === "pro" ? "monthly" : undefined;
     return {
-      tier: ["verified", "pro"].includes(tier as string) ? tier : undefined,
-      period: ["monthly", "annual"].includes(period as string) ? period : undefined,
+      tier: validTier,
+      period: requestedPeriod === period ? requestedPeriod : period,
       next: next === "checkout" ? "checkout" : undefined,
     };
   },
@@ -645,13 +647,13 @@ function SignupPage() {
 
               <p className="text-center text-[11px] text-reps-muted-light">
                 By creating an account, you agree to our{" "}
-                <a href="#" className="text-reps-orange hover:underline">
+                <Link to="/terms" className="text-reps-orange hover:underline">
                   Terms of Use
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a href="#" className="text-reps-orange hover:underline">
+                <Link to="/privacy" className="text-reps-orange hover:underline">
                   Privacy Policy
-                </a>
+                </Link>
                 .
               </p>
             </form>

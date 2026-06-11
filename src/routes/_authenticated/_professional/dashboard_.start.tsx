@@ -17,8 +17,8 @@ type StartSearch = {
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/start")({
   validateSearch: (s: Record<string, unknown>): StartSearch => ({
-    tier: s.tier as StartSearch["tier"],
-    period: (s.period as StartSearch["period"]) ?? "annual",
+    tier: s.tier === "verified" || s.tier === "pro" ? s.tier : undefined,
+    period: s.tier === "pro" ? "monthly" : "annual",
   }),
   head: () => ({
     meta: [{ title: "Choose your plan — REPS" }],
@@ -27,7 +27,6 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/s
 });
 
 function StartPage() {
-  const search = Route.useSearch();
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCheckoutSession);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
