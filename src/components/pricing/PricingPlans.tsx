@@ -60,7 +60,9 @@ export function PricingPlans() {
           {(["monthly", "annual"] as Billing[]).map((period) => (
             <ToggleGroupItem
               key={period}
+              type="button"
               value={period}
+              onClick={() => setBilling(period)}
               aria-label={period === "monthly" ? "Monthly billing" : "Annual billing"}
               className="group flex h-9 items-center gap-2 rounded-full bg-transparent px-5 text-[13px] font-semibold text-white/65 hover:bg-transparent hover:text-white data-[state=on]:bg-reps-orange data-[state=on]:text-white"
             >
