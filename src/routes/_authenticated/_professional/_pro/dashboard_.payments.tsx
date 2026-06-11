@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { ManageBillingButton } from "@/components/billing/ManageBillingButton";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/payments")({
   head: () => ({
