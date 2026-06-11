@@ -193,7 +193,7 @@ function LoginPage() {
               </p>
             </div>
 
-            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email" className="text-white/75">
                   Email
@@ -203,11 +203,30 @@ function LoginPage() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailTouched) setEmailError(validateEmail(e.target.value));
+                    if (error) setError(null);
+                  }}
+                  onBlur={() => {
+                    setEmailTouched(true);
+                    setEmailError(validateEmail(email));
+                  }}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                  aria-invalid={emailError ? true : undefined}
+                  aria-describedby={emailError ? "email-error" : undefined}
+                  className={`h-11 rounded-[12px] bg-white/[0.04] text-white placeholder:text-white/30 ${
+                    emailError
+                      ? "border-red-400/60 focus-visible:ring-red-400/40"
+                      : "border-white/15"
+                  }`}
                 />
+                {emailError && (
+                  <p id="email-error" className="text-[12px] text-red-300">
+                    {emailError}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -227,18 +246,60 @@ function LoginPage() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordTouched) setPasswordError(validatePassword(e.target.value));
+                    if (error) setError(null);
+                  }}
+                  onBlur={() => {
+                    setPasswordTouched(true);
+                    setPasswordError(validatePassword(password));
+                  }}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                  aria-invalid={passwordError ? true : undefined}
+                  aria-describedby={passwordError ? "password-error" : undefined}
+                  className={`h-11 rounded-[12px] bg-white/[0.04] text-white placeholder:text-white/30 ${
+                    passwordError
+                      ? "border-red-400/60 focus-visible:ring-red-400/40"
+                      : "border-white/15"
+                  }`}
                 />
+                {passwordError && (
+                  <p id="password-error" className="text-[12px] text-red-300">
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               {error && (
-                <Alert variant="destructive" className="border-red-400/30 bg-red-500/10 text-red-200">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert
+                  role="alert"
+                  variant="destructive"
+                  className="border-red-400/30 bg-red-500/10 text-red-200"
+                >
+                  <AlertDescription>
+                    {error}{" "}
+                    {/that email and password/i.test(error) && (
+                      <Link
+                        to="/forgot-password"
+                        className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
+                      >
+                        Reset password
+                      </Link>
+                    )}
+                    {/no account found/i.test(error) && (
+                      <Link
+                        to="/signup"
+                        className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
+                      >
+                        Create account
+                      </Link>
+                    )}
+                  </AlertDescription>
                 </Alert>
               )}
+
 
               <Button
                 type="submit"
