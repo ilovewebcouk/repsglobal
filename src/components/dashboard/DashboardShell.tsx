@@ -342,12 +342,14 @@ function Sidebar({
 /* ------------------------------------------------------------------------- */
 
 function TopBar({
+  role,
   title,
   subtitle,
   actions,
   mobileNav,
   searchPlaceholder,
 }: {
+  role: Role;
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
