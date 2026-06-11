@@ -127,6 +127,11 @@ function StartPage() {
                     {tier.priceLabel}
                   </p>
                   <p className="mt-5 text-[14px] text-white/70">{tier.blurb}</p>
+                  {key === "pro" && (
+                    <p className="mt-3 text-[12px] text-white/55">
+                      30-day free trial · card required · £0 today, then £59/month unless cancelled.
+                    </p>
+                  )}
 
                   <Button
                     onClick={() => beginCheckout(key, period)}
