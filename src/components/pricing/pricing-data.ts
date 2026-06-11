@@ -104,7 +104,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
     title: "Billing",
     rows: [
       { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year", studio: "£149/month or £1,490/year · waitlist" },
-      { label: "30-day free trial", verified: false, pro: "Card required", studio: false },
+      { label: "30-day free trial", verified: false, pro: true, studio: false },
       { label: "Charge today", verified: "£99", pro: "£0", studio: "—" },
     ],
   },
@@ -200,7 +200,7 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is there a free trial?",
-    a: "Yes — Pro includes a 30-day free trial with a card required at signup. You pay £0 today, then £59/month after 30 days unless you cancel during the trial. Verified does not include a trial, and Studio is waitlist-only.",
+    a: "Yes — Pro includes a 30-day free trial. You pay £0 today and you can cancel anytime before day 30 to avoid the first charge. Verified does not include a trial, and Studio is waitlist-only.",
   },
   {
     q: "What's the difference between Verified and Pro?",
@@ -220,7 +220,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are available?",
-    a: "Verified is billed annually. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the card-required 30-day free trial. Studio is planned at £149 monthly or £1,490 annually and remains waitlist-only.",
+    a: "Verified is billed annually at £99. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the 30-day free trial. Studio is planned at £149 monthly or £1,490 annually and remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { ManageBillingButton } from "@/components/billing/ManageBillingButton";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/payments")({
   head: () => ({
@@ -121,6 +122,10 @@ function PaymentsPage() {
       subtitle="Revenue, payouts, invoices and subscriptions across your REPS business."
       actions={
         <>
+          <ManageBillingButton
+            label="Manage subscription"
+            className="h-10 rounded-[10px] border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none hover:text-white"
+          />
           <button type="button" className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none hover:text-white">
             <Download className="h-4 w-4" />
             Export

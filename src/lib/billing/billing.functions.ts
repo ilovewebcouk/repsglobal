@@ -204,17 +204,9 @@ export const syncMySubscription = createServerFn({ method: "POST" })
       updated_at: new Date().toISOString(),
     };
 
-    const { data: existing } = await supabaseAdmin
+    await supabaseAdmin
       .from("subscriptions")
-      .select("id")
-      .eq("stripe_subscription_id", sub.id)
-      .maybeSingle();
-
-    if (existing) {
-      await supabaseAdmin.from("subscriptions").update(row as never).eq("id", existing.id);
-    } else {
-      await supabaseAdmin.from("subscriptions").insert(row as never);
-    }
+      .upsert(row as never, { onConflict: "user_id" });
 
     return { synced: true, tier: row.tier, status: row.status };
   });
