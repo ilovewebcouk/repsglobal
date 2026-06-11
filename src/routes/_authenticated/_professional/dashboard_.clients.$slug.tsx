@@ -372,7 +372,7 @@ function ProgressChart() {
                 cy={y}
                 r={i === pts.length - 1 ? 4 : 2.5}
                 fill="var(--reps-orange)"
-                stroke="#0b0b10"
+                stroke="var(--reps-ink)"
                 strokeWidth={i === pts.length - 1 ? 2 : 0}
               />
             );
