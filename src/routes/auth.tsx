@@ -117,21 +117,20 @@ function LoginPage() {
     }
   };
 
-  const handleOAuth = async (provider: "google" | "apple") => {
+  const handleApple = async () => {
     setError(null);
-    const setBusy = provider === "google" ? setGoogleLoading : setAppleLoading;
-    setBusy(true);
+    setAppleLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
+      const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
         setError(
           friendlyAuthError(
-            result.error.message ?? `Couldn't sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`,
+            result.error.message ?? "Couldn't sign in with Apple. Please try again.",
           ),
         );
-        setBusy(false);
+        setAppleLoading(false);
         return;
       }
       if (result.redirected) return;
@@ -141,9 +140,9 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      const raw = err instanceof Error ? err.message : `${provider} sign-in failed`;
+      const raw = err instanceof Error ? err.message : "Apple sign-in failed";
       setError(friendlyAuthError(raw));
-      setBusy(false);
+      setAppleLoading(false);
     }
   };
 
