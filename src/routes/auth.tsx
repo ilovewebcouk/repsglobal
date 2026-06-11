@@ -1,9 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Apple, Eye, EyeOff, Loader2, Mail } from "lucide-react";
+import { Apple, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
-import { ShopFrontMock } from "@/components/auth/ShopFrontMock";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
@@ -33,10 +36,10 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -59,16 +62,17 @@ function LoginPage() {
     }
   };
 
-  const handleGoogle = async () => {
+  const handleOAuth = async (provider: "google" | "apple") => {
     setError(null);
-    setGoogleLoading(true);
+    const setBusy = provider === "google" ? setGoogleLoading : setAppleLoading;
+    setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
+      const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        setError(result.error.message ?? "Google sign-in failed");
-        setGoogleLoading(false);
+        setError(result.error.message ?? `${provider} sign-in failed`);
+        setBusy(false);
         return;
       }
       if (result.redirected) return;
@@ -78,14 +82,14 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
-      setGoogleLoading(false);
+      setError(err instanceof Error ? err.message : `${provider} sign-in failed`);
+      setBusy(false);
     }
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-reps-ink text-reps-text">
-      {/* Decorative orange glow — chrome, not a hero overlay */}
+      {/* Decorative orange glow — brand chrome */}
       <div
         aria-hidden
         className="pointer-events-none absolute -right-40 -top-40 h-[640px] w-[640px] rounded-full opacity-[0.07]"
@@ -103,64 +107,55 @@ function LoginPage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto grid min-h-screen max-w-[1320px] grid-cols-1 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16 lg:px-10">
-        {/* ============ LEFT: FORM COLUMN ============ */}
-        <div className="relative flex min-h-screen items-center justify-center py-24 lg:py-10">
-          {/* Wordmark — pinned top-left */}
-          <Link
-            to="/"
-            aria-label="REPs — back to home"
-            className="absolute left-0 top-8 inline-flex items-center gap-3 text-white lg:top-10"
-          >
-            <RepsWordmark className="h-6 w-auto" />
-            <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
-              The Register of
-              <br />
-              Exercise Professionals
-            </span>
-          </Link>
+      {/* Wordmark — pinned top-left */}
+      <Link
+        to="/"
+        aria-label="REPs — back to home"
+        className="absolute left-6 top-8 z-10 inline-flex items-center gap-3 text-white lg:left-10 lg:top-10"
+      >
+        <RepsWordmark className="h-6 w-auto" />
+        <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
+          The Register of
+          <br />
+          Exercise Professionals
+        </span>
+      </Link>
 
-          {/* Centred stack */}
-          <div className="w-full max-w-[400px] text-center">
-            <h1 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              Login to your account
-            </h1>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Sign in to manage your profile, clients and bookings — all in one place.
-            </p>
+      {/* Centred card */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-24">
+        <div className="w-full max-w-[420px]">
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-sm">
+            <div className="text-center">
+              <h1 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[36px]">
+                Login to your account
+              </h1>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/65">
+                Welcome back — sign in to continue.
+              </p>
+            </div>
 
-            {/* Email + password */}
-            <form className="mt-7 grid gap-4" onSubmit={handleSubmit}>
-              <div className="text-left">
-                <label
-                  htmlFor="email"
-                  className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
-                >
+            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email" className="text-white/75">
                   Email
-                </label>
-                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
-                  <Mail className="h-4 w-4 text-white/40" />
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
-                  />
-                </div>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                />
               </div>
 
-              <div>
+              <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="password"
-                    className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
-                  >
+                  <Label htmlFor="password" className="text-white/75">
                     Password
-                  </label>
+                  </Label>
                   <Link
                     to="/forgot-password"
                     className="text-[12px] font-semibold text-reps-orange hover:underline"
@@ -168,85 +163,75 @@ function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
-                  <input
-                    id="password"
-                    type={showPw ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    aria-label={showPw ? "Hide password" : "Show password"}
-                    onClick={() => setShowPw((v) => !v)}
-                    className="text-white/40 hover:text-white/80"
-                  >
-                    {showPw ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                />
               </div>
 
               {error && (
-                <div className="rounded-[10px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
-                  {error}
-                </div>
+                <Alert variant="destructive" className="border-red-400/30 bg-red-500/10 text-red-200">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
-              <button
+              <Button
                 type="submit"
                 disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
+                className="h-11 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading && <Loader2 data-icon="inline-start" className="animate-spin" />}
                 {loading ? "Signing in…" : "Sign in"}
-              </button>
+              </Button>
             </form>
 
             {/* Divider */}
-            <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
+            <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
               <span className="h-px flex-1 bg-white/10" />
               Or continue with
               <span className="h-px flex-1 bg-white/10" />
             </div>
 
-            {/* OAuth row — below the email form */}
-            <div className="grid gap-2.5">
-              <button
+            {/* OAuth row */}
+            <div className="flex flex-col gap-2.5">
+              <Button
                 type="button"
-                onClick={handleGoogle}
+                variant="outline"
+                onClick={() => handleOAuth("google")}
                 disabled={googleLoading}
-                className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
               >
                 {googleLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 data-icon="inline-start" className="animate-spin" />
                 ) : (
                   <GoogleGlyph />
                 )}
                 {googleLoading ? "Connecting…" : "Continue with Google"}
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
-                disabled
-                className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/10 bg-white/[0.02] text-[14px] font-semibold text-white/50"
+                variant="outline"
+                onClick={() => handleOAuth("apple")}
+                disabled={appleLoading}
+                className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
               >
-                <Apple className="h-4 w-4" />
-                Continue with Apple
-                <span className="ml-1 rounded-full border border-white/10 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-white/45">
-                  Soon
-                </span>
-              </button>
+                {appleLoading ? (
+                  <Loader2 data-icon="inline-start" className="animate-spin" />
+                ) : (
+                  <Apple data-icon="inline-start" />
+                )}
+                {appleLoading ? "Connecting…" : "Continue with Apple"}
+              </Button>
             </div>
 
-            <p className="mt-6 text-[13px] text-white/55">
+            <p className="mt-6 text-center text-[13px] text-white/55">
               Don&apos;t have an account?{" "}
               <Link
                 to="/signup"
@@ -257,8 +242,7 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* Footer line — pinned bottom-left */}
-          <p className="absolute bottom-8 left-0 text-[12px] text-white/35 lg:bottom-10">
+          <p className="mt-6 text-center text-[12px] text-white/35">
             By signing in you agree to our{" "}
             <Link to="/terms" className="hover:text-white/70">
               Terms
@@ -270,26 +254,6 @@ function LoginPage() {
             .
           </p>
         </div>
-
-        {/* ============ RIGHT: SHOP-FRONT MOCK ============ */}
-        <div className="relative hidden items-center justify-center lg:flex">
-          <div className="w-full max-w-[640px]">
-            <div className="mb-8 max-w-[440px]">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/65">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Live on REPs
-              </div>
-              <h2 className="mt-4 font-display text-[28px] font-bold leading-[1.1] tracking-[-0.01em] text-white lg:text-[30px]">
-                This is what you&apos;re signing in to build.
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-white/70">
-                A real Pro shop-front on REPs — outcomes-led, verified, and built
-                to convert the right clients.
-              </p>
-            </div>
-            <ShopFrontMock />
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -297,7 +261,7 @@ function LoginPage() {
 
 function GoogleGlyph() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
       <path
         fill="#4285F4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"
