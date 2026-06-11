@@ -28,7 +28,7 @@ import proLaura from"@/assets/pro-laura.jpg";
 import proDaniel from"@/assets/pro-daniel.jpg";
 import holoFigure from"@/assets/dashboard-holo-figure.png";
 
-export const Route = createFileRoute("/dashboard")({ head: () => ({ meta: [
+export const Route = createFileRoute("/dashboard-demo")({ head: () => ({ meta: [
       { title:"Dashboard — REPS Professional" },
       { name:"description",
         content:
