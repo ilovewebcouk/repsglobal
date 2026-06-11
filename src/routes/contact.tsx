@@ -288,7 +288,7 @@ function ContactPage() {
               </div>
             </div>
             <a
-              href="/safeguarding"
+              href="/complaints"
               className="inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-[10px] border border-emerald-400/40 bg-emerald-500/15 px-5 text-[13.5px] font-semibold text-emerald-100 hover:bg-emerald-500/25 sm:self-auto"
             >
               <LifeBuoy className="size-4" /> Open safeguarding route
@@ -312,7 +312,7 @@ function ContactPage() {
         eyebrow={null}
         heading="Prefer to browse first?"
         lede="The register and pricing pages answer most questions before you even need to send a message."
-        primary={{ to: "/search", label: "Find a coach" }}
+        primary={{ to: "/find-a-professional", label: "Find a coach" }}
         secondary={{ to: "/pricing", label: "See pricing" }}
       />
 
