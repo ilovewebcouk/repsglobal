@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { syncMySubscription } from "@/lib/billing/billing.functions";
 
 type Search = { session_id?: string };
 
@@ -26,6 +27,9 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard/sy
 
 const POLL_MS = 1500;
 const MAX_ATTEMPTS = 20; // ~30s
+// Trigger an active pull from Stripe on attempts 2 and 6 (~1.5s and ~9s in),
+// so a missed webhook doesn't strand the user on this screen.
+const SYNC_ATTEMPTS = new Set([2, 6]);
 
 function SyncingPage() {
   const navigate = useNavigate();
@@ -56,6 +60,15 @@ function SyncingPage() {
         if (isPaid) {
           navigate({ to: "/dashboard", replace: true });
           return;
+        }
+      }
+
+      // Webhook fallback: actively pull the latest subscription from Stripe.
+      if (SYNC_ATTEMPTS.has(attempts)) {
+        try {
+          await syncMySubscription();
+        } catch {
+          /* non-fatal; next poll will retry */
         }
       }
 
