@@ -844,6 +844,17 @@ function UserMenu({
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator className="my-1 bg-reps-stone" />
+            <DropdownMenuItem asChild className="rounded-[10px] focus:bg-reps-warm-white">
+              <Link to="/admin">
+                <ShieldCheck className="mr-2 h-4 w-4 text-reps-orange" aria-hidden />
+                Admin console
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator className="my-1 bg-reps-stone" />
         <DropdownMenuItem
           onSelect={onSignOut}
@@ -881,12 +892,14 @@ function MobileDrawer({
   active,
   city,
   user,
+  isAdmin,
   onSignOut,
   onNavigate,
 }: {
   active: ActiveState;
   city: string;
-  user: { name: string; email: string } | null;
+  user: SessionUser | null;
+  isAdmin: boolean;
   onSignOut: () => void;
   onNavigate: () => void;
 }) {
