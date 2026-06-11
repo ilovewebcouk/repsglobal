@@ -220,11 +220,11 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Yes. Founding member pricing on Pro is locked for the lifetime of your subscription — but it's only available before public launch and to a limited number of professionals.",
   },
   {
-    q: "Can I switch between monthly and annual?",
+    q: "Which billing periods are available?",
     a: "The live offers are Verified billed annually and Pro billed monthly. Additional billing periods are not currently available.",
   },
   {
     q: "Can I cancel anytime?",
-    a: "Yes. Plans are monthly or annual and you can downgrade or cancel from your dashboard at any time.",
+    a: "Yes. You can manage or cancel an active membership from your dashboard. Pro trial members can cancel before day 30 to prevent the first charge.",
   },
 ];
