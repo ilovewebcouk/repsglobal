@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { User, Target, Dumbbell, Apple, Bell, Ruler } from "lucide-react";
 import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 
 export const Route = createFileRoute("/portal_/profile")({
+  ssr: false,
+  beforeLoad: requireRole(['client', 'professional']),
   head: () => ({
     meta: [
       { title: "Profile — REPS Client Portal" },

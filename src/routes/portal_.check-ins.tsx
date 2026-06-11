@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { Scale, Camera, CheckCircle2, LineChart } from "lucide-react";
 import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 
 export const Route = createFileRoute("/portal_/check-ins")({
+  ssr: false,
+  beforeLoad: requireRole(['client', 'professional']),
   head: () => ({
     meta: [
       { title: "Check-ins — REPS Client Portal" },

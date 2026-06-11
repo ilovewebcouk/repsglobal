@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -11,6 +12,8 @@ import {
 import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
 
 export const Route = createFileRoute("/admin_/memberships")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   component: AdminMembershipsPage,
 });
 

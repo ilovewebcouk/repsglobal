@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 
 export const Route = createFileRoute("/admin_/settings")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   head: () => ({
     meta: [
       { title: "Platform settings — REPS Admin" },

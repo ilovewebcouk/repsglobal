@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import {
   AlertCircle,
   ArrowRight,
@@ -13,6 +14,8 @@ import {
 import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
 
 export const Route = createFileRoute("/admin_/migration")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   component: AdminMigrationPage,
 });
 

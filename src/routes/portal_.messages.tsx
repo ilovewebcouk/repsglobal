@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { Paperclip, Send, Search } from "lucide-react";
 import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 
 export const Route = createFileRoute("/portal_/messages")({
+  ssr: false,
+  beforeLoad: requireRole(['client', 'professional']),
   head: () => ({
     meta: [
       { title: "Messages — REPS Client Portal" },
