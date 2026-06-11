@@ -108,10 +108,49 @@ export const Route = createFileRoute("/signup")({
     };
   },
 
-  beforeLoad: ({ search }) => {
+  beforeLoad: async ({ search }) => {
     // REPS is paid-only — a bare /signup with no plan choice goes back to pricing.
     if (!search.tier) {
       throw redirect({ to: "/pricing" });
+    }
+
+    // Orphaned-account recovery: if the user is already signed in we skip the
+    // form entirely. If they already paid, send them to the dashboard. If not,
+    // kick checkout immediately — the only reason they're here is to pay.
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return;
+
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("tier,status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const LIVE = ["active", "trialing", "past_due", "unpaid"];
+    const PAID = ["verified", "pro", "studio"];
+    const isPaid =
+      !!sub &&
+      PAID.includes(sub.tier as string) &&
+      LIVE.includes(sub.status as string);
+
+    if (isPaid) {
+      throw redirect({ to: "/dashboard" });
+    }
+
+    if (typeof window !== "undefined" && search.tier && search.period) {
+      try {
+        const result = await createCheckoutSession({
+          data: { tier: search.tier, period: search.period },
+        });
+        if (result?.url) {
+          window.location.href = result.url;
+          // Block route render while the browser navigates to Stripe
+          await new Promise(() => {});
+        }
+      } catch {
+        // Fall through and render the page (which will surface the error path)
+      }
     }
   },
 
