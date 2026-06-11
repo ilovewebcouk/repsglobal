@@ -1,14 +1,17 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
   Circle,
   Clock,
+  CreditCard,
   ExternalLink,
   FileText,
   Loader2,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   UserPen,
@@ -20,8 +23,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
+import {
+  createPortalSession,
+  syncMySubscription,
+} from "@/lib/billing/billing.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  validateSearch: (raw: Record<string, unknown>) => ({
+    billing: typeof raw.billing === "string" ? raw.billing : undefined,
+  }),
   head: () => ({ meta: [{ title: "Dashboard — REPS" }] }),
   component: DashboardPage,
 });
@@ -38,10 +48,40 @@ type Step = {
 
 function DashboardPage() {
   const fetchStatus = useServerFn(getDashboardStatus);
+  const openPortal = useServerFn(createPortalSession);
+  const syncSub = useServerFn(syncMySubscription);
+  const queryClient = useQueryClient();
+  const { billing } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
   const status = useQuery({
     queryKey: ["dashboard-status"],
     queryFn: () => fetchStatus(),
   });
+
+  const portalMutation = useMutation({
+    mutationFn: () => openPortal({ data: undefined }),
+    onSuccess: (res) => {
+      if (res?.url) window.location.href = res.url;
+    },
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => syncSub({ data: undefined }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-status"] });
+    },
+  });
+
+  // Recovery path: if the user just returned from Stripe Checkout and the
+  // webhook hasn't landed yet, sync the subscription from Stripe directly.
+  React.useEffect(() => {
+    if (billing === "success") {
+      syncMutation.mutate();
+      navigate({ search: { billing: undefined }, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billing]);
 
   const data = status.data;
   const subTier = data?.subscription?.tier ?? "free";
@@ -52,6 +92,14 @@ function DashboardPage() {
   const hasSubmission = !!data?.lastSubmission;
   const profileComplete = data?.profileComplete ?? false;
   const isPublished = data?.profile?.is_published ?? false;
+  const sub = data?.subscription;
+  const renewsAt = sub?.current_period_end
+    ? new Date(sub.current_period_end).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
   const steps: Step[] = [
     {
@@ -224,6 +272,59 @@ function DashboardPage() {
             })}
           </ol>
         )}
+
+        {hasPaidTier && (
+          <div className="mt-8 rounded-[18px] border border-reps-border bg-reps-panel/15 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/40">
+                  <CreditCard className="size-3.5" /> Billing
+                </div>
+                <h3 className="mt-1 font-display text-[18px] text-white">
+                  {TIERS[subTier as "verified" | "pro"]?.label ?? subTier}
+                  {sub?.status && sub.status !== "active" && (
+                    <span className="ml-2 align-middle text-[12px] uppercase tracking-wider text-white/55">
+                      · {sub.status}
+                    </span>
+                  )}
+                </h3>
+                <p className="mt-1 text-[13px] text-white/55">
+                  {renewsAt
+                    ? `Renews ${renewsAt}`
+                    : "No renewal date on file yet."}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => syncMutation.mutate()}
+                  disabled={syncMutation.isPending}
+                >
+                  {syncMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  Refresh status
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                >
+                  {portalMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <ExternalLink className="size-3.5" />
+                  )}
+                  Manage billing
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {data?.profile?.slug && isPublished && (
           <div className="mt-8 flex items-center justify-between rounded-[18px] border border-emerald-400/20 bg-emerald-500/5 px-5 py-4">
