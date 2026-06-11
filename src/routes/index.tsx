@@ -489,7 +489,7 @@ function HomeV2() {
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
             <div className="relative w-full md:absolute md:inset-0">
-              <img src={ctaTrainers} alt="" className="aspect-[5/4] w-full object-cover object-[100%_center] md:aspect-auto md:h-full md:object-[100%_top] lg:object-center" loading="lazy" />
+              <img src={ctaTrainers} alt="" className="aspect-[5/4] w-full object-cover object-[100%_20%] md:aspect-auto md:h-full md:object-[100%_15%] lg:object-[100%_20%]" loading="lazy" />
               <div
                 className="absolute inset-0 hidden md:block"
                 style={{ backgroundImage: "linear-gradient(to bottom, transparent 0%, transparent 18%, rgba(11,13,16,0.38) 42%, rgba(11,13,16,0.72) 65%, #0B0D10 88%)" }}
