@@ -1,99 +1,68 @@
+# /contact QA Pass — pre-lock checklist
 
-# /contact — full rebuild
+A focused QA sweep so we can confidently lock `/contact` into memory. Two parts: **visual sweep at three breakpoints**, then a **code/compliance audit**.
 
-Replace the current generic SaaS contact page (fake offices, hand-rolled inputs, 3-icon email grid) with a single-purpose, audience-aware page that does one job extremely well: get the right message into the right inbox with zero anxiety about whether anyone's listening.
+## 1. Visual sweep (browser, full-page screenshots)
 
-Phase 1 = static only. No backend submit yet (form posts a fake success state via local React state). No new routes. shadcn-only primitives.
+For each breakpoint, capture full-page screenshot + zoom into hot spots and check the list below.
 
-## Page structure (top → bottom)
+**Breakpoints:**
+- Mobile — 390×844
+- Tablet — 820×1180
+- Desktop — 1440×900
 
-1. **Hero**
-   - Left (copy): `MarketingHeroEyebrow` ("Contact") → H1 **"Talk to a human."** → 16px lede: "Most messages get a reply the same working day. Pick what fits — we'll route it to the person who actually owns it."
-   - Right: **"Right now" status card** — soft panel, emerald status dot, three rows:
-     - *Replying to messages from earlier today*
-     - *Typical reply time: ~4 hours* (Mon–Fri, 9–6 GMT)
-     - *Currently online: REPs support team*
-     Static copy in Phase 1, designed so it can later be wired to real data.
-   - `HeroOverlay copySide="left"`. No hero photograph.
-   - Locked vertical rhythm: `pt-24 pb-20 lg:pt-28 lg:pb-24`.
+**Per-section checks:**
 
-2. **Audience switcher + smart form** (`bg-reps-panel/15`, `py-20 lg:py-28`)
-   Single shadcn `Tabs` component, full-width segmented control, three tabs:
-   - **I'm looking for a coach** (default)
-   - **I'm a professional**
-   - **Press, partnerships or enterprise**
+| Section | What I'm looking for |
+|---|---|
+| Hero | Status card stacks under copy on mobile/tablet, sits right on desktop. H1 doesn't orphan "register." awkwardly. "Looking for a coach?" deflection link is visible but quiet. Trust chips wrap cleanly. |
+| Form tabs | 2-tab grid is full width on mobile (stacked), 2-col on sm+. Active state readable. No overflow. |
+| Form fields | Pro tab: Profession + Mobile row → stack on mobile. ToggleGroup wraps to 2 rows on mobile without clipping. Conditional "REPs profile URL" field appears only when "Already verified" is picked and doesn't break the grid. Partner tab: Organisation/type, Website/Phone rows stack on mobile. Reason select full width. |
+| Reply ETA chip + Send button | Bottom row reverses on mobile (button on top, chip under) per `flex-col-reverse sm:flex-row` — confirm chip + button both legible. |
+| Quick answers (3 cards) | Single column on mobile, 3-col on md+. Card heights even. Arrow nudges on hover. The 3rd card uses `<a href>` (not `<Link>`) for `/for-training-providers` — confirm it still renders identically. |
+| Direct channels list | 3-col grid `[200px_1fr_auto]` collapses to stacked rows on mobile. Email link wraps cleanly. |
+| Safeguarding Alert | Icon + copy stack vertically on mobile, button full-width-ish; horizontal on sm+. Emerald tokens correct. |
+| FAQ | Accordion behaves, no layout shift on expand. |
+| FinalCta | Primary/secondary buttons stack on mobile. |
 
-   The form re-uses one shared `FieldGroup` layout but the visible fields swap per tab:
+## 2. Code / compliance audit (read-only)
 
-   | Tab | Fields |
-   |---|---|
-   | Client | Full name · Email · City (Input) · What you're looking for (Select: PT / Online coaching / Nutrition / Group / Yoga / Other) · Message (Textarea) |
-   | Professional | Full name · Email · Current tier (ToggleGroup: None yet / Verified / Pro / Studio) · REPs profile URL *(optional Input)* · Reason (Select: Verification · Profile / shop-front · Payouts · Bug · Other) · Message |
-   | Press | Name · Email · Outlet / company · Deadline (Input, optional) · Reason (Select: Press enquiry · Partnership · Enterprise / multi-coach · Investor) · Brief (Textarea) |
+- **Radii** — confirm only the locked scale (10/12/16/18/22/24, plus pills). Spot-check `rounded-[N]` usage; no `rounded-xl/2xl/3xl`, no 14/20/28/32.
+- **Colors** — no hardcoded hex in `contact.tsx`, `ContactForm.tsx`, `StatusCard.tsx`. Emerald used only for status (safeguarding alert + status dot + submitted success Alert).
+- **Marketing primitives** — `MarketingHeroEyebrow`, `SectionHeader`, `MarketingFaq`, `FinalCta` all in use (✓ already).
+- **Vertical rhythm** — every section uses `py-20 lg:py-28` (or hero `pt-24 pb-20 lg:pt-28 lg:pb-24`). No `py-24 lg:py-28`.
+- **Dividers** — confirm no `border-y border-reps-border` between sections; alternating `bg-reps-panel/15` ↔ `/30` only. *Note: the channels list uses `divide-y divide-reps-border` internally for row separation — that's intra-card, not section divider, so it's allowed.*
+- **No "UK" qualifier** anywhere in copy. (Emails are `@repsuk.org` — that's the domain, not body copy, allowed.)
+- **Banned phrases** — no "booking fee", "commission", "flat plan", "CIMSPA". ✓ scanned mentally but will rg.
+- **Tier ladder** — Verified £99/yr referenced ✓, Pro/Studio mentioned, no retired free/£29 tier.
+- **shadcn skill** — Tabs/Select/ToggleGroup/Textarea/Input/Label/Alert all in use. Honeypot present. *Possible upgrade noted, not blocking lock: migrate form layout from custom `FieldShell` to shadcn `FieldGroup`/`Field` primitives per skill rules — flag for follow-up only if user wants strict compliance now.*
+- **Run the bundled audit script** `knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0.
 
-   Below the form, a small live "Estimated reply: ~Xh" chip that updates from the Reason value (e.g. *Verification → usually <2 hours*).
+## 3. Likely fixes I'm budgeting for (won't redesign, just polish)
 
-   Submit = `Button` with primary orange; on click, swap to an inline `Alert` success state ("Message sent — we'll reply to {email} shortly.") — no real network call yet.
+- ToggleGroup row on the Pro tab may wrap awkwardly at 390px — may need `text-[12.5px]` or shorter label on the longest item ("Already verified, need help").
+- Status card on tablet portrait may sit too tall next to the hero copy — check stacking trigger.
+- Quick-answers cards may have uneven heights if copy lengths differ — flex-grow on the body paragraph may be needed.
+- "Looking for a coach?" link contrast at `text-white/55` — verify it's discoverable without competing with primary CTAs.
 
-   Honeypot field (hidden) included so the future wire-up is trivial.
+## 4. After QA passes
 
-3. **"Before you write" deflection grid** (`bg-reps-ink`)
-   `SectionHeader` eyebrow "Quick answers" / H2 "Most people are asking…".
-   3-up grid of the *actual* top reasons, each a card linking to the real answer:
-   - "How do I get verified?" → `/get-verified`
-   - "How do I find a coach in my city?" → `/search`
-   - "Is this person really REPs-registered?" → `/search`
-   Cards use 16px radius, no shadow, hover lift via border colour only.
+Save a `mem://design/locked-contact` memory describing:
+- B2B-only purpose (no Client tab, no public lookup form)
+- 2 tabs: Professional (default) + Training provider/partner
+- Section order, status card content, 3 emails (`pros@`, `partners@`, `press@repsuk.org`)
+- Radius map, locked vertical rhythm, no dividers
+- The `/for-training-providers` route still being a stub `<a href>` (Phase 1 limitation)
 
-4. **Direct channels** (`bg-reps-panel/30`)
-   `SectionHeader` "Prefer email?".
-   Quiet 3-row list (not the 3-icon grid). Each row: role label · email · one-line scope.
-   - `support@repsuk.org` — Client support · finding a pro, bookings, accounts
-   - `pros@repsuk.org` — Professional support · verification, payouts, profile
-   - `press@repsuk.org` — Press, partnerships & enterprise
-   Footnote line: **"REPs is a remote-first global team."** No phone numbers. No addresses.
+Then update `mem://index.md` Core to add `/contact` to the locked-pages list.
 
-5. **Safeguarding callout** (`bg-reps-ink`)
-   shadcn `Alert` (not custom div), emerald accent allowed here as status semantic.
-   "Safeguarding concern about a coach or client? Use the dedicated route — it goes straight to our safeguarding lead." → button to `/safeguarding` (route may not exist yet; link is fine — TanStack typecheck note below).
+## Out of scope for this pass
 
-6. **FAQ** (`bg-reps-panel/15`)
-   `MarketingFaq`, 5 questions, audience-neutral:
-   - How quickly will I hear back?
-   - Can I phone REPs?
-   - I'm a coach — where do I report a profile issue?
-   - I'm a client — how do I report a coach?
-   - Where are you based?
+- Real form submit / backend
+- Building `/for-training-providers` and `/safeguarding` route bodies
+- Live status data wiring
+- Migrating form to shadcn `FieldGroup`/`Field` (noted as follow-up)
 
-7. **FinalCta** — secondary in tone: heading "Prefer to browse first?" · primary button → `/search` · secondary → `/pricing`.
+---
 
-## Files
-
-**Edit**
-- `src/routes/contact.tsx` — full rebuild. Remove `Field`/`Select` helpers, all OFFICES/CHANNELS arrays, fake addresses and phones. Replace with the structure above using shadcn `Tabs`, `FieldGroup`, `Field`, `Input`, `Select`, `Textarea`, `ToggleGroup`, `Alert`, `Button`, `Badge`, plus shared marketing primitives (`MarketingHeroEyebrow`, `SectionHeader`, `MarketingFaq`, `FinalCta`, `HeroOverlay`).
-
-**New**
-- `src/components/contact/StatusCard.tsx` — the "Right now" hero status card (panel, emerald dot, three rows).
-- `src/components/contact/ContactForm.tsx` — controlled `Tabs` + per-tab field set + inline success Alert.
-
-No other files change. No new routes. No new images.
-
-## Technical notes
-
-- shadcn primitives only — no hand-rolled `<input>`/`<select>` markup. Use `FieldGroup` + `Field` + `FieldLabel`. ToggleGroup for the tier picker.
-- Radii per locked system: button 10, input 12, std card 16, status / form panel 22, hero 24. No `rounded-xl/2xl/3xl`.
-- Tokens only — `bg-reps-panel`, `border-reps-border`, `text-reps-orange`, etc. No raw hex.
-- Section rhythm `py-20 lg:py-28`; hero `pt-24 pb-20 lg:pt-28 lg:pb-24`. No hairline dividers between sections.
-- Emerald used only for the safeguarding `Alert` and the status-card dot (status semantics, per `mem://design/status-colors`).
-- No "UK"/"United Kingdom" anywhere. "Mon–Fri, 9–6 GMT" is the only time-zone reference and is allowed (it's a working window, not a country claim).
-- Safeguarding link: if `/safeguarding` route doesn't exist yet, render as an `<a href>` (not `<Link to>`) to avoid TanStack type errors; tracked as a follow-up to create the route.
-- Honeypot input is `hidden` + `tabIndex={-1}` + `autoComplete="off"`.
-- Page is indexable (no `noindex`). Update `head()` description to the new positioning.
-
-## Out of scope (Phase 1)
-
-- Real form submit / email infrastructure / Resend wiring.
-- Live status data feeding the "Right now" card.
-- Live chat widget.
-- `/safeguarding` route content (link only).
-- Any office address / phone number.
+**Deliverable:** screenshots at 3 breakpoints, audit script result, list of any fixes applied, then save the lock memory.
