@@ -9,9 +9,14 @@ const CORS = {
   "Access-Control-Allow-Headers": "stripe-signature, content-type",
 } as const;
 
-
-
-async function logEvent(event: Stripe.Event, opts: { userId?: string | null; processingError?: string | null }) {
+/**
+ * Insert a payment_events row immediately after signature verification.
+ * Returns the inserted row id, or null if this event id has already been
+ * recorded (UNIQUE constraint hit). The "insert first, process second" shape
+ * closes the race window two concurrent webhook deliveries would otherwise
+ * have if we selected first and inserted last.
+ */
+async function reserveEventRow(event: Stripe.Event): Promise<string | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const obj = event.data.object as unknown as Record<string, unknown>;
   const customerId = typeof obj.customer === "string" ? (obj.customer as string) : null;
@@ -22,17 +27,41 @@ async function logEvent(event: Stripe.Event, opts: { userId?: string | null; pro
     subscriptionId = obj.id as string;
   }
 
-  // payment_events has insert blocked from authenticated; we use admin client which bypasses RLS.
-  await supabaseAdmin.from("payment_events").insert({
-    stripe_event_id: event.id,
-    event_type: event.type,
-    payload: event as unknown as object,
-    stripe_customer_id: customerId,
-    stripe_subscription_id: subscriptionId,
-    user_id: opts.userId ?? null,
-    processed_at: opts.processingError ? null : new Date().toISOString(),
-    processing_error: opts.processingError ?? null,
-  } as never);
+  const { data, error } = await supabaseAdmin
+    .from("payment_events")
+    .insert({
+      stripe_event_id: event.id,
+      event_type: event.type,
+      payload: event as unknown as object,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      processed_at: null,
+      processing_error: null,
+    } as never)
+    .select("id")
+    .single();
+
+  if (error) {
+    // 23505 = unique_violation on stripe_event_id → duplicate delivery.
+    if ((error as { code?: string }).code === "23505") return null;
+    throw error;
+  }
+  return (data as { id: string }).id;
+}
+
+async function finalizeEventRow(
+  rowId: string,
+  opts: { userId: string | null; processingError: string | null },
+): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("payment_events")
+    .update({
+      user_id: opts.userId,
+      processed_at: opts.processingError ? null : new Date().toISOString(),
+      processing_error: opts.processingError,
+    } as never)
+    .eq("id", rowId);
 }
 
 async function resolveUserId(opts: {
@@ -92,6 +121,22 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
   // If subscription is canceled/incomplete_expired etc, drop the user back to free tier.
   const isLiveStatus = ["active", "trialing", "past_due", "unpaid"].includes(sub.status);
 
+  // Resubscribe cleanup: if the user has prior rows for *different* subscription
+  // ids, mark them superseded so getMySubscription doesn't have to rely on
+  // updated_at ordering and we don't accumulate stale "canceled" rows.
+  await supabaseAdmin
+    .from("subscriptions")
+    .update({
+      status: "superseded",
+      tier: "free",
+      billing_period: null,
+      cancel_at_period_end: false,
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq("user_id", userId)
+    .neq("stripe_subscription_id", sub.id)
+    .in("status", ["active", "trialing", "past_due", "unpaid", "canceled", "incomplete", "incomplete_expired"]);
+
   const row = {
     user_id: userId,
     stripe_customer_id: customerId,
@@ -140,10 +185,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
         }
 
         const rawBody = await request.text();
-        const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
-          import("@/integrations/supabase/client.server"),
-          import("@/lib/billing/stripe.server"),
-        ]);
+        const { getStripe } = await import("@/lib/billing/stripe.server");
         const stripe = getStripe();
 
         let event: Stripe.Event;
@@ -155,14 +197,18 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
           return new Response(`Webhook Error: ${message}`, { status: 400, headers: CORS });
         }
 
-        // Idempotency: skip if we've already processed this event id successfully.
-        const { data: prior } = await supabaseAdmin
-          .from("payment_events")
-          .select("id, processed_at")
-          .eq("stripe_event_id", event.id)
-          .limit(1)
-          .maybeSingle();
-        if (prior?.processed_at) {
+        // Atomic idempotency lock: insert payment_events row first; the
+        // UNIQUE(stripe_event_id) constraint rejects duplicate deliveries.
+        let rowId: string | null;
+        try {
+          rowId = await reserveEventRow(event);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error("[stripe-webhook] failed to record event:", message);
+          return new Response(`Webhook Error: ${message}`, { status: 500, headers: CORS });
+        }
+
+        if (rowId === null) {
           return new Response(JSON.stringify({ received: true, duplicate: true }), {
             status: 200,
             headers: { ...CORS, "Content-Type": "application/json" },
@@ -202,7 +248,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
               break;
             }
             default:
-              // No-op for unhandled events; still logged.
+              // No-op for unhandled events; the row stays for audit.
               break;
           }
         } catch (err) {
@@ -210,7 +256,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
           console.error(`[stripe-webhook] error handling ${event.type}:`, processingError);
         }
 
-        await logEvent(event, { userId, processingError });
+        await finalizeEventRow(rowId, { userId, processingError });
 
         if (processingError) {
           // 500 makes Stripe retry; signature was valid so this is a processing failure.
