@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ProShell } from "@/components/dashboard/ProShell";
 import {
   KpiRow,
@@ -36,27 +36,19 @@ function DashboardPage() {
     <ProShell
       active="Dashboard"
       title="Welcome back, James 👋"
-      subtitle="Here's what's happening with your business today."
+      subtitle="Visual reference only — all figures are sample data and actions are disabled."
       hasProAccess={true}
+      actions={<Badge variant="outline" className="border-reps-orange-border bg-reps-orange-soft text-reps-orange">Demo</Badge>}
     >
       <div className="flex flex-col gap-4">
-        <KpiRow />
-        <ScheduleAndAi />
-        <PerformanceRow />
-        <RevenueRow />
-        <SpotlightRow />
-        <BottomRow />
+        <KpiRow isLocked />
+        <ScheduleAndAi isLocked />
+        <PerformanceRow isLocked />
+        <RevenueRow isLocked />
+        <SpotlightRow isLocked />
+        <BottomRow isLocked />
       </div>
       <DashboardFooter />
-
-      {/* FAB */}
-      <button
-        type="button"
-        aria-label="Quick add"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange text-white shadow-none transition-colors hover:bg-reps-orange-hover"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
     </ProShell>
   );
 }

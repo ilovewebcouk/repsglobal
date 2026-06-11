@@ -85,7 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { icon: Users, label: "Clients", to: "/dashboard/clients" },
       { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
       { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
-      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages", badge: "6" },
+      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages" },
     ],
   },
   {
