@@ -923,19 +923,33 @@ function MobileDrawer({
       {user ? (
         <div className="px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[999px] bg-reps-orange text-[13px] font-semibold text-white">
-              {user.name
-                .split(" ")
-                .map((p) => p[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase()}
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[999px] bg-reps-orange text-[13px] font-semibold text-white">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                user.name
+                  .split(" ")
+                  .map((p) => p[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase()
+              )}
             </span>
             <div>
               <div className="text-[14px] font-semibold text-white">{user.name}</div>
               <div className="text-[12px] text-white/60">{user.email}</div>
             </div>
           </div>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={onNavigate}
+              className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-white/25 px-3 text-[13px] font-medium text-white transition-colors hover:bg-white/10"
+            >
+              <ShieldCheck className="h-4 w-4 text-reps-orange" aria-hidden />
+              Admin console
+            </Link>
+          )}
         </div>
       ) : (
         <div className="px-5 py-4">
