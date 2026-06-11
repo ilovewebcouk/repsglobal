@@ -45,7 +45,10 @@ const csvRowSchema = z.object({
 // Helpers — assert caller has an active Pro/Studio entitlement
 // ============================================================================
 async function assertProfessional(
-  supabase: { from: (t: string) => { select: (s: string) => { eq: (k: string, v: string) => Promise<{ data: { role: string }[] | null }> } } },
+  // The authenticated client is injected by middleware and its generated
+  // table types are preserved at each call site.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   userId: string,
 ) {
   const { data: roles } = await supabase
