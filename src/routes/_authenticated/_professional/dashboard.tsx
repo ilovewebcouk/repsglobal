@@ -28,10 +28,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
-import {
-  createPortalSession,
-  syncMySubscription,
-} from "@/lib/billing/billing.functions";
+import { syncMySubscription } from "@/lib/billing/billing.functions";
 
 import {
   KpiRow,
@@ -76,7 +73,6 @@ type Step = {
 
 function DashboardPage() {
   const fetchStatus = useServerFn(getDashboardStatus);
-  const openPortal = useServerFn(createPortalSession);
   const syncSub = useServerFn(syncMySubscription);
   const queryClient = useQueryClient();
   const { billing } = Route.useSearch();
@@ -85,13 +81,6 @@ function DashboardPage() {
   const status = useQuery({
     queryKey: ["dashboard-status"],
     queryFn: () => fetchStatus(),
-  });
-
-  const portalMutation = useMutation({
-    mutationFn: () => openPortal({ data: undefined }),
-    onSuccess: (res) => {
-      if (res?.url) window.location.href = res.url;
-    },
   });
 
   const syncMutation = useMutation({
