@@ -83,7 +83,6 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
-import { Route as ApiPublicStripeReplayFailedRouteImport } from './routes/api/public/stripe/replay-failed'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardProfileEditRouteImport } from './routes/_authenticated/_professional/dashboard_.profile-edit'
@@ -480,12 +479,6 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicStripeReplayFailedRoute =
-  ApiPublicStripeReplayFailedRouteImport.update({
-    id: '/api/public/stripe/replay-failed',
-    path: '/api/public/stripe/replay-failed',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedProfessionalDashboardVerificationRoute =
   AuthenticatedProfessionalDashboardVerificationRouteImport.update({
     id: '/dashboard_/verification',
@@ -686,7 +679,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/api/public/stripe/replay-failed': typeof ApiPublicStripeReplayFailedRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -780,7 +772,6 @@ export interface FileRoutesByTo {
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/api/public/stripe/replay-failed': typeof ApiPublicStripeReplayFailedRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -879,7 +870,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/api/public/stripe/replay-failed': typeof ApiPublicStripeReplayFailedRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -976,7 +966,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
     | '/dashboard/verification'
-    | '/api/public/stripe/replay-failed'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1070,7 +1059,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
     | '/dashboard/verification'
-    | '/api/public/stripe/replay-failed'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1168,7 +1156,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/profile-edit'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/verification'
-    | '/api/public/stripe/replay-failed'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1257,7 +1244,6 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
-  ApiPublicStripeReplayFailedRoute: typeof ApiPublicStripeReplayFailedRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -1784,13 +1770,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/stripe/replay-failed': {
-      id: '/api/public/stripe/replay-failed'
-      path: '/api/public/stripe/replay-failed'
-      fullPath: '/api/public/stripe/replay-failed'
-      preLoaderRoute: typeof ApiPublicStripeReplayFailedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/_professional/dashboard_/verification': {
       id: '/_authenticated/_professional/dashboard_/verification'
       path: '/dashboard/verification'
@@ -2149,7 +2128,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
-  ApiPublicStripeReplayFailedRoute: ApiPublicStripeReplayFailedRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
