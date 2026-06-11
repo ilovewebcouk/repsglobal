@@ -74,7 +74,7 @@ export type ProShellMember = {
   tierLabel?: string;
 };
 
-const VERIFIED_ROUTES = new Set(["/dashboard", "/dashboard/profile", "/dashboard/settings"]);
+const VERIFIED_ROUTES = new Set(["/dashboard", "/dashboard/profile-edit", "/dashboard/settings"]);
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -104,7 +104,7 @@ const NAV_GROUPS: NavGroup[] = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile-edit" },
     ],
   },
   {
