@@ -48,7 +48,7 @@ const QUICK_ANSWERS = [
     icon: ShieldCheck,
     title: "Get verified",
     body: "£99/year. Submit evidence once — decision in 5 working days.",
-    to: "/get-verified" as const,
+    to: "/for-professionals" as const,
     cta: "See how verification works",
   },
   {
@@ -344,7 +344,7 @@ function ContactPage() {
         eyebrow={null}
         heading="Ready to join the register?"
         lede="Most pros are verified within 5 working days. Pricing is honest, evidence is reviewed by humans, and every feature in your tier is included."
-        primary={{ to: "/get-verified", label: "Get verified — £99/yr" }}
+        primary={{ to: "/for-professionals", label: "Get verified — £99/yr" }}
         secondary={{ to: "/pricing", label: "Compare Pro & Studio" }}
       />
 
