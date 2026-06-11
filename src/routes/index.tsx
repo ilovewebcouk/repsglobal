@@ -173,8 +173,8 @@ function HomeV2() {
                 className="animate-rise-in mt-6 max-w-[520px] text-[18px] font-light leading-relaxed text-white/75"
                 style={{ animationDelay: "220ms" }}
               >
-                25,000+ verified fitness professionals. Real qualifications. Real reviews.
-                <span className="text-white"> Real results — in 30 seconds.</span>
+                25,000+ verified fitness professionals. Real qualifications. Real reviews —&nbsp;
+                <span className="text-white">Book in 30 seconds.</span>
               </p>
 
               <form
