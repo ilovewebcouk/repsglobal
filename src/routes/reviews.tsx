@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowRight,
   BadgeCheck,
+  Building2,
   CalendarCheck,
   ChevronRight,
   Dumbbell,
   Eye,
   Flag,
+  GraduationCap,
   Leaf,
   Lock,
   MapPin,
@@ -21,9 +24,13 @@ import {
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -32,17 +39,17 @@ import proSophie from "@/assets/pro-sophie.jpg";
 export const Route = createFileRoute("/reviews")({
   head: () => ({
     meta: [
-      { title: "Reviews you can actually trust | REPs" },
+      { title: "Reviews you can trust — for every fitness pro | REPs" },
       {
         name: "description",
         content:
-          "Verified-booking reviews of REPs professionals. Critical reviews stay live, pros can respond, and we never sell placement. See how it works.",
+          "Verified-booking reviews of coaches, studios, gyms, nutritionists and training providers on REPs. Only real clients. Pros own the response.",
       },
-      { property: "og:title", content: "Reviews you can actually trust — REPs" },
+      { property: "og:title", content: "Reviews you can trust — REPs" },
       {
         property: "og:description",
         content:
-          "Only clients who actually booked through REPs can leave a review. Critical feedback stays live. No paid placement.",
+          "Every review on REPs is tied to a booking that actually happened. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
       },
       { property: "og:url", content: "/reviews" },
     ],
@@ -69,7 +76,6 @@ type Review = {
   proRole: string;
   proImage: string;
   programme: string;
-  response?: { author: string; body: string; date: string };
 };
 
 const EDITOR_PICKS: Review[] = [
@@ -124,7 +130,6 @@ const EDITOR_PICKS: Review[] = [
 ];
 
 const REVIEWS: Review[] = [
-  ...EDITOR_PICKS,
   {
     id: "r4",
     author: "Priya M.",
@@ -173,61 +178,29 @@ const REVIEWS: Review[] = [
     proImage: proSophie,
     programme: "Postnatal Pilates · 12 weeks",
   },
-];
-
-// Critical reviews that stay live, with public pro response
-const CRITICAL_REVIEWS: Review[] = [
   {
-    id: "c1",
-    author: "Hannah R.",
-    authorCity: "London",
-    rating: 4,
-    date: "1 week ago",
-    title: "Great trainer, scheduling can be tricky",
+    id: "r7",
+    author: "Ben J.",
+    authorCity: "Glasgow",
+    rating: 5,
+    date: "2 weeks ago",
+    title: "First gym I've actually stuck with",
     body:
-      "James is a brilliant coach — sessions are always well-planned and I'm seeing real progress. Sometimes hard to book the slot I want at short notice, which is the only reason this isn't a 5.",
-    helpful: 12,
+      "Coaches know your name, programming is on the wall every week, the kit is properly maintained. Two years in and still showing up.",
+    helpful: 14,
     proName: "James Wilson",
     proSlug: "james-wilson",
     proRole: "Personal Trainer",
     proImage: proJames,
-    programme: "1:1 Strength · 12 sessions",
-    response: {
-      author: "James Wilson",
-      date: "5 days ago",
-      body:
-        "Thanks Hannah — totally fair. I've opened two more evening slots a week from next month and prioritised existing clients on the new times. Appreciate the honest feedback.",
-    },
-  },
-  {
-    id: "c2",
-    author: "Ravi S.",
-    authorCity: "Reading",
-    rating: 3,
-    date: "3 weeks ago",
-    title: "Programme was solid, communication slipped mid-block",
-    body:
-      "Training itself was good and I made real progress. Replies between sessions went quiet for about a fortnight which knocked momentum. We've talked it through and it's improved.",
-    helpful: 9,
-    proName: "Liam Roberts",
-    proSlug: "liam-roberts",
-    proRole: "Strength Coach",
-    proImage: proDaniel,
-    programme: "Strength · 8 weeks",
-    response: {
-      author: "Liam Roberts",
-      date: "2 weeks ago",
-      body:
-        "Fair call, Ravi. I was juggling exam-period clients and dropped the ball on async check-ins. New rule: every client gets a Monday and Thursday message, no exceptions.",
-    },
+    programme: "Open Gym Membership",
   },
 ];
 
 const STATS = [
-  { value: "4.9", label: "Average rating", suffix: "/ 5" },
-  { value: "12,840", label: "Verified reviews", suffix: "" },
-  { value: "94%", label: "5-star reviews", suffix: "" },
-  { value: "2,341", label: "Reviewed pros", suffix: "" },
+  { v: "12,400+", k: "Verified reviews" },
+  { v: "4.9", k: "Average rating" },
+  { v: "96%", k: "Would rebook" },
+  { v: "4hr", k: "Median publish time" },
 ];
 
 const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
@@ -238,17 +211,11 @@ const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
   { stars: 1, pct: 0.5, count: "65" },
 ];
 
-const HONEST_STATS = [
-  { value: "0", label: "Reviews removed for being critical" },
-  { value: "100%", label: "From verified bookings" },
-  { value: "4hr", label: "Median time to publish" },
-];
-
 const METHODOLOGY = [
   {
     icon: CalendarCheck,
     title: "Book through REPs",
-    body: "Reviews are tied to a booking on the platform. No booking, no review.",
+    body: "Reviews are tied to a real booking on the platform. No booking, no review.",
   },
   {
     icon: Dumbbell,
@@ -263,68 +230,85 @@ const METHODOLOGY = [
   {
     icon: Eye,
     title: "Moderated, then published",
-    body: "Checked for legality and personal data — not sentiment. Critical reviews stay live.",
+    body: "Checked for legality, abuse and personal data — not for sentiment.",
   },
 ];
 
 const PROFESSION_TILES = [
   { name: "Personal Training", slug: "personal-trainer", rating: "4.9", count: "6,420", icon: Dumbbell },
   { name: "Strength Coaching", slug: "strength-coach", rating: "4.9", count: "1,890", icon: Dumbbell },
+  { name: "Group Exercise", slug: "group-exercise", rating: "4.8", count: "1,090", icon: Users },
+  { name: "Online Coaching", slug: "online-coach", rating: "4.9", count: "1,440", icon: MessageSquare },
   { name: "Pilates", slug: "pilates-instructor", rating: "4.9", count: "1,340", icon: Sparkles },
   { name: "Yoga", slug: "yoga-teacher", rating: "4.9", count: "1,120", icon: Leaf },
   { name: "Nutrition", slug: "nutritionist", rating: "4.8", count: "980", icon: Leaf },
-  { name: "Group Exercise", slug: "group-exercise", rating: "4.8", count: "1,090", icon: Users },
+  { name: "Gyms & Studios", slug: "personal-trainer", rating: "4.8", count: "740", icon: Building2 },
+  { name: "Training Providers", slug: "personal-trainer", rating: "4.8", count: "320", icon: GraduationCap },
 ];
 
-const FILTERS = ["All reviews", "5 stars", "4★ and under", "Most helpful", "Most recent"];
+const SORT_OPTIONS = ["Most recent", "Highest rated", "Most helpful"];
+
+const WHY_PROS = [
+  {
+    icon: ShieldCheck,
+    title: "Real clients only — no anonymous trolls.",
+    body: "Only people who actually booked you through REPs can review you. No drive-by ratings, no competitors, no off-platform noise.",
+  },
+  {
+    icon: MessageSquare,
+    title: "You own the response.",
+    body: "Every review comes with a public right of reply. Show future clients how you handle feedback — on the record, in your voice.",
+  },
+  {
+    icon: Sparkles,
+    title: "Reviews follow you everywhere on REPs.",
+    body: "Your verified reviews show on your shop-front, profile, enquire pages, and across profession and city search results. One source of truth.",
+  },
+];
 
 const TRUST_MECHANICS = [
   {
     icon: ShieldCheck,
     title: "Verified-booking only",
-    body: "If you didn't book through REPs, you can't review. That's the whole point.",
+    body: "If a client didn't book through REPs, they can't review. That's the whole point.",
   },
   {
     icon: BadgeCheck,
-    title: "Critical reviews stay live",
-    body: "We don't remove a 1, 2 or 3-star review because a pro asks us to. Ever.",
+    title: "Moderated for legality, not sentiment",
+    body: "We screen for defamation, abuse, spam and personal data. Honest opinions — positive or critical — stay live.",
   },
   {
     icon: MessageSquare,
-    title: "Pros can publicly respond",
-    body: "One on-the-record reply per review. No deleting, no editing your way out of feedback.",
+    title: "Pros respond publicly",
+    body: "One on-the-record reply per review. Your response sits underneath the review for every future client to see.",
   },
   {
     icon: Flag,
-    title: "Report a review, transparently",
-    body: "If a review breaks our policy (defamation, personal data, hate), report it. We publish what we remove and why.",
+    title: "Transparent reporting",
+    body: "Anything removed is logged with a reason. We never let a pro quietly bury feedback, and we never let a reviewer break our policy.",
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: "Who can leave a review?",
-    a: "Only clients who booked and completed a session with a REPs professional through the platform. Off-platform clients can't post here — by design.",
+    q: "Who can leave a review on REPs?",
+    a: "Only clients who booked and completed a session, programme or course with a REPs professional through the platform. Off-platform clients can't post here — by design.",
   },
   {
-    q: "Can a pro pay to hide a bad review?",
-    a: "No. There is no commercial path to removing a critical review. We don't sell placement on this page and we don't sell placement in search results either.",
+    q: "Can a business respond to a review?",
+    a: "Yes — every pro, gym, studio and training provider on REPs gets one on-the-record public response per review. The response sits underneath the original review for every future client to see.",
   },
   {
-    q: "Can REPs ever remove a review?",
-    a: "Only if it breaks policy — defamatory claims, personal data, hate speech, or content unrelated to the service. Negative opinions don't qualify. We log every removal with a reason.",
+    q: "How does REPs handle fake reviews?",
+    a: "Reviews are gated to verified bookings, so the most common fake-review vector is closed off entirely. Anything flagged as suspicious (multi-account, off-platform incentives, paid posting) is investigated and removed, with the reason logged.",
   },
   {
-    q: "What about reviews from off-platform clients?",
-    a: "We don't import them. Other directories let pros paste in screenshots and old testimonials; we don't, because there's no way to verify they happened.",
+    q: "Can a review be edited later?",
+    a: "Reviewers can update a review once, up to 12 months after publishing. The previous version stays visible on the same card so the timeline is transparent.",
   },
   {
-    q: "Can I edit my review later?",
-    a: "You can update a review once, up to 12 months after publishing. The previous version stays visible on the same card so the timeline is transparent.",
-  },
-  {
-    q: "What's a \"Phase 1 placeholder\" stat?",
-    a: "The headline numbers on this page are illustrative while we open the platform to early cohorts. They'll be replaced with live, automatically-refreshed numbers once we hit launch volume.",
+    q: "Where do reviews show up across REPs?",
+    a: "On the pro's profile and shop-front, on their enquire page, on profession and city search results, and here on the public reviews hub. One verified source — everywhere.",
   },
 ];
 
@@ -334,50 +318,38 @@ const FAQ_ITEMS = [
 
 function ReviewsPage() {
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
+    <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
       <PublicHeader variant="solid" />
 
-      {/* Breadcrumb */}
-      <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-white/55">
-          <Link to="/" className="hover:text-white">Home</Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-white">Client Reviews</span>
-        </nav>
-      </div>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden">
+      {/* ============ HERO (dark) ============ */}
+      <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(60%_70%_at_20%_0%,rgba(255,122,0,0.10),transparent_70%)]"
         />
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink lg:h-56"
-        />
-        <div className="relative mx-auto grid max-w-[1320px] gap-12 px-6 pt-20 pb-20 lg:grid-cols-[1.2fr_0.8fr] lg:items-start lg:gap-16 lg:px-10 lg:pt-24 lg:pb-24">
-          <div className="max-w-[640px]">
+        <div className="relative mx-auto max-w-[1320px] px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
+          <div className="max-w-[780px]">
             <MarketingHeroEyebrow icon={Star}>Reviews</MarketingHeroEyebrow>
 
             <h1 className="mt-6 font-display text-[40px] font-bold leading-[1.05] text-white sm:text-[52px] lg:text-[64px]">
-              Reviews you can <span className="text-reps-orange">actually trust.</span>
+              Reviews you can trust — <span className="text-reps-orange">for every fitness pro.</span>
             </h1>
 
-            <p className="mt-6 max-w-[560px] text-[16px] leading-relaxed text-white/80">
-              Every review on REPs is tied to a booking that actually happened. We don't hide critical
-              feedback, we don't sell placement, and we never trade reviews for discounts.
+            <p className="mt-6 max-w-[620px] text-[16px] leading-relaxed text-white/80">
+              Every coach, studio, gym, nutritionist and training provider on REPs — reviewed only by
+              people who actually booked them. No anonymous posters. No paid placement. No edits made
+              quietly behind the scenes.
             </p>
 
             <form
-              className="mt-8 grid gap-2 rounded-[18px] border border-reps-border bg-reps-panel/60 p-2 sm:grid-cols-[1fr_auto]"
+              className="mt-8 grid gap-2 rounded-[18px] border border-white/10 bg-white/[0.04] p-2 backdrop-blur sm:grid-cols-[1fr_auto]"
               role="search"
             >
               <label className="flex items-center gap-2 rounded-[12px] bg-reps-ink/60 px-3 py-2.5">
                 <Search className="h-4 w-4 text-white/55" />
                 <input
                   type="text"
-                  placeholder="Search reviews by pro, city or specialism"
+                  placeholder="Search reviews by pro, gym, city or specialism"
                   className="w-full bg-transparent text-[14px] text-white placeholder:text-white/45 focus:outline-none"
                 />
               </label>
@@ -401,127 +373,130 @@ function ReviewsPage() {
               </span>
             </div>
           </div>
-
-          {/* Headline rating panel */}
-          <aside className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-6 backdrop-blur">
-            <div className="flex items-center gap-4">
-              <div className="font-display text-[56px] font-bold leading-none text-white">4.9</div>
-              <div>
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                  ))}
-                </div>
-                <p className="mt-1 text-[12px] text-white/55">From 12,840 verified reviews</p>
-              </div>
-            </div>
-            <ul className="mt-5 space-y-2">
-              {RATING_BREAKDOWN.map((r) => (
-                <li key={r.stars} className="flex items-center gap-2 text-[12px]">
-                  <span className="w-3 text-white/55">{r.stars}</span>
-                  <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                  <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-ink/70">
-                    <span
-                      className="absolute inset-y-0 left-0 rounded-full bg-reps-orange"
-                      style={{ width: `${r.pct}%` }}
-                    />
-                  </span>
-                  <span className="w-12 text-right text-white/55">{r.count}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-6 grid grid-cols-3 gap-2 border-t border-reps-border pt-5">
-              {HONEST_STATS.map((s) => (
-                <div key={s.label} className="rounded-[12px] bg-reps-ink/40 p-3 text-center">
-                  <div className="font-display text-[20px] font-bold text-reps-orange">{s.value}</div>
-                  <div className="mt-1 text-[10.5px] leading-tight text-white/55">{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </aside>
         </div>
       </section>
 
-      {/* Stat strip */}
-      <section className="bg-reps-panel/15">
-        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-14">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {STATS.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-[16px] border border-reps-border bg-reps-panel/40 p-5 text-center"
-              >
-                <div className="font-display text-[28px] font-bold text-white lg:text-[36px]">
-                  {s.value}
-                  <span className="text-[14px] text-white/55"> {s.suffix}</span>
-                </div>
-                <div className="mt-1 text-[11.5px] font-semibold uppercase tracking-wider text-white/55">
-                  {s.label}
+      {/* ============ HEADLINE RATING + STAT STRIP (light) ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-10 lg:px-10 lg:pt-20 lg:pb-14">
+          <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+            {/* Headline rating panel */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-ivory p-7 lg:p-8">
+              <div className="flex items-center gap-5">
+                <div className="font-display text-[64px] font-bold leading-none text-reps-charcoal">4.9</div>
+                <div>
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className="h-4 w-4 fill-reps-orange text-reps-orange" />
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[12.5px] text-reps-muted-light">
+                    From 12,400+ verified reviews across REPs
+                  </p>
                 </div>
               </div>
-            ))}
+              <ul className="mt-6 space-y-2.5">
+                {RATING_BREAKDOWN.map((r) => (
+                  <li key={r.stars} className="flex items-center gap-2.5 text-[12.5px]">
+                    <span className="w-3 font-semibold text-reps-charcoal">{r.stars}</span>
+                    <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                    <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-stone">
+                      <span
+                        className="absolute inset-y-0 left-0 rounded-full bg-reps-orange"
+                        style={{ width: `${r.pct}%` }}
+                      />
+                    </span>
+                    <span className="w-12 text-right text-reps-muted-light">{r.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Stat strip — homepage pattern */}
+            <div>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+                The numbers
+              </span>
+              <h2 className="mt-1 font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
+                Honest about how reviews work here.
+              </h2>
+              <p className="mt-3 max-w-[460px] text-[14px] text-reps-muted-light">
+                Phase 1 placeholder data while we onboard early cohorts. Replaced with live numbers at
+                launch volume.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-2">
+                {STATS.map((s) => (
+                  <div
+                    key={s.k}
+                    className="flex flex-col items-start gap-1.5 bg-reps-ivory p-5 sm:p-6"
+                  >
+                    <div className="font-display text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-reps-charcoal sm:text-[32px] lg:text-[40px]">
+                      {s.v}
+                    </div>
+                    <div className="text-[11px] font-medium uppercase tracking-wider text-reps-muted-light sm:text-[12px]">
+                      {s.k}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="mt-4 text-center text-[11.5px] text-white/45">
-            Updated weekly · Phase 1 placeholder data while we onboard early cohorts
-          </p>
         </div>
       </section>
 
-      {/* Methodology */}
-      <section className="bg-reps-panel/30">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionHeader
-            eyebrow="How a REPs review is made"
-            heading={
-              <>
-                Four steps. <span className="text-reps-orange">No shortcuts.</span>
-              </>
-            }
-            lede="A REPs review can only come from a real booking. Here's the exact path it takes — and what we will and won't do at each step."
-            align="center"
-            className="mx-auto"
-          />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ============ METHODOLOGY (light) ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[680px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              How a REPs review is made
+            </span>
+            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+              Four steps. No shortcuts.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              A REPs review can only come from a real booking. Here's the exact path it takes — and
+              what we will and won't do at each step.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {METHODOLOGY.map((m, i) => (
               <div
                 key={m.title}
-                className="relative rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+                className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
               >
-                <span className="absolute right-4 top-4 text-[11px] font-semibold text-white/35">
+                <span className="absolute right-4 top-4 text-[11px] font-semibold text-reps-muted-light/70">
                   0{i + 1}
                 </span>
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-orange">
                   <m.icon className="h-5 w-5" strokeWidth={1.75} />
                 </span>
-                <h3 className="mt-5 font-display text-[17px] font-bold text-white">{m.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{m.body}</p>
+                <h3 className="mt-5 font-display text-[17px] font-bold text-reps-charcoal">{m.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{m.body}</p>
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center text-[12.5px] text-white/55">
-            Read the full{" "}
-            <Link to="/" className="text-reps-orange hover:underline">
-              review policy
-            </Link>{" "}
-            · Last reviewed June 2026
-          </p>
         </div>
       </section>
 
-      {/* Editor's Picks */}
-      <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionHeader
-            eyebrow="Editor's picks"
-            heading={
-              <>
-                This week's <span className="text-reps-orange">stand-out reviews.</span>
-              </>
-            }
-            lede="Three reviews from across the register, chosen for the detail and context they give a future client — not the score."
-          />
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+      {/* ============ EDITOR'S PICKS (light) ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-[640px]">
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+                Editor's picks
+              </span>
+              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+                This week's stand-out reviews.
+              </h2>
+              <p className="mt-3 text-[15px] text-reps-muted-light">
+                Three reviews from across the register, chosen for the detail and context they give a
+                future client — not the score.
+              </p>
+            </div>
+          </div>
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
             {EDITOR_PICKS.map((r) => (
               <ReviewCard key={r.id} review={r} variant="pick" />
             ))}
@@ -529,69 +504,74 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* Profession breakdown */}
-      <section className="bg-reps-panel/15">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionHeader
-            eyebrow="By specialism"
-            heading={
-              <>
-                Filter the register <span className="text-reps-orange">by what you train for.</span>
-              </>
-            }
-            lede="Jump straight to verified reviews for the kind of pro you're looking for."
-          />
+      {/* ============ BROWSE BY SPECIALISM (light) ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[680px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              Browse by specialism
+            </span>
+            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+              Reviews across every kind of fitness pro.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              Trainers, coaches, gyms, studios, nutritionists, Pilates and yoga teachers, and the
+              training providers behind them.
+            </p>
+          </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PROFESSION_TILES.map((p) => (
               <Link
-                key={p.slug}
+                key={p.name}
                 to="/professions/$profession"
                 params={{ profession: p.slug }}
-                className="group flex items-center justify-between rounded-[18px] border border-reps-border bg-reps-panel/40 p-5 transition-colors hover:border-reps-orange-border hover:bg-reps-panel/60"
+                className="group flex items-center justify-between rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 transition-colors hover:border-reps-orange/40 hover:bg-reps-ivory"
               >
                 <div className="flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-border bg-reps-ink/60 text-white/70 group-hover:text-reps-orange">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal transition-colors group-hover:text-reps-orange">
                     <p.icon className="h-5 w-5" strokeWidth={1.6} />
                   </span>
                   <div>
-                    <div className="text-[14.5px] font-semibold text-white">{p.name}</div>
-                    <div className="mt-0.5 flex items-center gap-1.5 text-[12px] text-white/55">
+                    <div className="text-[14.5px] font-semibold text-reps-charcoal">{p.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-[12px] text-reps-muted-light">
                       <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                      <span className="font-semibold text-white">{p.rating}</span>
+                      <span className="font-semibold text-reps-charcoal">{p.rating}</span>
                       <span>·</span>
                       <span>{p.count} reviews</span>
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-white/45 transition-transform group-hover:translate-x-0.5 group-hover:text-reps-orange" />
+                <ChevronRight className="h-4 w-4 text-reps-muted-light transition-transform group-hover:translate-x-0.5 group-hover:text-reps-orange" />
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Filters + grid */}
-      <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+      {/* ============ FULL FEED (light) ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeader
-              eyebrow="The full feed"
-              heading={
-                <>
-                  Latest reviews from <span className="text-reps-orange">verified clients.</span>
-                </>
-              }
-              className="max-w-[560px]"
-            />
-            <div className="flex flex-wrap gap-2">
-              {FILTERS.map((f, i) => (
+            <div className="max-w-[560px]">
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+                The full feed
+              </span>
+              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+                Latest reviews from verified clients.
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">
+                Sort
+              </span>
+              {SORT_OPTIONS.map((f, i) => (
                 <button
                   key={f}
                   type="button"
                   className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
                     i === 0
-                      ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                      : "border-reps-border bg-reps-panel/40 text-white/75 hover:border-reps-orange-border hover:text-white"
+                      ? "border-reps-orange/40 bg-reps-orange/10 text-reps-orange"
+                      : "border-reps-stone bg-reps-ivory text-reps-charcoal hover:border-reps-orange/40 hover:text-reps-orange"
                   }`}
                 >
                   {f}
@@ -600,8 +580,8 @@ function ReviewsPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            {REVIEWS.slice(3).map((r) => (
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            {REVIEWS.map((r) => (
               <ReviewCard key={r.id} review={r} />
             ))}
           </div>
@@ -609,7 +589,7 @@ function ReviewsPage() {
           <div className="mt-10 flex items-center justify-center">
             <button
               type="button"
-              className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel/40 px-6 text-[14px] font-semibold text-white hover:border-reps-orange-border hover:text-reps-orange"
+              className="inline-flex h-11 items-center rounded-[10px] border border-reps-stone bg-reps-ivory px-6 text-[14px] font-semibold text-reps-charcoal shadow-none hover:border-reps-orange/40 hover:text-reps-orange"
             >
               Load more reviews
             </button>
@@ -617,73 +597,121 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* Critical reviews — proof */}
-      <section className="bg-reps-panel/30">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionHeader
-            eyebrow="We don't hide critical feedback"
-            heading={
-              <>
-                Real 3 and 4-star reviews, <span className="text-reps-orange">with real responses.</span>
-              </>
-            }
-            lede="Most directories quietly bury anything below 5 stars. We don't. Critical reviews stay live, and pros get exactly one on-the-record reply."
-          />
-          <div className="mt-10 grid gap-4 lg:grid-cols-2">
-            {CRITICAL_REVIEWS.map((r) => (
-              <ReviewCard key={r.id} review={r} variant="critical" />
+      {/* ============ WHY PROS CHOOSE REPs REVIEWS (light) ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[720px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              For professionals
+            </span>
+            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+              Why pros choose to be reviewed on REPs.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              REPs reviews are built to work for the pro as much as the client. Real feedback, a fair
+              right of reply, and one verified source that follows you across the platform.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {WHY_PROS.map((w) => (
+              <article
+                key={w.title}
+                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-orange">
+                  <w.icon className="h-5 w-5" strokeWidth={1.7} />
+                </span>
+                <h3 className="font-display text-[17.5px] font-bold leading-tight text-reps-charcoal">
+                  {w.title}
+                </h3>
+                <p className="text-[13.5px] leading-relaxed text-reps-muted-light">{w.body}</p>
+              </article>
             ))}
+          </div>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link
+              to="/for-professionals"
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+            >
+              List your business on REPs <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/features/visibility"
+              className="text-[13.5px] font-semibold text-reps-charcoal underline-offset-4 hover:underline"
+            >
+              See how reviews show on your profile →
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Trust mechanics */}
-      <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionHeader
-            eyebrow="Our commitments"
-            heading={
-              <>
-                Four mechanics that make a review <span className="text-reps-orange">worth reading.</span>
-              </>
-            }
-            lede="Not vibes. Hard-wired rules we'll publish, repeat and stick to as the platform grows."
-          />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ============ TRUST MECHANICS (light) ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[680px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+              Our commitments
+            </span>
+            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+              Four mechanics that make a review worth reading.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              Not vibes. Hard-wired rules we publish, repeat and stick to as the platform grows.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {TRUST_MECHANICS.map((t) => (
               <div
                 key={t.title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+                className="flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6"
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
                   <t.icon className="h-5 w-5" strokeWidth={1.75} />
                 </span>
-                <h3 className="mt-5 font-display text-[16.5px] font-bold text-white">{t.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{t.body}</p>
+                <h3 className="mt-5 font-display text-[16.5px] font-bold text-reps-charcoal">{t.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{t.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <MarketingFaq
-        heading={
-          <>
-            Reviews — <span className="text-reps-orange">straight answers.</span>
-          </>
-        }
-        items={FAQ_ITEMS}
-      />
+      {/* ============ FAQ (light) ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[920px] px-6 py-16 lg:px-10 lg:py-20">
+          <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
+            FAQ
+          </span>
+          <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+            Reviews — straight answers.
+          </h2>
+          <Accordion type="single" collapsible className="mt-10">
+            {FAQ_ITEMS.map((f, i) => (
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="border-b border-reps-stone"
+              >
+                <AccordionTrigger className="text-left text-[15.5px] font-semibold text-reps-charcoal hover:no-underline">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-[14.5px] leading-relaxed text-reps-muted-light">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
 
-      {/* Final CTA */}
+      {/* ============ FINAL CTA (dark, shared) ============ */}
       <FinalCta
         eyebrow={{ icon: Star, label: "Verified-booking reviews" }}
         heading="Find a coach"
         headingAccent="by what their clients actually said."
-        lede="Search the register, filter by specialism and city, and read every review — including the critical ones."
+        lede="Search the register, filter by specialism and city, and read every review tied to a real booking."
         primary={{ to: "/find-a-professional", label: "Find a professional" }}
-        secondary={{ to: "/for-professionals", label: "How reviews work for pros" }}
+        secondary={{ to: "/for-professionals", label: "List your business" }}
       />
 
       <PublicFooter />
@@ -692,7 +720,7 @@ function ReviewsPage() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Review card                                                         */
+/* Review card (light)                                                 */
 /* ------------------------------------------------------------------ */
 
 function ReviewCard({
@@ -700,21 +728,18 @@ function ReviewCard({
   variant = "default",
 }: {
   review: Review;
-  variant?: "default" | "pick" | "critical";
+  variant?: "default" | "pick";
 }) {
   const isPick = variant === "pick";
-  const isCritical = variant === "critical";
 
   return (
     <article
-      className={`flex flex-col gap-4 rounded-[18px] border bg-reps-panel/40 p-6 ${
-        isPick
-          ? "border-reps-orange-border bg-reps-panel/60"
-          : "border-reps-border"
+      className={`flex flex-col gap-4 rounded-[18px] border bg-reps-warm-white p-6 ${
+        isPick ? "border-reps-orange/40" : "border-reps-stone"
       }`}
     >
       {isPick ? (
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
           <Sparkles className="h-3 w-3" /> Editor's pick
         </span>
       ) : null}
@@ -722,17 +747,17 @@ function ReviewCard({
       {/* Reviewer */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-border bg-reps-ink/60 text-[12.5px] font-bold text-white">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-reps-ivory text-[12.5px] font-bold text-reps-charcoal">
             {r.author.split(" ").map((n) => n[0]).join("")}
           </span>
           <div>
-            <div className="flex items-center gap-1.5 text-[13.5px] font-semibold text-white">
+            <div className="flex flex-wrap items-center gap-1.5 text-[13.5px] font-semibold text-reps-charcoal">
               {r.author}
-              <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-300">
+              <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-700">
                 <BadgeCheck className="h-2.5 w-2.5" /> Verified
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11.5px] text-white/55">
+            <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-reps-muted-light">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> {r.authorCity}
               </span>
@@ -746,7 +771,7 @@ function ReviewCard({
             <Star
               key={i}
               className={`h-3.5 w-3.5 ${
-                i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-white/20"
+                i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-reps-stone"
               }`}
             />
           ))}
@@ -755,25 +780,14 @@ function ReviewCard({
 
       {/* Body */}
       <div>
-        <h3 className="font-display text-[16.5px] font-bold leading-snug text-white">
+        <h3 className="font-display text-[16.5px] font-bold leading-snug text-reps-charcoal">
           {r.title}
         </h3>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-white/80">{r.body}</p>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-reps-charcoal/80">{r.body}</p>
       </div>
 
-      {/* Pro response */}
-      {r.response ? (
-        <div className="rounded-[12px] border border-reps-border bg-reps-ink/50 p-4">
-          <div className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-wider text-white/55">
-            <MessageSquare className="h-3 w-3 text-reps-orange" />
-            Response from {r.response.author} · {r.response.date}
-          </div>
-          <p className="mt-2 text-[13px] leading-relaxed text-white/75">{r.response.body}</p>
-        </div>
-      ) : null}
-
       {/* Pro context */}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-border pt-4">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone pt-4">
         <Link
           to="/pro/$slug"
           params={{ slug: r.proSlug }}
@@ -786,25 +800,23 @@ function ReviewCard({
             loading="lazy"
           />
           <div>
-            <div className="text-[13px] font-semibold text-white group-hover:text-reps-orange">
+            <div className="text-[13px] font-semibold text-reps-charcoal group-hover:text-reps-orange">
               {r.proName}
             </div>
-            <div className="text-[11.5px] text-white/55">
+            <div className="text-[11.5px] text-reps-muted-light">
               {r.proRole} · {r.programme}
             </div>
           </div>
         </Link>
-        <div className="flex items-center gap-3 text-[11.5px] text-white/55">
+        <div className="flex items-center gap-3 text-[11.5px] text-reps-muted-light">
           <span>{r.helpful} found helpful</span>
-          {isCritical ? null : (
-            <Link
-              to="/pro/$slug"
-              params={{ slug: r.proSlug }}
-              className="inline-flex items-center gap-1 font-semibold text-reps-orange hover:underline"
-            >
-              View pro <ChevronRight className="h-3 w-3" />
-            </Link>
-          )}
+          <Link
+            to="/pro/$slug"
+            params={{ slug: r.proSlug }}
+            className="inline-flex items-center gap-1 font-semibold text-reps-orange hover:underline"
+          >
+            View pro <ChevronRight className="h-3 w-3" />
+          </Link>
         </div>
       </div>
     </article>
