@@ -1,37 +1,25 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  Apple,
-  BadgeCheck,
-  Eye,
-  Globe,
-  Loader2,
-  Mail,
-  Star,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { Apple, Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { ShopFrontMock } from "@/components/auth/ShopFrontMock";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
-import proSophie from "@/assets/pro-sophie.jpg";
-import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in to REPS — Your Professional Account" },
+      { title: "Sign in to REPs" },
       {
         name: "description",
         content:
-          "Log in to REPS to manage your professional profile, clients, bookings and CPD all in one place.",
+          "Sign in to REPs to manage your professional profile, clients, bookings and CPD — all in one place.",
       },
-      { property: "og:title", content: "Sign in to REPS" },
+      { property: "og:title", content: "Sign in to REPs" },
       {
         property: "og:description",
-        content:
-          "Welcome back — sign in to REPS to access your professional dashboard.",
+        content: "Welcome back — sign in to your REPs professional account.",
       },
       { property: "og:url", content: "/auth" },
     ],
@@ -39,29 +27,6 @@ export const Route = createFileRoute("/auth")({
   }),
   component: LoginPage,
 });
-
-const TRUST_BULLETS = [
-  {
-    icon: BadgeCheck,
-    title: "Verified. Trusted. Recognised.",
-    sub: "The professional standard in fitness.",
-  },
-  {
-    icon: Users,
-    title: "Manage your clients",
-    sub: "All your bookings and leads in one place.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Track your growth",
-    sub: "Reviews, CPD and career progress at a glance.",
-  },
-  {
-    icon: Globe,
-    title: "Trusted worldwide",
-    sub: "120+ countries. One professional standard.",
-  },
-];
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -106,7 +71,6 @@ function LoginPage() {
         return;
       }
       if (result.redirected) return;
-      // Tokens received in-line — resolve role and redirect
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         const to = await redirectAfterAuth(data.user.id);
@@ -119,231 +83,168 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text">
-      {/* ============ AUTH HEADER ============ */}
-      <header className="relative z-30">
-        <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="font-display text-[34px] font-bold leading-none tracking-tight text-white">
+    <div className="relative min-h-screen overflow-hidden bg-reps-ink text-reps-text">
+      {/* Decorative orange glow — chrome, not a hero overlay */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-40 -top-40 h-[640px] w-[640px] rounded-full opacity-[0.07]"
+        style={{
+          background:
+            "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-40 bottom-0 h-[520px] w-[520px] rounded-full opacity-[0.05]"
+        style={{
+          background:
+            "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative z-10 mx-auto grid min-h-screen max-w-[1320px] grid-cols-1 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16 lg:px-10">
+        {/* ============ LEFT: FORM COLUMN ============ */}
+        <div className="flex min-h-screen flex-col py-8 lg:py-10">
+          {/* Wordmark */}
+          <Link to="/" className="inline-flex items-center gap-3 self-start">
+            <span className="font-display text-[28px] font-bold leading-none tracking-tight text-white">
               REPS
             </span>
-            <span className="hidden border-l border-white/15 pl-3 text-[11px] leading-tight text-white/70 sm:block">
+            <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
               The Register of
               <br />
               Exercise Professionals
             </span>
           </Link>
-          <p className="text-[14px] text-white/70">
-            New to REPS?{" "}
-            <Link
-              to="/signup"
-              className="font-semibold text-reps-orange hover:underline"
-            >
-              Create an account
-            </Link>
-          </p>
-        </div>
-      </header>
 
-      {/* ============ HERO + FORM ============ */}
-      <section className="relative overflow-hidden">
-        {/* Dashboard laptop background */}
-        <img
-          src={signupHeroBg}
-          alt=""
-          aria-hidden
-          width={1920}
-          height={1080}
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-left opacity-80"
-        />
-        {/* Ink wash + right-side fade so the form card stays high contrast */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-10"
-          style={{
-            background:
-              "linear-gradient(90deg, var(--reps-ink) 0%, color-mix(in oklab, var(--reps-ink) 55%, transparent) 35%, color-mix(in oklab, var(--reps-ink) 75%, transparent) 60%, var(--reps-ink) 100%)",
-          }}
-        />
-        {/* Decorative orange swooshes */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-20 top-20 z-10 h-[420px] w-[420px] rounded-full opacity-[0.06]"
-          style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-32 -top-10 z-10 h-[520px] w-[520px] rounded-full opacity-[0.05]"
-          style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
-        />
-
-        <div className="relative z-20 mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:items-start lg:gap-14 lg:px-10">
-          {/* Left: welcome back */}
-          <div className="flex flex-col">
-            <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
-              Welcome back to{" "}
-              <span className="text-reps-orange">REPS.</span>
-            </h1>
-            <p className="mt-5 text-[15px] leading-relaxed text-white/65">
-              Sign in to access your professional profile, manage clients and
-              keep your qualifications current — all in one place.
-            </p>
-
-            <ul className="mt-8 grid gap-5">
-              {TRUST_BULLETS.map((b) => (
-                <li key={b.title} className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                    <b.icon className="h-[18px] w-[18px]" />
-                  </span>
-                  <div>
-                    <div className="text-[14px] font-semibold text-white">
-                      {b.title}
-                    </div>
-                    <div className="text-[13px] text-white/60">{b.sub}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <figure className="mt-10 w-full max-w-[480px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4 fill-reps-orange text-reps-orange"
-                  />
-                ))}
-              </div>
-              <blockquote className="mt-3 text-[14px] leading-relaxed text-white/80">
-                &ldquo;REPS has helped me build trust with clients and grow
-                my business. The tools and support are incredible.&rdquo;
-              </blockquote>
-              <figcaption className="mt-4 flex items-center gap-3">
-                <img
-                  src={proSophie}
-                  alt=""
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-                <div>
-                  <div className="text-[13px] font-semibold text-white">
-                    Sophie Williams
-                  </div>
-                  <div className="text-[12px] text-white/60">
-                    Pilates Instructor
-                  </div>
-                </div>
-              </figcaption>
-            </figure>
-          </div>
-
-          {/* Right: login form */}
-          <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
-            <div className="text-center">
-              <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
-                Sign in to REPS
-              </h2>
-              <p className="mt-1.5 text-[13px] text-reps-muted-light">
-                Welcome back. Enter your details to continue.
+          {/* Form, vertically centered in remaining space */}
+          <div className="flex flex-1 items-center">
+            <div className="w-full max-w-[420px]">
+              <h1 className="font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[40px]">
+                Sign in to REPs
+              </h1>
+              <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+                Welcome back. Pick up where you left off.
               </p>
-            </div>
 
-            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              {/* Email */}
-              <div>
-                <label className="text-[13px] font-semibold text-reps-charcoal">
-                  Email address
-                </label>
-                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
-                  <Mail className="h-4 w-4 text-reps-muted-light" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    autoComplete="email"
-                    className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[13px] font-semibold text-reps-charcoal">
-                    Password
-                  </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-[12px] font-semibold text-reps-orange hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    aria-label={showPw ? "Hide password" : "Show password"}
-                    onClick={() => setShowPw((v) => !v)}
-                    className="text-reps-muted-light hover:text-reps-charcoal"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
-                  {error}
-                </div>
-              )}
-
-              <label className="flex items-center gap-2 text-[13px] text-reps-charcoal">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded-[6px] border-reps-stone accent-reps-orange"
-                />
-                Keep me signed in
-              </label>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
-              >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {loading ? "Signing in…" : "Sign in"}
-              </button>
-
-              <div className="flex items-center gap-3 py-1 text-[11px] uppercase tracking-wider text-reps-muted-light">
-                <span className="h-px flex-1 bg-reps-stone" />
-                or continue with
-                <span className="h-px flex-1 bg-reps-stone" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <SocialButton
-                  label={googleLoading ? "Connecting…" : "Continue with Google"}
+              {/* OAuth row */}
+              <div className="mt-7 grid gap-2.5">
+                <button
+                  type="button"
                   onClick={handleGoogle}
                   disabled={googleLoading}
+                  className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <GoogleGlyph />
-                </SocialButton>
-                <SocialButton label="Continue with Apple" disabled>
-                  <Apple className="h-4 w-4 text-reps-charcoal" />
-                </SocialButton>
+                  {googleLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <GoogleGlyph />
+                  )}
+                  {googleLoading ? "Connecting…" : "Continue with Google"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/10 bg-white/[0.02] text-[14px] font-semibold text-white/50"
+                >
+                  <Apple className="h-4 w-4" />
+                  Continue with Apple
+                  <span className="ml-1 rounded-full border border-white/10 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-white/45">
+                    Soon
+                  </span>
+                </button>
               </div>
 
-              <p className="text-center text-[12px] text-reps-muted-light">
+              {/* Divider */}
+              <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
+                <span className="h-px flex-1 bg-white/10" />
+                or with email
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+
+              {/* Email + password */}
+              <form className="grid gap-4" onSubmit={handleSubmit}>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
+                  >
+                    Email
+                  </label>
+                  <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
+                    <Mail className="h-4 w-4 text-white/40" />
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="password"
+                      className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
+                    >
+                      Password
+                    </label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-[12px] font-semibold text-reps-orange hover:underline"
+                    >
+                      Forgot?
+                    </Link>
+                  </div>
+                  <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
+                    <input
+                      id="password"
+                      type={showPw ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                      onClick={() => setShowPw((v) => !v)}
+                      className="text-white/40 hover:text-white/80"
+                    >
+                      {showPw ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="rounded-[10px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {loading ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+
+              <p className="mt-6 text-[13px] text-white/55">
                 Don&apos;t have an account?{" "}
                 <Link
                   to="/signup"
@@ -352,35 +253,44 @@ function LoginPage() {
                   Sign up
                 </Link>
               </p>
-            </form>
+            </div>
+          </div>
+
+          {/* Footer line */}
+          <p className="mt-6 text-[12px] text-white/35">
+            By signing in you agree to our{" "}
+            <Link to="/terms" className="hover:text-white/70">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="hover:text-white/70">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
+
+        {/* ============ RIGHT: SHOP-FRONT MOCK ============ */}
+        <div className="relative hidden items-center justify-center lg:flex">
+          <div className="w-full max-w-[640px]">
+            <div className="mb-8 max-w-[440px]">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/65">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Live on REPs
+              </div>
+              <h2 className="mt-4 font-display text-[26px] font-bold leading-[1.15] tracking-[-0.01em] text-white">
+                This is what you&apos;re signing in to build.
+              </h2>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/55">
+                A real Pro shop-front on REPs. Outcomes-led, verified, and built
+                to convert the right clients.
+              </p>
+            </div>
+            <ShopFrontMock />
           </div>
         </div>
-      </section>
+      </div>
     </div>
-  );
-}
-
-function SocialButton({
-  label,
-  children,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {children}
-      {label}
-    </button>
   );
 }
 
