@@ -1,48 +1,94 @@
-# Show signed-in avatar menu in the public navbar (real auth)
+# Plan: real admin, password eye, Apple BYOC
 
-## Goal
-When any user is signed in (admin, professional, or client), the public navbar shows the avatar + dropdown instead of "Log in / Join REPS". Admins get one extra item in that dropdown: **Admin console**. No role-based branching of the chrome itself.
+Three small, independent changes.
 
-## Why this shape
+---
 
-- One signed-in UI for all roles = one code path, fewer regressions on a locked header.
-- Admin gets a contextual entry point (Admin console) without a parallel navbar.
-- Replaces the `reps.mockUser` localStorage shim, which never reflected real auth and is the root reason an admin sees buttons today.
+## 1. Make `cruz.pt@icloud.com` a real admin
 
-## Changes
+Your account already exists (`auth.users` row found). One migration adds the admin role.
 
-### 1. New shared hook: `src/hooks/use-session-user.ts`
-- `useSessionUser()` returns `{ user, isAdmin, isLoading, signOut }`.
-- Reads `supabase.auth.getUser()` via TanStack Query (key: `["session-user"]`, `staleTime: 60_000`).
-- If `user` present, second query calls the existing `has_role(_user_id, 'admin')` RPC (key: `["has-role", userId, "admin"]`).
-- Invalidated automatically by the existing `supabase.auth.onAuthStateChange` listener in `__root.tsx` (already calls `queryClient.invalidateQueries()` — no new listener needed).
-- `signOut()`: `cancelQueries → clear → supabase.auth.signOut → navigate('/auth', {replace})` per the sign-out hygiene rule.
-- Derives display fields from `user.user_metadata.full_name || email` and `user_metadata.avatar_url`.
+```sql
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('3d8ffa68-f4b2-46b2-bdac-d06b48fbf445', 'admin')
+ON CONFLICT (user_id, role) DO NOTHING;
+```
 
-### 2. `src/components/public/PublicHeader.tsx`
-- Delete `useMockUser` and the `MOCK_USER_KEY` constant.
-- Call `useSessionUser()` once at the top of `PublicHeader`.
-- Right cluster (desktop, ~line 305): `user ? <UserMenu/> : <Log in / Join REPS>` — unchanged condition, real data.
-- `UserMenu` (line 790): accept `{ user, isAdmin, onSignOut }`.
-  - Add `<AvatarImage>` when `user.avatarUrl` exists, fall back to initials (current behaviour).
-  - Append an admin-only `DropdownMenuItem` linking to `/admin` above the sign-out separator, with the existing `ShieldCheck` icon.
-- `MobileDrawer` (line 889+): pass the same real user/isAdmin through; add "Admin console" link in the signed-in section.
+After this runs:
+- Sign in at `/auth` → your avatar dropdown shows **Admin console** (already wired via `has_role` + `useSessionUser`).
+- The seeded `pros@repsuk.org` admin stays in place; remove later if you want.
 
-### 3. Cleanup
-- Remove the saved-pros heart button's `user &&` gating? — leave as-is (still useful for signed-in users).
-- No visual changes to the navbar at rest; this is a data-source swap.
+No code changes — the navbar already reflects real Supabase role state.
+
+---
+
+## 2. Password eye toggle on `/auth`
+
+Frontend-only change in `src/routes/auth.tsx`:
+
+- Add `const [showPassword, setShowPassword] = useState(false)`.
+- Wrap the existing `<Input>` in a relative container, set `type={showPassword ? "text" : "password"}`, and add a right-aligned `<Button variant="ghost" size="icon">` with `Eye` / `EyeOff` (lucide-react) inside.
+- Right-pad the input (`pr-10`) so text doesn't slide under the icon.
+- `aria-label` toggles between "Show password" / "Hide password"; `aria-pressed={showPassword}`.
+- Apply the same treatment to the sign-up password field (and "confirm password" if present) so the UX is consistent.
+
+No new deps — `Eye`/`EyeOff` and `Button` are already in use across the app.
+
+---
+
+## 3. Apple sign-in — BYOC wiring
+
+Two parts: (a) what I'll do in the codebase, (b) what you need to do in Apple Developer + Lovable Cloud dashboard. You can't ship Apple sign-in without (b), but I'll prep everything so it's a 10-minute paste job.
+
+### What I'll do (code)
+
+- Run `supabase--configure_social_auth` with `providers: ["apple"]` (keeps Google + email enabled). This generates/refreshes `src/integrations/lovable/` and installs `@lovable.dev/cloud-auth-js` if not present.
+- Confirm the existing "Continue with Apple" button on `/auth` calls:
+  ```ts
+  await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+  ```
+  Add the same `result.error` / `result.redirected` handling pattern already used for Google. (If the button is currently a stub, wire it up.)
+
+That's the full code side. Apple works the moment you paste credentials into the backend dashboard.
+
+### What you do (Apple Developer + dashboard)
+
+You'll need:
+
+1. **Apple Developer account** ($99/yr) — https://developer.apple.com
+2. **Services ID** (acts as the Client ID) at Identifiers → "+" → Services IDs.
+   - Enable **Sign In with Apple** on it.
+   - Configure → add domain `repsglobal.lovable.app` (and `staging.repsuk.org`, plus any other custom domains).
+   - Add return URL: `https://ftlrvwripgnpyjlrvtgw.supabase.co/auth/v1/callback`
+3. **Sign in with Apple Key (.p8)** at Keys → "+".
+   - Enable Sign In with Apple, link to your primary App ID.
+   - Download the `.p8` file (only available once — save it).
+   - Copy the **Key ID** (10 chars).
+4. **Team ID** — top-right of Apple Developer Console (10 chars).
+5. In Lovable Cloud backend → **Users → Auth Settings → Sign In Methods → Apple → "Use your own credentials"**:
+   - Paste Team ID, Key ID, Client ID (= the Services ID), and the `.p8` contents.
+   - Click **Generate Secret** → it builds a JWT valid 6 months.
+   - **Set a calendar reminder to regenerate before expiry** — otherwise Apple sign-in breaks silently in ~6 months.
+
+### Risk / caveat
+
+- BYOC = your "REPs" name appears on the Apple consent sheet (good for brand).
+- The 6-month JWT is the main operational footgun — I'll add a note to the Phase 2.0 doc as a recurring task.
+- We can flip back to Managed Apple any time by clearing the BYOC fields in the dashboard.
+
+---
+
+## Technical notes
+
+- The admin grant is data-only (no schema change); migration approval flow still applies.
+- `useSessionUser` already calls `has_role` RPC, 60s staleTime — admin status appears within a minute of grant, immediately on next page load.
+- The password toggle stays uncontrolled at the form level; no impact on `signInWithPassword` payload.
+- After `configure_social_auth` runs, do not edit `src/integrations/lovable/` — it's managed.
+
+---
 
 ## Out of scope
-- No changes to `/admin` itself, `AdminShell`, or any other route.
-- No new design tokens; existing `UserMenu` styling is reused verbatim.
-- Professional/client dropdowns stay the same items; only admins get the extra "Admin console" row.
 
-## Risks / honest call-outs
-- The current `UserMenu` links to `/portal/today`, `/portal/messages`, `/portal/profile` — those are **client-portal** routes. For a logged-in professional or admin they're the wrong destinations. **Recommendation:** add role-aware destinations in a follow-up (Pro → `/dashboard`, Client → `/portal/today`, Admin → `/admin`). I'll leave the current items intact in this PR so we don't expand scope, but flag this clearly afterwards.
-- `supabase.auth.getUser()` runs client-side, so on first paint of a marketing page the signed-out buttons may flash for ~100ms before swapping to the avatar. Acceptable for a marketing header; if you want it gone we'd need SSR session reading, which is a bigger change.
-
-## Verification
-- Signed out → buttons (unchanged).
-- Signed in as `pros@repsuk.org` (admin) → avatar menu with "Admin console" row.
-- Signed in as non-admin → avatar menu without that row.
-- Sign out from the dropdown → returns to `/auth`, no console 401 spam, cache cleared.
+- Building the actual `/admin` console UI (separate task).
+- Removing the seeded `pros@repsuk.org` admin (optional cleanup).
+- Custom-domain DNS or Apple App ID creation — assume your developer account is in good standing.
