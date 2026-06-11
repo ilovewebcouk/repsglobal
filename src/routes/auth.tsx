@@ -121,7 +121,7 @@ function LoginPage() {
           </Link>
 
           {/* Centred stack */}
-          <div className="w-full max-w-[400px]">
+          <div className="w-full max-w-[400px] text-center">
             <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
               Welcome back to REPs.
             </h1>
