@@ -1,58 +1,37 @@
 ## Goal
+Replace the current `For Professionals` CTA image on `/` with a single, 10/10 editorial image that speaks to the *operator* (coach as business owner), so it's visually distinct from the hero portrait and reinforces the four CTA bullets (profile, bookings, CRM, CPD).
 
-Replace the homepage hero image with a world-class editorial portrait that makes the REPs hero read as a register of trusted professionals, not a fitness marketplace. **Layout, gradient stops, animations and copy stay exactly as they are** (per locked homepage memory). Image only.
+## Concept — "Coach in command"
+- Single verified REPs personal trainer, mid-30s, in their own working environment (small private studio corner or daylit gym; soft warm fill + cool background, charcoal-to-amber palette).
+- 3/4 body framing, subject anchored **right of centre** so the left third stays quiet for the dark wash + copy.
+- Calm, in-control body language. Not posed, not mid-rep — the working pro between sessions.
+- Phone in hand, screen tilted just enough to read a single REPs booking notification line ("New booking · Tue 7:30am · Sarah K.") in REPs UI styling — small, legible, not a full screenshot. This is the operator cue.
+- **REPS wordmark** embroidered white (ALL CAPS) on left chest of a charcoal polo, per `mem://design/trainer-imagery`.
+- 35–50mm lens feel, shallow depth of field, film grain, no HDR, no lens flare.
 
-## What changes
+## Asset production
+- Generate at premium tier (legible wordmark + legible phone-screen microtext is the hard part).
+- 1920×1200 JPG (16:10) to match current slot aspect.
+- Save to `/tmp/cta-coach-in-command.jpg`, upload via `lovable-assets create --file ... --filename cta-band.jpg`, overwrite `src/assets/cta-band.jpg.asset.json` pointer.
+- Keep import name `ctaTrainers` and the existing `<img>` markup intact.
 
-1. **Generate one new hero image** at premium tier and swap `src/assets/home-hero-coaching.jpg.asset.json` for the new asset.
-2. **Keep everything else in `src/routes/index.tsx` hero block untouched** — including the `object-[88%_30%] lg:object-[78%_30%]` crop, the two-stop dark wash, the H1/lede/form/trust chips, and animation delays.
+## QA bar (must pass before declaring done)
+1. REPS wordmark: ALL CAPS, white, embroidered look, readable on left chest.
+2. Phone screen: REPs notification line is legible (or at minimum convincingly REPs-branded) — not garbled glyphs.
+3. Subject sits in right third; left third is quiet enough for the existing dark wash to carry the copy at md and lg.
+4. No second person, no gym clutter dominating the frame, no logos other than REPs.
 
-That's the entire scope.
-
-## The image brief
-
-**Direction:** Single editorial portrait of one verified REPs personal trainer.
-
-**Subject**
-- Personal trainer, mid-30s, calm authority. Real working coach, not a fitness model or bodybuilder.
-- Direct eye contact with camera. Subtle, settled expression — not smiling, not stern.
-- 3/4 body framing, turned slightly off-axis so the gaze meets the lens.
-
-**Wardrobe (locked brand rule)**
-- Charcoal or black short-sleeve technical polo or T-shirt.
-- **REPS** wordmark, ALL CAPS, **white**, embroidered small on the left chest. Looks like real embroidery, not an overlay.
-
-**Lighting + background**
-- Deep charcoal seamless background (~`#0E0E10`) so it composites onto `bg-reps-black` cleanly.
-- Single key light camera-right + a low-intensity warm rim, no fill. Sculpted, editorial — *Monocle / FT Weekend Magazine*, not Men's Health.
-- Subtle film grain. Zero HDR look. No lens flares, no glow.
-
-**Composition for the locked crop**
-- The locked CSS crops to `object-[88%_30%]` desktop and `[78%_30%]` large-desktop, so the subject must sit in the **right third** of the frame with their head around 30% from the top.
-- The **left two-thirds must be quiet, mostly negative space** (background only) — that's where the dark wash and H1 + lede + search form land.
-- No props, no equipment in frame.
-
-**Output**
-- 1920×1200 JPG (16:10), generated via `imagegen --model premium`.
-- No overlay graphics, no verified card baked into the image (per the user's pick — overlay-free, let the photo carry it).
-- Save to `/tmp/hero-coaching-v2.jpg`, then upload via `lovable-assets` and write to `src/assets/home-hero-coaching.jpg.asset.json` (overwrite, same import path → zero code change needed beyond the pointer file).
-
-## Production steps
-
-1. Generate the image with `imagegen` at `premium` quality, prompt built from the brief above, written to `src/assets/home-hero-coaching-v2.jpg`.
-2. **QA pass:** open the generated image and check (a) REPS wordmark reads ALL CAPS, white, left-chest, looks embroidered; (b) subject is in the right third; (c) left two-thirds is quiet enough for copy; (d) background tone is dark enough to composite onto `bg-reps-black`. If any check fails, regenerate with a tightened prompt before continuing.
-3. Upload via `lovable-assets create --file ... --filename home-hero-coaching.jpg` and overwrite `src/assets/home-hero-coaching.jpg.asset.json`. Delete the temp JPG.
-4. **Verify in preview:** load `/` at desktop and large-desktop widths, confirm the subject lands in the right third and the H1/lede/form remain perfectly readable on the left. If the crop fights the new image, the *only* allowed change is the `object-position` percentages on lines 143 — adjust those, leave gradient and everything else untouched. (This is a Phase 1-acceptable nudge; gradient stops stay locked.)
+## Code touch
+- Only file edited: `src/assets/cta-band.jpg.asset.json` (pointer rewrite).
+- No JSX, layout, gradient, copy, or component changes. The locked homepage rule stays intact.
+- If the new crop fights the existing `object-position` (`object-[100%_center] md:object-[100%_top] lg:object-center` on line 491), I will adjust **only those percentages** to re-anchor the subject — gradient stops and section structure stay locked.
 
 ## Out of scope
+- No changes to H1, bullets, buttons, or the surrounding section.
+- No changes to the hero image or any other page asset.
+- No new components, no animation changes.
+- No real photo shoot — this is the AI-generated launch asset, same posture as the hero pick.
 
-- No changes to H1, lede, form, trust chips, animation delays, or any other section of the homepage.
-- No new components, no new images elsewhere on the page.
-- No real photoshoot — flagged separately later if you want to upgrade beyond AI.
-- No overlay/verified card on the image itself (you picked option 3).
-
-## Technical notes
-
-- `imagegen --model premium` is required because the REPS wordmark must render as legible embroidered text — `fast` and `standard` tiers produce garbled letterforms on garments.
-- The asset is consumed by an existing `<img src={heroCoaching.url}>` so overwriting the `.asset.json` pointer is enough — no route file edits, no build changes.
-- Locked homepage memory permits asset swaps; only structural changes are forbidden. This change is a like-for-like image replacement.
+## Verification
+- Load `/` at 1464px and at desktop large, confirm subject in right third, copy readable, wordmark visible, phone notification legible.
+- Spot-check md (~900px) so the vertical gradient still hides the bottom of the image cleanly.
