@@ -65,6 +65,7 @@ export type TrainerActive =
   | "Community"
   | "Education & CPD"
   | "Public Profile"
+  | "Edit Profile"
   | "Verification"
   | "Payments"
   | "Business Tools"
