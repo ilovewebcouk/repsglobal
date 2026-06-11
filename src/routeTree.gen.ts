@@ -37,6 +37,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
@@ -93,6 +94,7 @@ import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
+import { Route as AuthenticatedDashboardStartRouteImport } from './routes/_authenticated/dashboard_.start'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -236,6 +238,10 @@ const AcceptInviteRoute = AcceptInviteRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -519,6 +525,12 @@ const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => DashboardClientsRoute,
 } as any)
+const AuthenticatedDashboardStartRoute =
+  AuthenticatedDashboardStartRouteImport.update({
+    id: '/dashboard_/start',
+    path: '/dashboard/start',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -624,6 +636,7 @@ export interface FileRoutesByFullPath {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -713,6 +726,7 @@ export interface FileRoutesByTo {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
+  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -725,6 +739,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
@@ -804,6 +819,7 @@ export interface FileRoutesById {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/_authenticated/dashboard_/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -896,6 +912,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
+    | '/dashboard/start'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -985,6 +1002,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources'
+    | '/dashboard/start'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -996,6 +1014,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
     | '/accept-invite'
     | '/admin'
@@ -1075,6 +1094,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
+    | '/_authenticated/dashboard_/start'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -1087,6 +1107,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
@@ -1369,6 +1390,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1763,6 +1791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardClientsSlugRouteImport
       parentRoute: typeof DashboardClientsRoute
     }
+    '/_authenticated/dashboard_/start': {
+      id: '/_authenticated/dashboard_/start'
+      path: '/dashboard/start'
+      fullPath: '/dashboard/start'
+      preLoaderRoute: typeof AuthenticatedDashboardStartRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -1794,6 +1829,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 interface DashboardClientsRouteChildren {
   DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
 }
@@ -1820,6 +1866,7 @@ const ProSlugRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
@@ -1908,13 +1955,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
