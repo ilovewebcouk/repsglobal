@@ -167,14 +167,14 @@ function HomeV2() {
               >
                 Find a coach
                 <br />
-                <span className="text-reps-orange">who's actually qualified.</span>
+                <span className="text-reps-orange">worth trusting.</span>
               </h1>
               <p
                 className="animate-rise-in mt-6 max-w-[520px] text-[18px] font-light leading-relaxed text-white/75"
                 style={{ animationDelay: "220ms" }}
               >
-                Every REP is credential-checked, insured and fully qualified. Browse 25,000+ verified professionals with real client reviews —
-                <span className="text-white"> book in 30 seconds.</span>
+                25,000+ verified fitness professionals. Real qualifications. Real reviews.
+                <span className="text-white"> Real results — in 30 seconds.</span>
               </p>
 
               <form
