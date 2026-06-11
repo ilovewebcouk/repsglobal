@@ -32,18 +32,71 @@ export const Route = createFileRoute("/auth")({
   component: LoginPage,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function friendlyAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials")) {
+    return "That email and password don't match. Double-check and try again — or reset your password.";
+  }
+  if (m.includes("email not confirmed")) {
+    return "Please confirm your email first — check your inbox for the confirmation link.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Too many attempts. Please wait a minute and try again.";
+  }
+  if (m.includes("user not found")) {
+    return "No account found for that email. Want to sign up instead?";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Connection issue — check your internet and try again.";
+  }
+  return message;
+}
+
 function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
+  const validateEmail = (value: string): string | null => {
+    const v = value.trim();
+    if (!v) return "Please enter your email.";
+    if (!EMAIL_RE.test(v)) return "That doesn't look like a valid email address.";
+    return null;
+  };
+
+  const validatePassword = (value: string): string | null => {
+    if (!value) return "Please enter your password.";
+    if (value.length < 6) return "Password must be at least 6 characters.";
+    return null;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    if (eErr || pErr) {
+      // Focus the first invalid field for assistive tech.
+      const id = eErr ? "email" : "password";
+      requestAnimationFrame(() => document.getElementById(id)?.focus());
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -56,7 +109,8 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      const raw = err instanceof Error ? err.message : "Sign in failed";
+      setError(friendlyAuthError(raw));
     } finally {
       setLoading(false);
     }
@@ -71,7 +125,11 @@ function LoginPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        setError(result.error.message ?? `${provider} sign-in failed`);
+        setError(
+          friendlyAuthError(
+            result.error.message ?? `Couldn't sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`,
+          ),
+        );
         setBusy(false);
         return;
       }
@@ -82,7 +140,8 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : `${provider} sign-in failed`);
+      const raw = err instanceof Error ? err.message : `${provider} sign-in failed`;
+      setError(friendlyAuthError(raw));
       setBusy(false);
     }
   };
