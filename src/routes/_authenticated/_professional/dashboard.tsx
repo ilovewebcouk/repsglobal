@@ -5,12 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
-  Circle,
   Clock,
   CreditCard,
   ExternalLink,
   FileText,
-  Loader2,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -23,7 +21,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { ProShell } from "@/components/dashboard/ProShell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
