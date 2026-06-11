@@ -1,37 +1,34 @@
-## Goal
-Replace the current `For Professionals` CTA image on `/` with a single, 10/10 editorial image that speaks to the *operator* (coach as business owner), so it's visually distinct from the hero portrait and reinforces the four CTA bullets (profile, bookings, CRM, CPD).
+# New CTA image — "Coach + client, post-session"
 
-## Concept — "Coach in command"
-- Single verified REPs personal trainer, mid-30s, in their own working environment (small private studio corner or daylit gym; soft warm fill + cool background, charcoal-to-amber palette).
-- 3/4 body framing, subject anchored **right of centre** so the left third stays quiet for the dark wash + copy.
-- Calm, in-control body language. Not posed, not mid-rep — the working pro between sessions.
-- Phone in hand, screen tilted just enough to read a single REPs booking notification line ("New booking · Tue 7:30am · Sarah K.") in REPs UI styling — small, legible, not a full screenshot. This is the operator cue.
-- **REPS wordmark** embroidered white (ALL CAPS) on left chest of a charcoal polo, per `mem://design/trainer-imagery`.
-- 35–50mm lens feel, shallow depth of field, film grain, no HDR, no lens flare.
+Replace the current `cta-band` image used in the bottom "For professionals" CTA on `/` (and referenced from `src/lib/resources.ts`).
 
-## Asset production
-- Generate at premium tier (legible wordmark + legible phone-screen microtext is the hard part).
-- 1920×1200 JPG (16:10) to match current slot aspect.
-- Save to `/tmp/cta-coach-in-command.jpg`, upload via `lovable-assets create --file ... --filename cta-band.jpg`, overwrite `src/assets/cta-band.jpg.asset.json` pointer.
-- Keep import name `ctaTrainers` and the existing `<img>` markup intact.
+## Composition (final pick)
 
-## QA bar (must pass before declaring done)
-1. REPS wordmark: ALL CAPS, white, embroidered look, readable on left chest.
-2. Phone screen: REPs notification line is legible (or at minimum convincingly REPs-branded) — not garbled glyphs.
-3. Subject sits in right third; left third is quiet enough for the existing dark wash to carry the copy at md and lg.
-4. No second person, no gym clutter dominating the frame, no logos other than REPs.
+- **Scene:** Wide environmental two-shot inside the coach's own studio, late morning after a 1:1 session has just finished.
+- **Coach:** Mid-30s, REPs polo (charcoal or deep slate — NOT same as hero), white embroidered REPS wordmark small left-chest, ALL CAPS, real embroidery look. Mid-conversation, relaxed, half-smile, weight on back foot.
+- **Client:** Mostly silhouetted from behind / over-shoulder — gym kit, towel over shoulder, no face visible. Falls slightly out of focus.
+- **Light:** Soft daylight from a large window left-of-frame. Left third of the image is naturally brighter / airier — deliberate contrast vs the all-charcoal hero. Warm highlights on the coach's shoulder and the client's back.
+- **In hand:** Coach holds phone low between them, screen catching a sliver of light. Faint, half-readable REPs booking confirmation visible ("Booked · Thu 7:30am" style) — implied, not hero'd.
+- **Lens / framing:** ~35mm equivalent, shallow DoF on the coach, client and background fall off. Subject sits in the right two-thirds so the bright window side reads first; the slot crop survives because the coach's torso + face is centred in the safe zone.
+- **Background:** Honest small studio — rig, plates, a chalkboard with session notes, plant. Lived-in, not staged showroom. No logos other than REPS on the polo.
+- **Mood:** Quiet, professional, "the work is done, the relationship is real." Not hype, not lonely.
 
-## Code touch
-- Only file edited: `src/assets/cta-band.jpg.asset.json` (pointer rewrite).
-- No JSX, layout, gradient, copy, or component changes. The locked homepage rule stays intact.
-- If the new crop fights the existing `object-position` (`object-[100%_center] md:object-[100%_top] lg:object-center` on line 491), I will adjust **only those percentages** to re-anchor the subject — gradient stops and section structure stay locked.
+## Why this is the 10/10 vs the current 6/10
 
-## Out of scope
-- No changes to H1, bullets, buttons, or the surrounding section.
-- No changes to the hero image or any other page asset.
-- No new components, no animation changes.
-- No real photo shoot — this is the AI-generated launch asset, same posture as the hero pick.
+1. Different scene grammar from the hero (two people, daylight) — page stops feeling like one photoshoot stretched twice.
+2. Shows the outcome a pro actually wants — a paying client in the room — which is what the CTA bullets promise.
+3. Survives the narrow crop: coach's face + REPS chest mark sit dead-centre; phone is inside the safe zone; window light gives the left edge something to look at even when cropped.
+4. White REPS wordmark renders as crisp embroidery, not a mushy emboss.
+5. No IP risk — client is silhouetted from behind.
+
+## Files to change
+
+- `src/assets/cta-band.jpg.asset.json` — regenerated via `imagegen` (16:9, premium tier for embroidery legibility), re-uploaded through `lovable-assets`, pointer overwritten in place.
+- No code changes. `src/routes/index.tsx` and `src/lib/resources.ts` already import the `.asset.json` pointer, so the new URL flows through automatically.
 
 ## Verification
-- Load `/` at 1464px and at desktop large, confirm subject in right third, copy readable, wordmark visible, phone notification legible.
-- Spot-check md (~900px) so the vertical gradient still hides the bottom of the image cleanly.
+
+1. Take a fresh preview screenshot of the `/` CTA band.
+2. Zoom into the coach's chest to confirm "REPS" reads correctly in ALL CAPS white.
+3. Confirm the phone + booking detail are visible in the rendered slot (not cropped off).
+4. If the embroidery or crop fails, regenerate once with a tightened prompt before declaring done.
