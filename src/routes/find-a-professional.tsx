@@ -296,7 +296,7 @@ function DirectoryPage() {
           blurb: r.headline || "REPS-verified professional.",
           image: proJames,
           venues: [],
-          slug: r.slug,
+          slug: r.slug ?? undefined,
         })),
     [livePros],
   );
