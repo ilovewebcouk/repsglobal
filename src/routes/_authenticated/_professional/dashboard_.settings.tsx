@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/settings")({
   head: () => ({
@@ -73,9 +74,11 @@ function Toggle({ on = false, label }: { on?: boolean; label: string }) {
 }
 
 function SettingsPage() {
+  const tier = useTrainerTier();
   return (
     <ProShell
       active="Settings"
+      tier={tier}
       title="Settings"
       subtitle="Account, business profile, notifications, billing and integrations."
       actions={

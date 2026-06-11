@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProShell } from "@/components/dashboard/ProShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   Apple,
   AreaChart,
