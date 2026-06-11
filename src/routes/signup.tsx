@@ -409,14 +409,7 @@ function SignupPage() {
             </p>
 
             {/* Social */}
-            <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <SocialButton
-                label={googleLoading ? "Connecting…" : "Continue with Google"}
-                onClick={handleGoogle}
-                disabled={googleLoading}
-              >
-                <GoogleGlyph />
-              </SocialButton>
+            <div className="mt-6">
               <SocialButton label="Continue with Apple" disabled>
                 <Apple className="h-4 w-4 text-reps-charcoal" />
               </SocialButton>
