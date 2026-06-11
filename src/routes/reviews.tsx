@@ -21,7 +21,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
-import { SectionHeader } from "@/components/marketing/SectionHeader";
+
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
