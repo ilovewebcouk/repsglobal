@@ -78,6 +78,7 @@ import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
+import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -450,6 +451,11 @@ const AuthenticatedProfessionalDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalProRouteRoute =
+  AuthenticatedProfessionalProRouteRouteImport.update({
+    id: '/_pro',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -505,93 +511,93 @@ const AuthenticatedProfessionalDashboardProfileRoute =
   } as any)
 const AuthenticatedProfessionalProDashboardReviewsRoute =
   AuthenticatedProfessionalProDashboardReviewsRouteImport.update({
-    id: '/_pro/dashboard_/reviews',
+    id: '/dashboard_/reviews',
     path: '/dashboard/reviews',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardReportsRoute =
   AuthenticatedProfessionalProDashboardReportsRouteImport.update({
-    id: '/_pro/dashboard_/reports',
+    id: '/dashboard_/reports',
     path: '/dashboard/reports',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardProgramsRoute =
   AuthenticatedProfessionalProDashboardProgramsRouteImport.update({
-    id: '/_pro/dashboard_/programs',
+    id: '/dashboard_/programs',
     path: '/dashboard/programs',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardPaymentsRoute =
   AuthenticatedProfessionalProDashboardPaymentsRouteImport.update({
-    id: '/_pro/dashboard_/payments',
+    id: '/dashboard_/payments',
     path: '/dashboard/payments',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardNutritionRoute =
   AuthenticatedProfessionalProDashboardNutritionRouteImport.update({
-    id: '/_pro/dashboard_/nutrition',
+    id: '/dashboard_/nutrition',
     path: '/dashboard/nutrition',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardMessagesRoute =
   AuthenticatedProfessionalProDashboardMessagesRouteImport.update({
-    id: '/_pro/dashboard_/messages',
+    id: '/dashboard_/messages',
     path: '/dashboard/messages',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardLeadsRoute =
   AuthenticatedProfessionalProDashboardLeadsRouteImport.update({
-    id: '/_pro/dashboard_/leads',
+    id: '/dashboard_/leads',
     path: '/dashboard/leads',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardCpdRoute =
   AuthenticatedProfessionalProDashboardCpdRouteImport.update({
-    id: '/_pro/dashboard_/cpd',
+    id: '/dashboard_/cpd',
     path: '/dashboard/cpd',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardContentRoute =
   AuthenticatedProfessionalProDashboardContentRouteImport.update({
-    id: '/_pro/dashboard_/content',
+    id: '/dashboard_/content',
     path: '/dashboard/content',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardCommunityRoute =
   AuthenticatedProfessionalProDashboardCommunityRouteImport.update({
-    id: '/_pro/dashboard_/community',
+    id: '/dashboard_/community',
     path: '/dashboard/community',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardClientsRoute =
   AuthenticatedProfessionalProDashboardClientsRouteImport.update({
-    id: '/_pro/dashboard_/clients',
+    id: '/dashboard_/clients',
     path: '/dashboard/clients',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardCheckInsRoute =
   AuthenticatedProfessionalProDashboardCheckInsRouteImport.update({
-    id: '/_pro/dashboard_/check-ins',
+    id: '/dashboard_/check-ins',
     path: '/dashboard/check-ins',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardCalendarRoute =
   AuthenticatedProfessionalProDashboardCalendarRouteImport.update({
-    id: '/_pro/dashboard_/calendar',
+    id: '/dashboard_/calendar',
     path: '/dashboard/calendar',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardBusinessRoute =
   AuthenticatedProfessionalProDashboardBusinessRouteImport.update({
-    id: '/_pro/dashboard_/business',
+    id: '/dashboard_/business',
     path: '/dashboard/business',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardBookingsRoute =
   AuthenticatedProfessionalProDashboardBookingsRouteImport.update({
-    id: '/_pro/dashboard_/bookings',
+    id: '/dashboard_/bookings',
     path: '/dashboard/bookings',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardClientsSlugRoute =
   AuthenticatedProfessionalProDashboardClientsSlugRouteImport.update({
@@ -854,6 +860,7 @@ export interface FileRoutesById {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -1139,6 +1146,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
+    | '/_authenticated/_professional/_pro'
     | '/_authenticated/_professional/dashboard'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -1727,6 +1735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/_pro': {
+      id: '/_authenticated/_professional/_pro'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedProfessionalProRouteRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -1795,105 +1810,105 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/reviews'
       fullPath: '/dashboard/reviews'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardReviewsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/reports': {
       id: '/_authenticated/_professional/_pro/dashboard_/reports'
       path: '/dashboard/reports'
       fullPath: '/dashboard/reports'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardReportsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/programs': {
       id: '/_authenticated/_professional/_pro/dashboard_/programs'
       path: '/dashboard/programs'
       fullPath: '/dashboard/programs'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardProgramsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/payments': {
       id: '/_authenticated/_professional/_pro/dashboard_/payments'
       path: '/dashboard/payments'
       fullPath: '/dashboard/payments'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardPaymentsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/nutrition': {
       id: '/_authenticated/_professional/_pro/dashboard_/nutrition'
       path: '/dashboard/nutrition'
       fullPath: '/dashboard/nutrition'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardNutritionRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/messages': {
       id: '/_authenticated/_professional/_pro/dashboard_/messages'
       path: '/dashboard/messages'
       fullPath: '/dashboard/messages'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardMessagesRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/leads': {
       id: '/_authenticated/_professional/_pro/dashboard_/leads'
       path: '/dashboard/leads'
       fullPath: '/dashboard/leads'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardLeadsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/cpd': {
       id: '/_authenticated/_professional/_pro/dashboard_/cpd'
       path: '/dashboard/cpd'
       fullPath: '/dashboard/cpd'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardCpdRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/content': {
       id: '/_authenticated/_professional/_pro/dashboard_/content'
       path: '/dashboard/content'
       fullPath: '/dashboard/content'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardContentRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/community': {
       id: '/_authenticated/_professional/_pro/dashboard_/community'
       path: '/dashboard/community'
       fullPath: '/dashboard/community'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardCommunityRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/clients': {
       id: '/_authenticated/_professional/_pro/dashboard_/clients'
       path: '/dashboard/clients'
       fullPath: '/dashboard/clients'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardClientsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/check-ins': {
       id: '/_authenticated/_professional/_pro/dashboard_/check-ins'
       path: '/dashboard/check-ins'
       fullPath: '/dashboard/check-ins'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardCheckInsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/calendar': {
       id: '/_authenticated/_professional/_pro/dashboard_/calendar'
       path: '/dashboard/calendar'
       fullPath: '/dashboard/calendar'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardCalendarRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/business': {
       id: '/_authenticated/_professional/_pro/dashboard_/business'
       path: '/dashboard/business'
       fullPath: '/dashboard/business'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardBusinessRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/bookings': {
       id: '/_authenticated/_professional/_pro/dashboard_/bookings'
       path: '/dashboard/bookings'
       fullPath: '/dashboard/bookings'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardBookingsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/clients/$slug': {
       id: '/_authenticated/_professional/_pro/dashboard_/clients/$slug'
@@ -1920,13 +1935,7 @@ const AuthenticatedProfessionalProDashboardClientsRouteWithChildren =
     AuthenticatedProfessionalProDashboardClientsRouteChildren,
   )
 
-interface AuthenticatedProfessionalRouteRouteChildren {
-  AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRoute
-  AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
-  AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
-  AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
-  AuthenticatedProfessionalDashboardStartRoute: typeof AuthenticatedProfessionalDashboardStartRoute
-  AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
+interface AuthenticatedProfessionalProRouteRouteChildren {
   AuthenticatedProfessionalProDashboardBookingsRoute: typeof AuthenticatedProfessionalProDashboardBookingsRoute
   AuthenticatedProfessionalProDashboardBusinessRoute: typeof AuthenticatedProfessionalProDashboardBusinessRoute
   AuthenticatedProfessionalProDashboardCalendarRoute: typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1944,20 +1953,8 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalProDashboardReviewsRoute: typeof AuthenticatedProfessionalProDashboardReviewsRoute
 }
 
-const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRouteRouteChildren =
+const AuthenticatedProfessionalProRouteRouteChildren: AuthenticatedProfessionalProRouteRouteChildren =
   {
-    AuthenticatedProfessionalDashboardRoute:
-      AuthenticatedProfessionalDashboardRoute,
-    AuthenticatedProfessionalDashboardProfileRoute:
-      AuthenticatedProfessionalDashboardProfileRoute,
-    AuthenticatedProfessionalDashboardProfileEditRoute:
-      AuthenticatedProfessionalDashboardProfileEditRoute,
-    AuthenticatedProfessionalDashboardSettingsRoute:
-      AuthenticatedProfessionalDashboardSettingsRoute,
-    AuthenticatedProfessionalDashboardStartRoute:
-      AuthenticatedProfessionalDashboardStartRoute,
-    AuthenticatedProfessionalDashboardVerificationRoute:
-      AuthenticatedProfessionalDashboardVerificationRoute,
     AuthenticatedProfessionalProDashboardBookingsRoute:
       AuthenticatedProfessionalProDashboardBookingsRoute,
     AuthenticatedProfessionalProDashboardBusinessRoute:
@@ -1988,6 +1985,39 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalProDashboardReportsRoute,
     AuthenticatedProfessionalProDashboardReviewsRoute:
       AuthenticatedProfessionalProDashboardReviewsRoute,
+  }
+
+const AuthenticatedProfessionalProRouteRouteWithChildren =
+  AuthenticatedProfessionalProRouteRoute._addFileChildren(
+    AuthenticatedProfessionalProRouteRouteChildren,
+  )
+
+interface AuthenticatedProfessionalRouteRouteChildren {
+  AuthenticatedProfessionalProRouteRoute: typeof AuthenticatedProfessionalProRouteRouteWithChildren
+  AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRoute
+  AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
+  AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
+  AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
+  AuthenticatedProfessionalDashboardStartRoute: typeof AuthenticatedProfessionalDashboardStartRoute
+  AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
+}
+
+const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRouteRouteChildren =
+  {
+    AuthenticatedProfessionalProRouteRoute:
+      AuthenticatedProfessionalProRouteRouteWithChildren,
+    AuthenticatedProfessionalDashboardRoute:
+      AuthenticatedProfessionalDashboardRoute,
+    AuthenticatedProfessionalDashboardProfileRoute:
+      AuthenticatedProfessionalDashboardProfileRoute,
+    AuthenticatedProfessionalDashboardProfileEditRoute:
+      AuthenticatedProfessionalDashboardProfileEditRoute,
+    AuthenticatedProfessionalDashboardSettingsRoute:
+      AuthenticatedProfessionalDashboardSettingsRoute,
+    AuthenticatedProfessionalDashboardStartRoute:
+      AuthenticatedProfessionalDashboardStartRoute,
+    AuthenticatedProfessionalDashboardVerificationRoute:
+      AuthenticatedProfessionalDashboardVerificationRoute,
   }
 
 const AuthenticatedProfessionalRouteRouteWithChildren =
@@ -2094,13 +2124,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
