@@ -27,6 +27,8 @@ import proSophie from"@/assets/pro-sophie.jpg";
 import proLaura from"@/assets/pro-laura.jpg";
 import proDaniel from"@/assets/pro-daniel.jpg";
 import holoFigure from"@/assets/dashboard-holo-figure.png";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/dashboard-demo")({ head: () => ({ meta: [
       { title:"Dashboard — REPS Professional" },
@@ -1257,6 +1259,45 @@ function DashboardFooter() { return (
    PAGE
    ============================================================ */
 
+function LockedPreview({ children, label }: { children: React.ReactNode; label: string }) {
+  return (
+    <section className="relative overflow-hidden rounded-[22px]" aria-label={`${label} — Pro preview`}>
+      <div className="pointer-events-none select-none opacity-55" aria-hidden>
+        {children}
+      </div>
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-3 bg-reps-midnight/90 px-4 py-3 backdrop-blur-sm">
+        <Badge className="border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+          Pro preview · {label}
+        </Badge>
+        <Button asChild variant="outline" size="sm" className="shadow-none">
+          <Link to="/dashboard/start" search={{ tier: "pro", period: "monthly" }}>
+            Unlock with Pro
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+export function DashboardOverview({ locked = false }: { locked?: boolean }) {
+  const renderRow = (label: string, row: React.ReactNode) =>
+    locked ? <LockedPreview label={label}>{row}</LockedPreview> : row;
+
+  return (
+    <>
+      <div className="flex flex-col gap-4">
+        {renderRow("Business overview", <KpiRow />)}
+        {renderRow("Schedule and AI command centre", <ScheduleAndAi />)}
+        {renderRow("Clients, leads and content", <PerformanceRow />)}
+        {renderRow("Revenue and programme engagement", <RevenueRow />)}
+        {renderRow("Progress, tasks and events", <SpotlightRow />)}
+        {renderRow("Reviews, CPD and growth", <BottomRow />)}
+      </div>
+      <DashboardFooter />
+    </>
+  );
+}
+
 function DashboardPage() {
   return (
     <ProShell
@@ -1264,15 +1305,7 @@ function DashboardPage() {
       title="Welcome back, James 👋"
       subtitle="Here's what's happening with your business today."
     >
-      <div className="flex flex-col gap-4">
-        <KpiRow />
-        <ScheduleAndAi />
-        <PerformanceRow />
-        <RevenueRow />
-        <SpotlightRow />
-        <BottomRow />
-      </div>
-      <DashboardFooter />
+      <DashboardOverview />
 
       {/* FAB */}
       <button
