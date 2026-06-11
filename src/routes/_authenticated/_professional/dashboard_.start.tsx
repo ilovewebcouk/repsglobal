@@ -11,7 +11,7 @@ import { TIERS } from "@/lib/billing";
 import { createCheckoutSession } from "@/lib/billing/billing.functions";
 
 type StartSearch = {
-  tier?: "verified" | "pro" | "studio";
+  tier?: "verified" | "pro";
   period?: "monthly" | "annual";
 };
 
@@ -156,7 +156,7 @@ function StartPage() {
 
         <p className="mt-10 text-center text-[13px] text-white/45">
           Studio (multi-seat) opens later in 2026 —{" "}
-          <Link to="/pricing" className="text-reps-orange hover:underline">
+          <Link to="/contact" className="text-reps-orange hover:underline">
             join the waitlist
           </Link>
           .

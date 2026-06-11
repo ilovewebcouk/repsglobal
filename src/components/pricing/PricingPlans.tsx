@@ -22,18 +22,19 @@ export function PricingPlans() {
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCheckoutSession);
 
-  async function handlePaidCta(tierKey: PlanTierKey) {
+  async function handlePaidCta(tierKey: "verified" | "pro") {
+    const checkoutPeriod: Billing = tierKey === "verified" ? "annual" : "monthly";
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         navigate({
           to: "/signup",
-          search: { tier: tierKey, period: billing, next: "checkout" } as never,
+          search: { tier: tierKey, period: checkoutPeriod, next: "checkout" } as never,
         });
         return;
       }
-      const result = await startCheckout({ data: { tier: tierKey, period: billing } });
+      const result = await startCheckout({ data: { tier: tierKey, period: checkoutPeriod } });
       if (result?.url) {
         window.location.href = result.url;
       } else {
@@ -80,7 +81,9 @@ export function PricingPlans() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((p) => {
-          const view = p.pricing[billing];
+          const view = p.waitlist
+            ? p.pricing.monthly
+            : p.pricing[p.tierKey === "verified" ? "annual" : "monthly"];
           const isLoading = checkoutTier === p.tierKey;
           return (
             <Card
@@ -129,7 +132,13 @@ export function PricingPlans() {
                 <Button
                   type="button"
                   disabled={isLoading}
-                  onClick={() => handlePaidCta(p.tierKey)}
+                  onClick={() => {
+                    if (p.waitlist) {
+                      navigate({ to: "/contact" });
+                      return;
+                    }
+                    handlePaidCta(p.tierKey as "verified" | "pro");
+                  }}
                   variant={p.featured ? "default" : "outline"}
                   className={
                     p.featured
