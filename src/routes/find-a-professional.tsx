@@ -946,7 +946,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
           </Tooltip>
           <Link
             to="/pro/$slug"
-            params={{ slug: proSlug(pro.name) }}
+            params={{ slug: pro.slug ?? proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             {ctaLabel}
@@ -956,7 +956,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
         {/* Mobile full-width CTA */}
         <Link
           to="/pro/$slug"
-          params={{ slug: proSlug(pro.name) }}
+          params={{ slug: pro.slug ?? proSlug(pro.name) }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
           {ctaLabel}
