@@ -123,7 +123,7 @@ function LoginPage() {
           {/* Centred stack */}
           <div className="w-full max-w-[400px] text-center">
             <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
-              Welcome back to REPs.
+              Login to your account
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
               Sign in to manage your profile, clients and bookings — all in one place.
