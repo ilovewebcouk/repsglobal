@@ -32,18 +32,71 @@ export const Route = createFileRoute("/auth")({
   component: LoginPage,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function friendlyAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials")) {
+    return "That email and password don't match. Double-check and try again — or reset your password.";
+  }
+  if (m.includes("email not confirmed")) {
+    return "Please confirm your email first — check your inbox for the confirmation link.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Too many attempts. Please wait a minute and try again.";
+  }
+  if (m.includes("user not found")) {
+    return "No account found for that email. Want to sign up instead?";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Connection issue — check your internet and try again.";
+  }
+  return message;
+}
+
 function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
+  const validateEmail = (value: string): string | null => {
+    const v = value.trim();
+    if (!v) return "Please enter your email.";
+    if (!EMAIL_RE.test(v)) return "That doesn't look like a valid email address.";
+    return null;
+  };
+
+  const validatePassword = (value: string): string | null => {
+    if (!value) return "Please enter your password.";
+    if (value.length < 6) return "Password must be at least 6 characters.";
+    return null;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    if (eErr || pErr) {
+      // Focus the first invalid field for assistive tech.
+      const id = eErr ? "email" : "password";
+      requestAnimationFrame(() => document.getElementById(id)?.focus());
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -56,7 +109,8 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      const raw = err instanceof Error ? err.message : "Sign in failed";
+      setError(friendlyAuthError(raw));
     } finally {
       setLoading(false);
     }
@@ -71,7 +125,11 @@ function LoginPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        setError(result.error.message ?? `${provider} sign-in failed`);
+        setError(
+          friendlyAuthError(
+            result.error.message ?? `Couldn't sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`,
+          ),
+        );
         setBusy(false);
         return;
       }
@@ -82,7 +140,8 @@ function LoginPage() {
         navigate({ to, replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : `${provider} sign-in failed`);
+      const raw = err instanceof Error ? err.message : `${provider} sign-in failed`;
+      setError(friendlyAuthError(raw));
       setBusy(false);
     }
   };
@@ -134,7 +193,7 @@ function LoginPage() {
               </p>
             </div>
 
-            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email" className="text-white/75">
                   Email
@@ -144,11 +203,30 @@ function LoginPage() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailTouched) setEmailError(validateEmail(e.target.value));
+                    if (error) setError(null);
+                  }}
+                  onBlur={() => {
+                    setEmailTouched(true);
+                    setEmailError(validateEmail(email));
+                  }}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                  aria-invalid={emailError ? true : undefined}
+                  aria-describedby={emailError ? "email-error" : undefined}
+                  className={`h-11 rounded-[12px] bg-white/[0.04] text-white placeholder:text-white/30 ${
+                    emailError
+                      ? "border-red-400/60 focus-visible:ring-red-400/40"
+                      : "border-white/15"
+                  }`}
                 />
+                {emailError && (
+                  <p id="email-error" className="text-[12px] text-red-300">
+                    {emailError}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -168,18 +246,60 @@ function LoginPage() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordTouched) setPasswordError(validatePassword(e.target.value));
+                    if (error) setError(null);
+                  }}
+                  onBlur={() => {
+                    setPasswordTouched(true);
+                    setPasswordError(validatePassword(password));
+                  }}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="h-11 rounded-[12px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+                  aria-invalid={passwordError ? true : undefined}
+                  aria-describedby={passwordError ? "password-error" : undefined}
+                  className={`h-11 rounded-[12px] bg-white/[0.04] text-white placeholder:text-white/30 ${
+                    passwordError
+                      ? "border-red-400/60 focus-visible:ring-red-400/40"
+                      : "border-white/15"
+                  }`}
                 />
+                {passwordError && (
+                  <p id="password-error" className="text-[12px] text-red-300">
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               {error && (
-                <Alert variant="destructive" className="border-red-400/30 bg-red-500/10 text-red-200">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert
+                  role="alert"
+                  variant="destructive"
+                  className="border-red-400/30 bg-red-500/10 text-red-200"
+                >
+                  <AlertDescription>
+                    {error}{" "}
+                    {/that email and password/i.test(error) && (
+                      <Link
+                        to="/forgot-password"
+                        className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
+                      >
+                        Reset password
+                      </Link>
+                    )}
+                    {/no account found/i.test(error) && (
+                      <Link
+                        to="/signup"
+                        className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
+                      >
+                        Create account
+                      </Link>
+                    )}
+                  </AlertDescription>
                 </Alert>
               )}
+
 
               <Button
                 type="submit"
