@@ -203,7 +203,7 @@ function LoginPage() {
                       to="/forgot-password"
                       className="text-[12px] font-semibold text-reps-orange hover:underline"
                     >
-                      Forgot?
+                      Forgot password?
                     </Link>
                   </div>
                   <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
