@@ -1,10 +1,10 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const DAYS = [
-  { day: "Mon", title: "Next Move card", body: "REPs ranks this week's highest-leverage action — the price to raise, the client to renew." },
+  { day: "Mon", title: "Next Move card", body: "REPS ranks this week's highest-leverage action — the price to raise, the client to renew." },
   { day: "Tue", title: "Lead drafts ready", body: "Every enquiry scored on intent, with a personalised first-draft reply waiting in the pipeline." },
   { day: "Wed", title: "Programme writer", body: "One-line brief in, 12-week plan out. Edit, assign, done before your 11am coffee." },
-  { day: "Thu", title: "Risk flagged", body: "Three clients off-track — REPs spotted it before they ghosted. Drafted check-in queued." },
+  { day: "Thu", title: "Risk flagged", body: "Three clients off-track — REPS spotted it before they ghosted. Drafted check-in queued." },
   { day: "Fri", title: "Check-ins, summarised", body: "Twelve check-ins read for you. One card per client: headline, change, ask." },
 ];
 

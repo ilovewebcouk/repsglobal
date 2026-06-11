@@ -23,13 +23,13 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/programs")({
   head: () => ({
     meta: [
-      { title: "Programme Builder — REPs Professional" },
+      { title: "Programme Builder — REPS Professional" },
       {
         name: "description",
         content:
-          "Create, structure and assign professional training programmes from your REPs dashboard.",
+          "Create, structure and assign professional training programmes from your REPS dashboard.",
       },
-      { property: "og:title", content: "Programme Builder — REPs Professional" },
+      { property: "og:title", content: "Programme Builder — REPS Professional" },
       {
         property: "og:description",
         content: "Create, structure and assign professional training programmes.",

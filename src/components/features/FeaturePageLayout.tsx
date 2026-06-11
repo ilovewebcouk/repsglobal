@@ -248,7 +248,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
           <div className="rounded-[24px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <Sparkles className="mx-auto h-5 w-5 text-reps-orange" />
             <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
-              Try {feature.label.toLowerCase()} on REPs.
+              Try {feature.label.toLowerCase()} on REPS.
             </h2>
             <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
               Start with Verified or Pro. Founding pricing on Pro locked for life — before public launch.
@@ -258,7 +258,7 @@ export function FeaturePageLayout(props: FeaturePageProps) {
                 to="/pricing"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                Join REPs <ArrowRight className="h-4 w-4" />
+                Join REPS <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/pricing"

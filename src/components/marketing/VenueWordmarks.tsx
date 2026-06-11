@@ -6,7 +6,7 @@ import type * as React from "react";
  *
  * These are typographic credits (NOT the gyms' protected logos) — each mark
  * uses a widely-available font stack chosen to evoke that brand's visual tone.
- * They live alongside REPs' independent professionals; the parent strip
+ * They live alongside REPS' independent professionals; the parent strip
  * carries the legal hygiene line ("not affiliated with the gyms shown").
  *
  * All viewBoxes are 32 units tall so they line up at a uniform pixel height.

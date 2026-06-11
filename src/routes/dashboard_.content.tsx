@@ -16,14 +16,14 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/content")({
   head: () => ({
     meta: [
-      { title: "Content Studio — REPs Professional" },
+      { title: "Content Studio — REPS Professional" },
       {
         name: "description",
         content:
           "Plan, draft and publish every piece of content — videos, posts, programme assets and blog drafts.",
       },
-      { property: "og:title", content: "Content Studio — REPs Professional" },
-      { property: "og:description", content: "Content studio for REPs professionals." },
+      { property: "og:title", content: "Content Studio — REPS Professional" },
+      { property: "og:description", content: "Content studio for REPS professionals." },
       { property: "og:url", content: "/dashboard/content" },
     ],
     links: [{ rel: "canonical", href: "/dashboard/content" }],

@@ -14,7 +14,7 @@ export function MigrationChecklist({
           The migration guide
         </span>
         <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-          Move from {competitorName} to REPs in a weekend.
+          Move from {competitorName} to REPS in a weekend.
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-white/65">
           You don&apos;t have to rebuild everything. Five steps, one weekend,

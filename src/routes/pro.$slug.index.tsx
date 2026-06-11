@@ -82,7 +82,7 @@ const PROS: Record<string, Pro> = {
     years: 8,
     clients: "100+",
     bio: [
-      "I'm a REPs Verified Personal Trainer with over 8 years of experience helping clients achieve real, lasting results. My approach is tailored, supportive and evidence-based, focusing on strength, performance and long-term wellbeing.",
+      "I'm a REPS Verified Personal Trainer with over 8 years of experience helping clients achieve real, lasting results. My approach is tailored, supportive and evidence-based, focusing on strength, performance and long-term wellbeing.",
       "Whether you're just starting out or looking to take your training to the next level, I'll create a plan that fits your goals, lifestyle and schedule.",
     ],
     specialisms: [
@@ -122,8 +122,8 @@ const PROS: Record<string, Pro> = {
     ],
     qualifications: [
       {
-        badge: "REPs",
-        title: "REPs Level 3 Personal Trainer",
+        badge: "REPS",
+        title: "REPS Level 3 Personal Trainer",
         issuer: "The Register of Exercise Professionals",
         id: "REP1234567",
         issued: "May 2023",
@@ -174,7 +174,7 @@ const STATS = [
   { icon: Star, value: "50,000+", label: "Client Reviews" },
   { icon: Globe, value: "120+", label: "Countries Worldwide" },
   { icon: Calendar, value: "1M+", label: "Sessions Booked" },
-  { icon: ShieldCheck, value: "100%", label: "REPs Verified" },
+  { icon: ShieldCheck, value: "100%", label: "REPS Verified" },
 ];
 
 const SUB_NAV = [
@@ -202,8 +202,8 @@ const RATING_DIST = [
 export const Route = createFileRoute("/pro/$slug/")({
   head: ({ params }) => {
     const pro = PROS[params.slug] ?? PROS["james-carter"];
-    const title = `${pro.name} — ${pro.role} | REPs`;
-    const description = `${pro.name}, REPs Verified ${pro.role} in ${pro.location}. ${pro.blurb}`;
+    const title = `${pro.name} — ${pro.role} | REPS`;
+    const description = `${pro.name}, REPS Verified ${pro.role} in ${pro.location}. ${pro.blurb}`;
     return {
       meta: [
         { title },
@@ -249,7 +249,7 @@ function ProProfilePage() {
             <div className="flex flex-col">
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
                 <BadgeCheck className="h-3 w-3" />
-                REPs Verified
+                REPS Verified
               </span>
 
               <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-charcoal lg:text-[52px]">
@@ -313,7 +313,7 @@ function ProProfilePage() {
           <div className="mt-6 grid grid-cols-2 gap-4 rounded-[16px] border border-reps-stone bg-reps-warm-white p-4 sm:grid-cols-4 lg:p-5">
             <TrustItem
               icon={ShieldCheck}
-              title="REPs Verified"
+              title="REPS Verified"
               sub="Qualified & insured"
             />
             <TrustItem
@@ -565,7 +565,7 @@ function ProProfilePage() {
               </h2>
               <ul className="mt-4 space-y-3 text-[13px]">
                 {[
-                  { t: "REPs Verified Professional", s: "Identity, qualifications & insurance verified" },
+                  { t: "REPS Verified Professional", s: "Identity, qualifications & insurance verified" },
                   { t: "Professional Indemnity Insurance", s: "Active until 12 Dec 2025" },
                   { t: "CPD Compliant", s: "18 / 20 points this cycle" },
                 ].map((i) => (

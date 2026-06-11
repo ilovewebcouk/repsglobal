@@ -109,41 +109,41 @@ export interface ResourceArticle {
 // Author personas (kept consistent across articles)
 const SOPHIE = {
   author: "Sophie Marshall",
-  authorRole: "Editor, REPs",
+  authorRole: "Editor, REPS",
   authorBio:
-    "Sophie writes the REPs consumer guides and has covered the fitness industry for over a decade.",
+    "Sophie writes the REPS consumer guides and has covered the fitness industry for over a decade.",
 };
 const STANDARDS = {
-  author: "The REPs Standards Team",
+  author: "The REPS Standards Team",
   authorRole: "Standards & Verification",
   authorBio:
-    "The REPs Standards Team is responsible for the verification framework, complaints process and the public register.",
+    "The REPS Standards Team is responsible for the verification framework, complaints process and the public register.",
 };
 const JAMES = {
   author: "James Carter",
-  authorRole: "Head of Professional Growth, REPs",
+  authorRole: "Head of Professional Growth, REPS",
   authorBio:
-    "James works directly with hundreds of REPs-verified pros on pricing, positioning and client retention.",
+    "James works directly with hundreds of REPS-verified pros on pricing, positioning and client retention.",
 };
 const PRIYA = {
   author: "Dr Priya Shah",
-  authorRole: "Head of Coaching Practice, REPs",
+  authorRole: "Head of Coaching Practice, REPS",
   authorBio:
-    "Priya leads coaching standards at REPs and has spent fifteen years coaching and mentoring coaches worldwide.",
+    "Priya leads coaching standards at REPS and has spent fifteen years coaching and mentoring coaches worldwide.",
 };
 const MARK = {
   author: "Mark Ellis",
-  authorRole: "Head of CPD & Education, REPs",
+  authorRole: "Head of CPD & Education, REPS",
   authorBio:
-    "Mark sets the REPs CPD framework and reviews course providers seeking REPs-endorsed status.",
+    "Mark sets the REPS CPD framework and reviews course providers seeking REPS-endorsed status.",
 };
 
 export const RESOURCE_ARTICLES: ResourceArticle[] = [
   {
     slug: "how-reps-verifies-a-fitness-professional",
-    title: "How REPs verifies a fitness professional",
+    title: "How REPS verifies a fitness professional",
     excerpt:
-      "A behind-the-badge look at the checks every REPs Verified Professional clears before they appear in the public directory.",
+      "A behind-the-badge look at the checks every REPS Verified Professional clears before they appear in the public directory.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-12",
@@ -154,12 +154,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "The REPs badge isn't a logo — it's a promise. When you see a professional marked as Verified on REPs, they have cleared a documented set of checks that the public can rely on. This guide walks through exactly what those checks are, how often they're renewed, and what happens when a professional falls below the bar.",
+        text: "The REPS badge isn't a logo — it's a promise. When you see a professional marked as Verified on REPS, they have cleared a documented set of checks that the public can rely on. This guide walks through exactly what those checks are, how often they're renewed, and what happens when a professional falls below the bar.",
       },
       { type: "h2", text: "The four pillars of verification" },
       {
         type: "p",
-        text: "Every verified professional on REPs has cleared four independent checks before their profile becomes searchable.",
+        text: "Every verified professional on REPS has cleared four independent checks before their profile becomes searchable.",
       },
       {
         type: "ul",
@@ -178,12 +178,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "What happens when standards slip" },
       {
         type: "p",
-        text: "Verification isn't a one-off. Every complaint logged through the REPs complaints process is reviewed by our standards team. Substantiated complaints can result in a public note on the profile, suspension of the Verified badge, or — in serious cases — removal from the register entirely. The full process is published openly on our standards page so both clients and professionals know exactly where they stand.",
+        text: "Verification isn't a one-off. Every complaint logged through the REPS complaints process is reviewed by our standards team. Substantiated complaints can result in a public note on the profile, suspension of the Verified badge, or — in serious cases — removal from the register entirely. The full process is published openly on our standards page so both clients and professionals know exactly where they stand.",
       },
       {
         type: "quote",
         text: "If you can't tell the public exactly what your verification means, it doesn't mean anything.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -206,12 +206,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Start with verification, not Instagram" },
       {
         type: "p",
-        text: "A polished Instagram grid tells you about marketing, not coaching. Before you look at anything else, confirm the trainer is verified on a register like REPs. That single step covers qualifications, insurance and identity — the three things that protect you legally and physically.",
+        text: "A polished Instagram grid tells you about marketing, not coaching. Before you look at anything else, confirm the trainer is verified on a register like REPS. That single step covers qualifications, insurance and identity — the three things that protect you legally and physically.",
       },
       { type: "h2", text: "Match the speciality to your goal" },
       {
         type: "p",
-        text: "A trainer who specialises in postnatal recovery is rarely the right pick for a powerlifting meet. On REPs, every professional lists their specialisms, the populations they work with, and the settings they coach in. Filter ruthlessly — the right specialist will get you further in eight weeks than a generalist will in six months.",
+        text: "A trainer who specialises in postnatal recovery is rarely the right pick for a powerlifting meet. On REPS, every professional lists their specialisms, the populations they work with, and the settings they coach in. Filter ruthlessly — the right specialist will get you further in eight weeks than a generalist will in six months.",
       },
       {
         type: "ul",
@@ -237,7 +237,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "grow-your-pt-business-in-2026",
     title: "5 ways to grow your PT business in 2026",
     excerpt:
-      "The marketing tactics, pricing models and client systems that are working for REPs-verified professionals right now.",
+      "The marketing tactics, pricing models and client systems that are working for REPS-verified professionals right now.",
     category: "Fitness Business",
     ...JAMES,
     date: "2026-04-14",
@@ -247,7 +247,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "The professionals winning in 2026 aren't the loudest on social media — they're the most systematic. After a year of working with hundreds of REPs-verified pros, these are the five things the top earners have in common.",
+        text: "The professionals winning in 2026 aren't the loudest on social media — they're the most systematic. After a year of working with hundreds of REPS-verified pros, these are the five things the top earners have in common.",
       },
       { type: "h2", text: "1. Productise your offer" },
       {
@@ -257,12 +257,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "2. Charge for outcomes, not hours" },
       {
         type: "p",
-        text: "Hourly pricing caps your income at the number of hours in a week. Programme pricing — a fixed fee for a defined outcome — lets you charge for the value of the result, not the time it takes. The top quartile of REPs pros price every offer this way.",
+        text: "Hourly pricing caps your income at the number of hours in a week. Programme pricing — a fixed fee for a defined outcome — lets you charge for the value of the result, not the time it takes. The top quartile of REPS pros price every offer this way.",
       },
       { type: "h2", text: "3. Build a referral engine" },
       {
         type: "p",
-        text: "Roughly 60% of new clients on REPs come through referral from existing clients. Make it easy: ask at week six, give a written incentive, and follow up once. That's it.",
+        text: "Roughly 60% of new clients on REPS come through referral from existing clients. Make it easy: ask at week six, give a written incentive, and follow up once. That's it.",
       },
       {
         type: "ul",
@@ -274,10 +274,10 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
           "Block 90 minutes a week for business work, before you book any sessions.",
         ],
       },
-      { type: "h2", text: "4. Use your REPs profile as your sales page" },
+      { type: "h2", text: "4. Use your REPS profile as your sales page" },
       {
         type: "p",
-        text: "Most pros treat their REPs profile like a CV. The top earners treat it like a landing page — clear specialism, three real outcomes, named programmes with prices, and a short personal video. Every enquiry you receive has already read it; make sure it does the selling for you.",
+        text: "Most pros treat their REPS profile like a CV. The top earners treat it like a landing page — clear specialism, three real outcomes, named programmes with prices, and a short personal video. Every enquiry you receive has already read it; make sure it does the selling for you.",
       },
       { type: "h2", text: "5. Protect 90 minutes a week for the business" },
       {
@@ -287,7 +287,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Hourly rate is what beginners charge. Programme price is what professionals charge.",
-        cite: "Head of Professional Growth, REPs",
+        cite: "Head of Professional Growth, REPS",
       },
     ],
   },
@@ -336,7 +336,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Hybrid is the quiet winner" },
       {
         type: "p",
-        text: "The fastest-growing model on REPs is hybrid: one in-person session a fortnight to coach technique and reset the plan, plus a full online programme between sessions. You get the eyes-on coaching that fixes problems early, and the day-in-day-out structure that actually produces results. If a coach you like offers a hybrid tier, that's usually the smartest spend.",
+        text: "The fastest-growing model on REPS is hybrid: one in-person session a fortnight to coach technique and reset the plan, plus a full online programme between sessions. You get the eyes-on coaching that fixes problems early, and the day-in-day-out structure that actually produces results. If a coach you like offers a hybrid tier, that's usually the smartest spend.",
       },
       {
         type: "quote",
@@ -358,7 +358,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "Almost every bad personal-training experience could have been avoided in the first message. The signs are nearly always there — they just look like normal marketing if you don't know what to look for. Here is the 60-second vetting routine we recommend to every first-time client on REPs.",
+        text: "Almost every bad personal-training experience could have been avoided in the first message. The signs are nearly always there — they just look like normal marketing if you don't know what to look for. Here is the 60-second vetting routine we recommend to every first-time client on REPS.",
       },
       { type: "h2", text: "Red flag 1 — no public proof of qualification" },
       {
@@ -421,7 +421,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "What you should expect to pay" },
       {
         type: "p",
-        text: "These are the typical ranges we see on REPs across the UK in 2026. They are not minimums or maximums — they are the middle 60% of verified coaches.",
+        text: "These are the typical ranges we see on REPS across the UK in 2026. They are not minimums or maximums — they are the middle 60% of verified coaches.",
       },
       {
         type: "ul",
@@ -459,7 +459,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
   // ---------- NEW: Verification & Standards ----------
   {
     slug: "what-reps-verified-actually-means",
-    title: "What \"REPs Verified\" actually means — and what it doesn't",
+    title: "What \"REPS Verified\" actually means — and what it doesn't",
     excerpt:
       "The badge is specific, not magic. Here's exactly what we've checked, what we haven't, and why that distinction matters.",
     category: "Verification & Standards",
@@ -471,7 +471,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "Verification only works if everyone — clients and professionals — knows precisely what it covers. We see two failure modes in our complaints inbox: clients who assumed REPs Verified meant we had personally trained with the coach, and professionals who thought the badge was an endorsement of their coaching style. Neither is true, and pretending otherwise would damage the register. This is what the badge actually means.",
+        text: "Verification only works if everyone — clients and professionals — knows precisely what it covers. We see two failure modes in our complaints inbox: clients who assumed REPS Verified meant we had personally trained with the coach, and professionals who thought the badge was an endorsement of their coaching style. Neither is true, and pretending otherwise would damage the register. This is what the badge actually means.",
       },
       { type: "h2", text: "What \"Verified\" guarantees" },
       {
@@ -487,7 +487,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         type: "ul",
         items: [
           "Verified ≠ best in the area — it's a baseline, not a ranking.",
-          "Verified ≠ endorsed by REPs — we check standards, we don't recommend individuals.",
+          "Verified ≠ endorsed by REPS — we check standards, we don't recommend individuals.",
           "Verified ≠ permanent — it can be suspended or removed after a substantiated complaint.",
           "Verified ≠ a substitute for your own consultation — always meet first.",
         ],
@@ -505,7 +505,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Verification is the floor we hold every professional to. Choosing the right one is still your decision.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -513,7 +513,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "how-to-complain-about-fitness-professional",
     title: "How to make a complaint about a fitness professional",
     excerpt:
-      "A step-by-step guide to what we can and can't act on, what evidence to gather, and how the REPs complaints process actually works.",
+      "A step-by-step guide to what we can and can't act on, what evidence to gather, and how the REPS complaints process actually works.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-04-21",
@@ -523,12 +523,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "If something went wrong with a professional you found on REPs, telling us is the right thing to do — for you, and for everyone who might book the same coach next. This is exactly how the complaints process works, what we can act on, and what evidence makes a complaint we can investigate properly.",
+        text: "If something went wrong with a professional you found on REPS, telling us is the right thing to do — for you, and for everyone who might book the same coach next. This is exactly how the complaints process works, what we can act on, and what evidence makes a complaint we can investigate properly.",
       },
       { type: "h2", text: "What we can act on" },
       {
         type: "p",
-        text: "We can investigate anything that touches the standards we verify: working without current insurance, misrepresenting qualifications, identity issues, safeguarding failures, breaches of the REPs code of conduct (which includes safe practice, scope of practice, and how clients are treated), and refusal to honour clearly written terms.",
+        text: "We can investigate anything that touches the standards we verify: working without current insurance, misrepresenting qualifications, identity issues, safeguarding failures, breaches of the REPS code of conduct (which includes safe practice, scope of practice, and how clients are treated), and refusal to honour clearly written terms.",
       },
       { type: "h2", text: "What we can't act on" },
       {
@@ -542,7 +542,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
           "Keep messages, contracts, payment receipts, and any policy documents the professional sent you.",
           "If safety was involved, note exactly what was said or done, by whom, and where.",
           "Try to raise it with the professional first in writing — most issues resolve there.",
-          "If it doesn't resolve, submit the complaint to REPs via the complaints page.",
+          "If it doesn't resolve, submit the complaint to REPS via the complaints page.",
         ],
       },
       { type: "h2", text: "What happens after you submit" },
@@ -558,7 +558,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "The complaints process is not punishment. It's how a register stays trustworthy.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -603,7 +603,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Real UK price ranges" },
       {
         type: "p",
-        text: "From the verified pros on REPs in 2026, a 12-week signature programme typically lands between £600 and £1,800 depending on city, format (online, hybrid, in-person), and specialism. Online-only signature programmes from experienced coaches cluster around £900–£1,200. Hybrid sits at £1,200–£1,800. In-person 2× per week for 12 weeks usually exceeds £2,000. If you're at the bottom of that band with five years' experience and a full client list, you're underpriced.",
+        text: "From the verified pros on REPS in 2026, a 12-week signature programme typically lands between £600 and £1,800 depending on city, format (online, hybrid, in-person), and specialism. Online-only signature programmes from experienced coaches cluster around £900–£1,200. Hybrid sits at £1,200–£1,800. In-person 2× per week for 12 weeks usually exceeds £2,000. If you're at the bottom of that band with five years' experience and a full client list, you're underpriced.",
       },
       { type: "h2", text: "What to do if no one's buying" },
       {
@@ -613,7 +613,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Set the price you need to earn what you said you wanted. Then make the offer worth it.",
-        cite: "Head of Professional Growth, REPs",
+        cite: "Head of Professional Growth, REPS",
       },
     ],
   },
@@ -621,7 +621,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "consultation-script-paying-client",
     title: "Turning a free consultation into a paying client: a 20-minute script",
     excerpt:
-      "The exact agenda, questions and close that the highest-converting REPs pros use in their free consultations.",
+      "The exact agenda, questions and close that the highest-converting REPS pros use in their free consultations.",
     category: "Fitness Business",
     ...JAMES,
     date: "2026-03-31",
@@ -666,7 +666,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Most coaches sell with their mouths. The best ones sell with their questions.",
-        cite: "Head of Professional Growth, REPs",
+        cite: "Head of Professional Growth, REPS",
       },
     ],
   },
@@ -719,7 +719,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "The right policy is the one you'll actually use. The wrong one is the one you only mention when you're already angry.",
-        cite: "Head of Professional Growth, REPs",
+        cite: "Head of Professional Growth, REPS",
       },
     ],
   },
@@ -780,7 +780,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Clients quit relationships, not programmes. Build the relationship in month one and the rest follows.",
-        cite: "Head of Coaching Practice, REPs",
+        cite: "Head of Coaching Practice, REPS",
       },
     ],
   },
@@ -837,7 +837,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Diagnose the inputs before you change the plan, and have the conversation before you change the client.",
-        cite: "Head of Coaching Practice, REPs",
+        cite: "Head of Coaching Practice, REPS",
       },
     ],
   },
@@ -890,7 +890,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "The best programme on paper is worthless. The second-best programme done four days a week is everything.",
-        cite: "Head of Coaching Practice, REPs",
+        cite: "Head of Coaching Practice, REPS",
       },
     ],
   },
@@ -921,7 +921,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Question 2 — does the local market actually want it?" },
       {
         type: "p",
-        text: "A brilliant qualification with no demand in your area is an expensive hobby. Spend a week looking at REPs profiles in a 10-mile radius. Count how many coaches already specialise in your candidate area, how many enquiries that population generates, and what the going price point looks like. Specialism + unmet local demand is where the best Level 4 outcomes happen.",
+        text: "A brilliant qualification with no demand in your area is an expensive hobby. Spend a week looking at REPS profiles in a 10-mile radius. Count how many coaches already specialise in your candidate area, how many enquiries that population generates, and what the going price point looks like. Specialism + unmet local demand is where the best Level 4 outcomes happen.",
       },
       {
         type: "ul",
@@ -946,7 +946,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Pick the qualification that fits the clients you want to work with for the next five years — not the next five months.",
-        cite: "Head of CPD & Education, REPs",
+        cite: "Head of CPD & Education, REPS",
       },
     ],
   },
@@ -999,7 +999,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "The most expensive CPD is the cheap CPD you do every year and never apply.",
-        cite: "Head of CPD & Education, REPs",
+        cite: "Head of CPD & Education, REPS",
       },
     ],
   },
@@ -1007,7 +1007,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
   // ---------- NEW: Platform Updates ----------
   {
     slug: "whats-new-reps-q2-2026",
-    title: "What's new on REPs — Q2 2026",
+    title: "What's new on REPS — Q2 2026",
     excerpt:
       "The updates we shipped to the directory, verification and professional profiles between April and June 2026.",
     category: "Platform Updates",
@@ -1020,7 +1020,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "A short, dated changelog of the public-facing things that landed on REPs in the second quarter of 2026. We publish these every quarter so the people who rely on the register — clients, professionals, and partner organisations — can see exactly what's changed and why.",
+        text: "A short, dated changelog of the public-facing things that landed on REPS in the second quarter of 2026. We publish these every quarter so the people who rely on the register — clients, professionals, and partner organisations — can see exactly what's changed and why.",
       },
       { type: "h2", text: "Search and discovery" },
       {
@@ -1030,7 +1030,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Professional profiles" },
       {
         type: "p",
-        text: "Profiles now have a horizontal services row at the top — three named programmes with price ranges and a single enquire action — so prospective clients can see exactly what's on offer without scrolling. The reviews section has been moved up the page and supports verified-purchase reviews from clients who booked through REPs.",
+        text: "Profiles now have a horizontal services row at the top — three named programmes with price ranges and a single enquire action — so prospective clients can see exactly what's on offer without scrolling. The reviews section has been moved up the page and supports verified-purchase reviews from clients who booked through REPS.",
       },
       { type: "h2", text: "Verification" },
       {
@@ -1055,15 +1055,15 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Trust is built in public. A register that doesn't publish its updates isn't a register — it's a database.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "reps-roadmap-next",
-    title: "The REPs roadmap: what we're building next",
+    title: "The REPS roadmap: what we're building next",
     excerpt:
-      "A public look at what's coming to REPs in the next two quarters — what we've committed to, what we're exploring, and what we won't be doing.",
+      "A public look at what's coming to REPS in the next two quarters — what we've committed to, what we're exploring, and what we won't be doing.",
     category: "Platform Updates",
     ...STANDARDS,
     date: "2026-05-26",
@@ -1078,7 +1078,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Committed for the next quarter" },
       {
         type: "p",
-        text: "Three things are funded and in build. First, a redesigned client-side enquiry flow that lets people request a consultation directly from a profile without leaving REPs. Second, an updated complaints submission interface with structured evidence upload and clearer status tracking for both parties. Third, a refreshed standards page with the full audited verification framework published in plain English.",
+        text: "Three things are funded and in build. First, a redesigned client-side enquiry flow that lets people request a consultation directly from a profile without leaving REPS. Second, an updated complaints submission interface with structured evidence upload and clearer status tracking for both parties. Third, a refreshed standards page with the full audited verification framework published in plain English.",
       },
       { type: "h2", text: "Committed for the quarter after" },
       {
@@ -1099,17 +1099,17 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "What we're exploring" },
       {
         type: "p",
-        text: "A few things sit in research, not in build. A specialism-led discovery experience for clients who know their goal but not the right type of coach. A safe-practice resource library for professionals that pairs with the standards framework. And a structured pathway for BD-registered professionals to migrate their existing profile into REPs without losing their history. These are not commitments — but they are the questions we're spending serious time on.",
+        text: "A few things sit in research, not in build. A specialism-led discovery experience for clients who know their goal but not the right type of coach. A safe-practice resource library for professionals that pairs with the standards framework. And a structured pathway for BD-registered professionals to migrate their existing profile into REPS without losing their history. These are not commitments — but they are the questions we're spending serious time on.",
       },
       { type: "h2", text: "What we're not building" },
       {
         type: "p",
-        text: "We are not building paid promotion of individual professionals over others. We are not building a workout app or wearable. We are not adding paid 'featured' placements in the directory — verification is the only thing that affects ranking on REPs and that will not change. Saying these out loud matters; a roadmap is also a contract about what won't happen.",
+        text: "We are not building paid promotion of individual professionals over others. We are not building a workout app or wearable. We are not adding paid 'featured' placements in the directory — verification is the only thing that affects ranking on REPS and that will not change. Saying these out loud matters; a roadmap is also a contract about what won't happen.",
       },
       {
         type: "quote",
         text: "A roadmap is a promise about both what we'll build and what we won't. Both halves matter.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1127,7 +1127,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       { type: "p", text: "Finding the right fitness professional can feel daunting, but the selection and vetting process does not need to consume hours of your schedule. By establishing a structured, objective screening protocol, you can easily filter out unqualified instructors and select someone who aligns perfectly with your physical health goals. We recommend a systematic, thirty-minute vetting process that relies on verified register searches, structured profile evidence, and a single, focused introductory conversation. This approach protects your health, secures your financial investment, and builds a sustainable training programme." },
       { type: "h2", text: "Ten-Minute Credential Auditing" },
-      { type: "p", text: "Your introductory step involves verifying the trainer’s professional status and registration, which should take no more than ten minutes of focused online research. Within the United Kingdom, any credible and qualified personal trainer must hold a recognised Level 3 certificate in Personal Training as a baseline standard. We maintain the official public register at REPs to ensure that an instructor's qualifications are fully accredited, active, and validated by national standards. During this initial check, you also need to confirm that the professional holds valid public liability insurance and a current first aid qualification. Verifying these documents immediately safeguards you from hobbyists who lack professional accountability and formal training." },
+      { type: "p", text: "Your introductory step involves verifying the trainer’s professional status and registration, which should take no more than ten minutes of focused online research. Within the United Kingdom, any credible and qualified personal trainer must hold a recognised Level 3 certificate in Personal Training as a baseline standard. We maintain the official public register at REPS to ensure that an instructor's qualifications are fully accredited, active, and validated by national standards. During this initial check, you also need to confirm that the professional holds valid public liability insurance and a current first aid qualification. Verifying these documents immediately safeguards you from hobbyists who lack professional accountability and formal training." },
       { type: "h2", text: "Reading the Evidence on a Professional Profile" },
       {
         type: "ul",
@@ -1146,7 +1146,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "An accredited personal trainer prioritises client health and physical safety by conducting a thorough medical screening and physical assessment before prescribing any exercise programme.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1162,7 +1162,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverGroupTrainingVsOneToOne,
     body: [
-      { type: "p", text: "When you decide to invest in professional fitness support to reach your health goals, the first major decision is the format of your delivery. Traditionally, working one-to-one with a trainer was the standard path for anyone seeking structured physical progression. Today, small-group coaching offers a reliable and highly effective alternative that bridges the gap between large, busy studio classes and solo personal training sessions. Understanding how these training choices differ in terms of technical attention, scheduling flexibility, and financial investment helps you select a registered REPs professional who perfectly aligns with your lifestyle and goals." },
+      { type: "p", text: "When you decide to invest in professional fitness support to reach your health goals, the first major decision is the format of your delivery. Traditionally, working one-to-one with a trainer was the standard path for anyone seeking structured physical progression. Today, small-group coaching offers a reliable and highly effective alternative that bridges the gap between large, busy studio classes and solo personal training sessions. Understanding how these training choices differ in terms of technical attention, scheduling flexibility, and financial investment helps you select a registered REPS professional who perfectly aligns with your lifestyle and goals." },
       { type: "h2", text: "The technical focus of individual personal training" },
       { type: "p", text: "One-to-one coaching provides undivided technical attention from your instructor, making it the most personalised pathway available. If you are recovering from an acute injury, managing a chronic medical condition, or training for a highly specific physical event like a marathon or powerlifting meet, a dedicated personal trainer is indispensable. They observe every single repetition, adjusting your posture, tempo, and movement patterns in real time to prevent training injuries and maximise your biomechanical efficiency. This format also offers complete flexibility with scheduling, as your coach works around your busy timetable. Because the training programme is designed solely for your unique anatomy and rate of recovery, your progress is highly targeted and optimised." },
       { type: "h2", text: "The practical elements of small-group sessions" },
@@ -1179,11 +1179,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "How accountability differs between solo and group environments" },
       { type: "p", text: "Accountability operates in entirely different ways within these two distinct environments. With one-to-one coaching, your commitment is completely personal; your instructor expects you at an exact hour, and your absence is immediately noticed. If you struggle with internal motivation or find yourself frequently cancelling training sessions, this direct, professional relationship provides a powerful buffer against inconsistency. In contrast, small-group training relies heavily on community dynamics. Showing up to work alongside peers provides a unique form of positive peer pressure, where you are spurred on by the efforts of those around you. For many, this collective atmosphere is less intimidating than individual training while keeping motivation high." },
       { type: "h2", text: "Balancing your physical needs with your long-term budget" },
-      { type: "p", text: "Choosing the right coaching format ultimately requires a realistic appraisal of your physical history against your financial resources and personal preferences. If your budget is flexible and you require specialised guidance for complex lifting techniques, injury rehabilitation, or highly specific athletic goals, one-to-one coaching remains the safest, most effective path. However, if you are looking to build general muscular strength, improve cardiovascular fitness, and master foundational movements in an encouraging social environment, small-group training offers exceptional value. Whichever path you select, ensure you verify that your coach is registered with REPs, guaranteeing they hold recognised UK qualifications and adhere to high professional standards." },
+      { type: "p", text: "Choosing the right coaching format ultimately requires a realistic appraisal of your physical history against your financial resources and personal preferences. If your budget is flexible and you require specialised guidance for complex lifting techniques, injury rehabilitation, or highly specific athletic goals, one-to-one coaching remains the safest, most effective path. However, if you are looking to build general muscular strength, improve cardiovascular fitness, and master foundational movements in an encouraging social environment, small-group training offers exceptional value. Whichever path you select, ensure you verify that your coach is registered with REPS, guaranteeing they hold recognised UK qualifications and adhere to high professional standards." },
       {
         type: "quote",
         text: "A qualified professional adapts their delivery to the format, maintaining safety and technical excellence whether managing one client or a small group.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1199,9 +1199,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "6 min read",
     cover: coverFindingAPrenatalPostnatalTrainer,
     body: [
-      { type: "p", text: "Navigating physical activity during pregnancy or during the postnatal phase requires much more than general fitness advice. Your body undergoes profound physiological changes that demand a highly tailored approach to movement, specifically prioritising pelvic health, joint laxity, and safe core recovery. Finding a professional you can trust means looking past superficial social media profiles and thoroughly examining their actual qualifications, communication methods, and commitment to active client consent. We understand how overwhelming this selection process can be for expectant and new mothers, which is why verifying these fundamental professional standards remains our core focus at REPs. This diligence ensures that your health, and that of your baby, remains the primary priority during every workout." },
+      { type: "p", text: "Navigating physical activity during pregnancy or during the postnatal phase requires much more than general fitness advice. Your body undergoes profound physiological changes that demand a highly tailored approach to movement, specifically prioritising pelvic health, joint laxity, and safe core recovery. Finding a professional you can trust means looking past superficial social media profiles and thoroughly examining their actual qualifications, communication methods, and commitment to active client consent. We understand how overwhelming this selection process can be for expectant and new mothers, which is why verifying these fundamental professional standards remains our core focus at REPS. This diligence ensures that your health, and that of your baby, remains the primary priority during every workout." },
       { type: "h2", text: "Verifying official specialist qualifications" },
-      { type: "p", text: "A general personal training certificate is simply not sufficient for guiding an expectant or new mother safely through these physical transitions. You must ensure your instructor holds a specific, accredited Level 3 Award in Supporting Pre and Postnatal Clients, or an equivalent recognised professional qualification. These specialised programmes train instructors to thoroughly understand pelvic floor pathology, safe maternal positioning, and modified cardiovascular training across different trimesters. When you search for a professional on REPs, we act as your verification partner to ensure these qualification claims are authentic and up to date. This simple step protects you from well-meaning but unqualified trainers whose generic advice could lead to long-term pelvic injuries, severe diastasis recti, or general joint strain." },
+      { type: "p", text: "A general personal training certificate is simply not sufficient for guiding an expectant or new mother safely through these physical transitions. You must ensure your instructor holds a specific, accredited Level 3 Award in Supporting Pre and Postnatal Clients, or an equivalent recognised professional qualification. These specialised programmes train instructors to thoroughly understand pelvic floor pathology, safe maternal positioning, and modified cardiovascular training across different trimesters. When you search for a professional on REPS, we act as your verification partner to ensure these qualification claims are authentic and up to date. This simple step protects you from well-meaning but unqualified trainers whose generic advice could lead to long-term pelvic injuries, severe diastasis recti, or general joint strain." },
       { type: "h2", text: "Key questions to ask your prospective coach" },
       {
         type: "ul",
@@ -1220,7 +1220,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Every movement decision during and after pregnancy must be guided by qualified expertise and absolute client autonomy.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1252,12 +1252,12 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       },
       { type: "h2", text: "Observing the trainer's focus on joint health" },
       { type: "p", text: "When you observe a training session or participate in an initial trial, observe how the physical trainer manages your posture, alignment, and movement mechanics. An expert in mid-life strength training will never rush your warm-up protocol, often dedicating fifteen minutes to glute activation, ankle mobility, and multi-directional stability drills. They should frequently check in on your perceived exertion and physical comfort levels rather than dismissing joint discomfort as a necessary part of the process. They understand that heavy resistance training is highly beneficial for bone health, but they never sacrifice movement quality for the sake of simply adding weight to the barbell." },
-      { type: "h2", text: "How REPs simplifies your search process" },
-      { type: "p", text: "We maintain highly rigorous standards to ensure you can identify a professional who genuinely understands your physical needs during this stage of life. Our directory allows you to filter trainers by verified qualifications, including specialist certifications in chronic conditions, orthopaedic exercise, and active ageing. When you search through REPs, you are not simply viewing a directory of unverified enthusiasts; you are accessing practitioners who hold valid insurance, certified credentials, and a commitment to ongoing professional development. This thorough verification process provides peace of mind that your physical health is guided by a professional who respects the distinct physiological rules of training past fifty." },
+      { type: "h2", text: "How REPS simplifies your search process" },
+      { type: "p", text: "We maintain highly rigorous standards to ensure you can identify a professional who genuinely understands your physical needs during this stage of life. Our directory allows you to filter trainers by verified qualifications, including specialist certifications in chronic conditions, orthopaedic exercise, and active ageing. When you search through REPS, you are not simply viewing a directory of unverified enthusiasts; you are accessing practitioners who hold valid insurance, certified credentials, and a commitment to ongoing professional development. This thorough verification process provides peace of mind that your physical health is guided by a professional who respects the distinct physiological rules of training past fifty." },
       {
         type: "quote",
         text: "True training longevity is defined by building a foundation of strength and mobility that keeps you active, pain-free, and independent for decades to come.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1273,7 +1273,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverChoosingAStrengthCoachVsGeneralPt,
     body: [
-      { type: "p", text: "When you decide to invest in your physical health, the first step is often identifying the right professional guidance. However, launching an online search reveals a clear division in the fitness industry between generalist personal trainers and dedicated strength coaches. Selecting the incorrect pathway can easily lead to stalled progress, lost motivation, or unnecessary physical frustration. At REPs, we believe that understanding these professional distinctions is critical to finding matches that actually succeed, ensuring your time, energy, and resources are spent effectively on the gym floor from your very first session under professional supervision." },
+      { type: "p", text: "When you decide to invest in your physical health, the first step is often identifying the right professional guidance. However, launching an online search reveals a clear division in the fitness industry between generalist personal trainers and dedicated strength coaches. Selecting the incorrect pathway can easily lead to stalled progress, lost motivation, or unnecessary physical frustration. At REPS, we believe that understanding these professional distinctions is critical to finding matches that actually succeed, ensuring your time, energy, and resources are spent effectively on the gym floor from your very first session under professional supervision." },
       { type: "h2", text: "Defining the role of a general personal trainer" },
       { type: "p", text: "A general personal trainer is your guide to versatile physical fitness, sustainable lifestyle habits, and robust overall health. Their training covers a broad spectrum of physical disciplines, including metabolic conditioning, basic resistance training, mobility exercises, and nutritional habit coaching. If your objectives include shedding body fat, improving cardiovascular endurance, or simply building a consistent weekly exercise routine, a general personal trainer is highly effective. They excel in the psychology of behaviour change, helping clients navigate the initial barriers to starting a regular exercise programme. Their sessions are deliberately designed with sufficient variety to ensure workouts remain engaging while building a broad foundation of functional movement patterns that support your daily life." },
       { type: "h2", text: "Indicators that you require a specialist strength coach" },
@@ -1294,7 +1294,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Selecting the right specialist is not about finding the coach with the most advanced credentials, but finding the one whose daily training philosophy directly matches your personal objectives.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1312,7 +1312,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       { type: "p", text: "Working with a professional running coach can elevate your physical performance, refine your technique, and protect you from injury, yet navigating the modern fitness landscape requires a clear understanding of what quality instruction looks like. As running participation reaches historic heights across the UK, finding the right professional is not about following trending fitness personalities online. Instead, it requires identifying coaches who hold recognised national qualifications, understand your physiological needs, and design structured, highly adaptable physical programming around your everyday professional and family schedule." },
       { type: "h2", text: "Verifying professional credentials and insurance" },
-      { type: "p", text: "In the United Kingdom, a competent running coach should hold a recognised qualification, typically awarded by England Athletics or UK Athletics, such as the Leadership in Running Fitness or Coach in Running Fitness qualifications. Alternatively, a personal trainer holding an advanced Level 3 Diploma who specialises in endurance training can provide excellent, holistic support. These formal credentials ensure the coach understands biomechanics, energy systems, and the application of periodised physical training. Beyond certificates, you should always verify that your prospective coach holds valid public liability insurance and a current outdoor first aid certificate. Confirming these essential documents on the REPs registry protects your safety and guarantees you are working with an industry professional committed to safe, ethical practices." },
+      { type: "p", text: "In the United Kingdom, a competent running coach should hold a recognised qualification, typically awarded by England Athletics or UK Athletics, such as the Leadership in Running Fitness or Coach in Running Fitness qualifications. Alternatively, a personal trainer holding an advanced Level 3 Diploma who specialises in endurance training can provide excellent, holistic support. These formal credentials ensure the coach understands biomechanics, energy systems, and the application of periodised physical training. Beyond certificates, you should always verify that your prospective coach holds valid public liability insurance and a current outdoor first aid certificate. Confirming these essential documents on the REPS registry protects your safety and guarantees you are working with an industry professional committed to safe, ethical practices." },
       { type: "h2", text: "Aligning coach experience with your racing goals" },
       {
         type: "ul",
@@ -1332,7 +1332,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Professional UK running coaching successfully combines physiological science with consistent, dynamic communication to keep athletes of all abilities moving forward safely.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1365,11 +1365,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "The importance of evidence-based practice" },
       { type: "p", text: "A qualified coach bases their recommendations on peer-reviewed science rather than current social media trends or personal anecdotes. They understand that nutrition is highly individual, influenced by sleep, stress, and physical activity. When you work with a certified professional, they will help you build sustainable habits, educating you on energy balance and food quality rather than restricting entire food groups unnecessarily. This evidence-based approach protects your relationship with food and ensures long-term success. It also safeguards your metabolic health from the damaging effects of extreme, unscientific diets." },
       { type: "h2", text: "Crucial steps for verifying a coach" },
-      { type: "p", text: "Before committing your time and hard-earned resources to an online coach, always ask about their qualifications and professional affiliations. A reputable professional will gladly share details of their insurance policy, their certifying body, and their continuing professional development achievements. At REPs, we verify these credentials so you do not have to guess. Our directory lists professionals who have met high industry standards, ensuring they practise safely and ethically. Taking this step protects you from costly mistakes and ensures you partner with someone who genuinely understands human physiology." },
+      { type: "p", text: "Before committing your time and hard-earned resources to an online coach, always ask about their qualifications and professional affiliations. A reputable professional will gladly share details of their insurance policy, their certifying body, and their continuing professional development achievements. At REPS, we verify these credentials so you do not have to guess. Our directory lists professionals who have met high industry standards, ensuring they practise safely and ethically. Taking this step protects you from costly mistakes and ensures you partner with someone who genuinely understands human physiology." },
       {
         type: "quote",
         text: "Professional standards in nutrition coaching ensure that your health is guided by established science, not passing trends.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1403,11 +1403,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "What physical exercise actually happens in session one" },
       { type: "p", text: "Once the formal physical assessments are complete, you will transition to light physical activity. This final portion of the session is not designed to leave you exhausted, sweaty, or excessively sore the next morning; instead, it is an educational walkthrough. Your trainer will demonstrate core exercises, guide you through proper lifting techniques, and teach you how to adjust and use standard gym machinery correctly. You will practice these exercises with very light weights or basic bodyweight resistance. This hands-on phase allows the trainer to watch how your body responds to coaching cues and ensures you feel safe, comfortable, and confident before any intensity is applied." },
       { type: "h2", text: "Recognising the warning signs of a poor introduction" },
-      { type: "p", text: "It is equally important to understand what should never happen during your initial session. A reputable trainer will never skip the medical health check or immediately force you into high-intensity circuits that leave you gasping for air. You should never feel pressured to purchase expensive nutritional supplements or sign up for highly restrictive meal plans. If a trainer ignores your physical discomfort, dismisses your personal boundaries, or spends the hour looking at their mobile phone rather than carefully monitoring your lift form, they are not meeting the professional standards we verify at REPs. Your personal physical safety should always remain their absolute priority." },
+      { type: "p", text: "It is equally important to understand what should never happen during your initial session. A reputable trainer will never skip the medical health check or immediately force you into high-intensity circuits that leave you gasping for air. You should never feel pressured to purchase expensive nutritional supplements or sign up for highly restrictive meal plans. If a trainer ignores your physical discomfort, dismisses your personal boundaries, or spends the hour looking at their mobile phone rather than carefully monitoring your lift form, they are not meeting the professional standards we verify at REPS. Your personal physical safety should always remain their absolute priority." },
       {
         type: "quote",
         text: "A professional fitness journey must always begin with mutual communication, active listening, and physical safety, not physical exhaustion.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1434,17 +1434,17 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
           "Schedule a brief face-to-face conversation at the end of a session, or send a professional email if you train in a busy, shared public gym.",
           "Use a clear, polite exit script that expresses gratitude for their help while clearly stating your decision to change your training routine.",
           "Ask your current trainer for a summary of your lift history, injuries, and assessments so you can smoothly hand them over to your next instructor.",
-          "Secure your next verified coach through REPs before your notice period ends to ensure there is no drop in your training momentum.",
+          "Secure your next verified coach through REPS before your notice period ends to ensure there is no drop in your training momentum.",
         ],
       },
       { type: "h2", text: "What to say when ending the relationship" },
       { type: "p", text: "You do not need to over-complicate your decision or apologise excessively for prioritising your own training requirements. Keep your explanation brief, polite, and completely firm, leaving no room for awkward negotiations. For instance, you might say: 'Thank you for all your support over the last six months; I have really valued learning proper weightlifting technique from you. However, my schedules are changing next month, so I must pause our regular sessions and transition to a trainer who can accommodate early morning slots. I would like to use our remaining pre-paid sessions next week to wrap up our training.' This structural approach acknowledges their help while keeping your professional boundaries intact." },
       { type: "h2", text: "Finding a better match for your next chapter" },
-      { type: "p", text: "Once you have initiated the split, you can focus on finding a qualified specialist who is properly matched to support your next set of physical milestones. Before hiring anyone new, verify their professional credentials to ensure they possess the exact expertise you require, whether that is pre-natal exercise, lower back pain management, or advanced athletic conditioning. At REPs, we make this verification process straightforward by holding our registered professionals to strict standards of behaviour and ongoing education. When you meet with potential coaches, be entirely transparent about why your previous arrangement did not fit your needs, allowing them to tailor their coaching style to your preferences." },
+      { type: "p", text: "Once you have initiated the split, you can focus on finding a qualified specialist who is properly matched to support your next set of physical milestones. Before hiring anyone new, verify their professional credentials to ensure they possess the exact expertise you require, whether that is pre-natal exercise, lower back pain management, or advanced athletic conditioning. At REPS, we make this verification process straightforward by holding our registered professionals to strict standards of behaviour and ongoing education. When you meet with potential coaches, be entirely transparent about why your previous arrangement did not fit your needs, allowing them to tailor their coaching style to your preferences." },
       {
         type: "quote",
         text: "An experienced personal trainer will always value your progress and long-term health over holding onto a contract that is no longer a good fit.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1477,11 +1477,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "The difference between technical skill and personality" },
       { type: "p", text: "It is common to see reviews that praise a trainer for being friendly, personable, or great fun. While rapport is vital for a successful coaching relationship, it should not be the sole basis of your decision. A highly accommodating trainer who lacks technical methodology will struggle to help you reach complex strength or rehabilitation goals. Evaluate whether clients highlight the instructor’s ability to explain exercise mechanics, adjust training volume based on fatigue, or provide clear, actionable feedback between sessions. A great coach balances interpersonal warmth with rigorous, evidence-based systems." },
       { type: "h2", text: "Verifying credentials beyond written praise" },
-      { type: "p", text: "Reviews are only one piece of the puzzle when selecting a personal trainer. To ensure your safety and investment are protected, you should always cross-reference online testimonials with verified professional standards. Check if the trainer holds active professional liability insurance and holds a recognised Level 3 Personal Training qualification. At REPs, we verify these credentials independently, allowing you to focus on finding a professional whose verified experience matches your specific health requirements directly, rather than relying solely on unverified online comments." },
+      { type: "p", text: "Reviews are only one piece of the puzzle when selecting a personal trainer. To ensure your safety and investment are protected, you should always cross-reference online testimonials with verified professional standards. Check if the trainer holds active professional liability insurance and holds a recognised Level 3 Personal Training qualification. At REPS, we verify these credentials independently, allowing you to focus on finding a professional whose verified experience matches your specific health requirements directly, rather than relying solely on unverified online comments." },
       {
         type: "quote",
         text: "A verified qualification ensures public safety, while a genuine review reveals how that knowledge is applied on the gym floor.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1497,7 +1497,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverWhyInsuranceMattersFitnessCoach,
     body: [
-      { type: "p", text: "When you embark on a new fitness journey, your primary focus is naturally on setting ambitious goals, planning workouts, and establishing healthy routines. It is incredibly easy to overlook the administrative and legal credentials of the professional you choose to hire. However, working with a personal trainer or exercise specialist involves inherent physical risks. At REPs, we believe that understanding a coach's insurance status is just as critical as assessing their training qualifications. Ensuring your instructor is fully covered is the single most effective way to safeguard your long-term health." },
+      { type: "p", text: "When you embark on a new fitness journey, your primary focus is naturally on setting ambitious goals, planning workouts, and establishing healthy routines. It is incredibly easy to overlook the administrative and legal credentials of the professional you choose to hire. However, working with a personal trainer or exercise specialist involves inherent physical risks. At REPS, we believe that understanding a coach's insurance status is just as critical as assessing their training qualifications. Ensuring your instructor is fully covered is the single most effective way to safeguard your long-term health." },
       { type: "h2", text: "The essential shield of public liability insurance" },
       { type: "p", text: "Public liability insurance is the absolute cornerstone of professional accountability in the UK fitness industry. This specific coverage protects both the trainer and the client if a physical accident occurs during a workout session, whether in a commercial gym, a private studio, or a public park. For instance, if you trip over a poorly positioned kettlebell, slip on a wet floor during an intense outdoor circuit, or suffer an acute injury due to faulty equipment provided by your instructor, public liability covers the resulting medical costs and legal fees. Without this policy in place, you could find yourself facing expensive private physiotherapy bills and rehabilitation costs entirely on your own, with little realistic recourse to recover those expenses from an uninsured individual." },
       { type: "h2", text: "What professional indemnity actually covers" },
@@ -1513,13 +1513,13 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "The financial and physical risks of an uninsured coach" },
-      { type: "p", text: "Hiring an uninsured fitness coach exposes you to immense personal and financial vulnerability. If you sustain a severe muscular injury, a joint fracture, or a spinal issue that prevents you from working, your sudden loss of income can quickly escalate into a serious financial crisis. An insured professional has a substantial corporate policy backstop that can help cover these losses, whereas an uninsured coach is highly unlikely to have the personal liquid assets required to compensate you for long-term rehabilitation or lost earnings. This leaves you carrying both the physical pain and the legal struggle of an accident. At REPs, we mandate that every registered professional holds active, validated insurance, completely removing this high-stakes gamble from your routine." },
+      { type: "p", text: "Hiring an uninsured fitness coach exposes you to immense personal and financial vulnerability. If you sustain a severe muscular injury, a joint fracture, or a spinal issue that prevents you from working, your sudden loss of income can quickly escalate into a serious financial crisis. An insured professional has a substantial corporate policy backstop that can help cover these losses, whereas an uninsured coach is highly unlikely to have the personal liquid assets required to compensate you for long-term rehabilitation or lost earnings. This leaves you carrying both the physical pain and the legal struggle of an accident. At REPS, we mandate that every registered professional holds active, validated insurance, completely removing this high-stakes gamble from your routine." },
       { type: "h2", text: "Verification as standard practice" },
-      { type: "p", text: "Verifying a coach's insurance credentials should never feel like an awkward or confrontational interaction. Any true professional in the fitness sector will gladly present their public liability and professional indemnity certificates upon your request. In fact, seasoned trainers view these documents as a vital badge of honour, illustrating their commitment to safety, industry regulation, and client welfare. When you choose to use the REPs directory to find and verify a fitness trainer, this delicate vetting process is handled automatically on your behalf. We perform rigorous, ongoing compliance checks to confirm that every listed member maintains active cover, enabling you to focus entirely on your workouts." },
+      { type: "p", text: "Verifying a coach's insurance credentials should never feel like an awkward or confrontational interaction. Any true professional in the fitness sector will gladly present their public liability and professional indemnity certificates upon your request. In fact, seasoned trainers view these documents as a vital badge of honour, illustrating their commitment to safety, industry regulation, and client welfare. When you choose to use the REPS directory to find and verify a fitness trainer, this delicate vetting process is handled automatically on your behalf. We perform rigorous, ongoing compliance checks to confirm that every listed member maintains active cover, enabling you to focus entirely on your workouts." },
       {
         type: "quote",
         text: "Verifying professional insurance is not a matter of red tape; it is the fundamental boundary that keeps physical training safe, ethical, and accountable.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1527,7 +1527,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "dbs-checks-explained-fitness",
     title: "DBS checks explained for fitness clients and coaches",
     excerpt:
-      "Discover what a DBS check represents in the fitness sector, when instructors require background clearance, and how REPs verifies and displays this standard on our registry.",
+      "Discover what a DBS check represents in the fitness sector, when instructors require background clearance, and how REPS verifies and displays this standard on our registry.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-12",
@@ -1535,7 +1535,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverDbsChecksExplainedFitness,
     body: [
-      { type: "p", text: "When choosing a fitness professional, technical qualifications and public liability insurance are standard requirements. However, personal safety and safeguarding go much deeper, especially when physical training takes place in private homes, local school halls, or community spaces. A Disclosure and Barring Service (DBS) check serves as a vital safeguard, verifying that a coach has no criminal record that would prevent them from working safely. At REPs, we believe that clear transparency around these background checks is absolutely essential for building lasting trust between clients and professionals." },
+      { type: "p", text: "When choosing a fitness professional, technical qualifications and public liability insurance are standard requirements. However, personal safety and safeguarding go much deeper, especially when physical training takes place in private homes, local school halls, or community spaces. A Disclosure and Barring Service (DBS) check serves as a vital safeguard, verifying that a coach has no criminal record that would prevent them from working safely. At REPS, we believe that clear transparency around these background checks is absolutely essential for building lasting trust between clients and professionals." },
       { type: "h2", text: "Understanding the levels of DBS checks" },
       { type: "p", text: "A DBS check is a formal vetting process initiated in England and Wales to search police records and, in some cases, barred lists. There are three primary tiers of disclosure: basic, standard, and enhanced. A basic check shows unspent convictions, whereas standard and enhanced checks provide much deeper histories, including cautions, warnings, and official checks against lists of individuals barred from working with sensitive demographic groups. For fitness professionals, the exact tier required depends on the nature of their clients and the environments where they train. While a basic check remains an excellent professional baseline for any personal trainer, specific roles make higher clearances an absolute legal necessity." },
       { type: "h2", text: "When fitness professionals require background clearance" },
@@ -1550,14 +1550,14 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
           "Instructors leading group outdoor bootcamps in municipal public parks often require validated background clearance to secure their commercial council operator permits.",
         ],
       },
-      { type: "h2", text: "How REPs verifies and displays DBS status" },
-      { type: "p", text: "We believe that finding a reliable, qualified fitness professional should not require endless manual paperwork or uncomfortable conversations. REPs simplifies this process by integrating professional DBS verification directly into our public directory. When a fitness coach joins our platform, they can submit their up-to-date certificate for digital verification by our specialist standards team. Once validated, this secure status is clearly displayed on their public-facing REPs profile. This transparent badge of verification allows prospective clients, families, and healthcare partners to verify a coach's background history instantly, completely removing the awkwardness of asking to inspect physical paper documents during an initial consultation." },
+      { type: "h2", text: "How REPS verifies and displays DBS status" },
+      { type: "p", text: "We believe that finding a reliable, qualified fitness professional should not require endless manual paperwork or uncomfortable conversations. REPS simplifies this process by integrating professional DBS verification directly into our public directory. When a fitness coach joins our platform, they can submit their up-to-date certificate for digital verification by our specialist standards team. Once validated, this secure status is clearly displayed on their public-facing REPS profile. This transparent badge of verification allows prospective clients, families, and healthcare partners to verify a coach's background history instantly, completely removing the awkwardness of asking to inspect physical paper documents during an initial consultation." },
       { type: "h2", text: "Advancing safety and professionalism in UK fitness" },
-      { type: "p", text: "For qualified physical fitness professionals, maintaining an active and verified background check on a neutral register is a powerful differentiator. It signals a deep commitment to ethical coaching practices and professional safeguarding standards that goes far beyond basic exercise prescription. As the UK fitness industry work evolves towards closer integration with healthcare systems and community exercise schemes, background checks are transitioning from optional extras into core requirements. By keeping your credentials verified on the public REPs registry, you show prospective clients that you respect their personal safety as much as their physical progress, helping to elevate training standards across our entire professional community." },
+      { type: "p", text: "For qualified physical fitness professionals, maintaining an active and verified background check on a neutral register is a powerful differentiator. It signals a deep commitment to ethical coaching practices and professional safeguarding standards that goes far beyond basic exercise prescription. As the UK fitness industry work evolves towards closer integration with healthcare systems and community exercise schemes, background checks are transitioning from optional extras into core requirements. By keeping your credentials verified on the public REPS registry, you show prospective clients that you respect their personal safety as much as their physical progress, helping to elevate training standards across our entire professional community." },
       {
         type: "quote",
         text: "Verifying background credentials on a public register ensures that transparency and client safety remain at the absolute heart of the UK fitness profession.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1565,7 +1565,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "recognised-vs-unrecognised-qualifications",
     title: "Recognised vs unrecognised fitness qualifications in the UK",
     excerpt:
-      "Learn how REPs evaluates UK fitness qualifications, which awarding bodies are formally recognised, and how you can verify registration validity yourself.",
+      "Learn how REPS evaluates UK fitness qualifications, which awarding bodies are formally recognised, and how you can verify registration validity yourself.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-10",
@@ -1573,9 +1573,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverRecognisedVsUnrecognisedQualifications,
     body: [
-      { type: "p", text: "The United Kingdom's fitness training sector features a wide array of educational routes, but not all courses qualify you to work safely with the public. Every week, we receive numerous directory registration applications at REPs supported by certificates from unrecognised training providers. This guide clarifies exactly how we distinguish between regulated, industry-standard qualifications and unaccredited online schemes. Understanding these critical differences ensures that your educational investment is legally compliant, fully insurable, and respected by major employers across the health and leisure sectors." },
-      { type: "h2", text: "The Regulated Qualifications Framework and REPs alignment" },
-      { type: "p", text: "To be formally accepted by REPs, a practitioner's certificate must be registered on the Regulated Qualifications Framework (RQF) for England and Northern Ireland, or the equivalent Scottish Credit and Qualifications Framework (SCQF). These qualifications are heavily regulated by independent government executive bodies such as Ofqual in England, the CCEA in Northern Ireland, or the SQA in Scotland. They are developed and awarded by approved organisations including Active IQ, YMCA Awards, and Focus Awards, which align their syllabi directly with the professional standards maintained by REPs. If your chosen training provider cannot explicitly name the regulated awarding organisation that validates the final certificate, or if they claim to issue their own private certification, the course is highly unlikely to meet our verification requirements." },
+      { type: "p", text: "The United Kingdom's fitness training sector features a wide array of educational routes, but not all courses qualify you to work safely with the public. Every week, we receive numerous directory registration applications at REPS supported by certificates from unrecognised training providers. This guide clarifies exactly how we distinguish between regulated, industry-standard qualifications and unaccredited online schemes. Understanding these critical differences ensures that your educational investment is legally compliant, fully insurable, and respected by major employers across the health and leisure sectors." },
+      { type: "h2", text: "The Regulated Qualifications Framework and REPS alignment" },
+      { type: "p", text: "To be formally accepted by REPS, a practitioner's certificate must be registered on the Regulated Qualifications Framework (RQF) for England and Northern Ireland, or the equivalent Scottish Credit and Qualifications Framework (SCQF). These qualifications are heavily regulated by independent government executive bodies such as Ofqual in England, the CCEA in Northern Ireland, or the SQA in Scotland. They are developed and awarded by approved organisations including Active IQ, YMCA Awards, and Focus Awards, which align their syllabi directly with the professional standards maintained by REPS. If your chosen training provider cannot explicitly name the regulated awarding organisation that validates the final certificate, or if they claim to issue their own private certification, the course is highly unlikely to meet our verification requirements." },
       { type: "h2", text: "Why we maintain strict standards for our register" },
       {
         type: "ul",
@@ -1591,19 +1591,19 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Red flags of unrecognised training providers" },
       { type: "p", text: "Identifying an unrecognised training provider is relatively straightforward if you know which indicators to watch for during your initial research. Unaccredited academies frequently market cheap, accelerated courses that claim to transform you into a fully qualified personal trainer over a single weekend. These low-cost alternatives often lack any face-to-face contact, peer interaction, or real-time assessment, relying entirely on basic, automated multiple-choice testing. Furthermore, these providers often use ambiguous marketing jargon such as 'internationally accredited' or 'globally approved' without specifying which external regulated awarding body actually validates the credential. A legitimate, high-quality training provider will always display their specific centre approval number alongside the official logo of Ofqual or their awarding body." },
       { type: "h2", text: "How to perform a manual certificate check" },
-      { type: "p", text: "Before launching your professional fitness career or submitting your credentials to the REPs registry, we strongly advise executing a thorough verification check. Begin by inspecting your physical or digital certificate for the official logo of Ofqual, SQA, or Qualifications Wales, which must sit alongside the awarding organisation's branding. Locate the unique Qualification Number, which typically uses an eight-digit alphanumeric format. You can run this exact code through the government's online Register of Regulated Qualifications to verify its active status. Additionally, contacting the awarding body directly can confirm that your training provider is currently registered as an audited and approved centre to deliver that particular programme." },
+      { type: "p", text: "Before launching your professional fitness career or submitting your credentials to the REPS registry, we strongly advise executing a thorough verification check. Begin by inspecting your physical or digital certificate for the official logo of Ofqual, SQA, or Qualifications Wales, which must sit alongside the awarding organisation's branding. Locate the unique Qualification Number, which typically uses an eight-digit alphanumeric format. You can run this exact code through the government's online Register of Regulated Qualifications to verify its active status. Additionally, contacting the awarding body directly can confirm that your training provider is currently registered as an audited and approved centre to deliver that particular programme." },
       {
         type: "quote",
         text: "Verifying a qualification is not about creating administrative hurdles; it is the fundamental safeguard protecting both consumers and the integrity of our profession.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "how-the-reps-public-register-works",
-    title: "How the REPs public register works",
+    title: "How the REPS public register works",
     excerpt:
-      "Learn how the REPs public register maintains integrity by distinguishing between verified professional credentials and self-reported profile updates for registered exercise specialists.",
+      "Learn how the REPS public register maintains integrity by distinguishing between verified professional credentials and self-reported profile updates for registered exercise specialists.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-08",
@@ -1611,7 +1611,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverHowTheRepsPublicRegisterWorks,
     body: [
-      { type: "p", text: "When an employer, NHS referral officer, or private client searches the REPs public register, they need absolute certainty. They must know that the exercise professional they are hiring is fully qualified, safely insured, and practising ethically. Behind our simple directory search lies a rigorous checking process that runs constantly. We designed this framework to bridge the gap between qualification and ongoing professional compliance, providing a transparent, verifiable record of active status that anyone can access at any time." },
+      { type: "p", text: "When an employer, NHS referral officer, or private client searches the REPS public register, they need absolute certainty. They must know that the exercise professional they are hiring is fully qualified, safely insured, and practising ethically. Behind our simple directory search lies a rigorous checking process that runs constantly. We designed this framework to bridge the gap between qualification and ongoing professional compliance, providing a transparent, verifiable record of active status that anyone can access at any time." },
       { type: "h2", text: "Verification versus self-reported details" },
       { type: "p", text: "The integrity of the register depends on a clear division between what we verify and what professionals report themselves. We do not allow members to self-certify their core educational credentials under any circumstances. Official certificates, such as Level 3 Personal Training diplomas or GP referral credentials, must be submitted directly to our compliance team. We verify these documents with the respective awarding organisations before they appear as validated achievements on a public profile. Conversely, details like personal bios, location coordinates, and standard working hours are self-reported by the professional to keep their profile current, allowing them to communicate their unique training approach directly to prospective clients across the country." },
       { type: "h2", text: "What our compliance team checks" },
@@ -1633,7 +1633,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Our central responsibility is to ensure that the public register remains a trusted, accurate, and completely transparent benchmark for professional standards in the UK fitness industry.",
-        cite: "REPs Quality Assurance Committee",
+        cite: "REPS Quality Assurance Committee",
       },
     ],
   },
@@ -1641,7 +1641,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "when-to-report-a-fitness-professional",
     title: "When (and how) to report a fitness professional",
     excerpt:
-      "Learn how to identify when a trainer's behaviour breaches professional standards, the evidence required to make a report, and how REPs investigates complaints.",
+      "Learn how to identify when a trainer's behaviour breaches professional standards, the evidence required to make a report, and how REPS investigates complaints.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-06",
@@ -1649,7 +1649,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverWhenToReportAFitnessProfessional,
     body: [
-      { type: "p", text: "Every member of the public deserves to train in a safe, professional, and supportive environment. While the vast majority of exercise professionals registered with REPs maintain exceptionally high standards of practice and client care, there are instances where a trainer's conduct falls below acceptable professional boundaries. Knowing the difference between an intense training session and genuine professional misconduct is crucial for protecting yourself and other gym users. At REPs, we take every report from the public seriously, investigating departures from our standards with rigorous objectivity to ensure the integrity of the fitness industry remains intact across the country. We believe that client feedback is a critical pillar in upholding these professional boundaries." },
+      { type: "p", text: "Every member of the public deserves to train in a safe, professional, and supportive environment. While the vast majority of exercise professionals registered with REPS maintain exceptionally high standards of practice and client care, there are instances where a trainer's conduct falls below acceptable professional boundaries. Knowing the difference between an intense training session and genuine professional misconduct is crucial for protecting yourself and other gym users. At REPS, we take every report from the public seriously, investigating departures from our standards with rigorous objectivity to ensure the integrity of the fitness industry remains intact across the country. We believe that client feedback is a critical pillar in upholding these professional boundaries." },
       { type: "h2", text: "Identifying a breach of professional standards" },
       { type: "p", text: "It is essential to distinguish between a challenging exercise session and a genuine breach of professional conduct. A trainer pushing your physical limits within certified boundaries is normal practice; however, behaviour that compromises your physical safety, crosses emotional boundaries, or constitutes harassment is a serious breach of trust. This includes giving clinical nutrition or medical advice without appropriate qualifications, demonstrating unsolicited physical contact during exercise execution, or using discriminatory language under the guise of motivation. If a professional's actions make you feel unsafe, degraded, or physically exposed to injury, the threshold for submitting a formal complaint has been met. It is important to act promptly when these standards are violated so that evidence remains fresh and actionable." },
       { type: "h2", text: "The key evidence needed to support your report" },
@@ -1670,15 +1670,15 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Our register functions as a benchmark of trust because clients and professionals alike actively report deviations from our established code of ethics.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "data-and-privacy-on-reps",
-    title: "Your data and privacy on REPs",
+    title: "Your data and privacy on REPS",
     excerpt:
-      "This guide outlines how REPs collects, secures, and processes personal data for both fitness professionals and clients, ensuring transparency and UK GDPR compliance.",
+      "This guide outlines how REPS collects, secures, and processes personal data for both fitness professionals and clients, ensuring transparency and UK GDPR compliance.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-04",
@@ -1688,7 +1688,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       { type: "p", text: "As the UK register for fitness professionals, we maintain a secure directory that helps clients find qualified trainers. Trust in our platform relies on absolute transparency regarding how we handle your personal data. Whether you are a registered personal trainer uploading qualification certificates or a client searching for a local instructor, we protect your information with strict technical and organisational safeguards. We do not sell your data, nor do we compromise on security, ensuring our community remains safe and private at all times." },
       { type: "h2", text: "Information we collect from fitness professionals" },
-      { type: "p", text: "To maintain professional registration and verify your credentials on REPs, we require specific verification data. This includes your full legal name, professional contact details, proof of identity, national insurance number, and officially accredited training qualifications. We also verify your active public liability insurance and professional indemnity coverage to confirm your safe operating status. We process this information to ensure every fitness professional on our register meets the stringent standards expected by the public and industry employers. We store registration documents on highly secure, encrypted servers managed within the United Kingdom, ensuring full compliance with the UK General Data Protection Regulation and the Data Protection Act 2018." },
+      { type: "p", text: "To maintain professional registration and verify your credentials on REPS, we require specific verification data. This includes your full legal name, professional contact details, proof of identity, national insurance number, and officially accredited training qualifications. We also verify your active public liability insurance and professional indemnity coverage to confirm your safe operating status. We process this information to ensure every fitness professional on our register meets the stringent standards expected by the public and industry employers. We store registration documents on highly secure, encrypted servers managed within the United Kingdom, ensuring full compliance with the UK General Data Protection Regulation and the Data Protection Act 2018." },
       { type: "h2", text: "How we process and protect client information" },
       {
         type: "ul",
@@ -1701,21 +1701,21 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "What we never share with third parties" },
-      { type: "p", text: "We maintain a strict and uncompromising policy against monetising your personal information. REPs will never sell, rent, or lease your private data to third-party marketing companies, health insurance providers, or commercial gym chains. Fitness professionals only display the public business information they explicitly choose to show on their directory profile, such as verified achievements, specialised training, and work locations. Private documents, including copies of government identification, home addresses, and qualification certificates used to complete registration checks, remain private. Our platform security teams constantly monitor these databases to detect and prevent unauthorised access, ensuring your professional records remain strictly confidential." },
+      { type: "p", text: "We maintain a strict and uncompromising policy against monetising your personal information. REPS will never sell, rent, or lease your private data to third-party marketing companies, health insurance providers, or commercial gym chains. Fitness professionals only display the public business information they explicitly choose to show on their directory profile, such as verified achievements, specialised training, and work locations. Private documents, including copies of government identification, home addresses, and qualification certificates used to complete registration checks, remain private. Our platform security teams constantly monitor these databases to detect and prevent unauthorised access, ensuring your professional records remain strictly confidential." },
       { type: "h2", text: "Your rights and accessing your data" },
-      { type: "p", text: "Under UK data protection laws, you retain full ownership and control over your personal data on REPs. Professionals and clients alike have the legal right to request a complete copy of the information we hold about them by submitting a formal subject access request to our compliance team. You can also request that we correct any administrative inaccuracies or completely erase your personal data from our directory databases. While we are legally required to retain certain financial transaction details and core verification records for statutory tax and auditing purposes, we will promptly delete all non-essential marketing preferences, active accounts, and directory profiles upon your request." },
+      { type: "p", text: "Under UK data protection laws, you retain full ownership and control over your personal data on REPS. Professionals and clients alike have the legal right to request a complete copy of the information we hold about them by submitting a formal subject access request to our compliance team. You can also request that we correct any administrative inaccuracies or completely erase your personal data from our directory databases. While we are legally required to retain certain financial transaction details and core verification records for statutory tax and auditing purposes, we will promptly delete all non-essential marketing preferences, active accounts, and directory profiles upon your request." },
       {
         type: "quote",
         text: "Data protection is not an administrative afterthought; it is the foundation upon which public trust in the fitness sector is built.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "how-reps-handles-disputes",
-    title: "How REPs handles disputes between clients and pros",
+    title: "How REPS handles disputes between clients and pros",
     excerpt:
-      "An overview of the structured mediation and investigations framework REPs uses to handle professional disputes and maintain high standards in the fitness sector.",
+      "An overview of the structured mediation and investigations framework REPS uses to handle professional disputes and maintain high standards in the fitness sector.",
     category: "Verification & Standards",
     ...STANDARDS,
     date: "2026-05-02",
@@ -1723,7 +1723,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverHowRepsHandlesDisputes,
     body: [
-      { type: "p", text: "When you hire a personal trainer or fitness coach, you enter a relationship built on trust, clear communication, and mutual commitment. However, training arrangements can occasionally break down due to financial misunderstandings, mismatched expectations, or breaches of our professional standards. At REPs, we do not leave clients or professionals to navigate these difficulties alone. We maintain a structured, objective process to address disputes, protect both parties, and uphold the integrity of the fitness sector." },
+      { type: "p", text: "When you hire a personal trainer or fitness coach, you enter a relationship built on trust, clear communication, and mutual commitment. However, training arrangements can occasionally break down due to financial misunderstandings, mismatched expectations, or breaches of our professional standards. At REPS, we do not leave clients or professionals to navigate these difficulties alone. We maintain a structured, objective process to address disputes, protect both parties, and uphold the integrity of the fitness sector." },
       { type: "h2", text: "Our approach to early mediation" },
       { type: "p", text: "Before moving to formal disciplinary investigations, we always encourage informal mediation. Our role is to act as an impartial referee, reviewing the initial agreements, communications, and terms of service established between the client and the professional. We ask both parties to submit their evidence, such as text messages, emails, and signed training contracts. By focusing on objective documentation rather than emotion, we can resolve the vast majority of disputes at this early stage, often helping to clarify simple misunderstandings regarding booking policies, cancellations, or refund terms." },
       { type: "h2", text: "The core pillars of our dispute resolution" },
@@ -1738,13 +1738,13 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Formal investigations and disciplinary action" },
-      { type: "p", text: "When mediation fails or if a complaint involves serious professional misconduct, we escalate the matter to a formal review. This process is handled by our independent disciplinary panel, which evaluates the case against the REPs Code of Conduct. Misconduct can range from serious safety negligence during exercise instruction to financial dishonesty or inappropriate personal behaviour. During an active investigation, the professional’s registry status may be temporarily suspended to protect the public. Our priority during these investigations is absolute fairness, ensuring both parties have ample opportunity to present their case before any sanctions are imposed." },
+      { type: "p", text: "When mediation fails or if a complaint involves serious professional misconduct, we escalate the matter to a formal review. This process is handled by our independent disciplinary panel, which evaluates the case against the REPS Code of Conduct. Misconduct can range from serious safety negligence during exercise instruction to financial dishonesty or inappropriate personal behaviour. During an active investigation, the professional’s registry status may be temporarily suspended to protect the public. Our priority during these investigations is absolute fairness, ensuring both parties have ample opportunity to present their case before any sanctions are imposed." },
       { type: "h2", text: "Outcomes, sanctions, and professional accountability" },
-      { type: "p", text: "The decisions of our disciplinary panel are final and designed to maintain public confidence in registered fitness professionals. Depending on the severity of the breach, outcomes can range from mandatory retraining and mentoring to permanent removal from the REPs register. If a professional is removed from our register, we notify relevant industry bodies to prevent them from practising under our credentials. This strict enforcement ensures that the REPs badge remains a trusted mark of quality, reassurance, and safety for clients searching for verified fitness professionals across the UK." },
+      { type: "p", text: "The decisions of our disciplinary panel are final and designed to maintain public confidence in registered fitness professionals. Depending on the severity of the breach, outcomes can range from mandatory retraining and mentoring to permanent removal from the REPS register. If a professional is removed from our register, we notify relevant industry bodies to prevent them from practising under our credentials. This strict enforcement ensures that the REPS badge remains a trusted mark of quality, reassurance, and safety for clients searching for verified fitness professionals across the UK." },
       {
         type: "quote",
         text: "Maintaining public trust in fitness professionals requires a transparent, rigorous framework that holds both trainers and clients accountable to clear professional boundaries.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1781,7 +1781,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Operating strictly within your verified qualification level is the foundation of professional fitness practice and long-term client safety.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1798,7 +1798,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     cover: coverBuildingASixFigurePtBusiness,
     featured: true,
     body: [
-      { type: "p", text: "At REPs, we regularly speak with qualified trainers who aspire to build a sustainable, highly profitable business. The modern fitness landscape is full of bold promises about reaching six figures overnight, yet the practical, daily operational reality of managing such a business is rarely discussed. Generating £100,000 in annual revenue as a solo practitioner in the UK is entirely achievable, but it requires a structured mix of client services, professional time management, and a robust understanding of your overheads rather than simply working yourself to the point of exhaustion. It is about working smarter, not just longer." },
+      { type: "p", text: "At REPS, we regularly speak with qualified trainers who aspire to build a sustainable, highly profitable business. The modern fitness landscape is full of bold promises about reaching six figures overnight, yet the practical, daily operational reality of managing such a business is rarely discussed. Generating £100,000 in annual revenue as a solo practitioner in the UK is entirely achievable, but it requires a structured mix of client services, professional time management, and a robust understanding of your overheads rather than simply working yourself to the point of exhaustion. It is about working smarter, not just longer." },
       { type: "h2", text: "The mathematics of a hundred-thousand pound business" },
       { type: "p", text: "To reach £100,000 in turnover, you must average roughly £8,333 in monthly revenue. Believing you can achieve this solely through traditional, one-to-one hourly gym floor training at £50 per session is a common mistake. This model requires delivering over 38 hours of physical training every single week, allowing no time for holidays, illness, or client cancellations. Outstanding trainers quickly realise that such a demanding schedule leads directly to physical burnout and a decline in training quality. Instead, a stable six-figure business relies on a diversified service model that combines high-value hybrid coaching, small group sessions, and remote programming, protecting your time while helping more clients." },
       { type: "h2", text: "Realistic revenue streams for a solo trainer" },
@@ -1813,13 +1813,13 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Calculating the essential business overheads" },
-      { type: "p", text: "It is essential to distinguish between gross business turnover and your actual net take-home income. Operating as a solo personal trainer in the UK means self-managing several critical expenses. Commercial gym rent or studio floor access often consumes between £600 and £1,200 monthly, unless you possess your own private facility. Professional indemnity insurance, your REPs registration, client management software, custom booking applications, and ongoing professional development courses add at least £250 per month. Furthermore, setting aside at least 20 to 25 percent of your monthly profits for Income Tax, National Insurance, and annual accountancy fees is absolutely mandatory to prevent problematic financial liabilities when filing your tax return." },
+      { type: "p", text: "It is essential to distinguish between gross business turnover and your actual net take-home income. Operating as a solo personal trainer in the UK means self-managing several critical expenses. Commercial gym rent or studio floor access often consumes between £600 and £1,200 monthly, unless you possess your own private facility. Professional indemnity insurance, your REPS registration, client management software, custom booking applications, and ongoing professional development courses add at least £250 per month. Furthermore, setting aside at least 20 to 25 percent of your monthly profits for Income Tax, National Insurance, and annual accountancy fees is absolutely mandatory to prevent problematic financial liabilities when filing your tax return." },
       { type: "h2", text: "Managing your weekly diary and energy levels" },
       { type: "p", text: "Maintaining a successful business at this scale demands exceptional personal organisation and strict boundaries around your weekly calendar. A sustainable template involves limiting face-to-face delivery to 20 or 22 coaching hours, leaving sufficient energy for necessary business administration. You should dedicate at least eight to ten hours each week to writing technical instruction programming, evaluating remote check-ins, managing your financial accounts, and responding to client enquiries. Protecting this administrative time ensures you remain highly organised and fully energised for your active clients. Professional longevity in the fitness industry rests on treating your weekly business operations with the same strict discipline that you bring to the gym floor." },
       {
         type: "quote",
         text: "True commercial success is built on structured delivery, verified standards, and keeping client safety at the centre of your business model.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1857,7 +1857,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Establishing a clear professional focus is the most reliable way to transition from trading hours for money to building a sustainable, high-value fitness career.",
-        cite: "REPs Standards Advisory",
+        cite: "REPS Standards Advisory",
       },
     ],
   },
@@ -1873,7 +1873,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverRunningSmallGroupTrainingProfitably,
     body: [
-      { type: "p", text: "At REPs, we frequently observe fitness professionals trapped in a volume cycle, running large, generic exercise classes with razor-thin margins or suffering from burnout due to back-to-back individual client sessions. Small group training, specifically limited to four to six clients, offers an ideal middle ground for sustainable career growth. However, long-term viability depends on highly precise financial and operational planning. To transition from an exhausting, unstructured schedule to a genuinely profitable business model, you must structure your service pricing, exercise programming, and physical venue choices with absolute clarity and commercial realism." },
+      { type: "p", text: "At REPS, we frequently observe fitness professionals trapped in a volume cycle, running large, generic exercise classes with razor-thin margins or suffering from burnout due to back-to-back individual client sessions. Small group training, specifically limited to four to six clients, offers an ideal middle ground for sustainable career growth. However, long-term viability depends on highly precise financial and operational planning. To transition from an exhausting, unstructured schedule to a genuinely profitable business model, you must structure your service pricing, exercise programming, and physical venue choices with absolute clarity and commercial realism." },
       { type: "h2", text: "The Economics of the Semi-Private Model" },
       { type: "p", text: "Setting the correct price point for a semi-private group is where many qualified coaches struggle. A common mistake is simply dividing your standard individual hourly rate by the net number of participants, which severely undervalues your expertise and dramatically reduces your overall profit margin. Instead, you should price each slot at approximately sixty percent of your single-session rate. With a group of four participants, this pricing structure easily doubles your hourly revenue while still offering each client a substantial discount compared to standard one-to-one coaching. This premium positioning ensures clients receive high-value, bespoke attention while fully protecting your income from occasional late cancellations and seasonal attendance drops." },
       { type: "h2", text: "Programming for Shared Progression" },
@@ -1895,7 +1895,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A sustainable small group model balances personalised coaching with structured business boundaries to deliver consistent client results and reliable trainer revenue.",
-        cite: "REPs Standards Advisory",
+        cite: "REPS Standards Advisory",
       },
     ],
   },
@@ -1928,11 +1928,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Onboarding Clients from Your Pipeline" },
       { type: "p", text: "When an opening inevitably occurs in your coaching schedule, you should resist the natural temptation to simply offer the vacancy to the first name on your registration list. Use this transition instead as an opportunity to select the candidate who fits your current specialisation, coaching methodology, and scheduling requirements best. Reach out to three or four potential candidates simultaneously, offering them the chance to book a structured compatibility consultation to discuss their long-term fitness aims. This targeted step ensures that you continue to work with clients who are highly motivated to succeed, whilst also maintaining the strict quality standards of your business." },
       { type: "h2", text: "Managing Expectations and Maintaining Engagement" },
-      { type: "p", text: "Transparent communication is absolutely essential when managing a waitlist, as letting hopeful applicants sit in silence for months on end damages your professional reputation and dampens their initial enthusiasm. As we frequently observe at REPs, clearly defining your typical onboarding times and sending regular, high-value check-ins demonstrates that you have not forgotten their application to join your programme. When an applicant is finally offered an active training spot, make sure the onboarding sequence is swift, professional, and entirely friction-free to reinforce the premium nature of your fitness business. This methodical approach builds your reputation as a highly sought-after professional, allowing you to focus on delivering exceptional coaching." },
+      { type: "p", text: "Transparent communication is absolutely essential when managing a waitlist, as letting hopeful applicants sit in silence for months on end damages your professional reputation and dampens their initial enthusiasm. As we frequently observe at REPS, clearly defining your typical onboarding times and sending regular, high-value check-ins demonstrates that you have not forgotten their application to join your programme. When an applicant is finally offered an active training spot, make sure the onboarding sequence is swift, professional, and entirely friction-free to reinforce the premium nature of your fitness business. This methodical approach builds your reputation as a highly sought-after professional, allowing you to focus on delivering exceptional coaching." },
       {
         type: "quote",
         text: "Maintaining a formal waitlist allows a fitness professional to preserve the integrity of their practice by selecting clients who are ready for genuine commitment.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1970,7 +1970,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Long-term professional commitment is the foundation of effective coaching, turning short-term fitness goals into lifelong healthy behaviours.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -1993,7 +1993,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "ul",
         items: [
-          "Conduct a comprehensive audit of your weekly operating expenditures, including REPs registration fees, public liability insurance, venue rent, travel costs, and taxation reserves.",
+          "Conduct a comprehensive audit of your weekly operating expenditures, including REPS registration fees, public liability insurance, venue rent, travel costs, and taxation reserves.",
           "Calculate your target net monthly income against a realistic number of weekly coaching hours, ensuring you leave sufficient time for professional development and recovery.",
           "Apply a standard, incremental increase of between ten and fifteen percent to your base rate, rather than attempting a sudden, destabilising price jump that might shock your client base.",
           "Value the additional qualifications and continuing professional courses you have completed since your last review by folding that expertise directly into your rates.",
@@ -2007,7 +2007,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Professional pricing reflects the true cost of delivering safe, effective, and evidence-based fitness coaching over the long term.",
-        cite: "REPs Code of Professional Conduct",
+        cite: "REPS Code of Professional Conduct",
       },
     ],
   },
@@ -2023,7 +2023,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverTaxBasicsSelfEmployedTrainerUk,
     body: [
-      { type: "p", text: "Transitioning from a gym employee to an independent, self-employed personal trainer is a significant milestone in any fitness career. While designing bespoke exercise programmes and helping personal training clients achieve their physical goals is highly rewarding, managing your own financial administration can initially feel daunting. At REPs, we believe that understanding your tax obligations and maintaining neat financial records is just as important as keeping your professional liability insurance up to date. Getting your head around UK tax rules early ensures you avoid costly penalties, retain more of your hard-earned income, and build an ethical, sustainable fitness business with complete confidence." },
+      { type: "p", text: "Transitioning from a gym employee to an independent, self-employed personal trainer is a significant milestone in any fitness career. While designing bespoke exercise programmes and helping personal training clients achieve their physical goals is highly rewarding, managing your own financial administration can initially feel daunting. At REPS, we believe that understanding your tax obligations and maintaining neat financial records is just as important as keeping your professional liability insurance up to date. Getting your head around UK tax rules early ensures you avoid costly penalties, retain more of your hard-earned income, and build an ethical, sustainable fitness business with complete confidence." },
       { type: "h2", text: "Understanding your Self Assessment obligations" },
       { type: "p", text: "As an independent personal trainer in the UK, you are legally required to register for Self Assessment with HM Revenue and Customs if your untaxed self-employed gross income exceeds the one thousand pounds standard trading allowance in a single tax year. Once successfully registered, you must file an annual tax return detailing your total business earnings and eligible expenses. This tax filing determines your precise Income Tax liability alongside your relevant Class 2 and Class 4 National Insurance contributions. The UK tax year begins on the sixth of April and ends on the fifth of April the following year. Your completed online tax return and any outstanding tax owed must be submitted and paid by the thirty-first of January." },
       { type: "h2", text: "Claiming allowable business expenses" },
@@ -2031,7 +2031,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         type: "ul",
         items: [
           "Portable training equipment purchased exclusively for client use, including resistance bands, kettlebells, medicine balls, suspension trainers, and client assessment tools.",
-          "Professional membership fees and necessary business insurance cover, including your yearly registration fees with REPs and public liability insurance.",
+          "Professional membership fees and necessary business insurance cover, including your yearly registration fees with REPS and public liability insurance.",
           "Business travel expenses incurred specifically when visiting clients at their private homes or traveling between different commercial gym studios, excluding your normal daily commute.",
           "Continuing professional development expenditure, containing the registration fees for completing accredited qualifications, workshops, and specialist fitness coaching courses.",
           "Operational and marketing overheads, containing website domain hosting, printing client progress journals, and monthly subscriptions for booking and exercise prescription applications.",
@@ -2044,7 +2044,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Professional credibility is built not just on the gym floor, but in how meticulously you manage your business administration.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2067,7 +2067,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "ul",
         items: [
-          "Display your verified REPs membership badge clearly in the header or footer of every single page so visitors know you meet professional UK regulatory and ethical standards.",
+          "Display your verified REPS membership badge clearly in the header or footer of every single page so visitors know you meet professional UK regulatory and ethical standards.",
           "Present client success stories with clear timelines and realistic progress, including specific physiological, strength, or behavioural milestones that highlight your practical coaching abilities.",
           "List your exact qualifications, active register status, and specialist certifications clearly to establish immediate authority and technical competence within the physical activity sector.",
           "Include an easily accessible privacy policy and professional liability insurance declaration to reassure prospective clients of their data security, safety, and physical well-being.",
@@ -2081,7 +2081,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A professional fitness website must serve as a trusted digital handshake, establishing your credibility and mapping out a safe, clear path for a client's physical journey.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2118,7 +2118,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A professional standard of business management prevents administrative hurdles from disrupting the vital relationship between coach and client.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2156,7 +2156,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "True advocacy is never forced; it is the natural byproduct of structured client success and clear, professional routes of introduction.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2194,7 +2194,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Transitioning to a private studio elevates your professional responsibility, requiring equal commitment to business compliance and high-quality coaching practice.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2231,7 +2231,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "The transition to hybrid coaching is less about changing how you train, and more about refining how you manage client relationships.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2268,7 +2268,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "An exceptional initial assessment is not about passing or failing a physical fitness test; it is about establishing mutual understanding and safety.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2305,7 +2305,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "True fitness coaching meets the client exactly where they are cognitively, adjusting the session environment so physical movement becomes a source of relief rather than distress.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2321,7 +2321,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "6 min read",
     cover: coverCoachingClientsThroughPerimenopause,
     body: [
-      { type: "p", text: "At REPs, we have witnessed a substantial shift in how the fitness industry addresses female hormonal transitions. For decades, menopause was treated as a niche concern that clients navigated in isolation. Today, registered fitness professionals recognise that supporting clients through perimenopause and menopause requires a structured, evidence-based approach. It is not about prescribing fragile, low-intensity movement, but rather understanding how hormonal shifts alter physical capacity and adjusting our strength, conditioning, and recovery strategies to support long-term metabolic health and functional independence." },
+      { type: "p", text: "At REPS, we have witnessed a substantial shift in how the fitness industry addresses female hormonal transitions. For decades, menopause was treated as a niche concern that clients navigated in isolation. Today, registered fitness professionals recognise that supporting clients through perimenopause and menopause requires a structured, evidence-based approach. It is not about prescribing fragile, low-intensity movement, but rather understanding how hormonal shifts alter physical capacity and adjusting our strength, conditioning, and recovery strategies to support long-term metabolic health and functional independence." },
       { type: "h2", text: "Understanding the physiological shift" },
       { type: "p", text: "During perimenopause and menopause, declining estrogen levels trigger significant physiological changes, including a decline in skeletal muscle mass, bone mineral density, and metabolic efficiency. This is not a signal to steer clients toward low-impact, lightweight routines; rather, it makes progressive strength training absolutely essential. As coaches, we must focus on counteracting these biological changes. Research demonstrates that heavy strength training and high-impact multi-directional movements are incredibly effective at stimulating osteogenesis and preserving lean tissue. We need to move beyond generic cardio programmes and design resistance routines that actively protect joint health, while treating daily energy fluctuations with empathy and structured flexibility." },
       { type: "h2", text: "Evidence-based programming principles" },
@@ -2337,13 +2337,13 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Staying within the scope of practice" },
-      { type: "p", text: "While a REPs registered professional is highly qualified to prescribe safe exercise, we must respect the hard boundary between fitness coaching and medical management. Many clients will experience complex symptoms, from severe sleep disruption and hot flushes to debilitating joint pain, anxiety, and pelvic floor dysfunction. Our role as personal trainers is strictly limited to exercise prescription, behavioural support, and non-clinical nutritional guidance. We cannot diagnose conditions, recommend specific hormone replacement therapy adjustments, or interpret medical blood tests. When a client presents with complex physical or emotional symptoms, our primary duty of care is to guide them toward a qualified GP, specialist gynaecologist, or pelvic health clinician." },
+      { type: "p", text: "While a REPS registered professional is highly qualified to prescribe safe exercise, we must respect the hard boundary between fitness coaching and medical management. Many clients will experience complex symptoms, from severe sleep disruption and hot flushes to debilitating joint pain, anxiety, and pelvic floor dysfunction. Our role as personal trainers is strictly limited to exercise prescription, behavioural support, and non-clinical nutritional guidance. We cannot diagnose conditions, recommend specific hormone replacement therapy adjustments, or interpret medical blood tests. When a client presents with complex physical or emotional symptoms, our primary duty of care is to guide them toward a qualified GP, specialist gynaecologist, or pelvic health clinician." },
       { type: "h2", text: "Managing communication and client care" },
       { type: "p", text: "Effective coaching during this life stage is rooted in open, transparent communication and highly flexible session design. A client who slept poorly due to night sweats or experienced sudden fatigue may not benefit from a high-intensity session; instead, we might pivot the session to focus on mobility, technique, or lower-intensity strength work. This adaptive coaching format builds long-term trust and ensures the client remains consistent with their training rather than skipping sessions out of frustration. By utilising objective screening during consultations, such as tracking symptom trends alongside workout performance, we can adapt our coaching style to provide maximum support without exceeding our defined professional boundaries." },
       {
         type: "quote",
         text: "Professional fitness coaches provide the physical foundation for healthy aging, but we must always collaborate with medical partners when symptoms shift from normal physical transitions to clinical concerns.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2380,7 +2380,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Consistency in a compromised programme will always outperform a perfect routine that the client cannot execute.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2417,7 +2417,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Coaching a client through an injury recovery phase requires us to respect medical boundaries while methodically restoring their belief in their own physical capability.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2454,7 +2454,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Consistency is not about never failing to meet the ideal; it is about how quickly and gracefully you return to your baseline.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2470,7 +2470,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverHavingDifficultConversationsWithClients,
     body: [
-      { type: "p", text: "Every fitness professional eventually faces a situation where a client's actions diverge from their original goals. Whether it is a recurring pattern of late cancellations, a sudden drop in physical effort during sessions, or unreasonable demands for impossible physical transformations in a fortnight, avoiding these issues rarely resolves them. Allowing frustration to build silently undermines both the client's progress and your professional well-being. At REPs, we believe that addressing these concerns early and calmly prevents resentment, establishes a stronger foundation for long-term progress, and ultimately solidifies your reputation as a dedicated, expert practitioner." },
+      { type: "p", text: "Every fitness professional eventually faces a situation where a client's actions diverge from their original goals. Whether it is a recurring pattern of late cancellations, a sudden drop in physical effort during sessions, or unreasonable demands for impossible physical transformations in a fortnight, avoiding these issues rarely resolves them. Allowing frustration to build silently undermines both the client's progress and your professional well-being. At REPS, we believe that addressing these concerns early and calmly prevents resentment, establishes a stronger foundation for long-term progress, and ultimately solidifies your reputation as a dedicated, expert practitioner." },
       { type: "h2", text: "Setting clear boundaries from the initial assessment" },
       { type: "p", text: "Many potentially difficult conversations can be completely avoided, or at least substantially simplified, by establishing clear expectations during your initial consultation and assessment phase. When a new client first signs up for your training programme, they should receive a comprehensive written agreement detailing your policies on late cancellations, communication hours, and active physical participation. This is not about presenting an overly rigid persona or discouraging clients; it is about creating a safe, professional framework. When you must address a boundary violation later on, you can refer back to this mutual agreement dispassionately, removing personal bias from the conversation and keeping the focus strictly on the agreed terms." },
       { type: "h2", text: "Practical strategies for raising hard topics" },
@@ -2491,7 +2491,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Clear boundaries are not barriers to coaching; they are the exact framework within which successful client relationships can safely thrive.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2509,7 +2509,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       { type: "p", text: "As fitness professionals, our primary instinct is to help clients overcome every physical hurdle they encounter on the gym floor. However, true coaching expertise lies in knowing where your qualifications end and clinical intervention begins. Navigating this boundary can feel uncomfortable, especially if you fear losing a client's business or disrupting their training momentum. Drawing a clear line does not weaken your professional standing; rather, it solidifies your role as a responsible, trusted partner in their long-term health and wellbeing, demonstrating that you prioritise their physical safety above all else." },
       { type: "h2", text: "Identifying the boundaries of the personal trainer scope" },
-      { type: "p", text: "Your registration with REPs signifies that you operate within a strict, evidence-based scope of practice designed to protect the public. While you are fully qualified to construct tailored strength and conditioning programmes, offer healthy lifestyle guidance, and coach movement mechanics, you cannot diagnose, treat, or rehabilitate clinical conditions. When a client complains of acute injury or shows symptoms of an underlying health issue, attempting to guess the cause or prescribe corrective medical exercises violates this professional scope. Accepting your limitations protects your client from severe injury exacerbation and safeguards your professional indemnity insurance, ensuring you remain a trusted, highly professional practitioner in the physical activity sector." },
+      { type: "p", text: "Your registration with REPS signifies that you operate within a strict, evidence-based scope of practice designed to protect the public. While you are fully qualified to construct tailored strength and conditioning programmes, offer healthy lifestyle guidance, and coach movement mechanics, you cannot diagnose, treat, or rehabilitate clinical conditions. When a client complains of acute injury or shows symptoms of an underlying health issue, attempting to guess the cause or prescribe corrective medical exercises violates this professional scope. Accepting your limitations protects your client from severe injury exacerbation and safeguards your professional indemnity insurance, ensuring you remain a trusted, highly professional practitioner in the physical activity sector." },
       { type: "h2", text: "Clinical red flags that demand specialist referral" },
       {
         type: "ul",
@@ -2525,11 +2525,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Positioning the referral as an advanced level of client care" },
       { type: "p", text: "Initiating a clinical referral does not mean you have failed your client; it means you are elevating the standard of your service. Suggesting a medical consultation should always be framed as an essential, collaborative step rather than a step backward or a sign of coaching weakness. Explain clearly to your client that by consulting a physiotherapist or GP, they will receive an accurate medical diagnosis that allows you to design a far safer and more effective long-term training programme. Clients rarely feel abandoned when you proactively guide them toward specialist help; instead, they deeply respect your integrity, your professional awareness, and your genuine commitment to keeping them active without risking serious injury." },
       { type: "h2", text: "Developing professional relationships with local healthcare providers" },
-      { type: "p", text: "To make this referral process seamless and professional, take the initiative to build a strong referral network of trusted local physiotherapists, osteopaths, and general practitioners. Reach out to these local clinics directly to introduce yourself, explaining your credentials, your REPs-aligned standards, and your desire to collaborate constructively on client care. When you refer a client, provide them with a brief, objective written summary of the specific movements that trigger their discomfort. Invite the medical specialist to share back-to-training guidelines, allowing you to adapt the gym sessions safely while the client continues their clinician-led recovery under your safe supervision." },
+      { type: "p", text: "To make this referral process seamless and professional, take the initiative to build a strong referral network of trusted local physiotherapists, osteopaths, and general practitioners. Reach out to these local clinics directly to introduce yourself, explaining your credentials, your REPS-aligned standards, and your desire to collaborate constructively on client care. When you refer a client, provide them with a brief, objective written summary of the specific movements that trigger their discomfort. Invite the medical specialist to share back-to-training guidelines, allowing you to adapt the gym sessions safely while the client continues their clinician-led recovery under your safe supervision." },
       {
         type: "quote",
         text: "Working collaboratively with clinical specialists ensures that safety remains the foundation of long-term physical progression.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2566,7 +2566,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A successful joint coaching session is never a compromised single workout; it is the seamless execution of two distinct programmes running side by side.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2582,7 +2582,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "6 min read",
     cover: coverRunningEffectiveCheckIns,
     body: [
-      { type: "p", text: "For professional fitness coaches, the weekly or fortnightly check-in is an essential tool to monitor physical progress and build professional accountability. However, without a clear, objective framework, these administrative sessions often devolve into forty-minute counselling discussions that exhaust your energy, disrupt your schedule, and blur physical boundaries. While we must show empathy to our clients, our primary role as verified REPs professionals is to assess physical adherence, adjust training variables, and keep clients moving toward their targets. Restructuring this weekly touchpoint allows you to extract high-quality, actionable coaching data in less than ten minutes." },
+      { type: "p", text: "For professional fitness coaches, the weekly or fortnightly check-in is an essential tool to monitor physical progress and build professional accountability. However, without a clear, objective framework, these administrative sessions often devolve into forty-minute counselling discussions that exhaust your energy, disrupt your schedule, and blur physical boundaries. While we must show empathy to our clients, our primary role as verified REPS professionals is to assess physical adherence, adjust training variables, and keep clients moving toward their targets. Restructuring this weekly touchpoint allows you to extract high-quality, actionable coaching data in less than ten minutes." },
       { type: "h2", text: "Establishing a data-led triage process" },
       { type: "p", text: "Efficiency begins long before you or your client speak. By implementing a mandatory, standardised pre-check-in form, you shift the administrative and emotional heavy lifting of the process to a structured digital format that clients complete in their own time. This form should require objective metrics, such as body weight trends, average sleep quality, and completed sessions, alongside subjective ratings of daily stress, mood, and hunger. Reviewing these inputs before your scheduled conversation allows you to quickly identify potential coaching obstacles before they arise. If a client scores their recovery as excellent, indicates low stress, and completed all scheduled workouts, their check-in requires a simple, encouraging written acknowledgment rather than a lengthy telephone call, keeping your schedule clear." },
       { type: "h2", text: "Six key metrics to standardise" },
@@ -2604,7 +2604,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A highly structured check-in protects the trainer from burnout while giving the client the objective clarity they need to succeed.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2636,13 +2636,13 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Using constructive phrasing with clients" },
-      { type: "p", text: "When a client asks for a rigid dietary protocol, a specific fat-loss meal plan, or precise daily calorie targets, your response should redirect them toward positive behavioural habits while respecting professional limits. Instead of designing a strict daily eating schedule, which risks fostering unhealthy relationships with food, utilise constructive language that empowers the client to make their own choices based on educational principles. You might say: \"While my qualification does not cover prescribing bespoke clinical meal plans, we can look at general hydration, protein intake, and fibre targets to fully support your recovery and training.\" This phrasing keeps you safely aligned with REPs standards and teaches clients sustainable, long-term habits without stepping into restricted domain." },
+      { type: "p", text: "When a client asks for a rigid dietary protocol, a specific fat-loss meal plan, or precise daily calorie targets, your response should redirect them toward positive behavioural habits while respecting professional limits. Instead of designing a strict daily eating schedule, which risks fostering unhealthy relationships with food, utilise constructive language that empowers the client to make their own choices based on educational principles. You might say: \"While my qualification does not cover prescribing bespoke clinical meal plans, we can look at general hydration, protein intake, and fibre targets to fully support your recovery and training.\" This phrasing keeps you safely aligned with REPS standards and teaches clients sustainable, long-term habits without stepping into restricted domain." },
       { type: "h2", text: "When to recommend professional referral" },
       { type: "p", text: "Recognising when to refer a client to a registered medical professional is a vital sign of coaching maturity rather than a limitation of your knowledge. If a client shares a medical diagnosis like type-2 diabetes, presents with severe food intolerances, or displays signs of disordered eating patterns, they require specialist clinical care that falls outside the fitness remit. We recommend proactively building a supportive network of registered dietitians and qualified nutritionists to whom you can confidently direct these complex cases. By framing this referral as a constructive partnership to ensure their long-term health, you reinforce your position as a trusted, highly responsible professional within the wellness industry." },
       {
         type: "quote",
         text: "Working within your designated scope of practice is the foundation of client safety and professional integrity in the fitness sector.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2658,7 +2658,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverEndingACoachingRelationshipWell,
     body: [
-      { type: "p", text: "Every professional coaching relationship has a natural lifecycle, yet the final phase of a personal training engagement is frequently overlooked by trainers and clients alike. Whether a client has successfully reached their specific physical targets, or shifting lifestyle requirements mean it is time to part ways, handling this transition with care is a core component of professional practice. At REPs, we believe that bringing a coaching relationship to a structured, positive close is just as critical as the onboarding process for maintaining your professional reputation and long-term client trust." },
+      { type: "p", text: "Every professional coaching relationship has a natural lifecycle, yet the final phase of a personal training engagement is frequently overlooked by trainers and clients alike. Whether a client has successfully reached their specific physical targets, or shifting lifestyle requirements mean it is time to part ways, handling this transition with care is a core component of professional practice. At REPS, we believe that bringing a coaching relationship to a structured, positive close is just as critical as the onboarding process for maintaining your professional reputation and long-term client trust." },
       { type: "h2", text: "Recognising when it is time to transition" },
       { type: "p", text: "Recognising the right moment to conclude a personal training programme prevents your service from stagnating or becoming an unproductive financial commitment for your client. A client might have achieved their primary muscle-building, mobility, or cardiovascular goals, meaning they now possess the physical autonomy to train safely without hands-on supervision. Alternatively, changing career workloads or shifting household budgets within the UK economy may dictate that they step back from premium one-to-one coaching services. Initiating this transition conversation proactively, rather than waiting for them to drift away, demonstrates that you prioritised your client's financial and physical welfare over simple monthly business retention. It turns a potentially awkward parting into a planned graduation, reinforcing the value of the education you delivered." },
       { type: "h2", text: "Establishing a clear offboarding workflow" },
@@ -2675,11 +2675,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Navigating the difficult or unilateral termination" },
       { type: "p", text: "Not every coaching engagement concludes on a celebratory note; occasionally, a fitness professional must unilaterally terminate a relationship due to repeated late cancellations, outstanding payments, or disregard for safety protocols. When executing a unilateral ending, maintaining an objective, calm, and written record is vital to keeping the situation highly professional and legally sound. Avoid emotional critiques or personal judgments and instead refer directly to your signed service agreement, cancellation policy, or gym conduct standards. By focusing strictly on your established booking terms or your specific scope of professional practice, you keep the interaction non-confrontational. This objective approach allows both parties to part ways cleanly, preserving your professional integrity and local reputation." },
       { type: "h2", text: "Preserving the professional network and future opportunities" },
-      { type: "p", text: "How you formally conclude an agreement directly influences your outstanding reputation in the local community and your long-term professional referral network. A client who finishes their training with a structured self-management plan and an organized exit experience is far more likely to recommend your business to friends, family, and colleagues. If their changing physical requirements mean they need a specialist from an allied healthcare discipline, such as physiotherapy or sports rehabilitation, coordinate an organised professional handoff. Remaining supportive and leaving the coaching door open for safety-focused future collaborations, whilst maintaining clear boundaries, exemplifies the high level of practice expected of verified REPs professionals." },
+      { type: "p", text: "How you formally conclude an agreement directly influences your outstanding reputation in the local community and your long-term professional referral network. A client who finishes their training with a structured self-management plan and an organized exit experience is far more likely to recommend your business to friends, family, and colleagues. If their changing physical requirements mean they need a specialist from an allied healthcare discipline, such as physiotherapy or sports rehabilitation, coordinate an organised professional handoff. Remaining supportive and leaving the coaching door open for safety-focused future collaborations, whilst maintaining clear boundaries, exemplifies the high level of practice expected of verified REPS professionals." },
       {
         type: "quote",
         text: "The mark of true coaching excellence is not just how you onboard a client, but the professional grace with which you finalise their journey.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2717,7 +2717,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Professional development should never be a tick-box exercise, but a deliberate strategy to raise the standard of care we deliver to our communities.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2750,11 +2750,11 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "The critical role of supervised practical hours" },
       { type: "p", text: "You cannot learn the sub-second nuances of coaching a clean-and-jerk or a high-velocity change-of-direction drill solely through a digital portal. While online learning offers convenience for theoretical concepts like bioenergetics, practical execution requires physical supervision and immediate feedback. Look for courses that specify a minimum number of face-to-face workshop hours where you are both the athlete and the coach. These sessions should test your ability to spot biomechanical breakdowns in real time and apply immediate, constructive coaching cues. If a provider promises a full strength and conditioning certification based purely on video submissions, the qualification may carry little weight with employers or insurers." },
       { type: "h2", text: "Verifying accreditation and industry recognition" },
-      { type: "p", text: "Before committing your capital, you must verify how the industry views the qualification you are considering. A reputable strength and conditioning course should be endorsed by recognised awarding organisations and align with the professional standards set by REPs. This alignment ensures that your new qualification is recognised for insurance purposes and valued by sports clubs, schools, and private athletic facilities. Take the time to contact the awarding body directly to confirm that the course provider is currently approved, or search the REPs directory to ensure the education provider is fully vetted." },
+      { type: "p", text: "Before committing your capital, you must verify how the industry views the qualification you are considering. A reputable strength and conditioning course should be endorsed by recognised awarding organisations and align with the professional standards set by REPS. This alignment ensures that your new qualification is recognised for insurance purposes and valued by sports clubs, schools, and private athletic facilities. Take the time to contact the awarding body directly to confirm that the course provider is currently approved, or search the REPS directory to ensure the education provider is fully vetted." },
       {
         type: "quote",
         text: "A valid qualification must demand rigorous practical assessment, not just multiple-choice theory exams.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2791,7 +2791,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Staying within your professional scope of practice is the foundation of client safety and ethical coaching.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2828,7 +2828,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "A qualified fitness professional knows that the most powerful mental health tool in their arsenal is not a therapy technique, but a clear referral pathway.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2844,7 +2844,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverLearningFromShadowingOtherCoaches,
     body: [
-      { type: "p", text: "Textbooks and initial training courses provide the essential theoretical framework for a career in fitness, but they rarely prepare you for the dynamic realities of a busy gym floor. Shadowing an experienced peer bridges this practical gap, offering real-time demonstrations of client communication, assessment, and technical adjustment. At REPs, we recognise structured shadowing as an exceptionally powerful tool for continuing professional development. It allows professionals to observe alternative cueing methods, study movement mechanics up close, and learn how seasoned specialists manage complex client behaviours across varying environments." },
+      { type: "p", text: "Textbooks and initial training courses provide the essential theoretical framework for a career in fitness, but they rarely prepare you for the dynamic realities of a busy gym floor. Shadowing an experienced peer bridges this practical gap, offering real-time demonstrations of client communication, assessment, and technical adjustment. At REPS, we recognise structured shadowing as an exceptionally powerful tool for continuing professional development. It allows professionals to observe alternative cueing methods, study movement mechanics up close, and learn how seasoned specialists manage complex client behaviours across varying environments." },
       { type: "h2", text: "Structuring shadowing as formal CPD" },
       { type: "p", text: "For shadowing to qualify as formal continuing professional development rather than casual observation, you must establish a structured framework before the sessions begin. This involves creating a written agreement with the host coach that clearly outlines your specific learning objectives, assessment methods, and professional boundaries. You should document the precise technical elements you intend to study, such as specific exercise regressions, verbal communication styles, or complex postural assessments during compound movements. Keeping a highly comprehensive reflective log that details how these observed techniques can be integrated into your own practice transforms passive exposure into an active, measurable learning experience that satisfies professional audit requirements." },
       { type: "h2", text: "Key protocols for the gym floor" },
@@ -2866,7 +2866,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "Reflective observation transforms raw gym floor experience into structured, professional expertise.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
@@ -2884,7 +2884,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       { type: "p", text: "Every year, UK fitness professionals invest precious time and money into Continuing Professional Development (CPD) courses. We learn about pre- and postnatal exercise, lower back pain management, or advanced nutrition. Yet, many of these certificates sit in desk drawers while our daily training sessions look exactly the same. The gap between learning a skill and selling it as a distinct service is where most trainers lose momentum. To build a sustainable business, we must treat every education course not just as a compliance requirement, but as a commercial launchpad." },
       { type: "h2", text: "Identifying the client problem your qualification solves" },
-      { type: "p", text: "Clients do not buy credentials; they buy solutions to specific physical or mental barriers. If you have recently completed a qualification in GP exercise referral, your current clients do not necessarily want to hear about clinical systems. Instead, they want to know how your new knowledge helps them manage their mild hypertension, joint discomfort, or anxiety safely. Before changing your professional profile on REPs, write down three specific lifestyle limitations your new qualification addresses. Use this list to reframe your training. By speaking directly to these pain points, you shift from offering generic gym floor supervision to delivering specialised, high-value outcomes." },
+      { type: "p", text: "Clients do not buy credentials; they buy solutions to specific physical or mental barriers. If you have recently completed a qualification in GP exercise referral, your current clients do not necessarily want to hear about clinical systems. Instead, they want to know how your new knowledge helps them manage their mild hypertension, joint discomfort, or anxiety safely. Before changing your professional profile on REPS, write down three specific lifestyle limitations your new qualification addresses. Use this list to reframe your training. By speaking directly to these pain points, you shift from offering generic gym floor supervision to delivering specialised, high-value outcomes." },
       { type: "h2", text: "Designing a structured pilot programme" },
       {
         type: "ul",
@@ -2898,19 +2898,19 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Positioning services with clear commercial boundaries" },
-      { type: "p", text: "One of the most common business mistakes is absorbing new skills into your existing hourly fitness rate. If you have spent time mastering lifestyle behaviour change, do not simply add fifteen minutes of verbal coaching to the end of a standard session for free. Instead, create a distinct, structured service line. For example, you might introduce a hybrid package that blends forty-five minutes of physical movement with a dedicated fifteen-minute lifestyle wellness consultation. This clean separation signals to your client that the new skill is a premium asset, requiring a different level of focus and justifying a distinct fee structure on your REPs profile. When pricing this new service, remember to account for the additional preparation and analysis time required outside of active training hours." },
+      { type: "p", text: "One of the most common business mistakes is absorbing new skills into your existing hourly fitness rate. If you have spent time mastering lifestyle behaviour change, do not simply add fifteen minutes of verbal coaching to the end of a standard session for free. Instead, create a distinct, structured service line. For example, you might introduce a hybrid package that blends forty-five minutes of physical movement with a dedicated fifteen-minute lifestyle wellness consultation. This clean separation signals to your client that the new skill is a premium asset, requiring a different level of focus and justifying a distinct fee structure on your REPS profile. When pricing this new service, remember to account for the additional preparation and analysis time required outside of active training hours." },
       { type: "h2", text: "Communicating the value to your wider network" },
-      { type: "p", text: "Once your pilot is complete and your service structure is defined, you can effectively present this to the wider wellness market. On REPs, clients and clinical referral professionals actively seek specialists with verified qualifications. Ensure your new credentials are fully uploaded to your profile, and write a concise, clear description of the specific outcomes you now facilitate. Avoid clinical jargon that might confuse a layperson. Instead, focus on the practical, everyday benefits your service delivers. By presenting your education as a structured pathway, you make it easy for local healthcare providers and prospective clients to choose your specialised services with complete confidence." },
+      { type: "p", text: "Once your pilot is complete and your service structure is defined, you can effectively present this to the wider wellness market. On REPS, clients and clinical referral professionals actively seek specialists with verified qualifications. Ensure your new credentials are fully uploaded to your profile, and write a concise, clear description of the specific outcomes you now facilitate. Avoid clinical jargon that might confuse a layperson. Instead, focus on the practical, everyday benefits your service delivers. By presenting your education as a structured pathway, you make it easy for local healthcare providers and prospective clients to choose your specialised services with complete confidence." },
       {
         type: "quote",
         text: "Professional development is only as valuable as the tangible changes it creates in your daily delivery.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "new-on-reps-enhanced-search-filters",
-    title: "New on REPs: enhanced search filters for clients",
+    title: "New on REPS: enhanced search filters for clients",
     excerpt:
       "We have upgraded our directory search filters to help clients find qualified fitness professionals by specialism, setting, specific populations, language, and accessibility needs.",
     category: "Platform Updates",
@@ -2920,7 +2920,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverNewOnRepsEnhancedSearchFilters,
     body: [
-      { type: "p", text: "Connecting the right client with the right fitness professional is the core of our mission at REPs. When a client visits our directory, they are typically looking for more than a general personal trainer; they often require specialised support to manage unique health conditions. To facilitate these connections, we have updated our directory search infrastructure. These changes make it straightforward for clients to filter our verified database by specific criteria, ensuring professionals are paired with clients who need their exact skillset and experience." },
+      { type: "p", text: "Connecting the right client with the right fitness professional is the core of our mission at REPS. When a client visits our directory, they are typically looking for more than a general personal trainer; they often require specialised support to manage unique health conditions. To facilitate these connections, we have updated our directory search infrastructure. These changes make it straightforward for clients to filter our verified database by specific criteria, ensuring professionals are paired with clients who need their exact skillset and experience." },
       { type: "h2", text: "Matching Specialisms with Client Goals" },
       { type: "p", text: "Fitness is not a one-size-fits-all discipline, and clients increasingly seek professionals with specialised training that matches their medical background or personal circumstances. Our new search capability permits users to filter directory results by precise specialisms, such as lower back pain management, pre- and post-natal exercise, and cardiovascular rehabilitation. By narrowing down the database this way, a client recovering from a medical condition or surgery can instantly locate a trainer who has verified, advanced qualifications in that specific clinical area. This eliminates guesswork for the client and ensures that our most highly trained members receive inquiries that are perfectly matched to their professional capabilities and educational credentials." },
       { type: "h2", text: "Environmental and Accessibility Adjustments" },
@@ -2935,21 +2935,21 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         ],
       },
       { type: "h2", text: "Supporting Specific Populations Safely" },
-      { type: "p", text: "Different life stages require fundamentally different approaches to physical activity, which is why population-specific filtering is now a core feature of the REPs directory. Clients looking for senior exercise specialists, youth fitness instructors, or adaptive fitness experts can apply these filters to find trainers who truly understand the biological and physiological demands of these groups. Each qualification claimed by a REPs professional is manually verified during registration, meaning clients can trust that a trainer listed under paediatric fitness or older adult exercise has the formal training necessary to programme safely. This structured verification process protects the client while maintaining the integrity of our profession." },
+      { type: "p", text: "Different life stages require fundamentally different approaches to physical activity, which is why population-specific filtering is now a core feature of the REPS directory. Clients looking for senior exercise specialists, youth fitness instructors, or adaptive fitness experts can apply these filters to find trainers who truly understand the biological and physiological demands of these groups. Each qualification claimed by a REPS professional is manually verified during registration, meaning clients can trust that a trainer listed under paediatric fitness or older adult exercise has the formal training necessary to programme safely. This structured verification process protects the client while maintaining the integrity of our profession." },
       { type: "h2", text: "Enhancing Trust through Verified Status" },
       { type: "p", text: "This update also benefits our registered exercise professionals by placing their verified credentials and specialised training at the forefront of client searches. Instead of competing on social media visibility or generic marketing reach, trainers on our register are discovered based on their verified expertise, geographical location, and professional standing. We encourage all registered members to log into their profile portal today and ensure their details are fully active and updated with their current qualifications, languages spoken, and facility settings. Keeping this information accurate ensures you appear in these highly targeted search results, directly connecting you with clients who are seeking your exact expertise. It is a direct, professional way to build a sustainable, client-focused business." },
       {
         type: "quote",
         text: "Connecting clients with the correct, highly qualified professional is fundamental to raising standards across the exercise sector.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   },
   {
     slug: "behind-the-scenes-how-we-built-the-public-register",
-    title: "Behind the scenes: how we built the REPs public register",
+    title: "Behind the scenes: how we built the REPS public register",
     excerpt:
-      "We share the engineering and design choices behind the REPs public register, detailing how we protect professional privacy while maintaining absolute verification integrity.",
+      "We share the engineering and design choices behind the REPS public register, detailing how we protect professional privacy while maintaining absolute verification integrity.",
     category: "Platform Updates",
     ...STANDARDS,
     date: "2026-03-01",
@@ -2957,7 +2957,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     readTime: "5 min read",
     cover: coverBehindTheScenesHowWeBuiltThePublicRegister,
     body: [
-      { type: "p", text: "When our software team set out to rebuild the REPs public register, our core objective was clear. We needed to design a highly dependable, visible directory where the public could verify a fitness professional's credentials instantly. Merely displaying a static list of names was insufficient to meet auditing demands. To support genuine trust across the physical activity sector, we had to build an infrastructure that balances public transparency with individual data privacy, ensuring that only verified, active professionals are visible to prospective employers and clients." },
+      { type: "p", text: "When our software team set out to rebuild the REPS public register, our core objective was clear. We needed to design a highly dependable, visible directory where the public could verify a fitness professional's credentials instantly. Merely displaying a static list of names was insufficient to meet auditing demands. To support genuine trust across the physical activity sector, we had to build an infrastructure that balances public transparency with individual data privacy, ensuring that only verified, active professionals are visible to prospective employers and clients." },
       { type: "h2", text: "Balancing public verification with personal privacy" },
       { type: "p", text: "A critical challenge in developing this database was determining exactly what information to display publicly without exposing sensitive data. While clients and employers require absolute proof of a trainer's qualifications, insurance status, and current registration level, fitness professionals deserve complete control over their personal contact details. We made a deliberate engineering choice to hide private phone numbers, home addresses, and specific financial transactions from public view. The public register shows only the professional’s full name, registration number, confirmed membership status, general location of work, and validated specialisations. This selective visibility ensures complete compliance with UK data protection regulations while establishing a reliable, open database for daily public queries." },
       { type: "h2", text: "Core principles of our database architecture" },
@@ -2979,7 +2979,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "quote",
         text: "By placing rigorous verification at the core of our platform design, we protect both the public searching for training guidance and the registered professionals who uphold these high standards.",
-        cite: "REPs Standards Charter",
+        cite: "REPS Standards Charter",
       },
     ],
   }

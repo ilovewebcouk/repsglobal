@@ -4,10 +4,10 @@ import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 export const Route = createFileRoute("/admin_/cpd")({
   head: () => ({
     meta: [
-      { title: "CPD oversight — REPs Admin" },
+      { title: "CPD oversight — REPS Admin" },
       { name: "description", content: "Track CPD compliance, evidence audits and the course catalogue." },
-      { property: "og:title", content: "CPD oversight — REPs Admin" },
-      { property: "og:description", content: "Cycle compliance and evidence review for REPs professionals." },
+      { property: "og:title", content: "CPD oversight — REPS Admin" },
+      { property: "og:description", content: "Cycle compliance and evidence review for REPS professionals." },
     ],
   }),
   component: AdminCpd,
@@ -74,7 +74,7 @@ function AdminCpd() {
             {[
               { t: "Coaching the postnatal client", p: "FitPro Education", s: "Pending" },
               { t: "Pre-screening for return-to-sport", p: "Sports Therapy Institute", s: "Pending" },
-              { t: "Nutrition coaching essentials", p: "REPs Academy", s: "Approved" },
+              { t: "Nutrition coaching essentials", p: "REPS Academy", s: "Approved" },
               { t: "Strength for over-50s", p: "Active IQ", s: "Pending" },
             ].map((c) => (
               <li key={c.t} className="rounded-[10px] border border-reps-border bg-reps-ink p-3">

@@ -14,7 +14,7 @@ export function DayInTheLife({
     <div className="overflow-clip rounded-[22px] border border-reps-border bg-reps-ink">
       <div className="grid border-b border-reps-border/60 bg-reps-panel text-[11px] font-semibold uppercase tracking-wider md:grid-cols-[1fr_1.2fr_1.2fr]">
         <div className="px-5 py-4 text-white/50">The job</div>
-        <div className="bg-reps-orange-soft px-5 py-4 text-reps-orange">REPs</div>
+        <div className="bg-reps-orange-soft px-5 py-4 text-reps-orange">REPS</div>
         <div className="px-5 py-4 text-white/65">{c.name}</div>
       </div>
       {rows.map((r) => (

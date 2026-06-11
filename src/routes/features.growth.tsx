@@ -156,7 +156,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Where do the growth numbers come from?",
-    a: "From the activity already happening inside your REPs Pro account — enquiries, consultations, bookings, payments, packages, reviews and client engagement. No extra tracking, no extra apps to wire up.",
+    a: "From the activity already happening inside your REPS Pro account — enquiries, consultations, bookings, payments, packages, reviews and client engagement. No extra tracking, no extra apps to wire up.",
   },
   {
     q: "Do I have to act on every recommendation?",
@@ -180,12 +180,12 @@ export const Route = createFileRoute("/features/growth")({
   head: () => ({
     meta: [
       {
-        title: "Growth — Grow a stronger fitness business with clearer decisions · REPs",
+        title: "Growth — Grow a stronger fitness business with clearer decisions · REPS",
       },
       {
         name: "description",
         content:
-          "REPs Pro turns your client activity into business growth — retention, reviews, referrals, reactivation and revenue insights. See what's working, fix what's slipping.",
+          "REPS Pro turns your client activity into business growth — retention, reviews, referrals, reactivation and revenue insights. See what's working, fix what's slipping.",
       },
       {
         property: "og:title",
@@ -194,7 +194,7 @@ export const Route = createFileRoute("/features/growth")({
       {
         property: "og:description",
         content:
-          "Improve revenue, retention, reviews, referrals and business performance — the growth layer behind REPs Pro.",
+          "Improve revenue, retention, reviews, referrals and business performance — the growth layer behind REPS Pro.",
       },
       { property: "og:image", content: heroGrowth.url },
       { property: "og:url", content: "https://repsglobal.lovable.app/features/growth" },
@@ -235,8 +235,8 @@ function GrowthPage() {
       <FinalCta
         heading="Grow with better visibility, better follow-up and"
         headingAccent=" clearer business decisions."
-        lede="Use REPs Pro to track what matters, keep clients engaged and turn more opportunities into growth."
-        primary={{ to: "/signup", label: "Start using REPs Pro" }}
+        lede="Use REPS Pro to track what matters, keep clients engaged and turn more opportunities into growth."
+        primary={{ to: "/signup", label: "Start using REPS Pro" }}
         secondary={{ to: "/pricing", label: "See Pro pricing" }}
       />
 
@@ -254,7 +254,7 @@ function Hero() {
     <section className="relative flex min-h-[640px] overflow-hidden lg:min-h-[780px]">
       <img
         src={heroGrowth.url}
-        alt="REPs-verified studio owner reviewing her business growth dashboard"
+        alt="REPS-verified studio owner reviewing her business growth dashboard"
         width={1920}
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -282,7 +282,7 @@ function Hero() {
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            Use REPs Pro to understand your leads, clients, revenue, reviews, referrals and
+            Use REPS Pro to understand your leads, clients, revenue, reviews, referrals and
             retention — so you can see what's working, what needs attention, and what to do next.
           </p>
 
@@ -294,7 +294,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Start using REPs Pro <ArrowRight className="h-4 w-4" />
+              Start using REPS Pro <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#dashboard"
@@ -309,7 +309,7 @@ function Hero() {
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
+              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPS Pro
             </li>
             <li className="inline-flex items-center gap-1.5">
               <LineChart className="h-4 w-4 text-reps-orange" /> Built on your real activity
@@ -353,7 +353,7 @@ function ProblemSection() {
             <p className="text-[13.5px] leading-relaxed text-white/65">
               Growth is not a marketing page. It is not SEO, social media or paid ads. It is the
               business-performance layer that sits on top of the activity you already have inside
-              REPs Pro.
+              REPS Pro.
             </p>
           </div>
 
@@ -409,7 +409,7 @@ function DashboardSection() {
         <SectionHeader
           eyebrow="The growth dashboard"
           heading="One screen. Revenue, retention, conversion, reviews and the next move."
-          lede="The centrepiece of REPs Pro Growth. Built from the activity already happening in your account — bookings, payments, packages, clients and reviews — surfaced as the numbers and next actions that actually move the business."
+          lede="The centrepiece of REPS Pro Growth. Built from the activity already happening in your account — bookings, payments, packages, clients and reviews — surfaced as the numbers and next actions that actually move the business."
         />
 
         <div className="mt-12 rounded-[22px] border border-reps-border bg-reps-panel/60 p-5 lg:p-8">
@@ -873,7 +873,7 @@ function AiActionsSection() {
         <SectionHeader
           eyebrow="AI growth recommendations"
           heading="Growth shouldn't depend on remembering every opportunity manually."
-          lede="REPs AI scans your real account activity and ranks the moves with the most business impact this week — the lead worth following up, the client worth re-engaging, the review worth asking for now."
+          lede="REPS AI scans your real account activity and ranks the moves with the most business impact this week — the lead worth following up, the client worth re-engaging, the review worth asking for now."
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -896,7 +896,7 @@ function AiActionsSection() {
             to="/features/ai"
             className="inline-flex h-12 items-center gap-2 rounded-[10px] border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/15"
           >
-            How REPs AI works <ArrowRight className="h-4 w-4" />
+            How REPS AI works <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

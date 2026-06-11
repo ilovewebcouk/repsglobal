@@ -42,7 +42,7 @@ const PRO_PROFESSIONS = [
 ];
 
 const PARTNER_REASONS = [
-  { value: "recognition", label: "Course recognition on REPs", eta: "Next working day" },
+  { value: "recognition", label: "Course recognition on REPS", eta: "Next working day" },
   { value: "partnership", label: "Partnership / integration", eta: "Next working day" },
   { value: "bulk-verify", label: "Bulk verification for our graduates", eta: "Next working day" },
   { value: "press", label: "Press / media", eta: "~6h" },
@@ -173,7 +173,7 @@ export function ContactForm() {
                 </FieldShell>
               </div>
 
-              <FieldShell label="Where are you in your REPs journey?" htmlFor="tier">
+              <FieldShell label="Where are you in your REPS journey?" htmlFor="tier">
                 <ToggleGroup
                   id="tier"
                   type="single"
@@ -210,7 +210,7 @@ export function ContactForm() {
                 </FieldShell>
                 {tier === "Already verified, need help" && (
                   <FieldShell
-                    label="REPs profile URL"
+                    label="REPS profile URL"
                     htmlFor="profile-url"
                     hint="Helps us look you up directly."
                   >

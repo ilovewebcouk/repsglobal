@@ -132,7 +132,7 @@ const COACHES: Record<string, Coach> = {
       ],
     },
     bio: [
-      "I'm a REPs Verified Personal Trainer with eight years coaching clients from total beginners to competitive athletes. Most come to me stuck — stalled progress, no time, fed up of training without a clear plan. We fix that in the first two weeks.",
+      "I'm a REPS Verified Personal Trainer with eight years coaching clients from total beginners to competitive athletes. Most come to me stuck — stalled progress, no time, fed up of training without a clear plan. We fix that in the first two weeks.",
       "I don't take on every enquiry. I work with around 20 people at a time, in person and online, so every client gets a programme written for them — not a template with their name on the front.",
     ],
     heroImage: coachJamesCoaching,
@@ -259,7 +259,7 @@ const COACHES: Record<string, Coach> = {
     ],
     qualifications: [
       {
-        title: "REPs Level 3 Personal Trainer",
+        title: "REPS Level 3 Personal Trainer",
         issuer: "Register of Exercise Professionals",
         id: "REP1234567",
         issued: "May 2023",
@@ -322,7 +322,7 @@ const COACHES: Record<string, Coach> = {
 export const Route = createFileRoute("/c/$slug")({
   head: ({ params }) => {
     const coach = COACHES[params.slug] ?? COACHES["james-wilson"];
-    const title = `${coach.name} — ${coach.role} | REPs`;
+    const title = `${coach.name} — ${coach.role} | REPS`;
     const description = `${coach.promise} ${coach.subhead}`;
     return {
       meta: [
@@ -402,11 +402,11 @@ function ChromeBar({ coach }: { coach: Coach }) {
             <TooltipTrigger asChild>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
                 <BadgeCheck className="h-3 w-3" />
-                Verified on REPs
+                Verified on REPS
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              ID, insurance and qualifications independently verified by REPs.
+              ID, insurance and qualifications independently verified by REPS.
             </TooltipContent>
           </Tooltip>
           <Link
@@ -475,7 +475,7 @@ function HeroSection({
                 className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30"
               >
                 <BadgeCheck className="h-3 w-3" />
-                REPs Verified · Insured
+                REPS Verified · Insured
               </Badge>
               <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
                 <MapPin className="h-3.5 w-3.5" />
@@ -562,7 +562,7 @@ function HeroSection({
             <div className="absolute -bottom-5 left-5 right-5 hidden rounded-[16px] border border-reps-border bg-reps-panel/95 p-4 shadow-[var(--reps-shadow-card)] backdrop-blur sm:left-6 sm:right-auto sm:block sm:max-w-[280px]">
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-reps-green">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Verified by REPs
+                Verified by REPS
               </div>
               <div className="mt-2 text-[13.5px] font-semibold text-reps-text">
                 Level 3 PT · Insured to Dec 2026
@@ -1085,16 +1085,16 @@ function QualificationsSection({ coach }: { coach: Coach }) {
               Credentials
             </span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
-              Verified by REPs
+              Verified by REPS
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-reps-text-soft">
-              Every qualification, insurance certificate and first-aid renewal is independently verified by REPs and kept current.
+              Every qualification, insurance certificate and first-aid renewal is independently verified by REPS and kept current.
             </p>
             <Link
               to="/standards"
               className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-reps-text hover:underline"
             >
-              How REPs verifies professionals
+              How REPS verifies professionals
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -1203,7 +1203,7 @@ function ContactSection({
                 Ready when you are
               </h2>
               <p className="mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-reps-text-soft">
-                Send an enquiry through REPs and I'll reply within one working day with a clear quote, available times, and next steps. No middleman, no booking fees.
+                Send an enquiry through REPS and I'll reply within one working day with a clear quote, available times, and next steps. No middleman, no booking fees.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
@@ -1301,7 +1301,7 @@ function FooterMark() {
         <Link to="/" className="inline-flex items-center gap-2 text-reps-text-soft">
           <RepsWordmark className="h-3.5 w-auto text-reps-text-soft" />
           <span>·</span>
-          <span className="font-medium">Powered by REPs</span>
+          <span className="font-medium">Powered by REPS</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link to="/standards" className="hover:text-reps-text">

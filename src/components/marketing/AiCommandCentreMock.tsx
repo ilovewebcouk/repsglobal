@@ -1,7 +1,7 @@
 import { AlertTriangle, ArrowUpRight, Sparkles, Wand2 } from "lucide-react";
 
 // Static placeholder visual for the AI hero moment — a stack of three "operating system" cards.
-// No data, no logic — just a tactile preview of what REPs AI surfaces.
+// No data, no logic — just a tactile preview of what REPS AI surfaces.
 export function AiCommandCentreMock() {
   return (
     <div className="relative">
@@ -15,7 +15,7 @@ export function AiCommandCentreMock() {
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-reps-orange shadow-[0_0_8px_rgba(255,122,0,0.8)]" />
             <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/70">
-              REPs AI · Live
+              REPS AI · Live
             </span>
           </div>
           <span className="text-[10.5px] text-white/40">Mon 09:14</span>

@@ -51,9 +51,9 @@ const heroCpd = cpdTutorMomentAsset.url;
 
 const CANONICAL = "https://repsglobal.lovable.app/cpd-legacy";
 const META_TITLE =
-  "CPD & Verified Training Providers — Education that actually counts | REPs";
+  "CPD & Verified Training Providers — Education that actually counts | REPS";
 const META_DESC =
-  "What CPD really is, how REPs runs it, and how to spot a worthless training provider before you spend a penny. Every CPD hour through a verified provider counts. The rest don't.";
+  "What CPD really is, how REPS runs it, and how to spot a worthless training provider before you spend a penny. Every CPD hour through a verified provider counts. The rest don't.";
 
 export const Route = createFileRoute("/cpd-legacy")({
   head: () => ({
@@ -136,7 +136,7 @@ const FITNESS_LADDER: LadderRung[] = [
         meaning: "Choreographed studio classes — aerobics, dance fitness, step.",
       },
       {
-        acronym: "REPs",
+        acronym: "REPS",
         full: "Register of Exercise Professionals",
         meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
@@ -163,7 +163,7 @@ const FITNESS_LADDER: LadderRung[] = [
         meaning: "Government-recognised qualification — the minimum every 1:1 coach must hold.",
       },
       {
-        acronym: "REPs",
+        acronym: "REPS",
         full: "Register of Exercise Professionals",
         meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
@@ -203,7 +203,7 @@ const FITNESS_LADDER: LadderRung[] = [
         meaning: "Internationally recognised S&C qualification.",
       },
       {
-        acronym: "REPs",
+        acronym: "REPS",
         full: "Register of Exercise Professionals",
         meaning: "The global register that sets professional standards across the sport and physical-activity sector and endorses qualifications, providers and CPD.",
       },
@@ -416,7 +416,7 @@ const PROVIDER_CHECKS = [
   {
     icon: BadgeCheck,
     title: "Accrediting body recognition",
-    body: "Qualifications must be Ofqual-regulated or endorsed by a recognised professional body (REPs, AfN, Yoga Alliance Professionals).",
+    body: "Qualifications must be Ofqual-regulated or endorsed by a recognised professional body (REPS, AfN, Yoga Alliance Professionals).",
   },
   {
     icon: GraduationCap,
@@ -444,10 +444,10 @@ const REGISTERS = [
     href: "https://www.gov.uk/government/organisations/ofqual",
   },
   {
-    short: "REPs",
+    short: "REPS",
     full: "Register of Exercise Professionals",
     covers: "Endorses training providers, qualifications and CPD",
-    meaning: "Sets professional standards across the sport and physical-activity sector. REPs-endorsed CPD is the safe default.",
+    meaning: "Sets professional standards across the sport and physical-activity sector. REPS-endorsed CPD is the safe default.",
     href: "/",
   },
   {
@@ -500,7 +500,7 @@ const REGISTERS = [
 
 const RED_FLAGS = [
   "“Level 3 PT plus 47 free CPD courses” bundled — those CPDs are usually self-marked PDFs with no awarding body.",
-  "Awarding body not Ofqual-regulated or REPs-accredited (or no awarding body listed at all).",
+  "Awarding body not Ofqual-regulated or REPS-accredited (or no awarding body listed at all).",
   "No external assessment — everything is in-house multiple-choice you can retake until you pass.",
   "High-pressure finance sales and time-limited “today-only” discounts.",
   "Tutor names, faces and qualifications hidden behind a generic “expert team” page.",
@@ -510,11 +510,11 @@ const RED_FLAGS = [
 
 const GOOD_SIGNS = [
   "Regulated qualification on the RQF, awarded by a named Ofqual body.",
-  "REPs endorsement listed openly on the course page.",
+  "REPS endorsement listed openly on the course page.",
   "Tutors are named, with their own qualifications visible and verifiable.",
   "External assessment, with re-sit rules in writing.",
   "Published refund policy, complaints procedure and learner-outcome data.",
-  "Listed on REPs as a verified training provider — CPD hours auto-count toward your log.",
+  "Listed on REPS as a verified training provider — CPD hours auto-count toward your log.",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -523,44 +523,44 @@ const GOOD_SIGNS = [
 
 const FAQS = [
   {
-    q: "What does it mean for a course to be accredited by REPs?",
-    a: "REPs accreditation means the training provider and its course have been independently checked at the points that matter: a recognised awarding body (Ofqual for regulated fitness and nutrition qualifications; Yoga Alliance Professionals, the British Wheel of Yoga or comparable bodies for yoga; the PMA, BASI, STOTT or comparable for Pilates), named and qualified tutors, external assessment, and published refund and complaints policies. Hours earned through an accredited provider auto-count toward a REPs member's CPD log.",
+    q: "What does it mean for a course to be accredited by REPS?",
+    a: "REPS accreditation means the training provider and its course have been independently checked at the points that matter: a recognised awarding body (Ofqual for regulated fitness and nutrition qualifications; Yoga Alliance Professionals, the British Wheel of Yoga or comparable bodies for yoga; the PMA, BASI, STOTT or comparable for Pilates), named and qualified tutors, external assessment, and published refund and complaints policies. Hours earned through an accredited provider auto-count toward a REPS member's CPD log.",
   },
   {
     q: "What is CPD?",
     a: "Continuing Professional Development. Ongoing, evidenced learning that a professional commits to after their initial qualification — courses, conferences, peer-reviewed reading, supervised practice. The point is that the certificate on your wall stays current with the science, not frozen at the date you passed.",
   },
   {
-    q: "How many CPD hours do I need per year on REPs?",
-    a: "Every REPs professional commits to a meaningful annual minimum, logged quarterly in their dashboard and audited at random. Specific hour thresholds per tier are published in each member's onboarding pack and updated as standards evolve.",
+    q: "How many CPD hours do I need per year on REPS?",
+    a: "Every REPS professional commits to a meaningful annual minimum, logged quarterly in their dashboard and audited at random. Specific hour thresholds per tier are published in each member's onboarding pack and updated as standards evolve.",
   },
   {
     q: "What happens if I miss a CPD quarter?",
     a: "The verified badge auto-suspends on the public profile until you bring your CPD log current. The public can see that a profile is currently unverified — that's the entire point of the standard. Catch up, log it, badge restored.",
   },
   {
-    q: "Does the L3 PT course I'm considering need to be from a REPs-verified provider?",
-    a: "If you want the qualification to mean anything on REPs — yes. Hours through a verified provider auto-count toward your CPD log once you're a member. Hours through unverified providers don't. More importantly, REPs-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. If the provider isn't on REPs, ask them why.",
+    q: "Does the L3 PT course I'm considering need to be from a REPS-verified provider?",
+    a: "If you want the qualification to mean anything on REPS — yes. Hours through a verified provider auto-count toward your CPD log once you're a member. Hours through unverified providers don't. More importantly, REPS-verified providers have been checked for accreditation, tutor qualifications and assessment integrity. If the provider isn't on REPS, ask them why.",
   },
   {
-    q: "Why are some big-name training providers not on REPs?",
+    q: "Why are some big-name training providers not on REPS?",
     a: "Because the bar is real. Verification is open to apply for and the standard is industry-baseline — accrediting body recognition, tutor checks, assessment integrity, published refund and complaints policies. There is no legitimate reason to refuse it. If a provider isn't here, treat that as information.",
   },
   {
     q: "What's the difference between a Nutritionist and a Dietitian?",
-    a: "Anyone can call themselves a 'nutritionist' — the title isn't legally protected. On REPs we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). 'Dietitian' is legally protected and regulated by the HCPC — it's the only role that can assess, diagnose and treat clinical conditions with diet.",
+    a: "Anyone can call themselves a 'nutritionist' — the title isn't legally protected. On REPS we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). 'Dietitian' is legally protected and regulated by the HCPC — it's the only role that can assess, diagnose and treat clinical conditions with diet.",
   },
   {
     q: "Do I need a specialist or is a general PT enough?",
-    a: "For general adult fitness — fat loss, getting stronger, building the habit — a Level 3 PT is the right tool. For specialist populations (clinical conditions, pre/post-natal, competition strength & conditioning, rehabilitation), you want a Level 4 specialist or a registered S&C coach. REPs surfaces the right specialism for the goal so you don't end up with a generalist trying to wing it.",
+    a: "For general adult fitness — fat loss, getting stronger, building the habit — a Level 3 PT is the right tool. For specialist populations (clinical conditions, pre/post-natal, competition strength & conditioning, rehabilitation), you want a Level 4 specialist or a registered S&C coach. REPS surfaces the right specialism for the goal so you don't end up with a generalist trying to wing it.",
   },
   {
     q: "Can CPD upgrade me to a new specialism?",
-    a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPs profile once the awarding body confirms it.",
+    a: "Yes. Stack CPD toward a recognised Level 4 credential — strength & conditioning, lower-back pain, pre/post-natal, obesity & diabetes, online coaching — and the new specialism appears on your REPS profile once the awarding body confirms it.",
   },
   {
-    q: "Does being verified on REPs let me charge more?",
-    a: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPs exists to widen that gap, not narrow it.",
+    q: "Does being verified on REPS let me charge more?",
+    a: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. Visible verification + logged CPD + a specialism credential is the case for charging what you're worth. REPS exists to widen that gap, not narrow it.",
   },
   {
     q: "How do I report a predatory provider or coach?",
@@ -621,7 +621,7 @@ function TutorMoment() {
             <span className="text-reps-orange"> The rest are running a print shop for certificates.”</span>
           </p>
           <p className="mt-6 text-[13px] font-semibold uppercase tracking-[0.22em] text-white/55">
-            REPs — verified training providers
+            REPS — verified training providers
           </p>
         </div>
       </div>
@@ -727,7 +727,7 @@ function Hero() {
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            REPs accredits training providers, qualifications and CPD across three pillars —
+            REPS accredits training providers, qualifications and CPD across three pillars —
             initial qualifications in fitness and nutrition, ongoing CPD, and teacher training in
             Pilates and yoga. Every accredited course is checked at the points that matter:
             awarding body, tutor credentials, assessment integrity and learner protections.
@@ -770,7 +770,7 @@ function Hero() {
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
               <span>Ofqual</span>
               <span className="text-reps-orange/70">·</span>
-              <span>REPs</span>
+              <span>REPS</span>
               <span className="text-reps-orange/70">·</span>
               <span>AfN</span>
               <span className="text-reps-orange/70">·</span>
@@ -788,7 +788,7 @@ function Hero() {
 
 
 /* ------------------------------------------------------------------ */
-/* Section: Profile screenshot — what CPD looks like on a REPs profile */
+/* Section: Profile screenshot — what CPD looks like on a REPS profile */
 /* ------------------------------------------------------------------ */
 
 function ProfileScreenshot() {
@@ -814,7 +814,7 @@ function ProfileScreenshot() {
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
               Every verified hour, qualification and insurance certificate shows up live on the
-              public REPs profile — with the provider, the awarding body and the date it was issued.
+              public REPS profile — with the provider, the awarding body and the date it was issued.
               Unverified hours sit in a separate column. Clients can see the difference at a glance.
             </p>
             <ul className="mt-7 flex flex-col gap-2.5 text-[14px] text-white/80">
@@ -835,7 +835,7 @@ function ProfileScreenshot() {
             <BrowserFrame url="repsglobal.com/c/james-wilson">
               <img
                 src={cpdProfileAsset.url}
-                alt="Screenshot of a REPs professional profile showing four verified credentials: Level 3 Personal Trainer, Level 3 Diploma in Personal Training, Professional Indemnity Insurance and First Aid & CPR."
+                alt="Screenshot of a REPS professional profile showing four verified credentials: Level 3 Personal Trainer, Level 3 Diploma in Personal Training, Professional Indemnity Insurance and First Aid & CPR."
                 width={1400}
                 height={416}
                 loading="lazy"
@@ -861,7 +861,7 @@ function ProfileScreenshot() {
 function WhatCpdIs() {
   const counts = [
     "Regulated qualifications (Ofqual / RQF)",
-    "REPs-endorsed CPD courses",
+    "REPS-endorsed CPD courses",
     "Accredited conferences and workshops",
     "Peer-reviewed reading with reflective notes",
     "Supervised mentoring with a senior coach",
@@ -888,7 +888,7 @@ function WhatCpdIs() {
             a recognised standard — and that members keep learning after the initial qualification
             through Continuing Professional Development (CPD). The science of training, nutrition,
             rehab and movement moves every year; adjacent professions like physiotherapy and
-            dietetics mandate ongoing CPD by default. On REPs, it's the same standard.
+            dietetics mandate ongoing CPD by default. On REPS, it's the same standard.
           </p>
         </div>
 
@@ -933,7 +933,7 @@ function WhatCpdIs() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Section: How REPs runs CPD                                          */
+/* Section: How REPS runs CPD                                          */
 /* ------------------------------------------------------------------ */
 
 function RepsCpdSystem() {
@@ -941,12 +941,12 @@ function RepsCpdSystem() {
     {
       icon: RefreshCw,
       title: "Logged quarterly",
-      body: "Members log every CPD activity in their REPs dashboard four times a year — with evidence attached. No “trust me bro”.",
+      body: "Members log every CPD activity in their REPS dashboard four times a year — with evidence attached. No “trust me bro”.",
     },
     {
       icon: ShieldCheck,
       title: "Verified-provider only",
-      body: "Hours through REPs-verified training providers auto-count. Hours from unverified providers don't — they go in a separate column the public can see.",
+      body: "Hours through REPS-verified training providers auto-count. Hours from unverified providers don't — they go in a separate column the public can see.",
     },
     {
       icon: Award,
@@ -968,13 +968,13 @@ function RepsCpdSystem() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <div className="max-w-[760px]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-            How REPs accredits education
+            How REPS accredits education
           </span>
           <h2 className="mt-3 font-display text-[30px] font-bold leading-tight text-white lg:text-[40px]">
             Four mechanics. No theatre.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            REPs accredits training providers and the courses they deliver — qualifications,
+            REPS accredits training providers and the courses they deliver — qualifications,
             CPD and teacher training — and holds professionals to an ongoing CPD log. The system
             is evidenced, governed and visible to the public.
           </p>
@@ -1083,7 +1083,7 @@ function Qualifications() {
             Every accredited pathway, in plain English.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-            REPs accredits qualifications across four pathways: fitness, nutrition, Pilates and
+            REPS accredits qualifications across four pathways: fitness, nutrition, Pilates and
             yoga. Each pathway has its own recognised awarding bodies and credentials — here is
             what those letters actually mean, and what each tier is qualified to do.
           </p>
@@ -1208,7 +1208,7 @@ function Qualifications() {
             <p className="text-[14px] leading-relaxed text-white">
               <strong className="text-white">Plain English:</strong> if someone selling you a
               “clinical meal plan” for a medical condition isn't a Registered Dietitian (RD, HCPC),
-              they're operating outside their lane. REPs verifies which role you're actually getting.
+              they're operating outside their lane. REPS verifies which role you're actually getting.
             </p>
           </div>
         </div>
@@ -1223,7 +1223,7 @@ function Qualifications() {
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
             Pilates runs on hours-based teacher training rather than the RQF for most apparatus work.
-            Here's the honest ladder REPs cross-checks.
+            Here's the honest ladder REPS cross-checks.
           </p>
           <div className="mt-6 grid gap-5 lg:grid-cols-3">
             {PILATES_LADDER.map((r) => (
@@ -1242,7 +1242,7 @@ function Qualifications() {
           </div>
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-white/70">
             Yoga teacher training is measured in hours, not RQF levels — but the international
-            standards are clear. These are the ones REPs verifies.
+            standards are clear. These are the ones REPS verifies.
           </p>
           <div className="mt-6 grid gap-5 lg:grid-cols-3">
             {YOGA_LADDER.map((r) => (
@@ -1325,7 +1325,7 @@ function GeneralistVsSpecialist() {
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
-                <span>REPs surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
+                <span>REPS surfaces the specialist for the exact thing you're chasing. No “I also do that on the side.”</span>
               </li>
               <li className="flex gap-2.5">
                 <ArrowRight className="mt-[3px] h-4 w-4 shrink-0 text-reps-orange" />
@@ -1374,14 +1374,14 @@ function VerifiedProviders() {
               Accredited training providers, across every pathway.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              A REPs-verified training provider has been independently checked at the points that
+              A REPS-verified training provider has been independently checked at the points that
               matter — accrediting body recognition, tutor credentials, assessment integrity, and
               published refund and complaints policies. This covers Ofqual-regulated awarding bodies
               for fitness and nutrition qualifications, and recognised teacher-training schools for
               Pilates and yoga.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">
-              Hours earned through verified providers auto-count toward a member's REPs CPD log.
+              Hours earned through verified providers auto-count toward a member's REPS CPD log.
               Verification is open to apply for and the standard is industry-baseline — there is no
               legitimate reason for a credible provider to refuse it.
             </p>
@@ -1489,7 +1489,7 @@ function RaiseTheStandard() {
     {
       n: "01",
       title: "Cut the noise.",
-      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPs makes them visibly absent — the listing alone proves the work.",
+      body: "Bedroom PTs with no qualifications. Instagram “online coaches” selling £400 PDFs. People issuing meal plans they're not legally allowed to prescribe. REPS makes them visibly absent — the listing alone proves the work.",
     },
     {
       n: "02",
@@ -1499,7 +1499,7 @@ function RaiseTheStandard() {
     {
       n: "03",
       title: "So you can charge what you're worth.",
-      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPs exists to widen that gap, not narrow it.",
+      body: "When the public can tell the difference between a verified expert and a chancer, the verified expert sets the price. REPS exists to widen that gap, not narrow it.",
     },
   ];
 
@@ -1514,10 +1514,10 @@ function RaiseTheStandard() {
             <TrendingUp className="h-3.5 w-3.5" /> Raise the standard
           </span>
           <h2 className="mt-4 font-display text-[32px] font-bold leading-[1.05] text-white lg:text-[44px]">
-            REPs exists for one reason: to raise the floor of this industry.
+            REPS exists for one reason: to raise the floor of this industry.
           </h2>
           <p className="mt-5 text-[15.5px] leading-relaxed text-white/75">
-            Fitness has been cheap for too long because nobody checks. REPs checks. That's the entire
+            Fitness has been cheap for too long because nobody checks. REPS checks. That's the entire
             product. Three things change when the standard goes up.
           </p>
         </div>
@@ -1541,7 +1541,7 @@ function RaiseTheStandard() {
 
         <div className="mt-10 rounded-[22px] border border-reps-orange-border bg-reps-orange-soft px-6 py-6 lg:px-8">
           <p className="font-display text-[20px] font-bold leading-tight text-white lg:text-[24px]">
-            Cheap coaching exists because nobody checks. REPs checks.
+            Cheap coaching exists because nobody checks. REPS checks.
             <span className="text-reps-orange"> Price accordingly.</span>
           </p>
         </div>
@@ -1607,7 +1607,7 @@ function RegistersBlock() {
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-white/70">
             The industry runs on letters after people's names. Here's what each one actually means —
-            and which ones we cross-check before a profile or provider goes live on REPs.
+            and which ones we cross-check before a profile or provider goes live on REPS.
           </p>
         </div>
 
@@ -1660,7 +1660,7 @@ const VERIFY_STEPS = [
   {
     icon: GraduationCap,
     title: "Qualifications",
-    body: "Every credential cross-checked against the body that issued it — Ofqual, REPs, AfN, HCPC, YAP.",
+    body: "Every credential cross-checked against the body that issued it — Ofqual, REPS, AfN, HCPC, YAP.",
   },
   {
     icon: ShieldCheck,
@@ -1746,7 +1746,7 @@ function FaqBlock() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Join REPs CTA — CPD-tuned variant of the homepage Pro CTA          */
+/* Join REPS CTA — CPD-tuned variant of the homepage Pro CTA          */
 /* ------------------------------------------------------------------ */
 
 function JoinRepsCta() {
@@ -1776,7 +1776,7 @@ function JoinRepsCta() {
                 <Sparkles className="h-3 w-3 fill-reps-orange" /> For professionals
               </span>
               <h2 className="mt-4 font-display text-[28px] font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:text-[32px] lg:text-[38px]">
-                Train with accredited providers. Be found on REPs.
+                Train with accredited providers. Be found on REPS.
               </h2>
               <p className="mt-3 max-w-[440px] text-[14.5px] leading-relaxed text-white/85">
                 Find the verified training providers behind every accredited course — or join the

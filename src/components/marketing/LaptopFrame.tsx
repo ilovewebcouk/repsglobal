@@ -14,7 +14,7 @@ export function LaptopFrame({ children }: { children: ReactNode }) {
           <span className="size-2 rounded-full bg-white/20" />
           <span className="size-2 rounded-full bg-white/20" />
           <span className="size-2 rounded-full bg-white/20" />
-          <span className="ml-3 text-[10px] font-medium text-white/40">REPs</span>
+          <span className="ml-3 text-[10px] font-medium text-white/40">REPS</span>
         </div>
         {/* Viewport */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-reps-ink">

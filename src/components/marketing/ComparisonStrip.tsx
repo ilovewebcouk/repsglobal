@@ -20,7 +20,7 @@ const ROWS: Row[] = [
 type Col = { label: string; logo?: string; logoHeight?: number };
 
 const COLS: readonly Col[] = [
-  { label: "REPs" },
+  { label: "REPS" },
   { label: "Trainerize", logo: trainerizeLogo.url, logoHeight: 20 },
   { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 22 },
   { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 18 },

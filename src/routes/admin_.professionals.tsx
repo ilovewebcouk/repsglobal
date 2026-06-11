@@ -117,7 +117,7 @@ function AdminProfessionalsPage() {
     <AdminShell
       active="Professionals"
       title="Professionals"
-      subtitle="Manage the full register of REPs professionals."
+      subtitle="Manage the full register of REPS professionals."
       actions={
         <button className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover">
           <Plus className="h-4 w-4" /> Invite professional

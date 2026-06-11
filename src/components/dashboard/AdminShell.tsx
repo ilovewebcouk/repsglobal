@@ -57,7 +57,7 @@ function Sidebar({ active }: { active: AdminActive }) {
     <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
       <Link to="/" className="flex items-center gap-3 px-5 pb-5 pt-6">
         <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPs
+          REPS
         </span>
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
           The Register of
@@ -68,7 +68,7 @@ function Sidebar({ active }: { active: AdminActive }) {
 
       <div className="mx-3 mb-3 flex items-center gap-2 rounded-[10px] bg-reps-orange-soft px-3 py-2">
         <ShieldCheck className="h-4 w-4 text-reps-orange" />
-        <span className="text-[12px] font-semibold text-reps-orange">REPs Admin</span>
+        <span className="text-[12px] font-semibold text-reps-orange">REPS Admin</span>
       </div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">

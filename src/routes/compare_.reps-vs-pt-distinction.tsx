@@ -4,9 +4,9 @@ import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
 import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg";
 
 const URL = "https://repsglobal.lovable.app/compare/reps-vs-pt-distinction";
-const TITLE = "PT Distinction Alternative — REPs vs PT Distinction (2026)";
+const TITLE = "PT Distinction Alternative — REPS vs PT Distinction (2026)";
 const DESC =
-  "Honest comparison of REPs and PT Distinction for personal trainers. Pricing, per-client charges, feature density (AI Program Builder, Smart Meal Planner) and where each platform wins.";
+  "Honest comparison of REPS and PT Distinction for personal trainers. Pricing, per-client charges, feature density (AI Program Builder, Smart Meal Planner) and where each platform wins.";
 
 export const Route = createFileRoute("/compare_/reps-vs-pt-distinction")({
   head: () => ({

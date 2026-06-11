@@ -1,5 +1,5 @@
-// Price IDs for REPs platform billing.
-// REPs 3-tier ladder: Verified / Pro / Studio.
+// Price IDs for REPS platform billing.
+// REPS 3-tier ladder: Verified / Pro / Studio.
 // The current "Pro" tier mirrors what was previously sold as "Business" —
 // same Stripe price IDs, same Founding lock, same £59/mo · £590/yr pricing.
 // Studio is unchanged. Verified is unchanged. The old £29 Pro tier is retired.

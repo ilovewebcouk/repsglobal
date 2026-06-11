@@ -4,9 +4,9 @@ import { LegalShell } from "@/components/legal/LegalShell";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy policy — REPs" },
-      { name: "description", content: "How REPs collects, uses and protects your personal data under GDPR." },
-      { property: "og:title", content: "Privacy policy — REPs" },
+      { title: "Privacy policy — REPS" },
+      { name: "description", content: "How REPS collects, uses and protects your personal data under GDPR." },
+      { property: "og:title", content: "Privacy policy — REPS" },
       { property: "og:description", content: "Our GDPR-aligned privacy practices." },
     ],
   }),
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/privacy")({
       eyebrow="Legal"
       title="Privacy policy"
       lastUpdated="31 May 2026"
-      intro="REPs takes the privacy of our professionals and clients seriously. This policy explains what data we collect, how we use it, and the rights you have under GDPR and equivalent data-protection laws."
+      intro="REPS takes the privacy of our professionals and clients seriously. This policy explains what data we collect, how we use it, and the rights you have under GDPR and equivalent data-protection laws."
       sections={[
         { id: "data-we-collect", title: "Data we collect", body: <p>Account details (name, email, password hash), professional credentials (qualifications, DBS, insurance), profile content, booking and payment metadata, and usage analytics.</p> },
         { id: "how-we-use-it", title: "How we use your data", body: <p>To operate the platform, verify professionals, process payments, surface relevant search results, send transactional and (with consent) marketing communications, and detect fraud.</p> },

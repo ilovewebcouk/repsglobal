@@ -70,7 +70,7 @@ export function VerificationCard({
       <div className="flex items-center gap-4 px-5 pt-5">
         <img
           src={photo}
-          alt={`${name} — verified REPs professional`}
+          alt={`${name} — verified REPS professional`}
           className="h-16 w-16 rounded-full object-cover ring-2 ring-reps-stone/80"
           loading="lazy"
         />

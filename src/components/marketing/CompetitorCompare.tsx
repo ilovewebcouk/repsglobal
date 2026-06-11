@@ -15,7 +15,7 @@ import { MethodologyNotice } from "@/components/marketing/MethodologyNotice";
 type Col = { label: string; logo?: string; logoHeight?: number };
 
 const COLS: readonly Col[] = [
-  { label: "REPs" },
+  { label: "REPS" },
   { label: "Trainerize", logo: trainerizeLogo.url, logoHeight: 22 },
   { label: "MyPTHub", logo: mypthubLogo.url, logoHeight: 24 },
   { label: "PT Distinction", logo: ptDistinctionLogo.url, logoHeight: 20 },
@@ -29,16 +29,16 @@ export function CompetitorCompare() {
           The honest comparison
         </span>
         <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-          REPs vs leading coaching apps.
+          REPS vs leading coaching apps.
         </h2>
         <p className="mt-3 max-w-[640px] text-[15px] text-white/65">
           Trainerize, MyPTHub and PT Distinction give you software — and a list of
-          paid add-ons. REPs Pro is £59/mo founding (was £79/mo) and includes the
+          paid add-ons. REPS Pro is £59/mo founding (was £79/mo) and includes the
           full software platform — no paid add-on stack, no per-client charges.
         </p>
       </div>
 
-      {/* Plans & limits summary — hidden for now; REPs unlimited model reads as more expensive vs competitor entry tiers
+      {/* Plans & limits summary — hidden for now; REPS unlimited model reads as more expensive vs competitor entry tiers
       <div className="mt-10">
         <h3 className="font-display text-[18px] font-semibold text-white/85">
           Plans &amp; limits at a glance
@@ -64,7 +64,7 @@ export function CompetitorCompare() {
         Feature-by-feature
       </h3>
 
-      {/* Responsive table: sticky Feature + REPs columns on tablet/mobile, full width on desktop */}
+      {/* Responsive table: sticky Feature + REPS columns on tablet/mobile, full width on desktop */}
       <div className="mt-3 overflow-clip rounded-[22px] border border-reps-border bg-reps-ink lg:mt-5">
         <div
           className="overflow-x-auto [overflow-y:clip] lg:overflow-visible"

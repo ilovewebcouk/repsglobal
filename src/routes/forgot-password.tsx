@@ -8,10 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Reset your password — REPs" },
-      { name: "description", content: "Enter your email and we'll send you a link to reset your REPs password." },
-      { property: "og:title", content: "Reset your password — REPs" },
-      { property: "og:description", content: "Recover access to your REPs professional account." },
+      { title: "Reset your password — REPS" },
+      { name: "description", content: "Enter your email and we'll send you a link to reset your REPS password." },
+      { property: "og:title", content: "Reset your password — REPS" },
+      { property: "og:description", content: "Recover access to your REPS professional account." },
     ],
   }),
   component: ForgotPasswordPage,
@@ -58,7 +58,7 @@ function ForgotPasswordPage() {
           Forgot your <span className="text-reps-orange">password?</span>
         </>
       }
-      intro="No problem — it happens. Enter the email on your REPs account and we'll send you a secure link to set a new password."
+      intro="No problem — it happens. Enter the email on your REPS account and we'll send you a secure link to set a new password."
     >
       <div className="text-center">
         <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">

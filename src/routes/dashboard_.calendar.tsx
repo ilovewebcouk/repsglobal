@@ -17,13 +17,13 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/calendar")({
   head: () => ({
     meta: [
-      { title: "Calendar — REPs Professional" },
+      { title: "Calendar — REPS Professional" },
       {
         name: "description",
         content:
-          "Manage sessions, consultations, classes and online bookings from your REPs professional dashboard.",
+          "Manage sessions, consultations, classes and online bookings from your REPS professional dashboard.",
       },
-      { property: "og:title", content: "Calendar — REPs Professional" },
+      { property: "og:title", content: "Calendar — REPS Professional" },
       {
         property: "og:description",
         content:

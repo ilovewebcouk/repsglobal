@@ -49,17 +49,17 @@ export const Route = createFileRoute("/find-a-professional")({
   },
   head: () => ({
     meta: [
-      { title: "Find a Professional — REPs" },
+      { title: "Find a Professional — REPS" },
       {
         name: "description",
         content:
           "Search verified personal trainers, Pilates instructors, nutritionists and coaches near you. Filter by specialism, location, training type, gym and rating.",
       },
-      { property: "og:title", content: "Find a Professional — REPs" },
+      { property: "og:title", content: "Find a Professional — REPS" },
       {
         property: "og:description",
         content:
-          "Browse REPs-verified fitness professionals. Filter by specialism, location, gym and training type.",
+          "Browse REPS-verified fitness professionals. Filter by specialism, location, gym and training type.",
       },
       { property: "og:url", content: "/find-a-professional" },
     ],
@@ -94,7 +94,7 @@ type Pro = {
   tags: [string, string, string];
   blurb: string;
   image: string;
-  /** Independent — REPs professionals choose where they train clients. */
+  /** Independent — REPS professionals choose where they train clients. */
   venues: ProVenue[];
   featured?: boolean;
 };
@@ -222,7 +222,7 @@ const directoryPros: Pro[] = [
 ];
 
 const trustItems = [
-  { icon: ShieldCheck, title: "REPs Verified", sub: "Qualifications & insurance check" },
+  { icon: ShieldCheck, title: "REPS Verified", sub: "Qualifications & insurance check" },
   { icon: Star, title: "Reviewed & Rated", sub: "Real client feedback" },
   { icon: Trophy, title: "Ongoing Standards", sub: "Committed to CPD & excellence" },
   { icon: Users, title: "Trusted Worldwide", sub: "In-person & online" },
@@ -231,7 +231,7 @@ const trustItems = [
 const testimonials = [
   {
     quote:
-      "I'd been burned by PTs who weren't actually qualified. REPs let me see credentials before I even booked. My coach is brilliant.",
+      "I'd been burned by PTs who weren't actually qualified. REPS let me see credentials before I even booked. My coach is brilliant.",
     name: "Natalie S.",
     role: "Strength training",
     city: "London",
@@ -247,7 +247,7 @@ const testimonials = [
   },
   {
     quote:
-      "I work shifts so I needed someone flexible and remote. REPs filtered down to qualified online coaches in minutes.",
+      "I work shifts so I needed someone flexible and remote. REPS filtered down to qualified online coaches in minutes.",
     name: "Tom B.",
     role: "Online coaching",
     city: "Bristol",
@@ -438,8 +438,8 @@ function DirectoryPage() {
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
                     {activeVenue
-                      ? "Independent REPs-verified — not affiliated with the gym shown"
-                      : "Showing 1–8 · all REPs Verified"}
+                      ? "Independent REPS-verified — not affiliated with the gym shown"
+                      : "Showing 1–8 · all REPS Verified"}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -558,10 +558,10 @@ function DirectoryPage() {
             <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
-                  The REPs standard
+                  The REPS standard
                 </div>
                 <h2 className="mt-2 font-display text-[22px] font-bold leading-tight text-reps-charcoal sm:text-[24px]">
-                  Why trust REPs professionals?
+                  Why trust REPS professionals?
                 </h2>
                 <p className="mt-2 max-w-[320px] text-[13px] leading-relaxed text-reps-muted-light">
                   We connect you with verified fitness and health professionals you can trust.
@@ -598,7 +598,7 @@ function DirectoryPage() {
               People who found their match.
             </h2>
             <p className="max-w-[520px] text-[14px] leading-relaxed text-white/65 sm:text-[15px]">
-              Real stories from clients who used REPs to find a coach they could trust.
+              Real stories from clients who used REPS to find a coach they could trust.
             </p>
           </div>
 
@@ -868,7 +868,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
             </h3>
             <span className="inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
               <BadgeCheck className="h-3 w-3" />
-              REPs Verified
+              REPS Verified
             </span>
           </div>
           <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
@@ -988,7 +988,7 @@ function EmptyResults() {
           to="/find-a-professional"
           className="inline-flex items-center justify-center rounded-[10px] border border-reps-stone bg-white px-4 py-2 text-[13px] font-semibold text-reps-charcoal transition-colors hover:border-reps-orange hover:text-reps-orange"
         >
-          Browse all REPs
+          Browse all REPS
         </Link>
       </div>
     </div>
@@ -1012,11 +1012,11 @@ function EditorialBreak() {
           </span>
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
-              Why REPs
+              Why REPS
             </div>
             <p className="mt-1 max-w-[520px] text-[14px] leading-snug text-white/85">
               Every professional on this page is qualification-checked, insurance-verified
-              and bound to the REPs Code of Ethical Practice.
+              and bound to the REPS Code of Ethical Practice.
             </p>
           </div>
         </div>

@@ -17,13 +17,13 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/reports")({
   head: () => ({
     meta: [
-      { title: "Reports & Analytics — REPs Professional" },
+      { title: "Reports & Analytics — REPS Professional" },
       {
         name: "description",
         content:
-          "Revenue, retention, utilisation and lead attribution — the proof your REPs business is healthy.",
+          "Revenue, retention, utilisation and lead attribution — the proof your REPS business is healthy.",
       },
-      { property: "og:title", content: "Reports & Analytics — REPs Professional" },
+      { property: "og:title", content: "Reports & Analytics — REPS Professional" },
       { property: "og:description", content: "Revenue, retention, utilisation, attribution." },
       { property: "og:url", content: "/dashboard/reports" },
     ],
@@ -72,7 +72,7 @@ const SERVICES = [
 ];
 
 const SOURCES = [
-  { source: "REPs Directory", leads: 38, conv: "34%", revenue: "£4,820" },
+  { source: "REPS Directory", leads: 38, conv: "34%", revenue: "£4,820" },
   { source: "Instagram", leads: 22, conv: "27%", revenue: "£2,140" },
   { source: "Referral", leads: 14, conv: "57%", revenue: "£3,260" },
   { source: "Google", leads: 11, conv: "18%", revenue: "£980" },
@@ -239,7 +239,7 @@ function ReportsPage() {
                 <Sparkles className="h-4 w-4" />
               </span>
               <div>
-                <h3 className="text-[14px] font-semibold text-white">REPs AI insight</h3>
+                <h3 className="text-[14px] font-semibold text-white">REPS AI insight</h3>
                 <p className="mt-1 text-[12px] leading-relaxed text-white/70">
                   Hybrid Programme revenue is up 22% — your strongest growth stream. Consider
                   raising the Group Strength price by 8% to offset the −4% drop.

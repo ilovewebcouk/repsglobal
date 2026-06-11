@@ -31,7 +31,7 @@ function Sidebar({ active }: { active: PortalActive }) {
           <Activity className="h-4.5 w-4.5" />
         </div>
         <div className="flex flex-col leading-none">
-          <span className="text-[15px] font-semibold tracking-tight text-white">REPs</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white">REPS</span>
           <span className="text-[10.5px] font-medium uppercase tracking-[0.16em] text-white/45">
             Client portal
           </span>

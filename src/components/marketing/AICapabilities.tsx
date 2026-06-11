@@ -53,7 +53,7 @@ export function AICapabilities() {
             An AI coach for your coaching business.
           </h2>
           <p className="mt-4 max-w-[620px] text-[15.5px] leading-relaxed text-white/70">
-            Trainerize, MyPTHub and PT Distinction give you forms to fill in. REPs writes the
+            Trainerize, MyPTHub and PT Distinction give you forms to fill in. REPS writes the
             programme, drafts the nutrition plan, summarises the check-in, prioritises the
             lead, flags the at-risk client and tells you the one move that will grow your
             month. You stay the coach. The admin runs itself.

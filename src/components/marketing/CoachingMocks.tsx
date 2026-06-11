@@ -2,7 +2,7 @@
  * Static coaching-mock components used on /features/coaching.
  *
  * Pure presentational JSX — no data, no logic. These are visual stand-ins for
- * REPs Pro coaching screens that don't exist as live routes yet (programme
+ * REPS Pro coaching screens that don't exist as live routes yet (programme
  * builder, client portal, client record). When the real routes ship, swap
  * these for AnnotatedMock + DeviceMockup.
  */

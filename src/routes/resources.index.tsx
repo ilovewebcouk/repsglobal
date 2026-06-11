@@ -23,17 +23,17 @@ export const Route = createFileRoute("/resources/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title:"Resources — Personal Trainer & Fitness Coach Guides | REPs" },
+      { title:"Resources — Personal Trainer & Fitness Coach Guides | REPS" },
       {
         name:"description",
         content:
-"Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
+"Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPS editorial team.",
       },
-      { property:"og:title", content:"Resources — Personal Trainer & Fitness Coach Guides | REPs" },
+      { property:"og:title", content:"Resources — Personal Trainer & Fitness Coach Guides | REPS" },
       {
         property:"og:description",
         content:
-"Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPs editorial team.",
+"Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPS editorial team.",
       },
       { property:"og:url", content:"https://staging.repsuk.org/resources" },
       { property:"og:type", content:"website" },
@@ -299,7 +299,7 @@ function ResourcesPage() {
               Looking for a verified professional?
             </h2>
             <p className="mt-2 text-[15px] text-white/85">
-              Browse REPs-verified personal trainers, coaches and instructors in your area.
+              Browse REPS-verified personal trainers, coaches and instructors in your area.
             </p>
           </div>
           <Link

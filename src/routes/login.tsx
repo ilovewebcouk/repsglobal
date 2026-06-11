@@ -21,17 +21,17 @@ import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in to REPs — Your Professional Account" },
+      { title: "Sign in to REPS — Your Professional Account" },
       {
         name: "description",
         content:
-          "Log in to REPs to manage your professional profile, clients, bookings and CPD all in one place.",
+          "Log in to REPS to manage your professional profile, clients, bookings and CPD all in one place.",
       },
-      { property: "og:title", content: "Sign in to REPs" },
+      { property: "og:title", content: "Sign in to REPS" },
       {
         property: "og:description",
         content:
-          "Welcome back — sign in to REPs to access your professional dashboard.",
+          "Welcome back — sign in to REPS to access your professional dashboard.",
       },
       { property: "og:url", content: "/login" },
     ],
@@ -125,7 +125,7 @@ function LoginPage() {
         <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
           <Link to="/" className="flex items-center gap-3">
             <span className="font-display text-[34px] font-bold leading-none tracking-tight text-white">
-              REPs
+              REPS
             </span>
             <span className="hidden border-l border-white/15 pl-3 text-[11px] leading-tight text-white/70 sm:block">
               The Register of
@@ -134,7 +134,7 @@ function LoginPage() {
             </span>
           </Link>
           <p className="text-[14px] text-white/70">
-            New to REPs?{" "}
+            New to REPS?{" "}
             <Link
               to="/signup"
               className="font-semibold text-reps-orange hover:underline"
@@ -182,7 +182,7 @@ function LoginPage() {
           <div className="flex flex-col">
             <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
               Welcome back to{" "}
-              <span className="text-reps-orange">REPs.</span>
+              <span className="text-reps-orange">REPS.</span>
             </h1>
             <p className="mt-5 text-[15px] leading-relaxed text-white/65">
               Sign in to access your professional profile, manage clients and
@@ -215,7 +215,7 @@ function LoginPage() {
                 ))}
               </div>
               <blockquote className="mt-3 text-[14px] leading-relaxed text-white/80">
-                &ldquo;REPs has helped me build trust with clients and grow
+                &ldquo;REPS has helped me build trust with clients and grow
                 my business. The tools and support are incredible.&rdquo;
               </blockquote>
               <figcaption className="mt-4 flex items-center gap-3">
@@ -240,7 +240,7 @@ function LoginPage() {
           <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
             <div className="text-center">
               <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
-                Sign in to REPs
+                Sign in to REPS
               </h2>
               <p className="mt-1.5 text-[13px] text-reps-muted-light">
                 Welcome back. Enter your details to continue.

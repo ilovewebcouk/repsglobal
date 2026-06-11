@@ -34,10 +34,10 @@ import proLaura from "@/assets/pro-laura.jpg";
 export const Route = createFileRoute("/home-legacy")({
   head: () => ({
     meta: [
-      { title: "REPs (legacy homepage)" },
+      { title: "REPS (legacy homepage)" },
       {
         name: "description",
-        content: "Legacy REPs homepage kept for reference.",
+        content: "Legacy REPS homepage kept for reference.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -62,7 +62,7 @@ const stats = [
   { icon: Star, value: "50,000+", label: "Client Reviews" },
   { icon: Globe, value: "120+", label: "Countries Worldwide" },
   { icon: Calendar, value: "1M+", label: "Sessions Booked" },
-  { icon: ShieldCheck, value: "100%", label: "REPs Verified" },
+  { icon: ShieldCheck, value: "100%", label: "REPS Verified" },
 ];
 
 const specialisms = [
@@ -335,7 +335,7 @@ function HomePage() {
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="flex items-end justify-between gap-4">
             <h2 className="font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-              Featured REPs Professionals
+              Featured REPS Professionals
             </h2>
             <div className="flex items-center gap-4">
               <Link
@@ -383,7 +383,7 @@ function HomePage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-reps-panel via-reps-panel/70 to-transparent" />
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
                     <BadgeCheck className="h-3 w-3" />
-                    REPs Verified
+                    REPS Verified
                   </span>
                 </div>
                 <div className="space-y-2 px-4 pb-4 pt-3">
@@ -415,12 +415,12 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ============ HOW REPs WORKS ============ */}
+      {/* ============ HOW REPS WORKS ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="text-center">
             <h2 className="font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-              How REPs works
+              How REPS works
             </h2>
             <p className="mt-2 text-[15px] text-reps-muted-light">
               Finding the right professional is simple
@@ -464,12 +464,12 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ============ WHY TRUST REPs ============ */}
+      {/* ============ WHY TRUST REPS ============ */}
       <section className="bg-reps-ivory">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="text-center">
             <h2 className="font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-              Why trust REPs?
+              Why trust REPS?
             </h2>
             <p className="mt-2 text-[15px] text-reps-muted-light">
               We set the standard for fitness professionals
@@ -481,7 +481,7 @@ function HomePage() {
               {
                 icon: ShieldCheck,
                 title: "Verified Professionals",
-                body: "All REPs are qualified, insured and verified.",
+                body: "All REPS are qualified, insured and verified.",
               },
               {
                 icon: Award,
@@ -555,7 +555,7 @@ function HomePage() {
                   Are you a fitness professional?
                 </h2>
                 <p className="mt-3 max-w-[420px] text-[14.5px] leading-relaxed text-white/85">
-                  Join REPs and connect with clients who are looking for professionals they can
+                  Join REPS and connect with clients who are looking for professionals they can
                   trust.
                 </p>
 
@@ -580,7 +580,7 @@ function HomePage() {
                   to="/for-professionals"
                   className="mt-7 inline-flex h-[48px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
                 >
-                  Become a REPs Pro
+                  Become a REPS Pro
                 </Link>
               </div>
             </div>

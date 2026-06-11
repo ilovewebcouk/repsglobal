@@ -81,7 +81,7 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
     metadataUserId: sub.metadata?.reps_user_id ?? null,
   });
   if (!userId) {
-    throw new Error(`No REPs user found for Stripe customer ${customerId}`);
+    throw new Error(`No REPS user found for Stripe customer ${customerId}`);
   }
 
   const priceId = sub.items.data[0]?.price.id ?? null;

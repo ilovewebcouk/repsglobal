@@ -4,10 +4,10 @@ import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 export const Route = createFileRoute("/admin_/settings")({
   head: () => ({
     meta: [
-      { title: "Platform settings — REPs Admin" },
-      { name: "description", content: "Configure REPs platform-wide settings: branding, email, integrations and feature flags." },
-      { property: "og:title", content: "Platform settings — REPs Admin" },
-      { property: "og:description", content: "REPs platform configuration." },
+      { title: "Platform settings — REPS Admin" },
+      { name: "description", content: "Configure REPS platform-wide settings: branding, email, integrations and feature flags." },
+      { property: "og:title", content: "Platform settings — REPS Admin" },
+      { property: "og:description", content: "REPS platform configuration." },
     ],
   }),
   component: AdminSettings,
@@ -33,7 +33,7 @@ function AdminSettings() {
         <APanel className="p-6">
           <h2 className="font-display text-[16px] font-semibold text-white">General</h2>
           <div className="mt-5 space-y-5">
-            <Row label="Platform name" value="REPs — The Register of Exercise Professionals" />
+            <Row label="Platform name" value="REPS — The Register of Exercise Professionals" />
             <Row label="Primary domain" value="repsglobal.com" />
             <Row label="Default region" value="Global" />
             <Row label="Currency" value="GBP (£)" />

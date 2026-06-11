@@ -121,7 +121,7 @@ const COMMAND_CALLOUTS: Callout[] = [
     x: "80%",
     y: "24%",
     title: "Live status pill",
-    body: "REPs AI runs in the background across your business — never a chat window you have to remember to open.",
+    body: "REPS AI runs in the background across your business — never a chat window you have to remember to open.",
   },
   {
     x: "20%",
@@ -231,35 +231,35 @@ const COMPARISON_ROWS: Array<{ feature: string; verified: boolean; pro: boolean 
 
 const FAQ_ITEMS = [
   {
-    q: "Is REPs AI a chatbot?",
-    a: "No. REPs AI is an operating layer that runs across your business — drafting, ranking, summarising and flagging in the background. It is not a chat window you have to remember to open.",
+    q: "Is REPS AI a chatbot?",
+    a: "No. REPS AI is an operating layer that runs across your business — drafting, ranking, summarising and flagging in the background. It is not a chat window you have to remember to open.",
   },
   {
     q: "Does AI ever send anything to my clients without me?",
     a: "No. Every AI output is a draft. Replies, programmes, meal plans, posts and check-in responses all wait for you to review, edit and approve. Nothing reaches a client without your sign-off.",
   },
   {
-    q: "Can REPs AI give nutrition or medical advice?",
-    a: "Meal plans and nutrition suggestions are drafted for you to review against your client and your scope of practice. REPs AI does not provide medical advice and is not a substitute for a registered dietitian or clinician.",
+    q: "Can REPS AI give nutrition or medical advice?",
+    a: "Meal plans and nutrition suggestions are drafted for you to review against your client and your scope of practice. REPS AI does not provide medical advice and is not a substitute for a registered dietitian or clinician.",
   },
   {
     q: "Where does the AI get its signals from?",
-    a: "From what already lives in your REPs workspace — enquiries, check-ins, bookings, payments, programmes and client notes. It is not pulling data from outside your account.",
+    a: "From what already lives in your REPS workspace — enquiries, check-ins, bookings, payments, programmes and client notes. It is not pulling data from outside your account.",
   },
   {
     q: "Will the writing sound like me or like a generic AI?",
-    a: "Drafts learn from the messages, posts and programmes you actually publish on REPs — so replies and content sound like you. The more you use it, the closer it gets.",
+    a: "Drafts learn from the messages, posts and programmes you actually publish on REPS — so replies and content sound like you. The more you use it, the closer it gets.",
   },
   {
     q: "Can I turn AI off completely?",
-    a: "Yes. Every AI surface can be disabled per area. You can run REPs Pro with no AI assistance at all, or switch it on only for the parts of your business where you want it.",
+    a: "Yes. Every AI surface can be disabled per area. You can run REPS Pro with no AI assistance at all, or switch it on only for the parts of your business where you want it.",
   },
   {
-    q: "Is REPs AI included in Verified or only Pro?",
-    a: "REPs AI is a Pro feature. Verified covers the public side — profile, verification, visibility and reviews. Pro adds the operating layer that drafts, ranks and flags across your business.",
+    q: "Is REPS AI included in Verified or only Pro?",
+    a: "REPS AI is a Pro feature. Verified covers the public side — profile, verification, visibility and reviews. Pro adds the operating layer that drafts, ranks and flags across your business.",
   },
   {
-    q: "Does REPs train AI models on my client data?",
+    q: "Does REPS train AI models on my client data?",
     a: "Your client records are not used to train third-party AI models. AI runs against your data to help you — not to feed a wider model. Detail on data handling lives in our privacy policy.",
   },
 ];
@@ -272,16 +272,16 @@ export const Route = createFileRoute("/features/ai")({
   head: () => ({
     meta: [
       {
-        title: "REPs AI — The AI operating layer for fitness professionals · REPs",
+        title: "REPS AI — The AI operating layer for fitness professionals · REPS",
       },
       {
         name: "description",
         content:
-          "Not a chatbot. REPs AI drafts your programmes, reads your check-ins, scores your leads, flags risks and ranks your next moves — across the whole REPs Pro workspace. Trainer-reviewed by design.",
+          "Not a chatbot. REPS AI drafts your programmes, reads your check-ins, scores your leads, flags risks and ranks your next moves — across the whole REPS Pro workspace. Trainer-reviewed by design.",
       },
       {
         property: "og:title",
-        content: "REPs AI — The AI operating layer for fitness professionals",
+        content: "REPS AI — The AI operating layer for fitness professionals",
       },
       {
         property: "og:description",
@@ -321,15 +321,15 @@ function AIPage() {
 
       <MarketingFaq
         eyebrow="Common questions"
-        heading="What REPs AI does — and what it deliberately doesn't."
+        heading="What REPS AI does — and what it deliberately doesn't."
         items={FAQ_ITEMS}
       />
 
       <FinalCta
         heading="Make better decisions, work faster, stay"
         headingAccent=" on top of every client."
-        lede="REPs AI runs across your whole Pro workspace — drafting, ranking and flagging in the background. You stay the coach. The admin runs itself."
-        primary={{ to: "/signup", label: "Start using REPs Pro" }}
+        lede="REPS AI runs across your whole Pro workspace — drafting, ranking and flagging in the background. You stay the coach. The admin runs itself."
+        primary={{ to: "/signup", label: "Start using REPS Pro" }}
         secondary={{ to: "/for-professionals", label: "Explore all features" }}
       />
 
@@ -347,7 +347,7 @@ function Hero() {
     <section className="relative flex min-h-[640px] overflow-hidden lg:min-h-[820px]">
       <img
         src={heroAi.url}
-        alt="REPs-verified coach reviewing AI-drafted programmes and check-ins on a tablet at a premium boutique gym"
+        alt="REPS-verified coach reviewing AI-drafted programmes and check-ins on a tablet at a premium boutique gym"
         width={1920}
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -360,7 +360,7 @@ function Hero() {
             icon={Brain}
             style={{ animationDuration: "560ms", animationFillMode: "both" }}
           >
-            REPs AI · The operating layer
+            REPS AI · The operating layer
           </MarketingHeroEyebrow>
 
           <h1
@@ -375,7 +375,7 @@ function Hero() {
             className="mt-6 max-w-[600px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration: "640ms", animationDelay: "180ms", animationFillMode: "both" }}
           >
-            Not a chatbot. Not an AI personal trainer. REPs AI runs across your whole Pro
+            Not a chatbot. Not an AI personal trainer. REPS AI runs across your whole Pro
             workspace — drafting programmes, summarising check-ins, scoring leads, flagging
             risks and ranking your next move. You stay the coach. AI handles the noise.
           </p>
@@ -388,13 +388,13 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Start using REPs Pro <ArrowRight className="h-4 w-4" />
+              Start using REPS Pro <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#attention"
               className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-white/5 px-7 text-[14px] font-semibold text-white shadow-none backdrop-blur hover:bg-white/15"
             >
-              See how REPs AI works
+              See how REPS AI works
             </a>
           </div>
 
@@ -403,7 +403,7 @@ function Hero() {
             style={{ animationDuration: "640ms", animationDelay: "340ms", animationFillMode: "both" }}
           >
             <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
+              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPS Pro
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Shield className="h-4 w-4 text-reps-orange" /> Trainer-reviewed by design
@@ -427,15 +427,15 @@ function ProblemSection() {
     <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="The problem REPs AI solves"
+          eyebrow="The problem REPS AI solves"
           heading="Most fitness pros don't have a productivity problem. They have a signal problem."
-          lede="The admin doesn't stop. Enquiries pile up, check-ins go unread, clients quietly slip. By Friday you can't tell what mattered. REPs AI exists to surface the signal — and draft the response — before something important goes missed."
+          lede="The admin doesn't stop. Enquiries pile up, check-ins go unread, clients quietly slip. By Friday you can't tell what mattered. REPS AI exists to surface the signal — and draft the response — before something important goes missed."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <X className="h-3 w-3" /> Without REPs AI
+              <X className="h-3 w-3" /> Without REPS AI
             </span>
             <BlockHeading className="mt-4">Noise. All of it the same colour.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -457,7 +457,7 @@ function ProblemSection() {
 
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With REPs AI
+              <Check className="h-3 w-3" /> With REPS AI
             </span>
             <BlockHeading className="mt-4">Signal. Ranked. With a drafted next step.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -492,7 +492,7 @@ function WorkflowSection() {
         <SectionHeader
           eyebrow="Across the whole workspace"
           heading="One AI layer. Every part of your coaching business."
-          lede="REPs AI isn't a feature you open. It runs across the entire Pro workspace — every stage of the day, drafting and ranking quietly in the background."
+          lede="REPS AI isn't a feature you open. It runs across the entire Pro workspace — every stage of the day, drafting and ranking quietly in the background."
         />
 
         <ol className="mt-12 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
@@ -524,7 +524,7 @@ function AttentionSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="What needs you, ranked"
-          heading="Every morning, REPs AI tells you what to do first — and drafts it."
+          heading="Every morning, REPS AI tells you what to do first — and drafts it."
           lede="The dashboard a Pro account opens to: a ranked needs-attention list built from the real signal in your workspace. Not a generic to-do feed."
         />
 
@@ -533,7 +533,7 @@ function AttentionSection() {
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "Live REPs Pro dashboard with AI ranking",
+              title: "Live REPS Pro dashboard with AI ranking",
             }}
             callouts={ATTENTION_CALLOUTS}
           />
@@ -554,7 +554,7 @@ function CheckinsSection() {
         <SectionHeader
           eyebrow="Check-ins and progress"
           heading="Six check-ins, read for you — without losing what matters."
-          lede="REPs AI reads every check-in, pulls out the trend, drafts the reply and flags who actually needs a human conversation this week."
+          lede="REPS AI reads every check-in, pulls out the trend, drafts the reply and flags who actually needs a human conversation this week."
         />
         <div className="mt-12">
           <ProductBlock
@@ -562,11 +562,11 @@ function CheckinsSection() {
             title="The change to make, the reply to send, the client who needs you most."
             body="Adherence, weight, mood, sleep and training notes summarised into one card per client. The headline up front. The detail one click away. A drafted reply waiting for your sign-off."
             bullets={CHECKINS_BULLETS}
-            imageLabel="REPs AI check-in summary"
+            imageLabel="REPS AI check-in summary"
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "REPs AI check-in summary",
+              title: "REPS AI check-in summary",
             }}
           />
         </div>
@@ -586,7 +586,7 @@ function ProgrammesSection() {
         <SectionHeader
           eyebrow="Programmes and coaching"
           heading="A 12-week plan, drafted in seconds. Yours to edit in minutes."
-          lede="Describe the client in one line. REPs AI drafts a structured programme with the right exercises, sets, reps and video demos. You tweak the parts that matter and publish."
+          lede="Describe the client in one line. REPS AI drafts a structured programme with the right exercises, sets, reps and video demos. You tweak the parts that matter and publish."
         />
         <div className="mt-12">
           <ProductBlock
@@ -595,11 +595,11 @@ function ProgrammesSection() {
             title="The blank-page problem, gone. The coaching, still yours."
             body="AI handles the scaffolding — structure, progressions, exercise selection, demo videos. You bring the judgement — the why, the where to push, the where to ease off. The result is a plan that's faster to ship and unmistakably yours."
             bullets={PROGRAMMES_BULLETS}
-            imageLabel="REPs AI programme writer"
+            imageLabel="REPS AI programme writer"
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "REPs AI programme writer",
+              title: "REPS AI programme writer",
             }}
           />
         </div>
@@ -626,13 +626,13 @@ function NutritionSection() {
           <ProductBlock
             eyebrow="Nutrition drafts"
             title="Drafts. Trainer reviews. Trainer approves."
-            body="REPs AI is not a registered dietitian. Nutrition drafts are starting points for trainers and qualified nutritionists to review against their client and their scope of practice — not advice to publish unread."
+            body="REPS AI is not a registered dietitian. Nutrition drafts are starting points for trainers and qualified nutritionists to review against their client and their scope of practice — not advice to publish unread."
             bullets={NUTRITION_BULLETS}
-            imageLabel="REPs AI nutrition draft"
+            imageLabel="REPS AI nutrition draft"
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "REPs AI nutrition draft",
+              title: "REPS AI nutrition draft",
             }}
           />
         </div>
@@ -659,13 +659,13 @@ function OperationsSection() {
             reverse
             eyebrow="Admin assistance"
             title="The chase, the reminder, the reply — drafted, timed and ready to send."
-            body="REPs AI watches your inbox, your bookings and your payments — surfaces what needs action, drafts the response, and times the chase for when a client is most likely to reply."
+            body="REPS AI watches your inbox, your bookings and your payments — surfaces what needs action, drafts the response, and times the chase for when a client is most likely to reply."
             bullets={OPS_BULLETS}
-            imageLabel="REPs AI admin assistant"
+            imageLabel="REPS AI admin assistant"
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "REPs AI admin assistant",
+              title: "REPS AI admin assistant",
             }}
           />
         </div>
@@ -685,7 +685,7 @@ function ProfileSection() {
         <SectionHeader
           eyebrow="Profile and Shop Front"
           heading="Your storefront, written in your voice — not a templated AI blurb."
-          lede="REPs AI tightens your bio, sharpens your service copy and surfaces the review quotes that earn trust — so your profile and Shop Front work harder without sounding generic."
+          lede="REPS AI tightens your bio, sharpens your service copy and surfaces the review quotes that earn trust — so your profile and Shop Front work harder without sounding generic."
         />
         <div className="mt-12">
           <ProductBlock
@@ -693,11 +693,11 @@ function ProfileSection() {
             title="The copy that converts — drafted from the words you already publish."
             body="Drafts learn from your real reviews, your real client outcomes and your real tone of voice. So the storefront sounds like you, not a templated assistant."
             bullets={PROFILE_BULLETS}
-            imageLabel="REPs AI profile suggestions"
+            imageLabel="REPS AI profile suggestions"
             mockup={{
               device: "laptop",
               src: "/dashboard",
-              title: "REPs AI profile suggestions",
+              title: "REPS AI profile suggestions",
             }}
           />
         </div>
@@ -717,7 +717,7 @@ function CommandCentreSection() {
         <SectionHeader
           eyebrow="The AI Command Centre"
           heading="One screen. Every AI suggestion. Every estimated impact."
-          lede="The Command Centre is where REPs AI shows its hand — the Next Move, the risk alerts, the drafted programmes and replies — with a modelled impact next to every suggestion, so you can decide what's worth your time."
+          lede="The Command Centre is where REPS AI shows its hand — the Next Move, the risk alerts, the drafted programmes and replies — with a modelled impact next to every suggestion, so you can decide what's worth your time."
         />
 
         <div className="relative mt-12">
@@ -778,7 +778,7 @@ function UseCasesSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"
-          heading="What REPs AI looks like for…"
+          heading="What REPS AI looks like for…"
           lede="The operating layer stays the same. The leverage flexes to how you actually run your business."
         />
 
@@ -812,7 +812,7 @@ function TierComparisonSection() {
         <SectionHeader
           eyebrow="Verified vs Pro"
           heading="Verified gets you found. Pro gives you the AI operating layer."
-          lede="REPs AI is a Pro pillar. Verified covers the public side — profile, verification, visibility, reviews. Pro adds the operating layer: ranking, drafting, summarising and flagging across your business."
+          lede="REPS AI is a Pro pillar. Verified covers the public side — profile, verification, visibility, reviews. Pro adds the operating layer: ranking, drafting, summarising and flagging across your business."
         />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
@@ -825,7 +825,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full REPs AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
+            blurb="Everything in Verified, plus the full REPS AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
             highlighted
             cta={{ to: "/pricing", label: "See Pro pricing" }}
           />

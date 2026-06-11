@@ -13,13 +13,13 @@ export const Route = createFileRoute("/resources/$slug")({
   },
   head: ({ params, loaderData }) => {
     const article = loaderData?.article;
-    if (!article) return { meta: [{ title:"Resource not found — REPs" }] };
+    if (!article) return { meta: [{ title:"Resource not found — REPS" }] };
     const baseUrl ="https://staging.repsuk.org";
     const url = `${baseUrl}/resources/${params.slug}`;
     const imageUrl = article.cover.startsWith("http") ? article.cover : `${baseUrl}${article.cover}`;
     return {
       meta: [
-        { title: `${article.title} — REPs Resources` },
+        { title: `${article.title} — REPS Resources` },
         { name:"description", content: article.excerpt },
         { property:"og:title", content: article.title },
         { property:"og:description", content: article.excerpt },
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/resources/$slug")({
             author: {"@type":"Person", name: article.author },
             publisher: {
 "@type":"Organization",
-              name:"REPs",
+              name:"REPS",
               url: baseUrl,
             },
             mainEntityOfPage: {"@type":"WebPage","@id": url },
@@ -233,7 +233,7 @@ function ArticlePage() {
               Looking for a verified professional?
             </h2>
             <p className="mt-2 text-[15px] text-white/85">
-              Browse REPs-verified personal trainers, coaches and instructors in your area.
+              Browse REPS-verified personal trainers, coaches and instructors in your area.
             </p>
           </div>
           <Link

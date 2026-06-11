@@ -57,7 +57,7 @@ const PLAN_SUMMARIES: Record<
 > = {
   verified: {
     monthly: {
-      name: "REPs Verified",
+      name: "REPS Verified",
       tagline: "Monetise your professional trust.",
       price: "£12",
       unit: "/month",
@@ -65,7 +65,7 @@ const PLAN_SUMMARIES: Record<
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
-      name: "REPs Verified",
+      name: "REPS Verified",
       tagline: "Monetise your professional trust.",
       price: "£8.25",
       unit: "/month",
@@ -129,7 +129,7 @@ export const Route = createFileRoute("/signup")({
   },
 
   beforeLoad: ({ search }) => {
-    // REPs is paid-only — a bare /signup with no plan choice goes back to pricing.
+    // REPS is paid-only — a bare /signup with no plan choice goes back to pricing.
     if (!search.tier) {
       throw redirect({ to: "/pricing" });
     }
@@ -137,17 +137,17 @@ export const Route = createFileRoute("/signup")({
 
   head: () => ({
     meta: [
-      { title: "Create Your REPs Account — Join the Professional Community" },
+      { title: "Create Your REPS Account — Join the Professional Community" },
       {
         name: "description",
         content:
-          "Join REPs and connect with verified fitness professionals and clients worldwide. Create your free account in minutes.",
+          "Join REPS and connect with verified fitness professionals and clients worldwide. Create your free account in minutes.",
       },
-      { property: "og:title", content: "Create Your REPs Account — REPs" },
+      { property: "og:title", content: "Create Your REPS Account — REPS" },
       {
         property: "og:description",
         content:
-          "Sign up to REPs — the global standard for fitness professionals. Verified credentials, public reviews, trusted worldwide.",
+          "Sign up to REPS — the global standard for fitness professionals. Verified credentials, public reviews, trusted worldwide.",
       },
       { property: "og:url", content: "/signup" },
     ],
@@ -204,7 +204,7 @@ const TIER_TO_ACCOUNT_TYPE: Record<string, "pro" | "biz"> = {
 
 const STATS = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
-  { icon: ShieldCheck, value: "100%", label: "REPs Verified" },
+  { icon: ShieldCheck, value: "100%", label: "REPS Verified" },
   { icon: Globe, value: "120+", label: "Countries Worldwide" },
   { icon: Star, value: "Trusted by", label: "Industry Leaders" },
 ];
@@ -242,8 +242,8 @@ const BRANDS = [
 ];
 
 const FAQS = [
-  "Is REPs membership required to use the platform?",
-  "How does REPs verify fitness professionals?",
+  "Is REPS membership required to use the platform?",
+  "How does REPS verify fitness professionals?",
   "Can I upgrade my account later?",
   "What features are included with my account?",
   "Is my data secure?",
@@ -427,7 +427,7 @@ function SignupPage() {
               <span className="text-reps-orange">in one place.</span>
             </h1>
             <p className="mt-5 text-[15px] leading-relaxed text-white/65">
-              Join thousands of exercise professionals who use REPs to grow
+              Join thousands of exercise professionals who use REPS to grow
               their business, manage clients and advance their career with
               confidence.
             </p>
@@ -460,7 +460,7 @@ function SignupPage() {
                 ))}
               </div>
               <blockquote className="mt-3 text-[14px] leading-relaxed text-white/80">
-                &ldquo;REPs has helped me build trust with clients and grow
+                &ldquo;REPS has helped me build trust with clients and grow
                 my business. The tools and support are incredible.&rdquo;
               </blockquote>
               <figcaption className="mt-4 flex items-center gap-3">
@@ -485,7 +485,7 @@ function SignupPage() {
           <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
             <div className="text-center">
               <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
-                Create Your REPs Account
+                Create Your REPS Account
               </h2>
               <p className="mt-1.5 text-[13px] text-reps-muted-light">
                 Join the professional community and take your career further.

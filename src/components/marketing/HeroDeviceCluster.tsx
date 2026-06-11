@@ -20,10 +20,10 @@ type Props = {
  */
 export function HeroDeviceCluster({
   laptopSrc = "/dashboard",
-  laptopTitle = "REPs dashboard preview",
+  laptopTitle = "REPS dashboard preview",
   laptopScale = 0.5,
   phoneSrc = "/portal/today",
-  phoneTitle = "REPs client portal preview",
+  phoneTitle = "REPS client portal preview",
   phoneScale = 0.32,
 }: Props = {}) {
   return (

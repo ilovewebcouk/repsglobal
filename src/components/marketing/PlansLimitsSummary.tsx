@@ -12,8 +12,8 @@ import { RepsTierWordmark } from "@/components/brand/RepsTierWordmark";
  * Compact plans & limits summary for the /compare hub.
  *
  * Shared grid across all rows so the Entry / Clients / Paid add-ons columns
- * line up across REPs + competitors. The "Recommended" pill sits as an
- * absolute corner badge on the REPs row so it never consumes grid space.
+ * line up across REPS + competitors. The "Recommended" pill sits as an
+ * absolute corner badge on the REPS row so it never consumes grid space.
  */
 
 const HREF_BY_SLUG: Record<
@@ -35,7 +35,7 @@ export function PlansLimitsSummary({
 }) {
   return (
     <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel/40">
-      {/* REPs reference row */}
+      {/* REPS reference row */}
       <div className="relative border-b border-reps-border bg-reps-orange/10 px-5 py-4 pr-5 md:pr-32">
         <span className="absolute right-4 top-4 inline-flex h-6 items-center rounded-full bg-reps-orange px-2.5 text-[10px] font-semibold uppercase tracking-wider text-white">
           Recommended
@@ -54,7 +54,7 @@ export function PlansLimitsSummary({
               to="/pricing"
               className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-reps-orange hover:underline"
             >
-              See REPs plans <ArrowRight className="h-3.5 w-3.5" />
+              See REPS plans <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

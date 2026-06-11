@@ -1,7 +1,7 @@
 // Shared pricing data for /pricing and /for-professionals.
 // Single source of truth — no duplication across routes.
 //
-// REPs 3-tier ladder: Verified / Pro / Studio. The current Pro tier is what
+// REPS 3-tier ladder: Verified / Pro / Studio. The current Pro tier is what
 // was previously called Business (same price, same features, same Founding
 // lock). The old £29 Pro tier and the Free tier are retired.
 
@@ -153,7 +153,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
     ],
   },
   {
-    title: "REPs AI",
+    title: "REPS AI",
     rows: [
       { label: "AI Programme Writer", verified: false, pro: true, studio: true },
       { label: "AI Nutrition Planner", verified: false, pro: true, studio: true },
@@ -210,8 +210,8 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Upload your qualifications, insurance and any CPD. Our team reviews within 24 hours. You'll see a Verified badge on your profile once approved.",
   },
   {
-    q: "Does REPs take a commission on bookings?",
-    a: "No. REPs does not charge a booking commission or per-booking fee. You pay for your tier (Verified, Pro or Studio) and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use.",
+    q: "Does REPS take a commission on bookings?",
+    a: "No. REPS does not charge a booking commission or per-booking fee. You pay for your tier (Verified, Pro or Studio) and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use.",
   },
   {
     q: "Will founding pricing stay forever?",

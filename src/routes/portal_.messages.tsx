@@ -5,7 +5,7 @@ import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 export const Route = createFileRoute("/portal_/messages")({
   head: () => ({
     meta: [
-      { title: "Messages — REPs Client Portal" },
+      { title: "Messages — REPS Client Portal" },
       { name: "description", content: "Chat with your coach." },
       { name: "robots", content: "noindex" },
     ],
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/portal_/messages")({
 
 const THREADS = [
   { name: "James Carter", role: "Coach", last: "Nice session — add 2.5kg next week.", time: "2h", unread: 1, active: true },
-  { name: "Support", role: "REPs", last: "Your invoice for May is ready.", time: "1d", unread: 0, active: false },
+  { name: "Support", role: "REPS", last: "Your invoice for May is ready.", time: "1d", unread: 0, active: false },
 ];
 
 const MSGS = [
@@ -28,7 +28,7 @@ const MSGS = [
 
 function MessagesPage() {
   return (
-    <ClientShell active="Messages" title="Messages" subtitle="Chat with your coach and the REPs team">
+    <ClientShell active="Messages" title="Messages" subtitle="Chat with your coach and the REPS team">
       <div className="grid h-[calc(100vh-9.5rem)] gap-5 lg:grid-cols-[320px_1fr]">
         <PortalCard className="overflow-hidden p-0">
           <div className="border-b border-reps-border p-3">

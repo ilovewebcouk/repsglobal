@@ -20,7 +20,7 @@ interface ClientInviteProps {
   acceptUrl?: string;
 }
 
-const SITE_NAME = "REPs";
+const SITE_NAME = "REPS";
 
 const ClientInviteEmail = ({
   proName = "Your coach",

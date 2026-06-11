@@ -102,7 +102,7 @@ const PROBLEM_ORGANISED = [
 "Client records with history, notes and next step in one view",
 "Tasks and reminders flag what needs attention before it slips",
 "Documents and agreements stored against the right person",
-"Everything connected to your REPs profile and Shop Front",
+"Everything connected to your REPS profile and Shop Front",
 ];
 
 const PIPELINE_STAGES = [
@@ -221,19 +221,19 @@ const USE_CASES = [
 const FAQ_ITEMS = [
   {
     q:"Where do my leads go?",
-    a:"Every enquiry — from your REPs profile, Shop Front, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
+    a:"Every enquiry — from your REPS profile, Shop Front, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
   },
   {
     q:"Can my clients book themselves?",
     a:"Yes. Share a booking link or let them book directly from your Shop Front. You set availability by service, venue and session length. Two-way calendar sync keeps your week clean.",
   },
   {
-    q:"Do I have to use REPs for payments?",
-    a:"No. You can run Operations without payments and keep using whatever you use today. If you do connect a processor like Stripe, payouts go on its normal schedule. REPs does not take a platform commission on your client payments — standard payment processing fees may apply.",
+    q:"Do I have to use REPS for payments?",
+    a:"No. You can run Operations without payments and keep using whatever you use today. If you do connect a processor like Stripe, payouts go on its normal schedule. REPS does not take a platform commission on your client payments — standard payment processing fees may apply.",
   },
   {
     q:"Can I keep using Google Calendar?",
-    a:"Yes. REPs syncs both ways with Google, Apple and Outlook calendars. Bookings created in REPs appear in your calendar; busy time from your calendar blocks new bookings.",
+    a:"Yes. REPS syncs both ways with Google, Apple and Outlook calendars. Bookings created in REPS appear in your calendar; busy time from your calendar blocks new bookings.",
   },
   {
     q:"What about my existing client list?",
@@ -253,12 +253,12 @@ export const Route = createFileRoute("/features/operations")({
   head: () => ({
     meta: [
       {
-        title:"Operations — Run your fitness business from one organised workspace · REPs",
+        title:"Operations — Run your fitness business from one organised workspace · REPS",
       },
       {
         name:"description",
         content:
-"Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPs profile and Shop Front. Included in REPs Pro.",
+"Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPS profile and Shop Front. Included in REPS Pro.",
       },
       {
         property:"og:title",
@@ -267,7 +267,7 @@ export const Route = createFileRoute("/features/operations")({
       {
         property:"og:description",
         content:
-"The back office for your fitness business. Leads, bookings, forms, payments, client records and tasks — connected to your REPs profile.",
+"The back office for your fitness business. Leads, bookings, forms, payments, client records and tasks — connected to your REPS profile.",
       },
       { property:"og:url", content:"https://repsglobal.lovable.app/features/operations" },
     ],
@@ -308,8 +308,8 @@ function OperationsPage() {
       <FinalCta
         heading="Run the business behind your coaching with"
         headingAccent=" less admin and more control."
-        lede="Manage enquiries, bookings, forms, payments and client records from the same platform that powers your REPs profile and Shop Front."
-        primary={{ to:"/signup", label:"Start using REPs Pro" }}
+        lede="Manage enquiries, bookings, forms, payments and client records from the same platform that powers your REPS profile and Shop Front."
+        primary={{ to:"/signup", label:"Start using REPS Pro" }}
         secondary={{ to:"/for-professionals", label:"Explore all features" }}
       />
 
@@ -356,7 +356,7 @@ function Hero() {
             style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             Manage enquiries, bookings, forms, payments, client records and follow-ups in the same
-            platform that powers your REPs profile and Shop Front — without stitching together five
+            platform that powers your REPS profile and Shop Front — without stitching together five
             different apps.
           </p>
 
@@ -368,7 +368,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Start using REPs Pro <ArrowRight className="h-4 w-4" />
+              Start using REPS Pro <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#workspace"
@@ -383,10 +383,10 @@ function Hero() {
             style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
+              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPS Pro
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <Workflow className="h-4 w-4 text-reps-orange" /> Connected to your REPs profile
+              <Workflow className="h-4 w-4 text-reps-orange" /> Connected to your REPS profile
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Zap className="h-4 w-4 text-reps-orange" /> No extra add-ons
@@ -416,7 +416,7 @@ function ProblemSection() {
           {/* Today — scattered */}
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <X className="h-3 w-3" /> Today, without REPs Operations
+              <X className="h-3 w-3" /> Today, without REPS Operations
             </span>
             <BlockHeading className="mt-4">Eight tools. One overwhelmed coach.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -436,10 +436,10 @@ function ProblemSection() {
             </p>
           </div>
 
-          {/* With REPs */}
+          {/* With REPS */}
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With REPs Operations
+              <Check className="h-3 w-3" /> With REPS Operations
             </span>
             <BlockHeading className="mt-4">One workspace. Every step connected.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -478,7 +478,7 @@ function WorkspaceSection() {
         <SectionHeader
           eyebrow="Inside the workspace"
           heading="One screen. Today's sessions, new leads, pending forms, unpaid invoices."
-          lede="This is the REPs dashboard a Pro account opens to every morning — running live, not a static mock. Six things every coaching business needs to see first, in one place."
+          lede="This is the REPS dashboard a Pro account opens to every morning — running live, not a static mock. Six things every coaching business needs to see first, in one place."
         />
 
         <div className="mt-12">
@@ -486,7 +486,7 @@ function WorkspaceSection() {
             mockup={{
               device:"laptop",
               src:"/dashboard",
-              title:"Live REPs Pro dashboard",
+              title:"Live REPS Pro dashboard",
             }}
             callouts={DASHBOARD_CALLOUTS}
           />
@@ -523,7 +523,7 @@ function PipelineSection() {
         <SectionHeader
           eyebrow="One place for every enquiry"
           heading="Every lead with a status, a next step and a place to live."
-          lede="Enquiries from your REPs profile, Shop Front, DMs and referrals land in one pipeline. You see exactly who's where — and what to do next — without searching six apps."
+          lede="Enquiries from your REPS profile, Shop Front, DMs and referrals land in one pipeline. You see exactly who's where — and what to do next — without searching six apps."
         />
 
         <div className="mt-12 overflow-x-auto pb-2">
@@ -586,11 +586,11 @@ function BookingsSection() {
             title="A schedule that shows the whole week — not just one session at a time."
             body="Consultations, assessments, 1:1, group, recurring blocks and online calls — all in one calendar, with availability set by service and venue."
             bullets={BOOKINGS_BULLETS}
-            imageLabel="REPs bookings dashboard"
+            imageLabel="REPS bookings dashboard"
             mockup={{
               device:"laptop",
               src:"/dashboard/bookings",
-              title:"Live REPs bookings dashboard",
+              title:"Live REPS bookings dashboard",
             }}
           />
         </div>
@@ -672,13 +672,13 @@ function PaymentsSection() {
             reverse
             eyebrow="Payments"
             title="See who's paid, who hasn't, and what's about to renew — at a glance."
-            body="Take payments through your connected processor. Payouts land on its normal schedule. REPs does not take a platform commission on your client payments — standard payment processing fees may apply."
+            body="Take payments through your connected processor. Payouts land on its normal schedule. REPS does not take a platform commission on your client payments — standard payment processing fees may apply."
             bullets={PAYMENTS_BULLETS}
-            imageLabel="REPs payments dashboard"
+            imageLabel="REPS payments dashboard"
             mockup={{
               device:"laptop",
               src:"/dashboard/payments",
-              title:"Live REPs payments dashboard",
+              title:"Live REPS payments dashboard",
             }}
           />
         </div>
@@ -707,11 +707,11 @@ function ClientRecordsSection() {
             title="The whole client, on one screen."
             body="Open a client and see contact details, forms, bookings, payment status, goals, notes and communication history — without switching apps. Programmes and check-ins live in the Coaching pillar; this view stays admin-focused on purpose."
             bullets={CLIENT_RECORD_BULLETS}
-            imageLabel="REPs client record"
+            imageLabel="REPS client record"
             mockup={{
               device:"laptop",
               src:"/dashboard/clients/james-carter",
-              title:"Live REPs client record",
+              title:"Live REPS client record",
             }}
           />
         </div>
@@ -730,7 +730,7 @@ function TasksSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Tasks, reminders and next actions"
-          heading="REPs should show you what needs attention before something slips."
+          heading="REPS should show you what needs attention before something slips."
           lede="The needs-attention queue. Built from real signals in your workspace — enquiries waiting, forms incomplete, payments overdue, clients gone quiet — not a generic to-do list."
         />
 
@@ -786,7 +786,7 @@ function ReplacesSection() {
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <RefreshCcw className="h-3 w-3" /> What REPs replaces
+              <RefreshCcw className="h-3 w-3" /> What REPS replaces
             </span>
             <BlockHeading className="mt-4">Goodbye to the patchwork.</BlockHeading>
             <ul className="mt-6 space-y-2.5">

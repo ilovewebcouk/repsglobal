@@ -19,13 +19,13 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/check-ins")({
   head: () => ({
     meta: [
-      { title: "Check-ins — REPs Professional" },
+      { title: "Check-ins — REPS Professional" },
       {
         name: "description",
         content:
-          "Review client check-ins, track adherence and respond with clear next steps from your REPs professional dashboard.",
+          "Review client check-ins, track adherence and respond with clear next steps from your REPS professional dashboard.",
       },
-      { property: "og:title", content: "Check-ins — REPs Professional" },
+      { property: "og:title", content: "Check-ins — REPS Professional" },
       {
         property: "og:description",
         content:

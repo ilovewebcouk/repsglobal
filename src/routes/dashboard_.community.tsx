@@ -16,13 +16,13 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/community")({
   head: () => ({
     meta: [
-      { title: "Community — REPs Professional" },
+      { title: "Community — REPS Professional" },
       {
         name: "description",
         content:
-          "The Pro Lounge for verified REPs professionals, and the group spaces you run for your clients.",
+          "The Pro Lounge for verified REPS professionals, and the group spaces you run for your clients.",
       },
-      { property: "og:title", content: "Community — REPs Professional" },
+      { property: "og:title", content: "Community — REPS Professional" },
       { property: "og:description", content: "Pro Lounge and client group spaces." },
       { property: "og:url", content: "/dashboard/community" },
     ],
@@ -52,7 +52,7 @@ const THREADS = [
     last: "1h ago",
   },
   {
-    title: "REPs renewal — anyone else's evidence rejected?",
+    title: "REPS renewal — anyone else's evidence rejected?",
     author: "Priya Mehta",
     level: "L3",
     category: "CPD",
@@ -244,7 +244,7 @@ function CommunityPage() {
                 <Sparkles className="h-4 w-4" />
               </span>
               <div>
-                <h3 className="text-[14px] font-semibold text-white">REPs guidelines</h3>
+                <h3 className="text-[14px] font-semibold text-white">REPS guidelines</h3>
                 <p className="mt-1 text-[12px] leading-relaxed text-white/70">
                   Pro Lounge is for verified professionals. Keep it respectful, on-topic and no
                   client poaching. Full guidelines linked at the bottom.

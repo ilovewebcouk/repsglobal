@@ -5,9 +5,9 @@ import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 export const Route = createFileRoute("/admin_/directory")({
   head: () => ({
     meta: [
-      { title: "Directory health — REPs Admin" },
+      { title: "Directory health — REPS Admin" },
       { name: "description", content: "Monitor public directory completeness, broken links and featured rotation." },
-      { property: "og:title", content: "Directory health — REPs Admin" },
+      { property: "og:title", content: "Directory health — REPS Admin" },
       { property: "og:description", content: "Public directory health and featured-pro rotation." },
     ],
   }),

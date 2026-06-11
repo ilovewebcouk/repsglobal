@@ -24,7 +24,7 @@ export function VerdictScorecard({
                 Weight
               </th>
               <th className="bg-reps-orange-soft px-4 py-4 text-[13px] font-display font-bold text-reps-orange md:px-5">
-                REPs
+                REPS
               </th>
               <th className="px-4 py-4 text-[13px] font-display font-bold text-white md:px-5">
                 {c.name}

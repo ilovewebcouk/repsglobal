@@ -17,9 +17,9 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/cpd")({
   head: () => ({
     meta: [
-      { title: "Education & CPD — REPs Professional" },
+      { title: "Education & CPD — REPS Professional" },
       { name: "description", content: "Track your CPD points, certificates and upcoming courses." },
-      { property: "og:title", content: "Education & CPD — REPs Professional" },
+      { property: "og:title", content: "Education & CPD — REPS Professional" },
       { property: "og:description", content: "CPD points, certificates and courses." },
       { property: "og:url", content: "/dashboard/cpd" },
     ],
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/dashboard_/cpd")({
 });
 
 const CERTS = [
-  { name: "REPs Level 3 — Personal Trainer", issuer: "REPs", date: "Mar 2022", points: 30, verified: true },
+  { name: "REPS Level 3 — Personal Trainer", issuer: "REPS", date: "Mar 2022", points: 30, verified: true },
   { name: "Strength & Conditioning Coach L2", issuer: "UKSCA", date: "Jul 2023", points: 18, verified: true },
   { name: "Nutrition for Sport — L3", issuer: "Active IQ", date: "Nov 2023", points: 12, verified: true },
   { name: "Pre & Post-natal Specialist", issuer: "FitPro", date: "Feb 2024", points: 10, verified: false },
@@ -37,7 +37,7 @@ const CERTS = [
 
 const COURSES = [
   { name: "Behaviour Change for Coaches", provider: "Mac-Nutrition Uni", date: "12 Jun 2026", points: 8, format: "Online · live" },
-  { name: "Lower-back Pain Programming", provider: "REPs Academy", date: "24 Jun 2026", points: 6, format: "In-person · Manchester" },
+  { name: "Lower-back Pain Programming", provider: "REPS Academy", date: "24 Jun 2026", points: 6, format: "In-person · Manchester" },
   { name: "Strength Coaching Symposium", provider: "UKSCA", date: "10 Jul 2026", points: 14, format: "In-person · Loughborough" },
   { name: "Menopause & Strength Training", provider: "Girls Gone Strong", date: "22 Jul 2026", points: 5, format: "Online · self-paced" },
 ];
@@ -84,7 +84,7 @@ function CpdPage() {
     <ProShell
       active="Education & CPD"
       title="Education & CPD"
-      subtitle="Maintain your REPs status and grow your practice."
+      subtitle="Maintain your REPS status and grow your practice."
       actions={
         <>
           <button type="button" className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none hover:text-white">
@@ -171,7 +171,7 @@ function CpdPage() {
             <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Upcoming courses</h3>
               <button type="button" className="flex h-8 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none hover:text-white">
-                Browse REPs Academy <ExternalLink className="h-3.5 w-3.5" />
+                Browse REPS Academy <ExternalLink className="h-3.5 w-3.5" />
               </button>
             </div>
             <ul className="divide-y divide-reps-border/60">
@@ -240,8 +240,8 @@ function CpdPage() {
           </PCard>
 
           <PCard>
-            <h3 className="text-[14px] font-semibold text-white">REPs membership</h3>
-            <p className="mt-1 text-[12px] text-white/55">REPs Level 3 · Verified Pro</p>
+            <h3 className="text-[14px] font-semibold text-white">REPS membership</h3>
+            <p className="mt-1 text-[12px] text-white/55">REPS Level 3 · Verified Pro</p>
             <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft p-3 text-[12px]">
               <div className="flex justify-between text-white/65"><span>Membership renewal</span><span className="text-white">01 Apr 2027</span></div>
               <div className="mt-1 flex justify-between text-white/65"><span>Insurance</span><span className="text-emerald-300">Active</span></div>

@@ -6,10 +6,10 @@ type RepsWordmarkProps = {
 };
 
 /**
- * REPs wordmark — custom logo SVG. Inherits colour from `currentColor`.
+ * REPS wordmark — custom logo SVG. Inherits colour from `currentColor`.
  * Size by setting a height class.
  */
-export function RepsWordmark({ className, title = "REPs" }: RepsWordmarkProps) {
+export function RepsWordmark({ className, title = "REPS" }: RepsWordmarkProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

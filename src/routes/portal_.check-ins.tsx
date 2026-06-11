@@ -5,7 +5,7 @@ import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 export const Route = createFileRoute("/portal_/check-ins")({
   head: () => ({
     meta: [
-      { title: "Check-ins — REPs Client Portal" },
+      { title: "Check-ins — REPS Client Portal" },
       { name: "description", content: "Weekly progress, photos and metrics." },
       { name: "robots", content: "noindex" },
     ],

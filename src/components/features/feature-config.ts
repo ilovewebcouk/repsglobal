@@ -290,7 +290,7 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
     hero: {
       eyebrow: "Visibility",
       title: "Be found. Be trusted. Be booked.",
-      sub: "Your verified REPs profile is the one place the public already searches for a trusted pro — built to convert browsers into clients.",
+      sub: "Your verified REPS profile is the one place the public already searches for a trusted pro — built to convert browsers into clients.",
     },
     icon: BadgeCheck,
   },
@@ -301,7 +301,7 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
     hero: {
       eyebrow: "Personalised shop-front",
       title: "A page that sells you while you sleep.",
-      sub: "More than a directory profile — a full single-page site at /c/your-name. Your photo, your method, your tiers, your proof, your accent colour. Every CTA drops straight into your REPs enquiry inbox.",
+      sub: "More than a directory profile — a full single-page site at /c/your-name. Your photo, your method, your tiers, your proof, your accent colour. Every CTA drops straight into your REPS enquiry inbox.",
     },
     icon: Globe,
   },
@@ -329,12 +329,12 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
   },
   {
     key: "ai",
-    label: "REPs AI",
+    label: "REPS AI",
     desc: "The AI operating layer for your business.",
     hero: {
-      eyebrow: "REPs AI Operating System",
+      eyebrow: "REPS AI Operating System",
       title: "Not just AI features. An AI operating layer.",
-      sub: "Trainerize, MyPTHub and PT Distinction bolt AI on. REPs runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
+      sub: "Trainerize, MyPTHub and PT Distinction bolt AI on. REPS runs your business on it — programmes drafted, check-ins summarised, leads scored, risks flagged, next moves ranked.",
     },
     icon: Wand2,
     highlight: true,

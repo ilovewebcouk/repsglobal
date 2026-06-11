@@ -47,14 +47,14 @@ import proJames from "@/assets/pro-james.jpg";
 export const Route = createFileRoute("/pro/$slug/enquire")({
   head: ({ params }) => ({
     meta: [
-      { title: `Send an enquiry — REPs` },
+      { title: `Send an enquiry — REPS` },
       {
         name: "description",
         content:
-          "Send a private enquiry to a REPs-verified professional. Outline your goals, preferred session type and availability — they'll reply with a quote.",
+          "Send a private enquiry to a REPS-verified professional. Outline your goals, preferred session type and availability — they'll reply with a quote.",
       },
-      { property: "og:title", content: "Send an enquiry — REPs" },
-      { property: "og:description", content: "Enquire about coaching with a REPs-verified professional." },
+      { property: "og:title", content: "Send an enquiry — REPS" },
+      { property: "og:description", content: "Enquire about coaching with a REPS-verified professional." },
       { property: "og:url", content: `/pro/${params.slug}/enquire` },
       { name: "robots", content: "noindex" },
     ],
@@ -277,7 +277,7 @@ function EnquirePage() {
                   className="mt-0.5 border-reps-stone data-[state=checked]:border-reps-orange data-[state=checked]:bg-reps-orange data-[state=checked]:text-white"
                 />
                 <span>
-                  I agree to REPs'{" "}
+                  I agree to REPS'{" "}
                   <Link to="/terms" className="text-reps-charcoal underline">terms</Link> and{" "}
                   <Link to="/privacy" className="text-reps-charcoal underline">privacy policy</Link>. My enquiry will be sent privately to {pro.name}.
                 </span>
@@ -352,7 +352,7 @@ function EnquirePage() {
               <h3 className="font-display text-[16px] font-bold text-reps-charcoal">What happens next</h3>
               <ol className="mt-4 flex flex-col gap-3">
                 {[
-                  { t: "You send this enquiry", d: "Your message lands privately in their REPs inbox." },
+                  { t: "You send this enquiry", d: "Your message lands privately in their REPS inbox." },
                   { t: "They reply with a quote", d: "Usually within a few hours — including price and availability." },
                   { t: "Agree the details directly", d: "Confirm scope, times and price with your pro before anything's locked in." },
                   { t: "Start training", d: "Sessions, programming and progress all tracked in one place." },
@@ -372,12 +372,12 @@ function EnquirePage() {
 
             {/* Trust */}
             <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-5">
-              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Booking on REPs is safe</h3>
+              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Booking on REPS is safe</h3>
               <ul className="mt-3 flex flex-col gap-2.5">
                 {[
                   { i: ShieldCheck, t: "Identity, qualifications & insurance verified" },
                   { i: Lock, t: "Private enquiry — never shared, sold, or added to mailing lists" },
-                  { i: CheckCircle2, t: "Every REPs pro signs our code of conduct" },
+                  { i: CheckCircle2, t: "Every REPS pro signs our code of conduct" },
                 ].map((x) => (
                   <li key={x.t} className="flex items-start gap-2.5 text-[12.5px] text-reps-charcoal">
                     <x.i className="mt-0.5 size-4 shrink-0 text-reps-orange" />
