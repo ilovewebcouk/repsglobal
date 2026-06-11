@@ -121,22 +121,6 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
   // If subscription is canceled/incomplete_expired etc, drop the user back to free tier.
   const isLiveStatus = ["active", "trialing", "past_due", "unpaid"].includes(sub.status);
 
-  // Resubscribe cleanup: if the user has prior rows for *different* subscription
-  // ids, mark them superseded so getMySubscription doesn't have to rely on
-  // updated_at ordering and we don't accumulate stale "canceled" rows.
-  await supabaseAdmin
-    .from("subscriptions")
-    .update({
-      status: "superseded",
-      tier: "free",
-      billing_period: null,
-      cancel_at_period_end: false,
-      updated_at: new Date().toISOString(),
-    } as never)
-    .eq("user_id", userId)
-    .neq("stripe_subscription_id", sub.id)
-    .in("status", ["active", "trialing", "past_due", "unpaid", "canceled", "incomplete", "incomplete_expired"]);
-
   const row = {
     user_id: userId,
     stripe_customer_id: customerId,
@@ -153,17 +137,13 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
     updated_at: new Date().toISOString(),
   };
 
-  const { data: existing } = await supabaseAdmin
+  // subscriptions.user_id is UNIQUE — there is exactly one row per user.
+  // Upserting by user_id cleanly handles resubscribe-after-cancel: the prior
+  // row is overwritten with the new stripe_subscription_id, no stale rows
+  // accumulate, and getMySubscription no longer needs updated_at ordering.
+  await supabaseAdmin
     .from("subscriptions")
-    .select("id")
-    .eq("stripe_subscription_id", sub.id)
-    .maybeSingle();
-
-  if (existing) {
-    await supabaseAdmin.from("subscriptions").update(row as never).eq("id", existing.id);
-  } else {
-    await supabaseAdmin.from("subscriptions").insert(row as never);
-  }
+    .upsert(row as never, { onConflict: "user_id" });
 
   return userId;
 }
