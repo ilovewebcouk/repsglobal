@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type Stripe from "stripe";
 
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { getStripe } from "@/lib/billing/stripe.server";
 import { lookupTierByPriceId } from "@/lib/billing/prices";
 
 const CORS = {
@@ -14,6 +12,7 @@ const CORS = {
 
 
 async function logEvent(event: Stripe.Event, opts: { userId?: string | null; processingError?: string | null }) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const obj = event.data.object as unknown as Record<string, unknown>;
   const customerId = typeof obj.customer === "string" ? (obj.customer as string) : null;
   let subscriptionId: string | null = null;
@@ -40,6 +39,7 @@ async function resolveUserId(opts: {
   customerId?: string | null;
   metadataUserId?: string | null;
 }): Promise<string | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   if (opts.metadataUserId) return opts.metadataUserId;
   if (!opts.customerId) return null;
 
@@ -54,6 +54,7 @@ async function resolveUserId(opts: {
 
   // Fallback: ask Stripe for the customer's metadata.reps_user_id
   try {
+    const { getStripe } = await import("@/lib/billing/stripe.server");
     const stripe = getStripe();
     const customer = await stripe.customers.retrieve(opts.customerId);
     if (!customer.deleted) {
@@ -75,6 +76,7 @@ function periodEndIso(sub: Stripe.Subscription): string | null {
 }
 
 async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
   const userId = await resolveUserId({
     customerId,
@@ -138,6 +140,10 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
         }
 
         const rawBody = await request.text();
+        const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
+          import("@/integrations/supabase/client.server"),
+          import("@/lib/billing/stripe.server"),
+        ]);
         const stripe = getStripe();
 
         let event: Stripe.Event;
