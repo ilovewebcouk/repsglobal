@@ -1,84 +1,93 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertTriangle,
   CheckCircle2,
   ChevronRight,
   Clock,
-  Download,
   ExternalLink,
   FileText,
+  Loader2,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 
 import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
-import proSophie from "@/assets/pro-sophie.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proJames from "@/assets/pro-james.jpg";
+import { Button } from "@/components/ui/button";
+import {
+  getVerificationDocUrl,
+  listPendingVerifications,
+  reviewVerification,
+} from "@/lib/verification/verification.functions";
 
 export const Route = createFileRoute("/admin_/verification")({
   component: AdminVerificationPage,
 });
 
-const STATS = [
-  { label: "In queue", value: "47", icon: Clock, tint: "bg-reps-orange-soft text-reps-orange" },
-  { label: "Approved today", value: "32", icon: CheckCircle2, tint: "bg-reps-green/15 text-reps-green" },
-  { label: "Rejected (7d)", value: "8", icon: XCircle, tint: "bg-red-500/15 text-red-400" },
-  { label: "Avg. review time", value: "4h 12m", icon: ShieldCheck, tint: "bg-white/10 text-white/80" },
-];
-
-const QUEUE = [
-  {
-    img: proLaura,
-    name: "Laura Bennett",
-    submitted: "2h ago",
-    docs: ["Level 4 Nutrition", "Insurance", "DBS Check"],
-    risk: "Low",
-    priority: "Standard",
-  },
-  {
-    img: proDaniel,
-    name: "Daniel Okafor (Renewal)",
-    submitted: "5h ago",
-    docs: ["Level 4 S&C", "Insurance"],
-    risk: "Low",
-    priority: "Standard",
-  },
-  {
-    img: proJames,
-    name: "Marcus Doyle",
-    submitted: "1d ago",
-    docs: ["Level 3 PT", "Insurance"],
-    risk: "Flagged",
-    priority: "High",
-  },
-  {
-    img: proSophie,
-    name: "Amelia Chen",
-    submitted: "1d ago",
-    docs: ["Pilates L4", "First Aid", "Insurance"],
-    risk: "Low",
-    priority: "Standard",
-  },
-];
-
-const RECENT = [
-  { name: "Hannah Wright", action: "Approved", by: "James A.", when: "12 min ago", status: "ok" },
-  { name: "Tom Reilly", action: "Rejected — expired insurance", by: "Sophie M.", when: "45 min ago", status: "bad" },
-  { name: "Priya Shah", action: "Approved", by: "James A.", when: "1h ago", status: "ok" },
-  { name: "Owen Davies", action: "Info requested", by: "Sophie M.", when: "2h ago", status: "warn" },
-];
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return `${days}d ago`;
+}
 
 function AdminVerificationPage() {
+  const qc = useQueryClient();
+  const fetchPending = useServerFn(listPendingVerifications);
+  const decide = useServerFn(reviewVerification);
+  const getDocUrl = useServerFn(getVerificationDocUrl);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const pending = useQuery({
+    queryKey: ["admin-pending-verifications"],
+    queryFn: () => fetchPending(),
+  });
+
+  const reviewMutation = useMutation({
+    mutationFn: async (input: {
+      id: string;
+      decision: "approved" | "rejected" | "changes_requested";
+    }) => decide({ data: input }),
+    onSettled: () => {
+      setBusyId(null);
+      qc.invalidateQueries({ queryKey: ["admin-pending-verifications"] });
+    },
+  });
+
+  const openDoc = async (path: string) => {
+    try {
+      const { url } = await getDocUrl({ data: { path } });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Could not open document");
+    }
+  };
+
+  const handleDecision = (id: string, decision: "approved" | "rejected") => {
+    setBusyId(id);
+    reviewMutation.mutate({ id, decision });
+  };
+
+  const rows = pending.data ?? [];
+  const stats = [
+    { label: "In queue", value: String(rows.length), icon: Clock, tint: "bg-reps-orange-soft text-reps-orange" },
+    { label: "Approved today", value: "—", icon: CheckCircle2, tint: "bg-reps-green/15 text-reps-green" },
+    { label: "Rejected (7d)", value: "—", icon: XCircle, tint: "bg-red-500/15 text-red-400" },
+    { label: "Avg. review time", value: "—", icon: ShieldCheck, tint: "bg-white/10 text-white/80" },
+  ];
+
   return (
     <AdminShell
       active="Verification"
       title="Verification queue"
-      subtitle="Review credentials, DBS checks, and insurance before activating professionals."
+      subtitle="Review credentials and insurance before activating professionals."
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <ACard key={s.label}>
             <div className="flex items-center justify-between">
               <div>
@@ -98,84 +107,84 @@ function AdminVerificationPage() {
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <div>
               <h2 className="font-display text-[16px] font-bold text-white">Pending review</h2>
-              <p className="text-[12px] text-white/55">47 applications awaiting verification</p>
+              <p className="text-[12px] text-white/55">
+                {pending.isLoading ? "Loading…" : `${rows.length} awaiting verification`}
+              </p>
             </div>
-            <button className="text-[12px] font-semibold text-reps-orange">Open full queue</button>
           </div>
 
           <ul className="divide-y divide-reps-border">
-            {QUEUE.map((q) => (
-              <li key={q.name} className="px-5 py-4">
-                <div className="flex items-start gap-3">
-                  <img src={q.img} className="h-11 w-11 rounded-full object-cover" alt="" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-white">{q.name}</span>
-                      {q.priority === "High" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-400">
-                          <AlertTriangle className="h-3 w-3" /> High priority
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/65">
-                          {q.priority}
-                        </span>
-                      )}
-                      <span className="text-[11px] text-white/45">Submitted {q.submitted}</span>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {q.docs.map((d) => (
-                        <span
-                          key={d}
-                          className="inline-flex items-center gap-1 rounded-[6px] bg-reps-ink px-2 py-1 text-[11px] text-white/75"
-                        >
-                          <FileText className="h-3 w-3" /> {d}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="h-9 rounded-[10px] border border-reps-border px-3 text-[12px] font-semibold text-white/75">
-                      Reject
-                    </button>
-                    <button className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover">
-                      Approve
-                    </button>
-                  </div>
-                </div>
+            {!pending.isLoading && rows.length === 0 && (
+              <li className="px-5 py-12 text-center text-sm text-white/55">
+                Queue is clear — no submissions awaiting review.
               </li>
-            ))}
+            )}
+            {rows.map((r) => {
+              const name =
+                r.professional?.full_name ||
+                r.professional?.trading_name ||
+                "Unnamed professional";
+              const busy = busyId === r.id;
+              return (
+                <li key={r.id} className="px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-panel/40 font-semibold text-white/70">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-white">{name}</span>
+                        {r.professional?.city && (
+                          <span className="text-[11px] text-white/45">{r.professional.city}</span>
+                        )}
+                        <span className="text-[11px] text-white/45">
+                          Submitted {relativeTime(r.created_at)}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[12px] text-white/65">
+                        {r.qualification} · {r.awarding_body}
+                        {r.year ? ` · ${r.year}` : ""}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {(r.doc_paths ?? []).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => openDoc(p)}
+                            className="inline-flex items-center gap-1 rounded-[6px] bg-reps-ink px-2 py-1 text-[11px] text-white/75 hover:text-reps-orange"
+                          >
+                            <FileText className="h-3 w-3" />
+                            {p.split("/").pop()?.slice(0, 28) ?? "doc"}
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => handleDecision(r.id, "rejected")}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => handleDecision(r.id, "approved")}
+                        className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve"}
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </APanel>
 
         <div className="space-y-6">
-          <APanel>
-            <div className="border-b border-reps-border px-5 py-4">
-              <h3 className="font-display text-[15px] font-bold text-white">Recent decisions</h3>
-            </div>
-            <ul className="divide-y divide-reps-border">
-              {RECENT.map((r, i) => (
-                <li key={i} className="flex items-start gap-3 px-5 py-3">
-                  <span
-                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                      r.status === "ok"
-                        ? "bg-reps-green"
-                        : r.status === "bad"
-                          ? "bg-red-400"
-                          : "bg-reps-orange"
-                    }`}
-                  />
-                  <div className="min-w-0 flex-1 text-[12px]">
-                    <div className="font-semibold text-white">{r.name}</div>
-                    <div className="text-white/55">{r.action}</div>
-                    <div className="mt-0.5 text-[11px] text-white/40">
-                      {r.by} · {r.when}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </APanel>
-
           <ACard>
             <h3 className="font-display text-[15px] font-bold text-white">SLA & policy</h3>
             <ul className="mt-3 space-y-2 text-[12px] text-white/70">
@@ -184,12 +193,8 @@ function AdminVerificationPage() {
                 <span className="font-semibold text-white">24h</span>
               </li>
               <li className="flex justify-between">
-                <span>Within SLA</span>
-                <span className="font-semibold text-reps-green">96%</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Auto-flagged</span>
-                <span className="font-semibold text-reps-orange">5</span>
+                <span>Approved → tier</span>
+                <span className="font-semibold text-emerald-300">Verified</span>
               </li>
             </ul>
             <button className="mt-4 flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
