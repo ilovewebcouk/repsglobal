@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Apple,
   AreaChart,
@@ -12,6 +12,8 @@ import {
   GraduationCap,
   LayoutDashboard,
   MessagesSquare,
+  LockKeyhole,
+  Menu,
   Search,
   Settings,
   Sparkles,
@@ -23,6 +25,18 @@ import {
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export type ProActive =
   | "Dashboard"
@@ -52,6 +66,15 @@ type NavItem = {
 };
 
 type NavGroup = { title: string; items: NavItem[] };
+
+export type ProShellMember = {
+  name: string;
+  avatarUrl?: string | null;
+  headline?: string | null;
+  tierLabel?: string;
+};
+
+const VERIFIED_ROUTES = new Set(["/dashboard", "/dashboard/profile", "/dashboard/settings"]);
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -94,13 +117,13 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-function Sidebar({ active }: { active: ProActive }) {
+function Sidebar({ active, hasProAccess, member }: { active: ProActive; hasProAccess: boolean; member?: ProShellMember }) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const initials = (member?.name ?? "REPS Member").split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
+    <div className="flex h-full flex-col bg-reps-midnight">
       <Link to="/" className="flex items-center gap-3 px-5 pb-6 pt-6">
-        <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPS
-        </span>
+        <RepsWordmark className="h-[22px] text-white" />
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
           The Register of
           <br />
@@ -114,9 +137,10 @@ function Sidebar({ active }: { active: ProActive }) {
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
               {group.title}
             </div>
-            <ul className="space-y-1">
+            <ul className="flex flex-col gap-1">
               {group.items.map((item) => {
-                const isActive = item.label === active;
+                const isActive = item.label === active || pathname === item.to;
+                const locked = !hasProAccess && !VERIFIED_ROUTES.has(item.to);
                 const base =
                   "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors";
                 const cls = isActive
@@ -124,9 +148,15 @@ function Sidebar({ active }: { active: ProActive }) {
                   : `${base} text-white/70 hover:bg-reps-panel hover:text-white`;
                 return (
                   <li key={item.label}>
-                    <Link to={item.to} className={cls}>
+                    <Link
+                      to={locked ? "/dashboard/start" : item.to}
+                      search={locked ? { tier: "pro", period: "monthly" } : undefined}
+                      className={cn(cls, locked && "text-white/45")}
+                      aria-label={locked ? `${item.label} — included with Pro` : item.label}
+                    >
                       <item.icon className="h-[18px] w-[18px] shrink-0" />
                       <span className="flex-1 text-left">{item.label}</span>
+                      {locked ? <LockKeyhole className="size-3.5" /> : null}
                       {item.badge ? (
                         <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                           {item.badge}
@@ -141,26 +171,26 @@ function Sidebar({ active }: { active: ProActive }) {
         ))}
       </nav>
 
-      <div className="space-y-3 px-3 pb-5">
+      <div className="flex flex-col gap-3 px-3 pb-5">
         <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
-          <img src={proJames} alt="" className="h-10 w-10 rounded-full object-cover" />
+          <Avatar className="size-10">
+            <AvatarImage src={member?.avatarUrl ?? proJames} alt="" />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-semibold text-white">James Carter</div>
-            <div className="truncate text-[11px] text-white/55">Personal Trainer</div>
-            <span className="mt-1 inline-flex h-4 items-center rounded-full bg-reps-orange-soft px-2 text-[10px] font-semibold text-reps-orange">
-              REPS Level 3
-            </span>
+            <div className="truncate text-[13px] font-semibold text-white">{member?.name ?? "James Carter"}</div>
+            <div className="truncate text-[11px] text-white/55">{member?.headline ?? "Personal Trainer"}</div>
+            <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange">{member?.tierLabel ?? "Pro"}</Badge>
           </div>
         </div>
-        <button
-          type="button"
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-[13px] font-semibold text-reps-orange shadow-none transition-colors hover:bg-reps-orange/15"
-        >
+        <Button asChild variant="outline" disabled={!hasProAccess}>
+          <Link to={hasProAccess ? "/dashboard" : "/dashboard/start"} search={hasProAccess ? undefined : { tier: "pro", period: "monthly" }}>
           <Sparkles className="h-4 w-4" />
-          AI Assistant
-        </button>
+          {hasProAccess ? "AI Assistant" : "Explore Pro"}
+          </Link>
+        </Button>
       </div>
-    </aside>
+    </div>
   );
 }
 
