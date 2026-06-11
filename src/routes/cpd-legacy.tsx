@@ -23,7 +23,8 @@ import {
   X,
 } from "lucide-react";
 
-import ctaTrainers from "@/assets/cta-band.jpg";
+import ctaTrainersAsset from "@/assets/cta-band.jpg.asset.json";
+const ctaTrainers = ctaTrainersAsset.url;
 import cpdProfileAsset from "@/assets/cpd-profile-screenshot.jpg.asset.json";
 import cpdTutorMomentAsset from "@/assets/cpd-tutor-moment.jpg.asset.json";
 import { BrowserFrame } from "@/components/mockups/BrowserFrame";
