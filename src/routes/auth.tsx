@@ -121,13 +121,14 @@ function LoginPage() {
           </Link>
 
           {/* Form, vertically centered in remaining space */}
-          <div className="flex flex-1 items-center">
-            <div className="w-full max-w-[420px]">
-              <h1 className="font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[40px]">
-                Sign in to REPs
+          <div className="flex flex-1 items-center py-10">
+            <div className="w-full max-w-[400px]">
+              <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
+                Welcome back to{" "}
+                <span className="text-reps-orange">REPs.</span>
               </h1>
               <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-                Welcome back. Pick up where you left off.
+                Sign in to manage your profile, clients and bookings — all in one place.
               </p>
 
               {/* OAuth row */}
