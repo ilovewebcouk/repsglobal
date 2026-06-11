@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { Clock } from "lucide-react";
 import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 
 export const Route = createFileRoute("/admin_/support")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   head: () => ({
     meta: [
       { title: "Support queue — REPS Admin" },

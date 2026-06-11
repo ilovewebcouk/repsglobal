@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import {
   CheckCircle2,
   Download,
@@ -18,6 +19,8 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 
 export const Route = createFileRoute("/admin_/professionals")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   component: AdminProfessionalsPage,
 });
 

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -22,6 +23,8 @@ import {
 } from "@/lib/verification/verification.functions";
 
 export const Route = createFileRoute("/admin_/verification")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   component: AdminVerificationPage,
 });
 

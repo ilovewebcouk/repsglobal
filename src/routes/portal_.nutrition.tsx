@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { Apple, Plus, Search, GlassWater, Barcode, Camera } from "lucide-react";
 import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 
 export const Route = createFileRoute("/portal_/nutrition")({
+  ssr: false,
+  beforeLoad: requireRole(['client', 'professional']),
   head: () => ({
     meta: [
       { title: "Nutrition — REPS Client Portal" },

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import {
   Apple,
   ArrowRight,
@@ -20,6 +21,8 @@ import {
 import { ClientShell, PortalCard } from "@/components/portal/ClientShell";
 
 export const Route = createFileRoute("/portal_/today")({
+  ssr: false,
+  beforeLoad: requireRole(['client', 'professional']),
   head: () => ({
     meta: [
       { title: "Today — REPS Client Portal" },

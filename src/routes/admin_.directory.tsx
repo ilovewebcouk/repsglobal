@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { AlertTriangle, Globe2, Star } from "lucide-react";
 import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 
 export const Route = createFileRoute("/admin_/directory")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   head: () => ({
     meta: [
       { title: "Directory health — REPS Admin" },

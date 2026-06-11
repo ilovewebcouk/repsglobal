@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import { AlertTriangle, Flag, MessageSquare, Star, ThumbsUp } from "lucide-react";
 
 import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
@@ -8,6 +9,8 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 
 export const Route = createFileRoute("/admin_/reviews")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   component: AdminReviewsPage,
 });
 

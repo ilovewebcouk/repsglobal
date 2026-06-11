@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { requireRole } from "@/lib/route-gates";
 import {
   ChevronDown,
   ChevronRight,
@@ -23,6 +24,8 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 
 export const Route = createFileRoute("/admin")({
+  ssr: false,
+  beforeLoad: requireRole(['admin']),
   head: () => ({
     meta: [
       { title: "Admin Dashboard — REPS" },
