@@ -1,5 +1,7 @@
-## Centre all text in the /auth left column
+## Change
+Reduce the auth page headline from `text-[36px] lg:text-[44px]` to `text-[30px] lg:text-[40px]` to match the canonical `SectionHeading` scale, making the sign-in form feel like the primary focus.
 
-1. Add `text-center` to the inner content wrapper (`<div className="w-full max-w-[400px]">`) so the headline, lede, form labels, divider text, buttons and footer all read centred.
-2. Form inputs and buttons remain full-width within the centred text block (inputs are block elements so they stay left-aligned internally, which is correct for form controls).
-3. No other layout changes — right column `ShopFrontMock` stays as-is.
+## File
+- `src/routes/auth.tsx` — update the `<h1>` className on line 125.
+
+No other changes.
