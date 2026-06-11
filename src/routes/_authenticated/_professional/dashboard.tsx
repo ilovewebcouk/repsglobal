@@ -5,18 +5,24 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
+  Clock,
   CreditCard,
   ExternalLink,
   FileText,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   UserPen,
+  LockKeyhole,
+  TrendingUp,
+  Users,
+  Plus,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { ProShell } from "@/components/dashboard/ProShell";
-import { DashboardOverview } from "@/routes/dashboard-demo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
@@ -29,8 +35,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
 import {
+  createPortalSession,
   syncMySubscription,
 } from "@/lib/billing/billing.functions";
+
+import {
+  KpiRow,
+  ScheduleAndAi,
+  PerformanceRow,
+  RevenueRow,
+  SpotlightRow,
+  BottomRow,
+  DashboardFooter
+} from "@/components/dashboard/DashboardDemoContent";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
@@ -65,6 +82,7 @@ type Step = {
 
 function DashboardPage() {
   const fetchStatus = useServerFn(getDashboardStatus);
+  const openPortal = useServerFn(createPortalSession);
   const syncSub = useServerFn(syncMySubscription);
   const queryClient = useQueryClient();
   const { billing } = Route.useSearch();
@@ -75,6 +93,13 @@ function DashboardPage() {
     queryFn: () => fetchStatus(),
   });
 
+  const portalMutation = useMutation({
+    mutationFn: () => openPortal({ data: undefined }),
+    onSuccess: (res) => {
+      if (res?.url) window.location.href = res.url;
+    },
+  });
+
   const syncMutation = useMutation({
     mutationFn: () => syncSub({ data: undefined }),
     onSuccess: () => {
@@ -82,14 +107,11 @@ function DashboardPage() {
     },
   });
 
-  // Recovery path: if the user just returned from Stripe Checkout and the
-  // webhook hasn't landed yet, sync the subscription from Stripe directly.
   React.useEffect(() => {
     if (billing === "success") {
       syncMutation.mutate();
       navigate({ search: { billing: undefined }, replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billing]);
 
   const data = status.data;
@@ -101,6 +123,8 @@ function DashboardPage() {
   const hasSubmission = !!data?.lastSubmission;
   const profileComplete = data?.profileComplete ?? false;
   const isPublished = data?.profile?.is_published ?? false;
+  const hasProAccess = data?.entitlement.hasProAccess ?? false;
+
   const sub = data?.subscription;
   const renewsAt = sub?.current_period_end
     ? new Date(sub.current_period_end).toLocaleDateString("en-GB", {
@@ -170,22 +194,32 @@ function DashboardPage() {
   const tierLabel = hasPaidTier ? TIERS[subTier as "verified" | "pro"]?.label ?? subTier : "No plan";
   const memberName = data?.identity?.full_name ?? data?.profile?.trading_name ?? "REPS member";
 
+  const statusData = {
+    isVerified,
+    hasInsurance: !!data?.profile?.insurance_valid_until,
+    insuranceDetail: data?.profile?.insurance_valid_until ? `Valid until ${new Date(data.profile.insurance_valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "Not uploaded",
+    qualCount: "3 Active" // Placeholder for now or could be calculated
+  };
+
   return (
     <ProShell
       active="Dashboard"
       title={`Welcome back, ${memberName.split(" ")[0]}`}
-      subtitle={data?.entitlement.hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
-      hasProAccess={data?.entitlement.hasProAccess ?? false}
+      subtitle={hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
+      hasProAccess={hasProAccess}
       member={{ name: memberName, avatarUrl: data?.identity?.avatar_url, headline: data?.profile?.headline, tierLabel }}
       actions={data && !data.onboarding.complete ? (
         <Button variant="outline" size="sm" onClick={() => setOnboardingOpen(true)}>
-          <CheckCircle2 /> Finish setup · {completedCount}/4
+          <CheckCircle2 className="mr-2 h-4 w-4" /> Finish setup · {completedCount}/4
         </Button>
       ) : undefined}
     >
       {status.isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-32 rounded-[16px]" />)}
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-32 rounded-[16px]" />)}
+          </div>
+          <Skeleton className="h-[400px] w-full rounded-[16px]" />
         </div>
       ) : status.isError ? (
         <Alert className="border-reps-border bg-reps-panel">
@@ -196,6 +230,7 @@ function DashboardPage() {
         </Alert>
       ) : (
         <div className="flex flex-col gap-4">
+          {/* Top Real Status Row */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatusCard label="Membership" value={tierLabel} detail={renewsAt ? `Renews ${renewsAt}` : sub?.status ?? "Choose a plan"} icon={CreditCard} />
             <StatusCard label="Verification" value={isVerified ? "Verified" : submissionStatus === "submitted" ? "In review" : "Not verified"} detail={data?.profile?.reps_level?.replace("_", " ") ?? "Credentials pending"} icon={BadgeCheck} positive={isVerified} />
@@ -203,17 +238,36 @@ function DashboardPage() {
             <StatusCard label="Setup progress" value={`${completedCount} of 4`} detail={data?.onboarding.complete ? "Complete" : "Finish setup to go live"} icon={CheckCircle2} positive={data?.onboarding.complete} />
           </div>
 
-          <DashboardOverview locked={!data?.entitlement.hasProAccess} />
+          {/* Integrated Demo Composition */}
+          <KpiRow isLocked={!hasProAccess} />
+          <ScheduleAndAi isLocked={!hasProAccess} statusData={statusData} />
+          <PerformanceRow isLocked={!hasProAccess} />
+          <RevenueRow isLocked={!hasProAccess} />
+          <SpotlightRow isLocked={!hasProAccess} />
+          <BottomRow isLocked={!hasProAccess} />
 
           {data?.profile?.slug && isPublished ? (
-            <Alert className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+            <Alert className="mt-4 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
               <AlertDescription className="flex items-center justify-between gap-4">
                 Your public page is live.
-                <Button asChild variant="outline" size="sm"><Link to="/pro/$slug" params={{ slug: data.profile.slug }} target="_blank">Visit <ExternalLink /></Link></Button>
+                <Button asChild variant="outline" size="sm"><Link to="/pro/$slug" params={{ slug: data.profile.slug }} target="_blank">Visit <ExternalLink className="ml-2 h-4 w-4" /></Link></Button>
               </AlertDescription>
             </Alert>
           ) : null}
+
+          <DashboardFooter />
         </div>
+      )}
+
+      {/* FAB (only if Pro) */}
+      {hasProAccess && (
+        <button
+          type="button"
+          aria-label="Quick add"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
       )}
 
       <Dialog open={onboardingOpen} onOpenChange={closeOnboarding}>
@@ -247,5 +301,16 @@ function DashboardPage() {
 }
 
 function StatusCard({ label, value, detail, icon: Icon, positive = false }: { label: string; value: string; detail: string; icon: typeof BadgeCheck; positive?: boolean }) {
-  return <div className="rounded-[16px] border border-reps-border bg-reps-panel p-5"><div className="flex items-center justify-between"><p className="text-[12px] text-white/55">{label}</p><Icon className={positive ? "size-4 text-emerald-300" : "size-4 text-reps-orange"} /></div><p className="mt-3 font-display text-[22px] text-white">{value}</p><p className="mt-1 text-[11px] text-white/45">{detail}</p></div>;
+  return (
+    <Card className="rounded-[16px] border-reps-border bg-reps-panel shadow-none">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-[12px] text-white/55">{label}</p>
+          <Icon className={positive ? "size-4 text-emerald-300" : "size-4 text-reps-orange"} />
+        </div>
+        <p className="mt-3 font-display text-[22px] text-white">{value}</p>
+        <p className="mt-1 text-[11px] text-white/45">{detail}</p>
+      </CardContent>
+    </Card>
+  );
 }

@@ -136,7 +136,7 @@ export function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) {
 export function LockOverlay({ title = "Pro Preview" }: { title?: string }) {
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[inherit] bg-reps-midnight/60 backdrop-blur-[2px]">
-      <div className="flex flex-col items-center rounded-2xl border border-reps-border bg-reps-panel p-6 shadow-2xl">
+      <div className="flex flex-col items-center rounded-[22px] border border-reps-border bg-reps-panel p-6">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">
           <LockKeyhole className="h-6 w-6" />
         </div>
@@ -294,12 +294,11 @@ const TIPS = [
 
 export function KpiRow({ isLocked = false }: { isLocked?: boolean }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+    <div className="relative grid grid-cols-2 gap-4 overflow-hidden rounded-[22px] sm:grid-cols-3 xl:grid-cols-6">
       <div className="relative col-span-2 grid grid-cols-2 gap-4 sm:col-span-3 sm:grid-cols-3 xl:col-span-3">
         <KpiTile label="Monthly Revenue" value="£12,480" delta="14.3%" sub="vs last month £10,910" />
         <KpiTile label="Active Clients" value="142" delta="8" sub="vs last month 134" />
         <KpiTile label="Client Adherence" value="87%" delta="5%" sub="vs last month 82%" />
-        {isLocked && <LockOverlay title="Business Metrics" />}
       </div>
       <Card>
         <div className="text-[12px] text-white/55">REPS Professional Score</div>
@@ -329,8 +328,8 @@ export function KpiRow({ isLocked = false }: { isLocked?: boolean }) {
           <p className="flex-1 text-[12px] leading-snug text-white/80">Your business is performing well</p>
         </div>
         <button type="button" className="mt-3 flex h-8 w-full items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft text-[12px] font-semibold text-white/80 shadow-none hover:text-white">View insights</button>
-        {isLocked && <LockOverlay title="AI Insights" />}
       </Card>
+      {isLocked && <LockOverlay title="Business overview" />}
     </div>
   );
 }
