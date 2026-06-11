@@ -16,7 +16,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
     title: "For Members",
     links: [
       { label: "Find a Professional", to: "/find-a-professional" },
-      { label: "How REPs Works", to: "/how-it-works" },
+      { label: "How REPS Works", to: "/how-it-works" },
       { label: "Specialisms", to: "/specialisms" },
       { label: "Reviews", to: "/reviews" },
       { label: "Help Centre", soon: true },
@@ -26,20 +26,20 @@ const cols: { title: string; links: FooterLink[] }[] = [
   {
     title: "For Professionals",
     links: [
-      { label: "Join REPs", to: "/for-professionals" },
+      { label: "Join REPS", to: "/for-professionals" },
       { label: "Pricing", to: "/pricing" },
       { label: "Dashboard", to: "/dashboard" },
       { label: "CPD & Education", to: "/cpd" },
-      { label: "REPs vs Trainerize", to: "/compare/reps-vs-trainerize" },
-      { label: "REPs vs MyPTHub", to: "/compare/reps-vs-mypthub" },
-      { label: "REPs vs PT Distinction", to: "/compare/reps-vs-pt-distinction" },
+      { label: "REPS vs Trainerize", to: "/compare/reps-vs-trainerize" },
+      { label: "REPS vs MyPTHub", to: "/compare/reps-vs-mypthub" },
+      { label: "REPS vs PT Distinction", to: "/compare/reps-vs-pt-distinction" },
       { label: "Compare all platforms", to: "/compare" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About REPs", to: "/about" },
+      { label: "About REPS", to: "/about" },
       { label: "Standards", soon: true },
       { label: "Resources", to: "/resources" },
       { label: "Careers", soon: true },
@@ -126,7 +126,7 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-reps-border pt-6 text-[13px] text-reps-muted sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} REPs. The Register of Exercise Professionals.</p>
+          <p>© {new Date().getFullYear()} REPS. The Register of Exercise Professionals.</p>
           <p>Find. Trust. Train. Transform.</p>
         </div>
       </div>

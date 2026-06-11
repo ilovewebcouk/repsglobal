@@ -33,17 +33,17 @@ import proSophie from "@/assets/pro-sophie.jpg";
 export const Route = createFileRoute("/reviews")({
   head: () => ({
     meta: [
-      { title: "Reviews on REPs — every review tied to a real booking" },
+      { title: "Reviews on REPS — every review tied to a real booking" },
       {
         name: "description",
         content:
-          "Verified-booking reviews of coaches, studios, gyms, nutritionists and training providers on REPs. Only real clients. Pros own the response.",
+          "Verified-booking reviews of coaches, studios, gyms, nutritionists and training providers on REPS. Only real clients. Pros own the response.",
       },
-      { property: "og:title", content: "Reviews on REPs" },
+      { property: "og:title", content: "Reviews on REPS" },
       {
         property: "og:description",
         content:
-          "Every review on REPs came from a real booking. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
+          "Every review on REPS came from a real booking. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
       },
       { property: "og:url", content: "/reviews" },
     ],
@@ -208,7 +208,7 @@ const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
 const METHODOLOGY = [
   {
     icon: CalendarCheck,
-    title: "Book through REPs",
+    title: "Book through REPS",
     body: "Reviews are tied to a real booking on the platform. No booking, no review.",
   },
   {
@@ -246,7 +246,7 @@ const WHY_PROS = [
   {
     icon: BadgeCheck,
     title: "Real clients only — no anonymous trolls.",
-    body: "Only people who actually booked you through REPs can review you. No drive-by ratings, no competitors, no off-platform noise.",
+    body: "Only people who actually booked you through REPS can review you. No drive-by ratings, no competitors, no off-platform noise.",
   },
   {
     icon: MessageSquare,
@@ -255,7 +255,7 @@ const WHY_PROS = [
   },
   {
     icon: Sparkles,
-    title: "Reviews follow you everywhere on REPs.",
+    title: "Reviews follow you everywhere on REPS.",
     body: "Verified reviews show on your shop-front, profile, enquire pages, and across profession and city search results. One source of truth.",
   },
 ];
@@ -264,7 +264,7 @@ const TRUST_MECHANICS = [
   {
     icon: BadgeCheck,
     title: "Verified-booking only",
-    body: "If a client didn't book through REPs, they can't review. That's the whole point.",
+    body: "If a client didn't book through REPS, they can't review. That's the whole point.",
   },
   {
     icon: Eye,
@@ -285,15 +285,15 @@ const TRUST_MECHANICS = [
 
 const FAQ_ITEMS = [
   {
-    q: "Who can leave a review on REPs?",
-    a: "Only clients who booked and completed a session, programme or course with a REPs professional through the platform. Off-platform clients can't post here — by design.",
+    q: "Who can leave a review on REPS?",
+    a: "Only clients who booked and completed a session, programme or course with a REPS professional through the platform. Off-platform clients can't post here — by design.",
   },
   {
     q: "Can a business respond to a review?",
-    a: "Yes — every pro, gym, studio and training provider on REPs gets one on-the-record public response per review. The response sits underneath the original review for every future client to see.",
+    a: "Yes — every pro, gym, studio and training provider on REPS gets one on-the-record public response per review. The response sits underneath the original review for every future client to see.",
   },
   {
-    q: "How does REPs handle fake reviews?",
+    q: "How does REPS handle fake reviews?",
     a: "Reviews are gated to verified bookings, so the most common fake-review vector is closed off entirely. Anything flagged as suspicious (multi-account, off-platform incentives, paid posting) is investigated and removed, with the reason logged.",
   },
   {
@@ -301,7 +301,7 @@ const FAQ_ITEMS = [
     a: "Reviewers can update a review once, up to 12 months after publishing. The previous version stays visible on the same card so the timeline is transparent.",
   },
   {
-    q: "Where do reviews show up across REPs?",
+    q: "Where do reviews show up across REPS?",
     a: "On the pro's profile and shop-front, on their enquire page, on profession and city search results, and here on the public reviews hub. One verified source — everywhere.",
   },
 ];
@@ -334,7 +334,7 @@ function ReviewsPage() {
           <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
             {/* Copy column */}
             <div>
-              <MarketingHeroEyebrow icon={Star}>Reviews on REPs</MarketingHeroEyebrow>
+              <MarketingHeroEyebrow icon={Star}>Reviews on REPS</MarketingHeroEyebrow>
 
               <h1
                 className="mt-6 font-display text-[40px] font-bold leading-[1.05] text-white sm:text-[52px] lg:text-[64px] animate-fade-in"
@@ -412,7 +412,7 @@ function ReviewsPage() {
               </div>
 
               <p className="mt-3 text-[12.5px] text-white/55">
-                From 12,400+ verified reviews across REPs
+                From 12,400+ verified reviews across REPS
               </p>
 
               <ul className="mt-6 space-y-2.5">
@@ -459,7 +459,7 @@ function ReviewsPage() {
           <SectionHeader
             eyebrow="How a review gets here"
             heading="Four steps. No shortcuts."
-            lede="A REPs review can only come from a real booking. Here's the exact path it takes — and what we will and won't do at each step."
+            lede="A REPS review can only come from a real booking. Here's the exact path it takes — and what we will and won't do at each step."
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {METHODOLOGY.map((m, i) => (
@@ -581,13 +581,13 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* ============ 7. WHY PROS CHOOSE REPs REVIEWS (dark, tinted) ============ */}
+      {/* ============ 7. WHY PROS CHOOSE REPS REVIEWS (dark, tinted) ============ */}
       <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <SectionHeader
             eyebrow="For professionals"
-            heading="Why pros choose to be reviewed on REPs."
-            lede="REPs reviews are built to work for the pro as much as the client. Real feedback, a fair right of reply, and one verified source that follows you across the platform."
+            heading="Why pros choose to be reviewed on REPS."
+            lede="REPS reviews are built to work for the pro as much as the client. Real feedback, a fair right of reply, and one verified source that follows you across the platform."
           />
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {WHY_PROS.map((w) => (
@@ -610,7 +610,7 @@ function ReviewsPage() {
               to="/for-professionals"
               className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              List your business on REPs <ArrowRight className="h-4 w-4" />
+              List your business on REPS <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/features/visibility"
