@@ -1,7 +1,8 @@
 # 07 — Phase 1 Build Status
 
-> **Snapshot date:** 3 June 2026 (IA split + AI pillar promotion)
-> **Scope reminder:** Phase 1 = static high-fidelity screens only. No auth wiring, RLS, DB writes, payments, bookings, AI, live maps, real search/filter logic, or BD migration. Visuals must reference the six locked mock-ups in `src/mockups/reps_fullpage_*_v1.png`.
+> **Status:** ✅ **Phase 1 visuals CLOSED — 11 June 2026.** All locked routes shipped at high fidelity. Phase 2.0 (wiring Verified + Pro Founding tiers end-to-end) is now in progress — see **`docs/09_phase2_verified.md`** for current scope.
+> **Snapshot date:** 3 June 2026 (IA split + AI pillar promotion). Frozen — kept as the Phase 1 reference.
+> **Scope reminder (historical):** Phase 1 = static high-fidelity screens only. No auth wiring, RLS, DB writes, payments, bookings, AI, live maps, real search/filter logic, or BD migration. Visuals reference the six locked mock-ups in `src/mockups/reps_fullpage_*_v1.png`.
 
 Status legend:
 
