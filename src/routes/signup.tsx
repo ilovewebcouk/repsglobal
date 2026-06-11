@@ -408,19 +408,6 @@ function SignupPage() {
               Takes about 30 seconds.
             </p>
 
-            {/* Social */}
-            <div className="mt-6">
-              <SocialButton label="Continue with Apple" disabled>
-                <Apple className="h-4 w-4 text-reps-charcoal" />
-              </SocialButton>
-            </div>
-
-            {/* Divider */}
-            <div className="mt-5 flex items-center gap-3 text-[11px] uppercase tracking-wider text-reps-muted-light">
-              <span className="h-px flex-1 bg-reps-stone" />
-              or sign up with email
-              <span className="h-px flex-1 bg-reps-stone" />
-            </div>
 
             <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
               {/* Full name */}
