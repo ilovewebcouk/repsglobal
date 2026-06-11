@@ -1158,10 +1158,24 @@ function MobileDrawer({
                     </p>
                     <ul className="flex flex-col">
                       {group.links.map((l) => (
-                        <li key={l.to}>
-                          <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
-                            {l.label}
-                          </Link>
+                        <li key={l.label}>
+                          {"soon" in l && l.soon ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex cursor-default select-none items-center gap-2 rounded-[8px] px-3 py-2.5 text-[14px] text-white/45">
+                                  {l.label}
+                                  <span className="rounded-[6px] border border-white/12 bg-white/[0.04] px-1.5 py-[1px] text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
+                                    Soon
+                                  </span>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">Launching soon</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                              {l.label}
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>
