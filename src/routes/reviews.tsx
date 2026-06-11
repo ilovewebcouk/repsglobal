@@ -1,18 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
+  CalendarCheck,
   ChevronRight,
+  Dumbbell,
+  Eye,
+  Flag,
+  Leaf,
+  Lock,
   MapPin,
-  Quote,
+  MessageSquare,
   Search,
   ShieldCheck,
+  Sparkles,
   Star,
-  ThumbsUp,
+  Timer,
   Users,
 } from "lucide-react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
+import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionHeader } from "@/components/marketing/SectionHeader";
+import { MarketingFaq } from "@/components/marketing/MarketingFaq";
+import { FinalCta } from "@/components/marketing/FinalCta";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -21,16 +32,17 @@ import proSophie from "@/assets/pro-sophie.jpg";
 export const Route = createFileRoute("/reviews")({
   head: () => ({
     meta: [
-      { title: "Client Reviews of REPs Professionals | REPs" },
+      { title: "Reviews you can actually trust | REPs" },
       {
         name: "description",
         content:
-          "Real reviews from real clients of REPs-verified personal trainers, Pilates instructors, nutritionists and coaches. Only verified clients can leave a review.",
+          "Verified-booking reviews of REPs professionals. Critical reviews stay live, pros can respond, and we never sell placement. See how it works.",
       },
-      { property: "og:title", content: "Client Reviews — REPs" },
+      { property: "og:title", content: "Reviews you can actually trust — REPs" },
       {
         property: "og:description",
-        content: "Verified-client reviews of REPs professionals worldwide.",
+        content:
+          "Only clients who actually booked through REPs can leave a review. Critical feedback stays live. No paid placement.",
       },
       { property: "og:url", content: "/reviews" },
     ],
@@ -40,7 +52,7 @@ export const Route = createFileRoute("/reviews")({
 });
 
 /* ------------------------------------------------------------------ */
-/* Data                                                                */
+/* Data (Phase 1 placeholder)                                          */
 /* ------------------------------------------------------------------ */
 
 type Review = {
@@ -57,97 +69,44 @@ type Review = {
   proRole: string;
   proImage: string;
   programme: string;
-  verified: true;
+  response?: { author: string; body: string; date: string };
 };
 
-const REVIEWS: Review[] = [
+const EDITOR_PICKS: Review[] = [
   {
-    id: "r1",
+    id: "ep1",
     author: "Natalie S.",
     authorCity: "London",
     rating: 5,
     date: "2 weeks ago",
     title: "Changed how I think about training",
     body:
-      "I came to James after years of half-hearted gym memberships. Six months in, I'm stronger than I've ever been and — more importantly — actually enjoy my sessions. The programming is thoughtful and he adjusts when life gets in the way. The REPs verification gave me confidence to commit; he completely earned it after that.",
+      "Six months in, I'm stronger than I've ever been and — more importantly — actually enjoy my sessions. The programming is thoughtful and James adjusts when life gets in the way.",
     helpful: 42,
     proName: "James Wilson",
     proSlug: "james-wilson",
     proRole: "Personal Trainer",
     proImage: proJames,
     programme: "1:1 Strength · 24 sessions",
-    verified: true,
   },
   {
-    id: "r2",
+    id: "ep2",
     author: "Marcus H.",
     authorCity: "Manchester",
     rating: 5,
     date: "1 month ago",
     title: "Best Pilates teacher I've worked with",
     body:
-      "Sophie is patient, knowledgeable and genuinely cares about long-term mobility, not just \"feeling the burn\". My lower back issues have basically vanished. Booking through REPs made the whole thing simple — payments, scheduling, all in one place.",
+      "Sophie is patient, knowledgeable and genuinely cares about long-term mobility, not just \"feeling the burn\". My lower back issues have basically vanished.",
     helpful: 38,
     proName: "Sophie Taylor",
     proSlug: "sophie-taylor",
     proRole: "Pilates Instructor",
     proImage: proSophie,
     programme: "Reformer · Weekly",
-    verified: true,
   },
   {
-    id: "r3",
-    author: "Priya M.",
-    authorCity: "Bristol",
-    rating: 5,
-    date: "3 weeks ago",
-    title: "Finally a nutritionist who gets it",
-    body:
-      "Laura gave me a plan I can actually live with. No food rules, no shame. We adjust monthly based on what's working. Down 8kg in 5 months and energy is the best it's been in years.",
-    helpful: 27,
-    proName: "Laura Bennett",
-    proSlug: "laura-bennett",
-    proRole: "Nutritionist",
-    proImage: proLaura,
-    programme: "Nutrition Plan · 6 months",
-    verified: true,
-  },
-  {
-    id: "r4",
-    author: "Daniel O.",
-    authorCity: "Leeds",
-    rating: 5,
-    date: "5 days ago",
-    title: "Took 30kg off my deadlift in 4 months",
-    body:
-      "Liam knows his stuff. Programming is challenging but never reckless, and he picks up form issues I'd never have noticed. The weekly progress check-ins kept me honest.",
-    helpful: 19,
-    proName: "Liam Roberts",
-    proSlug: "liam-roberts",
-    proRole: "Strength Coach",
-    proImage: proDaniel,
-    programme: "Powerlifting · 16 weeks",
-    verified: true,
-  },
-  {
-    id: "r5",
-    author: "Hannah R.",
-    authorCity: "London",
-    rating: 4,
-    date: "1 week ago",
-    title: "Great trainer, scheduling can be tricky",
-    body:
-      "James is a brilliant coach — sessions are always well-planned and I'm seeing real progress. Sometimes hard to book the slot I want at short notice, which is the only reason this isn't a 5. Worth the wait though.",
-    helpful: 12,
-    proName: "James Wilson",
-    proSlug: "james-wilson",
-    proRole: "Personal Trainer",
-    proImage: proJames,
-    programme: "1:1 Strength · 12 sessions",
-    verified: true,
-  },
-  {
-    id: "r6",
+    id: "ep3",
     author: "Tom W.",
     authorCity: "Edinburgh",
     rating: 5,
@@ -161,15 +120,50 @@ const REVIEWS: Review[] = [
     proRole: "Strength Coach",
     proImage: proDaniel,
     programme: "Marathon Prep · 20 weeks",
-    verified: true,
+  },
+];
+
+const REVIEWS: Review[] = [
+  ...EDITOR_PICKS,
+  {
+    id: "r4",
+    author: "Priya M.",
+    authorCity: "Bristol",
+    rating: 5,
+    date: "3 weeks ago",
+    title: "Finally a nutritionist who gets it",
+    body:
+      "Laura gave me a plan I can actually live with. No food rules, no shame. We adjust monthly based on what's working. Down 8kg in 5 months and energy is the best it's been in years.",
+    helpful: 27,
+    proName: "Laura Bennett",
+    proSlug: "laura-bennett",
+    proRole: "Nutritionist",
+    proImage: proLaura,
+    programme: "Nutrition Plan · 6 months",
   },
   {
-    id: "r7",
+    id: "r5",
+    author: "Daniel O.",
+    authorCity: "Leeds",
+    rating: 5,
+    date: "5 days ago",
+    title: "Took 30kg off my deadlift in 4 months",
+    body:
+      "Liam knows his stuff. Programming is challenging but never reckless, and he picks up form issues I'd never have noticed.",
+    helpful: 19,
+    proName: "Liam Roberts",
+    proSlug: "liam-roberts",
+    proRole: "Strength Coach",
+    proImage: proDaniel,
+    programme: "Powerlifting · 16 weeks",
+  },
+  {
+    id: "r6",
     author: "Aisha K.",
     authorCity: "Birmingham",
     rating: 5,
     date: "1 month ago",
-    title: "Postnatal Pilates that actually understands postpartum",
+    title: "Postnatal Pilates that understands postpartum",
     body:
       "Sophie's postnatal sessions have been a lifeline. She knows when to push and when to ease back. Felt safe from session one.",
     helpful: 23,
@@ -178,24 +172,54 @@ const REVIEWS: Review[] = [
     proRole: "Pilates Instructor",
     proImage: proSophie,
     programme: "Postnatal Pilates · 12 weeks",
-    verified: true,
+  },
+];
+
+// Critical reviews that stay live, with public pro response
+const CRITICAL_REVIEWS: Review[] = [
+  {
+    id: "c1",
+    author: "Hannah R.",
+    authorCity: "London",
+    rating: 4,
+    date: "1 week ago",
+    title: "Great trainer, scheduling can be tricky",
+    body:
+      "James is a brilliant coach — sessions are always well-planned and I'm seeing real progress. Sometimes hard to book the slot I want at short notice, which is the only reason this isn't a 5.",
+    helpful: 12,
+    proName: "James Wilson",
+    proSlug: "james-wilson",
+    proRole: "Personal Trainer",
+    proImage: proJames,
+    programme: "1:1 Strength · 12 sessions",
+    response: {
+      author: "James Wilson",
+      date: "5 days ago",
+      body:
+        "Thanks Hannah — totally fair. I've opened two more evening slots a week from next month and prioritised existing clients on the new times. Appreciate the honest feedback.",
+    },
   },
   {
-    id: "r8",
-    author: "Ben A.",
-    authorCity: "London",
-    rating: 5,
+    id: "c2",
+    author: "Ravi S.",
+    authorCity: "Reading",
+    rating: 3,
     date: "3 weeks ago",
-    title: "Nutrition coaching that respects busy lives",
+    title: "Programme was solid, communication slipped mid-block",
     body:
-      "Laura works around shift patterns and travel. Plans are practical, not aesthetic Instagram fluff. Down 12% body fat, sleeping better, training harder.",
-    helpful: 18,
-    proName: "Laura Bennett",
-    proSlug: "laura-bennett",
-    proRole: "Nutritionist",
-    proImage: proLaura,
-    programme: "Nutrition Plan · 4 months",
-    verified: true,
+      "Training itself was good and I made real progress. Replies between sessions went quiet for about a fortnight which knocked momentum. We've talked it through and it's improved.",
+    helpful: 9,
+    proName: "Liam Roberts",
+    proSlug: "liam-roberts",
+    proRole: "Strength Coach",
+    proImage: proDaniel,
+    programme: "Strength · 8 weeks",
+    response: {
+      author: "Liam Roberts",
+      date: "2 weeks ago",
+      body:
+        "Fair call, Ravi. I was juggling exam-period clients and dropped the ball on async check-ins. New rule: every client gets a Monday and Thursday message, no exceptions.",
+    },
   },
 ];
 
@@ -203,7 +227,7 @@ const STATS = [
   { value: "4.9", label: "Average rating", suffix: "/ 5" },
   { value: "12,840", label: "Verified reviews", suffix: "" },
   { value: "94%", label: "5-star reviews", suffix: "" },
-  { value: "2,341", label: "Active pros", suffix: "" },
+  { value: "2,341", label: "Reviewed pros", suffix: "" },
 ];
 
 const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
@@ -214,7 +238,95 @@ const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
   { stars: 1, pct: 0.5, count: "65" },
 ];
 
-const FILTERS = ["All reviews", "5 stars", "4 stars", "Most helpful", "Most recent", "Verified only"];
+const HONEST_STATS = [
+  { value: "0", label: "Reviews removed for being critical" },
+  { value: "100%", label: "From verified bookings" },
+  { value: "4hr", label: "Median time to publish" },
+];
+
+const METHODOLOGY = [
+  {
+    icon: CalendarCheck,
+    title: "Book through REPs",
+    body: "Reviews are tied to a booking on the platform. No booking, no review.",
+  },
+  {
+    icon: Dumbbell,
+    title: "Train with your pro",
+    body: "Session, programme or course actually takes place — confirmed on both sides.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Invited to review",
+    body: "Automatic invite after your session. Never traded for a discount, prize or upgrade.",
+  },
+  {
+    icon: Eye,
+    title: "Moderated, then published",
+    body: "Checked for legality and personal data — not sentiment. Critical reviews stay live.",
+  },
+];
+
+const PROFESSION_TILES = [
+  { name: "Personal Training", slug: "personal-trainer", rating: "4.9", count: "6,420", icon: Dumbbell },
+  { name: "Strength Coaching", slug: "strength-coach", rating: "4.9", count: "1,890", icon: Dumbbell },
+  { name: "Pilates", slug: "pilates-instructor", rating: "4.9", count: "1,340", icon: Sparkles },
+  { name: "Yoga", slug: "yoga-teacher", rating: "4.9", count: "1,120", icon: Leaf },
+  { name: "Nutrition", slug: "nutritionist", rating: "4.8", count: "980", icon: Leaf },
+  { name: "Group Exercise", slug: "group-exercise", rating: "4.8", count: "1,090", icon: Users },
+];
+
+const FILTERS = ["All reviews", "5 stars", "4★ and under", "Most helpful", "Most recent"];
+
+const TRUST_MECHANICS = [
+  {
+    icon: ShieldCheck,
+    title: "Verified-booking only",
+    body: "If you didn't book through REPs, you can't review. That's the whole point.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "Critical reviews stay live",
+    body: "We don't remove a 1, 2 or 3-star review because a pro asks us to. Ever.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Pros can publicly respond",
+    body: "One on-the-record reply per review. No deleting, no editing your way out of feedback.",
+  },
+  {
+    icon: Flag,
+    title: "Report a review, transparently",
+    body: "If a review breaks our policy (defamation, personal data, hate), report it. We publish what we remove and why.",
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "Who can leave a review?",
+    a: "Only clients who booked and completed a session with a REPs professional through the platform. Off-platform clients can't post here — by design.",
+  },
+  {
+    q: "Can a pro pay to hide a bad review?",
+    a: "No. There is no commercial path to removing a critical review. We don't sell placement on this page and we don't sell placement in search results either.",
+  },
+  {
+    q: "Can REPs ever remove a review?",
+    a: "Only if it breaks policy — defamatory claims, personal data, hate speech, or content unrelated to the service. Negative opinions don't qualify. We log every removal with a reason.",
+  },
+  {
+    q: "What about reviews from off-platform clients?",
+    a: "We don't import them. Other directories let pros paste in screenshots and old testimonials; we don't, because there's no way to verify they happened.",
+  },
+  {
+    q: "Can I edit my review later?",
+    a: "You can update a review once, up to 12 months after publishing. The previous version stays visible on the same card so the timeline is transparent.",
+  },
+  {
+    q: "What's a \"Phase 1 placeholder\" stat?",
+    a: "The headline numbers on this page are illustrative while we open the platform to early cohorts. They'll be replaced with live, automatically-refreshed numbers once we hit launch volume.",
+  },
+];
 
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
@@ -222,187 +334,357 @@ const FILTERS = ["All reviews", "5 stars", "4 stars", "Most helpful", "Most rece
 
 function ReviewsPage() {
   return (
-    <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
+    <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
       {/* Breadcrumb */}
       <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-reps-muted-light">
-          <Link to="/" className="hover:text-reps-charcoal">Home</Link>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-white/55">
+          <Link to="/" className="hover:text-white">Home</Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-reps-charcoal">Client Reviews</span>
+          <span className="font-medium text-white">Client Reviews</span>
         </nav>
       </div>
 
       {/* Hero */}
-      <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-6 lg:px-10 lg:pb-14 lg:pt-10">
-        <div className="grid items-end gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
-              <ShieldCheck className="h-3 w-3 text-reps-orange" />
-              Verified-client reviews only
-            </span>
-            <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
-              Real reviews from <span className="text-reps-orange">real clients</span>
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(60%_70%_at_20%_0%,rgba(255,122,0,0.10),transparent_70%)]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink lg:h-56"
+        />
+        <div className="relative mx-auto grid max-w-[1320px] gap-12 px-6 pt-20 pb-20 lg:grid-cols-[1.2fr_0.8fr] lg:items-start lg:gap-16 lg:px-10 lg:pt-24 lg:pb-24">
+          <div className="max-w-[640px]">
+            <MarketingHeroEyebrow icon={Star}>Reviews</MarketingHeroEyebrow>
+
+            <h1 className="mt-6 font-display text-[40px] font-bold leading-[1.05] text-white sm:text-[52px] lg:text-[64px]">
+              Reviews you can <span className="text-reps-orange">actually trust.</span>
             </h1>
-            <p className="mt-4 max-w-[620px] text-[16px] leading-relaxed text-reps-muted-light">
-              Every review on REPs comes from someone who actually trained, coached or worked with the professional through our platform. No fake reviews, no paid placements.
+
+            <p className="mt-6 max-w-[560px] text-[16px] leading-relaxed text-white/80">
+              Every review on REPs is tied to a booking that actually happened. We don't hide critical
+              feedback, we don't sell placement, and we never trade reviews for discounts.
             </p>
 
-            <form className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_auto]">
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <Search className="h-4 w-4 text-reps-muted-light" />
+            <form
+              className="mt-8 grid gap-2 rounded-[18px] border border-reps-border bg-reps-panel/60 p-2 sm:grid-cols-[1fr_auto]"
+              role="search"
+            >
+              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ink/60 px-3 py-2.5">
+                <Search className="h-4 w-4 text-white/55" />
                 <input
                   type="text"
-                  placeholder="Search reviews by trainer, city or specialism"
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
+                  placeholder="Search reviews by pro, city or specialism"
+                  className="w-full bg-transparent text-[14px] text-white placeholder:text-white/45 focus:outline-none"
                 />
               </label>
               <button
                 type="button"
-                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
               >
                 Search reviews
               </button>
             </form>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] text-white/55">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck className="size-3.5 text-reps-orange" /> Verified bookings only
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Lock className="size-3.5 text-reps-orange" /> No paid placement
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Timer className="size-3.5 text-reps-orange" /> Median publish 4hr
+              </span>
+            </div>
           </div>
 
           {/* Headline rating panel */}
-          <aside className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+          <aside className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-6 backdrop-blur">
             <div className="flex items-center gap-4">
-              <div className="font-display text-[48px] font-bold leading-none text-reps-charcoal">4.9</div>
+              <div className="font-display text-[56px] font-bold leading-none text-white">4.9</div>
               <div>
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="h-4 w-4 fill-reps-orange text-reps-orange" />
                   ))}
                 </div>
-                <p className="mt-1 text-[12px] text-reps-muted-light">From 12,840 verified reviews</p>
+                <p className="mt-1 text-[12px] text-white/55">From 12,840 verified reviews</p>
               </div>
             </div>
             <ul className="mt-5 space-y-2">
               {RATING_BREAKDOWN.map((r) => (
                 <li key={r.stars} className="flex items-center gap-2 text-[12px]">
-                  <span className="w-3 text-reps-muted-light">{r.stars}</span>
+                  <span className="w-3 text-white/55">{r.stars}</span>
                   <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                  <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-ivory">
+                  <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-ink/70">
                     <span
                       className="absolute inset-y-0 left-0 rounded-full bg-reps-orange"
                       style={{ width: `${r.pct}%` }}
                     />
                   </span>
-                  <span className="w-12 text-right text-reps-muted-light">{r.count}</span>
+                  <span className="w-12 text-right text-white/55">{r.count}</span>
                 </li>
               ))}
             </ul>
+
+            <div className="mt-6 grid grid-cols-3 gap-2 border-t border-reps-border pt-5">
+              {HONEST_STATS.map((s) => (
+                <div key={s.label} className="rounded-[12px] bg-reps-ink/40 p-3 text-center">
+                  <div className="font-display text-[20px] font-bold text-reps-orange">{s.value}</div>
+                  <div className="mt-1 text-[10.5px] leading-tight text-white/55">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </aside>
         </div>
       </section>
 
       {/* Stat strip */}
-      <section className="border-y border-reps-stone bg-reps-warm-white">
-        <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px bg-reps-stone px-6 py-0 lg:grid-cols-4 lg:px-10">
-          {STATS.map((s) => (
-            <div key={s.label} className="bg-reps-warm-white p-6 text-center">
-              <div className="font-display text-[32px] font-bold text-reps-orange lg:text-[40px]">
-                {s.value}
-                <span className="text-[16px] text-reps-charcoal/70"> {s.suffix}</span>
-              </div>
-              <div className="mt-1 text-[12px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Filters + grid */}
-      <section className="mx-auto max-w-[1320px] px-6 py-12 lg:px-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[30px]">
-            Latest verified reviews
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((f, i) => (
-              <button
-                key={f}
-                type="button"
-                className={`rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${
-                  i === 0
-                    ? "border-reps-orange bg-reps-orange/10 text-reps-orange"
-                    : "border-reps-stone bg-reps-warm-white text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
-                }`}
+      <section className="bg-reps-panel/15">
+        <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10 lg:py-14">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {STATS.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-[16px] border border-reps-border bg-reps-panel/40 p-5 text-center"
               >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {REVIEWS.map((r) => (
-            <ReviewCard key={r.id} review={r} />
-          ))}
-        </div>
-
-        <div className="mt-8 flex items-center justify-center">
-          <button
-            type="button"
-            className="inline-flex h-11 items-center rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
-          >
-            Load more reviews
-          </button>
-        </div>
-      </section>
-
-      {/* Trust callout */}
-      <section className="bg-reps-warm-white py-14">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid items-center gap-6 rounded-[22px] border border-reps-stone bg-reps-ivory p-8 lg:grid-cols-3">
-            {[
-              { icon: ShieldCheck, title: "Verified clients only", sub: "Only people who booked through REPs can leave a review." },
-              { icon: BadgeCheck, title: "Moderated for honesty", sub: "Both positive and negative reviews stay live — we don't hide critical feedback." },
-              { icon: Users, title: "Real names, real cities", sub: "No anonymous trolls. Reviewers verify their identity at booking." },
-            ].map((t) => (
-              <div key={t.title} className="flex items-start gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-reps-warm-white text-reps-charcoal">
-                  <t.icon className="h-6 w-6" strokeWidth={1.6} />
-                </span>
-                <div>
-                  <div className="text-[15px] font-semibold text-reps-charcoal">{t.title}</div>
-                  <p className="mt-1 text-[13px] leading-relaxed text-reps-muted-light">{t.sub}</p>
+                <div className="font-display text-[28px] font-bold text-white lg:text-[36px]">
+                  {s.value}
+                  <span className="text-[14px] text-white/55"> {s.suffix}</span>
+                </div>
+                <div className="mt-1 text-[11.5px] font-semibold uppercase tracking-wider text-white/55">
+                  {s.label}
                 </div>
               </div>
             ))}
           </div>
+          <p className="mt-4 text-center text-[11.5px] text-white/45">
+            Updated weekly · Phase 1 placeholder data while we onboard early cohorts
+          </p>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-reps-ivory py-16">
-        <div className="mx-auto max-w-[860px] px-6 text-center lg:px-10">
-          <h2 className="font-display text-[32px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-            Find your next coach with confidence
-          </h2>
-          <p className="mt-3 text-[15px] text-reps-muted-light">
-            Search verified professionals near you and read what real clients say before you commit.
+      {/* Methodology */}
+      <section className="bg-reps-panel/30">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="How a REPs review is made"
+            heading={
+              <>
+                Four steps. <span className="text-reps-orange">No shortcuts.</span>
+              </>
+            }
+            lede="A REPs review can only come from a real booking. Here's the exact path it takes — and what we will and won't do at each step."
+            align="center"
+            className="mx-auto"
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {METHODOLOGY.map((m, i) => (
+              <div
+                key={m.title}
+                className="relative rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+              >
+                <span className="absolute right-4 top-4 text-[11px] font-semibold text-white/35">
+                  0{i + 1}
+                </span>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                  <m.icon className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <h3 className="mt-5 font-display text-[17px] font-bold text-white">{m.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{m.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-[12.5px] text-white/55">
+            Read the full{" "}
+            <Link to="/" className="text-reps-orange hover:underline">
+              review policy
+            </Link>{" "}
+            · Last reviewed June 2026
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              to="/find-a-professional"
-              className="inline-flex h-12 items-center rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-            >
-              Find a professional
-            </Link>
-            <Link
-              to="/for-professionals"
-              className="inline-flex h-12 items-center rounded-[10px] border border-reps-stone bg-reps-warm-white px-7 text-[14px] font-semibold text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
-            >
-              I'm a professional
-            </Link>
+        </div>
+      </section>
+
+      {/* Editor's Picks */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="Editor's picks"
+            heading={
+              <>
+                This week's <span className="text-reps-orange">stand-out reviews.</span>
+              </>
+            }
+            lede="Three reviews from across the register, chosen for the detail and context they give a future client — not the score."
+          />
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+            {EDITOR_PICKS.map((r) => (
+              <ReviewCard key={r.id} review={r} variant="pick" />
+            ))}
           </div>
         </div>
       </section>
+
+      {/* Profession breakdown */}
+      <section className="bg-reps-panel/15">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="By specialism"
+            heading={
+              <>
+                Filter the register <span className="text-reps-orange">by what you train for.</span>
+              </>
+            }
+            lede="Jump straight to verified reviews for the kind of pro you're looking for."
+          />
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PROFESSION_TILES.map((p) => (
+              <Link
+                key={p.slug}
+                to="/professions/$profession"
+                params={{ profession: p.slug }}
+                className="group flex items-center justify-between rounded-[18px] border border-reps-border bg-reps-panel/40 p-5 transition-colors hover:border-reps-orange-border hover:bg-reps-panel/60"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-border bg-reps-ink/60 text-white/70 group-hover:text-reps-orange">
+                    <p.icon className="h-5 w-5" strokeWidth={1.6} />
+                  </span>
+                  <div>
+                    <div className="text-[14.5px] font-semibold text-white">{p.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-[12px] text-white/55">
+                      <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                      <span className="font-semibold text-white">{p.rating}</span>
+                      <span>·</span>
+                      <span>{p.count} reviews</span>
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/45 transition-transform group-hover:translate-x-0.5 group-hover:text-reps-orange" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Filters + grid */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHeader
+              eyebrow="The full feed"
+              heading={
+                <>
+                  Latest reviews from <span className="text-reps-orange">verified clients.</span>
+                </>
+              }
+              className="max-w-[560px]"
+            />
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f, i) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
+                    i === 0
+                      ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                      : "border-reps-border bg-reps-panel/40 text-white/75 hover:border-reps-orange-border hover:text-white"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {REVIEWS.slice(3).map((r) => (
+              <ReviewCard key={r.id} review={r} />
+            ))}
+          </div>
+
+          <div className="mt-10 flex items-center justify-center">
+            <button
+              type="button"
+              className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel/40 px-6 text-[14px] font-semibold text-white hover:border-reps-orange-border hover:text-reps-orange"
+            >
+              Load more reviews
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Critical reviews — proof */}
+      <section className="bg-reps-panel/30">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="We don't hide critical feedback"
+            heading={
+              <>
+                Real 3 and 4-star reviews, <span className="text-reps-orange">with real responses.</span>
+              </>
+            }
+            lede="Most directories quietly bury anything below 5 stars. We don't. Critical reviews stay live, and pros get exactly one on-the-record reply."
+          />
+          <div className="mt-10 grid gap-4 lg:grid-cols-2">
+            {CRITICAL_REVIEWS.map((r) => (
+              <ReviewCard key={r.id} review={r} variant="critical" />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust mechanics */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="Our commitments"
+            heading={
+              <>
+                Four mechanics that make a review <span className="text-reps-orange">worth reading.</span>
+              </>
+            }
+            lede="Not vibes. Hard-wired rules we'll publish, repeat and stick to as the platform grows."
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {TRUST_MECHANICS.map((t) => (
+              <div
+                key={t.title}
+                className="rounded-[18px] border border-reps-border bg-reps-panel/40 p-6"
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                  <t.icon className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <h3 className="mt-5 font-display text-[16.5px] font-bold text-white">{t.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{t.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <MarketingFaq
+        heading={
+          <>
+            Reviews — <span className="text-reps-orange">straight answers.</span>
+          </>
+        }
+        items={FAQ_ITEMS}
+      />
+
+      {/* Final CTA */}
+      <FinalCta
+        eyebrow={{ icon: Star, label: "Verified-booking reviews" }}
+        heading="Find a coach"
+        headingAccent="by what their clients actually said."
+        lede="Search the register, filter by specialism and city, and read every review — including the critical ones."
+        primary={{ to: "/find-a-professional", label: "Find a professional" }}
+        secondary={{ to: "/for-professionals", label: "How reviews work for pros" }}
+      />
 
       <PublicFooter />
     </div>
@@ -413,27 +695,47 @@ function ReviewsPage() {
 /* Review card                                                         */
 /* ------------------------------------------------------------------ */
 
-function ReviewCard({ review: r }: { review: Review }) {
+function ReviewCard({
+  review: r,
+  variant = "default",
+}: {
+  review: Review;
+  variant?: "default" | "pick" | "critical";
+}) {
+  const isPick = variant === "pick";
+  const isCritical = variant === "critical";
+
   return (
-    <article className="flex flex-col gap-4 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5">
-      {/* Header — reviewer */}
+    <article
+      className={`flex flex-col gap-4 rounded-[18px] border bg-reps-panel/40 p-6 ${
+        isPick
+          ? "border-reps-orange-border bg-reps-panel/60"
+          : "border-reps-border"
+      }`}
+    >
+      {isPick ? (
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
+          <Sparkles className="h-3 w-3" /> Editor's pick
+        </span>
+      ) : null}
+
+      {/* Reviewer */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-reps-ivory text-[13px] font-bold text-reps-charcoal">
-            {r.author
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-border bg-reps-ink/60 text-[12.5px] font-bold text-white">
+            {r.author.split(" ").map((n) => n[0]).join("")}
           </span>
           <div>
-            <div className="flex items-center gap-1.5 text-[13.5px] font-semibold text-reps-charcoal">
+            <div className="flex items-center gap-1.5 text-[13.5px] font-semibold text-white">
               {r.author}
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-reps-green/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
+              <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-300">
                 <BadgeCheck className="h-2.5 w-2.5" /> Verified
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11.5px] text-reps-muted-light">
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.authorCity}</span>
+            <div className="flex items-center gap-2 text-[11.5px] text-white/55">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> {r.authorCity}
+              </span>
               <span>·</span>
               <span>{r.date}</span>
             </div>
@@ -443,7 +745,9 @@ function ReviewCard({ review: r }: { review: Review }) {
           {[1, 2, 3, 4, 5].map((i) => (
             <Star
               key={i}
-              className={`h-3.5 w-3.5 ${i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-reps-stone"}`}
+              className={`h-3.5 w-3.5 ${
+                i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-white/20"
+              }`}
             />
           ))}
         </div>
@@ -451,15 +755,25 @@ function ReviewCard({ review: r }: { review: Review }) {
 
       {/* Body */}
       <div>
-        <h3 className="font-display text-[16px] font-bold leading-snug text-reps-charcoal">
-          <Quote className="-mt-1 mr-1 inline h-3.5 w-3.5 text-reps-orange" />
+        <h3 className="font-display text-[16.5px] font-bold leading-snug text-white">
           {r.title}
         </h3>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-reps-charcoal/85">{r.body}</p>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-white/80">{r.body}</p>
       </div>
 
-      {/* Pro context + actions */}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone pt-3">
+      {/* Pro response */}
+      {r.response ? (
+        <div className="rounded-[12px] border border-reps-border bg-reps-ink/50 p-4">
+          <div className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-wider text-white/55">
+            <MessageSquare className="h-3 w-3 text-reps-orange" />
+            Response from {r.response.author} · {r.response.date}
+          </div>
+          <p className="mt-2 text-[13px] leading-relaxed text-white/75">{r.response.body}</p>
+        </div>
+      ) : null}
+
+      {/* Pro context */}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-border pt-4">
         <Link
           to="/pro/$slug"
           params={{ slug: r.proSlug }}
@@ -468,22 +782,30 @@ function ReviewCard({ review: r }: { review: Review }) {
           <img
             src={r.proImage}
             alt={r.proName}
-            className="h-9 w-9 rounded-full object-cover"
+            className="h-9 w-9 rounded-[14px] object-cover"
             loading="lazy"
           />
           <div>
-            <div className="text-[13px] font-semibold text-reps-charcoal group-hover:text-reps-orange">
+            <div className="text-[13px] font-semibold text-white group-hover:text-reps-orange">
               {r.proName}
             </div>
-            <div className="text-[11.5px] text-reps-muted-light">{r.proRole} · {r.programme}</div>
+            <div className="text-[11.5px] text-white/55">
+              {r.proRole} · {r.programme}
+            </div>
           </div>
         </Link>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-ivory px-3 py-1.5 text-[12px] font-semibold text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
-        >
-          <ThumbsUp className="h-3 w-3" /> Helpful · {r.helpful}
-        </button>
+        <div className="flex items-center gap-3 text-[11.5px] text-white/55">
+          <span>{r.helpful} found helpful</span>
+          {isCritical ? null : (
+            <Link
+              to="/pro/$slug"
+              params={{ slug: r.proSlug }}
+              className="inline-flex items-center gap-1 font-semibold text-reps-orange hover:underline"
+            >
+              View pro <ChevronRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
       </div>
     </article>
   );
