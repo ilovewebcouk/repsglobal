@@ -1,68 +1,111 @@
-# /contact QA Pass — pre-lock checklist
+# /reviews — 10/10 rework (revised)
 
-A focused QA sweep so we can confidently lock `/contact` into memory. Two parts: **visual sweep at three breakpoints**, then a **code/compliance audit**.
+## Brutal honest, corrected
 
-## 1. Visual sweep (browser, full-page screenshots)
+I was wrong last round. Re-checked `src/routes/index.tsx`: homepage uses **dark hero on `bg-reps-black`** → **light body sections alternating `bg-reps-warm-white` / `bg-reps-ivory`** → **dark CTA card** → dark footer. `/reviews` is currently fully dark, which makes it look like a `/features/*` pillar page (pro-facing) instead of a public consumer landing page like `/` or `/in/london`. You were right to call it. We migrate `/reviews` to the homepage pattern.
 
-For each breakpoint, capture full-page screenshot + zoom into hot spots and check the list below.
+The other three calls also stand:
 
-**Breakpoints:**
-- Mobile — 390×844
-- Tablet — 820×1180
-- Desktop — 1440×900
-
-**Per-section checks:**
-
-| Section | What I'm looking for |
-|---|---|
-| Hero | Status card stacks under copy on mobile/tablet, sits right on desktop. H1 doesn't orphan "register." awkwardly. "Looking for a coach?" deflection link is visible but quiet. Trust chips wrap cleanly. |
-| Form tabs | 2-tab grid is full width on mobile (stacked), 2-col on sm+. Active state readable. No overflow. |
-| Form fields | Pro tab: Profession + Mobile row → stack on mobile. ToggleGroup wraps to 2 rows on mobile without clipping. Conditional "REPs profile URL" field appears only when "Already verified" is picked and doesn't break the grid. Partner tab: Organisation/type, Website/Phone rows stack on mobile. Reason select full width. |
-| Reply ETA chip + Send button | Bottom row reverses on mobile (button on top, chip under) per `flex-col-reverse sm:flex-row` — confirm chip + button both legible. |
-| Quick answers (3 cards) | Single column on mobile, 3-col on md+. Card heights even. Arrow nudges on hover. The 3rd card uses `<a href>` (not `<Link>`) for `/for-training-providers` — confirm it still renders identically. |
-| Direct channels list | 3-col grid `[200px_1fr_auto]` collapses to stacked rows on mobile. Email link wraps cleanly. |
-| Safeguarding Alert | Icon + copy stack vertically on mobile, button full-width-ish; horizontal on sm+. Emerald tokens correct. |
-| FAQ | Accordion behaves, no layout shift on expand. |
-| FinalCta | Primary/secondary buttons stack on mobile. |
-
-## 2. Code / compliance audit (read-only)
-
-- **Radii** — confirm only the locked scale (10/12/16/18/22/24, plus pills). Spot-check `rounded-[N]` usage; no `rounded-xl/2xl/3xl`, no 14/20/28/32.
-- **Colors** — no hardcoded hex in `contact.tsx`, `ContactForm.tsx`, `StatusCard.tsx`. Emerald used only for status (safeguarding alert + status dot + submitted success Alert).
-- **Marketing primitives** — `MarketingHeroEyebrow`, `SectionHeader`, `MarketingFaq`, `FinalCta` all in use (✓ already).
-- **Vertical rhythm** — every section uses `py-20 lg:py-28` (or hero `pt-24 pb-20 lg:pt-28 lg:pb-24`). No `py-24 lg:py-28`.
-- **Dividers** — confirm no `border-y border-reps-border` between sections; alternating `bg-reps-panel/15` ↔ `/30` only. *Note: the channels list uses `divide-y divide-reps-border` internally for row separation — that's intra-card, not section divider, so it's allowed.*
-- **No "UK" qualifier** anywhere in copy. (Emails are `@repsuk.org` — that's the domain, not body copy, allowed.)
-- **Banned phrases** — no "booking fee", "commission", "flat plan", "CIMSPA". ✓ scanned mentally but will rg.
-- **Tier ladder** — Verified £99/yr referenced ✓, Pro/Studio mentioned, no retired free/£29 tier.
-- **shadcn skill** — Tabs/Select/ToggleGroup/Textarea/Input/Label/Alert all in use. Honeypot present. *Possible upgrade noted, not blocking lock: migrate form layout from custom `FieldShell` to shadcn `FieldGroup`/`Field` primitives per skill rules — flag for follow-up only if user wants strict compliance now.*
-- **Run the bundled audit script** `knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0.
-
-## 3. Likely fixes I'm budgeting for (won't redesign, just polish)
-
-- ToggleGroup row on the Pro tab may wrap awkwardly at 390px — may need `text-[12.5px]` or shorter label on the longest item ("Already verified, need help").
-- Status card on tablet portrait may sit too tall next to the hero copy — check stacking trigger.
-- Quick-answers cards may have uneven heights if copy lengths differ — flex-grow on the body paragraph may be needed.
-- "Looking for a coach?" link contrast at `text-white/55` — verify it's discoverable without competing with primary CTAs.
-
-## 4. After QA passes
-
-Save a `mem://design/locked-contact` memory describing:
-- B2B-only purpose (no Client tab, no public lookup form)
-- 2 tabs: Professional (default) + Training provider/partner
-- Section order, status card content, 3 emails (`pros@`, `partners@`, `press@repsuk.org`)
-- Radius map, locked vertical rhythm, no dividers
-- The `/for-training-providers` route still being a stub `<a href>` (Phase 1 limitation)
-
-Then update `mem://index.md` Core to add `/contact` to the locked-pages list.
-
-## Out of scope for this pass
-
-- Real form submit / backend
-- Building `/for-training-providers` and `/safeguarding` route bodies
-- Live status data wiring
-- Migrating form to shadcn `FieldGroup`/`Field` (noted as follow-up)
+- **Kill the "We don't hide critical feedback" section.** Showcasing 3★ reviews on the public hub is a sales-anti-pattern for pros. Replace with a pro-positive "Why pros choose to be reviewed on REPs" block. Trust comes from *method*, not from parading negativity.
+- **Remove the breadcrumb.** No other top-level marketing page has one.
+- **Standardise the stat strip with `/about`** (single bordered 4-up panel, `rounded-[22px]`, gap-px, `font-display 32→40`, uppercase `tracking-[0.14em]` labels). On a light section we use a soft surface variant; the structure is identical to `/about`.
+- **Broaden scope.** Add gyms, training providers, nutrition, Pilates, yoga to the explore-by-specialism tiles. Reword H1 to cover the whole platform.
 
 ---
 
-**Deliverable:** screenshots at 3 breakpoints, audit script result, list of any fixes applied, then save the lock memory.
+## New section order + theme map
+
+```text
+1. Hero  (DARK — bg-reps-black, matches homepage hero)
+   - MarketingHeroEyebrow
+   - H1: "Reviews you can trust — for every fitness pro."
+   - Lede: every coach, studio, gym, nutritionist, training provider on
+     REPs — reviewed only by people who actually booked them.
+   - Search bar (placeholder behaviour, same UI tokens as homepage hero)
+   - 3 trust chips: Verified bookings · Moderated for legality, not
+     sentiment · Pro right of reply
+   - NO breadcrumb.
+
+2. Headline rating panel  (LIGHT — bg-reps-warm-white)
+   - Keep the 4.9 score + breakdown bars but restyled for a light surface
+     (white card, reps-border, reps-text). Drop the three "honest stats"
+     chips — they move into the stat strip.
+
+3. Stat strip  (LIGHT — same section as #2 OR bg-reps-ivory)
+   - SHARED pattern with /about: 4-up bordered panel, rounded-[22px],
+     gap-px, font-display 32→40, uppercase tracking labels.
+   - Numbers: "12,400+ verified reviews · 4.9 avg rating ·
+     96% would rebook · Median 4h to publish".
+
+4. How REPs reviews work  (LIGHT — bg-reps-warm-white)
+   - 4-stage methodology: Book → Train → Invited to review → Published.
+   - The credibility engine. Tighten copy.
+
+5. Editor's picks  (LIGHT — bg-reps-ivory)
+   - 3-card row of featured reviews on cream surface.
+
+6. Browse reviews by specialism  (LIGHT — bg-reps-warm-white)
+   - Expand from 6 to 8 tiles: PT, Group Ex, Strength, Online Coaching,
+     Nutritionist, Yoga, Pilates, Gyms & Studios, Training Providers.
+     (sm:grid-cols-2 lg:grid-cols-4, two rows.)
+
+7. Full review feed  (LIGHT — bg-reps-ivory)
+   - Filter row: "Most recent / Highest rated / Most helpful".
+     DROP the "4★ and under" filter.
+   - Restyle ReviewCard for light surface (white card, soft border).
+
+8. Why pros choose to be reviewed on REPs  (LIGHT — bg-reps-warm-white)
+   <-- REPLACES "We don't hide critical feedback".
+   - 3-card row aimed at the pro reader:
+     a) Reviews from real clients only — no anonymous trolls.
+     b) You own the response — public right of reply.
+     c) Reviews follow you across REPs — profile, shop-front, enquire,
+        search, profession + city pages.
+   - Soft CTA: "List your business on REPs" → /for-professionals.
+
+9. Trust mechanics  (LIGHT — bg-reps-ivory)
+   - 4 short commitments. Reframe one card from
+     "critical reviews stay live" to
+     "Moderated for legality, abuse and spam — not for sentiment."
+
+10. FAQ  (LIGHT — bg-reps-warm-white)
+    - MarketingFaq primitive, 5 questions:
+      Who can leave a review? · Can a business respond? · How are fake
+      reviews handled? · Can reviews be edited later? · Where do reviews
+      show up across REPs?
+
+11. FinalCta  (DARK — shared <FinalCta /> component, matches homepage CTA)
+    - Find a coach by review → /find-a-professional
+    - How reviews work for pros → /for-professionals
+```
+
+## Technical changes
+
+**File:** `src/routes/reviews.tsx` only.
+
+- Remove breadcrumb `<nav aria-label="Breadcrumb">` block (~L340).
+- Switch root wrapper from `bg-reps-ink text-reps-text` to `bg-reps-warm-white text-reps-charcoal` (or equivalent light text token).
+- Hero stays dark (`bg-reps-black`) — copy/paste structure already used by homepage hero.
+- For each body section, swap dark surface classes:
+  - `bg-reps-panel/15` / `bg-reps-panel/30` → `bg-reps-warm-white` / `bg-reps-ivory`
+  - `border-reps-border` (dark) → keep the same token (it works on both — it's a neutral border var), but verify contrast and switch to a lighter border var if needed
+  - `text-white` / `text-white/70` etc → `text-reps-charcoal` / `text-reps-muted` (or whatever the homepage uses in light sections — mirror exactly)
+  - `bg-reps-panel/40` cards → `bg-white` cards with soft border + `var(--reps-shadow-card)` (matches the homepage Featured Pros + 4-step cards)
+- Refactor stat block to `/about` STATS pattern (single `rounded-[22px] border gap-px` panel, `font-display 32→40`, uppercase tracking labels) but on light surface to match the rest of the page.
+- Delete the "We don't hide critical feedback" section + its data array; add new "Why pros choose to be reviewed on REPs" 3-card row using `SectionEyebrow` + `SectionHeading`.
+- Expand `PROFESSION_TILES` 6 → 8.
+- Replace bottom dark CTA with the shared `<FinalCta />` component from `src/components/marketing/FinalCta.tsx` (already wired on `/cpd`, `/for-professionals`).
+- Hero MUST use `<HeroOverlay copySide="left" />` per the locked hero-overlay system, only if it has a background image. If hero stays flat dark with no image, skip overlay.
+
+## Memory updates after lock-in
+
+- Update `mem://design/locked-reviews` (create) with section order, theme map, surface tokens per section, and the "reviews are public consumer-landing, not pro-pillar" classification rule.
+- Add a Core note: "Public consumer-landing pages (/, /in/$location, /reviews, /find-a-professional) use the homepage theme pattern: dark hero + alternating warm-white/ivory body + dark FinalCta. /about and /features/* stay fully dark."
+
+## Out of scope (Phase 1, unchanged)
+
+Real review data, functional search/sort, pro-response moderation backend, per-profession real counts, auth, DB, payments.
+
+## Compliance
+
+Will run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` after the edit. Expected: 0 violations from `reviews.tsx`. The 14px pro-thumbnail radius exception still applies if a scaled-down profile photo appears in a card.
