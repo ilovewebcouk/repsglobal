@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -20,26 +19,21 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PressRouteImport } from './routes/press'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
-import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
-import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CpdV2RouteImport } from './routes/cpd-v2'
 import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
-import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
@@ -119,11 +113,6 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StandardsRoute = StandardsRouteImport.update({
-  id: '/standards',
-  path: '/standards',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SpecialismsRoute = SpecialismsRouteImport.update({
   id: '/specialisms',
   path: '/specialisms',
@@ -159,11 +148,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PressRoute = PressRouteImport.update({
-  id: '/press',
-  path: '/press',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -184,11 +168,6 @@ const HomeLegacyRoute = HomeLegacyRouteImport.update({
   path: '/home-legacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HelpRoute = HelpRouteImport.update({
-  id: '/help',
-  path: '/help',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -202,11 +181,6 @@ const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   id: '/find-a-professional',
   path: '/find-a-professional',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaqRoute = FaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -239,11 +213,6 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ComplaintsRoute = ComplaintsRouteImport.update({
-  id: '/complaints',
-  path: '/complaints',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
   id: '/comparison-methodology',
   path: '/comparison-methodology',
@@ -252,11 +221,6 @@ const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CareersRoute = CareersRouteImport.update({
-  id: '/careers',
-  path: '/careers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -584,26 +548,21 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
-  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
-  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
-  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -611,7 +570,6 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
-  '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -680,26 +638,21 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
-  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
-  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
-  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -707,7 +660,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
-  '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -776,26 +728,21 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
-  '/careers': typeof CareersRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
-  '/complaints': typeof ComplaintsRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
   '/dashboard': typeof DashboardRoute
-  '/faq': typeof FaqRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/help': typeof HelpRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
-  '/press': typeof PressRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -803,7 +750,6 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
-  '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -874,26 +820,21 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/careers'
     | '/compare'
     | '/comparison-methodology'
-    | '/complaints'
     | '/contact'
     | '/cookies'
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
-    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
-    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/login'
     | '/portal'
-    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -901,7 +842,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
-    | '/standards'
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
@@ -970,26 +910,21 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/careers'
     | '/compare'
     | '/comparison-methodology'
-    | '/complaints'
     | '/contact'
     | '/cookies'
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
-    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
-    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/login'
     | '/portal'
-    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -997,7 +932,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
-    | '/standards'
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
@@ -1065,26 +999,21 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
-    | '/careers'
     | '/compare'
     | '/comparison-methodology'
-    | '/complaints'
     | '/contact'
     | '/cookies'
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
     | '/dashboard'
-    | '/faq'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
-    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/login'
     | '/portal'
-    | '/press'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -1092,7 +1021,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/specialisms'
-    | '/standards'
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
@@ -1162,26 +1090,21 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
-  CareersRoute: typeof CareersRoute
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
-  ComplaintsRoute: typeof ComplaintsRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
   CpdLegacyRoute: typeof CpdLegacyRoute
   CpdV2Route: typeof CpdV2Route
   DashboardRoute: typeof DashboardRoute
-  FaqRoute: typeof FaqRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  HelpRoute: typeof HelpRoute
   HomeLegacyRoute: typeof HomeLegacyRoute
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
-  PressRoute: typeof PressRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1189,7 +1112,6 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
-  StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -1274,13 +1196,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/standards': {
-      id: '/standards'
-      path: '/standards'
-      fullPath: '/standards'
-      preLoaderRoute: typeof StandardsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/specialisms': {
       id: '/specialisms'
       path: '/specialisms'
@@ -1330,13 +1245,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/press': {
-      id: '/press'
-      path: '/press'
-      fullPath: '/press'
-      preLoaderRoute: typeof PressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -1365,13 +1273,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeLegacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/help': {
-      id: '/help'
-      path: '/help'
-      fullPath: '/help'
-      preLoaderRoute: typeof HelpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -1391,13 +1292,6 @@ declare module '@tanstack/react-router' {
       path: '/find-a-professional'
       fullPath: '/find-a-professional'
       preLoaderRoute: typeof FindAProfessionalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/faq': {
-      id: '/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -1442,13 +1336,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/complaints': {
-      id: '/complaints'
-      path: '/complaints'
-      fullPath: '/complaints'
-      preLoaderRoute: typeof ComplaintsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/comparison-methodology': {
       id: '/comparison-methodology'
       path: '/comparison-methodology'
@@ -1461,13 +1348,6 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/careers': {
-      id: '/careers'
-      path: '/careers'
-      fullPath: '/careers'
-      preLoaderRoute: typeof CareersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1943,26 +1823,21 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
-  CareersRoute: CareersRoute,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
-  ComplaintsRoute: ComplaintsRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
   CpdLegacyRoute: CpdLegacyRoute,
   CpdV2Route: CpdV2Route,
   DashboardRoute: DashboardRoute,
-  FaqRoute: FaqRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  HelpRoute: HelpRoute,
   HomeLegacyRoute: HomeLegacyRoute,
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
-  PressRoute: PressRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -1970,7 +1845,6 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
-  StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
