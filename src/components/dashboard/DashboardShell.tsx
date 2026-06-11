@@ -44,6 +44,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { TierPreviewSwitch } from "@/components/dashboard/TierPreviewSwitch";
 
 /* ------------------------------------------------------------------------- */
 /* Types                                                                      */
