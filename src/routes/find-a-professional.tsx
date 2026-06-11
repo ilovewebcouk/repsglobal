@@ -97,6 +97,8 @@ type Pro = {
   /** Independent — REPS professionals choose where they train clients. */
   venues: ProVenue[];
   featured?: boolean;
+  /** Override slug for live DB pros — otherwise derived from name. */
+  slug?: string;
 };
 
 const directoryPros: Pro[] = [
