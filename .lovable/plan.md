@@ -1,59 +1,71 @@
-## Brutal honest truth
+# Phase A — QA Sweep: Signup → Role → Dashboard Routing
 
-Two separate things going on — only one is what you think it is.
+Read-only investigation. No code changes. Output is a triaged findings report grouped by severity (P0 blocks launch / P1 broken-but-workaround / P2 polish), each with file:line evidence and a proposed fix. Fixes happen in a follow-up build loop after you approve the triage.
 
-### 1. You are NOT signed up as a client
-I checked the database. Your latest account (`cruz.pt+demo1@icloud.com`) is:
-- `signup_kind = professional`
-- `user_roles = ['professional']`
+## Scope (in)
 
-You ARE a trainer. The reason `/dashboard` punted you back to `/pricing` is **not** a role problem — it's that the new subscription gate on `_authenticated/_professional/route.tsx` (the one we just added) checks for an active subscription row, and there isn't one. So it correctly assumed "unpaid trainer" and bounced you to `/pricing`. That's the gate doing its job — just at the wrong moment.
+1. **Signup paths**
+   - Professional email/password signup → `handle_new_user` trigger → `profiles` + `user_roles('professional')` + `professionals` rows created
+   - Client email/password signup (via invite token + standalone) → `profiles` + `user_roles('client')` + `clients` rows
+   - Google OAuth signup for both kinds (does `signup_kind` survive the OAuth round-trip?)
+   - Admin seed `pros@repsuk.org` — confirm `user_roles('admin')` present
+   - Invite-accept flow → `accept_client_invite` RPC behaviour
 
-### 2. Why there's no subscription row
-I checked `payment_events` — it's **empty**. Zero events, ever. That means **the Stripe webhook has never reached this app**. Stripe took your payment, Stripe redirected you to `/dashboard?billing=success&session_id=...`, but Stripe never told *us* you paid, so we never wrote the subscription row, so the gate bounced you.
+2. **Role assignment + tier**
+   - Every signed-up user has exactly one expected `user_roles` row
+   - `subscriptions.tier` resolves correctly for Verified vs Pro vs none
+   - `has_role` and `has_active_tier` return expected values for sample users
 
-Two things are missing:
+3. **Dashboard routing**
+   - `/auth` → correct post-login redirect by role (pro → `/dashboard`, client → client area, admin → `/admin`)
+   - `_authenticated/route.tsx` gate behaviour (signed-out, signed-in, role mismatch)
+   - `_authenticated/_professional/*` gate (if present) — does a Verified user reach Pro-only pages?
+   - `/admin/*` — does a non-admin user get bounced?
+   - Tier-aware nav: Verified user currently sees full Pro nav (expected gap — log it, don't fix here)
+   - Hard-refresh on a deep protected URL (e.g. `/dashboard/clients/abc`) — no redirect loop, no auth flash
 
-**A. Webhook isn't configured (or is pointing at the wrong URL).** This is a Stripe Dashboard setup task, not a code task. The endpoint exists at `src/routes/api/public/stripe/webhook.ts` and `STRIPE_WEBHOOK_SECRET` is set — but Stripe itself needs an endpoint registered pointing at one of:
-- `https://repsglobal.lovable.app/api/public/stripe/webhook` (published)
-- `https://staging.repsuk.org/api/public/stripe/webhook` (custom domain)
+4. **Evidence gathering (read-only)**
+   - `supabase--read_query` against `auth.users` (recent), `profiles`, `user_roles`, `professionals`, `clients`, `subscriptions`, `payment_events`, `client_invites` for the last ~20 signups
+   - `supabase--analytics_query` on `auth_logs` for signup errors / 4xx-5xx
+   - `rg` sweep of `src/routes/_authenticated/`, `src/routes/auth*.tsx`, `src/routes/admin*`, `src/lib/billing.ts`, `handle_new_user` references
+   - Browser-driven smoke of `/auth` (sign-in form only — no destructive actions, no new account creation in prod data)
 
-Listening for at least `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`.
+## Scope (out — explicitly deferred)
 
-**B. Even with the webhook firing, the success-URL hop is racey.** Webhook can take 1–10 seconds. If the user's browser loads `/dashboard` before the webhook lands, the gate sees no subscription → bounces to `/pricing`. We need a sync screen between Stripe and the dashboard.
+- Stripe checkout end-to-end (Phase A2, separate sweep)
+- Verified-shell build, shared-primitive extraction (Phase B)
+- Visual / token / radius audit of dashboard chrome (Phase B post-flight)
+- Any code edits, migrations, or RLS changes
+- Admin dashboard functionality (Phase D)
 
----
+## Deliverable
 
-## The plan
+A single triage report in chat with:
 
-### Step 1 — Confirm/set up the Stripe webhook (you, in Stripe Dashboard)
-I can't do this for you — it's done inside Stripe. Once I tell you it's missing, you go to **Stripe → Developers → Webhooks → Add endpoint**, paste the URL above, select the 4 events, and copy the signing secret. If the secret matches the `STRIPE_WEBHOOK_SECRET` already in the project, no further code change is needed. If not, I rotate the secret.
+```text
+P0 (blocks launch)
+  - <symptom> — <file:line or query evidence> — <proposed fix>
+P1 (broken, has workaround)
+  - ...
+P2 (polish)
+  - ...
+Healthy (verified working)
+  - ...
+```
 
-### Step 2 — Add a `/dashboard/syncing` screen that handles the race
-Currently `success_url` goes straight to `/dashboard`. That route runs the subscription gate immediately and loses the race. Change to:
+Plus a recommendation on whether to fix P0s immediately or proceed to Phase B and batch fixes.
 
-- `success_url` → `/dashboard/syncing?session_id={CHECKOUT_SESSION_ID}` (set in `src/lib/billing/billing.functions.ts`)
-- New route `src/routes/_authenticated/dashboard.syncing.tsx`:
-  - Public-feeling "Setting up your account…" screen with REPs branding + spinner.
-  - Polls `subscriptions` for the current user every 1.5s, up to ~20s.
-  - When a row appears with `status ∈ (active, trialing)` → `navigate({ to: '/dashboard' })`.
-  - On timeout → show "Still syncing — this can take up to a minute" with a manual "I've waited, take me to the dashboard" button + support email. Doesn't dump them on `/pricing`.
+## Approach / order of operations
 
-### Step 3 — Make the subscription gate aware of the sync screen
-`_authenticated/_professional/route.tsx` currently redirects no-sub users to `/pricing`. Allow `/dashboard/syncing` through the gate so it can do its job without bouncing.
+1. Map the auth surface: read `src/routes/auth*.tsx`, `_authenticated/route.tsx`, any `_professional` / `_admin` layouts, `handle_new_user`, `accept_client_invite`.
+2. Pull last 20 signups + their `user_roles` / `profiles` / `professionals` / `clients` / `subscriptions` rows; flag any mismatches.
+3. Check `auth_logs` for the last 24h of signup/sign-in errors.
+4. Browser-smoke `/auth` page render + sign-in form validation (no submissions against prod accounts).
+5. Static-trace each role's expected post-login route and gate behaviour.
+6. Compile triage report.
 
-### Step 4 — Smoke test
-After step 1 is confirmed: I'll seed a fresh test signup, you complete checkout in test mode, we verify a row lands in `payment_events` and `subscriptions`, and the syncing screen forwards you to the dashboard within a few seconds.
+## Risks / assumptions
 
----
-
-## Out of scope (for this turn)
-- The onboarding pop-up inside the dashboard.
-- Webhook idempotency hardening (already adequate for now).
-- Email receipts (separate task).
-
----
-
-## What I need from you to proceed
-1. Confirm you want me to build Step 2 + 3 now.
-2. Check Stripe → Developers → Webhooks and tell me whether an endpoint pointing at `repsglobal.lovable.app` or `staging.repsuk.org` exists. If not, I'll give you the exact steps to add it.
+- Read-only — no risk to data.
+- Assumes the user does NOT want me to create new test accounts in the live Supabase project. If you want a real end-to-end signup test, say so and I'll do it in a separate loop with a throwaway email.
+- Verified-tier users currently seeing the full Pro nav is **expected** until Phase C and will be logged as a known gap, not a P0.
