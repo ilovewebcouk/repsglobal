@@ -23,7 +23,7 @@ import {
 
 
 import { ProShell } from "@/components/dashboard/ProShell";
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/clients/$slug")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/clients/$slug")({
   head: () => ({
     meta: [
       { title: "Sarah Johnson — Client record · REPS Professional" },

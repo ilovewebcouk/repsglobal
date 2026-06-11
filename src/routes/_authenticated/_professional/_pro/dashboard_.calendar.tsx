@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { ProShell } from "@/components/dashboard/ProShell";
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/calendar")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/calendar")({
   head: () => ({
     meta: [
       { title: "Calendar — REPS Professional" },

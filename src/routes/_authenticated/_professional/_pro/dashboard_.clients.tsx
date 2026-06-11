@@ -15,7 +15,7 @@ import {
 } from "@/lib/roster.functions";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/clients")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/clients")({
   head: () => ({
     meta: [
       { title: "Clients — REPS Professional Dashboard" },

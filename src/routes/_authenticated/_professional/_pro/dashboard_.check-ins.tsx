@@ -16,7 +16,7 @@ import {
 
 import { ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/check-ins")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/check-ins")({
   head: () => ({
     meta: [
       { title: "Check-ins — REPS Professional" },
