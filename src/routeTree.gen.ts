@@ -96,6 +96,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
 import { Route as AuthenticatedDashboardVerificationRouteImport } from './routes/_authenticated/dashboard_.verification'
 import { Route as AuthenticatedDashboardStartRouteImport } from './routes/_authenticated/dashboard_.start'
+import { Route as AuthenticatedDashboardProfileEditRouteImport } from './routes/_authenticated/dashboard_.profile-edit'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -538,6 +539,12 @@ const AuthenticatedDashboardStartRoute =
     path: '/dashboard/start',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardProfileEditRoute =
+  AuthenticatedDashboardProfileEditRouteImport.update({
+    id: '/dashboard_/profile-edit',
+    path: '/dashboard/profile-edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -643,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/dashboard/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
@@ -734,6 +742,7 @@ export interface FileRoutesByTo {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
+  '/dashboard/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
@@ -828,6 +837,7 @@ export interface FileRoutesById {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/_authenticated/dashboard_/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
   '/_authenticated/dashboard_/start': typeof AuthenticatedDashboardStartRoute
   '/_authenticated/dashboard_/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
@@ -922,6 +932,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
+    | '/dashboard/profile-edit'
     | '/dashboard/start'
     | '/dashboard/verification'
     | '/dashboard/clients/$slug'
@@ -1013,6 +1024,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources'
+    | '/dashboard/profile-edit'
     | '/dashboard/start'
     | '/dashboard/verification'
     | '/dashboard/clients/$slug'
@@ -1106,6 +1118,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
+    | '/_authenticated/dashboard_/profile-edit'
     | '/_authenticated/dashboard_/start'
     | '/_authenticated/dashboard_/verification'
     | '/dashboard_/clients/$slug'
@@ -1818,6 +1831,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardStartRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard_/profile-edit': {
+      id: '/_authenticated/dashboard_/profile-edit'
+      path: '/dashboard/profile-edit'
+      fullPath: '/dashboard/profile-edit'
+      preLoaderRoute: typeof AuthenticatedDashboardProfileEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -1850,11 +1870,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardProfileEditRoute: typeof AuthenticatedDashboardProfileEditRoute
   AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
   AuthenticatedDashboardVerificationRoute: typeof AuthenticatedDashboardVerificationRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardProfileEditRoute:
+    AuthenticatedDashboardProfileEditRoute,
   AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
   AuthenticatedDashboardVerificationRoute:
     AuthenticatedDashboardVerificationRoute,
