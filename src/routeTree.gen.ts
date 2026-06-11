@@ -25,7 +25,7 @@ import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DashboardDemoRouteImport } from './routes/dashboard-demo'
 import { Route as CpdV2RouteImport } from './routes/cpd-v2'
 import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
@@ -182,9 +182,9 @@ const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   path: '/find-a-professional',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const DashboardDemoRoute = DashboardDemoRouteImport.update({
+  id: '/dashboard-demo',
+  path: '/dashboard-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CpdV2Route = CpdV2RouteImport.update({
@@ -582,7 +582,7 @@ export interface FileRoutesByFullPath {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -675,7 +675,7 @@ export interface FileRoutesByTo {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -769,7 +769,7 @@ export interface FileRoutesById {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -864,7 +864,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -957,7 +957,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -1050,7 +1050,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -1145,7 +1145,7 @@ export interface RootRouteChildren {
   CpdRoute: typeof CpdRoute
   CpdLegacyRoute: typeof CpdLegacyRoute
   CpdV2Route: typeof CpdV2Route
-  DashboardRoute: typeof DashboardRoute
+  DashboardDemoRoute: typeof DashboardDemoRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -1334,11 +1334,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FindAProfessionalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/dashboard-demo': {
+      id: '/dashboard-demo'
+      path: '/dashboard-demo'
+      fullPath: '/dashboard-demo'
+      preLoaderRoute: typeof DashboardDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd-v2': {
@@ -1924,7 +1924,7 @@ const rootRouteChildren: RootRouteChildren = {
   CpdRoute: CpdRoute,
   CpdLegacyRoute: CpdLegacyRoute,
   CpdV2Route: CpdV2Route,
-  DashboardRoute: DashboardRoute,
+  DashboardDemoRoute: DashboardDemoRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -2001,3 +2001,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
