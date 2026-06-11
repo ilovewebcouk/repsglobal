@@ -152,7 +152,7 @@ export const getMySubscription = createServerFn({ method: "GET" })
       current_period_end: data.current_period_end,
       cancel_at_period_end: data.cancel_at_period_end,
       is_founding: data.is_founding,
-      display: lookup ? CHECKOUT_OFFERS[lookup.tier].display : null,
+      display: lookup ? CHECKOUT_OFFERS[lookup.tier][lookup.period]?.display ?? null : null,
     };
   });
 

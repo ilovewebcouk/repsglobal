@@ -9,18 +9,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   PLANS,
+  type Billing,
   type PlanTierKey,
 } from "./pricing-data";
 
 export function PricingPlans() {
+  const [billing, setBilling] = useState<Billing>("annual");
   const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCheckoutSession);
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
-    const checkoutPeriod = tierKey === "verified" ? "annual" as const : "monthly" as const;
+    const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -47,11 +50,37 @@ export function PricingPlans() {
 
   return (
     <div>
+      <div className="mb-10 flex justify-center">
+        <ToggleGroup
+          type="single"
+          value={billing}
+          onValueChange={(value) => value && setBilling(value as Billing)}
+          className="inline-flex items-center gap-1 rounded-full border border-reps-border bg-reps-panel p-1"
+        >
+          {(["monthly", "annual"] as Billing[]).map((period) => (
+            <ToggleGroupItem
+              key={period}
+              value={period}
+              aria-label={period === "monthly" ? "Monthly billing" : "Annual billing"}
+              className="group flex h-9 items-center gap-2 rounded-full bg-transparent px-5 text-[13px] font-semibold text-white/65 hover:bg-transparent hover:text-white data-[state=on]:bg-reps-orange data-[state=on]:text-white"
+            >
+              {period === "monthly" ? "Monthly" : "Annual"}
+              {period === "annual" && (
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10px] uppercase tracking-wider text-reps-orange group-data-[state=on]:border-transparent group-data-[state=on]:bg-white/20 group-data-[state=on]:text-white"
+                >
+                  Save 2 months
+                </Badge>
+              )}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((p) => {
-          const view = p.waitlist
-            ? p.pricing.monthly
-            : p.pricing[p.tierKey === "verified" ? "annual" : "monthly"];
+          const view = p.pricing[p.tierKey === "verified" ? "annual" : billing];
           const isLoading = checkoutTier === p.tierKey;
           return (
             <Card
