@@ -5,21 +5,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
-  Clock,
   CreditCard,
   ExternalLink,
   FileText,
-  RefreshCw,
   ShieldCheck,
   Sparkles,
   UserPen,
-  LockKeyhole,
-  TrendingUp,
-  Users,
   Plus,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProShell } from "@/components/dashboard/ProShell";
@@ -198,7 +192,7 @@ function DashboardPage() {
     isVerified,
     hasInsurance: !!data?.profile?.insurance_valid_until,
     insuranceDetail: data?.profile?.insurance_valid_until ? `Valid until ${new Date(data.profile.insurance_valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "Not uploaded",
-    qualCount: "3 Active" // Placeholder for now or could be calculated
+    qualCount: "3 Active"
   };
 
   return (
@@ -230,7 +224,6 @@ function DashboardPage() {
         </Alert>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Top Real Status Row */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatusCard label="Membership" value={tierLabel} detail={renewsAt ? `Renews ${renewsAt}` : sub?.status ?? "Choose a plan"} icon={CreditCard} />
             <StatusCard label="Verification" value={isVerified ? "Verified" : submissionStatus === "submitted" ? "In review" : "Not verified"} detail={data?.profile?.reps_level?.replace("_", " ") ?? "Credentials pending"} icon={BadgeCheck} positive={isVerified} />
@@ -238,7 +231,6 @@ function DashboardPage() {
             <StatusCard label="Setup progress" value={`${completedCount} of 4`} detail={data?.onboarding.complete ? "Complete" : "Finish setup to go live"} icon={CheckCircle2} positive={data?.onboarding.complete} />
           </div>
 
-          {/* Integrated Demo Composition */}
           <KpiRow isLocked={!hasProAccess} />
           <ScheduleAndAi isLocked={!hasProAccess} statusData={statusData} />
           <PerformanceRow isLocked={!hasProAccess} />
@@ -259,7 +251,6 @@ function DashboardPage() {
         </div>
       )}
 
-      {/* FAB (only if Pro) */}
       {hasProAccess && (
         <button
           type="button"
