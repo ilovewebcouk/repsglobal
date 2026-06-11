@@ -1,4 +1,5 @@
-import ctaBand from "@/assets/cta-band.jpg";
+import ctaBandAsset from "@/assets/cta-band.jpg.asset.json";
+const ctaBand = ctaBandAsset.url;
 import heroCoaching from "@/assets/hero-coaching-moment";
 import heroTrainer from "@/assets/hero-trainer.jpg";
 
