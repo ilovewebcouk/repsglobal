@@ -132,7 +132,7 @@ function AboutPage() {
       <section className="relative overflow-hidden">
         <img
           src={heroAsset.url}
-          alt="A REPs-registered strength coach mid-cue inside a cavernous warehouse training floor, golden window-light raking across his forearms, a second athlete silhouetted in the background."
+          alt="Editorial portrait of a REPs-registered strength coach in a charcoal heather tee with an embroidered white REPS wordmark on the left chest, arms loosely crossed, looking just past camera, soft window-key light from the left, warm out-of-focus interior behind him."
           className="absolute inset-0 h-full w-full object-cover"
           fetchPriority="high"
         />
