@@ -47,12 +47,11 @@ export const PLANS: PlanCard[] = [
     tier: "Pro",
     tierKey: "pro",
     desc: "Run and scale your whole coaching practice.",
-    cta: "Start free trial",
+    cta: "Start 30-day free trial",
     ctaHref: "/signup",
     founding: true,
     featured: true,
     features: [
-      "30-day free trial",
       "Everything in Verified",
       "Personalised shop-front page (/c/your-name)",
       "Leads CRM & client management",
@@ -65,7 +64,7 @@ export const PLANS: PlanCard[] = [
     ],
     pricing: {
       monthly: { price: "£59", was: "£79", period: "per month", meta: "Card required · £0 today · then billed monthly after 30 days" },
-      annual: { price: "£49", was: "£66", period: "per month", meta: "30-day free trial · card required · £590 billed yearly after trial · 2 months free" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "Card required · £590 billed yearly after trial · 2 months free" },
     },
   },
   {
