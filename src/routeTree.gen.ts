@@ -59,23 +59,6 @@ import { Route as FeaturesAiRouteImport } from './routes/features.ai'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DevSectionLibraryRouteImport } from './routes/dev.section-library'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard_.settings'
-import { Route as DashboardReviewsRouteImport } from './routes/dashboard_.reviews'
-import { Route as DashboardReportsRouteImport } from './routes/dashboard_.reports'
-import { Route as DashboardProgramsRouteImport } from './routes/dashboard_.programs'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard_.profile'
-import { Route as DashboardPaymentsRouteImport } from './routes/dashboard_.payments'
-import { Route as DashboardNutritionRouteImport } from './routes/dashboard_.nutrition'
-import { Route as DashboardMessagesRouteImport } from './routes/dashboard_.messages'
-import { Route as DashboardLeadsRouteImport } from './routes/dashboard_.leads'
-import { Route as DashboardCpdRouteImport } from './routes/dashboard_.cpd'
-import { Route as DashboardContentRouteImport } from './routes/dashboard_.content'
-import { Route as DashboardCommunityRouteImport } from './routes/dashboard_.community'
-import { Route as DashboardClientsRouteImport } from './routes/dashboard_.clients'
-import { Route as DashboardCheckInsRouteImport } from './routes/dashboard_.check-ins'
-import { Route as DashboardCalendarRouteImport } from './routes/dashboard_.calendar'
-import { Route as DashboardBusinessRouteImport } from './routes/dashboard_.business'
-import { Route as DashboardBookingsRouteImport } from './routes/dashboard_.bookings'
 import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.reps-vs-trainerize'
 import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
@@ -90,18 +73,35 @@ import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
-import { Route as AuthenticatedDashboardVerificationRouteImport } from './routes/_authenticated/dashboard_.verification'
-import { Route as AuthenticatedDashboardStartRouteImport } from './routes/_authenticated/dashboard_.start'
-import { Route as AuthenticatedDashboardProfileEditRouteImport } from './routes/_authenticated/dashboard_.profile-edit'
+import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
+import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
+import { Route as AuthenticatedProfessionalDashboardStartRouteImport } from './routes/_authenticated/_professional/dashboard_.start'
+import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
+import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
+import { Route as AuthenticatedProfessionalDashboardReportsRouteImport } from './routes/_authenticated/_professional/dashboard_.reports'
+import { Route as AuthenticatedProfessionalDashboardProgramsRouteImport } from './routes/_authenticated/_professional/dashboard_.programs'
+import { Route as AuthenticatedProfessionalDashboardProfileEditRouteImport } from './routes/_authenticated/_professional/dashboard_.profile-edit'
+import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
+import { Route as AuthenticatedProfessionalDashboardPaymentsRouteImport } from './routes/_authenticated/_professional/dashboard_.payments'
+import { Route as AuthenticatedProfessionalDashboardNutritionRouteImport } from './routes/_authenticated/_professional/dashboard_.nutrition'
+import { Route as AuthenticatedProfessionalDashboardMessagesRouteImport } from './routes/_authenticated/_professional/dashboard_.messages'
+import { Route as AuthenticatedProfessionalDashboardLeadsRouteImport } from './routes/_authenticated/_professional/dashboard_.leads'
+import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
+import { Route as AuthenticatedProfessionalDashboardContentRouteImport } from './routes/_authenticated/_professional/dashboard_.content'
+import { Route as AuthenticatedProfessionalDashboardCommunityRouteImport } from './routes/_authenticated/_professional/dashboard_.community'
+import { Route as AuthenticatedProfessionalDashboardClientsRouteImport } from './routes/_authenticated/_professional/dashboard_.clients'
+import { Route as AuthenticatedProfessionalDashboardCheckInsRouteImport } from './routes/_authenticated/_professional/dashboard_.check-ins'
+import { Route as AuthenticatedProfessionalDashboardCalendarRouteImport } from './routes/_authenticated/_professional/dashboard_.calendar'
+import { Route as AuthenticatedProfessionalDashboardBusinessRouteImport } from './routes/_authenticated/_professional/dashboard_.business'
+import { Route as AuthenticatedProfessionalDashboardBookingsRouteImport } from './routes/_authenticated/_professional/dashboard_.bookings'
+import { Route as AuthenticatedProfessionalDashboardClientsSlugRouteImport } from './routes/_authenticated/_professional/dashboard_.clients.$slug'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -352,91 +352,6 @@ const DevSectionLibraryRoute = DevSectionLibraryRouteImport.update({
   path: '/dev/section-library',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/dashboard_/settings',
-  path: '/dashboard/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardReviewsRoute = DashboardReviewsRouteImport.update({
-  id: '/dashboard_/reviews',
-  path: '/dashboard/reviews',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardReportsRoute = DashboardReportsRouteImport.update({
-  id: '/dashboard_/reports',
-  path: '/dashboard/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardProgramsRoute = DashboardProgramsRouteImport.update({
-  id: '/dashboard_/programs',
-  path: '/dashboard/programs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/dashboard_/profile',
-  path: '/dashboard/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardPaymentsRoute = DashboardPaymentsRouteImport.update({
-  id: '/dashboard_/payments',
-  path: '/dashboard/payments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardNutritionRoute = DashboardNutritionRouteImport.update({
-  id: '/dashboard_/nutrition',
-  path: '/dashboard/nutrition',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
-  id: '/dashboard_/messages',
-  path: '/dashboard/messages',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
-  id: '/dashboard_/leads',
-  path: '/dashboard/leads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardCpdRoute = DashboardCpdRouteImport.update({
-  id: '/dashboard_/cpd',
-  path: '/dashboard/cpd',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardContentRoute = DashboardContentRouteImport.update({
-  id: '/dashboard_/content',
-  path: '/dashboard/content',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardCommunityRoute = DashboardCommunityRouteImport.update({
-  id: '/dashboard_/community',
-  path: '/dashboard/community',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardClientsRoute = DashboardClientsRouteImport.update({
-  id: '/dashboard_/clients',
-  path: '/dashboard/clients',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardCheckInsRoute = DashboardCheckInsRouteImport.update({
-  id: '/dashboard_/check-ins',
-  path: '/dashboard/check-ins',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
-  id: '/dashboard_/calendar',
-  path: '/dashboard/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardBusinessRoute = DashboardBusinessRouteImport.update({
-  id: '/dashboard_/business',
-  path: '/dashboard/business',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
-  id: '/dashboard_/bookings',
-  path: '/dashboard/bookings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CompareRepsVsTrainerizeRoute = CompareRepsVsTrainerizeRouteImport.update({
   id: '/compare_/reps-vs-trainerize',
   path: '/compare/reps-vs-trainerize',
@@ -508,11 +423,6 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -528,27 +438,10 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => DashboardClientsRoute,
-} as any)
-const AuthenticatedDashboardVerificationRoute =
-  AuthenticatedDashboardVerificationRouteImport.update({
-    id: '/dashboard_/verification',
-    path: '/dashboard/verification',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardStartRoute =
-  AuthenticatedDashboardStartRouteImport.update({
-    id: '/dashboard_/start',
-    path: '/dashboard/start',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardProfileEditRoute =
-  AuthenticatedDashboardProfileEditRouteImport.update({
-    id: '/dashboard_/profile-edit',
-    path: '/dashboard/profile-edit',
+const AuthenticatedProfessionalDashboardRoute =
+  AuthenticatedProfessionalDashboardRouteImport.update({
+    id: '/_professional/dashboard',
+    path: '/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const LovableEmailTransactionalSendRoute =
@@ -574,6 +467,132 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProfessionalDashboardVerificationRoute =
+  AuthenticatedProfessionalDashboardVerificationRouteImport.update({
+    id: '/_professional/dashboard_/verification',
+    path: '/dashboard/verification',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardStartRoute =
+  AuthenticatedProfessionalDashboardStartRouteImport.update({
+    id: '/_professional/dashboard_/start',
+    path: '/dashboard/start',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardSettingsRoute =
+  AuthenticatedProfessionalDashboardSettingsRouteImport.update({
+    id: '/_professional/dashboard_/settings',
+    path: '/dashboard/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardReviewsRoute =
+  AuthenticatedProfessionalDashboardReviewsRouteImport.update({
+    id: '/_professional/dashboard_/reviews',
+    path: '/dashboard/reviews',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardReportsRoute =
+  AuthenticatedProfessionalDashboardReportsRouteImport.update({
+    id: '/_professional/dashboard_/reports',
+    path: '/dashboard/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardProgramsRoute =
+  AuthenticatedProfessionalDashboardProgramsRouteImport.update({
+    id: '/_professional/dashboard_/programs',
+    path: '/dashboard/programs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardProfileEditRoute =
+  AuthenticatedProfessionalDashboardProfileEditRouteImport.update({
+    id: '/_professional/dashboard_/profile-edit',
+    path: '/dashboard/profile-edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardProfileRoute =
+  AuthenticatedProfessionalDashboardProfileRouteImport.update({
+    id: '/_professional/dashboard_/profile',
+    path: '/dashboard/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardPaymentsRoute =
+  AuthenticatedProfessionalDashboardPaymentsRouteImport.update({
+    id: '/_professional/dashboard_/payments',
+    path: '/dashboard/payments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardNutritionRoute =
+  AuthenticatedProfessionalDashboardNutritionRouteImport.update({
+    id: '/_professional/dashboard_/nutrition',
+    path: '/dashboard/nutrition',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardMessagesRoute =
+  AuthenticatedProfessionalDashboardMessagesRouteImport.update({
+    id: '/_professional/dashboard_/messages',
+    path: '/dashboard/messages',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardLeadsRoute =
+  AuthenticatedProfessionalDashboardLeadsRouteImport.update({
+    id: '/_professional/dashboard_/leads',
+    path: '/dashboard/leads',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardCpdRoute =
+  AuthenticatedProfessionalDashboardCpdRouteImport.update({
+    id: '/_professional/dashboard_/cpd',
+    path: '/dashboard/cpd',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardContentRoute =
+  AuthenticatedProfessionalDashboardContentRouteImport.update({
+    id: '/_professional/dashboard_/content',
+    path: '/dashboard/content',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardCommunityRoute =
+  AuthenticatedProfessionalDashboardCommunityRouteImport.update({
+    id: '/_professional/dashboard_/community',
+    path: '/dashboard/community',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardClientsRoute =
+  AuthenticatedProfessionalDashboardClientsRouteImport.update({
+    id: '/_professional/dashboard_/clients',
+    path: '/dashboard/clients',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardCheckInsRoute =
+  AuthenticatedProfessionalDashboardCheckInsRouteImport.update({
+    id: '/_professional/dashboard_/check-ins',
+    path: '/dashboard/check-ins',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardCalendarRoute =
+  AuthenticatedProfessionalDashboardCalendarRouteImport.update({
+    id: '/_professional/dashboard_/calendar',
+    path: '/dashboard/calendar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardBusinessRoute =
+  AuthenticatedProfessionalDashboardBusinessRouteImport.update({
+    id: '/_professional/dashboard_/business',
+    path: '/dashboard/business',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardBookingsRoute =
+  AuthenticatedProfessionalDashboardBookingsRouteImport.update({
+    id: '/_professional/dashboard_/bookings',
+    path: '/dashboard/bookings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfessionalDashboardClientsSlugRoute =
+  AuthenticatedProfessionalDashboardClientsSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedProfessionalDashboardClientsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -605,7 +624,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -620,23 +638,6 @@ export interface FileRoutesByFullPath {
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
-  '/dashboard/bookings': typeof DashboardBookingsRoute
-  '/dashboard/business': typeof DashboardBusinessRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/check-ins': typeof DashboardCheckInsRoute
-  '/dashboard/clients': typeof DashboardClientsRouteWithChildren
-  '/dashboard/community': typeof DashboardCommunityRoute
-  '/dashboard/content': typeof DashboardContentRoute
-  '/dashboard/cpd': typeof DashboardCpdRoute
-  '/dashboard/leads': typeof DashboardLeadsRoute
-  '/dashboard/messages': typeof DashboardMessagesRoute
-  '/dashboard/nutrition': typeof DashboardNutritionRoute
-  '/dashboard/payments': typeof DashboardPaymentsRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/programs': typeof DashboardProgramsRoute
-  '/dashboard/reports': typeof DashboardReportsRoute
-  '/dashboard/reviews': typeof DashboardReviewsRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
@@ -657,17 +658,35 @@ export interface FileRoutesByFullPath {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
-  '/dashboard/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
-  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
-  '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
-  '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
+  '/dashboard': typeof AuthenticatedProfessionalDashboardRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/dashboard/bookings': typeof AuthenticatedProfessionalDashboardBookingsRoute
+  '/dashboard/business': typeof AuthenticatedProfessionalDashboardBusinessRoute
+  '/dashboard/calendar': typeof AuthenticatedProfessionalDashboardCalendarRoute
+  '/dashboard/check-ins': typeof AuthenticatedProfessionalDashboardCheckInsRoute
+  '/dashboard/clients': typeof AuthenticatedProfessionalDashboardClientsRouteWithChildren
+  '/dashboard/community': typeof AuthenticatedProfessionalDashboardCommunityRoute
+  '/dashboard/content': typeof AuthenticatedProfessionalDashboardContentRoute
+  '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
+  '/dashboard/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
+  '/dashboard/messages': typeof AuthenticatedProfessionalDashboardMessagesRoute
+  '/dashboard/nutrition': typeof AuthenticatedProfessionalDashboardNutritionRoute
+  '/dashboard/payments': typeof AuthenticatedProfessionalDashboardPaymentsRoute
+  '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
+  '/dashboard/programs': typeof AuthenticatedProfessionalDashboardProgramsRoute
+  '/dashboard/reports': typeof AuthenticatedProfessionalDashboardReportsRoute
+  '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
+  '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/start': typeof AuthenticatedProfessionalDashboardStartRoute
+  '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/dashboard/clients/$slug': typeof AuthenticatedProfessionalDashboardClientsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -699,7 +718,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -714,23 +732,6 @@ export interface FileRoutesByTo {
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
-  '/dashboard/bookings': typeof DashboardBookingsRoute
-  '/dashboard/business': typeof DashboardBusinessRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/check-ins': typeof DashboardCheckInsRoute
-  '/dashboard/clients': typeof DashboardClientsRouteWithChildren
-  '/dashboard/community': typeof DashboardCommunityRoute
-  '/dashboard/content': typeof DashboardContentRoute
-  '/dashboard/cpd': typeof DashboardCpdRoute
-  '/dashboard/leads': typeof DashboardLeadsRoute
-  '/dashboard/messages': typeof DashboardMessagesRoute
-  '/dashboard/nutrition': typeof DashboardNutritionRoute
-  '/dashboard/payments': typeof DashboardPaymentsRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/programs': typeof DashboardProgramsRoute
-  '/dashboard/reports': typeof DashboardReportsRoute
-  '/dashboard/reviews': typeof DashboardReviewsRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
@@ -750,17 +751,35 @@ export interface FileRoutesByTo {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
-  '/dashboard/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
-  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
-  '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
-  '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
+  '/dashboard': typeof AuthenticatedProfessionalDashboardRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug': typeof ProSlugIndexRoute
+  '/dashboard/bookings': typeof AuthenticatedProfessionalDashboardBookingsRoute
+  '/dashboard/business': typeof AuthenticatedProfessionalDashboardBusinessRoute
+  '/dashboard/calendar': typeof AuthenticatedProfessionalDashboardCalendarRoute
+  '/dashboard/check-ins': typeof AuthenticatedProfessionalDashboardCheckInsRoute
+  '/dashboard/clients': typeof AuthenticatedProfessionalDashboardClientsRouteWithChildren
+  '/dashboard/community': typeof AuthenticatedProfessionalDashboardCommunityRoute
+  '/dashboard/content': typeof AuthenticatedProfessionalDashboardContentRoute
+  '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
+  '/dashboard/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
+  '/dashboard/messages': typeof AuthenticatedProfessionalDashboardMessagesRoute
+  '/dashboard/nutrition': typeof AuthenticatedProfessionalDashboardNutritionRoute
+  '/dashboard/payments': typeof AuthenticatedProfessionalDashboardPaymentsRoute
+  '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
+  '/dashboard/programs': typeof AuthenticatedProfessionalDashboardProgramsRoute
+  '/dashboard/reports': typeof AuthenticatedProfessionalDashboardReportsRoute
+  '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
+  '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/start': typeof AuthenticatedProfessionalDashboardStartRoute
+  '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/dashboard/clients/$slug': typeof AuthenticatedProfessionalDashboardClientsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -794,7 +813,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
@@ -809,23 +827,6 @@ export interface FileRoutesById {
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare_/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
-  '/dashboard_/bookings': typeof DashboardBookingsRoute
-  '/dashboard_/business': typeof DashboardBusinessRoute
-  '/dashboard_/calendar': typeof DashboardCalendarRoute
-  '/dashboard_/check-ins': typeof DashboardCheckInsRoute
-  '/dashboard_/clients': typeof DashboardClientsRouteWithChildren
-  '/dashboard_/community': typeof DashboardCommunityRoute
-  '/dashboard_/content': typeof DashboardContentRoute
-  '/dashboard_/cpd': typeof DashboardCpdRoute
-  '/dashboard_/leads': typeof DashboardLeadsRoute
-  '/dashboard_/messages': typeof DashboardMessagesRoute
-  '/dashboard_/nutrition': typeof DashboardNutritionRoute
-  '/dashboard_/payments': typeof DashboardPaymentsRoute
-  '/dashboard_/profile': typeof DashboardProfileRoute
-  '/dashboard_/programs': typeof DashboardProgramsRoute
-  '/dashboard_/reports': typeof DashboardReportsRoute
-  '/dashboard_/reviews': typeof DashboardReviewsRoute
-  '/dashboard_/settings': typeof DashboardSettingsRoute
   '/dev/section-library': typeof DevSectionLibraryRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/features/$slug': typeof FeaturesSlugRoute
@@ -846,17 +847,35 @@ export interface FileRoutesById {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
-  '/_authenticated/dashboard_/profile-edit': typeof AuthenticatedDashboardProfileEditRoute
-  '/_authenticated/dashboard_/start': typeof AuthenticatedDashboardStartRoute
-  '/_authenticated/dashboard_/verification': typeof AuthenticatedDashboardVerificationRoute
-  '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
+  '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/_authenticated/_professional/dashboard_/bookings': typeof AuthenticatedProfessionalDashboardBookingsRoute
+  '/_authenticated/_professional/dashboard_/business': typeof AuthenticatedProfessionalDashboardBusinessRoute
+  '/_authenticated/_professional/dashboard_/calendar': typeof AuthenticatedProfessionalDashboardCalendarRoute
+  '/_authenticated/_professional/dashboard_/check-ins': typeof AuthenticatedProfessionalDashboardCheckInsRoute
+  '/_authenticated/_professional/dashboard_/clients': typeof AuthenticatedProfessionalDashboardClientsRouteWithChildren
+  '/_authenticated/_professional/dashboard_/community': typeof AuthenticatedProfessionalDashboardCommunityRoute
+  '/_authenticated/_professional/dashboard_/content': typeof AuthenticatedProfessionalDashboardContentRoute
+  '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
+  '/_authenticated/_professional/dashboard_/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
+  '/_authenticated/_professional/dashboard_/messages': typeof AuthenticatedProfessionalDashboardMessagesRoute
+  '/_authenticated/_professional/dashboard_/nutrition': typeof AuthenticatedProfessionalDashboardNutritionRoute
+  '/_authenticated/_professional/dashboard_/payments': typeof AuthenticatedProfessionalDashboardPaymentsRoute
+  '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/_authenticated/_professional/dashboard_/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
+  '/_authenticated/_professional/dashboard_/programs': typeof AuthenticatedProfessionalDashboardProgramsRoute
+  '/_authenticated/_professional/dashboard_/reports': typeof AuthenticatedProfessionalDashboardReportsRoute
+  '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
+  '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/_authenticated/_professional/dashboard_/start': typeof AuthenticatedProfessionalDashboardStartRoute
+  '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/_authenticated/_professional/dashboard_/clients/$slug': typeof AuthenticatedProfessionalDashboardClientsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -890,7 +909,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
-    | '/dashboard'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/memberships'
@@ -905,23 +923,6 @@ export interface FileRouteTypes {
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
-    | '/dashboard/bookings'
-    | '/dashboard/business'
-    | '/dashboard/calendar'
-    | '/dashboard/check-ins'
-    | '/dashboard/clients'
-    | '/dashboard/community'
-    | '/dashboard/content'
-    | '/dashboard/cpd'
-    | '/dashboard/leads'
-    | '/dashboard/messages'
-    | '/dashboard/nutrition'
-    | '/dashboard/payments'
-    | '/dashboard/profile'
-    | '/dashboard/programs'
-    | '/dashboard/reports'
-    | '/dashboard/reviews'
-    | '/dashboard/settings'
     | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
@@ -942,17 +943,35 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
-    | '/dashboard/profile-edit'
-    | '/dashboard/start'
-    | '/dashboard/verification'
-    | '/dashboard/clients/$slug'
+    | '/dashboard'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/'
+    | '/dashboard/bookings'
+    | '/dashboard/business'
+    | '/dashboard/calendar'
+    | '/dashboard/check-ins'
+    | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
+    | '/dashboard/cpd'
+    | '/dashboard/leads'
+    | '/dashboard/messages'
+    | '/dashboard/nutrition'
+    | '/dashboard/payments'
+    | '/dashboard/profile'
+    | '/dashboard/profile-edit'
+    | '/dashboard/programs'
+    | '/dashboard/reports'
+    | '/dashboard/reviews'
+    | '/dashboard/settings'
+    | '/dashboard/start'
+    | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/dashboard/clients/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -984,7 +1003,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
-    | '/dashboard'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/memberships'
@@ -999,23 +1017,6 @@ export interface FileRouteTypes {
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
-    | '/dashboard/bookings'
-    | '/dashboard/business'
-    | '/dashboard/calendar'
-    | '/dashboard/check-ins'
-    | '/dashboard/clients'
-    | '/dashboard/community'
-    | '/dashboard/content'
-    | '/dashboard/cpd'
-    | '/dashboard/leads'
-    | '/dashboard/messages'
-    | '/dashboard/nutrition'
-    | '/dashboard/payments'
-    | '/dashboard/profile'
-    | '/dashboard/programs'
-    | '/dashboard/reports'
-    | '/dashboard/reviews'
-    | '/dashboard/settings'
     | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
@@ -1035,17 +1036,35 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources'
-    | '/dashboard/profile-edit'
-    | '/dashboard/start'
-    | '/dashboard/verification'
-    | '/dashboard/clients/$slug'
+    | '/dashboard'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug'
+    | '/dashboard/bookings'
+    | '/dashboard/business'
+    | '/dashboard/calendar'
+    | '/dashboard/check-ins'
+    | '/dashboard/clients'
+    | '/dashboard/community'
+    | '/dashboard/content'
+    | '/dashboard/cpd'
+    | '/dashboard/leads'
+    | '/dashboard/messages'
+    | '/dashboard/nutrition'
+    | '/dashboard/payments'
+    | '/dashboard/profile'
+    | '/dashboard/profile-edit'
+    | '/dashboard/programs'
+    | '/dashboard/reports'
+    | '/dashboard/reviews'
+    | '/dashboard/settings'
+    | '/dashboard/start'
+    | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/dashboard/clients/$slug'
   id:
     | '__root__'
     | '/'
@@ -1078,7 +1097,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
-    | '/_authenticated/dashboard'
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/memberships'
@@ -1093,23 +1111,6 @@ export interface FileRouteTypes {
     | '/compare_/reps-vs-mypthub'
     | '/compare_/reps-vs-pt-distinction'
     | '/compare_/reps-vs-trainerize'
-    | '/dashboard_/bookings'
-    | '/dashboard_/business'
-    | '/dashboard_/calendar'
-    | '/dashboard_/check-ins'
-    | '/dashboard_/clients'
-    | '/dashboard_/community'
-    | '/dashboard_/content'
-    | '/dashboard_/cpd'
-    | '/dashboard_/leads'
-    | '/dashboard_/messages'
-    | '/dashboard_/nutrition'
-    | '/dashboard_/payments'
-    | '/dashboard_/profile'
-    | '/dashboard_/programs'
-    | '/dashboard_/reports'
-    | '/dashboard_/reviews'
-    | '/dashboard_/settings'
     | '/dev/section-library'
     | '/email/unsubscribe'
     | '/features/$slug'
@@ -1130,17 +1131,35 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/resources/$slug'
     | '/resources/'
-    | '/_authenticated/dashboard_/profile-edit'
-    | '/_authenticated/dashboard_/start'
-    | '/_authenticated/dashboard_/verification'
-    | '/dashboard_/clients/$slug'
+    | '/_authenticated/_professional/dashboard'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/'
+    | '/_authenticated/_professional/dashboard_/bookings'
+    | '/_authenticated/_professional/dashboard_/business'
+    | '/_authenticated/_professional/dashboard_/calendar'
+    | '/_authenticated/_professional/dashboard_/check-ins'
+    | '/_authenticated/_professional/dashboard_/clients'
+    | '/_authenticated/_professional/dashboard_/community'
+    | '/_authenticated/_professional/dashboard_/content'
+    | '/_authenticated/_professional/dashboard_/cpd'
+    | '/_authenticated/_professional/dashboard_/leads'
+    | '/_authenticated/_professional/dashboard_/messages'
+    | '/_authenticated/_professional/dashboard_/nutrition'
+    | '/_authenticated/_professional/dashboard_/payments'
+    | '/_authenticated/_professional/dashboard_/profile'
+    | '/_authenticated/_professional/dashboard_/profile-edit'
+    | '/_authenticated/_professional/dashboard_/programs'
+    | '/_authenticated/_professional/dashboard_/reports'
+    | '/_authenticated/_professional/dashboard_/reviews'
+    | '/_authenticated/_professional/dashboard_/settings'
+    | '/_authenticated/_professional/dashboard_/start'
+    | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/_authenticated/_professional/dashboard_/clients/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1188,23 +1207,6 @@ export interface RootRouteChildren {
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
   CompareRepsVsTrainerizeRoute: typeof CompareRepsVsTrainerizeRoute
-  DashboardBookingsRoute: typeof DashboardBookingsRoute
-  DashboardBusinessRoute: typeof DashboardBusinessRoute
-  DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardCheckInsRoute: typeof DashboardCheckInsRoute
-  DashboardClientsRoute: typeof DashboardClientsRouteWithChildren
-  DashboardCommunityRoute: typeof DashboardCommunityRoute
-  DashboardContentRoute: typeof DashboardContentRoute
-  DashboardCpdRoute: typeof DashboardCpdRoute
-  DashboardLeadsRoute: typeof DashboardLeadsRoute
-  DashboardMessagesRoute: typeof DashboardMessagesRoute
-  DashboardNutritionRoute: typeof DashboardNutritionRoute
-  DashboardPaymentsRoute: typeof DashboardPaymentsRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardProgramsRoute: typeof DashboardProgramsRoute
-  DashboardReportsRoute: typeof DashboardReportsRoute
-  DashboardReviewsRoute: typeof DashboardReviewsRoute
-  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DevSectionLibraryRoute: typeof DevSectionLibraryRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
@@ -1584,125 +1586,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevSectionLibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard_/settings': {
-      id: '/dashboard_/settings'
-      path: '/dashboard/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/reviews': {
-      id: '/dashboard_/reviews'
-      path: '/dashboard/reviews'
-      fullPath: '/dashboard/reviews'
-      preLoaderRoute: typeof DashboardReviewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/reports': {
-      id: '/dashboard_/reports'
-      path: '/dashboard/reports'
-      fullPath: '/dashboard/reports'
-      preLoaderRoute: typeof DashboardReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/programs': {
-      id: '/dashboard_/programs'
-      path: '/dashboard/programs'
-      fullPath: '/dashboard/programs'
-      preLoaderRoute: typeof DashboardProgramsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/profile': {
-      id: '/dashboard_/profile'
-      path: '/dashboard/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/payments': {
-      id: '/dashboard_/payments'
-      path: '/dashboard/payments'
-      fullPath: '/dashboard/payments'
-      preLoaderRoute: typeof DashboardPaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/nutrition': {
-      id: '/dashboard_/nutrition'
-      path: '/dashboard/nutrition'
-      fullPath: '/dashboard/nutrition'
-      preLoaderRoute: typeof DashboardNutritionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/messages': {
-      id: '/dashboard_/messages'
-      path: '/dashboard/messages'
-      fullPath: '/dashboard/messages'
-      preLoaderRoute: typeof DashboardMessagesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/leads': {
-      id: '/dashboard_/leads'
-      path: '/dashboard/leads'
-      fullPath: '/dashboard/leads'
-      preLoaderRoute: typeof DashboardLeadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/cpd': {
-      id: '/dashboard_/cpd'
-      path: '/dashboard/cpd'
-      fullPath: '/dashboard/cpd'
-      preLoaderRoute: typeof DashboardCpdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/content': {
-      id: '/dashboard_/content'
-      path: '/dashboard/content'
-      fullPath: '/dashboard/content'
-      preLoaderRoute: typeof DashboardContentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/community': {
-      id: '/dashboard_/community'
-      path: '/dashboard/community'
-      fullPath: '/dashboard/community'
-      preLoaderRoute: typeof DashboardCommunityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/clients': {
-      id: '/dashboard_/clients'
-      path: '/dashboard/clients'
-      fullPath: '/dashboard/clients'
-      preLoaderRoute: typeof DashboardClientsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/check-ins': {
-      id: '/dashboard_/check-ins'
-      path: '/dashboard/check-ins'
-      fullPath: '/dashboard/check-ins'
-      preLoaderRoute: typeof DashboardCheckInsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/calendar': {
-      id: '/dashboard_/calendar'
-      path: '/dashboard/calendar'
-      fullPath: '/dashboard/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/business': {
-      id: '/dashboard_/business'
-      path: '/dashboard/business'
-      fullPath: '/dashboard/business'
-      preLoaderRoute: typeof DashboardBusinessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard_/bookings': {
-      id: '/dashboard_/bookings'
-      path: '/dashboard/bookings'
-      fullPath: '/dashboard/bookings'
-      preLoaderRoute: typeof DashboardBookingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/compare_/reps-vs-trainerize': {
       id: '/compare_/reps-vs-trainerize'
       path: '/compare/reps-vs-trainerize'
@@ -1801,13 +1684,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/pro/$slug/': {
       id: '/pro/$slug/'
       path: '/'
@@ -1829,32 +1705,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard_/clients/$slug': {
-      id: '/dashboard_/clients/$slug'
-      path: '/$slug'
-      fullPath: '/dashboard/clients/$slug'
-      preLoaderRoute: typeof DashboardClientsSlugRouteImport
-      parentRoute: typeof DashboardClientsRoute
-    }
-    '/_authenticated/dashboard_/verification': {
-      id: '/_authenticated/dashboard_/verification'
-      path: '/dashboard/verification'
-      fullPath: '/dashboard/verification'
-      preLoaderRoute: typeof AuthenticatedDashboardVerificationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard_/start': {
-      id: '/_authenticated/dashboard_/start'
-      path: '/dashboard/start'
-      fullPath: '/dashboard/start'
-      preLoaderRoute: typeof AuthenticatedDashboardStartRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard_/profile-edit': {
-      id: '/_authenticated/dashboard_/profile-edit'
-      path: '/dashboard/profile-edit'
-      fullPath: '/dashboard/profile-edit'
-      preLoaderRoute: typeof AuthenticatedDashboardProfileEditRouteImport
+    '/_authenticated/_professional/dashboard': {
+      id: '/_authenticated/_professional/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/lovable/email/transactional/send': {
@@ -1885,38 +1740,242 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_professional/dashboard_/verification': {
+      id: '/_authenticated/_professional/dashboard_/verification'
+      path: '/dashboard/verification'
+      fullPath: '/dashboard/verification'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardVerificationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/start': {
+      id: '/_authenticated/_professional/dashboard_/start'
+      path: '/dashboard/start'
+      fullPath: '/dashboard/start'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardStartRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/settings': {
+      id: '/_authenticated/_professional/dashboard_/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/reviews': {
+      id: '/_authenticated/_professional/dashboard_/reviews'
+      path: '/dashboard/reviews'
+      fullPath: '/dashboard/reviews'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardReviewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/reports': {
+      id: '/_authenticated/_professional/dashboard_/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/programs': {
+      id: '/_authenticated/_professional/dashboard_/programs'
+      path: '/dashboard/programs'
+      fullPath: '/dashboard/programs'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardProgramsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/profile-edit': {
+      id: '/_authenticated/_professional/dashboard_/profile-edit'
+      path: '/dashboard/profile-edit'
+      fullPath: '/dashboard/profile-edit'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/profile': {
+      id: '/_authenticated/_professional/dashboard_/profile'
+      path: '/dashboard/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/payments': {
+      id: '/_authenticated/_professional/dashboard_/payments'
+      path: '/dashboard/payments'
+      fullPath: '/dashboard/payments'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/nutrition': {
+      id: '/_authenticated/_professional/dashboard_/nutrition'
+      path: '/dashboard/nutrition'
+      fullPath: '/dashboard/nutrition'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardNutritionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/messages': {
+      id: '/_authenticated/_professional/dashboard_/messages'
+      path: '/dashboard/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/leads': {
+      id: '/_authenticated/_professional/dashboard_/leads'
+      path: '/dashboard/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardLeadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/cpd': {
+      id: '/_authenticated/_professional/dashboard_/cpd'
+      path: '/dashboard/cpd'
+      fullPath: '/dashboard/cpd'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardCpdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/content': {
+      id: '/_authenticated/_professional/dashboard_/content'
+      path: '/dashboard/content'
+      fullPath: '/dashboard/content'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardContentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/community': {
+      id: '/_authenticated/_professional/dashboard_/community'
+      path: '/dashboard/community'
+      fullPath: '/dashboard/community'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/clients': {
+      id: '/_authenticated/_professional/dashboard_/clients'
+      path: '/dashboard/clients'
+      fullPath: '/dashboard/clients'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/check-ins': {
+      id: '/_authenticated/_professional/dashboard_/check-ins'
+      path: '/dashboard/check-ins'
+      fullPath: '/dashboard/check-ins'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardCheckInsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/calendar': {
+      id: '/_authenticated/_professional/dashboard_/calendar'
+      path: '/dashboard/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/business': {
+      id: '/_authenticated/_professional/dashboard_/business'
+      path: '/dashboard/business'
+      fullPath: '/dashboard/business'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardBusinessRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/bookings': {
+      id: '/_authenticated/_professional/dashboard_/bookings'
+      path: '/dashboard/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardBookingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_professional/dashboard_/clients/$slug': {
+      id: '/_authenticated/_professional/dashboard_/clients/$slug'
+      path: '/$slug'
+      fullPath: '/dashboard/clients/$slug'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardClientsSlugRouteImport
+      parentRoute: typeof AuthenticatedProfessionalDashboardClientsRoute
+    }
   }
 }
 
+interface AuthenticatedProfessionalDashboardClientsRouteChildren {
+  AuthenticatedProfessionalDashboardClientsSlugRoute: typeof AuthenticatedProfessionalDashboardClientsSlugRoute
+}
+
+const AuthenticatedProfessionalDashboardClientsRouteChildren: AuthenticatedProfessionalDashboardClientsRouteChildren =
+  {
+    AuthenticatedProfessionalDashboardClientsSlugRoute:
+      AuthenticatedProfessionalDashboardClientsSlugRoute,
+  }
+
+const AuthenticatedProfessionalDashboardClientsRouteWithChildren =
+  AuthenticatedProfessionalDashboardClientsRoute._addFileChildren(
+    AuthenticatedProfessionalDashboardClientsRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDashboardProfileEditRoute: typeof AuthenticatedDashboardProfileEditRoute
-  AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
-  AuthenticatedDashboardVerificationRoute: typeof AuthenticatedDashboardVerificationRoute
+  AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRoute
+  AuthenticatedProfessionalDashboardBookingsRoute: typeof AuthenticatedProfessionalDashboardBookingsRoute
+  AuthenticatedProfessionalDashboardBusinessRoute: typeof AuthenticatedProfessionalDashboardBusinessRoute
+  AuthenticatedProfessionalDashboardCalendarRoute: typeof AuthenticatedProfessionalDashboardCalendarRoute
+  AuthenticatedProfessionalDashboardCheckInsRoute: typeof AuthenticatedProfessionalDashboardCheckInsRoute
+  AuthenticatedProfessionalDashboardClientsRoute: typeof AuthenticatedProfessionalDashboardClientsRouteWithChildren
+  AuthenticatedProfessionalDashboardCommunityRoute: typeof AuthenticatedProfessionalDashboardCommunityRoute
+  AuthenticatedProfessionalDashboardContentRoute: typeof AuthenticatedProfessionalDashboardContentRoute
+  AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
+  AuthenticatedProfessionalDashboardLeadsRoute: typeof AuthenticatedProfessionalDashboardLeadsRoute
+  AuthenticatedProfessionalDashboardMessagesRoute: typeof AuthenticatedProfessionalDashboardMessagesRoute
+  AuthenticatedProfessionalDashboardNutritionRoute: typeof AuthenticatedProfessionalDashboardNutritionRoute
+  AuthenticatedProfessionalDashboardPaymentsRoute: typeof AuthenticatedProfessionalDashboardPaymentsRoute
+  AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
+  AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
+  AuthenticatedProfessionalDashboardProgramsRoute: typeof AuthenticatedProfessionalDashboardProgramsRoute
+  AuthenticatedProfessionalDashboardReportsRoute: typeof AuthenticatedProfessionalDashboardReportsRoute
+  AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
+  AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
+  AuthenticatedProfessionalDashboardStartRoute: typeof AuthenticatedProfessionalDashboardStartRoute
+  AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDashboardProfileEditRoute:
-    AuthenticatedDashboardProfileEditRoute,
-  AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
-  AuthenticatedDashboardVerificationRoute:
-    AuthenticatedDashboardVerificationRoute,
+  AuthenticatedProfessionalDashboardRoute:
+    AuthenticatedProfessionalDashboardRoute,
+  AuthenticatedProfessionalDashboardBookingsRoute:
+    AuthenticatedProfessionalDashboardBookingsRoute,
+  AuthenticatedProfessionalDashboardBusinessRoute:
+    AuthenticatedProfessionalDashboardBusinessRoute,
+  AuthenticatedProfessionalDashboardCalendarRoute:
+    AuthenticatedProfessionalDashboardCalendarRoute,
+  AuthenticatedProfessionalDashboardCheckInsRoute:
+    AuthenticatedProfessionalDashboardCheckInsRoute,
+  AuthenticatedProfessionalDashboardClientsRoute:
+    AuthenticatedProfessionalDashboardClientsRouteWithChildren,
+  AuthenticatedProfessionalDashboardCommunityRoute:
+    AuthenticatedProfessionalDashboardCommunityRoute,
+  AuthenticatedProfessionalDashboardContentRoute:
+    AuthenticatedProfessionalDashboardContentRoute,
+  AuthenticatedProfessionalDashboardCpdRoute:
+    AuthenticatedProfessionalDashboardCpdRoute,
+  AuthenticatedProfessionalDashboardLeadsRoute:
+    AuthenticatedProfessionalDashboardLeadsRoute,
+  AuthenticatedProfessionalDashboardMessagesRoute:
+    AuthenticatedProfessionalDashboardMessagesRoute,
+  AuthenticatedProfessionalDashboardNutritionRoute:
+    AuthenticatedProfessionalDashboardNutritionRoute,
+  AuthenticatedProfessionalDashboardPaymentsRoute:
+    AuthenticatedProfessionalDashboardPaymentsRoute,
+  AuthenticatedProfessionalDashboardProfileRoute:
+    AuthenticatedProfessionalDashboardProfileRoute,
+  AuthenticatedProfessionalDashboardProfileEditRoute:
+    AuthenticatedProfessionalDashboardProfileEditRoute,
+  AuthenticatedProfessionalDashboardProgramsRoute:
+    AuthenticatedProfessionalDashboardProgramsRoute,
+  AuthenticatedProfessionalDashboardReportsRoute:
+    AuthenticatedProfessionalDashboardReportsRoute,
+  AuthenticatedProfessionalDashboardReviewsRoute:
+    AuthenticatedProfessionalDashboardReviewsRoute,
+  AuthenticatedProfessionalDashboardSettingsRoute:
+    AuthenticatedProfessionalDashboardSettingsRoute,
+  AuthenticatedProfessionalDashboardStartRoute:
+    AuthenticatedProfessionalDashboardStartRoute,
+  AuthenticatedProfessionalDashboardVerificationRoute:
+    AuthenticatedProfessionalDashboardVerificationRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
-interface DashboardClientsRouteChildren {
-  DashboardClientsSlugRoute: typeof DashboardClientsSlugRoute
-}
-
-const DashboardClientsRouteChildren: DashboardClientsRouteChildren = {
-  DashboardClientsSlugRoute: DashboardClientsSlugRoute,
-}
-
-const DashboardClientsRouteWithChildren =
-  DashboardClientsRoute._addFileChildren(DashboardClientsRouteChildren)
 
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
@@ -1976,23 +2035,6 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
   CompareRepsVsTrainerizeRoute: CompareRepsVsTrainerizeRoute,
-  DashboardBookingsRoute: DashboardBookingsRoute,
-  DashboardBusinessRoute: DashboardBusinessRoute,
-  DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardCheckInsRoute: DashboardCheckInsRoute,
-  DashboardClientsRoute: DashboardClientsRouteWithChildren,
-  DashboardCommunityRoute: DashboardCommunityRoute,
-  DashboardContentRoute: DashboardContentRoute,
-  DashboardCpdRoute: DashboardCpdRoute,
-  DashboardLeadsRoute: DashboardLeadsRoute,
-  DashboardMessagesRoute: DashboardMessagesRoute,
-  DashboardNutritionRoute: DashboardNutritionRoute,
-  DashboardPaymentsRoute: DashboardPaymentsRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardProgramsRoute: DashboardProgramsRoute,
-  DashboardReportsRoute: DashboardReportsRoute,
-  DashboardReviewsRoute: DashboardReviewsRoute,
-  DashboardSettingsRoute: DashboardSettingsRoute,
   DevSectionLibraryRoute: DevSectionLibraryRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,

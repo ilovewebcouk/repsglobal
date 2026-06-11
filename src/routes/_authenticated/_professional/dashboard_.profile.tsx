@@ -29,7 +29,7 @@ import {
 
 import proJames from "@/assets/pro-james.jpg";
 
-export const Route = createFileRoute("/dashboard_/profile")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile")({
   head: () => ({
     meta: [
       { title: "Profile editor — REPS Professional" },
