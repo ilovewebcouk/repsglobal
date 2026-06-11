@@ -220,7 +220,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are available?",
-    a: "Verified is billed annually. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the card-required 30-day free trial. Studio is planned at £149 monthly or £1,490 annually and remains waitlist-only.",
+    a: "Verified is billed annually at £99. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the 30-day free trial. Studio is planned at £149 monthly or £1,490 annually and remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",
