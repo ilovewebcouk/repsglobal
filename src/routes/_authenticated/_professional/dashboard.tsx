@@ -124,7 +124,7 @@ function DashboardPage() {
       desc: "Pick Verified or Pro Founding to unlock your listing.",
       done: hasPaidTier,
       current: !hasPaidTier,
-      cta: { label: hasPaidTier ? "Manage billing" : "Choose plan", to: "/dashboard/start" },
+      cta: { label: hasPaidTier ? "Manage billing" : "Choose plan", to: "/pricing" },
       icon: Sparkles,
     },
     {
