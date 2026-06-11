@@ -49,6 +49,7 @@ import {
 import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type ResourceCategory } from "@/lib/resources";
 import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
 import {
   RESOURCE_TOPICS,
   PRO_RESOURCES,
@@ -63,7 +64,6 @@ type Variant = "transparent" | "solid";
 
 const SCROLL_THRESHOLD = 96;
 const LOCATION_KEY = "reps.location";
-const MOCK_USER_KEY = "reps.mockUser";
 
 /* ---------------- hooks ---------------- */
 
@@ -129,26 +129,6 @@ function useLocationPin() {
   return { city, setCity: update };
 }
 
-function useMockUser() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(MOCK_USER_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {
-      /* noop */
-    }
-  }, []);
-  const signOut = () => {
-    try {
-      window.localStorage.removeItem(MOCK_USER_KEY);
-    } catch {
-      /* noop */
-    }
-    setUser(null);
-  };
-  return { user, signOut };
-}
 
 
 /* ---------------- style helpers ---------------- */
@@ -187,7 +167,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   
   
   const { city, setCity } = useLocationPin();
-  const { user, signOut } = useMockUser();
+  const { user, isAdmin, signOut } = useSessionUser();
 
   
 
