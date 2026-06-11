@@ -770,9 +770,11 @@ function AboutMenu() {
 
 function UserMenu({
   user,
+  isAdmin,
   onSignOut,
 }: {
-  user: { name: string; email: string };
+  user: SessionUser;
+  isAdmin: boolean;
   onSignOut: () => void;
 }) {
   const initials = user.name
@@ -789,8 +791,16 @@ function UserMenu({
           aria-label="Account menu"
           className="hidden h-10 items-center gap-2 rounded-[999px] border border-white/20 bg-white/[0.04] pl-1 pr-3 text-[13px] font-medium text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink sm:inline-flex"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-reps-orange text-[12px] font-semibold text-white">
-            {initials}
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[999px] bg-reps-orange text-[12px] font-semibold text-white">
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </span>
           <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
         </button>
