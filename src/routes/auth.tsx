@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Apple, Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { ShopFrontMock } from "@/components/auth/ShopFrontMock";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -106,10 +107,12 @@ function LoginPage() {
         {/* ============ LEFT: FORM COLUMN ============ */}
         <div className="flex min-h-screen flex-col py-8 lg:py-10">
           {/* Wordmark */}
-          <Link to="/" className="inline-flex items-center gap-3 self-start">
-            <span className="font-display text-[28px] font-bold leading-none tracking-tight text-white">
-              REPS
-            </span>
+          <Link
+            to="/"
+            aria-label="REPs — back to home"
+            className="inline-flex items-center gap-3 self-start text-white"
+          >
+            <RepsWordmark className="h-6 w-auto" />
             <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
               The Register of
               <br />
@@ -118,13 +121,14 @@ function LoginPage() {
           </Link>
 
           {/* Form, vertically centered in remaining space */}
-          <div className="flex flex-1 items-center">
-            <div className="w-full max-w-[420px]">
-              <h1 className="font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[40px]">
-                Sign in to REPs
+          <div className="flex flex-1 items-center py-10">
+            <div className="w-full max-w-[400px]">
+              <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
+                Welcome back to{" "}
+                <span className="text-reps-orange">REPs.</span>
               </h1>
               <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-                Welcome back. Pick up where you left off.
+                Sign in to manage your profile, clients and bookings — all in one place.
               </p>
 
               {/* OAuth row */}
@@ -199,7 +203,7 @@ function LoginPage() {
                       to="/forgot-password"
                       className="text-[12px] font-semibold text-reps-orange hover:underline"
                     >
-                      Forgot?
+                      Forgot password?
                     </Link>
                   </div>
                   <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
@@ -278,11 +282,11 @@ function LoginPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 Live on REPs
               </div>
-              <h2 className="mt-4 font-display text-[26px] font-bold leading-[1.15] tracking-[-0.01em] text-white">
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-[1.1] tracking-[-0.01em] text-white lg:text-[30px]">
                 This is what you&apos;re signing in to build.
               </h2>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/55">
-                A real Pro shop-front on REPs. Outcomes-led, verified, and built
+              <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+                A real Pro shop-front on REPs — outcomes-led, verified, and built
                 to convert the right clients.
               </p>
             </div>
