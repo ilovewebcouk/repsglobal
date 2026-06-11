@@ -3,8 +3,6 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { getStripe } from "./stripe.server";
 import { CHECKOUT_OFFERS, getCheckoutOffer, type BillingPeriod, type PurchasableTier, checkoutOfferForPriceId } from "../billing";
 
 const checkoutInput = z.object({
@@ -26,6 +24,10 @@ async function getOrCreateCustomer(opts: {
   email: string | null | undefined;
 }): Promise<string> {
   const { userId, email } = opts;
+  const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
+    import("@/integrations/supabase/client.server"),
+    import("./stripe.server"),
+  ]);
   const stripe = getStripe();
 
   // 1) Existing row in subscriptions?
@@ -67,6 +69,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const customerId = await getOrCreateCustomer({ userId, email });
     const origin = getOrigin();
+    const { getStripe } = await import("./stripe.server");
     const stripe = getStripe();
 
     const session = await stripe.checkout.sessions.create({
@@ -102,6 +105,7 @@ export const createPortalSession = createServerFn({ method: "POST" })
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
     const customerId = await getOrCreateCustomer({ userId, email });
+    const { getStripe } = await import("./stripe.server");
     const stripe = getStripe();
     const origin = getOrigin();
 
@@ -116,6 +120,7 @@ export const getMySubscription = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data } = await supabaseAdmin
       .from("subscriptions")
@@ -160,6 +165,10 @@ export const syncMySubscription = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
+    const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
+      import("@/integrations/supabase/client.server"),
+      import("./stripe.server"),
+    ]);
     const stripe = getStripe();
 
     const customerId = await getOrCreateCustomer({ userId, email });

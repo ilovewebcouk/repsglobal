@@ -61,7 +61,7 @@ const PLAN_SUMMARIES: Record<
       tagline: "Monetise your professional trust.",
       price: "£12",
       unit: "/month",
-      meta: "Billed monthly",
+      meta: "30-day free trial · card required · then £59/month unless cancelled",
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
