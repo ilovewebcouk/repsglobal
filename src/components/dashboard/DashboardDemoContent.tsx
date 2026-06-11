@@ -19,6 +19,7 @@ import {
   TrendingDown,
   TrendingUp,
   Trophy,
+  Users,
   Wallet,
   LockKeyhole,
   type LucideIcon
