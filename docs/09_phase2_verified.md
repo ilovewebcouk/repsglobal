@@ -43,11 +43,11 @@ All defined in `src/lib/billing.ts`.
 
 ## Admin seed
 
-The email `pros@repsuk.org` is auto-granted the `admin` role on next sign-up (handled by an idempotent block in the migration). Migrate this list with care.
+Seed admin: `demo-admin@repsuk.org` (granted `admin` role in DB). A secondary dual professional+admin account exists at `cruz.pt@icloud.com`. Adjust via `user_roles` if a new admin is required.
 
 ## Auth surface
 
-- Provider config: email/password + Google (Lovable-managed) + Apple (Lovable-managed). Configured via `supabase--configure_social_auth`.
+- Provider config: email/password only. Google and Apple OAuth were intentionally removed — `/auth` and `/signup` are email+password only.
 - Sign-in route: `/auth` (renamed from `/login` in week 1).
 - Auth gate: `src/routes/_authenticated/route.tsx` (integration-managed, `ssr: false`, redirects unauthenticated users to `/auth`).
 - Admin gate: nested `_authenticated/_admin/` layout calling `has_role('admin')` via `requireSupabaseAuth` middleware.
