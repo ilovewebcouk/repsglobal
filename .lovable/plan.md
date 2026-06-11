@@ -1,94 +1,93 @@
-# Plan: real admin, password eye, Apple BYOC
+# `/signup` — world-class conversion screen
 
-Three small, independent changes.
+## Principle
 
----
+The user already said yes on `/pricing`. The job of `/signup?tier=…&period=…&next=checkout` is **collect credentials and get out of the way**. No re-pitching, no scrolling, no second thoughts. One viewport, one action, one outcome: land in Stripe Checkout in under 10 seconds.
 
-## 1. Make `cruz.pt@icloud.com` a real admin
+## The screen (single viewport, two columns on ≥lg, stacked on mobile)
 
-Your account already exists (`auth.users` row found). One migration adds the admin role.
+**Left rail (40%) — reassurance, not selling**
 
-```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('3d8ffa68-f4b2-46b2-bdac-d06b48fbf445', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
-```
+- `RepsWordmark` + one-line tagline "The Register of Exercise Professionals"
+- Plan summary card (existing `planSummary` data) — promoted to the hero of the left rail:
+  - "You're signing up for" eyebrow
+  - Plan name + tagline
+  - Big price + unit + meta line (e.g. "30-day free trial · then £59/month")
+  - 4 highlight bullets (existing data) with emerald check icons
+  - Subtle "Change plan" link → `/pricing` (critical escape hatch — removes anxiety, proven to *increase* conversion)
+- Three trust micro-rows under the card, single line each, muted:
+  - 🛡 Secured by Stripe · PCI-DSS
+  - ✓ Cancel anytime from your dashboard
+  - 🔒 We never see your card details
 
-After this runs:
-- Sign in at `/auth` → your avatar dropdown shows **Admin console** (already wired via `has_role` + `useSessionUser`).
-- The seeded `pros@repsuk.org` admin stays in place; remove later if you want.
+That's the entire left rail. No testimonial, no stats grid, no feature cards, no brand logos, no FAQ.
 
-No code changes — the navbar already reflects real Supabase role state.
+**Right rail (60%) — the form**
 
----
+- H2: "Create your account" (single line, no subhead)
+- Google + Apple buttons, side-by-side on ≥sm, stacked on mobile, equal weight, outlined not filled
+- Divider: "or sign up with email"
+- Full name (single field, not split)
+- Email
+- Password with eye toggle + inline strength hint (subtle, only after typing)
+- Single checkbox: "I agree to the [Terms] and [Privacy Policy]" — required, no marketing opt-in clutter
+- Primary CTA, full-width, large: **"Continue to secure checkout →"** (Verified copy: **"Continue to payment →"**)
+- Below CTA, one muted line: "Next: secure payment via Stripe. You'll be back here in 30 seconds."
+- Footer microcopy: "Already a member? [Sign in]"
 
-## 2. Password eye toggle on `/auth`
+## Conversion details that make this 10/10
 
-Frontend-only change in `src/routes/auth.tsx`:
+1. **Autofocus on full name** — one less click
+2. **`autocomplete` attributes** wired correctly (`name`, `email`, `new-password`) so password managers fire
+3. **CTA shows the destination**, not the action. "Continue to secure checkout" beats "Create account" because it sets the next-screen expectation and removes the "what happens after I click?" hesitation
+4. **Plan card sits on the LEFT** (not above the form on desktop) so the form is always at thumb height on the right — this is the standard SaaS conversion pattern (Linear, Vercel, Notion all do this)
+5. **"Change plan" link is visible but quiet** — confidence signal; users who *don't* click it convert harder because they were given the option
+6. **No double H1** — the page H1 is the plan name in the summary card. The form gets H2. This kills the current "Your fitness business…in one place" pitch headline that's currently fighting the plan card for attention
+7. **Inline errors only**, no toast spam. Field-level red text under the offending input, focus moves to it on submit failure
+8. **Loading state on CTA**: button text swaps to "Taking you to Stripe…" with the existing `Loader2` spinner — explicit destination beats generic "Loading…"
+9. **No layout shift** between empty/error/loading states — pre-reserve error line height
+10. **OAuth buttons match form button height exactly** (44px) — visual rhythm
+11. **Mobile**: plan card collapses to a sticky bottom-of-card summary strip (name + price), full plan details accessible via a "View plan details" disclosure. Form takes full viewport.
+12. **Page background**: keep the existing dark `bg-reps-ink` + orange radial glows + the dashboard hero image at low opacity in the far background. The form card stays warm-white for max contrast — that part is already right.
 
-- Add `const [showPassword, setShowPassword] = useState(false)`.
-- Wrap the existing `<Input>` in a relative container, set `type={showPassword ? "text" : "password"}`, and add a right-aligned `<Button variant="ghost" size="icon">` with `Eye` / `EyeOff` (lucide-react) inside.
-- Right-pad the input (`pr-10`) so text doesn't slide under the icon.
-- `aria-label` toggles between "Show password" / "Hide password"; `aria-pressed={showPassword}`.
-- Apply the same treatment to the sign-up password field (and "confirm password" if present) so the UX is consistent.
+## What gets deleted from the file
 
-No new deps — `Eye`/`EyeOff` and `Button` are already in use across the app.
+- `TRUST_BULLETS` (4 items) + its `<ul>` render
+- `STATS` strip
+- `FEATURES` 4-card grid
+- `BRANDS` logo strip
+- `FAQS` accordion
+- `ACCOUNT_TYPES` + `TIER_TO_ACCOUNT_TYPE`
+- Sophie testimonial figure
+- Hero H1 "Your fitness business…in one place"
+- All section dividers and wrapper sections below the form
+- Unused lucide imports: `Award`, `Briefcase`, `Building2`, `Calendar`, `ChevronDown`, `Globe`, `ShieldCheck`, `Sparkles`, `Star`, `TrendingUp`, `Users`, `User` (audit and keep only what the new layout uses)
 
----
+## What stays untouched
 
-## 3. Apple sign-in — BYOC wiring
+- `validateSearch` + `beforeLoad` redirect
+- `head()` SEO block
+- `handleSubmit` → `supabase.auth.signUp` → `continueAfterAuth` → `createCheckoutSession` → `window.location.href` flow
+- `handleGoogle` + Apple OAuth wiring + `continueAfterAuth` fallback
+- Email-verification redirect path that preserves checkout intent
+- Plan summary data shape (`PLAN_SUMMARIES`)
+- Header strip (logo + "Already have an account? Sign in")
 
-Two parts: (a) what I'll do in the codebase, (b) what you need to do in Apple Developer + Lovable Cloud dashboard. You can't ship Apple sign-in without (b), but I'll prep everything so it's a 10-minute paste job.
+## Edge cases handled
 
-### What I'll do (code)
-
-- Run `supabase--configure_social_auth` with `providers: ["apple"]` (keeps Google + email enabled). This generates/refreshes `src/integrations/lovable/` and installs `@lovable.dev/cloud-auth-js` if not present.
-- Confirm the existing "Continue with Apple" button on `/auth` calls:
-  ```ts
-  await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
-  ```
-  Add the same `result.error` / `result.redirected` handling pattern already used for Google. (If the button is currently a stub, wire it up.)
-
-That's the full code side. Apple works the moment you paste credentials into the backend dashboard.
-
-### What you do (Apple Developer + dashboard)
-
-You'll need:
-
-1. **Apple Developer account** ($99/yr) — https://developer.apple.com
-2. **Services ID** (acts as the Client ID) at Identifiers → "+" → Services IDs.
-   - Enable **Sign In with Apple** on it.
-   - Configure → add domain `repsglobal.lovable.app` (and `staging.repsuk.org`, plus any other custom domains).
-   - Add return URL: `https://ftlrvwripgnpyjlrvtgw.supabase.co/auth/v1/callback`
-3. **Sign in with Apple Key (.p8)** at Keys → "+".
-   - Enable Sign In with Apple, link to your primary App ID.
-   - Download the `.p8` file (only available once — save it).
-   - Copy the **Key ID** (10 chars).
-4. **Team ID** — top-right of Apple Developer Console (10 chars).
-5. In Lovable Cloud backend → **Users → Auth Settings → Sign In Methods → Apple → "Use your own credentials"**:
-   - Paste Team ID, Key ID, Client ID (= the Services ID), and the `.p8` contents.
-   - Click **Generate Secret** → it builds a JWT valid 6 months.
-   - **Set a calendar reminder to regenerate before expiry** — otherwise Apple sign-in breaks silently in ~6 months.
-
-### Risk / caveat
-
-- BYOC = your "REPs" name appears on the Apple consent sheet (good for brand).
-- The 6-month JWT is the main operational footgun — I'll add a note to the Phase 2.0 doc as a recurring task.
-- We can flip back to Managed Apple any time by clearing the BYOC fields in the dashboard.
-
----
-
-## Technical notes
-
-- The admin grant is data-only (no schema change); migration approval flow still applies.
-- `useSessionUser` already calls `has_role` RPC, 60s staleTime — admin status appears within a minute of grant, immediately on next page load.
-- The password toggle stays uncontrolled at the form level; no impact on `signInWithPassword` payload.
-- After `configure_social_auth` runs, do not edit `src/integrations/lovable/` — it's managed.
-
----
+- **No `?tier`** → `beforeLoad` already redirects to `/pricing` (keep)
+- **Email already exists** → friendly inline error: "An account already exists for this email. [Sign in instead]" with link to `/auth?next=checkout&tier=…&period=…` so they resume the same flow post-login
+- **Email verification required** → existing info banner stays; copy tightened to: "Check your inbox to verify, then we'll bring you back to checkout."
+- **OAuth user with existing account** → `continueAfterAuth` already handles this; goes straight to Stripe
+- **User abandons at Stripe and returns** → `/signup` with same query still works; they'll sign in via the "Already have an account?" link, which preserves intent
 
 ## Out of scope
 
-- Building the actual `/admin` console UI (separate task).
-- Removing the seeded `pros@repsuk.org` admin (optional cleanup).
-- Custom-domain DNS or Apple App ID creation — assume your developer account is in good standing.
+- `/pricing`, `/auth`, `createCheckoutSession`, billing tiers, Stripe IDs
+- Apple Developer wiring
+- A separate post-payment onboarding screen (that's Phase 2.x — Stripe success_url already routes to `/dashboard` which handles first-run state)
+- Removing the page entirely (impossible — Stripe can't create the auth user)
+
+## Files
+
+- `src/routes/signup.tsx` — restructure to two-column layout as above. Net: ~450 lines removed, layout rebuilt around the existing form + plan card. No new files, no new components, no design tokens, no backend.
