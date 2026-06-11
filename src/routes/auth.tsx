@@ -65,7 +65,7 @@ function LoginPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
+  
   const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (value: string): string | null => {
