@@ -1,108 +1,49 @@
 ---
-name: Locked /reviews
-description: /reviews public consumer-landing page, frozen 2026-06-11. Dark hero, light alternating body, pro-positive proof block (no critical-feedback showcase), shared FinalCta.
+name: Locked /reviews page
+description: Frozen 2026-06-11 dark rebuild — /reviews is a trust pillar, dark throughout, score panel anchored in hero, /about-pattern stat strip, no filter bar
 type: design
 ---
 
-# Locked /reviews (Phase 1)
+# /reviews — LOCKED (2026-06-11)
 
-Frozen 2026-06-11. Public consumer-landing page. Migrated from fully-dark
-pillar styling to the homepage theme pattern (dark hero → alternating
-warm-white/ivory body → dark FinalCta). One file: `src/routes/reviews.tsx`.
+`/reviews` is a **dark trust pillar**, not a Trustpilot-style aggregator. It sits in the same dark marketing system as `/about` and `/features/*`. Do not flip to light surfaces — that breaks the global `PublicHeader` (header reads as a grey ghost-nav over light heroes).
 
-## Classification
+## Surfaces
 
-`/reviews` is a **public consumer-landing page**, not a `/features/*` pillar.
-It follows the homepage (`src/routes/index.tsx`) theme pattern, not the
-`/features/*` or `/about` dark-everywhere pattern.
+- Root: `bg-reps-ink text-reps-text`.
+- Hero: `bg-reps-black` + dual radial wash + bottom fade-to-ink. NO HeroOverlay (no photo hero).
+- Body: alternating `bg-reps-panel/15` ↔ `bg-reps-panel/30` ↔ plain ink. No hairline section dividers.
+- All cards: `bg-reps-panel` + `border-reps-border`.
+- FinalCta: shared dark `<FinalCta />` component.
 
-## Section order (FINAL)
+## Section order (10) — do not reorder or add light sections
 
-1. **Hero** — `bg-reps-black`, `pt-24 pb-20 lg:pt-28 lg:pb-24`, MarketingHeroEyebrow.
-   H1: "Reviews you can trust — for every fitness pro." (orange split on
-   second clause). Search bar + 3 trust chips. **No breadcrumb. Ever.**
-2. **Headline rating + stat strip** — `bg-reps-warm-white`. Two-column
-   `lg:grid-cols-[1fr_1fr]`: left = 4.9 rating panel with breakdown bars on
-   `bg-reps-ivory`; right = STATS in homepage stat-strip pattern
-   (`grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone
-   bg-reps-stone` with `bg-reps-ivory` cells, `font-display 26 → 32 → 40px`,
-   uppercase `tracking-wider` labels).
-3. **Methodology** — `bg-reps-ivory`. 4 steps (Book / Train / Invite /
-   Moderate) in `bg-reps-warm-white` cards.
-4. **Editor's picks** — `bg-reps-warm-white`. 3 ReviewCard `variant="pick"`.
-5. **Browse by specialism** — `bg-reps-ivory`. 9 tiles in
-   `sm:grid-cols-2 lg:grid-cols-3`: Personal Training, Strength Coaching,
-   Group Exercise, Online Coaching, Pilates, Yoga, Nutrition, Gyms & Studios,
-   Training Providers.
-6. **Full feed** — `bg-reps-warm-white`. Sort options only (Most recent /
-   Highest rated / Most helpful). **No "4★ and under" filter.**
-7. **Why pros choose to be reviewed on REPs** — `bg-reps-ivory`. 3 cards
-   aimed at the pro reader (real clients only / right of reply / reviews
-   follow you across REPs). Orange CTA → /for-professionals.
-   **This section REPLACES the deleted "We don't hide critical feedback"
-   block. Do not reintroduce a critical-reviews showcase on this page —
-   it's a public-facing sales surface for pros as much as clients.**
-8. **Trust mechanics** — `bg-reps-warm-white`. 4 cards: verified-only,
-   moderated for legality (not sentiment), pros respond publicly,
-   transparent reporting.
-9. **FAQ** — `bg-reps-ivory`. Hand-rolled `Accordion` in light tokens
-   (`text-reps-charcoal` triggers, `text-reps-muted-light` content,
-   `border-reps-stone`). 5 questions only.
-10. **FinalCta** — shared `<FinalCta />` component (its own dark panel).
-    Primary "Find a professional", secondary "List your business".
+1. **Hero** — `MarketingHeroEyebrow` ("Reviews on REPs") + H1 "Every review here came from a real booking." + lede + 3 trust chips + dual CTA. **Score panel anchored in hero right column** (`lg:grid-cols-[1.1fr_1fr]`): 4.9 / 5 + stars + emerald "100% verified" status pill + 5-bar rating breakdown. Hero copy uses staggered `animate-fade-in` (80/180/260/340ms, 560–640ms).
+2. **Stat strip** — EXACT `/about` pattern: `rounded-[22px] border border-reps-border bg-reps-border gap-px` wrapper, `bg-reps-panel` cells, `font-display 32→40` numbers, `uppercase tracking-[0.14em] text-white/55` labels. Stats: 12,400+ verified reviews · 4.9 avg · 96% would rebook · 100% booking-verified. Rhythm `pt-10 pb-16 lg:pt-12 lg:pb-20`.
+3. **Methodology** (`#methodology`) — `bg-reps-panel/15`, 4 numbered cards (Book → Train → Invited → Moderated).
+4. **Editor's picks** — 3 `ReviewCard variant="pick"` (orange border + Editor's pick chip).
+5. **Browse by specialism** — `bg-reps-panel/30`, 9 tiles `sm:grid-cols-2 lg:grid-cols-3` (PT, Strength, Group ex, Online, Pilates, Yoga, Nutrition, Gyms & Studios, Training Providers).
+6. **Full feed** — sort-only pill row ("Most recent / Highest rated / Most helpful"). NO rating filter, NO search input, NO breadcrumb. 4 cards in `lg:grid-cols-2` + Load more.
+7. **Why pros choose to be reviewed on REPs** — `bg-reps-panel/15`, 3 pro-positive cards + soft CTA → `/for-professionals`. Replaces the old anti-pattern "we don't hide bad reviews" section — never reintroduce that framing.
+8. **Trust mechanics** — 4 commitments (verified-only · moderated for legality not sentiment · public right of reply · transparent reporting).
+9. **FAQ** — `MarketingFaq` primitive, 5 Qs.
+10. **FinalCta** — shared component.
 
-## Surface token map
+## Primitives (must use)
 
-| Surface          | Background          | Card / inset       | Border        | Text                     |
-| ---------------- | ------------------- | ------------------ | ------------- | ------------------------ |
-| Hero             | `bg-reps-black`     | `bg-white/[0.04]`  | `border-white/10` | white + `/55` `/70` `/80` |
-| Section A (warm) | `bg-reps-warm-white`| `bg-reps-ivory`    | `border-reps-stone` | `text-reps-charcoal` / `text-reps-muted-light` |
-| Section B (ivory)| `bg-reps-ivory`     | `bg-reps-warm-white`| `border-reps-stone` | same |
-| FinalCta         | dark, owned by component | — | — | white |
+- `MarketingHeroEyebrow` / `SectionHeader` / `SectionHeading` / `SectionEyebrow` / `MarketingFaq` / `FinalCta`.
+- Never hand-roll section headers or hero eyebrows on this page.
 
-## Radius map (locked scale)
+## Constraints
 
-- Buttons → `rounded-[10px]`
-- Search input wrapper / inner inputs → `rounded-[12px]`
-- ReviewCard / methodology / why-pros / specialism tile / trust card → `rounded-[18px]`
-- Rating panel + stat-strip outer + hero search shell → `rounded-[22px]`
-- Pro thumbnail in ReviewCard → `rounded-[14px]` (locked exception for
-  scaled-down profile photos, same as enquire summary card).
-
-## Type scale (page-local)
-
-Section H2 = `font-display text-[30px] lg:text-[40px]` in
-`text-reps-charcoal`. Eyebrow = `text-[12px] uppercase tracking-wider
-text-reps-orange` (homepage-style; NOT the marketing-primitive eyebrow,
-because the marketing primitives are dark-only). H1 = `text-[40px] →
-sm:[52px] → lg:[64px]` in white.
-
-## Why we DON'T use the marketing primitives here
-
-`SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingFaq` are all
-baked for dark surfaces (`text-white`, `bg-reps-ink`). `/reviews` is a
-light-body page following the homepage pattern, which itself opts out of
-the primitives. Mirroring the homepage's hand-rolled section headings is
-correct here. The primitive-must rule applies to dark `/features/*` and
-brand-pillar pages.
-
-## Data shape (Phase 1 placeholder — unchanged contract)
-
-- `EDITOR_PICKS: Review[3]` (above-the-fold trio)
-- `REVIEWS: Review[]` (full feed; do NOT spread EDITOR_PICKS into it again)
-- `STATS: { v, k }[4]`, `RATING_BREAKDOWN`, `METHODOLOGY`, `PROFESSION_TILES`,
-  `SORT_OPTIONS`, `WHY_PROS`, `TRUST_MECHANICS`, `FAQ_ITEMS`.
-- No `CRITICAL_REVIEWS` array. Deleted. Do not re-add.
-- ReviewCard variants: `"default" | "pick"`. The old `"critical"` variant
-  and any `response` field on the Review type were intentionally removed.
+- **No light surfaces anywhere on /reviews.** No `bg-reps-warm-white`, `bg-reps-ivory`, `text-reps-charcoal`, `border-reps-stone`.
+- **Header is default `PublicHeader`** — no `variant="solid"` overrides.
+- **Score panel must stay in the hero** — never split into a separate row below the stat strip.
+- **No breadcrumb.** No fake search input. No rating-filter pill row.
+- **Phase 1 honesty:** sort dropdown is decorative; no working sort, search, real counts, or AI summaries.
+- 14px radius exception applies only to the pro thumbnail in `ReviewCard` (matches enquire-page pattern).
+- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`; stat strip uses the locked proof-strip rhythm `pt-10 pb-16 lg:pt-12 lg:pb-20`.
 
 ## Out of scope (Phase 1)
 
-Real review data, functional sort/search, pro-response moderation backend,
-per-profession real counts, auth, DB, payments.
-
-## Compliance
-
-`bash knowledge://skill/reps-build-compliance/scripts/audit.sh` — expected
-exception: `src/routes/reviews.tsx:799 rounded-[14px]` on pro thumbnail
-(allowed under the radius memory). No other violations.
+Real review data, working sort/search, per-profession real counts, response moderation backend, AI summaries, auth, DB, payments.
