@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Apple, Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { ShopFrontMock } from "@/components/auth/ShopFrontMock";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
