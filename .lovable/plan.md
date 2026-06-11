@@ -1,36 +1,48 @@
-Close the billing-migration Phase 1 gaps so Phase 2 work can start safely.
+# Show signed-in avatar menu in the public navbar (real auth)
 
-## Shipped this pass
+## Goal
+When any user is signed in (admin, professional, or client), the public navbar shows the avatar + dropdown instead of "Log in / Join REPS". Admins get one extra item in that dropdown: **Admin console**. No role-based branching of the chrome itself.
 
-### 1. Customer Portal wired
-- New `src/components/billing/ManageBillingButton.tsx` — shared button that calls `createPortalSession` and redirects to the Stripe-hosted portal.
-- `src/routes/_authenticated/_professional/dashboard.tsx` — Finish-setup dialog now renders `ManageBillingButton` instead of the `/dashboard/start` link when the user is on a paid tier.
-- `src/routes/_authenticated/_professional/_pro/dashboard_.payments.tsx` — added a "Manage subscription" action button to the page header (Pro-only route).
+## Why this shape
 
-### 2. Pro annual price documented
-- `docs/09_phase2_verified.md` — added the live `price_1Th8U8AP31Yc4cJjLhq9Yhvf` (£590/yr, Pro Founding annual) to the price table so it matches `src/lib/billing.ts`.
+- One signed-in UI for all roles = one code path, fewer regressions on a locked header.
+- Admin gets a contextual entry point (Admin console) without a parallel navbar.
+- Replaces the `reps.mockUser` localStorage shim, which never reflected real auth and is the root reason an admin sees buttons today.
 
-### 3. Webhook hardened
-- `src/routes/api/public/stripe/webhook.ts` — replaced select-then-insert idempotency with insert-first. After signature verification we INSERT a `payment_events` row immediately; the existing `UNIQUE(stripe_event_id)` constraint becomes the atomic dedupe lock (PG error 23505 → return `{ duplicate: true }` 200). Row is updated with `processed_at` / `processing_error` after handling.
-- Same file: replaced the bespoke "find then update or insert" subscription write with `.upsert(..., { onConflict: "user_id" })`. The `subscriptions.user_id` UNIQUE constraint means there's exactly one row per user, so a resubscribe after cancel now overwrites the prior row cleanly instead of failing on the unique-on-user-id insert.
-- `src/lib/billing/billing.functions.ts` `syncMySubscription` — same upsert-by-user-id fix applied for parity.
+## Changes
 
-### 4. Stale "card required" copy
-- `src/components/pricing/pricing-data.ts` — Billing compare-row changed `pro: "Card required"` → `pro: true`. "Is there a free trial?" + "Which billing periods are available?" FAQ answers rewritten to drop "card required at signup" language.
-- `src/routes/_authenticated/_professional/dashboard_.start.tsx` — Pro card subtitle replaced with `30-day free trial · cancel anytime before day 30.`
+### 1. New shared hook: `src/hooks/use-session-user.ts`
+- `useSessionUser()` returns `{ user, isAdmin, isLoading, signOut }`.
+- Reads `supabase.auth.getUser()` via TanStack Query (key: `["session-user"]`, `staleTime: 60_000`).
+- If `user` present, second query calls the existing `has_role(_user_id, 'admin')` RPC (key: `["has-role", userId, "admin"]`).
+- Invalidated automatically by the existing `supabase.auth.onAuthStateChange` listener in `__root.tsx` (already calls `queryClient.invalidateQueries()` — no new listener needed).
+- `signOut()`: `cancelQueries → clear → supabase.auth.signOut → navigate('/auth', {replace})` per the sign-out hygiene rule.
+- Derives display fields from `user.user_metadata.full_name || email` and `user_metadata.avatar_url`.
 
-### 5. Phase 0 decisions locked in a doc
-- New `docs/10_billing_phase0_decisions.md` — captures the seven June 1 decisions (legal entity, `REPS MEMBERSHIP` descriptor, migration pricing rule, Stripe Connect, 30-day pending window, 12-month BD grace, tier ≠ verification).
-- Memory index already references Phase 2.0 scope; the new doc is linked from there for next session's context.
+### 2. `src/components/public/PublicHeader.tsx`
+- Delete `useMockUser` and the `MOCK_USER_KEY` constant.
+- Call `useSessionUser()` once at the top of `PublicHeader`.
+- Right cluster (desktop, ~line 305): `user ? <UserMenu/> : <Log in / Join REPS>` — unchanged condition, real data.
+- `UserMenu` (line 790): accept `{ user, isAdmin, onSignOut }`.
+  - Add `<AvatarImage>` when `user.avatarUrl` exists, fall back to initials (current behaviour).
+  - Append an admin-only `DropdownMenuItem` linking to `/admin` above the sign-out separator, with the existing `ShieldCheck` icon.
+- `MobileDrawer` (line 889+): pass the same real user/isAdmin through; add "Admin console" link in the signed-in section.
 
-## Not done in this pass (out of scope)
+### 3. Cleanup
+- Remove the saved-pros heart button's `user &&` gating? — leave as-is (still useful for signed-in users).
+- No visual changes to the navbar at rest; this is a data-source swap.
 
-- Live test-mode smoke run of the two checkouts — the user needs to do that interactively against the preview webhook URL.
-- BD migration script, Stripe Connect onboarding, auto-downgrade job — explicit Phase 2.1+.
-- Any visual change to locked screens.
+## Out of scope
+- No changes to `/admin` itself, `AdminShell`, or any other route.
+- No new design tokens; existing `UserMenu` styling is reused verbatim.
+- Professional/client dropdowns stay the same items; only admins get the extra "Admin console" row.
 
-## Risk notes
+## Risks / honest call-outs
+- The current `UserMenu` links to `/portal/today`, `/portal/messages`, `/portal/profile` — those are **client-portal** routes. For a logged-in professional or admin they're the wrong destinations. **Recommendation:** add role-aware destinations in a follow-up (Pro → `/dashboard`, Client → `/portal/today`, Admin → `/admin`). I'll leave the current items intact in this PR so we don't expand scope, but flag this clearly afterwards.
+- `supabase.auth.getUser()` runs client-side, so on first paint of a marketing page the signed-out buttons may flash for ~100ms before swapping to the avatar. Acceptable for a marketing header; if you want it gone we'd need SSR session reading, which is a bigger change.
 
-- `subscriptions.user_id` has a UNIQUE constraint, which is what makes the upsert-by-user-id safe. If that constraint is ever dropped, both the webhook and `syncMySubscription` need to be re-keyed.
-- `payment_events.stripe_event_id` UNIQUE constraint is what makes the new idempotency lock atomic. Same warning.
-- `subscription_status` enum is `{trialing, active, past_due, canceled, unpaid, incomplete, incomplete_expired, paused}`. The webhook never writes any other value — confirmed by removing the earlier draft's "superseded" status which would have failed at runtime.
+## Verification
+- Signed out → buttons (unchanged).
+- Signed in as `pros@repsuk.org` (admin) → avatar menu with "Admin console" row.
+- Signed in as non-admin → avatar menu without that row.
+- Sign out from the dropdown → returns to `/auth`, no console 401 spam, cache cleared.
