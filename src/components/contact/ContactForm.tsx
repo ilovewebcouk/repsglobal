@@ -19,41 +19,54 @@ import {
 } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
-type Audience = "client" | "pro" | "press";
+type Audience = "pro" | "partner";
 
-const CLIENT_REASONS = [
-  { value: "personal-training", label: "Personal training", eta: "~4h" },
-  { value: "online-coaching", label: "Online coaching", eta: "~4h" },
-  { value: "nutrition", label: "Nutrition", eta: "~4h" },
-  { value: "group", label: "Group / classes", eta: "~4h" },
-  { value: "yoga-pilates", label: "Yoga / Pilates", eta: "~4h" },
+const PRO_REASONS = [
+  { value: "verification", label: "Verification help", eta: "Under 2h" },
+  { value: "upgrade", label: "Upgrade to Pro or Studio", eta: "~2h" },
+  { value: "profile", label: "Profile / shop-front issue", eta: "~3h" },
+  { value: "billing", label: "Billing", eta: "Under 2h" },
+  { value: "safeguarding", label: "Safeguarding / conduct", eta: "Same day" },
   { value: "other", label: "Something else", eta: "Same day" },
 ];
 
-const PRO_REASONS = [
-  { value: "verification", label: "Verification", eta: "Under 2h" },
-  { value: "profile", label: "Profile / shop-front", eta: "~3h" },
-  { value: "payouts", label: "Payouts & invoices", eta: "Under 2h" },
-  { value: "bug", label: "Bug or technical issue", eta: "~4h" },
-  { value: "other", label: "Other", eta: "Same day" },
+const PRO_PROFESSIONS = [
+  { value: "pt", label: "Personal trainer" },
+  { value: "snc", label: "Strength & conditioning" },
+  { value: "group", label: "Group exercise instructor" },
+  { value: "online", label: "Online coach" },
+  { value: "nutritionist", label: "Nutritionist" },
+  { value: "yoga", label: "Yoga teacher" },
+  { value: "pilates", label: "Pilates teacher" },
+  { value: "other", label: "Other" },
 ];
 
-const PRESS_REASONS = [
-  { value: "press", label: "Press enquiry", eta: "~6h" },
-  { value: "partnership", label: "Partnership", eta: "Next working day" },
-  { value: "enterprise", label: "Enterprise / multi-coach", eta: "Next working day" },
-  { value: "investor", label: "Investor", eta: "Next working day" },
+const PARTNER_REASONS = [
+  { value: "recognition", label: "Course recognition on REPs", eta: "Next working day" },
+  { value: "partnership", label: "Partnership / integration", eta: "Next working day" },
+  { value: "bulk-verify", label: "Bulk verification for our graduates", eta: "Next working day" },
+  { value: "press", label: "Press / media", eta: "~6h" },
+  { value: "safeguarding", label: "Safeguarding / conduct concern", eta: "Same day" },
+  { value: "other", label: "Other", eta: "Next working day" },
+];
+
+const PARTNER_TYPES = [
+  { value: "awarding-body", label: "Awarding body" },
+  { value: "course-provider", label: "Course provider" },
+  { value: "education", label: "Education partner" },
+  { value: "insurer", label: "Insurer" },
+  { value: "press", label: "Media / Press" },
+  { value: "other", label: "Other" },
 ];
 
 function reasonsFor(a: Audience) {
-  if (a === "pro") return PRO_REASONS;
-  if (a === "press") return PRESS_REASONS;
-  return CLIENT_REASONS;
+  return a === "partner" ? PARTNER_REASONS : PRO_REASONS;
 }
 
 export function ContactForm() {
-  const [audience, setAudience] = useState<Audience>("client");
+  const [audience, setAudience] = useState<Audience>("pro");
   const [reason, setReason] = useState<string>("");
+  const [tier, setTier] = useState<string>("");
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -65,6 +78,7 @@ export function ContactForm() {
     if (!value) return;
     setAudience(value as Audience);
     setReason("");
+    setTier("");
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -79,13 +93,7 @@ export function ContactForm() {
         onValueChange={(v) => handleAudience(v)}
         className="w-full"
       >
-        <TabsList className="grid h-auto w-full grid-cols-1 gap-1 bg-reps-ink p-1 sm:grid-cols-3">
-          <TabsTrigger
-            value="client"
-            className="rounded-[8px] text-[13px] font-semibold data-[state=active]:bg-reps-panel data-[state=active]:text-white"
-          >
-            Looking for a coach
-          </TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-1 gap-1 bg-reps-ink p-1 sm:grid-cols-2">
           <TabsTrigger
             value="pro"
             className="rounded-[8px] text-[13px] font-semibold data-[state=active]:bg-reps-panel data-[state=active]:text-white"
@@ -93,10 +101,10 @@ export function ContactForm() {
             I'm a professional
           </TabsTrigger>
           <TabsTrigger
-            value="press"
+            value="partner"
             className="rounded-[8px] text-[13px] font-semibold data-[state=active]:bg-reps-panel data-[state=active]:text-white"
           >
-            Press / partnerships
+            Training provider / partner
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -118,16 +126,16 @@ export function ContactForm() {
               <Input
                 id="name"
                 required
-                placeholder={audience === "press" ? "Alex Morgan" : "Jane Carter"}
+                placeholder={audience === "partner" ? "Alex Morgan" : "Jane Carter"}
                 className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
               />
             </FieldShell>
-            <FieldShell label="Email" htmlFor="email">
+            <FieldShell label="Work email" htmlFor="email">
               <Input
                 id="email"
                 type="email"
                 required
-                placeholder="you@example.com"
+                placeholder="you@yourcompany.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
@@ -135,36 +143,50 @@ export function ContactForm() {
             </FieldShell>
           </div>
 
-          {audience === "client" && (
-            <div className="grid gap-5 md:grid-cols-2">
-              <FieldShell label="City" htmlFor="city" hint="So we can suggest local pros.">
-                <Input
-                  id="city"
-                  placeholder="London, Manchester, Lisbon…"
-                  className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
-                />
-              </FieldShell>
-              <FieldShell label="What you're looking for" htmlFor="reason-client">
-                <ReasonSelect
-                  id="reason-client"
-                  value={reason}
-                  onChange={setReason}
-                  options={CLIENT_REASONS}
-                  placeholder="Pick the closest fit"
-                />
-              </FieldShell>
-            </div>
-          )}
-
           {audience === "pro" && (
             <>
-              <FieldShell label="Where you're at" htmlFor="tier" hint="So we route you to the right team.">
+              <div className="grid gap-5 md:grid-cols-2">
+                <FieldShell label="Profession" htmlFor="profession">
+                  <Select>
+                    <SelectTrigger
+                      id="profession"
+                      className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white focus:ring-reps-orange/60"
+                    >
+                      <SelectValue placeholder="Pick your profession" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[12px] border-reps-border bg-reps-panel text-white">
+                      {PRO_PROFESSIONS.map((p) => (
+                        <SelectItem key={p.value} value={p.value} className="text-[14px]">
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldShell>
+                <FieldShell label="Mobile" htmlFor="mobile" hint="Optional — for urgent verification follow-ups.">
+                  <Input
+                    id="mobile"
+                    type="tel"
+                    placeholder="+44…"
+                    className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
+                  />
+                </FieldShell>
+              </div>
+
+              <FieldShell label="Where are you in your REPs journey?" htmlFor="tier">
                 <ToggleGroup
                   id="tier"
                   type="single"
+                  value={tier}
+                  onValueChange={(v) => v && setTier(v)}
                   className="flex flex-wrap justify-start gap-2"
                 >
-                  {["Not on REPs yet", "Verified", "Pro", "Studio"].map((t) => (
+                  {[
+                    "Just exploring",
+                    "Ready to verify",
+                    "Already verified, need help",
+                    "Considering Pro or Studio",
+                  ].map((t) => (
                     <ToggleGroupItem
                       key={t}
                       value={t}
@@ -177,18 +199,6 @@ export function ContactForm() {
               </FieldShell>
 
               <div className="grid gap-5 md:grid-cols-2">
-                <FieldShell
-                  label="REPs profile URL"
-                  htmlFor="profile-url"
-                  hint="Optional — helps us look you up."
-                >
-                  <Input
-                    id="profile-url"
-                    type="url"
-                    placeholder="repsglobal.com/c/your-handle"
-                    className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
-                  />
-                </FieldShell>
                 <FieldShell label="Reason" htmlFor="reason-pro">
                   <ReasonSelect
                     id="reason-pro"
@@ -198,42 +208,87 @@ export function ContactForm() {
                     placeholder="What's this about?"
                   />
                 </FieldShell>
+                {tier === "Already verified, need help" && (
+                  <FieldShell
+                    label="REPs profile URL"
+                    htmlFor="profile-url"
+                    hint="Helps us look you up directly."
+                  >
+                    <Input
+                      id="profile-url"
+                      type="url"
+                      placeholder="repsglobal.com/c/your-handle"
+                      className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
+                    />
+                  </FieldShell>
+                )}
               </div>
             </>
           )}
 
-          {audience === "press" && (
+          {audience === "partner" && (
             <>
               <div className="grid gap-5 md:grid-cols-2">
-                <FieldShell label="Outlet / company" htmlFor="outlet">
+                <FieldShell label="Organisation" htmlFor="org">
                   <Input
-                    id="outlet"
-                    placeholder="Publication, brand or fund"
+                    id="org"
+                    required
+                    placeholder="Your awarding body, provider or outlet"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
                 </FieldShell>
-                <FieldShell label="Deadline" htmlFor="deadline" hint="Optional — we'll prioritise.">
+                <FieldShell label="Organisation type" htmlFor="org-type">
+                  <Select>
+                    <SelectTrigger
+                      id="org-type"
+                      className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white focus:ring-reps-orange/60"
+                    >
+                      <SelectValue placeholder="Pick the closest fit" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[12px] border-reps-border bg-reps-panel text-white">
+                      {PARTNER_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value} className="text-[14px]">
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldShell>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <FieldShell label="Website" htmlFor="website">
                   <Input
-                    id="deadline"
-                    placeholder="e.g. Friday 6pm GMT"
+                    id="website"
+                    type="url"
+                    placeholder="https://"
+                    className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
+                  />
+                </FieldShell>
+                <FieldShell label="Phone" htmlFor="phone" hint="Optional.">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+44…"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
                 </FieldShell>
               </div>
-              <FieldShell label="Reason" htmlFor="reason-press">
+
+              <FieldShell label="What would you like to discuss?" htmlFor="reason-partner">
                 <ReasonSelect
-                  id="reason-press"
+                  id="reason-partner"
                   value={reason}
                   onChange={setReason}
-                  options={PRESS_REASONS}
-                  placeholder="What's this about?"
+                  options={PARTNER_REASONS}
+                  placeholder="Pick the closest fit"
                 />
               </FieldShell>
             </>
           )}
 
           <FieldShell
-            label={audience === "press" ? "Brief" : "Message"}
+            label={audience === "partner" ? "Brief" : "Message"}
             htmlFor="message"
           >
             <Textarea
@@ -241,8 +296,8 @@ export function ContactForm() {
               required
               rows={5}
               placeholder={
-                audience === "press"
-                  ? "A few lines on what you're working on and what you need from us."
+                audience === "partner"
+                  ? "A few lines on what you're working on — courses, learner volumes, timelines, anything useful."
                   : "Tell us a bit more — context is gold."
               }
               className="rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
@@ -270,7 +325,8 @@ export function ContactForm() {
                 "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover",
               )}
             >
-              Send message <ArrowRight className="size-4" />
+              {audience === "partner" ? "Send to partnerships" : "Send message"}{" "}
+              <ArrowRight className="size-4" />
             </button>
           </div>
         </form>

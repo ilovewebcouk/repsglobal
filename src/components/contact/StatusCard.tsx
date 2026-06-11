@@ -1,8 +1,8 @@
-import { Clock, Headphones, Mail } from "lucide-react";
+import { Briefcase, Clock, ShieldCheck } from "lucide-react";
 
 /**
  * "Right now" hero status card for /contact.
- * Soft panel, emerald status dot, three rows of live-ish status copy.
+ * B2B: messaging is for professionals and training providers/partners.
  * Phase 1: static copy. Wired to real data later.
  */
 export function StatusCard() {
@@ -25,19 +25,19 @@ export function StatusCard() {
 
         <ul className="mt-5 flex flex-col gap-4">
           <Row
-            icon={<Mail className="size-4 text-reps-orange" />}
-            title="Replying to messages from earlier today"
-            sub="Inbox is being worked through in order"
+            icon={<ShieldCheck className="size-4 text-reps-orange" />}
+            title="Helping pros get verified"
+            sub="Evidence reviewed in order, weekdays"
           />
           <Row
             icon={<Clock className="size-4 text-reps-orange" />}
-            title="Typical reply: under 4 hours"
+            title="Pro questions: ~2hr reply"
             sub="Mon–Fri, 9–6 GMT"
           />
           <Row
-            icon={<Headphones className="size-4 text-reps-orange" />}
-            title="Currently online: REPs support team"
-            sub="Real humans — not a ticket bot"
+            icon={<Briefcase className="size-4 text-reps-orange" />}
+            title="Partnerships: same-day acknowledgement"
+            sub="Training providers, awarding bodies, press"
           />
         </ul>
       </div>
