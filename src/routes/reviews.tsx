@@ -10,27 +10,21 @@ import {
   Flag,
   GraduationCap,
   Leaf,
-  Lock,
   MapPin,
   MessageSquare,
-  Search,
-  ShieldCheck,
   Sparkles,
   Star,
-  Timer,
   Users,
 } from "lucide-react";
 
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
+import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
+import { SectionHeading } from "@/components/marketing/SectionHeading";
+import { SectionHeader } from "@/components/marketing/SectionHeader";
+import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -39,17 +33,17 @@ import proSophie from "@/assets/pro-sophie.jpg";
 export const Route = createFileRoute("/reviews")({
   head: () => ({
     meta: [
-      { title: "Reviews you can trust — for every fitness pro | REPs" },
+      { title: "Reviews on REPs — every review tied to a real booking" },
       {
         name: "description",
         content:
           "Verified-booking reviews of coaches, studios, gyms, nutritionists and training providers on REPs. Only real clients. Pros own the response.",
       },
-      { property: "og:title", content: "Reviews you can trust — REPs" },
+      { property: "og:title", content: "Reviews on REPs" },
       {
         property: "og:description",
         content:
-          "Every review on REPs is tied to a booking that actually happened. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
+          "Every review on REPs came from a real booking. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
       },
       { property: "og:url", content: "/reviews" },
     ],
@@ -200,7 +194,7 @@ const STATS = [
   { v: "12,400+", k: "Verified reviews" },
   { v: "4.9", k: "Average rating" },
   { v: "96%", k: "Would rebook" },
-  { v: "4hr", k: "Median publish time" },
+  { v: "100%", k: "Booking-verified" },
 ];
 
 const RATING_BREAKDOWN: { stars: number; pct: number; count: string }[] = [
@@ -250,7 +244,7 @@ const SORT_OPTIONS = ["Most recent", "Highest rated", "Most helpful"];
 
 const WHY_PROS = [
   {
-    icon: ShieldCheck,
+    icon: BadgeCheck,
     title: "Real clients only — no anonymous trolls.",
     body: "Only people who actually booked you through REPs can review you. No drive-by ratings, no competitors, no off-platform noise.",
   },
@@ -262,25 +256,25 @@ const WHY_PROS = [
   {
     icon: Sparkles,
     title: "Reviews follow you everywhere on REPs.",
-    body: "Your verified reviews show on your shop-front, profile, enquire pages, and across profession and city search results. One source of truth.",
+    body: "Verified reviews show on your shop-front, profile, enquire pages, and across profession and city search results. One source of truth.",
   },
 ];
 
 const TRUST_MECHANICS = [
   {
-    icon: ShieldCheck,
+    icon: BadgeCheck,
     title: "Verified-booking only",
     body: "If a client didn't book through REPs, they can't review. That's the whole point.",
   },
   {
-    icon: BadgeCheck,
+    icon: Eye,
     title: "Moderated for legality, not sentiment",
     body: "We screen for defamation, abuse, spam and personal data. Honest opinions — positive or critical — stay live.",
   },
   {
     icon: MessageSquare,
     title: "Pros respond publicly",
-    body: "One on-the-record reply per review. Your response sits underneath the review for every future client to see.",
+    body: "One on-the-record reply per review. The response sits underneath every review for future clients to see.",
   },
   {
     icon: Flag,
@@ -318,185 +312,184 @@ const FAQ_ITEMS = [
 
 function ReviewsPage() {
   return (
-    <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
-      <PublicHeader variant="solid" />
+    <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
+      <PublicHeader />
 
-      {/* ============ HERO (dark) ============ */}
+      {/* ============ 1. HERO (dark) ============ */}
       <section className="relative isolate overflow-hidden bg-reps-black text-white">
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(60%_70%_at_20%_0%,rgba(255,122,0,0.10),transparent_70%)]"
         />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(55%_60%_at_85%_30%,rgba(255,122,0,0.06),transparent_70%)]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-reps-ink"
+        />
+
         <div className="relative mx-auto max-w-[1320px] px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
-          <div className="max-w-[780px]">
-            <MarketingHeroEyebrow icon={Star}>Reviews</MarketingHeroEyebrow>
+          <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+            {/* Copy column */}
+            <div>
+              <MarketingHeroEyebrow icon={Star}>Reviews on REPs</MarketingHeroEyebrow>
 
-            <h1 className="mt-6 font-display text-[40px] font-bold leading-[1.05] text-white sm:text-[52px] lg:text-[64px]">
-              Reviews you can trust — <span className="text-reps-orange">for every fitness pro.</span>
-            </h1>
-
-            <p className="mt-6 max-w-[620px] text-[16px] leading-relaxed text-white/80">
-              Every coach, studio, gym, nutritionist and training provider on REPs — reviewed only by
-              people who actually booked them. No anonymous posters. No paid placement. No edits made
-              quietly behind the scenes.
-            </p>
-
-            <form
-              className="mt-8 grid gap-2 rounded-[18px] border border-white/10 bg-white/[0.04] p-2 backdrop-blur sm:grid-cols-[1fr_auto]"
-              role="search"
-            >
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ink/60 px-3 py-2.5">
-                <Search className="h-4 w-4 text-white/55" />
-                <input
-                  type="text"
-                  placeholder="Search reviews by pro, gym, city or specialism"
-                  className="w-full bg-transparent text-[14px] text-white placeholder:text-white/45 focus:outline-none"
-                />
-              </label>
-              <button
-                type="button"
-                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+              <h1
+                className="mt-6 font-display text-[40px] font-bold leading-[1.05] text-white sm:text-[52px] lg:text-[64px] animate-fade-in"
+                style={{ animationDelay: "80ms", animationDuration: "640ms" }}
               >
-                Search reviews
-              </button>
-            </form>
+                Every review here came from{" "}
+                <span className="text-reps-orange">a real booking.</span>
+              </h1>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] text-white/55">
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck className="size-3.5 text-reps-orange" /> Verified bookings only
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Lock className="size-3.5 text-reps-orange" /> No paid placement
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Timer className="size-3.5 text-reps-orange" /> Median publish 4hr
-              </span>
+              <p
+                className="mt-6 max-w-[560px] text-[16px] leading-relaxed text-white/80 animate-fade-in"
+                style={{ animationDelay: "180ms", animationDuration: "560ms" }}
+              >
+                Coaches, studios, gyms, nutritionists and training providers — reviewed only by
+                people who actually trained with them. Moderated for legality, not sentiment. Pros
+                get a public right of reply.
+              </p>
+
+              <div
+                className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-white/55 animate-fade-in"
+                style={{ animationDelay: "260ms", animationDuration: "560ms" }}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <BadgeCheck className="size-3.5 text-reps-orange" /> Verified bookings only
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Eye className="size-3.5 text-reps-orange" /> Moderated for legality
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <MessageSquare className="size-3.5 text-reps-orange" /> Pro right of reply
+                </span>
+              </div>
+
+              <div
+                className="mt-8 flex flex-wrap items-center gap-3 animate-fade-in"
+                style={{ animationDelay: "340ms", animationDuration: "560ms" }}
+              >
+                <Link
+                  to="/find-a-professional"
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+                >
+                  Find a professional <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="#methodology"
+                  className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel/40 px-5 text-[14px] font-semibold text-white/80 hover:text-white"
+                >
+                  How a review gets here
+                </a>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ============ HEADLINE RATING + STAT STRIP (light) ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 pt-16 pb-10 lg:px-10 lg:pt-20 lg:pb-14">
-          <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
-            {/* Headline rating panel */}
-            <div className="rounded-[22px] border border-reps-stone bg-reps-ivory p-7 lg:p-8">
-              <div className="flex items-center gap-5">
-                <div className="font-display text-[64px] font-bold leading-none text-reps-charcoal">4.9</div>
+            {/* Score panel — anchored in hero */}
+            <div
+              className="relative rounded-[22px] border border-reps-border bg-reps-panel p-7 lg:p-8 animate-fade-in"
+              style={{ animationDelay: "260ms", animationDuration: "640ms" }}
+            >
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-display text-[64px] font-bold leading-none text-white">
+                      4.9
+                    </span>
+                    <span className="text-[13px] font-medium text-white/55">/ 5</span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Star key={i} className="h-4 w-4 fill-reps-orange text-reps-orange" />
                     ))}
                   </div>
-                  <p className="mt-1.5 text-[12.5px] text-reps-muted-light">
-                    From 12,400+ verified reviews across REPs
-                  </p>
                 </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-emerald-300">
+                  <BadgeCheck className="h-3 w-3" /> 100% verified
+                </span>
               </div>
+
+              <p className="mt-3 text-[12.5px] text-white/55">
+                From 12,400+ verified reviews across REPs
+              </p>
+
               <ul className="mt-6 space-y-2.5">
                 {RATING_BREAKDOWN.map((r) => (
-                  <li key={r.stars} className="flex items-center gap-2.5 text-[12.5px]">
-                    <span className="w-3 font-semibold text-reps-charcoal">{r.stars}</span>
+                  <li key={r.stars} className="flex items-center gap-3 text-[12.5px]">
+                    <span className="w-3 text-right font-semibold text-white/80">{r.stars}</span>
                     <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                    <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-stone">
+                    <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-reps-border">
                       <span
                         className="absolute inset-y-0 left-0 rounded-full bg-reps-orange"
-                        style={{ width: `${r.pct}%` }}
+                        style={{ width: `${Math.max(r.pct, 1)}%` }}
                       />
                     </span>
-                    <span className="w-12 text-right text-reps-muted-light">{r.count}</span>
+                    <span className="w-14 text-right tabular-nums text-white/55">{r.count}</span>
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Stat strip — homepage pattern */}
-            <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                The numbers
-              </span>
-              <h2 className="mt-1 font-display text-[28px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-                Honest about how reviews work here.
-              </h2>
-              <p className="mt-3 max-w-[460px] text-[14px] text-reps-muted-light">
-                Phase 1 placeholder data while we onboard early cohorts. Replaced with live numbers at
-                launch volume.
-              </p>
-              <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-stone bg-reps-stone sm:grid-cols-2">
-                {STATS.map((s) => (
-                  <div
-                    key={s.k}
-                    className="flex flex-col items-start gap-1.5 bg-reps-ivory p-5 sm:p-6"
-                  >
-                    <div className="font-display text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-reps-charcoal sm:text-[32px] lg:text-[40px]">
-                      {s.v}
-                    </div>
-                    <div className="text-[11px] font-medium uppercase tracking-wider text-reps-muted-light sm:text-[12px]">
-                      {s.k}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ============ METHODOLOGY (light) ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[680px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              How a REPs review is made
-            </span>
-            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-              Four steps. No shortcuts.
-            </h2>
-            <p className="mt-3 text-[15px] text-reps-muted-light">
-              A REPs review can only come from a real booking. Here's the exact path it takes — and
-              what we will and won't do at each step.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {METHODOLOGY.map((m, i) => (
-              <div
-                key={m.title}
-                className="relative flex flex-col rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
-              >
-                <span className="absolute right-4 top-4 text-[11px] font-semibold text-reps-muted-light/70">
-                  0{i + 1}
-                </span>
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-orange">
-                  <m.icon className="h-5 w-5" strokeWidth={1.75} />
-                </span>
-                <h3 className="mt-5 font-display text-[17px] font-bold text-reps-charcoal">{m.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{m.body}</p>
+      {/* ============ 2. STAT STRIP (matches /about) ============ */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 pt-10 pb-16 lg:px-10 lg:pt-12 lg:pb-20">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border lg:grid-cols-4">
+            {STATS.map((s) => (
+              <div key={s.k} className="bg-reps-panel px-6 py-8 text-center">
+                <div className="font-display text-[32px] font-bold leading-none text-white lg:text-[40px]">
+                  {s.v}
+                </div>
+                <div className="mt-3 text-[12px] uppercase tracking-[0.14em] text-white/55 lg:tracking-[0.18em]">
+                  {s.k}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ EDITOR'S PICKS (light) ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-[640px]">
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                Editor's picks
-              </span>
-              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-                This week's stand-out reviews.
-              </h2>
-              <p className="mt-3 text-[15px] text-reps-muted-light">
-                Three reviews from across the register, chosen for the detail and context they give a
-                future client — not the score.
-              </p>
-            </div>
+      {/* ============ 3. METHODOLOGY (dark, tinted) ============ */}
+      <section id="methodology" className="bg-reps-panel/15">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="How a review gets here"
+            heading="Four steps. No shortcuts."
+            lede="A REPs review can only come from a real booking. Here's the exact path it takes — and what we will and won't do at each step."
+          />
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {METHODOLOGY.map((m, i) => (
+              <div
+                key={m.title}
+                className="relative flex flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6"
+              >
+                <span className="absolute right-4 top-4 text-[11px] font-semibold uppercase tracking-wider text-white/45">
+                  0{i + 1}
+                </span>
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-reps-border bg-reps-ink text-reps-orange">
+                  <m.icon className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <h3 className="mt-5 font-display text-[17px] font-bold text-white">{m.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{m.body}</p>
+              </div>
+            ))}
           </div>
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        </div>
+      </section>
+
+      {/* ============ 4. EDITOR'S PICKS (dark) ============ */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="Editor's picks"
+            heading="This week's stand-out reviews."
+            lede="Three reviews from across the register, chosen for the detail and context they give a future client — not the score."
+          />
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
             {EDITOR_PICKS.map((r) => (
               <ReviewCard key={r.id} review={r} variant="pick" />
             ))}
@@ -504,64 +497,55 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* ============ BROWSE BY SPECIALISM (light) ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[680px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              Browse by specialism
-            </span>
-            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-              Reviews across every kind of fitness pro.
-            </h2>
-            <p className="mt-3 text-[15px] text-reps-muted-light">
-              Trainers, coaches, gyms, studios, nutritionists, Pilates and yoga teachers, and the
-              training providers behind them.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {/* ============ 5. BROWSE BY SPECIALISM (dark, tinted) ============ */}
+      <section className="bg-reps-panel/30">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="Browse by specialism"
+            heading="Reviews across every kind of fitness pro."
+            lede="Trainers, coaches, gyms, studios, nutritionists, Pilates and yoga teachers, and the training providers behind them."
+          />
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PROFESSION_TILES.map((p) => (
               <Link
                 key={p.name}
                 to="/professions/$profession"
                 params={{ profession: p.slug }}
-                className="group flex items-center justify-between rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 transition-colors hover:border-reps-orange/40 hover:bg-reps-ivory"
+                className="group flex items-center justify-between rounded-[18px] border border-reps-border bg-reps-panel p-5 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel/70"
               >
                 <div className="flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal transition-colors group-hover:text-reps-orange">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-reps-border bg-reps-ink text-white/70 transition-colors group-hover:text-reps-orange">
                     <p.icon className="h-5 w-5" strokeWidth={1.6} />
                   </span>
                   <div>
-                    <div className="text-[14.5px] font-semibold text-reps-charcoal">{p.name}</div>
-                    <div className="mt-0.5 flex items-center gap-1.5 text-[12px] text-reps-muted-light">
+                    <div className="text-[14.5px] font-semibold text-white">{p.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-[12px] text-white/55">
                       <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                      <span className="font-semibold text-reps-charcoal">{p.rating}</span>
+                      <span className="font-semibold text-white/80">{p.rating}</span>
                       <span>·</span>
                       <span>{p.count} reviews</span>
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-reps-muted-light transition-transform group-hover:translate-x-0.5 group-hover:text-reps-orange" />
+                <ChevronRight className="h-4 w-4 text-white/45 transition-transform group-hover:translate-x-0.5 group-hover:text-reps-orange" />
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ FULL FEED (light) ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+      {/* ============ 6. THE FEED (dark) ============ */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-[560px]">
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                The full feed
-              </span>
-              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
+              <SectionEyebrow>The full feed</SectionEyebrow>
+              <SectionHeading className="mt-3">
                 Latest reviews from verified clients.
-              </h2>
+              </SectionHeading>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[12px] font-medium uppercase tracking-wider text-reps-muted-light">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
                 Sort
               </span>
               {SORT_OPTIONS.map((f, i) => (
@@ -570,8 +554,8 @@ function ReviewsPage() {
                   type="button"
                   className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
                     i === 0
-                      ? "border-reps-orange/40 bg-reps-orange/10 text-reps-orange"
-                      : "border-reps-stone bg-reps-ivory text-reps-charcoal hover:border-reps-orange/40 hover:text-reps-orange"
+                      ? "border-reps-orange/40 bg-reps-orange/15 text-reps-orange"
+                      : "border-reps-border bg-reps-panel text-white/70 hover:border-reps-orange/40 hover:text-white"
                   }`}
                 >
                   {f}
@@ -580,7 +564,7 @@ function ReviewsPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {REVIEWS.map((r) => (
               <ReviewCard key={r.id} review={r} />
             ))}
@@ -589,7 +573,7 @@ function ReviewsPage() {
           <div className="mt-10 flex items-center justify-center">
             <button
               type="button"
-              className="inline-flex h-11 items-center rounded-[10px] border border-reps-stone bg-reps-ivory px-6 text-[14px] font-semibold text-reps-charcoal shadow-none hover:border-reps-orange/40 hover:text-reps-orange"
+              className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel px-6 text-[14px] font-semibold text-white/80 shadow-none hover:border-reps-orange/40 hover:text-white"
             >
               Load more reviews
             </button>
@@ -597,34 +581,27 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* ============ WHY PROS CHOOSE REPs REVIEWS (light) ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[720px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              For professionals
-            </span>
-            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-              Why pros choose to be reviewed on REPs.
-            </h2>
-            <p className="mt-3 text-[15px] text-reps-muted-light">
-              REPs reviews are built to work for the pro as much as the client. Real feedback, a fair
-              right of reply, and one verified source that follows you across the platform.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+      {/* ============ 7. WHY PROS CHOOSE REPs REVIEWS (dark, tinted) ============ */}
+      <section className="bg-reps-panel/15">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="For professionals"
+            heading="Why pros choose to be reviewed on REPs."
+            lede="REPs reviews are built to work for the pro as much as the client. Real feedback, a fair right of reply, and one verified source that follows you across the platform."
+          />
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
             {WHY_PROS.map((w) => (
               <article
                 key={w.title}
-                className="flex flex-col gap-3 rounded-[18px] border border-reps-stone bg-reps-warm-white p-6"
+                className="flex flex-col gap-3 rounded-[18px] border border-reps-border bg-reps-panel p-6"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-reps-orange">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-reps-border bg-reps-ink text-reps-orange">
                   <w.icon className="h-5 w-5" strokeWidth={1.7} />
                 </span>
-                <h3 className="font-display text-[17.5px] font-bold leading-tight text-reps-charcoal">
+                <h3 className="font-display text-[17.5px] font-bold leading-tight text-white">
                   {w.title}
                 </h3>
-                <p className="text-[13.5px] leading-relaxed text-reps-muted-light">{w.body}</p>
+                <p className="text-[13.5px] leading-relaxed text-white/70">{w.body}</p>
               </article>
             ))}
           </div>
@@ -637,7 +614,7 @@ function ReviewsPage() {
             </Link>
             <Link
               to="/features/visibility"
-              className="text-[13.5px] font-semibold text-reps-charcoal underline-offset-4 hover:underline"
+              className="text-[13.5px] font-semibold text-white/80 underline-offset-4 hover:text-white hover:underline"
             >
               See how reviews show on your profile →
             </Link>
@@ -645,66 +622,35 @@ function ReviewsPage() {
         </div>
       </section>
 
-      {/* ============ TRUST MECHANICS (light) ============ */}
-      <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="max-w-[680px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              Our commitments
-            </span>
-            <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-              Four mechanics that make a review worth reading.
-            </h2>
-            <p className="mt-3 text-[15px] text-reps-muted-light">
-              Not vibes. Hard-wired rules we publish, repeat and stick to as the platform grows.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ============ 8. TRUST MECHANICS (dark) ============ */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <SectionHeader
+            eyebrow="Our commitments"
+            heading="Four mechanics that make a review worth reading."
+            lede="Not vibes. Hard-wired rules we publish, repeat and stick to as the platform grows."
+          />
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {TRUST_MECHANICS.map((t) => (
               <div
                 key={t.title}
-                className="flex flex-col rounded-[18px] border border-reps-stone bg-reps-ivory p-6"
+                className="flex flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-warm-white text-reps-orange">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-reps-border bg-reps-ink text-reps-orange">
                   <t.icon className="h-5 w-5" strokeWidth={1.75} />
                 </span>
-                <h3 className="mt-5 font-display text-[16.5px] font-bold text-reps-charcoal">{t.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-reps-muted-light">{t.body}</p>
+                <h3 className="mt-5 font-display text-[16.5px] font-bold text-white">{t.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{t.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ FAQ (light) ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[920px] px-6 py-16 lg:px-10 lg:py-20">
-          <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-            FAQ
-          </span>
-          <h2 className="mt-2 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[40px]">
-            Reviews — straight answers.
-          </h2>
-          <Accordion type="single" collapsible className="mt-10">
-            {FAQ_ITEMS.map((f, i) => (
-              <AccordionItem
-                key={i}
-                value={`item-${i}`}
-                className="border-b border-reps-stone"
-              >
-                <AccordionTrigger className="text-left text-[15.5px] font-semibold text-reps-charcoal hover:no-underline">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-[14.5px] leading-relaxed text-reps-muted-light">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
+      {/* ============ 9. FAQ (dark, shared primitive) ============ */}
+      <MarketingFaq heading="Reviews — straight answers." items={FAQ_ITEMS} />
 
-      {/* ============ FINAL CTA (dark, shared) ============ */}
+      {/* ============ 10. FINAL CTA (dark, shared) ============ */}
       <FinalCta
         eyebrow={{ icon: Star, label: "Verified-booking reviews" }}
         heading="Find a coach"
@@ -720,7 +666,7 @@ function ReviewsPage() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Review card (light)                                                 */
+/* Review card (dark)                                                  */
 /* ------------------------------------------------------------------ */
 
 function ReviewCard({
@@ -734,12 +680,12 @@ function ReviewCard({
 
   return (
     <article
-      className={`flex flex-col gap-4 rounded-[18px] border bg-reps-warm-white p-6 ${
-        isPick ? "border-reps-orange/40" : "border-reps-stone"
+      className={`flex flex-col gap-4 rounded-[18px] border bg-reps-panel p-6 ${
+        isPick ? "border-reps-orange/40" : "border-reps-border"
       }`}
     >
       {isPick ? (
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
           <Sparkles className="h-3 w-3" /> Editor's pick
         </span>
       ) : null}
@@ -747,17 +693,17 @@ function ReviewCard({
       {/* Reviewer */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-reps-ivory text-[12.5px] font-bold text-reps-charcoal">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-border bg-reps-ink text-[12.5px] font-bold text-white">
             {r.author.split(" ").map((n) => n[0]).join("")}
           </span>
           <div>
-            <div className="flex flex-wrap items-center gap-1.5 text-[13.5px] font-semibold text-reps-charcoal">
+            <div className="flex flex-wrap items-center gap-1.5 text-[13.5px] font-semibold text-white">
               {r.author}
-              <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-700">
+              <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-300">
                 <BadgeCheck className="h-2.5 w-2.5" /> Verified
               </span>
             </div>
-            <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-reps-muted-light">
+            <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-white/55">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> {r.authorCity}
               </span>
@@ -771,7 +717,7 @@ function ReviewCard({
             <Star
               key={i}
               className={`h-3.5 w-3.5 ${
-                i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-reps-stone"
+                i <= r.rating ? "fill-reps-orange text-reps-orange" : "text-white/20"
               }`}
             />
           ))}
@@ -780,14 +726,12 @@ function ReviewCard({
 
       {/* Body */}
       <div>
-        <h3 className="font-display text-[16.5px] font-bold leading-snug text-reps-charcoal">
-          {r.title}
-        </h3>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-reps-charcoal/80">{r.body}</p>
+        <h3 className="font-display text-[16.5px] font-bold leading-snug text-white">{r.title}</h3>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-white/75">{r.body}</p>
       </div>
 
       {/* Pro context */}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-stone pt-4">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-border pt-4">
         <Link
           to="/pro/$slug"
           params={{ slug: r.proSlug }}
@@ -800,15 +744,15 @@ function ReviewCard({
             loading="lazy"
           />
           <div>
-            <div className="text-[13px] font-semibold text-reps-charcoal group-hover:text-reps-orange">
+            <div className="text-[13px] font-semibold text-white group-hover:text-reps-orange">
               {r.proName}
             </div>
-            <div className="text-[11.5px] text-reps-muted-light">
+            <div className="text-[11.5px] text-white/55">
               {r.proRole} · {r.programme}
             </div>
           </div>
         </Link>
-        <div className="flex items-center gap-3 text-[11.5px] text-reps-muted-light">
+        <div className="flex items-center gap-3 text-[11.5px] text-white/55">
           <span>{r.helpful} found helpful</span>
           <Link
             to="/pro/$slug"
