@@ -115,7 +115,7 @@ function AcceptInvitePage() {
           {invite && invite.status !== "pending" && (
             <div className="rounded-[12px] border border-reps-border bg-reps-ink p-4 text-sm text-white/70">
               This invite has already been {invite.status}.{" "}
-              <Link to="/login" className="text-reps-orange">
+              <Link to="/auth" className="text-reps-orange">
                 Sign in instead
               </Link>
               .
@@ -213,7 +213,7 @@ function AcceptInvitePage() {
 
         <p className="mt-6 text-center text-xs text-white/40">
           Already have an account?{" "}
-          <Link to="/login" className="text-reps-orange">
+          <Link to="/auth" className="text-reps-orange">
             Sign in
           </Link>
         </p>

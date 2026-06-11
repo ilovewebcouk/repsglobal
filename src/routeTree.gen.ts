@@ -34,6 +34,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
@@ -221,6 +222,11 @@ const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -548,6 +554,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -638,6 +645,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -728,6 +736,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -820,6 +829,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/auth'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -910,6 +920,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/auth'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -999,6 +1010,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/accept-invite'
     | '/admin'
+    | '/auth'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1090,6 +1102,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ContactRoute: typeof ContactRoute
@@ -1348,6 +1361,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1823,6 +1843,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ContactRoute: ContactRoute,
@@ -1908,3 +1929,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
