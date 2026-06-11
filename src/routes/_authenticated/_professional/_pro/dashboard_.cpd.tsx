@@ -12,7 +12,8 @@ import {
   Upload,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/cpd")({
   head: () => ({
@@ -81,7 +82,7 @@ function Ring({ pct, value, label }: { pct: number; value: string; label: string
 
 function CpdPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Education & CPD"
       title="Education & CPD"
       subtitle="Maintain your REPS status and grow your practice."
@@ -250,6 +251,6 @@ function CpdPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

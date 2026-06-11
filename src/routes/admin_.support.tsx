@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
 import { Clock } from "lucide-react";
-import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/support")({
   ssr: false,
@@ -41,7 +42,7 @@ function AdminSupport() {
   const resolved = TICKETS.filter((t) => t.status === "Resolved").length;
 
   return (
-    <AdminShell active="Support" title="Support queue" subtitle={`${open} open · ${pending} pending · SLA on track`}>
+    <DashboardShell role="admin" active="Support" title="Support queue" subtitle={`${open} open · ${pending} pending · SLA on track`}>
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { l: "Open", v: open.toString(), d: "2 urgent", tone: "warn" },
@@ -49,15 +50,15 @@ function AdminSupport() {
           { l: "Resolved today", v: "18", d: "+22% vs yesterday" },
           { l: "First-response SLA", v: "94%", d: "Target 90%" },
         ].map((k) => (
-          <ACard key={k.l}>
+          <PCard key={k.l}>
             <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">{k.l}</div>
             <div className="mt-2 font-display text-[28px] font-bold text-white">{k.v}</div>
             <div className={`mt-1 text-[12px] ${k.tone === "warn" ? "text-rose-400" : "text-reps-green"}`}>{k.d}</div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
-      <APanel className="mt-6 p-0">
+      <PPanel className="mt-6 p-0">
         <div className="flex items-center gap-1 border-b border-reps-border p-3 text-[12px] font-medium">
           {[
             ["Open", open],
@@ -113,7 +114,7 @@ function AdminSupport() {
             </tbody>
           </table>
         </div>
-      </APanel>
-    </AdminShell>
+      </PPanel>
+    </DashboardShell>
   );
 }

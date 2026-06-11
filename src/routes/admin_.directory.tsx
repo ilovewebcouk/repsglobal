@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
 import { AlertTriangle, Globe2, Star } from "lucide-react";
-import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/directory")({
   ssr: false,
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/admin_/directory")({
 
 function AdminDirectory() {
   return (
-    <AdminShell active="Directory" title="Directory health" subtitle="2,418 live listings · 87% completeness average">
+    <DashboardShell role="admin" active="Directory" title="Directory health" subtitle="2,418 live listings · 87% completeness average">
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { label: "Live listings", value: "2,418", delta: "+62 this week" },
@@ -27,16 +28,16 @@ function AdminDirectory() {
           { label: "Broken links", value: "14", delta: "−6 this week", tone: "warn" },
           { label: "Featured slots", value: "12 / 12", delta: "Next rotation Mon" },
         ].map((k) => (
-          <ACard key={k.label}>
+          <PCard key={k.label}>
             <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">{k.label}</div>
             <div className="mt-2 font-display text-[28px] font-bold text-white">{k.value}</div>
             <div className={`mt-1 text-[12px] ${k.tone === "warn" ? "text-rose-400" : "text-reps-green"}`}>{k.delta}</div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <APanel className="p-6">
+        <PPanel className="p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-[16px] font-semibold text-white">Listings needing attention</h2>
             <button className="text-[12px] font-semibold text-reps-orange hover:underline">View all</button>
@@ -75,10 +76,10 @@ function AdminDirectory() {
               ))}
             </tbody>
           </table>
-        </APanel>
+        </PPanel>
 
         <div className="space-y-6">
-          <APanel className="p-6">
+          <PPanel className="p-6">
             <div className="flex items-center gap-2 text-white">
               <Star className="h-4 w-4 text-reps-orange" />
               <h2 className="font-display text-[16px] font-semibold">Featured rotation</h2>
@@ -96,8 +97,8 @@ function AdminDirectory() {
                 </li>
               ))}
             </ul>
-          </APanel>
-          <ACard>
+          </PPanel>
+          <PCard>
             <div className="flex items-center gap-2 text-white">
               <Globe2 className="h-4 w-4 text-reps-orange" />
               <h3 className="font-display text-[14px] font-semibold">Geographic coverage</h3>
@@ -112,8 +113,8 @@ function AdminDirectory() {
                 </li>
               ))}
             </ul>
-          </ACard>
-          <ACard className="border-rose-500/30 bg-rose-500/[0.04]">
+          </PCard>
+          <PCard className="border-rose-500/30 bg-rose-500/[0.04]">
             <div className="flex items-center gap-2 text-rose-300">
               <AlertTriangle className="h-4 w-4" />
               <h3 className="font-display text-[14px] font-semibold">Crawl alerts</h3>
@@ -124,9 +125,9 @@ function AdminDirectory() {
             <button className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover">
               Re-run crawl
             </button>
-          </ACard>
+          </PCard>
         </div>
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

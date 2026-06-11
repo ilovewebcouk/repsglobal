@@ -17,7 +17,8 @@ import {
   Video,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/messages")({
   head: () => ({
@@ -69,7 +70,7 @@ function Bubble({ m }: { m: Msg }) {
 
 function MessagesPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Messages"
       title="Messages"
       subtitle="One inbox for every client, lead and class enquiry."
@@ -247,6 +248,6 @@ function MessagesPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

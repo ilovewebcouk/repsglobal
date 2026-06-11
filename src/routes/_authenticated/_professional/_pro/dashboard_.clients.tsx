@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import Papa from "papaparse";
 
-import { ProShell, PCard } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard } from "@/components/dashboard/primitives";
 import {
   addRosterClient,
   confirmRosterClient,
@@ -77,7 +78,7 @@ function ClientsIndex() {
   const pendingInvites = rows.filter((r) => r.inviteStatus === "pending").length;
 
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Clients"
       title="Clients"
       subtitle={`${total} on roster · ${active} active · ${pendingInvites} pending invite`}
@@ -171,7 +172,7 @@ function ClientsIndex() {
           onImported={() => qc.invalidateQueries({ queryKey: ["roster"] })}
         />
       )}
-    </ProShell>
+    </DashboardShell>
   );
 }
 

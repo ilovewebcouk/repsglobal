@@ -11,7 +11,8 @@ import {
   Video,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/content")({
   head: () => ({
@@ -68,7 +69,7 @@ function typeIcon(t: string) {
 
 function ContentStudioPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Content Studio"
       title="Content Studio"
       subtitle="Plan, draft and publish — videos, posts, programme assets, blogs."
@@ -216,6 +217,6 @@ function ContentStudioPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/calendar")({
   head: () => ({
     meta: [
@@ -786,7 +786,7 @@ function ClassAttendance() {
 
 function CalendarPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Calendar"
       title="Calendar"
       subtitle="Manage sessions, consultations, classes and online bookings."
@@ -830,6 +830,6 @@ function CalendarPage() {
           <ClassAttendance />
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
-import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/settings")({
   ssr: false,
@@ -20,7 +21,7 @@ const TABS = ["General", "Branding", "Email", "Integrations", "Feature flags", "
 
 function AdminSettings() {
   return (
-    <AdminShell active="Settings" title="Platform settings" subtitle="Production environment · v2026.05.31">
+    <DashboardShell role="admin" active="Settings" title="Platform settings" subtitle="Production environment · v2026.05.31">
       <div className="mb-6 flex flex-wrap gap-1 rounded-[10px] border border-reps-border bg-reps-panel p-1 text-[12px] font-medium">
         {TABS.map((t, i) => (
           <button
@@ -33,7 +34,7 @@ function AdminSettings() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <APanel className="p-6">
+        <PPanel className="p-6">
           <h2 className="font-display text-[16px] font-semibold text-white">General</h2>
           <div className="mt-5 space-y-5">
             <Row label="Platform name" value="REPS — The Register of Exercise Professionals" />
@@ -43,10 +44,10 @@ function AdminSettings() {
             <Row label="Maintenance mode" value="Off" />
             <Row label="Public sign-ups" value="Enabled" />
           </div>
-        </APanel>
+        </PPanel>
 
         <div className="space-y-6">
-          <ACard>
+          <PCard>
             <h3 className="font-display text-[14px] font-semibold text-white">Branding</h3>
             <div className="mt-3 grid grid-cols-3 gap-2">
               {[
@@ -61,9 +62,9 @@ function AdminSettings() {
               ))}
             </div>
             <p className="mt-3 text-[12px] text-white/55">Primary brand orange, ink and warm white tokens.</p>
-          </ACard>
+          </PCard>
 
-          <ACard>
+          <PCard>
             <h3 className="font-display text-[14px] font-semibold text-white">Feature flags</h3>
             <ul className="mt-3 space-y-2 text-[13px]">
               {[
@@ -81,9 +82,9 @@ function AdminSettings() {
                 </li>
               ))}
             </ul>
-          </ACard>
+          </PCard>
 
-          <ACard>
+          <PCard>
             <h3 className="font-display text-[14px] font-semibold text-white">Integrations</h3>
             <ul className="mt-3 space-y-2 text-[13px] text-white/80">
               {["Stripe — Payouts", "Resend — Transactional email", "Cloudflare R2 — Storage", "Mapbox — Location"].map((i) => (
@@ -93,11 +94,11 @@ function AdminSettings() {
                 </li>
               ))}
             </ul>
-          </ACard>
+          </PCard>
         </div>
       </div>
 
-      <APanel className="mt-6 p-6">
+      <PPanel className="mt-6 p-6">
         <h2 className="font-display text-[16px] font-semibold text-white">Recent audit log</h2>
         <table className="mt-4 w-full text-[13px]">
           <thead>
@@ -125,8 +126,8 @@ function AdminSettings() {
             ))}
           </tbody>
         </table>
-      </APanel>
-    </AdminShell>
+      </PPanel>
+    </DashboardShell>
   );
 }
 

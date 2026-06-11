@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   Apple,
@@ -771,7 +771,7 @@ function DashboardFooter() {
 function ProfileEditorPage() {
   const tier = useTrainerTier();
   return (
-    <ProShell
+    <DashboardShell role="trainer"
       active="Public Profile"
       tier={tier}
       title="Profile editor"
@@ -814,6 +814,6 @@ function ProfileEditorPage() {
         </div>
       </div>
       <DashboardFooter />
-    </ProShell>
+    </DashboardShell>
   );
 }

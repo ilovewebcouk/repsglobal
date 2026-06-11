@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
-import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/cpd")({
   ssr: false,
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/admin_/cpd")({
 
 function AdminCpd() {
   return (
-    <AdminShell active="CPD" title="CPD oversight" subtitle="Current cycle: Jan 2026 – Dec 2026">
+    <DashboardShell role="admin" active="CPD" title="CPD oversight" subtitle="Current cycle: Jan 2026 – Dec 2026">
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { l: "Compliance", v: "84%", d: "1,824 / 2,168 pros" },
@@ -26,16 +27,16 @@ function AdminCpd() {
           { l: "Evidence pending", v: "47", d: "Awaiting audit" },
           { l: "Courses in catalogue", v: "312", d: "12 awaiting moderation" },
         ].map((k) => (
-          <ACard key={k.l}>
+          <PCard key={k.l}>
             <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">{k.l}</div>
             <div className="mt-2 font-display text-[28px] font-bold text-white">{k.v}</div>
             <div className={`mt-1 text-[12px] ${k.tone === "warn" ? "text-rose-400" : "text-reps-green"}`}>{k.d}</div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <APanel className="p-6">
+        <PPanel className="p-6">
           <h2 className="font-display text-[16px] font-semibold text-white">Pros at risk this cycle</h2>
           <table className="mt-4 w-full text-[13px]">
             <thead>
@@ -69,9 +70,9 @@ function AdminCpd() {
               ))}
             </tbody>
           </table>
-        </APanel>
+        </PPanel>
 
-        <APanel className="p-6">
+        <PPanel className="p-6">
           <h2 className="font-display text-[16px] font-semibold text-white">Course catalogue moderation</h2>
           <ul className="mt-4 space-y-3 text-[13px]">
             {[
@@ -92,8 +93,8 @@ function AdminCpd() {
               </li>
             ))}
           </ul>
-        </APanel>
+        </PPanel>
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

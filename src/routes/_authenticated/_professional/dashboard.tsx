@@ -15,7 +15,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -176,11 +176,10 @@ function DashboardPage() {
   };
 
   return (
-    <ProShell
+    <DashboardShell role="trainer"
       active="Dashboard"
       title={`Welcome back, ${memberName.split(" ")[0]}`}
       subtitle={hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
-      hasProAccess={hasProAccess}
       tier={tier}
       member={{ name: memberName, avatarUrl: data?.identity?.avatar_url, headline: data?.profile?.headline, tierLabel }}
       actions={data && !data.onboarding.complete ? (
@@ -263,7 +262,7 @@ function DashboardPage() {
           </ol>
         </DialogContent>
       </Dialog>
-    </ProShell>
+    </DashboardShell>
   );
 }
 

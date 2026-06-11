@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import {
   getVerificationDocUrl,
@@ -84,14 +85,14 @@ function AdminVerificationPage() {
   ];
 
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Verification"
       title="Verification queue"
       subtitle="Review credentials and insurance before activating professionals."
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <ACard key={s.label}>
+          <PCard key={s.label}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[12px] text-white/55">{s.label}</div>
@@ -101,12 +102,12 @@ function AdminVerificationPage() {
                 <s.icon className="h-4 w-4" />
               </span>
             </div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <APanel className="lg:col-span-2">
+        <PPanel className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <div>
               <h2 className="font-display text-[16px] font-bold text-white">Pending review</h2>
@@ -185,10 +186,10 @@ function AdminVerificationPage() {
               );
             })}
           </ul>
-        </APanel>
+        </PPanel>
 
         <div className="space-y-6">
-          <ACard>
+          <PCard>
             <h3 className="font-display text-[15px] font-bold text-white">SLA & policy</h3>
             <ul className="mt-3 space-y-2 text-[12px] text-white/70">
               <li className="flex justify-between">
@@ -203,9 +204,9 @@ function AdminVerificationPage() {
             <button className="mt-4 flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
               Open policy <ChevronRight className="h-3.5 w-3.5" />
             </button>
-          </ACard>
+          </PCard>
         </div>
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

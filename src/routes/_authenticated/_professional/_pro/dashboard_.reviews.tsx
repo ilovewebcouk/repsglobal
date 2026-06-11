@@ -11,7 +11,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/reviews")({
   head: () => ({
@@ -109,7 +110,7 @@ function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
 
 function ReviewsPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Reviews"
       title="Reviews"
       subtitle="Public reviews, response composer and moderation queue."
@@ -262,6 +263,6 @@ function ReviewsPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

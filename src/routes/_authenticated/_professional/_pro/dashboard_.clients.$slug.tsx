@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/clients/$slug")({
   head: () => ({
     meta: [
@@ -797,7 +797,7 @@ function AiCoachingInsight() {
 
 function ClientProfilePage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Clients"
       title="Sarah Johnson"
       subtitle="Client record, progress, coaching plan and account status."
@@ -882,7 +882,7 @@ function ClientProfilePage() {
           </div>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }
 

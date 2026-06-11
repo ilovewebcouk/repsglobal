@@ -16,7 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { AdminShell } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
@@ -1232,7 +1233,7 @@ function TopProsTable() {
 
 function AdminDashboardPage() {
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Overview"
       title="Platform Overview"
       subtitle="Real-time overview of the REPS platform and key operational metrics."
@@ -1246,6 +1247,6 @@ function AdminDashboardPage() {
         <BreakdownRow />
         <TopProsTable />
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

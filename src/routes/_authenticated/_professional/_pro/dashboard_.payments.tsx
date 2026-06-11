@@ -14,7 +14,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { ManageBillingButton } from "@/components/billing/ManageBillingButton";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/payments")({
@@ -116,7 +117,7 @@ function RevenueChart() {
 
 function PaymentsPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Payments"
       title="Payments"
       subtitle="Revenue, payouts, invoices and subscriptions across your REPS business."
@@ -323,6 +324,6 @@ function PaymentsPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

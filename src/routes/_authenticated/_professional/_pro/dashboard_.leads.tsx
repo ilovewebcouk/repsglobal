@@ -16,7 +16,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/leads")({
   head: () => ({
@@ -643,7 +643,7 @@ function ConversionCard() {
 
 function LeadsPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Leads"
       title="Leads pipeline"
       subtitle="Track enquiries, prioritise follow-ups and convert leads into clients."
@@ -693,6 +693,6 @@ function LeadsPage() {
           <ConversionCard />
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }
