@@ -25,7 +25,7 @@ import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DashboardDemoRouteImport } from './routes/dashboard-demo'
 import { Route as CpdV2RouteImport } from './routes/cpd-v2'
 import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
@@ -90,6 +90,7 @@ import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -182,9 +183,9 @@ const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
   path: '/find-a-professional',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const DashboardDemoRoute = DashboardDemoRouteImport.update({
+  id: '/dashboard-demo',
+  path: '/dashboard-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CpdV2Route = CpdV2RouteImport.update({
@@ -507,6 +508,11 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -582,7 +588,7 @@ export interface FileRoutesByFullPath {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -599,6 +605,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -675,7 +682,7 @@ export interface FileRoutesByTo {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -692,6 +699,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/memberships': typeof AdminMembershipsRoute
@@ -769,7 +777,7 @@ export interface FileRoutesById {
   '/cpd': typeof CpdRoute
   '/cpd-legacy': typeof CpdLegacyRoute
   '/cpd-v2': typeof CpdV2Route
-  '/dashboard': typeof DashboardRoute
+  '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -786,6 +794,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
@@ -864,7 +873,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -881,6 +890,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/dashboard'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/memberships'
@@ -957,7 +967,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -974,6 +984,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/dashboard'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/memberships'
@@ -1050,7 +1061,7 @@ export interface FileRouteTypes {
     | '/cpd'
     | '/cpd-legacy'
     | '/cpd-v2'
-    | '/dashboard'
+    | '/dashboard-demo'
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
@@ -1067,6 +1078,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/_authenticated/dashboard'
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/memberships'
@@ -1145,7 +1157,7 @@ export interface RootRouteChildren {
   CpdRoute: typeof CpdRoute
   CpdLegacyRoute: typeof CpdLegacyRoute
   CpdV2Route: typeof CpdV2Route
-  DashboardRoute: typeof DashboardRoute
+  DashboardDemoRoute: typeof DashboardDemoRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -1334,11 +1346,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FindAProfessionalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/dashboard-demo': {
+      id: '/dashboard-demo'
+      path: '/dashboard-demo'
+      fullPath: '/dashboard-demo'
+      preLoaderRoute: typeof DashboardDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd-v2': {
@@ -1789,6 +1801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCpdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/pro/$slug/': {
       id: '/pro/$slug/'
       path: '/'
@@ -1870,12 +1889,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDashboardProfileEditRoute: typeof AuthenticatedDashboardProfileEditRoute
   AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
   AuthenticatedDashboardVerificationRoute: typeof AuthenticatedDashboardVerificationRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDashboardProfileEditRoute:
     AuthenticatedDashboardProfileEditRoute,
   AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
@@ -1924,7 +1945,7 @@ const rootRouteChildren: RootRouteChildren = {
   CpdRoute: CpdRoute,
   CpdLegacyRoute: CpdLegacyRoute,
   CpdV2Route: CpdV2Route,
-  DashboardRoute: DashboardRoute,
+  DashboardDemoRoute: DashboardDemoRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
