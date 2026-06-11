@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Compass,
+  GraduationCap,
+  Handshake,
   LifeBuoy,
   Mail,
   MessageSquare,
-  Search,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -23,17 +24,17 @@ import { ContactForm } from "@/components/contact/ContactForm";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact REPs — talk to a human" },
+      { title: "Contact REPs — talk to the team behind the register" },
       {
         name: "description",
         content:
-          "Send a message to REPs and reach the right team — clients, professionals, press and partnerships. Real humans, typical reply under 4 hours.",
+          "For professionals joining REPs and training providers, awarding bodies, partners and press. Real humans, typical reply ~2hr on weekdays.",
       },
-      { property: "og:title", content: "Contact REPs — talk to a human" },
+      { property: "og:title", content: "Contact REPs — talk to the team behind the register" },
       {
         property: "og:description",
         content:
-          "One smart contact form that routes your message to the right team. Typical reply under 4 hours, Mon–Fri.",
+          "A B2B contact route for professionals and training providers. Verification help, partnership, recognition and press — routed to the right person.",
       },
       { property: "og:url", content: "/contact" },
     ],
@@ -44,66 +45,66 @@ export const Route = createFileRoute("/contact")({
 
 const QUICK_ANSWERS = [
   {
-    icon: ShieldAlert,
-    title: "How do I get verified?",
-    body: "Three checks: ID, an Ofqual-regulated qualification, valid insurance. Average turnaround: 48 hours.",
-    to: "/for-professionals",
+    icon: ShieldCheck,
+    title: "Get verified",
+    body: "£99/year. Submit evidence once — decision in 5 working days.",
+    to: "/for-professionals" as const,
     cta: "See how verification works",
   },
   {
-    icon: Search,
-    title: "How do I find a coach in my city?",
-    body: "Search the register by city and specialism — filter by tier, format, and availability.",
-    to: "/find-a-professional",
-    cta: "Browse the register",
+    icon: Sparkles,
+    title: "Compare Pro vs Studio",
+    body: "Shop-front, bookings, payments, growth tools — see what's in each tier.",
+    to: "/pricing" as const,
+    cta: "See pricing",
   },
   {
-    icon: Compass,
-    title: "Is this person really REPs-registered?",
-    body: "Every active member has a public profile. If you can find them on the register, they're current.",
-    to: "/find-a-professional",
-    cta: "Check the register",
+    icon: GraduationCap,
+    title: "For training providers",
+    body: "Course recognition, bulk verification for graduates, partnership and integrations.",
+    href: "/for-training-providers",
+    cta: "Provider enquiries",
   },
 ] as const;
 
 const CHANNELS = [
   {
-    label: "Client support",
-    email: "support@repsuk.org",
-    scope: "Finding a pro, bookings and your account.",
-  },
-  {
     label: "Professional support",
     email: "pros@repsuk.org",
-    scope: "Verification, payouts, profile and shop-front.",
+    scope: "Verification, billing, profile and shop-front.",
   },
   {
-    label: "Press, partnerships & enterprise",
+    label: "Partnerships",
+    email: "partners@repsuk.org",
+    scope: "Training providers, awarding bodies, integrations.",
+  },
+  {
+    label: "Press & media",
     email: "press@repsuk.org",
-    scope: "Media, partnerships, multi-coach and investor enquiries.",
+    scope: "Editorial, interviews, brand assets.",
   },
 ] as const;
 
 const FAQ_ITEMS = [
   {
-    q: "How quickly will I hear back?",
-    a: "Most messages get a reply the same working day. Verification and payout questions are usually answered in under two hours during working hours (Mon–Fri, 9–6 GMT).",
+    q: "How long does verification take?",
+    a: "We aim for a decision within 5 working days of receiving complete evidence (ID, qualification, insurance). Most pros hear back in 48 hours.",
   },
   {
-    q: "Can I phone REPs?",
-    a: "We're a remote-first global team and don't run a phone line. Email keeps a written record for both of us and lets the right specialist answer — usually faster than a call.",
+    q: "Does REPs charge a booking commission?",
+    a: "No. There's no booking fee or commission of any kind. Every feature in your tier is included — no paid add-ons.",
   },
   {
-    q: "I'm a coach — where do I report a profile issue?",
-    a: "Use the form above and pick \"I'm a professional\" → \"Profile / shop-front\". If you can, include your REPs profile URL so we can look you up directly.",
+    q: "Can my course be recognised on REPs?",
+    a: "Yes — pick \"Training provider / partner\" above and choose \"Course recognition on REPs\". We'll come back with what we need to assess your qualification.",
   },
   {
-    q: "I'm a client — how do I report a coach?",
-    a: "If it's a safeguarding concern, use the dedicated safeguarding route below — it goes straight to our safeguarding lead. For anything else (a no-show, a refund question), use the form above.",
+    q: "How do bulk verifications work for training providers?",
+    a: "If you'd like a streamlined onboarding lane for your graduates (so they don't each have to re-submit qualification evidence from scratch), use the partner form — we'll set up a dedicated pipeline.",
   },
   {
-    q: "Where are you based?",
-    a: "REPs is a global register with a remote-first team. We don't operate a public office — every message goes to a real person, not a reception desk.",
+    q: "Where do I send a safeguarding or conduct concern?",
+    a: "Use the dedicated safeguarding route below — it goes straight to our safeguarding lead and is kept separate from general support.",
   },
 ];
 
@@ -139,8 +140,8 @@ function ContactPage() {
                 animationFillMode: "both",
               }}
             >
-              Talk to a{" "}
-              <span className="text-reps-orange">human.</span>
+              Talk to the team behind the{" "}
+              <span className="text-reps-orange">register.</span>
             </h1>
 
             <p
@@ -151,8 +152,8 @@ function ContactPage() {
                 animationFillMode: "both",
               }}
             >
-              Most messages get a reply the same working day. Pick what fits below —
-              we'll route it to the person who actually owns it.
+              Whether you're a professional joining REPs or a training provider partnering with
+              us, you'll speak to a human who actually knows the product — not a ticket queue.
             </p>
 
             <div
@@ -170,6 +171,23 @@ function ContactPage() {
                 <Mail className="size-3.5 text-reps-orange" /> Routed to the right team
               </span>
             </div>
+
+            <p
+              className="mt-6 animate-fade-in text-[12.5px] text-white/55"
+              style={{
+                animationDuration: "640ms",
+                animationDelay: "320ms",
+                animationFillMode: "both",
+              }}
+            >
+              Looking for a coach?{" "}
+              <Link
+                to="/find-a-professional"
+                className="font-semibold text-white/75 underline-offset-4 hover:text-reps-orange hover:underline"
+              >
+                Search the register →
+              </Link>
+            </p>
           </div>
 
           <div
@@ -190,7 +208,7 @@ function ContactPage() {
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-28">
           <SectionHeader
             eyebrow="Send a message"
-            heading="One form. Three audiences. Routed properly."
+            heading="Two audiences. One form. Routed properly."
             lede="Pick the tab that fits and we'll show only the fields that matter. The estimated reply time below updates as you choose a reason."
             align="center"
             className="mx-auto text-center"
@@ -205,32 +223,45 @@ function ContactPage() {
       <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <SectionHeader
-            eyebrow="Quick answers"
-            heading="Most people are asking…"
+            eyebrow="Before you write"
+            heading="Most pros and providers are asking…"
             lede="If your question lives here, you'll get an answer in under a minute — no waiting on a reply."
           />
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {QUICK_ANSWERS.map((q) => (
-              <Link
-                key={q.title}
-                to={q.to}
-                className="group flex flex-col rounded-[16px] border border-reps-border bg-reps-panel/40 p-6 transition-colors hover:border-reps-orange/60"
-              >
-                <span className="flex size-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <q.icon className="size-5" />
-                </span>
-                <h3 className="mt-5 font-display text-[18px] font-bold text-white">
-                  {q.title}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
-                  {q.body}
-                </p>
-                <span className="mt-5 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
-                  {q.cta}{" "}
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            ))}
+            {QUICK_ANSWERS.map((q) => {
+              const Icon = q.icon;
+              const inner = (
+                <>
+                  <span className="flex size-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                    <Icon className="size-5" />
+                  </span>
+                  <h3 className="mt-5 font-display text-[18px] font-bold text-white">
+                    {q.title}
+                  </h3>
+                  <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
+                    {q.body}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
+                    {q.cta}{" "}
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </>
+              );
+              const className =
+                "group flex flex-col rounded-[16px] border border-reps-border bg-reps-panel/40 p-6 transition-colors hover:border-reps-orange/60";
+              if ("href" in q) {
+                return (
+                  <a key={q.title} href={q.href} className={className}>
+                    {inner}
+                  </a>
+                );
+              }
+              return (
+                <Link key={q.title} to={q.to} className={className}>
+                  {inner}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -262,9 +293,9 @@ function ContactPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-[13px] text-white/55">
-            REPs is a remote-first global team. We don't run a phone line or a public office —
-            every message is read by a named person.
+          <p className="mt-6 inline-flex items-center gap-2 text-[13px] text-white/55">
+            <Handshake className="size-4 text-reps-orange" />
+            REPs is a remote-first global team — every message is read by a named person.
           </p>
         </div>
       </section>
@@ -279,11 +310,12 @@ function ContactPage() {
               </span>
               <div>
                 <AlertTitle className="font-display text-[18px] font-bold text-white">
-                  Safeguarding concern? Use the dedicated route.
+                  Safeguarding or conduct concern? Use the dedicated route.
                 </AlertTitle>
                 <AlertDescription className="mt-1 text-[14px] text-white/75">
-                  If you have a safeguarding concern about a coach or client, please don't use the
-                  general form — it goes straight to our safeguarding lead.
+                  If you have a safeguarding or professional-conduct concern about a registered
+                  pro or a graduate, please don't use the general form — it goes straight to our
+                  safeguarding lead.
                 </AlertDescription>
               </div>
             </div>
@@ -310,10 +342,10 @@ function ContactPage() {
 
       <FinalCta
         eyebrow={null}
-        heading="Prefer to browse first?"
-        lede="The register and pricing pages answer most questions before you even need to send a message."
-        primary={{ to: "/find-a-professional", label: "Find a coach" }}
-        secondary={{ to: "/pricing", label: "See pricing" }}
+        heading="Ready to join the register?"
+        lede="Most pros are verified within 5 working days. Pricing is honest, evidence is reviewed by humans, and every feature in your tier is included."
+        primary={{ to: "/for-professionals", label: "Get verified — £99/yr" }}
+        secondary={{ to: "/pricing", label: "Compare Pro & Studio" }}
       />
 
       <PublicFooter />
