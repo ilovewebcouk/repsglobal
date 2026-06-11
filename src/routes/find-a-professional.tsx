@@ -266,9 +266,46 @@ function DirectoryPage() {
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
+  const listLive = useServerFn(listPublishedProfessionals);
+  const { data: livePros = [] } = useQuery({
+    queryKey: ["directory", "published"],
+    queryFn: () => listLive({ data: undefined }),
+    staleTime: 60_000,
+  });
+
+  const liveAsPros: Pro[] = React.useMemo(
+    () =>
+      livePros
+        .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
+        .map((r) => ({
+          name: r.trading_name || "REPS Professional",
+          role: (r.specialisms?.[0] as string) || "Personal Trainer",
+          distance: r.city ? `${r.city}` : "—",
+          rating: 5.0,
+          reviews: 0,
+          mode: r.in_person_available && r.online_available
+            ? "In-person & Online"
+            : r.online_available
+              ? "Online"
+              : "In-person",
+          tags: [
+            (r.specialisms?.[0] as string) || "Health & Fitness",
+            (r.specialisms?.[1] as string) || "Strength Training",
+            (r.specialisms?.[2] as string) || "Conditioning",
+          ] as [string, string, string],
+          blurb: r.headline || "REPS-verified professional.",
+          image: proJames,
+          venues: [],
+          slug: r.slug,
+        })),
+    [livePros],
+  );
+
+  const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
+
   const visiblePros = activeVenue
-    ? directoryPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
-    : directoryPros;
+    ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : mergedPros;
 
   const clearVenue = () =>
     navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
