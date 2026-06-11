@@ -1,14 +1,17 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
   Circle,
   Clock,
+  CreditCard,
   ExternalLink,
   FileText,
   Loader2,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   UserPen,
@@ -20,8 +23,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
+import {
+  createPortalSession,
+  syncMySubscription,
+} from "@/lib/billing/billing.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  validateSearch: (raw: Record<string, unknown>) => ({
+    billing: typeof raw.billing === "string" ? raw.billing : undefined,
+  }),
   head: () => ({ meta: [{ title: "Dashboard — REPS" }] }),
   component: DashboardPage,
 });
