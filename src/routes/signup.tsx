@@ -272,28 +272,6 @@ function SignupPage() {
     }
   };
 
-  const handleGoogle = async () => {
-    setError(null);
-    setGoogleLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        setError(result.error.message ?? "Google sign-up failed");
-        setGoogleLoading(false);
-        return;
-      }
-      if (result.redirected) return;
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        await continueAfterAuth(data.user.id);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-up failed");
-      setGoogleLoading(false);
-    }
-  };
 
   // Build a sign-in URL that preserves checkout intent
   const signInHref = wantsCheckout
