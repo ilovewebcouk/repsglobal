@@ -76,7 +76,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       mode: "subscription",
       customer: customerId,
       line_items: [{ price: offer.priceId, quantity: 1 }],
-      success_url: `${origin}/dashboard?billing=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/dashboard/syncing?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?billing=cancelled`,
       allow_promotion_codes: true,
       payment_method_collection: "always",
