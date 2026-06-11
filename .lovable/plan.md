@@ -1,102 +1,127 @@
-# /reviews — world-class rebuild plan
+## Brutal honest verdict on the current /reviews
 
-## Brutal honest truth
+Current state ≈ **6.5 / 10**.
 
-No, the current page is not 10/10. Three real problems:
+What's wrong, specifically:
 
-1. **Theme mismatch + ghost nav.** We flipped the page to light (`bg-reps-warm-white`) while the global `PublicHeader` is built for dark surfaces. On a light hero the header reads as a grey strip with no contrast — it looks broken, not intentional. Every other top-level marketing page (`/about`, `/for-professionals`, `/features/*`, `/specialisms`, `/cpd`) sits on a **dark hero into dark body** with subtle `bg-reps-panel/15–/30` tinting for rhythm. `/` is the exception because it's the consumer landing page. `/reviews` is a **trust / proof pillar**, not a consumer landing — it belongs in the dark marketing system.
-2. **"Headline rating block" got orphaned.** The 4.9 + bars panel now sits in its own row beneath the stat strip, floating, with no relationship to anything around it. World-class review pages anchor the score *inside* the hero so the number is the hero.
-3. **It's still structured like Trustpilot.** Score → stats → methodology → feed. That's a review *aggregator*. REPs is not an aggregator — we're the register the reviews live on. The page should feel like a **trust pillar for the whole platform**, not a public leaderboard.
+1. **It went fully dark** to fix the "grey ghost nav" issue. That broke parity with the homepage, which is the page you actually want this to feel like. /about is allowed to be all-dark (it's a brand/manifesto pillar). /reviews is closer to a homepage-style hub.
+2. **The hero looks like a Trustpilot dashboard** — big 4.9 + bars on the right, score-led, no human, no story. That's the most generic possible treatment for a reviews page.
+3. **Two competing stat moments stacked back-to-back** — the score panel inside the hero AND the 4-cell stat strip 80px below it. Visually it reads as "stat → stat → stat → finally content".
+4. **Header reads correctly now** (transparent over the dark hero, solid after scroll). The "grey strip" was a symptom of mixing the light body with the transparent header — solvable without going all-dark.
+5. **Editor's picks and the feed look identical** — same panel, same border, same density. No hierarchy.
+6. **Pro pitch is buried** in a dim mid-page tile row — it should feel like a moment, not a footnote.
 
-## What world-class looks like (reference register)
+So no, this is not 10/10. Here is what 10/10 looks like, locked to the choices you just made (homepage-style mixed theme, hybrid consumer+pro, image-led editorial hero).
 
-Stripe Trust Center, Linear Changelog, Vercel Security, Notion Customers — dark, editorial, opinionated, proof-led. One big idea per section. No filter bars pretending to be a product.
+---
 
-## New structure (dark, REPs-native)
+## Target shape: homepage-mixed, image-led editorial
+
+Surface system (mirrors `/`):
+
+- Hero: `bg-reps-black` with editorial image, header stays `transparent` and goes solid on scroll — same behaviour the homepage already has.
+- Body: alternating `bg-reps-ivory` ↔ `bg-reps-warm-white` (light editorial, like the homepage's body).
+- Close: dark again (`bg-reps-ink`) for the FinalCta + footer, exactly like the homepage.
+
+This is the single biggest move. It restores light/dark rhythm and fixes the "why does this look nothing like the homepage" complaint.
+
+---
+
+## Section order (10 sections)
 
 ```text
-1. Hero (dark, bg-reps-black)
-   ├─ MarketingHeroEyebrow: "Reviews on REPs"
-   ├─ H1: "Every review here came from a real booking."
-   ├─ Lede (16px): one sentence on verified-only + right of reply
-   ├─ Trust chips: Verified bookings · Moderated for legality · Pro right of reply
-   └─ FLOATING SCORE CARD (right column, lg+):
-        4.9 ★★★★★  ·  12,400+ verified reviews
-        5★ ████████ 84%
-        4★ ███      11%
-        3★ ▌         3%
-        2★ ▌         1%
-        1★ ▌         1%
-        → score lives IN the hero, not below it
-
-2. Stat strip (dark, /about pattern — single rounded-[22px] panel, gap-px)
-   12,400 reviews · 4.9 avg · 96% would book again · 100% verified booking
-   (Standardised to match /about exactly. No second variant.)
-
-3. "How a review gets on REPs" (4-step rail, dark)
-   Book → Train → Invited (only after booking confirmed) → Published
-   Each step a small card. Methodology, not a sales line.
-
-4. Editor's picks (3 cards, dark)
-   Story-led — name + transformation + 1 pull-quote. Not generic stars.
-
-5. Browse reviews by what you're looking for (8 tiles, dark)
-   PT · Online coach · Group ex · Strength · Nutritionist · Yoga · Pilates
-   · Gyms & Studios · Training providers (9 tiles, sm:2 / lg:3 / xl:5 mosaic)
-
-6. Live feed (dark, no filter bar pretending to work)
-   Two-column masonry, 8 reviews. Sort dropdown only (Most recent / Highest /
-   Most helpful) — no rating filter, no search input. Phase 1 = static.
-
-7. "Why pros choose to be reviewed on REPs" (3 cards, dark — pro-positive)
-   ├─ Real clients only — no anonymous trolls
-   ├─ You own the response — public right of reply
-   └─ Reviews follow you across REPs (profile, shop-front, search, city pages)
-   Soft CTA → /for-professionals
-
-8. Trust mechanics (4 commitments, dark)
-   Verified-booking gating · Moderated for legality/abuse/spam (not sentiment)
-   · Right of reply · Reviews can't be bought, removed, or reordered for money
-
-9. FAQ (MarketingFaq primitive, dark) — 5 Qs
-10. FinalCta (shared dark component) — two CTAs (find a pro / list your business)
+1.  HERO — dark, image-led editorial
+2.  TRUST RAIL — slim dark band directly under hero (1 row)
+3.  EDITORIAL FEATURE REVIEW — light, magazine-style 50/50
+4.  HOW A REVIEW GETS HERE — light, 4-step inline rail
+5.  EDITOR'S PICKS — light ivory, 3 quote-led cards
+6.  BROWSE BY SPECIALISM — light warm-white, 9-tile mosaic
+7.  THE FEED — light ivory, 2-col masonry + sort
+8.  WHY PROS CHOOSE REPs REVIEWS — dark inset band (the "moment")
+9.  FAQ — light, MarketingFaq
+10. FINAL CTA — dark, shared FinalCta + footer
 ```
 
-## Why this is 10/10 and the current page isn't
+### 1. Hero (dark, image-led)
 
-- **One visual system.** Dark throughout = the header sits on a dark hero like every other marketing page. No more grey ghost-nav.
-- **Score is the hero, not a footnote.** The 4.9 + bars panel is anchored in the hero column, where world-class trust pages put it.
-- **Stat strip standardised.** Identical pattern to `/about` — only one stat-strip in the whole product.
-- **Pro-positive, not pillory.** "Why pros choose to be reviewed on REPs" replaces the old "we don't hide bad reviews" sales-anti-pattern.
-- **No fake interactivity.** Phase 1 honesty — sort dropdown only, no filter bar, no fake search.
-- **REPs-native.** Score → method → editor picks → browse by profession → feed → pro proof → mechanics → FAQ. Feels like REPs, not Trustpilot.
+- Full-bleed editorial photo of a coach mid-session, REPS wordmark on chest (per trainer-imagery rule). Use existing `HeroOverlay copySide="left"` — never hand-roll the wash.
+- Left column copy: `MarketingHeroEyebrow` "Reviews on REPs" → H1 "Every review came from a real booking." → 16px lede → 3 trust chips → primary CTA "Find a professional" + ghost link "How a review gets here".
+- Right column: **no rating dashboard.** Instead, a single floating "verified review" card — initials, 5 orange stars, a 2-line quote, the pro's name + role, and a small "Verified booking · 14 Nov" line. Reads like proof, not a leaderboard.
+- Standard rhythm: `pt-24 pb-20 lg:pt-28 lg:pb-24`.
 
-## Out of scope (Phase 1)
+### 2. Trust rail (dark, slim)
 
-Real review data, working sort, search, profession counts, auth, DB, payments, AI summaries, per-profession averages, response moderation backend.
+Single dark band immediately under the hero, before the light body starts. One row, 4 cells, divider keylines (the `/about` pattern). Stats: `12,400+ verified reviews · 4.9 avg · 96% would rebook · 100% booking-verified`. This is the only stat moment on the page — kills the duplicate score+strip problem.
+
+### 3. Editorial feature review (light, 50/50)
+
+The hero proof, expanded. Light ivory. Left: large pro portrait (radius 22). Right: pull-quote in display type, attribution, programme, "Verified booking" badge, link to the pro's shop-front. This is the page's most distinctive moment and the thing nobody else does.
+
+### 4. How a review gets here (light)
+
+Reframe the 4-step methodology as a **horizontal rail with numbered ribbons** (01–04), not 4 identical cards. Light surface, dark text, orange step numbers. Tighter than the current grid.
+
+### 5. Editor's picks (light ivory)
+
+3 quote-led cards (not feed cards). Bigger pull-quote, smaller meta. Orange "Editor's pick" pill, clear visual difference from the feed below.
+
+### 6. Browse by specialism (light warm-white)
+
+9 tiles, `sm:2 lg:3` mosaic, light surface, subtle stone border, orange chevron on hover. Same data already in `PROFESSION_TILES`.
+
+### 7. The feed (light ivory)
+
+Sort pills only (Most recent / Highest rated / Most helpful). 2-column light review cards. "Load more reviews" ghost button. No filters — Phase 1.
+
+### 8. Why pros choose to be reviewed on REPs (dark inset)
+
+The pivot to pro acquisition. Wrap the whole section in a **dark inset band** with `bg-reps-ink` + soft orange radial glow — so it reads as a moment inside the light body, not a fourth identical card row. 3 cards (real clients only / right of reply / reviews follow you across REPs) + primary CTA "List your business on REPs" + link to `/features/visibility`.
+
+### 9. FAQ (light)
+
+Light surface variant of `MarketingFaq`. Same 5 questions already drafted.
+
+### 10. Final CTA + footer (dark)
+
+Shared `<FinalCta />` + `<PublicFooter />` — unchanged.
+
+---
+
+## What gets removed
+
+- The 4.9 + ratings-breakdown panel inside the hero (rating bars feel aggregator-y; the trust rail covers the number).
+- The dedicated dark stat strip below the hero (folded into the trust rail).
+- Duplicate dark backgrounds on every section.
+- The "Trust mechanics — four commitments" grid (its job is covered by Methodology + Why Pros + FAQ; removing it tightens the page).
+
+---
+
+## Header / "grey ghost nav" fix
+
+Use the same pattern the homepage uses: `<PublicHeader variant="transparent" />`. Transparent over the dark hero, solid-dark on scroll. The ghost-grey effect only happens when transparent header sits over a light body — putting the hero on `bg-reps-black` removes the bug without going all-dark on the whole page.
+
+---
 
 ## Technical notes
 
 - File: `src/routes/reviews.tsx` only.
-- Surfaces: `bg-reps-black` hero → `bg-reps-panel/15` and `/30` alternating body → dark FinalCta. Drop all `bg-reps-warm-white`, `bg-reps-ivory`, `text-reps-charcoal`.
-- Header stays default dark `PublicHeader` — no overrides.
-- Stat strip = exact `/about` pattern (`rounded-[22px] border border-reps-border bg-reps-border gap-px`, `font-display 32→40`, `uppercase tracking-[0.14em] text-white/55`).
-- Headline rating panel lives in hero right column at `lg:` with grid `lg:grid-cols-[1.1fr,1fr]`.
-- Type: `SectionEyebrow` / `SectionHeading` / `SectionHeader` everywhere. Hero lede 16px, section lede 15–15.5px.
-- Radius: hero 24, panels 22, cards 18, buttons 10, inputs 12 — no `rounded-xl/2xl/3xl`, no 14/20/28/32.
-- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`.
-- Use `HeroOverlay copySide="left"` (locked primitive) for the hero wash.
-- Use shared `<FinalCta />` — don't rebuild.
-- No breadcrumb. No filter pill row. No light surfaces anywhere.
-- Update `mem://design/locked-reviews` to reflect the dark rebuild and freeze.
+- `MarketingFaq` currently renders dark — add a `tone="light"` prop (white surface, ink text, stone borders) so /reviews can reuse it without forking. Single shared primitive stays the source of truth.
+- All section radii respect the locked scale: hero 24, large panels 22, cards 18, buttons 10, inputs 12, pills full. No 14/20/28/32, no `rounded-xl/2xl/3xl`. 14px exception only for downscaled pro thumbnails.
+- Tokens only — no hex in components. Light surfaces via `bg-reps-ivory` / `bg-reps-warm-white` / `border-reps-stone` (homepage pattern).
+- Section rhythm strictly `py-20 lg:py-28`; trust rail uses the tight proof-strip rhythm `pt-10 pb-16 lg:pt-12 lg:pb-20`.
+- No hairline dividers between sections; rhythm is colour-band only.
+- Image-led hero uses `HeroOverlay copySide="left"` (no inline wash).
+- Run `audit.sh`; must exit 0.
+- Update `mem://design/locked-reviews` to reflect the new locked structure.
 
-## Audit expectations
+---
 
-`audit.sh` exits 0. Standard 14px pro-thumbnail exception only if a downscaled pro photo appears in editor picks (otherwise no exceptions).
+## Out of scope (Phase 1)
 
-## What I need from you before I build
+Real review data, working sort, search, profession counts, per-profession averages, response moderation backend, auth, payments, AI summaries.
 
-Confirm:
-1. Dark-system rebuild (yes / tweak).
-2. Score panel anchored in hero (yes / keep as separate row).
-3. Drop the filter bar entirely, keep only a sort dropdown (yes / keep filters).
+---
+
+## Decisions still open
+
+None — your three answers (homepage-mixed theme, hybrid consumer+pro, image-led editorial hero) fully determine the design. I'll implement exactly the above when you approve.
