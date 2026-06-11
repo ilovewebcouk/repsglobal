@@ -19,6 +19,7 @@ export type PlanCard = {
   ctaHref: string;
   founding?: boolean;
   featured?: boolean;
+  waitlist?: boolean;
   features: string[];
   pricing: Record<Billing, PriceView>;
 };
@@ -71,8 +72,9 @@ export const PLANS: PlanCard[] = [
     tier: "Studio",
     tierKey: "studio",
     desc: "Teams, gyms and multi-coach businesses.",
-    cta: "Start Studio",
-    ctaHref: "/signup",
+    cta: "Join Studio waitlist",
+    ctaHref: "/contact",
+    waitlist: true,
     features: [
       "Everything in Pro",
       "Personalised shop-front (team accent options)",
@@ -84,8 +86,8 @@ export const PLANS: PlanCard[] = [
       "Account manager",
     ],
     pricing: {
-      monthly: { price: "£149", period: "per month", meta: "Billed monthly" },
-      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · 2 months free" },
+      monthly: { price: "£149", period: "per month", meta: "Planned pricing · waitlist only" },
+      annual: { price: "£149", period: "per month", meta: "Planned pricing · waitlist only" },
     },
   },
 ];
@@ -199,7 +201,7 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is there a free trial?",
-    a: "Yes — Pro includes a 30-day free trial. You can cancel anytime during the trial from your dashboard. Verified and Studio don't currently include a trial.",
+    a: "Yes — Pro includes a 30-day free trial with a card required at signup. You pay £0 today, then £59/month after 30 days unless you cancel during the trial. Verified does not include a trial, and Studio is waitlist-only.",
   },
   {
     q: "What's the difference between Verified and Pro?",
