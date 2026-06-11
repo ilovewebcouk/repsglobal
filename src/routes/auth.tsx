@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Apple, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth")({
@@ -65,7 +65,7 @@ function LoginPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
+  
   const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (value: string): string | null => {
@@ -117,34 +117,6 @@ function LoginPage() {
     }
   };
 
-  const handleApple = async () => {
-    setError(null);
-    setAppleLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        setError(
-          friendlyAuthError(
-            result.error.message ?? "Couldn't sign in with Apple. Please try again.",
-          ),
-        );
-        setAppleLoading(false);
-        return;
-      }
-      if (result.redirected) return;
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
-      }
-    } catch (err) {
-      const raw = err instanceof Error ? err.message : "Apple sign-in failed";
-      setError(friendlyAuthError(raw));
-      setAppleLoading(false);
-    }
-  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-reps-ink text-reps-text">
@@ -319,28 +291,6 @@ function LoginPage() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
-              <span className="h-px flex-1 bg-white/10" />
-              Or continue with
-              <span className="h-px flex-1 bg-white/10" />
-            </div>
-
-            {/* OAuth */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleApple}
-              disabled={appleLoading}
-              className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
-            >
-              {appleLoading ? (
-                <Loader2 data-icon="inline-start" className="animate-spin" />
-              ) : (
-                <Apple data-icon="inline-start" />
-              )}
-              {appleLoading ? "Connecting…" : "Continue with Apple"}
-            </Button>
 
             <p className="mt-6 text-center text-[13px] text-white/55">
               Don&apos;t have an account?{" "}

@@ -1,7 +1,6 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Apple,
   ArrowRight,
   BadgeCheck,
   Eye,
@@ -408,19 +407,6 @@ function SignupPage() {
               Takes about 30 seconds.
             </p>
 
-            {/* Social */}
-            <div className="mt-6">
-              <SocialButton label="Continue with Apple" disabled>
-                <Apple className="h-4 w-4 text-reps-charcoal" />
-              </SocialButton>
-            </div>
-
-            {/* Divider */}
-            <div className="mt-5 flex items-center gap-3 text-[11px] uppercase tracking-wider text-reps-muted-light">
-              <span className="h-px flex-1 bg-reps-stone" />
-              or sign up with email
-              <span className="h-px flex-1 bg-reps-stone" />
-            </div>
 
             <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
               {/* Full name */}
@@ -570,27 +556,4 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function SocialButton({
-  label,
-  children,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {children}
-      {label}
-    </button>
-  );
-}
 
