@@ -1,72 +1,58 @@
 ## Goal
 
-Mark six footer entries — **Careers, Press, Complaints, Help Centre, FAQ, Standards** — as non-interactive "Soon" items in the footer. Nothing clickable, no dead routes, no header active-state glow.
+Replace the homepage hero image with a world-class editorial portrait that makes the REPs hero read as a register of trusted professionals, not a fitness marketplace. **Layout, gradient stops, animations and copy stay exactly as they are** (per locked homepage memory). Image only.
 
-## Visual treatment (the "10/10" bit)
+## What changes
 
-Footer item, replacing the current `<Link>`:
+1. **Generate one new hero image** at premium tier and swap `src/assets/home-hero-coaching.jpg.asset.json` for the new asset.
+2. **Keep everything else in `src/routes/index.tsx` hero block untouched** — including the `object-[88%_30%] lg:object-[78%_30%]` crop, the two-stop dark wash, the H1/lede/form/trust chips, and animation delays.
 
-```tsx
-<span
-  aria-disabled="true"
-  className="inline-flex items-center gap-2 text-[14px] text-reps-muted/60 cursor-default select-none"
->
-  {label}
-  <span className="rounded-[6px] border border-white/12 bg-white/[0.04] px-1.5 py-[1px] text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
-    Soon
-  </span>
-</span>
-```
+That's the entire scope.
 
-- Label is muted (not the normal hover-white), so the eye reads it as deferred.
-- Pill is **neutral white-on-white**, not emerald and not orange (memory: emerald is reserved for status; orange is brand-active).
-- `cursor-default`, no hover-underline, no colour change.
-- Wrapped in a shadcn `Tooltip` (`side="top"`) with content **"Launching soon"** — keeps it accessible without a native `title`.
+## The image brief
 
-## Footer data model
+**Direction:** Single editorial portrait of one verified REPs personal trainer.
 
-Update the `FooterLink` type in `src/components/public/PublicFooter.tsx`:
+**Subject**
+- Personal trainer, mid-30s, calm authority. Real working coach, not a fitness model or bodybuilder.
+- Direct eye contact with camera. Subtle, settled expression — not smiling, not stern.
+- 3/4 body framing, turned slightly off-axis so the gaze meets the lens.
 
-```ts
-type FooterLink = { label: string; to?: string; soon?: boolean };
-```
+**Wardrobe (locked brand rule)**
+- Charcoal or black short-sleeve technical polo or T-shirt.
+- **REPS** wordmark, ALL CAPS, **white**, embroidered small on the left chest. Looks like real embroidery, not an overlay.
 
-Mark these six entries with `soon: true` and drop `to`:
+**Lighting + background**
+- Deep charcoal seamless background (~`#0E0E10`) so it composites onto `bg-reps-black` cleanly.
+- Single key light camera-right + a low-intensity warm rim, no fill. Sculpted, editorial — *Monocle / FT Weekend Magazine*, not Men's Health.
+- Subtle film grain. Zero HDR look. No lens flares, no glow.
 
-- For Members → Help Centre, FAQ
-- Company → Standards, Careers, Press
-- Legal → Complaints
+**Composition for the locked crop**
+- The locked CSS crops to `object-[88%_30%]` desktop and `[78%_30%]` large-desktop, so the subject must sit in the **right third** of the frame with their head around 30% from the top.
+- The **left two-thirds must be quiet, mostly negative space** (background only) — that's where the dark wash and H1 + lede + search form land.
+- No props, no equipment in frame.
 
-Render logic: if `soon`, render the `<Tooltip>` + `<span>` block above; otherwise render the existing `<Link>`.
+**Output**
+- 1920×1200 JPG (16:10), generated via `imagegen --model premium`.
+- No overlay graphics, no verified card baked into the image (per the user's pick — overlay-free, let the photo carry it).
+- Save to `/tmp/hero-coaching-v2.jpg`, then upload via `lovable-assets` and write to `src/assets/home-hero-coaching.jpg.asset.json` (overwrite, same import path → zero code change needed beyond the pointer file).
 
-## Header
+## Production steps
 
-`src/components/public/PublicHeader.tsx` currently lights up its active state for `/standards`, `/help`, `/faq`, `/careers`, `/press`, `/complaints`. Remove those six `pathname.startsWith(...)` clauses from the active-match expression — the routes are going away.
-
-## Routes
-
-Delete the six route files so nothing is ever reachable, indexed, or hot-linked:
-
-- `src/routes/careers.tsx`
-- `src/routes/press.tsx`
-- `src/routes/complaints.tsx`
-- `src/routes/help.tsx`
-- `src/routes/faq.tsx`
-- `src/routes/standards.tsx`
-
-The router tree (`routeTree.gen.ts`) regenerates automatically on next build.
-
-Before deleting, grep the codebase for any internal `<Link to="/careers" | "/press" | "/complaints" | "/help" | "/faq" | "/standards">` references and either remove them or swap them to a sensible live target (most likely none exist outside the footer/header, but the grep is mandatory — TanStack Router type-checks routes and a stray `<Link to="/faq">` would break the build).
+1. Generate the image with `imagegen` at `premium` quality, prompt built from the brief above, written to `src/assets/home-hero-coaching-v2.jpg`.
+2. **QA pass:** open the generated image and check (a) REPS wordmark reads ALL CAPS, white, left-chest, looks embroidered; (b) subject is in the right third; (c) left two-thirds is quiet enough for copy; (d) background tone is dark enough to composite onto `bg-reps-black`. If any check fails, regenerate with a tightened prompt before continuing.
+3. Upload via `lovable-assets create --file ... --filename home-hero-coaching.jpg` and overwrite `src/assets/home-hero-coaching.jpg.asset.json`. Delete the temp JPG.
+4. **Verify in preview:** load `/` at desktop and large-desktop widths, confirm the subject lands in the right third and the H1/lede/form remain perfectly readable on the left. If the crop fights the new image, the *only* allowed change is the `object-position` percentages on lines 143 — adjust those, leave gradient and everything else untouched. (This is a Phase 1-acceptable nudge; gradient stops stay locked.)
 
 ## Out of scope
 
-- No new "Coming Soon" landing pages, no email capture, no waitlist.
-- No copy changes to other surfaces beyond the footer & header.
-- No backend / DB / SEO redirect work — these URLs were never published or indexed.
+- No changes to H1, lede, form, trust chips, animation delays, or any other section of the homepage.
+- No new components, no new images elsewhere on the page.
+- No real photoshoot — flagged separately later if you want to upgrade beyond AI.
+- No overlay/verified card on the image itself (you picked option 3).
 
-## Acceptance
+## Technical notes
 
-- Footer shows the six items as muted labels with a neutral "Soon" pill; hover does nothing; tooltip reads "Launching soon".
-- Header no longer treats those paths as active.
-- Visiting `/careers`, `/press`, `/complaints`, `/help`, `/faq`, `/standards` falls through to the root `notFoundComponent`.
-- `bun run build` (run automatically by the harness) passes with no missing-route type errors.
+- `imagegen --model premium` is required because the REPS wordmark must render as legible embroidered text — `fast` and `standard` tiers produce garbled letterforms on garments.
+- The asset is consumed by an existing `<img src={heroCoaching.url}>` so overwriting the `.asset.json` pointer is enough — no route file edits, no build changes.
+- Locked homepage memory permits asset swaps; only structural changes are forbidden. This change is a like-for-like image replacement.
