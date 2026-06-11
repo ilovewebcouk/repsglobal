@@ -84,7 +84,6 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
-import { Route as AuthenticatedProfessionalDashboardStartRouteImport } from './routes/_authenticated/_professional/dashboard_.start'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardProfileEditRouteImport } from './routes/_authenticated/_professional/dashboard_.profile-edit'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
@@ -485,12 +484,6 @@ const AuthenticatedProfessionalDashboardVerificationRoute =
     path: '/dashboard/verification',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardStartRoute =
-  AuthenticatedProfessionalDashboardStartRouteImport.update({
-    id: '/dashboard_/start',
-    path: '/dashboard/start',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardSettingsRoute =
   AuthenticatedProfessionalDashboardSettingsRouteImport.update({
     id: '/dashboard_/settings',
@@ -677,7 +670,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/start': typeof AuthenticatedProfessionalDashboardStartRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -770,7 +762,6 @@ export interface FileRoutesByTo {
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/start': typeof AuthenticatedProfessionalDashboardStartRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -868,7 +859,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/_authenticated/_professional/dashboard_/start': typeof AuthenticatedProfessionalDashboardStartRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -964,7 +954,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
-    | '/dashboard/start'
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
@@ -1057,7 +1046,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
-    | '/dashboard/start'
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
@@ -1154,7 +1142,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/profile-edit'
     | '/_authenticated/_professional/dashboard_/settings'
-    | '/_authenticated/_professional/dashboard_/start'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
@@ -1777,13 +1764,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardVerificationRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/start': {
-      id: '/_authenticated/_professional/dashboard_/start'
-      path: '/dashboard/start'
-      fullPath: '/dashboard/start'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardStartRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/settings': {
       id: '/_authenticated/_professional/dashboard_/settings'
       path: '/dashboard/settings'
@@ -1998,7 +1978,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
-  AuthenticatedProfessionalDashboardStartRoute: typeof AuthenticatedProfessionalDashboardStartRoute
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
 }
 
@@ -2014,8 +1993,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardProfileEditRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
-    AuthenticatedProfessionalDashboardStartRoute:
-      AuthenticatedProfessionalDashboardStartRoute,
     AuthenticatedProfessionalDashboardVerificationRoute:
       AuthenticatedProfessionalDashboardVerificationRoute,
   }

@@ -18,10 +18,10 @@ export const Route = createFileRoute("/_authenticated/_professional/_pro")({
       (subscription?.tier === "pro" || subscription?.tier === "studio") &&
       LIVE_STATUSES.includes(subscription.status);
     if (!allowed) {
-      throw redirect({
-        to: "/dashboard/start",
-        search: { tier: "pro", period: "monthly" },
-      });
+      // Verified-only users land on their listing editor. (Unpaid users are
+      // already caught one level up by the _professional layout and sent to
+      // /pricing — they never reach here.)
+      throw redirect({ to: "/dashboard/profile-edit" });
     }
   },
   component: () => <Outlet />,
