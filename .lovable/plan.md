@@ -1,60 +1,99 @@
-# Full rebuild: /about hero
 
-## Goal
+# /contact — full rebuild
 
-A hero photo that looks like the **same photographer, same day, same lens, same light** as `about-professionals.jpg` and `about-independence.jpg` — the two images you've already approved as the lookbook standard. Not a menswear ad. Not "guy in a doorway." A working coach, mid-moment, in a real warehouse training floor, with a real embroidered left-chest REPS mark.
+Replace the current generic SaaS contact page (fake offices, hand-rolled inputs, 3-icon email grid) with a single-purpose, audience-aware page that does one job extremely well: get the right message into the right inbox with zero anxiety about whether anyone's listening.
 
-## What "same lookbook" means (locked from the two reference shots)
+Phase 1 = static only. No backend submit yet (form posts a fake success state via local React state). No new routes. shadcn-only primitives.
 
-- **Lens & framing**: 35mm full-frame equivalent, shallow DoF (~f/2), creamy bokeh. Subject 1/3 from frame edge, wide negative space on the opposite side for headline.
-- **Light**: single hard golden window-key, low angle (~15–20°), raking from camera-left. Near-black shadow side. No fill. No softbox feel.
-- **Palette**: muted film — warm amber highlights, cool teal-black shadows, slight desaturation, fine 35mm anamorphic grain.
-- **Environment**: cavernous warehouse interior — exposed red brick, galvanised steel trusses, polished concrete, dust in the light shaft. No doorway. No street. No skyline. No barbells/racks/plates as the subject of the shot.
-- **Wardrobe**: charcoal heather grey tee, completely blank chest at generation time (logo composited in post).
-- **Subject**: solo male coach, early-30s, athletic but not bodybuilder, short dark hair, light stubble. Eyes off-camera, mouth mid-word, hands shaping a coaching cue. Never smiling-at-camera, never posing.
-- **Format**: 1792×1024 (16:9), JPEG q92.
+## Page structure (top → bottom)
 
-## Two-pass pipeline (deterministic logo, no model-generated wordmark)
+1. **Hero**
+   - Left (copy): `MarketingHeroEyebrow` ("Contact") → H1 **"Talk to a human."** → 16px lede: "Most messages get a reply the same working day. Pick what fits — we'll route it to the person who actually owns it."
+   - Right: **"Right now" status card** — soft panel, emerald status dot, three rows:
+     - *Replying to messages from earlier today*
+     - *Typical reply time: ~4 hours* (Mon–Fri, 9–6 GMT)
+     - *Currently online: REPs support team*
+     Static copy in Phase 1, designed so it can later be wired to real data.
+   - `HeroOverlay copySide="left"`. No hero photograph.
+   - Locked vertical rhythm: `pt-24 pb-20 lg:pt-28 lg:pb-24`.
 
-### Pass 1 — Base photo (Gemini 3 Pro Image, premium)
+2. **Audience switcher + smart form** (`bg-reps-panel/15`, `py-20 lg:py-28`)
+   Single shadcn `Tabs` component, full-width segmented control, three tabs:
+   - **I'm looking for a coach** (default)
+   - **I'm a professional**
+   - **Press, partnerships or enterprise**
 
-Generate with both `about-professionals.jpg` and `about-independence.jpg` passed as **reference images** so the model matches photographer/lens/light/grade exactly. Prompt is built around: "match the photographer, lens, lighting, grade and grain of the reference images" + the scene spec above + the hard reject list (no second person, no smiling, no facing camera, no posing, no barbell/rack/plates as subject, no text, no chest graphic, no doorway, no street, no skyline, no tablet/phone, no even light, no lifted shadows, no 3D-render, no stock-fitness, no menswear-ad pose).
+   The form re-uses one shared `FieldGroup` layout but the visible fields swap per tab:
 
-If pass-1 misses on any spec, regenerate up to 3 times before moving on — do not ship a near-miss.
+   | Tab | Fields |
+   |---|---|
+   | Client | Full name · Email · City (Input) · What you're looking for (Select: PT / Online coaching / Nutrition / Group / Yoga / Other) · Message (Textarea) |
+   | Professional | Full name · Email · Current tier (ToggleGroup: None yet / Verified / Pro / Studio) · REPs profile URL *(optional Input)* · Reason (Select: Verification · Profile / shop-front · Payouts · Bug · Other) · Message |
+   | Press | Name · Email · Outlet / company · Deadline (Input, optional) · Reason (Select: Press enquiry · Partnership · Enterprise / multi-coach · Investor) · Brief (Textarea) |
 
-### Pass 2 — Embroidered REPS mark (PIL composite, not AI)
+   Below the form, a small live "Estimated reply: ~Xh" chip that updates from the Reason value (e.g. *Verification → usually <2 hours*).
 
-Use `src/assets/brand/logo.svg` as the source — never a model-rendered wordmark. Script `/tmp/compose-logo-v2.py`:
+   Submit = `Button` with primary orange; on click, swap to an inline `Alert` success state ("Message sent — we'll reply to {email} shortly.") — no real network call yet.
 
-1. `rsvg-convert` logo.svg → 256px-wide white PNG, transparent bg.
-2. Resize to **~90–110px wide** (small left-chest, not centred billboard).
-3. Position at **wearer's left chest** (camera-right of torso centre), ~3% down from collarbone, anchored to the tee fabric — not floating.
-4. **Embroidery realism stack** (this is what was missing last pass):
-   - Tint to off-white `#EDEAE3` (not pure white — pure white reads as a print/decal).
-   - Apply a subtle bump/displacement map sampled from the underlying fabric pixels so the wordmark follows the tee's folds and weave.
-   - Add a 1px dark inner-shadow (stitch-edge depression) + 1px warm highlight on the rim-light-facing side (thread catching the golden key).
-   - Multiply blend at 88% opacity over the fabric (not normal blend).
-   - 0.5px Gaussian blur to lose the SVG's vector crispness.
-   - Add a faint stitch-noise texture at 6% opacity inside the letterforms.
-5. Zoom-verify at 4× — letterforms still pixel-true to `logo.svg`, but the mark reads as **thread in fabric**, not a sticker.
+   Honeypot field (hidden) included so the future wire-up is trivial.
 
-### Pass 3 — QA before upload
+3. **"Before you write" deflection grid** (`bg-reps-ink`)
+   `SectionHeader` eyebrow "Quick answers" / H2 "Most people are asking…".
+   3-up grid of the *actual* top reasons, each a card linking to the real answer:
+   - "How do I get verified?" → `/get-verified`
+   - "How do I find a coach in my city?" → `/search`
+   - "Is this person really REPs-registered?" → `/search`
+   Cards use 16px radius, no shadow, hover lift via border colour only.
 
-Screenshot `/about` at 1536×864, zoom into chest at 4×. Reject and redo if any of:
-- Logo reads as print/decal rather than embroidery
-- Logo is centred, too large, or floating off the fabric
-- Scene doesn't match the warmth/grade of the two reference images
-- Any banned element from the reject list slipped in
+4. **Direct channels** (`bg-reps-panel/30`)
+   `SectionHeader` "Prefer email?".
+   Quiet 3-row list (not the 3-icon grid). Each row: role label · email · one-line scope.
+   - `support@repsuk.org` — Client support · finding a pro, bookings, accounts
+   - `pros@repsuk.org` — Professional support · verification, payouts, profile
+   - `press@repsuk.org` — Press, partnerships & enterprise
+   Footnote line: **"REPs is a remote-first global team."** No phone numbers. No addresses.
 
-Only then: `lovable-assets create` → overwrite `src/assets/about/about-hero.jpg.asset.json`.
+5. **Safeguarding callout** (`bg-reps-ink`)
+   shadcn `Alert` (not custom div), emerald accent allowed here as status semantic.
+   "Safeguarding concern about a coach or client? Use the dedicated route — it goes straight to our safeguarding lead." → button to `/safeguarding` (route may not exist yet; link is fine — TanStack typecheck note below).
 
-## Other changes
+6. **FAQ** (`bg-reps-panel/15`)
+   `MarketingFaq`, 5 questions, audience-neutral:
+   - How quickly will I hear back?
+   - Can I phone REPs?
+   - I'm a coach — where do I report a profile issue?
+   - I'm a client — how do I report a coach?
+   - Where are you based?
 
-- `src/routes/about.tsx` — update hero `alt` to match the final scene.
-- `mem://design/trainer-imagery` — add the embroidery realism stack (tint, displacement, inner-shadow + rim-highlight, multiply blend, stitch noise) as the locked recipe so this can't regress.
+7. **FinalCta** — secondary in tone: heading "Prefer to browse first?" · primary button → `/search` · secondary → `/pricing`.
 
-## Out of scope
+## Files
 
-- No layout, copy, section-order changes on /about.
-- No other images on the page.
-- Page stays LOCKED per `mem://design/locked-about`.
+**Edit**
+- `src/routes/contact.tsx` — full rebuild. Remove `Field`/`Select` helpers, all OFFICES/CHANNELS arrays, fake addresses and phones. Replace with the structure above using shadcn `Tabs`, `FieldGroup`, `Field`, `Input`, `Select`, `Textarea`, `ToggleGroup`, `Alert`, `Button`, `Badge`, plus shared marketing primitives (`MarketingHeroEyebrow`, `SectionHeader`, `MarketingFaq`, `FinalCta`, `HeroOverlay`).
+
+**New**
+- `src/components/contact/StatusCard.tsx` — the "Right now" hero status card (panel, emerald dot, three rows).
+- `src/components/contact/ContactForm.tsx` — controlled `Tabs` + per-tab field set + inline success Alert.
+
+No other files change. No new routes. No new images.
+
+## Technical notes
+
+- shadcn primitives only — no hand-rolled `<input>`/`<select>` markup. Use `FieldGroup` + `Field` + `FieldLabel`. ToggleGroup for the tier picker.
+- Radii per locked system: button 10, input 12, std card 16, status / form panel 22, hero 24. No `rounded-xl/2xl/3xl`.
+- Tokens only — `bg-reps-panel`, `border-reps-border`, `text-reps-orange`, etc. No raw hex.
+- Section rhythm `py-20 lg:py-28`; hero `pt-24 pb-20 lg:pt-28 lg:pb-24`. No hairline dividers between sections.
+- Emerald used only for the safeguarding `Alert` and the status-card dot (status semantics, per `mem://design/status-colors`).
+- No "UK"/"United Kingdom" anywhere. "Mon–Fri, 9–6 GMT" is the only time-zone reference and is allowed (it's a working window, not a country claim).
+- Safeguarding link: if `/safeguarding` route doesn't exist yet, render as an `<a href>` (not `<Link to>`) to avoid TanStack type errors; tracked as a follow-up to create the route.
+- Honeypot input is `hidden` + `tabIndex={-1}` + `autoComplete="off"`.
+- Page is indexable (no `noindex`). Update `head()` description to the new positioning.
+
+## Out of scope (Phase 1)
+
+- Real form submit / email infrastructure / Resend wiring.
+- Live status data feeding the "Right now" card.
+- Live chat widget.
+- `/safeguarding` route content (link only).
+- Any office address / phone number.
