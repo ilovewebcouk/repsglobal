@@ -49,6 +49,7 @@ import {
 import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type ResourceCategory } from "@/lib/resources";
 import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
 import {
   RESOURCE_TOPICS,
   PRO_RESOURCES,
@@ -63,7 +64,6 @@ type Variant = "transparent" | "solid";
 
 const SCROLL_THRESHOLD = 96;
 const LOCATION_KEY = "reps.location";
-const MOCK_USER_KEY = "reps.mockUser";
 
 /* ---------------- hooks ---------------- */
 
@@ -129,26 +129,6 @@ function useLocationPin() {
   return { city, setCity: update };
 }
 
-function useMockUser() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(MOCK_USER_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {
-      /* noop */
-    }
-  }, []);
-  const signOut = () => {
-    try {
-      window.localStorage.removeItem(MOCK_USER_KEY);
-    } catch {
-      /* noop */
-    }
-    setUser(null);
-  };
-  return { user, signOut };
-}
 
 
 /* ---------------- style helpers ---------------- */
@@ -187,7 +167,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   
   
   const { city, setCity } = useLocationPin();
-  const { user, signOut } = useMockUser();
+  const { user, isAdmin, signOut } = useSessionUser();
 
   
 
@@ -303,7 +283,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
               {user ? (
-                <UserMenu user={user} onSignOut={signOut} />
+                <UserMenu user={user} isAdmin={isAdmin} onSignOut={signOut} />
               ) : (
                 <>
                   <Link
@@ -344,6 +324,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     active={active}
                     city={city}
                     user={user}
+                    isAdmin={isAdmin}
                     onSignOut={signOut}
                     onNavigate={() => setMobileOpen(false)}
                   />
@@ -789,9 +770,11 @@ function AboutMenu() {
 
 function UserMenu({
   user,
+  isAdmin,
   onSignOut,
 }: {
-  user: { name: string; email: string };
+  user: SessionUser;
+  isAdmin: boolean;
   onSignOut: () => void;
 }) {
   const initials = user.name
@@ -808,8 +791,16 @@ function UserMenu({
           aria-label="Account menu"
           className="hidden h-10 items-center gap-2 rounded-[999px] border border-white/20 bg-white/[0.04] pl-1 pr-3 text-[13px] font-medium text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink sm:inline-flex"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-reps-orange text-[12px] font-semibold text-white">
-            {initials}
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[999px] bg-reps-orange text-[12px] font-semibold text-white">
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </span>
           <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
         </button>
@@ -853,6 +844,17 @@ function UserMenu({
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator className="my-1 bg-reps-stone" />
+            <DropdownMenuItem asChild className="rounded-[10px] focus:bg-reps-warm-white">
+              <Link to="/admin">
+                <ShieldCheck className="mr-2 h-4 w-4 text-reps-orange" aria-hidden />
+                Admin console
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator className="my-1 bg-reps-stone" />
         <DropdownMenuItem
           onSelect={onSignOut}
@@ -890,12 +892,14 @@ function MobileDrawer({
   active,
   city,
   user,
+  isAdmin,
   onSignOut,
   onNavigate,
 }: {
   active: ActiveState;
   city: string;
-  user: { name: string; email: string } | null;
+  user: SessionUser | null;
+  isAdmin: boolean;
   onSignOut: () => void;
   onNavigate: () => void;
 }) {
@@ -919,19 +923,33 @@ function MobileDrawer({
       {user ? (
         <div className="px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[999px] bg-reps-orange text-[13px] font-semibold text-white">
-              {user.name
-                .split(" ")
-                .map((p) => p[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase()}
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[999px] bg-reps-orange text-[13px] font-semibold text-white">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                user.name
+                  .split(" ")
+                  .map((p) => p[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase()
+              )}
             </span>
             <div>
               <div className="text-[14px] font-semibold text-white">{user.name}</div>
               <div className="text-[12px] text-white/60">{user.email}</div>
             </div>
           </div>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={onNavigate}
+              className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-white/25 px-3 text-[13px] font-medium text-white transition-colors hover:bg-white/10"
+            >
+              <ShieldCheck className="h-4 w-4 text-reps-orange" aria-hidden />
+              Admin console
+            </Link>
+          )}
         </div>
       ) : (
         <div className="px-5 py-4">
