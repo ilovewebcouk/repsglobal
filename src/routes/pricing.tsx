@@ -15,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name:"description",
         content:
-"Verified £99/yr. Pro Founding £59/mo with a card-required 30-day free trial. Studio is waitlist-only.",
+"Verified £99/yr. Pro Founding £59/mo with a 30-day free trial. Studio is waitlist-only.",
       },
       { property:"og:title", content:"REPS pricing" },
       {
@@ -58,7 +58,7 @@ function PricingPage() {
       </section>
 
       <section>
-        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-16 pt-2 lg:px-10 lg:pb-20 lg:pt-4">
           <PricingPlans />
         </div>
       </section>
