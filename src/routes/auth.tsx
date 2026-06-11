@@ -117,34 +117,6 @@ function LoginPage() {
     }
   };
 
-  const handleApple = async () => {
-    setError(null);
-    setAppleLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        setError(
-          friendlyAuthError(
-            result.error.message ?? "Couldn't sign in with Apple. Please try again.",
-          ),
-        );
-        setAppleLoading(false);
-        return;
-      }
-      if (result.redirected) return;
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        const to = await redirectAfterAuth(data.user.id);
-        navigate({ to, replace: true });
-      }
-    } catch (err) {
-      const raw = err instanceof Error ? err.message : "Apple sign-in failed";
-      setError(friendlyAuthError(raw));
-      setAppleLoading(false);
-    }
-  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-reps-ink text-reps-text">
