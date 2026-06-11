@@ -273,6 +273,59 @@ function DashboardPage() {
           </ol>
         )}
 
+        {hasPaidTier && (
+          <div className="mt-8 rounded-[18px] border border-reps-border bg-reps-panel/15 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/40">
+                  <CreditCard className="size-3.5" /> Billing
+                </div>
+                <h3 className="mt-1 font-display text-[18px] text-white">
+                  {TIERS[subTier as "verified" | "pro"]?.label ?? subTier}
+                  {sub?.status && sub.status !== "active" && (
+                    <span className="ml-2 align-middle text-[12px] uppercase tracking-wider text-white/55">
+                      · {sub.status}
+                    </span>
+                  )}
+                </h3>
+                <p className="mt-1 text-[13px] text-white/55">
+                  {renewsAt
+                    ? `Renews ${renewsAt}`
+                    : "No renewal date on file yet."}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => syncMutation.mutate()}
+                  disabled={syncMutation.isPending}
+                >
+                  {syncMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  Refresh status
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                >
+                  {portalMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <ExternalLink className="size-3.5" />
+                  )}
+                  Manage billing
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
         {data?.profile?.slug && isPublished && (
           <div className="mt-8 flex items-center justify-between rounded-[18px] border border-emerald-400/20 bg-emerald-500/5 px-5 py-4">
             <div>
