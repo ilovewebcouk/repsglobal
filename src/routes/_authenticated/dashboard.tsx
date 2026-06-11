@@ -48,10 +48,40 @@ type Step = {
 
 function DashboardPage() {
   const fetchStatus = useServerFn(getDashboardStatus);
+  const openPortal = useServerFn(createPortalSession);
+  const syncSub = useServerFn(syncMySubscription);
+  const queryClient = useQueryClient();
+  const { billing } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
   const status = useQuery({
     queryKey: ["dashboard-status"],
     queryFn: () => fetchStatus(),
   });
+
+  const portalMutation = useMutation({
+    mutationFn: () => openPortal({ data: undefined }),
+    onSuccess: (res) => {
+      if (res?.url) window.location.href = res.url;
+    },
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => syncSub({ data: undefined }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-status"] });
+    },
+  });
+
+  // Recovery path: if the user just returned from Stripe Checkout and the
+  // webhook hasn't landed yet, sync the subscription from Stripe directly.
+  React.useEffect(() => {
+    if (billing === "success") {
+      syncMutation.mutate();
+      navigate({ search: { billing: undefined }, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billing]);
 
   const data = status.data;
   const subTier = data?.subscription?.tier ?? "free";
@@ -62,6 +92,14 @@ function DashboardPage() {
   const hasSubmission = !!data?.lastSubmission;
   const profileComplete = data?.profileComplete ?? false;
   const isPublished = data?.profile?.is_published ?? false;
+  const sub = data?.subscription;
+  const renewsAt = sub?.current_period_end
+    ? new Date(sub.current_period_end).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
   const steps: Step[] = [
     {
