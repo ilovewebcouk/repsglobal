@@ -96,15 +96,9 @@ function useActive() {
       pathname.startsWith("/signup"),
     about:
       pathname.startsWith("/about") ||
-      pathname.startsWith("/standards") ||
       pathname.startsWith("/verify") ||
-      pathname.startsWith("/help") ||
-      pathname.startsWith("/faq") ||
-      pathname.startsWith("/careers") ||
-      pathname.startsWith("/press") ||
       pathname.startsWith("/contact") ||
-      pathname.startsWith("/reviews") ||
-      pathname.startsWith("/complaints"),
+      pathname.startsWith("/reviews"),
   };
 }
 
