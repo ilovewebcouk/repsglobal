@@ -104,7 +104,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
     title: "Billing",
     rows: [
       { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year", studio: "£149/month or £1,490/year · waitlist" },
-      { label: "30-day free trial", verified: false, pro: "Card required", studio: false },
+      { label: "30-day free trial", verified: false, pro: true, studio: false },
       { label: "Charge today", verified: "£99", pro: "£0", studio: "—" },
     ],
   },
