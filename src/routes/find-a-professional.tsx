@@ -1,6 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
 import {
   BadgeCheck,
   Bookmark,
