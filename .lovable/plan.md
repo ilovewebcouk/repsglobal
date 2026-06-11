@@ -1,8 +1,10 @@
+## Diagnosis
+
+The toggle logic works in a fresh preview: selecting **Monthly** changes Pro to £59/month and Studio to £149/month. The affected preview recorded a failed client-module load, which can leave the page visually rendered but prevent React interactions from hydrating.
+
 ## Plan
 
-1. Update the shared Studio pricing data so the existing billing toggle shows:
-   - **Monthly:** £149 per month, billed monthly
-   - **Annual:** £124 per month, £1,490 billed yearly, with the existing “Save 2 months” treatment
-2. Keep Studio’s CTA and availability unchanged as **waitlist-only**; do not add Studio checkout or alter the locked pricing layout.
-3. Update the shared billing-period copy so Studio’s planned monthly and annual options are described consistently wherever pricing data is reused.
-4. Verify the `/pricing` toggle renders the correct Studio amount and billing note in both states.
+1. Harden the existing shadcn `ToggleGroup` so each Monthly/Annual item explicitly selects its billing period while retaining the controlled group behavior and current styling.
+2. Keep Verified annual-only and preserve the restored Pro and Studio monthly/annual prices.
+3. Refresh the preview runtime to clear the stale client module.
+4. Verify both directions in-browser: Annual → Monthly and Monthly → Annual, confirming both Pro and Studio prices update each time.
