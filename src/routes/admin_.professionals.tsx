@@ -12,7 +12,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -117,7 +118,7 @@ function statusClass(s: string) {
 
 function AdminProfessionalsPage() {
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Professionals"
       title="Professionals"
       subtitle="Manage the full register of REPS professionals."
@@ -129,7 +130,7 @@ function AdminProfessionalsPage() {
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <ACard key={k.label}>
+          <PCard key={k.label}>
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-[12px] text-white/55">{k.label}</div>
@@ -140,11 +141,11 @@ function AdminProfessionalsPage() {
                 <k.icon className="h-4 w-4" />
               </span>
             </div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
-      <APanel className="mt-6">
+      <PPanel className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {TABS.map((t, i) => (
@@ -230,7 +231,7 @@ function AdminProfessionalsPage() {
             <button className="h-8 rounded-[8px] border border-reps-border px-3 text-white/70">Next</button>
           </div>
         </div>
-      </APanel>
-    </AdminShell>
+      </PPanel>
+    </DashboardShell>
   );
 }

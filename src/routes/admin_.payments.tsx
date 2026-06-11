@@ -10,7 +10,8 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/payments")({
   ssr: false,
@@ -46,7 +47,7 @@ const REVENUE = [42, 55, 48, 62, 70, 58, 75, 82, 68, 88, 95, 102];
 function AdminPaymentsPage() {
   const max = Math.max(...REVENUE);
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Payments"
       title="Payments"
       subtitle="Platform-wide payouts, take rate, and transaction health."
@@ -58,7 +59,7 @@ function AdminPaymentsPage() {
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <ACard key={k.label}>
+          <PCard key={k.label}>
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-[12px] text-white/55">{k.label}</div>
@@ -69,12 +70,12 @@ function AdminPaymentsPage() {
                 <k.icon className="h-4 w-4" />
               </span>
             </div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <APanel className="lg:col-span-2">
+        <PPanel className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <div>
               <h2 className="font-display text-[16px] font-bold text-white">Revenue trend</h2>
@@ -119,9 +120,9 @@ function AdminPaymentsPage() {
               )}
             </div>
           </div>
-        </APanel>
+        </PPanel>
 
-        <APanel>
+        <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
             <h2 className="font-display text-[16px] font-bold text-white">Payouts queue</h2>
             <p className="text-[12px] text-white/55">Next batch · Mon 09:00</p>
@@ -141,10 +142,10 @@ function AdminPaymentsPage() {
               Release payouts <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           </div>
-        </APanel>
+        </PPanel>
       </div>
 
-      <APanel className="mt-6">
+      <PPanel className="mt-6">
         <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
           <h2 className="font-display text-[16px] font-bold text-white">Recent transactions</h2>
           <button className="text-[12px] font-semibold text-reps-orange">View all</button>
@@ -183,7 +184,7 @@ function AdminPaymentsPage() {
             </tbody>
           </table>
         </div>
-      </APanel>
-    </AdminShell>
+      </PPanel>
+    </DashboardShell>
   );
 }

@@ -11,7 +11,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/community")({
   head: () => ({
@@ -102,7 +103,7 @@ const SUGGESTED = [
 
 function CommunityPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Community"
       title="Community"
       subtitle="Talk shop with verified pros and run group spaces for your clients."
@@ -296,6 +297,6 @@ function CommunityPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

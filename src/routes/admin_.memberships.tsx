@@ -9,7 +9,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/memberships")({
   ssr: false,
@@ -54,37 +55,37 @@ const RECENT = [
 
 function AdminMembershipsPage() {
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Memberships"
       title="Memberships"
       subtitle="Track plan distribution, conversions, and recurring revenue."
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <ACard>
+        <PCard>
           <div className="text-[12px] text-white/55">MRR</div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">£78,346</div>
           <div className="mt-1 text-[11px] text-reps-green">+8.4% vs last month</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="text-[12px] text-white/55">Paid members</div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">4,066</div>
           <div className="mt-1 text-[11px] text-white/55">32.5% of base</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="text-[12px] text-white/55">Foundation → Pro conv.</div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">3.8%</div>
           <div className="mt-1 text-[11px] text-reps-green">+0.4 pts</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="text-[12px] text-white/55">Monthly churn</div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">2.1%</div>
           <div className="mt-1 text-[11px] text-white/55">Target ≤2.5%</div>
-        </ACard>
+        </PCard>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {PLANS.map((p) => (
-          <APanel key={p.tier} className="p-6">
+          <PPanel key={p.tier} className="p-6">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -116,12 +117,12 @@ function AdminMembershipsPage() {
                 </li>
               ))}
             </ul>
-          </APanel>
+          </PPanel>
         ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <APanel className="lg:col-span-2">
+        <PPanel className="lg:col-span-2">
           <div className="border-b border-reps-border px-5 py-4">
             <h2 className="font-display text-[16px] font-bold text-white">Plan distribution</h2>
             <p className="text-[12px] text-white/55">Across 12,486 professionals</p>
@@ -157,9 +158,9 @@ function AdminMembershipsPage() {
               ))}
             </div>
           </div>
-        </APanel>
+        </PPanel>
 
-        <APanel>
+        <PPanel>
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <h2 className="font-display text-[16px] font-bold text-white">Recent activity</h2>
             <CreditCard className="h-4 w-4 text-white/40" />
@@ -182,8 +183,8 @@ function AdminMembershipsPage() {
               </li>
             ))}
           </ul>
-        </APanel>
+        </PPanel>
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import {
   KpiRow,
   ScheduleAndAi,
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/dashboard-demo")({
 
 function DashboardPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Dashboard"
       title="Welcome back, James 👋"
       subtitle="Visual reference only — all figures are sample data and actions are disabled."
@@ -49,6 +49,6 @@ function DashboardPage() {
         <BottomRow isLocked />
       </div>
       <DashboardFooter />
-    </ProShell>
+    </DashboardShell>
   );
 }

@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
 import { AlertTriangle, Flag, MessageSquare, Star, ThumbsUp } from "lucide-react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -85,14 +86,14 @@ function Stars({ n }: { n: number }) {
 
 function AdminReviewsPage() {
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Reviews"
       title="Reviews moderation"
       subtitle="Approve, reject, and escalate reviews flagged by our trust system."
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <ACard key={k.label}>
+          <PCard key={k.label}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[12px] text-white/55">{k.label}</div>
@@ -102,12 +103,12 @@ function AdminReviewsPage() {
                 <k.icon className="h-4 w-4" />
               </span>
             </div>
-          </ACard>
+          </PCard>
         ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <APanel className="lg:col-span-2">
+        <PPanel className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <div>
               <h2 className="font-display text-[16px] font-bold text-white">Flagged for review</h2>
@@ -143,10 +144,10 @@ function AdminReviewsPage() {
               </li>
             ))}
           </ul>
-        </APanel>
+        </PPanel>
 
         <div className="space-y-6">
-          <APanel>
+          <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
               <h3 className="font-display text-[15px] font-bold text-white">Rating distribution</h3>
               <p className="text-[12px] text-white/55">Last 30 days · 2,184 reviews</p>
@@ -163,9 +164,9 @@ function AdminReviewsPage() {
                 </div>
               ))}
             </div>
-          </APanel>
+          </PPanel>
 
-          <ACard>
+          <PCard>
             <h3 className="font-display text-[15px] font-bold text-white">Trust system</h3>
             <ul className="mt-3 space-y-2 text-[12px] text-white/70">
               <li className="flex justify-between">
@@ -181,9 +182,9 @@ function AdminReviewsPage() {
                 <span className="font-semibold text-white">95% conf.</span>
               </li>
             </ul>
-          </ACard>
+          </PCard>
         </div>
       </div>
-    </AdminShell>
+    </DashboardShell>
   );
 }

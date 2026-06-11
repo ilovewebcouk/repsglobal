@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/check-ins")({
   head: () => ({
@@ -918,7 +918,7 @@ function AdherenceTrends() {
 
 function CheckInsReviewPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Check-Ins"
       title="Check-ins"
       subtitle="Review client updates, track adherence and respond with clear next steps."
@@ -972,7 +972,7 @@ function CheckInsReviewPage() {
           <AdherenceTrends />
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }
 

@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/bookings")({
   head: () => ({
@@ -315,7 +315,7 @@ function Avatar({ initials }: { initials: string }) {
 
 function BookingsPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Bookings"
       title="Bookings"
       subtitle="Every session, consultation, class and online booking across your REPS services."
@@ -696,7 +696,7 @@ function BookingsPage() {
               </div>
             </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }
 

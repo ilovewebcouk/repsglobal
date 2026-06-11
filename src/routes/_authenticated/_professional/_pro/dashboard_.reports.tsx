@@ -12,7 +12,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/reports")({
   head: () => ({
@@ -83,7 +84,7 @@ function ReportsPage() {
   const max = Math.max(...REVENUE.map((r) => r.a + r.b + r.c + r.d));
 
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Reports"
       title="Reports & Analytics"
       subtitle="Revenue, retention, utilisation and lead attribution — last 12 weeks."
@@ -303,6 +304,6 @@ function ReportsPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

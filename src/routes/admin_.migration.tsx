@@ -11,7 +11,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { ACard, AdminShell, APanel } from "@/components/dashboard/AdminShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/migration")({
   ssr: false,
@@ -50,7 +51,7 @@ function statusClass(s: string) {
 
 function AdminMigrationPage() {
   return (
-    <AdminShell
+    <DashboardShell role="admin"
       active="Migration"
       title="BD migration"
       subtitle="Import, verify, and onboard legacy Body & Discipline professionals to REPS."
@@ -66,38 +67,38 @@ function AdminMigrationPage() {
       }
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <ACard>
+        <PCard>
           <div className="flex items-center gap-2 text-[12px] text-white/55">
             <Database className="h-3.5 w-3.5" /> Total legacy
           </div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">14,210</div>
           <div className="mt-1 text-[11px] text-white/55">BD as of 31 May 2026</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="flex items-center gap-2 text-[12px] text-white/55">
             <FileCheck className="h-3.5 w-3.5" /> Migrated
           </div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">9,840</div>
           <div className="mt-1 text-[11px] text-reps-green">69.2% complete</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="flex items-center gap-2 text-[12px] text-white/55">
             <Users className="h-3.5 w-3.5" /> Activated on REPS
           </div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">1,864</div>
           <div className="mt-1 text-[11px] text-white/55">18.9% of invited</div>
-        </ACard>
-        <ACard>
+        </PCard>
+        <PCard>
           <div className="flex items-center gap-2 text-[12px] text-white/55">
             <AlertCircle className="h-3.5 w-3.5" /> Issues to resolve
           </div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">263</div>
           <div className="mt-1 text-[11px] text-reps-orange">Needs admin review</div>
-        </ACard>
+        </PCard>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <APanel className="lg:col-span-2">
+        <PPanel className="lg:col-span-2">
           <div className="border-b border-reps-border px-5 py-4">
             <h2 className="font-display text-[16px] font-bold text-white">Migration pipeline</h2>
             <p className="text-[12px] text-white/55">5-step ETL · running on BD-import-v3</p>
@@ -137,9 +138,9 @@ function AdminMigrationPage() {
               </li>
             ))}
           </ol>
-        </APanel>
+        </PPanel>
 
-        <APanel>
+        <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
             <h2 className="font-display text-[16px] font-bold text-white">Issues to resolve</h2>
             <p className="text-[12px] text-white/55">Records held in quarantine</p>
@@ -159,10 +160,10 @@ function AdminMigrationPage() {
               Open quarantine queue <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
-        </APanel>
+        </PPanel>
       </div>
 
-      <APanel className="mt-6">
+      <PPanel className="mt-6">
         <div className="border-b border-reps-border px-5 py-4">
           <h2 className="font-display text-[16px] font-bold text-white">Batches</h2>
           <p className="text-[12px] text-white/55">Grouped by region for staged onboarding</p>
@@ -209,7 +210,7 @@ function AdminMigrationPage() {
             </tbody>
           </table>
         </div>
-      </APanel>
-    </AdminShell>
+      </PPanel>
+    </DashboardShell>
   );
 }

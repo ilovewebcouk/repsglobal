@@ -77,7 +77,7 @@ function ClientsIndex() {
   const pendingInvites = rows.filter((r) => r.inviteStatus === "pending").length;
 
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Clients"
       title="Clients"
       subtitle={`${total} on roster · ${active} active · ${pendingInvites} pending invite`}
@@ -171,7 +171,7 @@ function ClientsIndex() {
           onImported={() => qc.invalidateQueries({ queryKey: ["roster"] })}
         />
       )}
-    </ProShell>
+    </DashboardShell>
   );
 }
 

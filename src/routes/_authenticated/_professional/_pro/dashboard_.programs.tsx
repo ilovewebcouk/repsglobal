@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
-import { ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/programs")({
   head: () => ({
@@ -785,7 +785,7 @@ function ClientFeedbackCard() {
 
 function ProgramsPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Programs"
       title="Programme builder"
       subtitle="Create, structure and assign professional training programmes."
@@ -840,6 +840,6 @@ function ProgramsPage() {
           <ClientFeedbackCard />
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

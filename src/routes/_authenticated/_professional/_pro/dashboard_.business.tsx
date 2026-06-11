@@ -11,7 +11,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/business")({
   head: () => ({
@@ -70,7 +71,7 @@ function toneClass(tone: string) {
 
 function BusinessPage() {
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Business Tools"
       title="Business Tools"
       subtitle="Invoices, contracts, forms, waivers and tax exports — all in one place."
@@ -234,6 +235,6 @@ function BusinessPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }

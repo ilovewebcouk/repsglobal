@@ -15,7 +15,8 @@ import {
   Target,
 } from "lucide-react";
 
-import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/nutrition")({
   head: () => ({
@@ -61,7 +62,7 @@ function NutritionPage() {
   );
 
   return (
-    <ProShell
+    <DashboardShell role="trainer" tier="pro"
       active="Nutrition"
       title="Nutrition"
       subtitle="Meal plans, macro targets and adherence tracking for every client."
@@ -247,6 +248,6 @@ function NutritionPage() {
           </PCard>
         </div>
       </div>
-    </ProShell>
+    </DashboardShell>
   );
 }
