@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import Papa from "papaparse";
 
-import { ProShell, PCard } from "@/components/dashboard/ProShell";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PCard } from "@/components/dashboard/primitives";
 import {
   addRosterClient,
   confirmRosterClient,
