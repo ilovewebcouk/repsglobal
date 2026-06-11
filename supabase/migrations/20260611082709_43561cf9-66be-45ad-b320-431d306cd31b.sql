@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.accept_client_invite(text) FROM PUBLIC, anon;
