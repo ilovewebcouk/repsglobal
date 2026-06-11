@@ -9,31 +9,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   PLANS,
-  type Billing,
   type PlanTierKey,
 } from "./pricing-data";
 
 export function PricingPlans() {
-  const [billing, setBilling] = useState<Billing>("annual");
   const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCheckoutSession);
 
-  async function handlePaidCta(tierKey: PlanTierKey) {
+  async function handlePaidCta(tierKey: "verified" | "pro") {
+    const checkoutPeriod = tierKey === "verified" ? "annual" as const : "monthly" as const;
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         navigate({
           to: "/signup",
-          search: { tier: tierKey, period: billing, next: "checkout" } as never,
+          search: { tier: tierKey, period: checkoutPeriod, next: "checkout" } as never,
         });
         return;
       }
-      const result = await startCheckout({ data: { tier: tierKey, period: billing } });
+      const result = await startCheckout({ data: { tier: tierKey, period: checkoutPeriod } });
       if (result?.url) {
         window.location.href = result.url;
       } else {
@@ -49,38 +47,11 @@ export function PricingPlans() {
 
   return (
     <div>
-      {/* Monthly / Annual toggle */}
-      <div className="mb-10 flex justify-center">
-        <ToggleGroup
-          type="single"
-          value={billing}
-          onValueChange={(v) => v && setBilling(v as Billing)}
-          className="inline-flex items-center gap-1 rounded-full border border-reps-border bg-reps-panel p-1"
-        >
-          {(["monthly", "annual"] as Billing[]).map((b) => (
-            <ToggleGroupItem
-              key={b}
-              value={b}
-              aria-label={b === "monthly" ? "Monthly billing" : "Annual billing"}
-              className="group flex h-9 items-center gap-2 rounded-full bg-transparent px-5 text-[13px] font-semibold text-white/65 hover:bg-transparent hover:text-white data-[state=on]:bg-reps-orange data-[state=on]:text-white"
-            >
-              {b === "monthly" ? "Monthly" : "Annual"}
-              {b === "annual" && (
-                <Badge
-                  variant="outline"
-                  className="rounded-full border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10px] uppercase tracking-wider text-reps-orange group-data-[state=on]:border-transparent group-data-[state=on]:bg-white/20 group-data-[state=on]:text-white"
-                >
-                  Save 2 months
-                </Badge>
-              )}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
-
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((p) => {
-          const view = p.pricing[billing];
+          const view = p.waitlist
+            ? p.pricing.monthly
+            : p.pricing[p.tierKey === "verified" ? "annual" : "monthly"];
           const isLoading = checkoutTier === p.tierKey;
           return (
             <Card
@@ -129,7 +100,13 @@ export function PricingPlans() {
                 <Button
                   type="button"
                   disabled={isLoading}
-                  onClick={() => handlePaidCta(p.tierKey)}
+                  onClick={() => {
+                    if (p.waitlist) {
+                      navigate({ to: "/contact" });
+                      return;
+                    }
+                    handlePaidCta(p.tierKey as "verified" | "pro");
+                  }}
                   variant={p.featured ? "default" : "outline"}
                   className={
                     p.featured

@@ -35,7 +35,7 @@ import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
 
 type SignupSearch = {
-  tier?: "verified" | "pro" | "studio";
+  tier?: "verified" | "pro";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
@@ -61,7 +61,7 @@ const PLAN_SUMMARIES: Record<
       tagline: "Monetise your professional trust.",
       price: "£12",
       unit: "/month",
-      meta: "Billed monthly",
+      meta: "30-day free trial · card required · then £59/month unless cancelled",
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
@@ -95,24 +95,6 @@ const PLAN_SUMMARIES: Record<
       highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
   },
-  studio: {
-    monthly: {
-      name: "Studio",
-      tagline: "Multi-coach teams and locations.",
-      price: "£149",
-      unit: "/month",
-      meta: "Billed monthly",
-      highlights: ["Everything in Pro", "Multi-coach roles", "Multiple locations", "5 coach seats"],
-    },
-    annual: {
-      name: "Studio",
-      tagline: "Multi-coach teams and locations.",
-      price: "£124",
-      unit: "/month",
-      meta: "£1,490 billed yearly · 2 months free",
-      highlights: ["Everything in Pro", "Multi-coach roles", "Multiple locations", "5 coach seats"],
-    },
-  },
 };
 
 
@@ -122,7 +104,7 @@ export const Route = createFileRoute("/signup")({
     const period = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
     return {
-      tier: ["verified", "pro", "studio"].includes(tier as string) ? tier : undefined,
+      tier: ["verified", "pro"].includes(tier as string) ? tier : undefined,
       period: ["monthly", "annual"].includes(period as string) ? period : undefined,
       next: next === "checkout" ? "checkout" : undefined,
     };
@@ -317,8 +299,7 @@ function SignupPage() {
           data: {
             full_name: fullName,
             signup_kind: "professional",
-            account_type:
-              search.tier === "studio" ? "biz" : "pro",
+            account_type: "pro",
             intended_tier: search.tier ?? null,
             intended_period: search.period ?? null,
           },

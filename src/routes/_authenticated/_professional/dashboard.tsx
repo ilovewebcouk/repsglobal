@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   Sparkles,
   UserPen,
-  Plus,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -181,7 +180,7 @@ function DashboardPage() {
     isVerified,
     hasInsurance: !!data?.profile?.insurance_valid_until,
     insuranceDetail: data?.profile?.insurance_valid_until ? `Valid until ${new Date(data.profile.insurance_valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "Not uploaded",
-    qualCount: "3 Active"
+    qualCount: data?.profile?.cert_uploaded_at ? "Uploaded" : "Not uploaded"
   };
 
   return (
@@ -220,12 +219,12 @@ function DashboardPage() {
             <StatusCard label="Setup progress" value={`${completedCount} of 4`} detail={data?.onboarding.complete ? "Complete" : "Finish setup to go live"} icon={CheckCircle2} positive={data?.onboarding.complete} />
           </div>
 
-          <KpiRow isLocked={!hasProAccess} />
-          <ScheduleAndAi isLocked={!hasProAccess} statusData={statusData} />
-          <PerformanceRow isLocked={!hasProAccess} />
-          <RevenueRow isLocked={!hasProAccess} />
-          <SpotlightRow isLocked={!hasProAccess} />
-          <BottomRow isLocked={!hasProAccess} />
+          <KpiRow isLocked />
+          <ScheduleAndAi isLocked statusData={statusData} />
+          <PerformanceRow isLocked />
+          <RevenueRow isLocked />
+          <SpotlightRow isLocked />
+          <BottomRow isLocked />
 
           {data?.profile?.slug && isPublished ? (
             <Alert className="mt-4 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -238,16 +237,6 @@ function DashboardPage() {
 
           <DashboardFooter />
         </div>
-      )}
-
-      {hasProAccess && (
-        <button
-          type="button"
-          aria-label="Quick add"
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange text-white shadow-none transition-colors hover:bg-reps-orange-hover"
-        >
-          <Plus className="h-6 w-6" />
-        </button>
       )}
 
       <Dialog open={onboardingOpen} onOpenChange={closeOnboarding}>

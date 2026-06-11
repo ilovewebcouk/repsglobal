@@ -85,7 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { icon: Users, label: "Clients", to: "/dashboard/clients" },
       { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
       { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
-      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages", badge: "6" },
+      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages" },
     ],
   },
   {
@@ -140,7 +140,7 @@ function Sidebar({ active, hasProAccess, member }: { active: ProActive; hasProAc
             <ul className="flex flex-col gap-1">
               {group.items.map((item) => {
                 const isActive = item.label === active || pathname === item.to;
-                const locked = !hasProAccess && !VERIFIED_ROUTES.has(item.to);
+                const locked = !VERIFIED_ROUTES.has(item.to);
                 const base =
                   "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors";
                 const cls = isActive
@@ -149,10 +149,9 @@ function Sidebar({ active, hasProAccess, member }: { active: ProActive; hasProAc
                 return (
                   <li key={item.label}>
                     <Link
-                      to={locked ? "/dashboard/start" : item.to}
-                      search={locked ? { tier: "pro", period: "monthly" } : undefined}
+                      to={locked ? "/dashboard" : item.to}
                       className={cn(cls, locked && "text-white/45")}
-                      aria-label={locked ? `${item.label} — included with Pro` : item.label}
+                      aria-label={locked ? `${item.label} — preview not connected` : item.label}
                     >
                       <item.icon className="h-[18px] w-[18px] shrink-0" />
                       <span className="flex-1 text-left">{item.label}</span>
@@ -183,11 +182,9 @@ function Sidebar({ active, hasProAccess, member }: { active: ProActive; hasProAc
             <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange">{member?.tierLabel ?? "Pro"}</Badge>
           </div>
         </div>
-        <Button asChild variant="outline" disabled={!hasProAccess}>
-          <Link to={hasProAccess ? "/dashboard" : "/dashboard/start"} search={hasProAccess ? undefined : { tier: "pro", period: "monthly" }}>
+        <Button variant="outline" disabled>
           <Sparkles className="h-4 w-4" />
-          {hasProAccess ? "AI Assistant" : "Explore Pro"}
-          </Link>
+           AI Assistant · coming soon
         </Button>
       </div>
     </div>

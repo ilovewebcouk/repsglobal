@@ -75,24 +75,28 @@ export function PanelHeader({ title,
 
 export function OutlineButton({ children }: { children: React.ReactNode }) {
   return (
-    <button
+    <Button
       type="button"
-      className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft text-[13px] font-semibold text-white/80 shadow-none transition-colors hover:bg-reps-panel-soft/70 hover:text-white"
+      variant="outline"
+      disabled
+      className="h-10 w-full rounded-[10px] border-reps-border bg-reps-panel-soft text-[13px] text-white/55"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
 export function GhostButton({ children }: { children: React.ReactNode }) {
   return (
-    <button
+    <Button
       type="button"
-      className="inline-flex h-8 items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none transition-colors hover:text-white"
+      variant="outline"
+      disabled
+      className="h-8 rounded-[8px] border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/55"
     >
       {children}
       <ChevronDown className="h-3 w-3" />
-    </button>
+    </Button>
   );
 }
 
@@ -134,7 +138,7 @@ export function Sparkline({ trend = "up" }: { trend?: "up" | "down" }) {
   );
 }
 
-export function LockOverlay({ title = "Pro Preview" }: { title?: string }) {
+export function LockOverlay({ title = "Module preview" }: { title?: string }) {
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[inherit] bg-reps-midnight/60 backdrop-blur-[2px]">
       <div className="flex flex-col items-center rounded-[22px] border border-reps-border bg-reps-panel p-6">
@@ -142,10 +146,7 @@ export function LockOverlay({ title = "Pro Preview" }: { title?: string }) {
           <LockKeyhole className="h-6 w-6" />
         </div>
         <h3 className="mt-4 font-display text-lg font-bold text-white">{title}</h3>
-        <p className="mt-2 text-center text-sm text-white/60">Included with REPS Pro.</p>
-        <Button asChild size="sm" className="mt-4 bg-reps-orange hover:bg-reps-orange-hover">
-          <Link to="/dashboard/start" search={{ tier: "pro" }}>Upgrade</Link>
-        </Button>
+        <p className="mt-2 max-w-[220px] text-center text-sm text-white/60">Sample data only. This module is not connected to your account yet.</p>
       </div>
     </div>
   );
@@ -328,7 +329,7 @@ export function KpiRow({ isLocked = false }: { isLocked?: boolean }) {
           </span>
           <p className="flex-1 text-[12px] leading-snug text-white/80">Your business is performing well</p>
         </div>
-        <button type="button" className="mt-3 flex h-8 w-full items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft text-[12px] font-semibold text-white/80 shadow-none hover:text-white">View insights</button>
+        <Button type="button" variant="outline" disabled className="mt-3 h-8 w-full rounded-[10px] border-reps-border bg-reps-panel-soft text-[12px] text-white/55">View insights</Button>
       </Card>
       {isLocked && <LockOverlay title="Business overview" />}
     </div>
@@ -376,7 +377,7 @@ export function ScheduleAndAi({ isLocked = false, statusData }: { isLocked?: boo
         <PanelHeader
           title="AI Command Centre"
           icon={Sparkles}
-          right={<button type="button" className="inline-flex h-8 items-center gap-1 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"><Sparkles className="h-3 w-3" /> Ask AI</button>}
+          right={<Button type="button" disabled size="sm" className="h-8 rounded-full px-4 text-[12px]"><Sparkles className="h-3 w-3" /> Ask AI</Button>}
         />
         <div className="relative">
           <img src={holoFigure} alt="" aria-hidden loading="lazy" width={1024} height={1024} className="pointer-events-none absolute -right-4 -top-2 h-[280px] w-auto object-contain opacity-60" />
@@ -419,14 +420,14 @@ export function ScheduleAndAi({ isLocked = false, statusData }: { isLocked?: boo
           <li className="rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-3">
             <div className="flex items-center justify-between text-[12px]">
               <span className="text-white/70">CPD Progress</span>
-              <span className="font-semibold text-white">18 / 20 pts</span>
+              <span className="font-semibold text-white/55">Not connected</span>
             </div>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-reps-border">
-              <div className="h-full rounded-full bg-reps-orange" style={{ width: "90%" }} />
+              <div className="h-full rounded-full bg-reps-orange" style={{ width: "0%" }} />
             </div>
           </li>
           <PillRow icon={GraduationCap} label="Qualifications" pill={statusData?.qualCount || "3 Active"} />
-          <PillRow icon={Trophy} label="Endorsements" pill="12" />
+           <PillRow icon={Trophy} label="Endorsements" pill="Not connected" />
           <li className="flex items-center justify-between rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2.5">
             <span className="flex items-center gap-2 text-[12.5px] text-white/80">
               <Star className="h-4 w-4 text-reps-orange" />
@@ -438,7 +439,7 @@ export function ScheduleAndAi({ isLocked = false, statusData }: { isLocked?: boo
                   <Star key={i} className="h-3 w-3 fill-reps-orange text-reps-orange" />
                 ))}
               </span>
-              4.9 <span className="text-white/55">(128)</span>
+              <span className="text-white/55">Not connected</span>
             </span>
           </li>
         </ul>
@@ -535,7 +536,7 @@ export function PerformanceRow({ isLocked = false }: { isLocked?: boolean }) {
       </Card>
 
       <Card className="overflow-hidden">
-        <PanelHeader title="Content Studio" right={<button type="button" className="inline-flex h-8 items-center gap-1 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"><Plus className="h-3 w-3" /> Create New</button>} />
+        <PanelHeader title="Content Studio" right={<Button type="button" disabled size="sm" className="h-8 rounded-[10px] px-3 text-[12px]"><Plus className="h-3 w-3" /> Create New</Button>} />
         <ul className="mt-3 space-y-2.5">
           {CONTENT_ITEMS.map((c) => (
             <li key={c.title} className="flex items-center gap-3">
@@ -759,8 +760,8 @@ export function DashboardFooter() {
       </div>
       <div className="flex items-center gap-5">
         <span>© 2026 REPS. All rights reserved.</span>
-        <a href="#" className="hover:text-white">Privacy Policy</a>
-        <a href="#" className="hover:text-white">Terms of Service</a>
+        <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
+        <Link to="/terms" className="hover:text-white">Terms of Service</Link>
       </div>
     </footer>
   );

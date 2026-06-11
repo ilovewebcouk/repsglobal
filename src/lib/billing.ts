@@ -10,6 +10,8 @@
  */
 
 export type TierKey = "verified" | "pro" | "studio";
+export type PurchasableTier = "verified" | "pro";
+export type BillingPeriod = "monthly" | "annual";
 
 export interface TierConfig {
   key: TierKey;
@@ -57,9 +59,43 @@ export const TIERS: Record<TierKey, TierConfig> = {
   },
 };
 
+export const CHECKOUT_OFFERS: Record<
+  PurchasableTier,
+  { period: BillingPeriod; priceId: string; display: string; trialDays: number; founding: boolean }
+> = {
+  verified: {
+    period: "annual",
+    priceId: TIERS.verified.stripePriceId as string,
+    display: "£99/yr",
+    trialDays: 0,
+    founding: false,
+  },
+  pro: {
+    period: "monthly",
+    priceId: TIERS.pro.stripePriceId as string,
+    display: "£59/mo (Founding)",
+    trialDays: 30,
+    founding: true,
+  },
+};
+
+export function getCheckoutOffer(tier: PurchasableTier, period: BillingPeriod) {
+  const offer = CHECKOUT_OFFERS[tier];
+  return offer.period === period ? offer : null;
+}
+
 export function tierForPriceId(priceId: string): TierKey | null {
   for (const t of Object.values(TIERS)) {
     if (t.stripePriceId === priceId) return t.key;
+  }
+  return null;
+}
+
+export function checkoutOfferForPriceId(priceId: string) {
+  for (const [tier, offer] of Object.entries(CHECKOUT_OFFERS)) {
+    if (offer.priceId === priceId) {
+      return { tier: tier as PurchasableTier, period: offer.period, founding: offer.founding };
+    }
   }
   return null;
 }

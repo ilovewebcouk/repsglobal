@@ -19,6 +19,7 @@ export type PlanCard = {
   ctaHref: string;
   founding?: boolean;
   featured?: boolean;
+  waitlist?: boolean;
   features: string[];
   pricing: Record<Billing, PriceView>;
 };
@@ -38,7 +39,7 @@ export const PLANS: PlanCard[] = [
       "Enquiries inbox",
     ],
     pricing: {
-      monthly: { price: "£12", period: "per month", meta: "Billed monthly" },
+      monthly: { price: "£99", period: "per year", meta: "Annual membership" },
       annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly · 2 months free" },
     },
   },
@@ -63,16 +64,17 @@ export const PLANS: PlanCard[] = [
       "Enhanced directory placement",
     ],
     pricing: {
-      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly · 30-day free trial" },
-      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free · 30-day free trial" },
+      monthly: { price: "£59", was: "£79", period: "per month", meta: "Card required · £0 today · then billed monthly after 30 days" },
+      annual: { price: "£59", was: "£79", period: "per month", meta: "30-day free trial · card required · then billed monthly" },
     },
   },
   {
     tier: "Studio",
     tierKey: "studio",
     desc: "Teams, gyms and multi-coach businesses.",
-    cta: "Start Studio",
-    ctaHref: "/signup",
+    cta: "Join Studio waitlist",
+    ctaHref: "/contact",
+    waitlist: true,
     features: [
       "Everything in Pro",
       "Personalised shop-front (team accent options)",
@@ -84,8 +86,8 @@ export const PLANS: PlanCard[] = [
       "Account manager",
     ],
     pricing: {
-      monthly: { price: "£149", period: "per month", meta: "Billed monthly" },
-      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · 2 months free" },
+      monthly: { price: "£149", period: "per month", meta: "Planned pricing · waitlist only" },
+      annual: { price: "£149", period: "per month", meta: "Planned pricing · waitlist only" },
     },
   },
 ];
@@ -102,9 +104,9 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Billing",
     rows: [
-      { label: "Monthly price", verified: "£12", pro: "£59", studio: "£149" },
-      { label: "Annual price (per month)", verified: "£8.25", pro: "£49", studio: "£124" },
-      { label: "Save with annual", verified: "2 months free", pro: "2 months free", studio: "2 months free" },
+      { label: "Live offer", verified: "£99/year", pro: "£59/month", studio: "Waitlist" },
+      { label: "30-day free trial", verified: false, pro: "Card required", studio: false },
+      { label: "Charge today", verified: "£99", pro: "£0", studio: "—" },
     ],
   },
   {
@@ -199,7 +201,7 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is there a free trial?",
-    a: "Yes — Pro includes a 30-day free trial. You can cancel anytime during the trial from your dashboard. Verified and Studio don't currently include a trial.",
+    a: "Yes — Pro includes a 30-day free trial with a card required at signup. You pay £0 today, then £59/month after 30 days unless you cancel during the trial. Verified does not include a trial, and Studio is waitlist-only.",
   },
   {
     q: "What's the difference between Verified and Pro?",
@@ -219,7 +221,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Can I switch between monthly and annual?",
-    a: "Yes, anytime from your dashboard. Annual saves you 2 months versus monthly.",
+    a: "The live offers are Verified billed annually and Pro billed monthly. Additional billing periods are not currently available.",
   },
   {
     q: "Can I cancel anytime?",
