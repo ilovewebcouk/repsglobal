@@ -59,29 +59,44 @@ export const TIERS: Record<TierKey, TierConfig> = {
   },
 };
 
-export const CHECKOUT_OFFERS: Record<
-  PurchasableTier,
-  { period: BillingPeriod; priceId: string; display: string; trialDays: number; founding: boolean }
-> = {
+export type CheckoutOffer = {
+  period: BillingPeriod;
+  priceId: string;
+  display: string;
+  trialDays: number;
+  founding: boolean;
+};
+
+export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeriod, CheckoutOffer>>> = {
   verified: {
-    period: "annual",
-    priceId: TIERS.verified.stripePriceId as string,
-    display: "£99/yr",
-    trialDays: 0,
-    founding: false,
+    annual: {
+      period: "annual",
+      priceId: TIERS.verified.stripePriceId as string,
+      display: "£99/yr",
+      trialDays: 0,
+      founding: false,
+    },
   },
   pro: {
-    period: "monthly",
-    priceId: TIERS.pro.stripePriceId as string,
-    display: "£59/mo (Founding)",
-    trialDays: 30,
-    founding: true,
+    monthly: {
+      period: "monthly",
+      priceId: TIERS.pro.stripePriceId as string,
+      display: "£59/mo (Founding)",
+      trialDays: 30,
+      founding: true,
+    },
+    annual: {
+      period: "annual",
+      priceId: "price_1Th8U8AP31Yc4cJjLhq9Yhvf",
+      display: "£590/yr (Founding)",
+      trialDays: 30,
+      founding: true,
+    },
   },
 };
 
 export function getCheckoutOffer(tier: PurchasableTier, period: BillingPeriod) {
-  const offer = CHECKOUT_OFFERS[tier];
-  return offer.period === period ? offer : null;
+  return CHECKOUT_OFFERS[tier][period] ?? null;
 }
 
 export function tierForPriceId(priceId: string): TierKey | null {
@@ -92,9 +107,11 @@ export function tierForPriceId(priceId: string): TierKey | null {
 }
 
 export function checkoutOfferForPriceId(priceId: string) {
-  for (const [tier, offer] of Object.entries(CHECKOUT_OFFERS)) {
-    if (offer.priceId === priceId) {
-      return { tier: tier as PurchasableTier, period: offer.period, founding: offer.founding };
+  for (const [tier, offers] of Object.entries(CHECKOUT_OFFERS)) {
+    for (const offer of Object.values(offers)) {
+      if (offer?.priceId === priceId) {
+        return { tier: tier as PurchasableTier, period: offer.period, founding: offer.founding };
+      }
     }
   }
   return null;

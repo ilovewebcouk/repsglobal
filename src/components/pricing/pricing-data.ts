@@ -65,7 +65,7 @@ export const PLANS: PlanCard[] = [
     ],
     pricing: {
       monthly: { price: "£59", was: "£79", period: "per month", meta: "Card required · £0 today · then billed monthly after 30 days" },
-      annual: { price: "£59", was: "£79", period: "per month", meta: "30-day free trial · card required · then billed monthly" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "30-day free trial · card required · £590 billed yearly after trial · 2 months free" },
     },
   },
   {
@@ -104,7 +104,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Billing",
     rows: [
-      { label: "Live offer", verified: "£99/year", pro: "£59/month", studio: "Waitlist" },
+      { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year", studio: "Waitlist" },
       { label: "30-day free trial", verified: false, pro: "Card required", studio: false },
       { label: "Charge today", verified: "£99", pro: "£0", studio: "—" },
     ],
@@ -221,7 +221,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are available?",
-    a: "The live offers are Verified billed annually and Pro billed monthly. Additional billing periods are not currently available.",
+    a: "Verified is billed annually. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the card-required 30-day free trial.",
   },
   {
     q: "Can I cancel anytime?",
