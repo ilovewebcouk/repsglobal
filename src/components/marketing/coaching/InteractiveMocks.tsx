@@ -874,7 +874,7 @@ const PROGRESS_STATES = [
 ] as const;
 type ProgressState = (typeof PROGRESS_STATES)[number]["id"];
 
-function LineChartSvg({ points, color = "#FF7A00" }: { points: number[]; color?: string }) {
+function LineChartSvg({ points, color = "var(--reps-orange)" }: { points: number[]; color?: string }) {
   const w = 280;
   const h = 90;
   const max = Math.max(...points);

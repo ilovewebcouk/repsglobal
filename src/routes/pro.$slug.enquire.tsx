@@ -314,7 +314,7 @@ function EnquirePage() {
                 <img
                   src={pro.image}
                   alt={pro.name}
-                  className="size-16 rounded-[14px] object-cover"
+                  className="size-16 rounded-[18px] object-cover"
                   loading="lazy"
                 />
                 <div className="min-w-0">

@@ -5,20 +5,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   CheckCircle2,
-  Clock,
   CreditCard,
   ExternalLink,
   FileText,
-  RefreshCw,
   ShieldCheck,
   Sparkles,
   UserPen,
-  LockKeyhole,
-  TrendingUp,
-  Users,
+  Plus,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProShell } from "@/components/dashboard/ProShell";
@@ -33,10 +28,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
+import { syncMySubscription } from "@/lib/billing/billing.functions";
+
 import {
-  createPortalSession,
-  syncMySubscription,
-} from "@/lib/billing/billing.functions";
+  KpiRow,
+  ScheduleAndAi,
+  PerformanceRow,
+  RevenueRow,
+  SpotlightRow,
+  BottomRow,
+  DashboardFooter
+} from "@/components/dashboard/DashboardDemoContent";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
@@ -71,7 +73,6 @@ type Step = {
 
 function DashboardPage() {
   const fetchStatus = useServerFn(getDashboardStatus);
-  const openPortal = useServerFn(createPortalSession);
   const syncSub = useServerFn(syncMySubscription);
   const queryClient = useQueryClient();
   const { billing } = Route.useSearch();
@@ -82,13 +83,6 @@ function DashboardPage() {
     queryFn: () => fetchStatus(),
   });
 
-  const portalMutation = useMutation({
-    mutationFn: () => openPortal({ data: undefined }),
-    onSuccess: (res) => {
-      if (res?.url) window.location.href = res.url;
-    },
-  });
-
   const syncMutation = useMutation({
     mutationFn: () => syncSub({ data: undefined }),
     onSuccess: () => {
@@ -96,14 +90,11 @@ function DashboardPage() {
     },
   });
 
-  // Recovery path: if the user just returned from Stripe Checkout and the
-  // webhook hasn't landed yet, sync the subscription from Stripe directly.
   React.useEffect(() => {
     if (billing === "success") {
       syncMutation.mutate();
       navigate({ search: { billing: undefined }, replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billing]);
 
   const data = status.data;
@@ -115,6 +106,8 @@ function DashboardPage() {
   const hasSubmission = !!data?.lastSubmission;
   const profileComplete = data?.profileComplete ?? false;
   const isPublished = data?.profile?.is_published ?? false;
+  const hasProAccess = data?.entitlement.hasProAccess ?? false;
+
   const sub = data?.subscription;
   const renewsAt = sub?.current_period_end
     ? new Date(sub.current_period_end).toLocaleDateString("en-GB", {
@@ -184,22 +177,32 @@ function DashboardPage() {
   const tierLabel = hasPaidTier ? TIERS[subTier as "verified" | "pro"]?.label ?? subTier : "No plan";
   const memberName = data?.identity?.full_name ?? data?.profile?.trading_name ?? "REPS member";
 
+  const statusData = {
+    isVerified,
+    hasInsurance: !!data?.profile?.insurance_valid_until,
+    insuranceDetail: data?.profile?.insurance_valid_until ? `Valid until ${new Date(data.profile.insurance_valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "Not uploaded",
+    qualCount: "3 Active"
+  };
+
   return (
     <ProShell
       active="Dashboard"
       title={`Welcome back, ${memberName.split(" ")[0]}`}
-      subtitle={data?.entitlement.hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
-      hasProAccess={data?.entitlement.hasProAccess ?? false}
+      subtitle={hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
+      hasProAccess={hasProAccess}
       member={{ name: memberName, avatarUrl: data?.identity?.avatar_url, headline: data?.profile?.headline, tierLabel }}
       actions={data && !data.onboarding.complete ? (
         <Button variant="outline" size="sm" onClick={() => setOnboardingOpen(true)}>
-          <CheckCircle2 /> Finish setup · {completedCount}/4
+          <CheckCircle2 className="mr-2 h-4 w-4" /> Finish setup · {completedCount}/4
         </Button>
       ) : undefined}
     >
       {status.isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-32 rounded-[16px]" />)}
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-32 rounded-[16px]" />)}
+          </div>
+          <Skeleton className="h-[400px] w-full rounded-[16px]" />
         </div>
       ) : status.isError ? (
         <Alert className="border-reps-border bg-reps-panel">
@@ -217,55 +220,34 @@ function DashboardPage() {
             <StatusCard label="Setup progress" value={`${completedCount} of 4`} detail={data?.onboarding.complete ? "Complete" : "Finish setup to go live"} icon={CheckCircle2} positive={data?.onboarding.complete} />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <Card className="rounded-[16px] border-reps-border bg-reps-panel lg:col-span-2">
-              <CardContent className="p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <Badge className="border-reps-orange-border bg-reps-orange-soft text-reps-orange">Professional status</Badge>
-                    <h2 className="mt-3 font-display text-[22px] text-white">Your REPS profile</h2>
-                    <p className="mt-1 text-[13px] text-white/55">Keep your credentials and public listing current.</p>
-                  </div>
-                  <Button asChild variant="outline"><Link to="/dashboard/profile-edit">Edit profile</Link></Button>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <TruthRow label="Qualification level" value={data?.profile?.reps_level?.replace("_", " ") ?? "Not added"} />
-                  <TruthRow label="Insurance" value={formatStatusDate(data?.profile?.insurance_valid_until)} />
-                  <TruthRow label="DBS" value={formatStatusDate(data?.profile?.dbs_valid_until)} />
-                  <TruthRow label="Certificate" value={data?.profile?.cert_uploaded_at ? "Uploaded" : "Not uploaded"} />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="rounded-[16px] border-reps-border bg-reps-panel">
-              <CardContent className="flex h-full flex-col justify-between p-5">
-                <div>
-                  <h2 className="font-display text-[18px] text-white">Billing</h2>
-                  <p className="mt-1 text-[13px] text-white/55">{tierLabel}{sub?.status ? ` · ${sub.status}` : ""}</p>
-                </div>
-                <div className="mt-6 flex flex-col gap-2">
-                  <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}><RefreshCw /> Refresh status</Button>
-                  {hasPaidTier ? <Button onClick={() => portalMutation.mutate()} disabled={portalMutation.isPending}><ExternalLink /> Manage billing</Button> : <Button asChild><Link to="/dashboard/start">Choose plan</Link></Button>}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <ProPreview title="Business performance" description="Revenue, client adherence and business insights are included with Pro." icon={TrendingUp} />
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <ProPreview title="Today’s schedule" description="Bookings, calendar and session management are included with Pro." icon={Clock} compact />
-            <ProPreview title="Clients and leads" description="Manage your pipeline, roster and client progress with Pro." icon={Users} compact />
-          </div>
-          <ProPreview title="AI business insights" description="Prioritised actions and intelligent business guidance are included with Pro." icon={Sparkles} />
+          <KpiRow isLocked={!hasProAccess} />
+          <ScheduleAndAi isLocked={!hasProAccess} statusData={statusData} />
+          <PerformanceRow isLocked={!hasProAccess} />
+          <RevenueRow isLocked={!hasProAccess} />
+          <SpotlightRow isLocked={!hasProAccess} />
+          <BottomRow isLocked={!hasProAccess} />
 
           {data?.profile?.slug && isPublished ? (
-            <Alert className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+            <Alert className="mt-4 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
               <AlertDescription className="flex items-center justify-between gap-4">
                 Your public page is live.
-                <Button asChild variant="outline" size="sm"><Link to="/pro/$slug" params={{ slug: data.profile.slug }} target="_blank">Visit <ExternalLink /></Link></Button>
+                <Button asChild variant="outline" size="sm"><Link to="/pro/$slug" params={{ slug: data.profile.slug }} target="_blank">Visit <ExternalLink className="ml-2 h-4 w-4" /></Link></Button>
               </AlertDescription>
             </Alert>
           ) : null}
+
+          <DashboardFooter />
         </div>
+      )}
+
+      {hasProAccess && (
+        <button
+          type="button"
+          aria-label="Quick add"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange text-white shadow-none transition-colors hover:bg-reps-orange-hover"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
       )}
 
       <Dialog open={onboardingOpen} onOpenChange={closeOnboarding}>
@@ -298,19 +280,17 @@ function DashboardPage() {
   );
 }
 
-function formatStatusDate(value?: string | null) {
-  if (!value) return "Not added";
-  return `Valid until ${new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`;
-}
-
 function StatusCard({ label, value, detail, icon: Icon, positive = false }: { label: string; value: string; detail: string; icon: typeof BadgeCheck; positive?: boolean }) {
-  return <Card className="rounded-[16px] border-reps-border bg-reps-panel"><CardContent className="p-5"><div className="flex items-center justify-between"><p className="text-[12px] text-white/55">{label}</p><Icon className={positive ? "size-4 text-emerald-300" : "size-4 text-reps-orange"} /></div><p className="mt-3 font-display text-[22px] text-white">{value}</p><p className="mt-1 text-[11px] text-white/45">{detail}</p></CardContent></Card>;
-}
-
-function TruthRow({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft p-3"><p className="text-[11px] text-white/45">{label}</p><p className="mt-1 text-[13px] font-semibold text-white/80">{value}</p></div>;
-}
-
-function ProPreview({ title, description, icon: Icon, compact = false }: { title: string; description: string; icon: typeof LockKeyhole; compact?: boolean }) {
-  return <Card className="relative overflow-hidden rounded-[16px] border-reps-border bg-reps-panel"><CardContent className={compact ? "p-5" : "p-7"}><div className="flex items-start justify-between gap-4"><div><Badge className="border-reps-orange-border bg-reps-orange-soft text-reps-orange"><LockKeyhole /> Pro preview</Badge><h2 className="mt-3 font-display text-[20px] text-white">{title}</h2><p className="mt-1 max-w-[620px] text-[13px] text-white/55">{description}</p></div><Icon className="size-8 text-white/20" /></div><Button asChild variant="outline" size="sm" className="mt-5"><Link to="/dashboard/start" search={{ tier: "pro", period: "monthly" }}>View Pro plan</Link></Button></CardContent></Card>;
+  return (
+    <Card className="rounded-[16px] border-reps-border bg-reps-panel shadow-none">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-[12px] text-white/55">{label}</p>
+          <Icon className={positive ? "size-4 text-emerald-300" : "size-4 text-reps-orange"} />
+        </div>
+        <p className="mt-3 font-display text-[22px] text-white">{value}</p>
+        <p className="mt-1 text-[11px] text-white/45">{detail}</p>
+      </CardContent>
+    </Card>
+  );
 }
