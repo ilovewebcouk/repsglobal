@@ -23,7 +23,8 @@ One paying Verified or Pro professional can:
 | Tier | Price ID | Product ID | Amount | Interval |
 |---|---|---|---|---|
 | Verified | `price_1Th5cVAP31Yc4cJjRclKEfCH` | `prod_UgSXqMrfMGNrKW` | £99 | year |
-| Pro (Founding) | `price_1Th5cVAP31Yc4cJj4VPiaXeH` | `prod_UgSXQ2CckI9BzA` | £59 | month |
+| Pro (Founding, monthly) | `price_1Th5cVAP31Yc4cJj4VPiaXeH` | `prod_UgSXQ2CckI9BzA` | £59 | month |
+| Pro (Founding, annual) | `price_1Th8U8AP31Yc4cJjLhq9Yhvf` | `prod_UgSXQ2CckI9BzA` | £590 | year |
 | Studio | — | — | — | Waitlist only |
 
 All defined in `src/lib/billing.ts`.
