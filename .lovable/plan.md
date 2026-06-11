@@ -1,71 +1,67 @@
-# Phase A — QA Sweep: Signup → Role → Dashboard Routing
+# Phase B — DashboardShell + Dashboard Primitives
 
-Read-only investigation. No code changes. Output is a triaged findings report grouped by severity (P0 blocks launch / P1 broken-but-workaround / P2 polish), each with file:line evidence and a proposed fix. Fixes happen in a follow-up build loop after you approve the triage.
+Single role-and-tier-aware shell, no separate `VerifiedShell`. Verified trainers get a focused nav (no locked Pro clutter). Direct hits on Pro-only URLs render an upgrade panel instead of silently rerouting.
 
-## Scope (in)
-
-1. **Signup paths**
-   - Professional email/password signup → `handle_new_user` trigger → `profiles` + `user_roles('professional')` + `professionals` rows created
-   - Client email/password signup (via invite token + standalone) → `profiles` + `user_roles('client')` + `clients` rows
-   - Google OAuth signup for both kinds (does `signup_kind` survive the OAuth round-trip?)
-   - Admin seed `pros@repsuk.org` — confirm `user_roles('admin')` present
-   - Invite-accept flow → `accept_client_invite` RPC behaviour
-
-2. **Role assignment + tier**
-   - Every signed-up user has exactly one expected `user_roles` row
-   - `subscriptions.tier` resolves correctly for Verified vs Pro vs none
-   - `has_role` and `has_active_tier` return expected values for sample users
-
-3. **Dashboard routing**
-   - `/auth` → correct post-login redirect by role (pro → `/dashboard`, client → client area, admin → `/admin`)
-   - `_authenticated/route.tsx` gate behaviour (signed-out, signed-in, role mismatch)
-   - `_authenticated/_professional/*` gate (if present) — does a Verified user reach Pro-only pages?
-   - `/admin/*` — does a non-admin user get bounced?
-   - Tier-aware nav: Verified user currently sees full Pro nav (expected gap — log it, don't fix here)
-   - Hard-refresh on a deep protected URL (e.g. `/dashboard/clients/abc`) — no redirect loop, no auth flash
-
-4. **Evidence gathering (read-only)**
-   - `supabase--read_query` against `auth.users` (recent), `profiles`, `user_roles`, `professionals`, `clients`, `subscriptions`, `payment_events`, `client_invites` for the last ~20 signups
-   - `supabase--analytics_query` on `auth_logs` for signup errors / 4xx-5xx
-   - `rg` sweep of `src/routes/_authenticated/`, `src/routes/auth*.tsx`, `src/routes/admin*`, `src/lib/billing.ts`, `handle_new_user` references
-   - Browser-driven smoke of `/auth` (sign-in form only — no destructive actions, no new account creation in prod data)
-
-## Scope (out — explicitly deferred)
-
-- Stripe checkout end-to-end (Phase A2, separate sweep)
-- Verified-shell build, shared-primitive extraction (Phase B)
-- Visual / token / radius audit of dashboard chrome (Phase B post-flight)
-- Any code edits, migrations, or RLS changes
-- Admin dashboard functionality (Phase D)
-
-## Deliverable
-
-A single triage report in chat with:
+## Architecture
 
 ```text
-P0 (blocks launch)
-  - <symptom> — <file:line or query evidence> — <proposed fix>
-P1 (broken, has workaround)
-  - ...
-P2 (polish)
-  - ...
-Healthy (verified working)
-  - ...
+DashboardShell
+  role:  "admin" | "trainer"
+  tier?: "verified" | "pro" | "studio"     (trainer only)
+  active, title, subtitle, actions, member, children
 ```
 
-Plus a recommendation on whether to fix P0s immediately or proceed to Phase B and batch fixes.
+- `role="admin"` → renders the admin nav (today's AdminShell groups).
+- `role="trainer"` → renders the trainer nav filtered by `tier`:
+  - **verified** → Dashboard, Public Profile, Edit Profile, Verification, Reviews, Settings + sidebar-footer "Upgrade to Pro" CTA.
+  - **pro** → today's full trainer nav (Work / Deliver / Grow / Money & Admin) **minus** Studio-only items.
+  - **studio** → pro nav + Team / Locations / Staff / Studio Settings (deferred wiring; only nav slots).
 
-## Approach / order of operations
+Layout/topbar/mobile sheet, brand mark, account card, search affordance, notifications stub — all live once in `DashboardShell`. Visual output for current Pro routes stays pixel-identical (Phase 1 lock).
 
-1. Map the auth surface: read `src/routes/auth*.tsx`, `_authenticated/route.tsx`, any `_professional` / `_admin` layouts, `handle_new_user`, `accept_client_invite`.
-2. Pull last 20 signups + their `user_roles` / `profiles` / `professionals` / `clients` / `subscriptions` rows; flag any mismatches.
-3. Check `auth_logs` for the last 24h of signup/sign-in errors.
-4. Browser-smoke `/auth` page render + sign-in form validation (no submissions against prod accounts).
-5. Static-trace each role's expected post-login route and gate behaviour.
-6. Compile triage report.
+## New files
 
-## Risks / assumptions
+```text
+src/components/dashboard/
+  DashboardShell.tsx          # the unified shell (replaces ProShell.tsx / AdminShell.tsx wiring)
+  primitives/
+    index.ts                  # barrel
+    PCard.tsx                 # moved from ProShell
+    PPanel.tsx                # moved from ProShell
+    KpiTile.tsx               # new, factored from DashboardDemoContent.KpiRow tiles
+    SectionHeader.tsx         # new, dashboard-section heading + optional action slot
+    UpgradePanel.tsx          # new, full-page "Pro feature — upgrade to unlock" with /pricing CTA
+```
 
-- Read-only — no risk to data.
-- Assumes the user does NOT want me to create new test accounts in the live Supabase project. If you want a real end-to-end signup test, say so and I'll do it in a separate loop with a throwaway email.
-- Verified-tier users currently seeing the full Pro nav is **expected** until Phase C and will be logged as a known gap, not a P0.
+`ProShell.tsx` and `AdminShell.tsx` become thin re-export shims for one turn (so the 17+ consuming routes don't break in the same commit), then a follow-up turn migrates imports and deletes the shims. No route file's JSX changes in this turn.
+
+## Route-level upgrade behavior
+
+`_authenticated/_professional/_pro/route.tsx` currently redirects Verified users hitting Pro-only URLs to `/dashboard/profile-edit`. Change it to render `<UpgradePanel feature={...}/>` inside `DashboardShell` so the URL is preserved, the sidebar still renders (Verified variant), and the panel explains the feature with a CTA to `/pricing`. Feature copy comes from a small map keyed by pathname (Bookings, Clients, Programs, Nutrition, etc.).
+
+## Tier source
+
+`getDashboardStatus` already returns `tier`. Each route reads it (it's in the existing query) and passes `tier={status.tier}` to `DashboardShell`. No new server function. Admin routes pass `role="admin"`.
+
+## Out of scope (explicit)
+
+- No visual changes to any Phase-1-locked screen.
+- No new Stripe/checkout work.
+- No Studio activation — Studio nav slots render but features stay disabled.
+- No migration of the 17 route imports in this turn — done via shims, swept in a follow-up turn to keep this diff small.
+- No new design tokens; reuses existing `reps-*` tokens and radius system.
+
+## Acceptance
+
+1. `/dashboard` (Verified user) shows only Verified nav + footer "Upgrade to Pro" CTA. No 🔒 icons.
+2. `/dashboard/bookings` (Verified user) renders the Verified sidebar + `UpgradePanel` (not a redirect).
+3. `/dashboard/bookings` (Pro user) renders unchanged.
+4. `/admin/*` renders unchanged (now via `DashboardShell role="admin"`).
+5. `PCard`, `PPanel` importable from `@/components/dashboard/primitives`; old `@/components/dashboard/ProShell` imports still resolve via shim.
+6. `bun run build` clean; `_authenticated` gates unchanged.
+
+## Follow-up turn (not this PR)
+
+- Sweep all `import { ... } from "@/components/dashboard/ProShell"` → `DashboardShell` / `primitives`.
+- Delete `ProShell.tsx` and `AdminShell.tsx` shims.
+- Wire `KpiTile` / `SectionHeader` into `DashboardDemoContent` to replace hand-rolled markup.
