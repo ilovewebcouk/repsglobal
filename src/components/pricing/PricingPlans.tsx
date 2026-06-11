@@ -95,7 +95,7 @@ export function PricingPlans() {
             >
               {p.featured && (
                 <Badge className="absolute -top-3 left-7 inline-flex items-center gap-1 rounded-full border-transparent bg-reps-orange px-3 py-1 text-[11px] uppercase tracking-wider text-white hover:bg-reps-orange">
-                  <Star className="h-3 w-3 fill-white" /> Most popular
+                  <Star className="h-3 w-3 fill-white" /> 30-day free trial
                 </Badge>
               )}
 
