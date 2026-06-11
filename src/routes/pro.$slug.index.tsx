@@ -27,6 +27,7 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
+import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
@@ -199,11 +200,58 @@ const RATING_DIST = [
 /* Route                                                              */
 /* ------------------------------------------------------------------ */
 
+type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
+
+function proFromDb(row: NonNullable<DbPro>): Pro {
+  const template = PROS["james-carter"];
+  return {
+    slug: row.slug ?? "",
+    name: row.trading_name ?? "REPS Professional",
+    firstName: (row.trading_name ?? "").split(" ")[0] || "Coach",
+    role: "REPS Verified Professional",
+    location: row.city ?? "Online",
+    region: row.country ?? "",
+    rating: 0,
+    reviews: 0,
+    modes: [
+      ...(row.in_person_available ? (["In-person"] as const) : []),
+      ...(row.online_available ? (["Online"] as const) : []),
+    ] as Pro["modes"],
+    blurb: row.headline ?? "",
+    image: proJames,
+    years: 0,
+    clients: "—",
+    bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
+    specialisms: row.specialisms ?? [],
+    services: row.hourly_rate_pence
+      ? [
+          {
+            title: "1-to-1 session",
+            desc: "Personalised coaching tailored to your goals.",
+            price: `From £${(row.hourly_rate_pence / 100).toFixed(0)}`,
+            unit: "per session",
+            image: heroCoaching,
+            icon: Users,
+          },
+        ]
+      : template.services,
+    qualifications: [],
+    faqs: [],
+  };
+}
+
 export const Route = createFileRoute("/pro/$slug/")({
-  head: ({ params }) => {
-    const pro = PROS[params.slug] ?? PROS["james-carter"];
+  loader: async ({ params }) => {
+    if (PROS[params.slug]) return { source: "fixture" as const, db: null };
+    const db = await getPublicProfileBySlug({ data: { slug: params.slug } });
+    return { source: db ? ("db" as const) : ("fallback" as const), db };
+  },
+  head: ({ params, loaderData }) => {
+    const fixture = PROS[params.slug];
+    const dbPro = loaderData?.db ? proFromDb(loaderData.db) : null;
+    const pro = fixture ?? dbPro ?? PROS["james-carter"];
     const title = `${pro.name} — ${pro.role} | REPS`;
-    const description = `${pro.name}, REPS Verified ${pro.role} in ${pro.location}. ${pro.blurb}`;
+    const description = `${pro.name}, REPS Verified ${pro.role}${pro.location ? ` in ${pro.location}` : ""}. ${pro.blurb}`;
     return {
       meta: [
         { title },
@@ -220,7 +268,8 @@ export const Route = createFileRoute("/pro/$slug/")({
 
 function ProProfilePage() {
   const { slug } = Route.useParams();
-  const pro = PROS[slug] ?? PROS["james-carter"];
+  const { db } = Route.useLoaderData();
+  const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
 
   return (
     <div className="min-h-screen bg-reps-ivory">
