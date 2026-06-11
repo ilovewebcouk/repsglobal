@@ -634,6 +634,59 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_submissions: {
+        Row: {
+          admin_note: string | null
+          awarding_body: string
+          created_at: string
+          doc_paths: string[]
+          id: string
+          professional_id: string
+          qualification: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["verification_submission_status"]
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          admin_note?: string | null
+          awarding_body: string
+          created_at?: string
+          doc_paths?: string[]
+          id?: string
+          professional_id: string
+          qualification: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["verification_submission_status"]
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          admin_note?: string | null
+          awarding_body?: string
+          created_at?: string
+          doc_paths?: string[]
+          id?: string
+          professional_id?: string
+          qualification?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["verification_submission_status"]
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_submissions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -720,6 +773,11 @@ export type Database = {
       subscription_tier: "free" | "pro" | "verified" | "studio"
       verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
+      verification_submission_status:
+        | "submitted"
+        | "approved"
+        | "rejected"
+        | "changes_requested"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -881,6 +939,12 @@ export const Constants = {
       subscription_tier: ["free", "pro", "verified", "studio"],
       verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
+      verification_submission_status: [
+        "submitted",
+        "approved",
+        "rejected",
+        "changes_requested",
+      ],
     },
   },
 } as const
