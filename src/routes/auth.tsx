@@ -105,12 +105,12 @@ function LoginPage() {
 
       <div className="relative z-10 mx-auto grid min-h-screen max-w-[1320px] grid-cols-1 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16 lg:px-10">
         {/* ============ LEFT: FORM COLUMN ============ */}
-        <div className="flex min-h-screen flex-col py-8 lg:py-10">
-          {/* Wordmark */}
+        <div className="relative flex min-h-screen items-center justify-center py-24 lg:py-10">
+          {/* Wordmark — pinned top-left */}
           <Link
             to="/"
             aria-label="REPs — back to home"
-            className="inline-flex items-center gap-3 self-start text-white"
+            className="absolute left-0 top-8 inline-flex items-center gap-3 text-white lg:top-10"
           >
             <RepsWordmark className="h-6 w-auto" />
             <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
@@ -120,148 +120,145 @@ function LoginPage() {
             </span>
           </Link>
 
-          {/* Form, vertically centered in remaining space */}
-          <div className="flex flex-1 items-center py-10">
-            <div className="w-full max-w-[400px]">
-              <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
-                Welcome back to{" "}
-                <span className="text-reps-orange">REPs.</span>
-              </h1>
-              <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-                Sign in to manage your profile, clients and bookings — all in one place.
-              </p>
+          {/* Centred stack */}
+          <div className="w-full max-w-[400px]">
+            <h1 className="font-display text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[44px]">
+              Welcome back to REPs.
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              Sign in to manage your profile, clients and bookings — all in one place.
+            </p>
 
-              {/* OAuth row */}
-              <div className="mt-7 grid gap-2.5">
-                <button
-                  type="button"
-                  onClick={handleGoogle}
-                  disabled={googleLoading}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+            {/* Email + password */}
+            <form className="mt-7 grid gap-4" onSubmit={handleSubmit}>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
                 >
-                  {googleLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <GoogleGlyph />
-                  )}
-                  {googleLoading ? "Connecting…" : "Continue with Google"}
-                </button>
-
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/10 bg-white/[0.02] text-[14px] font-semibold text-white/50"
-                >
-                  <Apple className="h-4 w-4" />
-                  Continue with Apple
-                  <span className="ml-1 rounded-full border border-white/10 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-white/45">
-                    Soon
-                  </span>
-                </button>
+                  Email
+                </label>
+                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
+                  <Mail className="h-4 w-4 text-white/40" />
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
-                <span className="h-px flex-1 bg-white/10" />
-                or with email
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-
-              {/* Email + password */}
-              <form className="grid gap-4" onSubmit={handleSubmit}>
-                <div>
+              <div>
+                <div className="flex items-center justify-between">
                   <label
-                    htmlFor="email"
+                    htmlFor="password"
                     className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
                   >
-                    Email
+                    Password
                   </label>
-                  <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
-                    <Mail className="h-4 w-4 text-white/40" />
-                    <input
-                      id="email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      autoComplete="email"
-                      className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
-                    />
-                  </div>
+                  <Link
+                    to="/forgot-password"
+                    className="text-[12px] font-semibold text-reps-orange hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
-
-                <div>
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="password"
-                      className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
-                    >
-                      Password
-                    </label>
-                    <Link
-                      to="/forgot-password"
-                      className="text-[12px] font-semibold text-reps-orange hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
-                    <input
-                      id="password"
-                      type={showPw ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      aria-label={showPw ? "Hide password" : "Show password"}
-                      onClick={() => setShowPw((v) => !v)}
-                      className="text-white/40 hover:text-white/80"
-                    >
-                      {showPw ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-white/15 bg-white/[0.04] px-3 focus-within:border-reps-orange/60">
+                  <input
+                    id="password"
+                    type={showPw ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="w-full bg-transparent text-[14px] text-white placeholder:text-white/30 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    onClick={() => setShowPw((v) => !v)}
+                    className="text-white/40 hover:text-white/80"
+                  >
+                    {showPw ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
+              </div>
 
-                {error && (
-                  <div className="rounded-[10px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
-                    {error}
-                  </div>
-                )}
+              {error && (
+                <div className="rounded-[10px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
+                  {error}
+                </div>
+              )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {loading ? "Signing in…" : "Sign in"}
-                </button>
-              </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Signing in…" : "Sign in"}
+              </button>
+            </form>
 
-              <p className="mt-6 text-[13px] text-white/55">
-                Don&apos;t have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="font-semibold text-reps-orange hover:underline"
-                >
-                  Sign up
-                </Link>
-              </p>
+            {/* Divider */}
+            <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
+              <span className="h-px flex-1 bg-white/10" />
+              Or continue with
+              <span className="h-px flex-1 bg-white/10" />
             </div>
+
+            {/* OAuth row — below the email form */}
+            <div className="grid gap-2.5">
+              <button
+                type="button"
+                onClick={handleGoogle}
+                disabled={googleLoading}
+                className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {googleLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleGlyph />
+                )}
+                {googleLoading ? "Connecting…" : "Continue with Google"}
+              </button>
+
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-white/10 bg-white/[0.02] text-[14px] font-semibold text-white/50"
+              >
+                <Apple className="h-4 w-4" />
+                Continue with Apple
+                <span className="ml-1 rounded-full border border-white/10 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-white/45">
+                  Soon
+                </span>
+              </button>
+            </div>
+
+            <p className="mt-6 text-[13px] text-white/55">
+              Don&apos;t have an account?{" "}
+              <Link
+                to="/signup"
+                className="font-semibold text-reps-orange hover:underline"
+              >
+                Sign up
+              </Link>
+            </p>
           </div>
 
-          {/* Footer line */}
-          <p className="mt-6 text-[12px] text-white/35">
+          {/* Footer line — pinned bottom-left */}
+          <p className="absolute bottom-8 left-0 text-[12px] text-white/35 lg:bottom-10">
             By signing in you agree to our{" "}
             <Link to="/terms" className="hover:text-white/70">
               Terms
