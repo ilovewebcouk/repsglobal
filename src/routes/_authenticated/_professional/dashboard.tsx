@@ -176,11 +176,10 @@ function DashboardPage() {
   };
 
   return (
-    <DashboardShell role="trainer" tier="pro"
+    <DashboardShell role="trainer"
       active="Dashboard"
       title={`Welcome back, ${memberName.split(" ")[0]}`}
       subtitle={hasProAccess ? "Your business overview." : "Your professional status and Pro workspace preview."}
-      hasProAccess={hasProAccess}
       tier={tier}
       member={{ name: memberName, avatarUrl: data?.identity?.avatar_url, headline: data?.profile?.headline, tierLabel }}
       actions={data && !data.onboarding.complete ? (

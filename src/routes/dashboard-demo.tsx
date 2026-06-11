@@ -37,7 +37,6 @@ function DashboardPage() {
       active="Dashboard"
       title="Welcome back, James 👋"
       subtitle="Visual reference only — all figures are sample data and actions are disabled."
-      hasProAccess={true}
       actions={<Badge variant="outline" className="border-reps-orange-border bg-reps-orange-soft text-reps-orange">Demo</Badge>}
     >
       <div className="flex flex-col gap-4">

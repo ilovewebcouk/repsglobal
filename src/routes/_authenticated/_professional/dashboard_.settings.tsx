@@ -77,7 +77,7 @@ function Toggle({ on = false, label }: { on?: boolean; label: string }) {
 function SettingsPage() {
   const tier = useTrainerTier();
   return (
-    <DashboardShell role="trainer" tier="pro"
+    <DashboardShell role="trainer"
       active="Settings"
       tier={tier}
       title="Settings"

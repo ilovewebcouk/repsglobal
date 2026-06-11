@@ -771,7 +771,7 @@ function DashboardFooter() {
 function ProfileEditorPage() {
   const tier = useTrainerTier();
   return (
-    <DashboardShell role="trainer" tier="pro"
+    <DashboardShell role="trainer"
       active="Public Profile"
       tier={tier}
       title="Profile editor"
