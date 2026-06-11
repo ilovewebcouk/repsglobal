@@ -44,19 +44,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard")(
   validateSearch: (raw: Record<string, unknown>) => ({
     billing: typeof raw.billing === "string" ? raw.billing : undefined,
   }),
-  beforeLoad: async () => {
-    const { getPrimaryRole, landingPathForRole } = await import(
-      "@/lib/auth-redirect"
-    );
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return;
-    const role = await getPrimaryRole(data.user.id);
-    if (role && role !== "professional") {
-      const { redirect } = await import("@tanstack/react-router");
-      throw redirect({ to: landingPathForRole(role) });
-    }
-  },
+  // Auth + professional-role + paid-tier are all enforced by the parent
+  // _authenticated and _professional layouts. No child gate needed.
   head: () => ({ meta: [{ title: "Dashboard — REPS" }] }),
   component: DashboardPage,
 });
