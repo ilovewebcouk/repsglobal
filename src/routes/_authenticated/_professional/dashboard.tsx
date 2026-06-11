@@ -15,12 +15,25 @@ import {
   ShieldCheck,
   Sparkles,
   UserPen,
+  LockKeyhole,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { ProShell } from "@/components/dashboard/ProShell";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
 import {
