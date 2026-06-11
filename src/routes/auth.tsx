@@ -326,38 +326,21 @@ function LoginPage() {
               <span className="h-px flex-1 bg-white/10" />
             </div>
 
-            {/* OAuth row */}
-            <div className="flex flex-col gap-2.5">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuth("google")}
-                disabled={googleLoading}
-                className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
-              >
-                {googleLoading ? (
-                  <Loader2 data-icon="inline-start" className="animate-spin" />
-                ) : (
-                  <GoogleGlyph />
-                )}
-                {googleLoading ? "Connecting…" : "Continue with Google"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuth("apple")}
-                disabled={appleLoading}
-                className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
-              >
-                {appleLoading ? (
-                  <Loader2 data-icon="inline-start" className="animate-spin" />
-                ) : (
-                  <Apple data-icon="inline-start" />
-                )}
-                {appleLoading ? "Connecting…" : "Continue with Apple"}
-              </Button>
-            </div>
+            {/* OAuth */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleApple}
+              disabled={appleLoading}
+              className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
+            >
+              {appleLoading ? (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              ) : (
+                <Apple data-icon="inline-start" />
+              )}
+              {appleLoading ? "Connecting…" : "Continue with Apple"}
+            </Button>
 
             <p className="mt-6 text-center text-[13px] text-white/55">
               Don&apos;t have an account?{" "}
