@@ -32,6 +32,12 @@ import {
 } from "@/components/ui/accordion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -746,12 +752,26 @@ function AboutMenu() {
             </h4>
             <ul className="mt-3 flex flex-col gap-1">
               {group.links.map((l) => (
-                <li key={l.to}>
-                  <NavigationMenu.Link asChild>
-                    <Link to={l.to} className={menuItemClass}>
-                      {l.label}
-                    </Link>
-                  </NavigationMenu.Link>
+                <li key={l.label}>
+                  {"soon" in l && l.soon ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex cursor-default select-none items-center gap-2 rounded-[8px] px-2 py-1.5 text-[14px] font-medium text-reps-charcoal/45">
+                          {l.label}
+                          <span className="rounded-[6px] border border-reps-stone/40 bg-reps-warm-white/60 px-1.5 py-[1px] text-[10px] font-medium uppercase tracking-[0.14em] text-reps-charcoal/50">
+                            Soon
+                          </span>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">Launching soon</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <NavigationMenu.Link asChild>
+                      <Link to={l.to} className={menuItemClass}>
+                        {l.label}
+                      </Link>
+                    </NavigationMenu.Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1138,10 +1158,24 @@ function MobileDrawer({
                     </p>
                     <ul className="flex flex-col">
                       {group.links.map((l) => (
-                        <li key={l.to}>
-                          <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
-                            {l.label}
-                          </Link>
+                        <li key={l.label}>
+                          {"soon" in l && l.soon ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex cursor-default select-none items-center gap-2 rounded-[8px] px-3 py-2.5 text-[14px] text-white/45">
+                                  {l.label}
+                                  <span className="rounded-[6px] border border-white/12 bg-white/[0.04] px-1.5 py-[1px] text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
+                                    Soon
+                                  </span>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">Launching soon</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Link to={l.to} onClick={onNavigate} className={mobileSubLinkClass}>
+                              {l.label}
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>
