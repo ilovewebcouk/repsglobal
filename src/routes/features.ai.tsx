@@ -723,7 +723,7 @@ function CommandCentreSection() {
         <div className="relative mt-12">
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-12 rounded-[28px] bg-[radial-gradient(60%_60%_at_50%_30%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
+            className="pointer-events-none absolute -inset-12 rounded-[24px] bg-[radial-gradient(60%_60%_at_50%_30%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
           />
           <div className="relative grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
             <div className="relative">

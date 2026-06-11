@@ -740,7 +740,7 @@ function ReviewCard({
           <img
             src={r.proImage}
             alt={r.proName}
-            className="h-9 w-9 rounded-[14px] object-cover"
+            className="h-9 w-9 rounded-[12px] object-cover"
             loading="lazy"
           />
           <div>
