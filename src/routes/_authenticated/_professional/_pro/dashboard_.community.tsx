@@ -13,7 +13,7 @@ import {
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/community")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/community")({
   head: () => ({
     meta: [
       { title: "Community — REPS Professional" },

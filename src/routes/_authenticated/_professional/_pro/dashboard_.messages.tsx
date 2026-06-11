@@ -19,7 +19,7 @@ import {
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/messages")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/messages")({
   head: () => ({
     meta: [
       { title: "Messages — REPS Professional" },

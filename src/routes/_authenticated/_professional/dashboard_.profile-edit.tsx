@@ -31,7 +31,7 @@ const SPECIALISM_OPTIONS = [
   "Mobility",
 ];
 
-export const Route = createFileRoute("/_authenticated/dashboard_/profile-edit")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile-edit")({
   head: () => ({ meta: [{ title: "Edit your profile — REPS" }] }),
   component: ProfileEditPage,
 });

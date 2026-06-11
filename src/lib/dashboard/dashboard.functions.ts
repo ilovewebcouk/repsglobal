@@ -6,16 +6,20 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [{ data: profile }, { data: roles }, { data: subs }, { data: lastSub }] =
+    const [{ data: profile }, { data: identity }, { data: subs }, { data: lastSub }] =
       await Promise.all([
         supabase
           .from("professionals")
           .select(
-            "slug, trading_name, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status",
+            "slug, trading_name, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until",
           )
           .eq("id", userId)
           .maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", userId),
+        supabase
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("id", userId)
+          .maybeSingle(),
         supabase
           .from("subscriptions")
           .select("tier, status, current_period_end")
@@ -41,11 +45,34 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
       profile?.city
     );
 
+    const tier = subs?.tier ?? "free";
+    const liveStatuses = ["active", "trialing", "past_due", "unpaid"];
+    const hasPaidTier =
+      (tier === "verified" || tier === "pro" || tier === "studio") &&
+      liveStatuses.includes(subs?.status ?? "");
+    const isVerified = profile?.verification_status === "verified";
+    const isPublished = profile?.is_published ?? false;
+
     return {
+      userId,
+      identity,
       profile,
       profileComplete,
-      isAdmin: (roles ?? []).some((r) => r.role === "admin"),
       subscription: subs,
       lastSubmission: lastSub,
+      entitlement: {
+        tier,
+        hasPaidTier,
+        hasProAccess:
+          (tier === "pro" || tier === "studio") &&
+          liveStatuses.includes(subs?.status ?? ""),
+      },
+      onboarding: {
+        plan: hasPaidTier,
+        profile: profileComplete,
+        credentials: isVerified,
+        publish: isPublished,
+        complete: hasPaidTier && profileComplete && isVerified && isPublished,
+      },
     };
   });

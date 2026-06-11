@@ -20,7 +20,7 @@ import {
 import proJames from "@/assets/pro-james.jpg";
 import { ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/programs")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/programs")({
   head: () => ({
     meta: [
       { title: "Programme Builder — REPS Professional" },
@@ -140,7 +140,7 @@ function ProgrammeSelectorRow() {
           Sarah Johnson
           <ChevronDown className="h-4 w-4 text-white/55" />
         </button>
-        <span className="inline-flex h-7 items-center rounded-full bg-[#1f7a4d]/20 px-3 text-[11px] font-semibold text-[#4ade80]">
+        <span className="inline-flex h-7 items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 text-[11px] font-semibold text-emerald-300">
           Active
         </span>
         <div className="h-6 w-px bg-reps-border" />
@@ -214,7 +214,7 @@ function StatusPill({ status }: { status: WeekStatus }) {
     status === "Active"
       ? "bg-reps-orange-soft text-reps-orange"
       : status === "Completed"
-        ? "bg-[#1f7a4d]/20 text-[#4ade80]"
+        ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
         : "bg-white/5 text-white/55";
   return (
     <span
@@ -554,7 +554,7 @@ function ClientAssignmentCard() {
             Fat Loss Phase 2
           </div>
         </div>
-        <span className="inline-flex h-5 items-center rounded-full bg-[#1f7a4d]/20 px-2 text-[10px] font-semibold text-[#4ade80]">
+        <span className="inline-flex h-5 items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 text-[10px] font-semibold text-emerald-300">
           Active
         </span>
       </div>
@@ -627,7 +627,7 @@ function ProgrammePerformanceCard() {
       <SectionHeader
         title="Programme performance"
         right={
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4ade80]">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300">
             <TrendingUp className="h-3.5 w-3.5" />
             On track
           </span>

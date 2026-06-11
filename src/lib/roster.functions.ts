@@ -42,18 +42,32 @@ const csvRowSchema = z.object({
 });
 
 // ============================================================================
-// Helpers — assert caller is professional
+// Helpers — assert caller has an active Pro/Studio entitlement
 // ============================================================================
 async function assertProfessional(
-  supabase: { from: (t: string) => { select: (s: string) => { eq: (k: string, v: string) => Promise<{ data: { role: string }[] | null }> } } },
+  // The authenticated client is injected by middleware and its generated
+  // table types are preserved at each call site.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   userId: string,
 ) {
   const { data: roles } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
-  const isPro = (roles ?? []).some((r) => r.role === "professional");
+  const isPro = (roles ?? []).some((r: { role: string }) => r.role === "professional");
   if (!isPro) throw new Error("Only professionals can manage clients");
+
+  const { data: subscriptions } = await supabase
+    .from("subscriptions")
+    .select("tier,status")
+    .eq("user_id", userId);
+  const hasProTier = (subscriptions ?? []).some(
+    (subscription: { tier: string; status: string }) =>
+      (subscription.tier === "pro" || subscription.tier === "studio") &&
+      ["active", "trialing", "past_due", "unpaid"].includes(subscription.status),
+  );
+  if (!hasProTier) throw new Error("This feature is included with an active Pro plan");
 }
 
 // ============================================================================

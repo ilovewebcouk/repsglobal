@@ -55,10 +55,11 @@ The email `pros@repsuk.org` is auto-granted the `admin` role on next sign-up (ha
 
 | Week | Scope | Status |
 |---|---|---|
-| 1 | Auth gate + `/auth` rename + signup/login wired + Stripe checkout edge function + `/dashboard/start` | In progress (foundations shipped 11 Jun: schema, bucket, Apple, Stripe products) |
-| 2 | Credential upload + admin review queue + approve/reject + emails | Not started |
-| 3 | Editable `/dashboard/profile` + live `/pro/$slug` from DB | Not started |
-| 4 | Directory pulls real verified pros + renewal webhooks + QA pass | Not started |
+| 1 | Auth gate + `/auth` rename + signup/login wired + checkout + `/dashboard/start` | Shipped |
+| 2 | Credential upload + admin review queue + approve/reject | Shipped |
+| 3 | Editable professional profile + live `/pro/$slug` from DB | Shipped |
+| 4 | Real Verified dashboard foundation + onboarding dialog + Pro preview locks | Shipped |
+| 5 | Directory data, renewal QA and individual Pro module wiring | In progress / Phase 2.1+ |
 
 ## Visual rule
 

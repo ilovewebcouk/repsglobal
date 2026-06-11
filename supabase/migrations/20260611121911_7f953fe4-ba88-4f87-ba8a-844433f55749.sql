@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.has_active_tier(uuid, public.subscription_tier[]) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.has_active_tier(uuid, public.subscription_tier[]) TO service_role;

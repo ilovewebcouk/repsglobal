@@ -712,6 +712,13 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      has_active_tier: {
+        Args: {
+          _tiers: Database["public"]["Enums"]["subscription_tier"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

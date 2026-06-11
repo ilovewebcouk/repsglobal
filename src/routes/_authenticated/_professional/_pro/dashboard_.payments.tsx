@@ -16,7 +16,7 @@ import {
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/payments")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/payments")({
   head: () => ({
     meta: [
       { title: "Payments — REPS Professional" },

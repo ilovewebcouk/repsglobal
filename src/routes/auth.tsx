@@ -12,6 +12,7 @@ import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign in to REPs" },

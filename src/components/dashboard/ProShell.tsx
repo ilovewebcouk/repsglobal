@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Apple,
   AreaChart,
@@ -12,6 +12,8 @@ import {
   GraduationCap,
   LayoutDashboard,
   MessagesSquare,
+  LockKeyhole,
+  Menu,
   Search,
   Settings,
   Sparkles,
@@ -23,6 +25,18 @@ import {
 } from "lucide-react";
 
 import proJames from "@/assets/pro-james.jpg";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export type ProActive =
   | "Dashboard"
@@ -53,6 +67,15 @@ type NavItem = {
 
 type NavGroup = { title: string; items: NavItem[] };
 
+export type ProShellMember = {
+  name: string;
+  avatarUrl?: string | null;
+  headline?: string | null;
+  tierLabel?: string;
+};
+
+const VERIFIED_ROUTES = new Set(["/dashboard", "/dashboard/profile-edit", "/dashboard/settings"]);
+
 const NAV_GROUPS: NavGroup[] = [
   {
     title: "Work",
@@ -81,7 +104,7 @@ const NAV_GROUPS: NavGroup[] = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile-edit" },
     ],
   },
   {
@@ -94,13 +117,13 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-function Sidebar({ active }: { active: ProActive }) {
+function Sidebar({ active, hasProAccess, member }: { active: ProActive; hasProAccess: boolean; member?: ProShellMember }) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const initials = (member?.name ?? "REPS Member").split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
+    <div className="flex h-full flex-col bg-reps-midnight">
       <Link to="/" className="flex items-center gap-3 px-5 pb-6 pt-6">
-        <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPS
-        </span>
+        <RepsWordmark className="h-[22px] text-white" />
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
           The Register of
           <br />
@@ -114,9 +137,10 @@ function Sidebar({ active }: { active: ProActive }) {
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
               {group.title}
             </div>
-            <ul className="space-y-1">
+            <ul className="flex flex-col gap-1">
               {group.items.map((item) => {
-                const isActive = item.label === active;
+                const isActive = item.label === active || pathname === item.to;
+                const locked = !hasProAccess && !VERIFIED_ROUTES.has(item.to);
                 const base =
                   "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors";
                 const cls = isActive
@@ -124,9 +148,15 @@ function Sidebar({ active }: { active: ProActive }) {
                   : `${base} text-white/70 hover:bg-reps-panel hover:text-white`;
                 return (
                   <li key={item.label}>
-                    <Link to={item.to} className={cls}>
+                    <Link
+                      to={locked ? "/dashboard/start" : item.to}
+                      search={locked ? { tier: "pro", period: "monthly" } : undefined}
+                      className={cn(cls, locked && "text-white/45")}
+                      aria-label={locked ? `${item.label} — included with Pro` : item.label}
+                    >
                       <item.icon className="h-[18px] w-[18px] shrink-0" />
                       <span className="flex-1 text-left">{item.label}</span>
+                      {locked ? <LockKeyhole className="size-3.5" /> : null}
                       {item.badge ? (
                         <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                           {item.badge}
@@ -141,26 +171,26 @@ function Sidebar({ active }: { active: ProActive }) {
         ))}
       </nav>
 
-      <div className="space-y-3 px-3 pb-5">
+      <div className="flex flex-col gap-3 px-3 pb-5">
         <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
-          <img src={proJames} alt="" className="h-10 w-10 rounded-full object-cover" />
+          <Avatar className="size-10">
+            <AvatarImage src={member?.avatarUrl ?? proJames} alt="" />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-semibold text-white">James Carter</div>
-            <div className="truncate text-[11px] text-white/55">Personal Trainer</div>
-            <span className="mt-1 inline-flex h-4 items-center rounded-full bg-reps-orange-soft px-2 text-[10px] font-semibold text-reps-orange">
-              REPS Level 3
-            </span>
+            <div className="truncate text-[13px] font-semibold text-white">{member?.name ?? "James Carter"}</div>
+            <div className="truncate text-[11px] text-white/55">{member?.headline ?? "Personal Trainer"}</div>
+            <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange">{member?.tierLabel ?? "Pro"}</Badge>
           </div>
         </div>
-        <button
-          type="button"
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-[13px] font-semibold text-reps-orange shadow-none transition-colors hover:bg-reps-orange/15"
-        >
+        <Button asChild variant="outline" disabled={!hasProAccess}>
+          <Link to={hasProAccess ? "/dashboard" : "/dashboard/start"} search={hasProAccess ? undefined : { tier: "pro", period: "monthly" }}>
           <Sparkles className="h-4 w-4" />
-          AI Assistant
-        </button>
+          {hasProAccess ? "AI Assistant" : "Explore Pro"}
+          </Link>
+        </Button>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -168,16 +198,21 @@ function TopBar({
   title,
   subtitle,
   actions,
+  mobileNav,
 }: {
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
+  mobileNav?: React.ReactNode;
 }) {
   return (
-    <header className="flex items-center justify-between gap-6 px-8 pt-7">
-      <div className="min-w-0">
+    <header className="flex items-center justify-between gap-4 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+      <div className="flex min-w-0 items-center gap-3">
+        {mobileNav}
+        <div className="min-w-0">
         <h1 className="font-display text-[22px] font-bold leading-tight text-white">{title}</h1>
         <p className="mt-0.5 text-[13px] text-white/55">{subtitle}</p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/55 md:flex">
@@ -188,21 +223,9 @@ function TopBar({
           </kbd>
         </div>
         {actions}
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
-        >
+        <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-reps-orange px-1 text-[9px] font-semibold text-white">
-            12
-          </span>
-        </button>
-        <img
-          src={proJames}
-          alt=""
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-reps-border"
-        />
+        </Button>
       </div>
     </header>
   );
@@ -213,21 +236,41 @@ export function ProShell({
   title,
   subtitle,
   actions,
+  hasProAccess = true,
+  member,
   children,
 }: {
   active: ProActive;
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
+  hasProAccess?: boolean;
+  member?: ProShellMember;
   children: React.ReactNode;
 }) {
+  const mobileNav = (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open dashboard navigation">
+          <Menu />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[280px] border-reps-border bg-reps-midnight p-0">
+        <SheetTitle className="sr-only">Professional dashboard navigation</SheetTitle>
+        <SheetDescription className="sr-only">Navigate between your REPs dashboard areas.</SheetDescription>
+        <Sidebar active={active} hasProAccess={hasProAccess} member={member} />
+      </SheetContent>
+    </Sheet>
+  );
   return (
     <div className="h-screen bg-reps-ink text-reps-text">
       <div className="flex h-screen">
-        <Sidebar active={active} />
+        <aside className="hidden h-screen w-[232px] shrink-0 border-r border-reps-border lg:block">
+          <Sidebar active={active} hasProAccess={hasProAccess} member={member} />
+        </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <TopBar title={title} subtitle={subtitle} actions={actions} />
-          <main className="flex-1 px-8 pb-12 pt-6">{children}</main>
+          <TopBar title={title} subtitle={subtitle} actions={actions} mobileNav={mobileNav} />
+          <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ import {
 
 
 import { ProShell } from "@/components/dashboard/ProShell";
-export const Route = createFileRoute("/dashboard_/clients/$slug")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/clients/$slug")({
   head: () => ({
     meta: [
       { title: "Sarah Johnson — Client record · REPS Professional" },
@@ -372,7 +372,7 @@ function ProgressChart() {
                 cy={y}
                 r={i === pts.length - 1 ? 4 : 2.5}
                 fill="var(--reps-orange)"
-                stroke="#0b0b10"
+                stroke="var(--reps-ink)"
                 strokeWidth={i === pts.length - 1 ? 2 : 0}
               />
             );

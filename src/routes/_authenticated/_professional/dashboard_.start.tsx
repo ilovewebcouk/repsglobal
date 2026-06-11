@@ -15,7 +15,7 @@ type StartSearch = {
   period?: "monthly" | "annual";
 };
 
-export const Route = createFileRoute("/_authenticated/dashboard_/start")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/start")({
   validateSearch: (s: Record<string, unknown>): StartSearch => ({
     tier: s.tier as StartSearch["tier"],
     period: (s.period as StartSearch["period"]) ?? "annual",
