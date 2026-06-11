@@ -198,16 +198,21 @@ function TopBar({
   title,
   subtitle,
   actions,
+  mobileNav,
 }: {
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
+  mobileNav?: React.ReactNode;
 }) {
   return (
-    <header className="flex items-center justify-between gap-6 px-8 pt-7">
-      <div className="min-w-0">
+    <header className="flex items-center justify-between gap-4 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+      <div className="flex min-w-0 items-center gap-3">
+        {mobileNav}
+        <div className="min-w-0">
         <h1 className="font-display text-[22px] font-bold leading-tight text-white">{title}</h1>
         <p className="mt-0.5 text-[13px] text-white/55">{subtitle}</p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/55 md:flex">
@@ -218,21 +223,9 @@ function TopBar({
           </kbd>
         </div>
         {actions}
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-white/70 shadow-none transition-colors hover:text-white"
-        >
+        <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-reps-orange px-1 text-[9px] font-semibold text-white">
-            12
-          </span>
-        </button>
-        <img
-          src={proJames}
-          alt=""
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-reps-border"
-        />
+        </Button>
       </div>
     </header>
   );
@@ -243,21 +236,41 @@ export function ProShell({
   title,
   subtitle,
   actions,
+  hasProAccess = true,
+  member,
   children,
 }: {
   active: ProActive;
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
+  hasProAccess?: boolean;
+  member?: ProShellMember;
   children: React.ReactNode;
 }) {
+  const mobileNav = (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open dashboard navigation">
+          <Menu />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[280px] border-reps-border bg-reps-midnight p-0">
+        <SheetTitle className="sr-only">Professional dashboard navigation</SheetTitle>
+        <SheetDescription className="sr-only">Navigate between your REPs dashboard areas.</SheetDescription>
+        <Sidebar active={active} hasProAccess={hasProAccess} member={member} />
+      </SheetContent>
+    </Sheet>
+  );
   return (
     <div className="h-screen bg-reps-ink text-reps-text">
       <div className="flex h-screen">
-        <Sidebar active={active} />
+        <aside className="hidden h-screen w-[232px] shrink-0 border-r border-reps-border lg:block">
+          <Sidebar active={active} hasProAccess={hasProAccess} member={member} />
+        </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <TopBar title={title} subtitle={subtitle} actions={actions} />
-          <main className="flex-1 px-8 pb-12 pt-6">{children}</main>
+          <TopBar title={title} subtitle={subtitle} actions={actions} mobileNav={mobileNav} />
+          <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>
     </div>
