@@ -1,34 +1,29 @@
-## Goal
-Replace `/auth` with a simple, centred shadcn `login-05`-style card: email + password, plus Google and Apple. Drop the right-hand shop-front mock.
+## Move REPs wordmark above the login card
 
-## Steps
+Currently the `RepsWordmark` is pinned top-left of the page (with the "Register of Exercise Professionals" tagline beside it). The login card stands alone in the middle of the page.
 
-1. **Install the block**
-   - Run `bunx --bun shadcn@latest add login-05` to pull in the canonical login-05 markup as a starting point under `src/components/`.
-   - Review the added files and rewrite imports/icons to match the project (`@/` alias, lucide already present).
+Reposition to match the shadcn `login-03` reference: a centred brand mark sitting **above** the card, outside it — so the visual stack reads logo → card → terms.
 
-2. **Wire Apple in Lovable Cloud**
-   - Call `supabase--configure_social_auth` with `providers: ["google", "apple"]` to enable Apple alongside the existing Google. (Email/password stays enabled.)
+### Changes to `src/routes/auth.tsx`
 
-3. **Rebuild `src/routes/auth.tsx`**
-   - Remove the 2-column grid and the `ShopFrontMock` import.
-   - Centre a single login-05-style card on the page; keep the existing decorative orange glows for brand chrome.
-   - Keep the existing `RepsWordmark` link above the card and the Terms/Privacy footer line below it.
-   - Card contents (top → bottom):
-     - Heading "Login to your account" (current copy, current 30 → 40 scale).
-     - Short lede (current copy).
-     - Email + password form using shadcn `FieldGroup` / `Field` / `Input` / `Button` (replacing the hand-rolled inputs). Keep "Forgot password?" link on the password row and the existing `handleSubmit` flow.
-     - Inline error using shadcn `Alert` (`variant="destructive"`) instead of the hand-rolled red div.
-     - Divider "Or continue with".
-     - Two `Button variant="outline"` rows: Google (uses existing `handleGoogle`) and Apple (new `handleApple` using `lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin })`).
-     - "Don't have an account? Sign up" link (`/signup`, unchanged).
-   - Preserve the existing redirect logic (`redirectAfterAuth` + `navigate`).
+1. **Remove** the absolutely-positioned top-left `Link` block containing `<RepsWordmark />` + the "Register of Exercise Professionals" tagline.
+2. **Add** a centred `Link to="/"` directly above the card (inside the existing `max-w-[420px]` column, before the card `div`):
+   - `RepsWordmark` rendered at `h-7 w-auto` (slightly larger than the previous 24px since it now anchors the page)
+   - Centred via `inline-flex` on a `flex justify-center` wrapper
+   - `mb-6` spacing to the card below
+   - `aria-label="REPs — back to home"` preserved
+3. Drop the small "Register of Exercise Professionals" tagline — it doesn't belong sitting next to a centred page-anchor logo (it was only there because the wordmark was top-left chrome). The card heading "Login to your account" already carries context.
+4. Keep the decorative orange glows, the card, and everything below it unchanged.
 
-4. **Cleanup**
-   - Remove the now-unused `ShopFrontMock` import and the right-column markup.
-   - Leave the `src/components/auth/ShopFrontMock.tsx` file in place (no other consumers? — verify with `rg` and delete only if truly unused).
+### Result
 
-## Notes
-- Styling stays on REPs tokens (`bg-reps-ink`, `text-white`, `--reps-orange`); no raw hex colours.
-- Radius map respected: button 10px, input 12px, card 22px (large panel).
-- No backend/schema changes; only auth provider toggle + route file rewrite.
+```
+        [ REPS wordmark ]            ← centred, above card
+   ┌────────────────────────────┐
+   │  Login to your account     │
+   │  Email / Password / OAuth  │
+   └────────────────────────────┘
+   By signing in you agree to…    ← unchanged
+```
+
+No copy, validation, OAuth, or styling logic changes — purely repositioning the brand mark.

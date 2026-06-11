@@ -166,24 +166,20 @@ function LoginPage() {
         }}
       />
 
-      {/* Wordmark — pinned top-left */}
-      <Link
-        to="/"
-        aria-label="REPs — back to home"
-        className="absolute left-6 top-8 z-10 inline-flex items-center gap-3 text-white lg:left-10 lg:top-10"
-      >
-        <RepsWordmark className="h-6 w-auto" />
-        <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
-          The Register of
-          <br />
-          Exercise Professionals
-        </span>
-      </Link>
-
       {/* Centred card */}
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-24">
         <div className="w-full max-w-[420px]">
+          <div className="mb-6 flex justify-center">
+            <Link
+              to="/"
+              aria-label="REPs — back to home"
+              className="inline-flex items-center text-white"
+            >
+              <RepsWordmark className="h-7 w-auto" />
+            </Link>
+          </div>
           <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-sm">
+
             <div className="text-center">
               <h1 className="font-display text-[24px] font-bold leading-tight text-white lg:text-[28px]">
                 Login to your account
