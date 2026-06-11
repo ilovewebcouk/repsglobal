@@ -1,93 +1,59 @@
-# `/signup` — world-class conversion screen
+## Brutal honest truth
 
-## Principle
+Two separate things going on — only one is what you think it is.
 
-The user already said yes on `/pricing`. The job of `/signup?tier=…&period=…&next=checkout` is **collect credentials and get out of the way**. No re-pitching, no scrolling, no second thoughts. One viewport, one action, one outcome: land in Stripe Checkout in under 10 seconds.
+### 1. You are NOT signed up as a client
+I checked the database. Your latest account (`cruz.pt+demo1@icloud.com`) is:
+- `signup_kind = professional`
+- `user_roles = ['professional']`
 
-## The screen (single viewport, two columns on ≥lg, stacked on mobile)
+You ARE a trainer. The reason `/dashboard` punted you back to `/pricing` is **not** a role problem — it's that the new subscription gate on `_authenticated/_professional/route.tsx` (the one we just added) checks for an active subscription row, and there isn't one. So it correctly assumed "unpaid trainer" and bounced you to `/pricing`. That's the gate doing its job — just at the wrong moment.
 
-**Left rail (40%) — reassurance, not selling**
+### 2. Why there's no subscription row
+I checked `payment_events` — it's **empty**. Zero events, ever. That means **the Stripe webhook has never reached this app**. Stripe took your payment, Stripe redirected you to `/dashboard?billing=success&session_id=...`, but Stripe never told *us* you paid, so we never wrote the subscription row, so the gate bounced you.
 
-- `RepsWordmark` + one-line tagline "The Register of Exercise Professionals"
-- Plan summary card (existing `planSummary` data) — promoted to the hero of the left rail:
-  - "You're signing up for" eyebrow
-  - Plan name + tagline
-  - Big price + unit + meta line (e.g. "30-day free trial · then £59/month")
-  - 4 highlight bullets (existing data) with emerald check icons
-  - Subtle "Change plan" link → `/pricing` (critical escape hatch — removes anxiety, proven to *increase* conversion)
-- Three trust micro-rows under the card, single line each, muted:
-  - 🛡 Secured by Stripe · PCI-DSS
-  - ✓ Cancel anytime from your dashboard
-  - 🔒 We never see your card details
+Two things are missing:
 
-That's the entire left rail. No testimonial, no stats grid, no feature cards, no brand logos, no FAQ.
+**A. Webhook isn't configured (or is pointing at the wrong URL).** This is a Stripe Dashboard setup task, not a code task. The endpoint exists at `src/routes/api/public/stripe/webhook.ts` and `STRIPE_WEBHOOK_SECRET` is set — but Stripe itself needs an endpoint registered pointing at one of:
+- `https://repsglobal.lovable.app/api/public/stripe/webhook` (published)
+- `https://staging.repsuk.org/api/public/stripe/webhook` (custom domain)
 
-**Right rail (60%) — the form**
+Listening for at least `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`.
 
-- H2: "Create your account" (single line, no subhead)
-- Google + Apple buttons, side-by-side on ≥sm, stacked on mobile, equal weight, outlined not filled
-- Divider: "or sign up with email"
-- Full name (single field, not split)
-- Email
-- Password with eye toggle + inline strength hint (subtle, only after typing)
-- Single checkbox: "I agree to the [Terms] and [Privacy Policy]" — required, no marketing opt-in clutter
-- Primary CTA, full-width, large: **"Continue to secure checkout →"** (Verified copy: **"Continue to payment →"**)
-- Below CTA, one muted line: "Next: secure payment via Stripe. You'll be back here in 30 seconds."
-- Footer microcopy: "Already a member? [Sign in]"
+**B. Even with the webhook firing, the success-URL hop is racey.** Webhook can take 1–10 seconds. If the user's browser loads `/dashboard` before the webhook lands, the gate sees no subscription → bounces to `/pricing`. We need a sync screen between Stripe and the dashboard.
 
-## Conversion details that make this 10/10
+---
 
-1. **Autofocus on full name** — one less click
-2. **`autocomplete` attributes** wired correctly (`name`, `email`, `new-password`) so password managers fire
-3. **CTA shows the destination**, not the action. "Continue to secure checkout" beats "Create account" because it sets the next-screen expectation and removes the "what happens after I click?" hesitation
-4. **Plan card sits on the LEFT** (not above the form on desktop) so the form is always at thumb height on the right — this is the standard SaaS conversion pattern (Linear, Vercel, Notion all do this)
-5. **"Change plan" link is visible but quiet** — confidence signal; users who *don't* click it convert harder because they were given the option
-6. **No double H1** — the page H1 is the plan name in the summary card. The form gets H2. This kills the current "Your fitness business…in one place" pitch headline that's currently fighting the plan card for attention
-7. **Inline errors only**, no toast spam. Field-level red text under the offending input, focus moves to it on submit failure
-8. **Loading state on CTA**: button text swaps to "Taking you to Stripe…" with the existing `Loader2` spinner — explicit destination beats generic "Loading…"
-9. **No layout shift** between empty/error/loading states — pre-reserve error line height
-10. **OAuth buttons match form button height exactly** (44px) — visual rhythm
-11. **Mobile**: plan card collapses to a sticky bottom-of-card summary strip (name + price), full plan details accessible via a "View plan details" disclosure. Form takes full viewport.
-12. **Page background**: keep the existing dark `bg-reps-ink` + orange radial glows + the dashboard hero image at low opacity in the far background. The form card stays warm-white for max contrast — that part is already right.
+## The plan
 
-## What gets deleted from the file
+### Step 1 — Confirm/set up the Stripe webhook (you, in Stripe Dashboard)
+I can't do this for you — it's done inside Stripe. Once I tell you it's missing, you go to **Stripe → Developers → Webhooks → Add endpoint**, paste the URL above, select the 4 events, and copy the signing secret. If the secret matches the `STRIPE_WEBHOOK_SECRET` already in the project, no further code change is needed. If not, I rotate the secret.
 
-- `TRUST_BULLETS` (4 items) + its `<ul>` render
-- `STATS` strip
-- `FEATURES` 4-card grid
-- `BRANDS` logo strip
-- `FAQS` accordion
-- `ACCOUNT_TYPES` + `TIER_TO_ACCOUNT_TYPE`
-- Sophie testimonial figure
-- Hero H1 "Your fitness business…in one place"
-- All section dividers and wrapper sections below the form
-- Unused lucide imports: `Award`, `Briefcase`, `Building2`, `Calendar`, `ChevronDown`, `Globe`, `ShieldCheck`, `Sparkles`, `Star`, `TrendingUp`, `Users`, `User` (audit and keep only what the new layout uses)
+### Step 2 — Add a `/dashboard/syncing` screen that handles the race
+Currently `success_url` goes straight to `/dashboard`. That route runs the subscription gate immediately and loses the race. Change to:
 
-## What stays untouched
+- `success_url` → `/dashboard/syncing?session_id={CHECKOUT_SESSION_ID}` (set in `src/lib/billing/billing.functions.ts`)
+- New route `src/routes/_authenticated/dashboard.syncing.tsx`:
+  - Public-feeling "Setting up your account…" screen with REPs branding + spinner.
+  - Polls `subscriptions` for the current user every 1.5s, up to ~20s.
+  - When a row appears with `status ∈ (active, trialing)` → `navigate({ to: '/dashboard' })`.
+  - On timeout → show "Still syncing — this can take up to a minute" with a manual "I've waited, take me to the dashboard" button + support email. Doesn't dump them on `/pricing`.
 
-- `validateSearch` + `beforeLoad` redirect
-- `head()` SEO block
-- `handleSubmit` → `supabase.auth.signUp` → `continueAfterAuth` → `createCheckoutSession` → `window.location.href` flow
-- `handleGoogle` + Apple OAuth wiring + `continueAfterAuth` fallback
-- Email-verification redirect path that preserves checkout intent
-- Plan summary data shape (`PLAN_SUMMARIES`)
-- Header strip (logo + "Already have an account? Sign in")
+### Step 3 — Make the subscription gate aware of the sync screen
+`_authenticated/_professional/route.tsx` currently redirects no-sub users to `/pricing`. Allow `/dashboard/syncing` through the gate so it can do its job without bouncing.
 
-## Edge cases handled
+### Step 4 — Smoke test
+After step 1 is confirmed: I'll seed a fresh test signup, you complete checkout in test mode, we verify a row lands in `payment_events` and `subscriptions`, and the syncing screen forwards you to the dashboard within a few seconds.
 
-- **No `?tier`** → `beforeLoad` already redirects to `/pricing` (keep)
-- **Email already exists** → friendly inline error: "An account already exists for this email. [Sign in instead]" with link to `/auth?next=checkout&tier=…&period=…` so they resume the same flow post-login
-- **Email verification required** → existing info banner stays; copy tightened to: "Check your inbox to verify, then we'll bring you back to checkout."
-- **OAuth user with existing account** → `continueAfterAuth` already handles this; goes straight to Stripe
-- **User abandons at Stripe and returns** → `/signup` with same query still works; they'll sign in via the "Already have an account?" link, which preserves intent
+---
 
-## Out of scope
+## Out of scope (for this turn)
+- The onboarding pop-up inside the dashboard.
+- Webhook idempotency hardening (already adequate for now).
+- Email receipts (separate task).
 
-- `/pricing`, `/auth`, `createCheckoutSession`, billing tiers, Stripe IDs
-- Apple Developer wiring
-- A separate post-payment onboarding screen (that's Phase 2.x — Stripe success_url already routes to `/dashboard` which handles first-run state)
-- Removing the page entirely (impossible — Stripe can't create the auth user)
+---
 
-## Files
-
-- `src/routes/signup.tsx` — restructure to two-column layout as above. Net: ~450 lines removed, layout rebuilt around the existing form + plan card. No new files, no new components, no design tokens, no backend.
+## What I need from you to proceed
+1. Confirm you want me to build Step 2 + 3 now.
+2. Check Stripe → Developers → Webhooks and tell me whether an endpoint pointing at `repsglobal.lovable.app` or `staging.repsuk.org` exists. If not, I'll give you the exact steps to add it.
