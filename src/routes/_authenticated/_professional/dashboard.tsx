@@ -62,6 +62,7 @@ type Step = {
 };
 
 function DashboardPage() {
+  const tier = useTrainerTier();
   const fetchStatus = useServerFn(getDashboardStatus);
   const syncSub = useServerFn(syncMySubscription);
   const queryClient = useQueryClient();
