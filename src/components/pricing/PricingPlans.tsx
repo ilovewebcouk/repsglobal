@@ -50,7 +50,7 @@ export function PricingPlans() {
 
   return (
     <div>
-      <div className="mb-10 flex justify-center">
+      <div className="mt-2 mb-14 flex justify-center">
         <ToggleGroup
           type="single"
           value={billing}
