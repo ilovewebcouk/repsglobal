@@ -1,0 +1,408 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  Apple,
+  BadgeCheck,
+  Eye,
+  Globe,
+  Loader2,
+  Mail,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useState, type FormEvent } from "react";
+
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { redirectAfterAuth } from "@/lib/auth-redirect";
+import proSophie from "@/assets/pro-sophie.jpg";
+import signupHeroBg from "@/assets/signup-hero-bg.jpg";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Sign in to REPS — Your Professional Account" },
+      {
+        name: "description",
+        content:
+          "Log in to REPS to manage your professional profile, clients, bookings and CPD all in one place.",
+      },
+      { property: "og:title", content: "Sign in to REPS" },
+      {
+        property: "og:description",
+        content:
+          "Welcome back — sign in to REPS to access your professional dashboard.",
+      },
+      { property: "og:url", content: "/auth" },
+    ],
+    links: [{ rel: "canonical", href: "/auth" }],
+  }),
+  component: LoginPage,
+});
+
+const TRUST_BULLETS = [
+  {
+    icon: BadgeCheck,
+    title: "Verified. Trusted. Recognised.",
+    sub: "The professional standard in fitness.",
+  },
+  {
+    icon: Users,
+    title: "Manage your clients",
+    sub: "All your bookings and leads in one place.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Track your growth",
+    sub: "Reviews, CPD and career progress at a glance.",
+  },
+  {
+    icon: Globe,
+    title: "Trusted worldwide",
+    sub: "120+ countries. One professional standard.",
+  },
+];
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInError) throw signInError;
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-in failed");
+        setGoogleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      // Tokens received in-line — resolve role and redirect
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        const to = await redirectAfterAuth(data.user.id);
+        navigate({ to, replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      setGoogleLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-reps-ink text-reps-text">
+      {/* ============ AUTH HEADER ============ */}
+      <header className="relative z-30">
+        <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
+          <Link to="/" className="flex items-center gap-3">
+            <span className="font-display text-[34px] font-bold leading-none tracking-tight text-white">
+              REPS
+            </span>
+            <span className="hidden border-l border-white/15 pl-3 text-[11px] leading-tight text-white/70 sm:block">
+              The Register of
+              <br />
+              Exercise Professionals
+            </span>
+          </Link>
+          <p className="text-[14px] text-white/70">
+            New to REPS?{" "}
+            <Link
+              to="/signup"
+              className="font-semibold text-reps-orange hover:underline"
+            >
+              Create an account
+            </Link>
+          </p>
+        </div>
+      </header>
+
+      {/* ============ HERO + FORM ============ */}
+      <section className="relative overflow-hidden">
+        {/* Dashboard laptop background */}
+        <img
+          src={signupHeroBg}
+          alt=""
+          aria-hidden
+          width={1920}
+          height={1080}
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-left opacity-80"
+        />
+        {/* Ink wash + right-side fade so the form card stays high contrast */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--reps-ink) 0%, color-mix(in oklab, var(--reps-ink) 55%, transparent) 35%, color-mix(in oklab, var(--reps-ink) 75%, transparent) 60%, var(--reps-ink) 100%)",
+          }}
+        />
+        {/* Decorative orange swooshes */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-20 top-20 z-10 h-[420px] w-[420px] rounded-full opacity-[0.06]"
+          style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-32 -top-10 z-10 h-[520px] w-[520px] rounded-full opacity-[0.05]"
+          style={{ background: "radial-gradient(circle, var(--reps-orange) 0%, transparent 70%)" }}
+        />
+
+        <div className="relative z-20 mx-auto grid max-w-[1320px] gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:items-start lg:gap-14 lg:px-10">
+          {/* Left: welcome back */}
+          <div className="flex flex-col">
+            <h1 className="font-display text-[44px] font-bold leading-[1.06] tracking-[-0.02em] text-white lg:text-[52px]">
+              Welcome back to{" "}
+              <span className="text-reps-orange">REPS.</span>
+            </h1>
+            <p className="mt-5 text-[15px] leading-relaxed text-white/65">
+              Sign in to access your professional profile, manage clients and
+              keep your qualifications current — all in one place.
+            </p>
+
+            <ul className="mt-8 grid gap-5">
+              {TRUST_BULLETS.map((b) => (
+                <li key={b.title} className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                    <b.icon className="h-[18px] w-[18px]" />
+                  </span>
+                  <div>
+                    <div className="text-[14px] font-semibold text-white">
+                      {b.title}
+                    </div>
+                    <div className="text-[13px] text-white/60">{b.sub}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <figure className="mt-10 w-full max-w-[480px] rounded-[18px] border border-reps-border bg-reps-panel/80 p-5 backdrop-blur-sm">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className="h-4 w-4 fill-reps-orange text-reps-orange"
+                  />
+                ))}
+              </div>
+              <blockquote className="mt-3 text-[14px] leading-relaxed text-white/80">
+                &ldquo;REPS has helped me build trust with clients and grow
+                my business. The tools and support are incredible.&rdquo;
+              </blockquote>
+              <figcaption className="mt-4 flex items-center gap-3">
+                <img
+                  src={proSophie}
+                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+                <div>
+                  <div className="text-[13px] font-semibold text-white">
+                    Sophie Williams
+                  </div>
+                  <div className="text-[12px] text-white/60">
+                    Pilates Instructor
+                  </div>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+
+          {/* Right: login form */}
+          <div className="rounded-[22px] bg-reps-warm-white p-8 text-reps-charcoal shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
+            <div className="text-center">
+              <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">
+                Sign in to REPS
+              </h2>
+              <p className="mt-1.5 text-[13px] text-reps-muted-light">
+                Welcome back. Enter your details to continue.
+              </p>
+            </div>
+
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              {/* Email */}
+              <div>
+                <label className="text-[13px] font-semibold text-reps-charcoal">
+                  Email address
+                </label>
+                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
+                  <Mail className="h-4 w-4 text-reps-muted-light" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    autoComplete="email"
+                    className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[13px] font-semibold text-reps-charcoal">
+                    Password
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-[12px] font-semibold text-reps-orange hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="mt-1.5 flex h-11 items-center gap-2 rounded-[12px] border border-reps-stone bg-reps-warm-white px-3">
+                  <input
+                    type={showPw ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    onClick={() => setShowPw((v) => !v)}
+                    className="text-reps-muted-light hover:text-reps-charcoal"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <label className="flex items-center gap-2 text-[13px] text-reps-charcoal">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded-[6px] border-reps-stone accent-reps-orange"
+                />
+                Keep me signed in
+              </label>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Signing in…" : "Sign in"}
+              </button>
+
+              <div className="flex items-center gap-3 py-1 text-[11px] uppercase tracking-wider text-reps-muted-light">
+                <span className="h-px flex-1 bg-reps-stone" />
+                or continue with
+                <span className="h-px flex-1 bg-reps-stone" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <SocialButton
+                  label={googleLoading ? "Connecting…" : "Continue with Google"}
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                >
+                  <GoogleGlyph />
+                </SocialButton>
+                <SocialButton label="Continue with Apple" disabled>
+                  <Apple className="h-4 w-4 text-reps-charcoal" />
+                </SocialButton>
+              </div>
+
+              <p className="text-center text-[12px] text-reps-muted-light">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/signup"
+                  className="font-semibold text-reps-orange hover:underline"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SocialButton({
+  label,
+  children,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {children}
+      {label}
+    </button>
+  );
+}
+
+function GoogleGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.99.66-2.25 1.05-3.72 1.05-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"
+      />
+    </svg>
+  );
+}
