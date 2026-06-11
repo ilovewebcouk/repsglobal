@@ -39,9 +39,9 @@ export const Route = createFileRoute("/dashboard-demo")({ head: () => ({ meta: [
         content:
 "Manage your clients, schedule, revenue and career — the REPS Professional Dashboard."
 },
-      { property:"og:url", content:"/dashboard" },
+      { property:"og:url", content:"/dashboard-demo" },
     ],
-    links: [{ rel:"canonical", href:"/dashboard" }]
+    links: [{ rel:"canonical", href:"/dashboard-demo" }]
 }),
   component: DashboardPage
 });
