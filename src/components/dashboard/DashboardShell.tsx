@@ -373,7 +373,7 @@ function TopBar({
             ⌘K
           </kbd>
         </div>
-        <TierPreviewSwitch />
+        {role === "trainer" ? <TierPreviewSwitch /> : null}
         {actions}
         <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
