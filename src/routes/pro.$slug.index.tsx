@@ -27,6 +27,7 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
+import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
