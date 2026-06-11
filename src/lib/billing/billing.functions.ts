@@ -143,3 +143,62 @@ export const getMySubscription = createServerFn({ method: "GET" })
       display: lookup ? PRICES[lookup.tier][lookup.period].display : null,
     };
   });
+
+/**
+ * Recovery path when a webhook is missed: pulls the latest subscription from
+ * Stripe for the current user and upserts it into our `subscriptions` table.
+ */
+export const syncMySubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId, claims } = context;
+    const email = (claims.email as string | undefined) ?? null;
+    const stripe = getStripe();
+
+    const customerId = await getOrCreateCustomer({ userId, email });
+    const subs = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "all",
+      limit: 1,
+    });
+    if (subs.data.length === 0) {
+      return { synced: false, tier: "free" as const };
+    }
+    const sub = subs.data[0];
+    const priceId = sub.items.data[0]?.price.id ?? null;
+    const lookup = priceId ? lookupTierByPriceId(priceId) : null;
+    const isLive = ["active", "trialing", "past_due", "unpaid"].includes(sub.status);
+    const cpe =
+      (sub as unknown as { current_period_end?: number }).current_period_end ??
+      sub.items.data[0]?.current_period_end ??
+      null;
+
+    const row = {
+      user_id: userId,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: sub.id,
+      stripe_price_id: priceId,
+      tier: isLive && lookup ? lookup.tier : "free",
+      billing_period: isLive && lookup ? lookup.period : null,
+      status: sub.status,
+      current_period_end: cpe ? new Date(cpe * 1000).toISOString() : null,
+      cancel_at_period_end: sub.cancel_at_period_end ?? false,
+      is_founding: lookup?.founding ?? false,
+      metadata: sub.metadata as unknown as object,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: existing } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("stripe_subscription_id", sub.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabaseAdmin.from("subscriptions").update(row as never).eq("id", existing.id);
+    } else {
+      await supabaseAdmin.from("subscriptions").insert(row as never);
+    }
+
+    return { synced: true, tier: row.tier, status: row.status };
+  });
