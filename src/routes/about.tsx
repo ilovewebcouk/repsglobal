@@ -23,13 +23,13 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About REPs — The professional platform for the modern fitness industry" },
+      { title: "About REPS — The professional platform for the modern fitness industry" },
       {
         name: "description",
         content:
-          "REPs is building a new professional home for fitness professionals — combining public trust, professional visibility, education, reviews and business software in one connected platform.",
+          "REPS is building a new professional home for fitness professionals — combining public trust, professional visibility, education, reviews and business software in one connected platform.",
       },
-      { property: "og:title", content: "About REPs" },
+      { property: "og:title", content: "About REPS" },
       {
         property: "og:description",
         content: "The professional platform for the modern fitness industry.",
@@ -75,7 +75,7 @@ const PILLARS: Array<{ label: string; body: string; to: string }> = [
     to: "/features/coaching",
   },
   {
-    label: "REPs AI",
+    label: "REPS AI",
     body: "Surfaces what needs attention before it becomes a problem.",
     to: "/features/ai",
   },
@@ -132,14 +132,14 @@ function AboutPage() {
       <section className="relative overflow-hidden">
         <img
           src={heroAsset.url}
-          alt="Editorial portrait of a REPs-registered strength coach in a charcoal heather tee with an embroidered white REPS wordmark on the left chest, arms loosely crossed, looking just past camera, soft window-key light from the left, warm out-of-focus interior behind him."
+          alt="Editorial portrait of a REPS-registered strength coach in a charcoal heather tee with an embroidered white REPS wordmark on the left chest, arms loosely crossed, looking just past camera, soft window-key light from the left, warm out-of-focus interior behind him."
           className="absolute inset-0 h-full w-full object-cover"
           fetchPriority="high"
         />
         <HeroOverlay copySide="left" />
         <div className="relative mx-auto flex max-w-[1320px] flex-col items-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
           <div className="max-w-[640px]">
-            <MarketingHeroEyebrow icon={Sparkles}>About REPs</MarketingHeroEyebrow>
+            <MarketingHeroEyebrow icon={Sparkles}>About REPS</MarketingHeroEyebrow>
             <h1
               className="mt-5 font-display text-[44px] font-bold leading-[1.05] text-white animate-fade-in lg:text-[64px]"
               style={{ animationDelay: "80ms", animationDuration: "640ms" }}
@@ -193,7 +193,7 @@ function AboutPage() {
       {/* 3. Manifesto moment --------------------------------------- */}
       <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-28">
-          <SectionEyebrow>Why REPs exists</SectionEyebrow>
+          <SectionEyebrow>Why REPS exists</SectionEyebrow>
           <div className="mt-6 space-y-4 font-display text-[32px] font-bold leading-[1.15] text-white lg:text-[52px] lg:leading-[1.1]">
             <p className="animate-fade-in" style={{ animationDelay: "0ms", animationDuration: "640ms" }}>
               The fitness industry has changed.
@@ -206,7 +206,7 @@ function AboutPage() {
               across too many disconnected tools.
             </p>
             <p className="animate-fade-in" style={{ animationDelay: "360ms", animationDuration: "640ms" }}>
-              REPs exists to bring that professional journey{" "}
+              REPS exists to bring that professional journey{" "}
               <span className="text-reps-orange">into one place.</span>
             </p>
           </div>
@@ -222,8 +222,8 @@ function AboutPage() {
               Heritage in the name. Modern in everything else.
             </SectionHeading>
             <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
-              The REPs name has long been associated with professional registration, standards and
-              recognition in the fitness sector. Today, REPs is being rebuilt for the modern fitness
+              The REPS name has long been associated with professional registration, standards and
+              recognition in the fitness sector. Today, REPS is being rebuilt for the modern fitness
               industry.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
@@ -237,7 +237,7 @@ function AboutPage() {
             <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
               <img
                 src={heritageAsset.url}
-                alt="A REPs-registered trainer pauses on a wet dawn street after a hill session."
+                alt="A REPS-registered trainer pauses on a wet dawn street after a hill session."
                 className="aspect-[4/5] w-full object-cover"
               />
             </div>
@@ -263,7 +263,7 @@ function AboutPage() {
               provide and why they may be suitable.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-              REPs profiles support clearer professional presentation through qualifications,
+              REPS profiles support clearer professional presentation through qualifications,
               insurance status, CPD, reviews, specialist areas, service information and public
               contact routes.
             </p>
@@ -284,7 +284,7 @@ function AboutPage() {
       <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mx-auto max-w-[820px] text-center">
-            <SectionEyebrow>What REPs is</SectionEyebrow>
+            <SectionEyebrow>What REPS is</SectionEyebrow>
             <SectionHeading className="mt-3">
               More than a directory. More than software.
             </SectionHeading>
@@ -340,7 +340,7 @@ function AboutPage() {
               The system behind the listing.
             </SectionHeading>
             <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
-              REPs supports the people building real careers in fitness — personal trainers, gym
+              REPS supports the people building real careers in fitness — personal trainers, gym
               instructors, online coaches, strength coaches, Pilates instructors, yoga teachers,
               specialist coaches, studio owners and education providers.
             </p>
@@ -379,7 +379,7 @@ function AboutPage() {
               office, an admin team, a marketing department or a software budget.
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-              REPs is being built to give those professionals a stronger foundation: a public
+              REPS is being built to give those professionals a stronger foundation: a public
               profile, a Shop Front, a place to manage enquiries, a system for bookings, payments
               and onboarding, tools for coaching delivery, and support for reviews, referrals, CPD
               and growth.
@@ -405,7 +405,7 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* 9. The future of REPs — horizon band ---------------------- */}
+      {/* 9. The future of REPS — horizon band ---------------------- */}
       <section className="relative overflow-hidden bg-reps-ink">
         <div
           aria-hidden
@@ -416,7 +416,7 @@ function AboutPage() {
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reps-border to-transparent"
         />
         <div className="relative mx-auto max-w-[1100px] px-6 py-24 text-center lg:px-10 lg:py-32">
-          <SectionEyebrow>The future of REPs</SectionEyebrow>
+          <SectionEyebrow>The future of REPS</SectionEyebrow>
           <h2 className="mt-6 font-display text-[34px] font-bold leading-[1.15] text-white lg:text-[56px] lg:leading-[1.1]">
             A trusted public platform for clients.
             <br />
@@ -435,7 +435,7 @@ function AboutPage() {
             </span>
           </h2>
           <p className="mx-auto mt-8 max-w-[560px] text-[15.5px] leading-relaxed text-white/55">
-            REPs is not trying to recreate the past — it's building the next version of professional
+            REPS is not trying to recreate the past — it's building the next version of professional
             infrastructure for the fitness industry.
           </p>
         </div>
@@ -445,8 +445,8 @@ function AboutPage() {
       <FinalCta
         eyebrow={null}
         heading="Build your professional presence with"
-        headingAccent="REPs."
-        lede="Whether you're looking for a trusted fitness professional or building your own career in fitness, REPs is designed to make the professional journey clearer."
+        headingAccent="REPS."
+        lede="Whether you're looking for a trusted fitness professional or building your own career in fitness, REPS is designed to make the professional journey clearer."
         primary={{ to: "/for-professionals", label: "Join as a professional" }}
         secondary={{ to: "/find-a-professional", label: "Find a professional" }}
       />

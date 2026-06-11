@@ -22,7 +22,7 @@ interface AnnotatedMockProps {
 }
 
 /**
- * Canonical "anatomy" primitive — a live REPs route inside a device frame
+ * Canonical "anatomy" primitive — a live REPS route inside a device frame
  * with numbered orange pills anchored over key UI areas and a matching
  * legend column. Use to teach the reader what each part of a screen does.
  *

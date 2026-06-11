@@ -10,9 +10,9 @@ import { VENUES } from "./VenueWordmarks";
  *
  * Each wordmark is a Link to /find-a-professional?venue={slug}, turning the
  * strip into a navigation surface — clients clicking PureGym immediately get
- * REPs professionals who train at PureGym.
+ * REPS professionals who train at PureGym.
  *
- * Legal hygiene: REPs professionals are independent — they are not partners
+ * Legal hygiene: REPS professionals are independent — they are not partners
  * of the gyms shown. The sub-line states this explicitly.
  */
 export function VenueStrip() {
@@ -23,10 +23,10 @@ export function VenueStrip() {
           Where you'll find our trainers
         </p>
         <h2 className="mt-3 font-display text-[22px] font-bold leading-tight text-reps-charcoal sm:text-[26px] lg:text-[30px]">
-          REPs professionals coach clients at gyms worldwide.
+          REPS professionals coach clients at gyms worldwide.
         </h2>
         <p className="mx-auto mt-2 max-w-[520px] text-[12.5px] leading-relaxed text-reps-muted-light">
-          Independent REPs-verified professionals — not affiliated with the gyms shown.
+          Independent REPS-verified professionals — not affiliated with the gyms shown.
         </p>
       </div>
 
@@ -46,7 +46,7 @@ export function VenueStrip() {
                 key={`${key}-${i}`}
                 to="/find-a-professional"
                 search={{ venue: slug } as never}
-                aria-label={`Find REPs professionals at ${label}`}
+                aria-label={`Find REPS professionals at ${label}`}
                 className="shrink-0 transition-colors hover:text-reps-orange focus:text-reps-orange focus:outline-none"
               >
                 <Mark className={`h-7 lg:h-8 ${widthClass}`} />

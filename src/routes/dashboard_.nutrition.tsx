@@ -20,9 +20,9 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/nutrition")({
   head: () => ({
     meta: [
-      { title: "Nutrition — REPs Professional" },
+      { title: "Nutrition — REPS Professional" },
       { name: "description", content: "Build meal plans, set macro targets and track client adherence." },
-      { property: "og:title", content: "Nutrition — REPs Professional" },
+      { property: "og:title", content: "Nutrition — REPS Professional" },
       { property: "og:description", content: "Meal plans, macros and adherence." },
       { property: "og:url", content: "/dashboard/nutrition" },
     ],

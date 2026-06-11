@@ -9,7 +9,7 @@ import type { Competitor } from "@/data/competitor-data";
 export function UiSideBySide({ c }: { c: Competitor }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Frame label="REPs" caption="Verified profile + branded client portal" isReps />
+      <Frame label="REPS" caption="Verified profile + branded client portal" isReps />
       <Frame label={c.name} caption={`${c.name} coaching app`} />
     </div>
   );

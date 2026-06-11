@@ -188,7 +188,7 @@ export function PricingPlans() {
       </Card>
 
       <div className="mt-6 text-center text-[13px] text-white/55">
-        Clients always search REPs for free. Pricing applies to professionals only.
+        Clients always search REPS for free. Pricing applies to professionals only.
       </div>
     </div>
   );

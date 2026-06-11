@@ -26,15 +26,15 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/clients/$slug")({
   head: () => ({
     meta: [
-      { title: "Sarah Johnson — Client record · REPs Professional" },
+      { title: "Sarah Johnson — Client record · REPS Professional" },
       {
         name: "description",
         content:
-          "Client record, progress, coaching plan and account status inside the REPs professional dashboard.",
+          "Client record, progress, coaching plan and account status inside the REPS professional dashboard.",
       },
       {
         property: "og:title",
-        content: "Sarah Johnson — Client record · REPs Professional",
+        content: "Sarah Johnson — Client record · REPS Professional",
       },
       {
         property: "og:description",
@@ -548,7 +548,7 @@ function UpcomingBookings() {
     {
       when: "Tomorrow, 10:00 AM",
       title: "Personal Training",
-      where: "REPs Performance Studio",
+      where: "REPS Performance Studio",
       status: "Confirmed",
     },
     {

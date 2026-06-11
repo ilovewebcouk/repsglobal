@@ -5,10 +5,10 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 export const Route = createFileRoute("/cookies")({
   head: () => ({
     meta: [
-      { title: "Cookie policy — REPs" },
-      { name: "description", content: "How REPs uses cookies and similar technologies, and how to manage your preferences." },
-      { property: "og:title", content: "Cookie policy — REPs" },
-      { property: "og:description", content: "Cookie categories and preferences for REPs." },
+      { title: "Cookie policy — REPS" },
+      { name: "description", content: "How REPS uses cookies and similar technologies, and how to manage your preferences." },
+      { property: "og:title", content: "Cookie policy — REPS" },
+      { property: "og:description", content: "Cookie categories and preferences for REPS." },
     ],
   }),
   component: CookiesPage,
@@ -18,7 +18,7 @@ const CATEGORIES: { name: string; required: boolean; purpose: string; examples: 
   { name: "Essential", required: true, purpose: "Authentication, security and load balancing. The platform cannot function without these.", examples: "reps_session, csrf_token, cf_clearance" },
   { name: "Functional", required: false, purpose: "Remember preferences such as language, region and saved professionals.", examples: "reps_locale, reps_saved_pros" },
   { name: "Analytics", required: false, purpose: "Help us understand how the platform is used so we can improve it. Aggregated, not used to identify you.", examples: "_ga, posthog_id" },
-  { name: "Marketing", required: false, purpose: "Used to measure the performance of REPs ad campaigns and to suggest relevant content.", examples: "_fbp, _gcl_au" },
+  { name: "Marketing", required: false, purpose: "Used to measure the performance of REPS ad campaigns and to suggest relevant content.", examples: "_fbp, _gcl_au" },
 ];
 
 function CookiesPage() {
@@ -34,7 +34,7 @@ function CookiesPage() {
             Cookie policy
           </h1>
           <p className="mt-4 max-w-[760px] text-[15px] leading-relaxed text-white/70">
-            REPs uses cookies and similar technologies to keep you signed in, remember your
+            REPS uses cookies and similar technologies to keep you signed in, remember your
             preferences, and understand how the platform is used. You're in control — manage your
             preferences below.
           </p>
@@ -84,7 +84,7 @@ function CookiesPage() {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-reps-stone bg-reps-ivory p-5">
           <p className="max-w-[600px] text-[13px] text-reps-charcoal/80">
-            Changes apply across all your REPs sessions. Essential cookies cannot be disabled because
+            Changes apply across all your REPS sessions. Essential cookies cannot be disabled because
             the platform needs them to keep you signed in securely.
           </p>
           <div className="flex gap-2">

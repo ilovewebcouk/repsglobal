@@ -20,7 +20,7 @@ const STEPS = [
   { label: "Extract from BD legacy DB", state: "done", count: "14,210 records" },
   { label: "Normalize tiers & qualifications", state: "done", count: "14,210 mapped" },
   { label: "Verify insurance & CPD expiry", state: "running", count: "9,840 / 14,210" },
-  { label: "Invite to REPs (email batch)", state: "pending", count: "0 / 14,210" },
+  { label: "Invite to REPS (email batch)", state: "pending", count: "0 / 14,210" },
   { label: "Activate verified profiles", state: "pending", count: "0 / 14,210" },
 ];
 
@@ -50,7 +50,7 @@ function AdminMigrationPage() {
     <AdminShell
       active="Migration"
       title="BD migration"
-      subtitle="Import, verify, and onboard legacy Body & Discipline professionals to REPs."
+      subtitle="Import, verify, and onboard legacy Body & Discipline professionals to REPS."
       actions={
         <div className="flex items-center gap-2">
           <button className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85">
@@ -79,7 +79,7 @@ function AdminMigrationPage() {
         </ACard>
         <ACard>
           <div className="flex items-center gap-2 text-[12px] text-white/55">
-            <Users className="h-3.5 w-3.5" /> Activated on REPs
+            <Users className="h-3.5 w-3.5" /> Activated on REPS
           </div>
           <div className="mt-1 font-display text-[26px] font-bold text-white">1,864</div>
           <div className="mt-1 text-[11px] text-white/55">18.9% of invited</div>

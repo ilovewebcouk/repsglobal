@@ -5,10 +5,10 @@ import { AuthShell } from "@/components/auth/AuthShell";
 export const Route = createFileRoute("/verify-email")({
   head: () => ({
     meta: [
-      { title: "Verify your email — REPs" },
-      { name: "description", content: "Check your inbox for the verification link to activate your REPs account." },
-      { property: "og:title", content: "Verify your email — REPs" },
-      { property: "og:description", content: "Activate your REPs account by confirming your email." },
+      { title: "Verify your email — REPS" },
+      { name: "description", content: "Check your inbox for the verification link to activate your REPS account." },
+      { property: "og:title", content: "Verify your email — REPS" },
+      { property: "og:description", content: "Activate your REPS account by confirming your email." },
     ],
   }),
   component: VerifyEmailPage,
@@ -31,7 +31,7 @@ function VerifyEmailPage() {
           Confirm your <span className="text-reps-orange">email address.</span>
         </>
       }
-      intro="We've sent a verification link to the email you used to register. Click it to activate your REPs account and access your dashboard."
+      intro="We've sent a verification link to the email you used to register. Click it to activate your REPS account and access your dashboard."
     >
       <div className="flex flex-col items-center text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange">

@@ -7,9 +7,9 @@ import { CompetitorCompare } from"@/components/marketing/CompetitorCompare";
 import { COMPETITOR_LIST } from"@/data/competitor-data";
 
 const URL ="https://repsglobal.lovable.app/compare";
-const TITLE ="Personal Trainer Software — REPs vs Trainerize, MyPTHub & PT Distinction";
+const TITLE ="Personal Trainer Software — REPS vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
-"Compare REPs Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
+"Compare REPS Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -29,7 +29,7 @@ const DIFFERENTIATORS = [
   {
     icon: MapPin,
     title:"A public register, not just an app",
-    body:"REPs is the verified directory the public already searches. Trainerize, MyPTHub and PT Distinction are private software — they don't bring you clients.",
+    body:"REPS is the verified directory the public already searches. Trainerize, MyPTHub and PT Distinction are private software — they don't bring you clients.",
   },
   {
     icon: ShieldCheck,
@@ -52,17 +52,17 @@ const HEAD_TO_HEAD_CARDS = [
   {
     href:"/compare/reps-vs-trainerize" as const,
     competitor: COMPETITOR_LIST[0],
-    headline:"Trainerize charges extra for payments, nutrition and branded app. REPs doesn't.",
+    headline:"Trainerize charges extra for payments, nutrition and branded app. REPS doesn't.",
   },
   {
     href:"/compare/reps-vs-mypthub" as const,
     competitor: COMPETITOR_LIST[1],
-    headline:"MyPTHub's AI, branded app and Zapier are all paid add-ons. REPs includes everything.",
+    headline:"MyPTHub's AI, branded app and Zapier are all paid add-ons. REPS includes everything.",
   },
   {
     href:"/compare/reps-vs-pt-distinction" as const,
     competitor: COMPETITOR_LIST[2],
-    headline:"PT Distinction charges per extra client. REPs doesn't.",
+    headline:"PT Distinction charges per extra client. REPS doesn't.",
   },
 ];
 
@@ -82,7 +82,7 @@ function ComparePage() {
           </h1>
           <p className="mx-auto mt-5 max-w-[680px] text-[16px] leading-relaxed text-white/70">
             Trainerize, MyPTHub and PT Distinction are coaching software you bring
-            your own clients to — then top up with paid add-ons. REPs Pro is
+            your own clients to — then top up with paid add-ons. REPS Pro is
             £59/mo founding (was £79/mo) and includes the full software platform
             on the verified public register — no paid add-on stack, no per-client
             charges.
@@ -92,13 +92,13 @@ function ComparePage() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
             >
-              Join REPs <ArrowRight className="h-4 w-4" />
+              Join REPS <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/pricing"
               className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white hover:bg-white/10"
             >
-              See REPs plans
+              See REPS plans
             </Link>
           </div>
         </div>
@@ -142,7 +142,7 @@ function ComparePage() {
                   />
                 </div>
                 <div className="mt-4 font-display text-[20px] font-bold text-white">
-                  REPs vs {competitor.name}
+                  REPS vs {competitor.name}
                 </div>
                 <p className="mt-2 text-[13.5px] leading-relaxed text-white/65">
                   {headline}
@@ -161,13 +161,13 @@ function ComparePage() {
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[760px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-              Where REPs is different
+              Where REPS is different
             </span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
               Not another coaching app.
             </h2>
             <p className="mt-3 text-[15px] text-white/65">
-              Other platforms compete on features. REPs is a different category — built
+              Other platforms compete on features. REPS is a different category — built
               around the public register, not the workout builder.
             </p>
           </div>
@@ -198,7 +198,7 @@ function ComparePage() {
               Ready to switch?
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
-              Start free, get verified, and run your whole practice on REPs. Founding
+              Start free, get verified, and run your whole practice on REPS. Founding
               pricing locked for life on paid plans — before public launch.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -206,13 +206,13 @@ function ComparePage() {
                 to="/pricing"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                See REPs plans <ArrowRight className="h-4 w-4" />
+                See REPS plans <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/signup"
                 className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white hover:bg-white/10"
               >
-                Join REPs
+                Join REPS
               </Link>
             </div>
           </div>

@@ -209,7 +209,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
           {/* Row 1 — logo · location · nav · trust · right cluster */}
           <div className="flex h-[72px] items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-3" aria-label="REPs home">
+              <Link to="/" className="flex items-center gap-3" aria-label="REPS home">
                 <RepsWordmark className="h-[22px] text-white" />
               </Link>
 
@@ -272,7 +272,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
                 <NavigationMenu.Item>
                   <NavigationMenu.Trigger className={triggerClass(active.about)}>
-                    About REPs
+                    About REPS
                     <ChevronDown
                       aria-hidden="true"
                       className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
@@ -316,7 +316,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     to="/pricing"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:inline-flex"
                   >
-                    Join REPs
+                    Join REPS
                   </Link>
                 </>
               )}
@@ -336,7 +336,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   side="right"
                   className="w-full border-l border-reps-border bg-reps-ink p-0 text-white sm:max-w-sm [&>button]:hidden"
                 >
-                  <SheetTitle className="sr-only">REPs navigation</SheetTitle>
+                  <SheetTitle className="sr-only">REPS navigation</SheetTitle>
                   <SheetDescription className="sr-only">
                     Main site navigation and account links.
                   </SheetDescription>
@@ -682,7 +682,7 @@ function ForProsMenu() {
                   to="/pricing"
                   className={cn(menuItemClass, "font-semibold text-reps-orange")}
                 >
-                  Join REPs →
+                  Join REPS →
                 </Link>
               </NavigationMenu.Link>
             </li>
@@ -902,7 +902,7 @@ function MobileDrawer({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-5 py-4 shadow-[0_6px_16px_-12px_rgba(0,0,0,0.6)]">
-        <Link to="/" onClick={onNavigate} className="flex items-center gap-2" aria-label="REPs home">
+        <Link to="/" onClick={onNavigate} className="flex items-center gap-2" aria-label="REPS home">
           <RepsWordmark className="h-[19px] text-white" />
         </Link>
         <SheetClose asChild>
@@ -948,7 +948,7 @@ function MobileDrawer({
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] bg-reps-orange px-3 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
             >
-              Join REPs
+              Join REPS
             </Link>
           </div>
         </div>
@@ -1066,7 +1066,7 @@ function MobileDrawer({
                     onClick={onNavigate}
                     className={cn(mobileSubLinkClass, "text-reps-orange")}
                   >
-                    REPs AI
+                    REPS AI
                   </Link>
                 </li>
                 <li>
@@ -1097,7 +1097,7 @@ function MobileDrawer({
                     onClick={onNavigate}
                     className={cn(mobileSubLinkClass, "font-semibold text-reps-orange")}
                   >
-                    Join REPs →
+                    Join REPS →
                   </Link>
                 </li>
               </ul>
@@ -1147,7 +1147,7 @@ function MobileDrawer({
                 active.about ? "text-white" : "text-white/85 hover:text-white",
               )}
             >
-              About REPs
+              About REPS
             </AccordionTrigger>
             <AccordionContent className="pb-2">
               <div className="flex flex-col gap-3 px-1">

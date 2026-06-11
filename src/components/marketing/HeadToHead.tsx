@@ -42,10 +42,10 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-panel px-3 py-1 text-[12px] font-semibold text-white/80">
-                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Deep dive · REPs vs {c.name}
+                <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Deep dive · REPS vs {c.name}
               </span>
               <h1 className="mt-5 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
-                REPs vs {c.name}: which is right for personal trainers in 2026?
+                REPS vs {c.name}: which is right for personal trainers in 2026?
               </h1>
               <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
                 An honest, opinionated 10-minute read. Real pricing maths, a
@@ -72,7 +72,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                   to="/pricing"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs <ArrowRight className="h-4 w-4" />
+                  Join REPS <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/compare"
@@ -89,7 +89,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
             <div className="relative">
               <img
                 src={c.hero}
-                alt={`REPs vs ${c.name}`}
+                alt={`REPS vs ${c.name}`}
                 width={1600}
                 height={900}
                 className="w-full rounded-[24px] border border-reps-border"
@@ -282,17 +282,17 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
 
             <div className="rounded-[22px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/10 to-reps-orange/[0.02] p-6 lg:p-10">
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                Why trainers move to REPs
+                Why trainers move to REPS
               </span>
               <h3 className="mt-2 font-display text-[24px] font-bold leading-tight text-white">
                 Built around the register, not the workout builder.
               </h3>
               <ul className="mt-4 space-y-3 text-[14px] text-white/80">
                 {[
-"The public register clients already search — verified, since 2009.",
+"The public register clients already search — verified, since 2002.",
 "Tier-based, but every feature in your tier is included. No add-on stack.",
 "AI as the operating layer, not a $12/mo add-on.",
-"GDPR-first, GBP pricing, REPs credential displayed on profile.",
+"GDPR-first, GBP pricing, REPS credential displayed on profile.",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
@@ -313,7 +313,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               FAQ
             </span>
             <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
-              REPs vs {c.name} — common questions.
+              REPS vs {c.name} — common questions.
             </h2>
           </div>
 
@@ -374,7 +374,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <span className="font-display text-[20px] font-bold text-white">
-                      REPs vs {o.name}
+                      REPS vs {o.name}
                     </span>
                     <ArrowRight className="h-4 w-4 text-reps-orange transition group-hover:translate-x-0.5" />
                   </div>
@@ -388,7 +388,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               Ready to be found — not just signed up?
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[15px] text-white/70">
-              Start free, get REPs verified, and run your whole practice on one
+              Start free, get REPS verified, and run your whole practice on one
               platform. Founding pricing locked for life on paid plans — before
               public launch.
             </p>
@@ -397,7 +397,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
                 to="/pricing"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                Join REPs <ArrowRight className="h-4 w-4" />
+                Join REPS <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/compare"

@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 /**
  * Reusable, presentation-only platform mockups.
- * Pure Tailwind + REPs tokens — no real data, no images required.
+ * Pure Tailwind + REPS tokens — no real data, no images required.
  * Used on /for-professionals and across /features/* pages.
  */
 import {
@@ -48,7 +48,7 @@ function AppSidebar({ active }: { active: string }) {
   return (
     <aside className="hidden w-[180px] shrink-0 border-r border-reps-border bg-reps-panel/40 px-3 py-4 md:block">
       <div className="mb-4 flex items-center gap-2 px-2">
-        <span className="font-display text-[15px] font-bold text-white">REPs</span>
+        <span className="font-display text-[15px] font-bold text-white">REPS</span>
         <span className="rounded-[6px] bg-reps-orange-soft px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-reps-orange">
           Pro
         </span>
@@ -652,7 +652,7 @@ export function ProfileMockup() {
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4">
             <div className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-reps-orange">
               <BadgeCheck className="h-3 w-3" />
-              REPs Verified
+              REPS Verified
             </div>
             <div className="mt-2 font-display text-[18px] font-bold text-white">Sophie Williams</div>
             <div className="text-[11px] text-white/85">Pilates Instructor · Manchester</div>

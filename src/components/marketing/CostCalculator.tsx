@@ -54,7 +54,7 @@ export function CostCalculator({ c }: { c: Competitor }) {
           <p className="mt-6 text-[13px] leading-relaxed text-white/55">
             Move the slider to see how each platform&apos;s monthly bill changes
             as you grow. {c.name}&apos;s figure includes the base tier plus the
-            always-on add-ons a serious coach actually needs. The REPs side
+            always-on add-ons a serious coach actually needs. The REPS side
             shows the tier you&apos;d sit on — every feature in that tier is
             included.
           </p>
@@ -90,11 +90,11 @@ export function CostCalculator({ c }: { c: Competitor }) {
             </ul>
           </div>
 
-          {/* REPs card */}
+          {/* REPS card */}
           <div className="rounded-[18px] border border-reps-orange/40 bg-gradient-to-b from-reps-orange/15 to-reps-orange/[0.03] p-5">
             <div className="flex items-baseline justify-between">
               <span className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wider text-reps-orange">
-                <Sparkles className="h-3 w-3" /> REPs tier
+                <Sparkles className="h-3 w-3" /> REPS tier
               </span>
               <span className="text-[11px] text-white/55">{repsTier.label}</span>
             </div>
@@ -103,9 +103,9 @@ export function CostCalculator({ c }: { c: Competitor }) {
               <span className="text-[14px] font-normal text-white/45">/{repsTier.unit}</span>
             </div>
             <p className="mt-3 text-[12.5px] text-white/70">
-              Every feature in this comparison is included in REPs Pro —
+              Every feature in this comparison is included in REPS Pro —
               directory profile, verification, CRM, bookings, payments,
-              programmes, check-ins, nutrition, client portal and REPs AI. No
+              programmes, check-ins, nutrition, client portal and REPS AI. No
               paid add-on stack, no per-client charges.
             </p>
             <p className="mt-2 text-[11px] text-white/45">
@@ -132,7 +132,7 @@ type Computed = {
 
 type RepsTier = { label: string; price: string; unit: "mo" | "yr" };
 
-/** REPs Pro is the like-for-like software comparison on every /compare page. */
+/** REPS Pro is the like-for-like software comparison on every /compare page. */
 function pickRepsTier(_clients: number): RepsTier {
   return { label: "Pro", price: "£59", unit: "mo" };
 }

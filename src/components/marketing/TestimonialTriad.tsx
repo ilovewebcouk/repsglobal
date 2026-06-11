@@ -19,7 +19,7 @@ const QUOTES = [
     name: "Marcus Okafor",
     role: "Online Coach · Bristol",
     image: marcusOkafor,
-    quote: "The Sunday check-in pile used to take 5 hours. REPs AI does the first pass — I just review and send.",
+    quote: "The Sunday check-in pile used to take 5 hours. REPS AI does the first pass — I just review and send.",
   },
   {
     initials: "EM",

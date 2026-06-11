@@ -32,17 +32,17 @@ import proJames from "@/assets/pro-james.jpg";
 export const Route = createFileRoute("/dashboard_/profile")({
   head: () => ({
     meta: [
-      { title: "Profile editor — REPs Professional" },
+      { title: "Profile editor — REPS Professional" },
       {
         name: "description",
         content:
-          "Manage how your professional profile appears in the REPs directory — photos, bio, services, specialisms and qualifications.",
+          "Manage how your professional profile appears in the REPS directory — photos, bio, services, specialisms and qualifications.",
       },
-      { property: "og:title", content: "Profile editor — REPs Professional" },
+      { property: "og:title", content: "Profile editor — REPS Professional" },
       {
         property: "og:description",
         content:
-          "Manage how your professional profile appears in the REPs directory.",
+          "Manage how your professional profile appears in the REPS directory.",
       },
       { property: "og:url", content: "/dashboard/profile" },
     ],
@@ -67,7 +67,7 @@ function ActionBar() {
             Public profile
           </div>
           <div className="text-[12px] text-white/55">
-            Last updated 2 days ago · Visible in REPs directory
+            Last updated 2 days ago · Visible in REPS directory
           </div>
         </div>
       </div>
@@ -365,7 +365,7 @@ function PublicBio() {
         >
           <TextArea
             rows={2}
-            value="REPs Level 3 strength coach helping busy professionals build lean, resilient bodies through structured training and clear nutrition."
+            value="REPS Level 3 strength coach helping busy professionals build lean, resilient bodies through structured training and clear nutrition."
           />
         </Field>
         <Field
@@ -482,8 +482,8 @@ function Specialisms() {
 function Qualifications() {
   const quals = [
     {
-      title: "REPs Level 3 Personal Trainer",
-      issuer: "REPs Global",
+      title: "REPS Level 3 Personal Trainer",
+      issuer: "REPS Global",
       year: "2018 · Verified",
       verified: true,
     },
@@ -558,7 +558,7 @@ function PublicPreview() {
         </span>
       </div>
       <p className="px-5 pt-1 text-[12px] text-white/55">
-        How your profile appears in the REPs directory.
+        How your profile appears in the REPS directory.
       </p>
 
       <div className="p-5">
@@ -575,7 +575,7 @@ function PublicPreview() {
               />
               <span className="inline-flex items-center gap-1 rounded-full bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold text-reps-orange">
                 <ShieldCheck className="h-3 w-3" />
-                REPs Verified
+                REPS Verified
               </span>
             </div>
             <div className="mt-3">
@@ -598,7 +598,7 @@ function PublicPreview() {
               </div>
             </div>
             <p className="mt-3 line-clamp-3 text-[12px] leading-relaxed text-white/65">
-              REPs Level 3 strength coach helping busy professionals build lean,
+              REPS Level 3 strength coach helping busy professionals build lean,
               resilient bodies through structured training and clear nutrition.
             </p>
             <button
@@ -695,7 +695,7 @@ function ProfileCompletion() {
 
 function VerificationStatus() {
   const rows = [
-    { label: "REPs Verified Member", value: "Verified" },
+    { label: "REPS Verified Member", value: "Verified" },
     { label: "Professional Indemnity Insurance", value: "Verified" },
     { label: "CPD Compliance", value: "Compliant" },
     { label: "Qualifications Verified", value: "Up to date" },
@@ -745,7 +745,7 @@ function DashboardFooter() {
     <footer className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-reps-border px-8 py-6 text-[12px] text-white/55 sm:flex-row">
       <div className="flex items-center gap-3">
         <span className="font-display text-[18px] font-bold tracking-tight text-white">
-          REPs
+          REPS
         </span>
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight">
           The Register of
@@ -754,7 +754,7 @@ function DashboardFooter() {
         </span>
       </div>
       <div className="flex items-center gap-5">
-        <span>© 2026 REPs. All rights reserved.</span>
+        <span>© 2026 REPS. All rights reserved.</span>
         <a href="#" className="hover:text-white">Privacy Policy</a>
         <a href="#" className="hover:text-white">Terms of Service</a>
         <a href="#" className="hover:text-white">Contact Support</a>
@@ -772,7 +772,7 @@ function ProfileEditorPage() {
     <ProShell
       active="Public Profile"
       title="Profile editor"
-      subtitle="Manage how your professional profile appears in the REPs directory."
+      subtitle="Manage how your professional profile appears in the REPS directory."
       actions={
         <>
           <button

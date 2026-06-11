@@ -1,5 +1,5 @@
 /**
- * HeroOverlay — the LOCKED REPs marketing-hero overlay system.
+ * HeroOverlay — the LOCKED REPS marketing-hero overlay system.
  *
  * Use on every full-bleed image hero (pillar pages + /for-professionals when
  * applicable). The recipe (do not modify ad-hoc — change the primitive instead):

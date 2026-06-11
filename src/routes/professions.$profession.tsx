@@ -48,7 +48,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Personal Trainer",
     plural: "Personal Trainers",
     blurb:
-      "REPs-verified personal trainers help you build strength, lose body fat and feel better in your training — one-to-one, in person or online.",
+      "REPS-verified personal trainers help you build strength, lose body fat and feel better in your training — one-to-one, in person or online.",
     qualifications: ["Level 3 PT (RQF)", "Level 4 Specialist", "First Aid (current)"],
     specialisms: [
       "Strength Training",
@@ -73,7 +73,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Pilates Instructor",
     plural: "Pilates Instructors",
     blurb:
-      "Find REPs-verified Pilates teachers for mat, reformer and rehabilitation Pilates — improving posture, mobility and long-term strength.",
+      "Find REPS-verified Pilates teachers for mat, reformer and rehabilitation Pilates — improving posture, mobility and long-term strength.",
     qualifications: ["Level 3 Mat Pilates", "Reformer Certification", "First Aid (current)"],
     specialisms: [
       "Mat Pilates",
@@ -98,7 +98,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Nutritionist",
     plural: "Nutritionists",
     blurb:
-      "Evidence-based nutrition support from REPs-verified professionals — fat loss, performance, gut health and habit-building plans.",
+      "Evidence-based nutrition support from REPS-verified professionals — fat loss, performance, gut health and habit-building plans.",
     qualifications: ["BSc Nutrition", "Registered Nutritionist (ANutr / RNutr)", "Sports Nutrition (ISSN)"],
     specialisms: [
       "Fat Loss",
@@ -123,7 +123,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Strength Coach",
     plural: "Strength Coaches",
     blurb:
-      "Specialist strength and conditioning coaches for powerlifting, hypertrophy and athletic performance — all REPs-verified.",
+      "Specialist strength and conditioning coaches for powerlifting, hypertrophy and athletic performance — all REPS-verified.",
     qualifications: ["Level 4 Strength & Conditioning", "UKSCA / NSCA-CSCS", "First Aid (current)"],
     specialisms: [
       "Powerlifting",
@@ -148,7 +148,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Online Coach",
     plural: "Online Coaches",
     blurb:
-      "Remote coaching from REPs-verified professionals — bespoke programming, weekly check-ins and video feedback, wherever you train.",
+      "Remote coaching from REPS-verified professionals — bespoke programming, weekly check-ins and video feedback, wherever you train.",
     qualifications: ["Level 3 PT (RQF)", "Online Coaching Certification", "Specialist Level 4"],
     specialisms: [
       "Online Programming",
@@ -173,7 +173,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     title: "Yoga Teacher",
     plural: "Yoga Teachers",
     blurb:
-      "REPs-verified yoga teachers for vinyasa, hatha, yin and pregnancy yoga — register-checked through Yoga Alliance Professionals or BWY, insured and ready to teach.",
+      "REPS-verified yoga teachers for vinyasa, hatha, yin and pregnancy yoga — register-checked through Yoga Alliance Professionals or BWY, insured and ready to teach.",
     qualifications: [
       "200hr / 500hr Yoga Alliance Professionals",
       "British Wheel of Yoga (BWY) Level 4",
@@ -212,7 +212,7 @@ function getProfession(slug: string): ProfessionMeta {
           .split("-")
           .map((s) => s[0]?.toUpperCase() + s.slice(1))
           .join(" ") + "s",
-      blurb: "REPs-verified professionals in your city and online. Search, compare and book with confidence.",
+      blurb: "REPS-verified professionals in your city and online. Search, compare and book with confidence.",
       qualifications: ["Level 3 (RQF)", "Specialist Qualifications", "First Aid (current)"],
       specialisms: ["1:1 Coaching", "Online Sessions", "Group Classes", "Specialist Programmes"],
       avgRate: "£40 – £80 / hour",
@@ -235,12 +235,12 @@ export const Route = createFileRoute("/professions/$profession")({
     const meta = getProfession(params.profession);
     return {
       meta: [
-        { title: `${meta.plural} — REPs-Verified | REPs` },
+        { title: `${meta.plural} — REPS-Verified | REPS` },
         {
           name: "description",
-          content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPs.`,
+          content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPS.`,
         },
-        { property: "og:title", content: `${meta.plural} — REPs` },
+        { property: "og:title", content: `${meta.plural} — REPS` },
         { property: "og:description", content: meta.blurb },
         { property: "og:url", content: `/professions/${meta.slug}` },
       ],
@@ -317,11 +317,11 @@ const TRUST = [
 
 const FAQS = [
   {
-    q: "What does REPs-verified mean?",
+    q: "What does REPS-verified mean?",
     a: "Each professional has had their identity, qualifications, insurance and (where required) DBS checked by our verification team before going live on the platform.",
   },
   {
-    q: "Can I book a session through REPs?",
+    q: "Can I book a session through REPS?",
     a: "Yes. Once you find someone you like, send an enquiry directly from their profile. They'll confirm availability and pricing, and you can book straight from the chat.",
   },
   {
@@ -363,7 +363,7 @@ function ProfessionLanding() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <BadgeCheck className="h-3 w-3 text-reps-orange" />
-              {meta.count.toLocaleString()} REPs-verified {meta.plural.toLowerCase()}
+              {meta.count.toLocaleString()} REPS-verified {meta.plural.toLowerCase()}
             </span>
             <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
               Find a verified <span className="text-reps-orange">{meta.title}</span>
@@ -464,7 +464,7 @@ function ProfessionLanding() {
               Featured {meta.plural.toLowerCase()}
             </h2>
             <p className="mt-1 text-[14px] text-reps-muted-light">
-              Hand-picked, REPs-verified and accepting new clients.
+              Hand-picked, REPS-verified and accepting new clients.
             </p>
           </div>
           <Link
@@ -527,7 +527,7 @@ function ProfessionLanding() {
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why every {meta.title.toLowerCase()}
-                <br />on REPs is verified
+                <br />on REPS is verified
               </h2>
               <p className="mt-2 text-[13px] text-reps-muted-light">
                 You shouldn't have to guess whether someone is qualified. We do the checking.
@@ -550,7 +550,7 @@ function ProfessionLanding() {
       <section className="bg-reps-warm-white py-14">
         <div className="mx-auto max-w-[860px] px-6 lg:px-10">
           <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-            Hiring a {meta.title.toLowerCase()} on REPs
+            Hiring a {meta.title.toLowerCase()} on REPS
           </h2>
           <Accordion
             type="single"

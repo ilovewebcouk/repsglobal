@@ -18,7 +18,7 @@ export function ReplacesStrip() {
             One platform
           </span>
           <h3 className="mt-1 font-display text-[22px] font-bold leading-tight text-white lg:text-[26px]">
-            REPs replaces<span className="text-reps-orange">.</span>
+            REPS replaces<span className="text-reps-orange">.</span>
           </h3>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">

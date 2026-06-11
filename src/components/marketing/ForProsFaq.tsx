@@ -10,8 +10,8 @@ const FAQ = [
     a: "Bring a CSV of clients and your programmes — we'll help you import. Your Stripe stays connected to your account; nothing moves unless you say so.",
   },
   {
-    q: "Does REPs take a cut of my bookings or sessions?",
-    a: "No. Every feature in your tier is included — REPs takes no cut of what your clients pay you, and there are no paid add-ons. You keep your revenue.",
+    q: "Does REPS take a cut of my bookings or sessions?",
+    a: "No. Every feature in your tier is included — REPS takes no cut of what your clients pay you, and there are no paid add-ons. You keep your revenue.",
   },
   {
     q: "Do my clients need to download an app?",

@@ -25,17 +25,17 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Dashboard — REPs" },
+      { title: "Admin Dashboard — REPS" },
       {
         name: "description",
         content:
-          "REPs Admin Dashboard — platform overview, registrations, verifications, revenue and system status.",
+          "REPS Admin Dashboard — platform overview, registrations, verifications, revenue and system status.",
       },
-      { property: "og:title", content: "REPs Admin Dashboard" },
+      { property: "og:title", content: "REPS Admin Dashboard" },
       {
         property: "og:description",
         content:
-          "Real-time overview of the REPs platform and key operational metrics.",
+          "Real-time overview of the REPS platform and key operational metrics.",
       },
       { property: "og:url", content: "/admin" },
     ],
@@ -1232,7 +1232,7 @@ function AdminDashboardPage() {
     <AdminShell
       active="Overview"
       title="Platform Overview"
-      subtitle="Real-time overview of the REPs platform and key operational metrics."
+      subtitle="Real-time overview of the REPS platform and key operational metrics."
       actions={<RangePill />}
     >
       <div className="space-y-6">

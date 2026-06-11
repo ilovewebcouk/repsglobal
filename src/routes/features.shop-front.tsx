@@ -50,7 +50,7 @@ const SHOPFRONT_CALLOUTS: Callout[] = [
     x:"84%",
     y:"20%",
     title:"Verified card",
-    body:"REPs Verified badge, credentials and insurance — live-pulled from your standards record.",
+    body:"REPS Verified badge, credentials and insurance — live-pulled from your standards record.",
   },
   {
     x:"14%",
@@ -74,7 +74,7 @@ const SHOPFRONT_CALLOUTS: Callout[] = [
     x:"84%",
     y:"84%",
     title:"Enquire panel",
-    body:"Every CTA on the page lands here. Drops straight into your REPs leads pipeline — never your inbox.",
+    body:"Every CTA on the page lands here. Drops straight into your REPS leads pipeline — never your inbox.",
   },
 ];
 
@@ -98,7 +98,7 @@ const FLOW_STEPS = [
   },
   {
     icon: Workflow,
-    title:"Lands in your REPs pipeline",
+    title:"Lands in your REPS pipeline",
     body:"Scored by AI, tagged by service and intent. No more leads lost between DMs and inbox.",
   },
   {
@@ -109,7 +109,7 @@ const FLOW_STEPS = [
   {
     icon: CreditCard,
     title:"Onboarded as a client",
-    body:"Welcome flow, intake form, programme assignment — handled inside REPs. They never leave the platform.",
+    body:"Welcome flow, intake form, programme assignment — handled inside REPS. They never leave the platform.",
   },
 ];
 
@@ -125,7 +125,7 @@ const PROOF_BLOCKS = [
   {
     icon: ShieldCheck,
     title:"Verified badge",
-    body:"The REPs Verified mark — checked by a human, displayed at the top of your Shop Front.",
+    body:"The REPS Verified mark — checked by a human, displayed at the top of your Shop Front.",
     accent:"emerald" as const,
   },
   {
@@ -165,7 +165,7 @@ const COMPARISON_ROWS = [
   { feature:"Credentials & insurance display", verified: false, pro: true },
   { feature:"Enquiry form (branded)", verified: false, pro: true },
   { feature:"Booking & payments wired in", verified: false, pro: true },
-  { feature:"Leads in your REPs pipeline", verified: false, pro: true },
+  { feature:"Leads in your REPS pipeline", verified: false, pro: true },
 ];
 
 const USE_CASES = [
@@ -206,19 +206,19 @@ const USE_CASES = [
 const FAQ_ITEMS = [
   {
     q:"Do I need design skills to build a Shop Front?",
-    a:"No. The layout, typography, dark theme and mobile behaviour are designed once. You pick an accent colour, upload a hero photo, three transformations and a portrait, and write your method, tiers and bio. REPs handles the rest.",
+    a:"No. The layout, typography, dark theme and mobile behaviour are designed once. You pick an accent colour, upload a hero photo, three transformations and a portrait, and write your method, tiers and bio. REPS handles the rest.",
   },
   {
     q:"Can I use my own brand colour?",
-    a:"You pick an accent from the REPs palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPs dark theme so every Shop Front feels premium and consistent.",
+    a:"You pick an accent from the REPS palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPS dark theme so every Shop Front feels premium and consistent.",
   },
   {
     q:"Is the Shop Front separate from my directory profile?",
-    a:"It's a separate public page at /c/your-name, connected to the same REPs record. Your verified badge, credentials, reviews and insurance status all read live from the same source — no duplication, no drift.",
+    a:"It's a separate public page at /c/your-name, connected to the same REPS record. Your verified badge, credentials, reviews and insurance status all read live from the same source — no duplication, no drift.",
   },
   {
     q:"What happens when someone clicks Enquire?",
-    a:"They open the same locked enquiry flow shown on your directory profile. Their answers land in your REPs leads pipeline, scored by AI and tagged by the service they were viewing — not your personal inbox.",
+    a:"They open the same locked enquiry flow shown on your directory profile. Their answers land in your REPS leads pipeline, scored by AI and tagged by the service they were viewing — not your personal inbox.",
   },
   {
     q:"Do I need Pro to publish a Shop Front?",
@@ -238,16 +238,16 @@ export const Route = createFileRoute("/features/shop-front")({
   head: () => ({
     meta: [
       {
-        title:"Shop-front — Your fitness business website, built into REPs · REPs",
+        title:"Shop-front — Your fitness business website, built into REPS · REPS",
       },
       {
         name:"description",
         content:
-"A professional Shop Front for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPs enquiries, bookings and clients.",
+"A professional Shop Front for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPS enquiries, bookings and clients.",
       },
       {
         property:"og:title",
-        content:"Shop-front — Your fitness business website, built into REPs",
+        content:"Shop-front — Your fitness business website, built into REPS",
       },
       {
         property:"og:description",
@@ -291,9 +291,9 @@ function ShopFrontPage() {
       <FinalCta
         heading="Build a Shop Front clients can"
         headingAccent="understand, trust and act on."
-        lede="Create a professional website page connected to your REPs profile, services, bookings and client workflow."
+        lede="Create a professional website page connected to your REPS profile, services, bookings and client workflow."
         primary={{ to:"/signup", label:"Create your Shop Front" }}
-        secondary={{ to:"/pricing", label:"Explore REPs Pro" }}
+        secondary={{ to:"/pricing", label:"Explore REPS Pro" }}
       />
 
       <PublicFooter />
@@ -310,7 +310,7 @@ function Hero() {
     <section className="relative flex min-h-[640px] overflow-hidden lg:min-h-[780px]">
       <img
         src={coachJamesCoaching}
-        alt="REPs Pro-tier trainer coaching a client through a dumbbell row in a premium gym"
+        alt="REPS Pro-tier trainer coaching a client through a dumbbell row in a premium gym"
         width={1920}
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -331,7 +331,7 @@ function Hero() {
             style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
             Your fitness business website,{""}
-            <span className="text-reps-orange">built into REPs.</span>
+            <span className="text-reps-orange">built into REPS.</span>
           </h1>
 
           <p
@@ -340,7 +340,7 @@ function Hero() {
           >
             A professional Shop Front that shows your services, credentials, reviews, packages and
             booking options in one client-ready page — connected to your enquiries, bookings and
-            clients inside REPs.
+            clients inside REPS.
           </p>
 
           <div
@@ -372,7 +372,7 @@ function Hero() {
               <Zap className="h-4 w-4 text-reps-orange" /> 10-minute setup
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-reps-orange" /> Connected to your REPs workflow
+              <Check className="h-4 w-4 text-reps-orange" /> Connected to your REPS workflow
             </li>
           </ul>
         </div>
@@ -427,10 +427,10 @@ function ProblemSection() {
             </p>
           </div>
 
-          {/* After — REPs */}
+          {/* After — REPS */}
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With a REPs Shop Front
+              <Check className="h-3 w-3" /> With a REPS Shop Front
             </span>
             <BlockHeading className="mt-4">One URL. One clear offer. One workflow.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -440,9 +440,9 @@ function ProblemSection() {
 "Verified badge, credentials and insurance built in",
 "Reviews from real clients shown next to the offer",
 "Enquire, book and pay without leaving the page",
-"Every lead lands in your REPs pipeline, not your inbox",
+"Every lead lands in your REPS pipeline, not your inbox",
 "Branded, mobile-first and built for conversion",
-"Updated in minutes from your REPs dashboard",
+"Updated in minutes from your REPS dashboard",
               ].map((line) => (
                 <li
                   key={line}
@@ -474,8 +474,8 @@ function AnatomySection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Anatomy of a Shop Front"
-          heading="An actual REPs Shop Front — six things every client checks."
-          lede="This isn't a template preview. It's a fully-built Pro-tier page running on REPs right now. Open it in a new tab and scroll, or read the call-outs below."
+          heading="An actual REPS Shop Front — six things every client checks."
+          lede="This isn't a template preview. It's a fully-built Pro-tier page running on REPS right now. Open it in a new tab and scroll, or read the call-outs below."
         />
 
         <div className="mt-12">
@@ -483,7 +483,7 @@ function AnatomySection() {
             mockup={{
               device:"laptop",
               src:"/c/james-wilson",
-              title:"Live REPs Pro Shop Front for James Wilson",
+              title:"Live REPS Pro Shop Front for James Wilson",
             }}
             callouts={SHOPFRONT_CALLOUTS}
           />
@@ -551,7 +551,7 @@ function FlowSection() {
         <SectionHeader
           eyebrow="Enquire · Book · Pay · Onboard"
           heading="When someone clicks Enquire, they don't disappear into your inbox."
-          lede="Every CTA on your Shop Front connects to the same REPs workflow your existing clients already use. Lead in, client out — without copying anything between four different tools."
+          lede="Every CTA on your Shop Front connects to the same REPS workflow your existing clients already use. Lead in, client out — without copying anything between four different tools."
         />
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -603,7 +603,7 @@ function ProofSection() {
         <SectionHeader
           eyebrow="Proof built into the page"
           heading="Your website shouldn't just look good. It should prove why clients can trust you."
-          lede="The Shop Front pulls live from your REPs standards record — every credential, every review, every CPD entry. Visibly. Without you maintaining a second copy."
+          lede="The Shop Front pulls live from your REPS standards record — every credential, every review, every CPD entry. Visibly. Without you maintaining a second copy."
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -657,14 +657,14 @@ function PurposeBuiltSection() {
         <SectionHeader
           eyebrow="Purpose-built for fitness pros"
           heading="Designed around the client journey — not a blank page."
-          lede="Generic builders give you a blank canvas and a thousand templates. REPs gives you a page already designed around how a stranger becomes a paying client."
+          lede="Generic builders give you a blank canvas and a thousand templates. REPS gives you a page already designed around how a stranger becomes a paying client."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-14">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-7 lg:p-10">
             <BlockHeading>A page built around the client journey.</BlockHeading>
             <p className="mt-4 text-[14.5px] leading-relaxed text-white/70">
-              Every section on a REPs Shop Front exists to move someone one step further down this
+              Every section on a REPS Shop Front exists to move someone one step further down this
               journey. Nothing decorative. Nothing optional. Nothing missing.
             </p>
 
@@ -706,11 +706,11 @@ function PurposeBuiltSection() {
                 <Palette className="h-5 w-5" />
               </span>
               <p className="mt-4 font-display text-[16px] font-bold text-white">
-                REPs gives you the journey, already designed.
+                REPS gives you the journey, already designed.
               </p>
               <p className="mt-2 text-[13.5px] leading-relaxed text-white/80">
                 Hero, tier services, methodology, proof, transformations, reviews, enquiry — in
-                the right order, with the right copy prompts, wired into your REPs workflow.
+                the right order, with the right copy prompts, wired into your REPS workflow.
               </p>
             </div>
             <div className="rounded-[18px] border border-reps-border bg-reps-panel/60 p-6">

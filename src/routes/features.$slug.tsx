@@ -18,9 +18,9 @@ export const Route = createFileRoute("/features/$slug")({
     return { feature };
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Features — REPs" }] };
+    if (!loaderData) return { meta: [{ title: "Features — REPS" }] };
     const f = loaderData.feature;
-    const title = `${f.label} — REPs`;
+    const title = `${f.label} — REPS`;
     const desc = f.oneLiner;
     const url = `https://repsglobal.lovable.app/features/${f.slug}`;
     return {

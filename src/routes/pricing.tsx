@@ -11,13 +11,13 @@ import { PricingCompare } from"@/components/pricing/PricingCompare";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title:"Pricing — Verified, Pro, Studio · REPs" },
+      { title:"Pricing — Verified, Pro, Studio · REPS" },
       {
         name:"description",
         content:
 "Verified £99/yr. Founding Pro from £49/mo with a 30-day free trial. Studio £149/mo. Every feature in your tier is included — no add-on stack.",
       },
-      { property:"og:title", content:"REPs pricing" },
+      { property:"og:title", content:"REPS pricing" },
       {
         property:"og:description",
         content:"Verified to be trusted. Pro to run your practice. Studio to scale your team.",
@@ -50,7 +50,7 @@ function PricingPage() {
             <span className="text-reps-orange">Pro to run your practice. Studio to scale.</span>
           </h1>
           <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-relaxed text-white/70">
-            REPs isn't another coaching app. It's a public register, a trust layer and an
+            REPS isn't another coaching app. It's a public register, a trust layer and an
             AI operating system — priced as a clear 3-tier ladder. Pick the tier that fits,
             and every feature in that tier is included.
           </p>
@@ -70,10 +70,10 @@ function PricingPage() {
               Plan-by-plan
             </span>
             <h2 className="mt-2 font-display text-[28px] font-bold text-white lg:text-[36px]">
-              Every feature, every REPs tier.
+              Every feature, every REPS tier.
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[14px] text-white/65">
-              Visibility, operations, coaching, REPs AI, growth and admin — side by side
+              Visibility, operations, coaching, REPS AI, growth and admin — side by side
               across Verified, Pro and Studio.
             </p>
           </div>
@@ -95,14 +95,14 @@ function PricingPage() {
             Looking at other coaching platforms?
           </h2>
           <p className="mx-auto mt-2 max-w-[560px] text-[14px] text-white/65">
-            See how REPs compares to Trainerize, MyPTHub and PT Distinction — feature by
+            See how REPS compares to Trainerize, MyPTHub and PT Distinction — feature by
             feature.
           </p>
           <Link
             to="/compare"
             className="mt-6 inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
           >
-            Compare REPs with other platforms <ArrowRight className="h-4 w-4" />
+            Compare REPS with other platforms <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
@@ -121,7 +121,7 @@ function PricingPage() {
                 to="/signup"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
               >
-                Join REPs <ArrowRight className="h-4 w-4" />
+                Join REPS <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/for-professionals"

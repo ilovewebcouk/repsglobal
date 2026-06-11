@@ -45,7 +45,7 @@ export const TOP_LOCATIONS: { slug: string; label: string }[] = [
 
 // Kept for footer use; no longer surfaced in header nav.
 export const ABOUT_LINKS = [
-  { to: "/about", label: "About REPs", sub: "Who we are and what we stand for" },
+  { to: "/about", label: "About REPS", sub: "Who we are and what we stand for" },
   { to: "/standards", label: "Our Standards", sub: "The bar every professional clears" },
   
   { to: "/reviews", label: "Reviews", sub: "Verified client feedback, on the record" },
@@ -61,7 +61,7 @@ export const RESOURCE_TOPICS: { category: string; label: string }[] = [
   { category: "Platform Updates", label: "Platform Updates" },
 ];
 
-// Editorial-only Resources dropdown — institutional links live under About REPs.
+// Editorial-only Resources dropdown — institutional links live under About REPS.
 export const RESOURCE_QUICK_LINKS: { to: "/resources"; label: string }[] = [];
 
 // For Professionals — supplementary links surfaced below pricing/compare/features.
@@ -70,7 +70,7 @@ export const PRO_RESOURCES = [
   { to: "/specialisms" as const, label: "Specialisms explained" },
 ];
 
-// About REPs mega-menu — 3 columns of institutional, trust and support pages.
+// About REPS mega-menu — 3 columns of institutional, trust and support pages.
 export const ABOUT_GROUPS: {
   heading: string;
   links: (
@@ -81,7 +81,7 @@ export const ABOUT_GROUPS: {
   {
     heading: "Organisation",
     links: [
-      { to: "/about", label: "About REPs" },
+      { to: "/about", label: "About REPS" },
       { label: "Careers", soon: true },
       { label: "Press", soon: true },
       { to: "/contact", label: "Contact" },

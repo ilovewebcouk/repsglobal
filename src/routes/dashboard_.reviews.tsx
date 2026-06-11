@@ -16,9 +16,9 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/reviews")({
   head: () => ({
     meta: [
-      { title: "Reviews — REPs Professional" },
-      { name: "description", content: "Public reviews, rating breakdown and response composer for your REPs profile." },
-      { property: "og:title", content: "Reviews — REPs Professional" },
+      { title: "Reviews — REPS Professional" },
+      { name: "description", content: "Public reviews, rating breakdown and response composer for your REPS profile." },
+      { property: "og:title", content: "Reviews — REPS Professional" },
       { property: "og:description", content: "Reviews and response composer." },
       { property: "og:url", content: "/dashboard/reviews" },
     ],
@@ -256,7 +256,7 @@ function ReviewsPage() {
               </span>
               <div>
                 <h3 className="text-[14px] font-semibold text-white">Review velocity</h3>
-                <p className="mt-1 text-[12px] text-white/65">You're averaging 2.4 new reviews per week — top 5% of REPs Level 3 trainers in Manchester.</p>
+                <p className="mt-1 text-[12px] text-white/65">You're averaging 2.4 new reviews per week — top 5% of REPS Level 3 trainers in Manchester.</p>
               </div>
             </div>
           </PCard>

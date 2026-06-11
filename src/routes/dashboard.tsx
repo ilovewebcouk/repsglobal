@@ -29,15 +29,15 @@ import proDaniel from"@/assets/pro-daniel.jpg";
 import holoFigure from"@/assets/dashboard-holo-figure.png";
 
 export const Route = createFileRoute("/dashboard")({ head: () => ({ meta: [
-      { title:"Dashboard — REPs Professional" },
+      { title:"Dashboard — REPS Professional" },
       { name:"description",
         content:
-"Your REPs professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place."
+"Your REPS professional dashboard — clients, schedule, revenue, CPD and AI business insights in one place."
 },
-      { property:"og:title", content:"REPs Professional Dashboard" },
+      { property:"og:title", content:"REPS Professional Dashboard" },
       { property:"og:description",
         content:
-"Manage your clients, schedule, revenue and career — the REPs Professional Dashboard."
+"Manage your clients, schedule, revenue and career — the REPS Professional Dashboard."
 },
       { property:"og:url", content:"/dashboard" },
     ],
@@ -167,7 +167,7 @@ function KpiRow() { return (
         sub="vs last month 82%"
       />
       <Card>
-        <div className="text-[12px] text-white/55">REPs Professional Score</div>
+        <div className="text-[12px] text-white/55">REPS Professional Score</div>
         <div className="mt-2 flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
             <ShieldCheck className="h-5 w-5" />
@@ -180,13 +180,13 @@ function KpiRow() { return (
           </div>
         </div>
         <div className="mt-3 text-[11px] text-white/50">
-          Top 10% of REPs members
+          Top 10% of REPS members
         </div>
       </Card>
       <Card>
         <div className="text-[12px] text-white/55">Membership Status</div>
         <div className="mt-2 font-display text-[20px] font-bold leading-tight text-reps-orange">
-          REPs Premium
+          REPS Premium
         </div>
         <div className="text-[11px] text-white/55">Renews 24 May 2026</div>
         <span className="mt-3 inline-flex h-6 items-center rounded-full bg-reps-green/15 px-2.5 text-[11px] font-semibold text-reps-green">
@@ -364,7 +364,7 @@ function ScheduleAndAi() { return (
           <StatusRow
             icon={CheckCircle2}
             iconColor="text-reps-green"
-            title="REPs Verified Member"
+            title="REPS Verified Member"
             sub="Verified until 24 May 2026"
           />
           <StatusRow
@@ -1235,7 +1235,7 @@ function DashboardFooter() { return (
     <footer className="mt-8 flex flex-col items-center justify-between gap-3 px-8 py-6 text-[12px] text-white/55 sm:flex-row">
       <div className="flex items-center gap-3">
         <span className="font-display text-[18px] font-bold tracking-tight text-white">
-          REPs
+          REPS
         </span>
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight">
           The Register of
@@ -1244,7 +1244,7 @@ function DashboardFooter() { return (
         </span>
       </div>
       <div className="flex items-center gap-5">
-        <span>© 2026 REPs. All rights reserved.</span>
+        <span>© 2026 REPS. All rights reserved.</span>
         <a href="#" className="hover:text-white">Privacy Policy</a>
         <a href="#" className="hover:text-white">Terms of Service</a>
         <a href="#" className="hover:text-white">Contact Support</a>

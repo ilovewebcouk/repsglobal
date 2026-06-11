@@ -10,7 +10,7 @@ import { lookupInviteByToken, completeInviteSignup } from "@/lib/roster.function
 export const Route = createFileRoute("/accept-invite")({
   head: () => ({
     meta: [
-      { title: "Accept invite — REPs" },
+      { title: "Accept invite — REPS" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -90,7 +90,7 @@ function AcceptInvitePage() {
             </div>
             <div>
               <div className="text-xs font-medium uppercase tracking-[0.16em] text-white/55">
-                REPs Client Invite
+                REPS Client Invite
               </div>
               <div className="text-[15px] font-semibold text-white">Join your coach</div>
             </div>
@@ -132,7 +132,7 @@ function AcceptInvitePage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <p className="text-sm text-white/75">
                 <span className="font-semibold text-white">{invite.professional_name}</span> has
-                invited you to join their coaching on REPs. Set a password to activate your account.
+                invited you to join their coaching on REPS. Set a password to activate your account.
               </p>
 
               <div>

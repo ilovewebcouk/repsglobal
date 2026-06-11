@@ -22,9 +22,9 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/messages")({
   head: () => ({
     meta: [
-      { title: "Messages — REPs Professional" },
-      { name: "description", content: "Inbox, threads and client context across your REPs business." },
-      { property: "og:title", content: "Messages — REPs Professional" },
+      { title: "Messages — REPS Professional" },
+      { name: "description", content: "Inbox, threads and client context across your REPS business." },
+      { property: "og:title", content: "Messages — REPS Professional" },
       { property: "og:description", content: "Inbox and client threads." },
       { property: "og:url", content: "/dashboard/messages" },
     ],

@@ -79,22 +79,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "REPs — Find. Trust. Train. Transform." },
+      { title: "REPS — Find. Trust. Train. Transform." },
       {
         name: "description",
         content:
-          "REPs connects you with verified fitness professionals you can trust — and powers the businesses behind them.",
+          "REPS connects you with verified fitness professionals you can trust — and powers the businesses behind them.",
       },
-      { property: "og:site_name", content: "REPs" },
+      { property: "og:site_name", content: "REPS" },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "REPs — Find. Trust. Train. Transform." },
+      { property: "og:title", content: "REPS — Find. Trust. Train. Transform." },
       {
         property: "og:description",
         content:
           "Find verified personal trainers, Pilates instructors, nutritionists and coaches you can trust.",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "REPs — Find. Trust. Train. Transform." },
+      { name: "twitter:title", content: "REPS — Find. Trust. Train. Transform." },
       {
         name: "twitter:description",
         content:

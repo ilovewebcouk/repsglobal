@@ -19,13 +19,13 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/payments")({
   head: () => ({
     meta: [
-      { title: "Payments — REPs Professional" },
+      { title: "Payments — REPS Professional" },
       {
         name: "description",
         content:
-          "Track revenue, payouts, invoices, subscription clients and failed payments across your REPs business.",
+          "Track revenue, payouts, invoices, subscription clients and failed payments across your REPS business.",
       },
-      { property: "og:title", content: "Payments — REPs Professional" },
+      { property: "og:title", content: "Payments — REPS Professional" },
       { property: "og:description", content: "Revenue, payouts and invoices." },
       { property: "og:url", content: "/dashboard/payments" },
     ],
@@ -118,7 +118,7 @@ function PaymentsPage() {
     <ProShell
       active="Payments"
       title="Payments"
-      subtitle="Revenue, payouts, invoices and subscriptions across your REPs business."
+      subtitle="Revenue, payouts, invoices and subscriptions across your REPS business."
       actions={
         <>
           <button type="button" className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none hover:text-white">

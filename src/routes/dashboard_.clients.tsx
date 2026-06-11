@@ -25,9 +25,9 @@ export const Route = createFileRoute("/dashboard_/clients")({
   },
   head: () => ({
     meta: [
-      { title: "Clients — REPs Professional Dashboard" },
+      { title: "Clients — REPS Professional Dashboard" },
       { name: "description", content: "Manage your client roster, send portal invites, and track activation." },
-      { property: "og:title", content: "Clients — REPs" },
+      { property: "og:title", content: "Clients — REPS" },
       { property: "og:description", content: "Add clients, send portal invites, track activation status." },
     ],
   }),

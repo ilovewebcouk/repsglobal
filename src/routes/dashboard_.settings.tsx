@@ -19,9 +19,9 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — REPs Professional" },
+      { title: "Settings — REPS Professional" },
       { name: "description", content: "Manage your account, business, notifications, billing and integrations." },
-      { property: "og:title", content: "Settings — REPs Professional" },
+      { property: "og:title", content: "Settings — REPS Professional" },
       { property: "og:description", content: "Account, business, notifications, billing, integrations." },
       { property: "og:url", content: "/dashboard/settings" },
     ],
@@ -111,7 +111,7 @@ function SettingsPage() {
               </span>
               <div>
                 <div className="text-[13px] font-semibold text-white">Account verified</div>
-                <p className="mt-1 text-[12px] text-white/65">REPs Level 3 · DBS valid · Insurance active</p>
+                <p className="mt-1 text-[12px] text-white/65">REPS Level 3 · DBS valid · Insurance active</p>
               </div>
             </div>
           </PCard>
@@ -122,7 +122,7 @@ function SettingsPage() {
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Account details</h3>
-              <p className="mt-0.5 text-[12px] text-white/55">Your personal information shown across REPs.</p>
+              <p className="mt-0.5 text-[12px] text-white/55">Your personal information shown across REPS.</p>
             </div>
             <Row label="Full name">
               <div className="grid grid-cols-2 gap-3">
@@ -150,7 +150,7 @@ function SettingsPage() {
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Business profile</h3>
-              <p className="mt-0.5 text-[12px] text-white/55">What clients see on your public REPs profile.</p>
+              <p className="mt-0.5 text-[12px] text-white/55">What clients see on your public REPS profile.</p>
             </div>
             <Row label="Trading name"><Input defaultValue="James Carter Coaching" /></Row>
             <Row label="Public URL" hint="Your shareable profile link.">
@@ -187,12 +187,12 @@ function SettingsPage() {
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Billing</h3>
-              <p className="mt-0.5 text-[12px] text-white/55">Your REPs membership and payout details.</p>
+              <p className="mt-0.5 text-[12px] text-white/55">Your REPS membership and payout details.</p>
             </div>
             <Row label="Membership plan">
               <div className="flex items-center justify-between rounded-[12px] border border-reps-border bg-reps-panel-soft px-4 py-3">
                 <div>
-                  <div className="text-[13px] font-semibold text-white">REPs Pro — Annual</div>
+                  <div className="text-[13px] font-semibold text-white">REPS Pro — Annual</div>
                   <div className="text-[12px] text-white/55">£189 / year · renews 01 Apr 2027</div>
                 </div>
                 <button type="button" className="flex h-8 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/85 shadow-none hover:text-white">Change plan</button>
@@ -250,7 +250,7 @@ function SettingsPage() {
               <h3 className="text-[14px] font-semibold text-white">Security</h3>
             </div>
             <Row label="Password"><Input placeholder="••••••••" /></Row>
-            <Row label="Two-factor auth" hint="Required for REPs Pro accounts.">
+            <Row label="Two-factor auth" hint="Required for REPS Pro accounts.">
               <Toggle on label="Authenticator app — enabled" />
             </Row>
             <Row label="Active sessions">

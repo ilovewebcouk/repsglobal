@@ -5,9 +5,9 @@ import { AdminShell, ACard, APanel } from "@/components/dashboard/AdminShell";
 export const Route = createFileRoute("/admin_/support")({
   head: () => ({
     meta: [
-      { title: "Support queue — REPs Admin" },
-      { name: "description", content: "Triage and respond to support tickets across the REPs platform." },
-      { property: "og:title", content: "Support queue — REPs Admin" },
+      { title: "Support queue — REPS Admin" },
+      { name: "description", content: "Triage and respond to support tickets across the REPS platform." },
+      { property: "og:title", content: "Support queue — REPS Admin" },
       { property: "og:description", content: "Open, pending and resolved support tickets with SLA tracking." },
     ],
   }),

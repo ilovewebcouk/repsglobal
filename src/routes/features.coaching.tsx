@@ -158,8 +158,8 @@ const COMPARISON_ROWS = [
 
 const FAQ_ITEMS = [
   {
-    q:"Is REPs Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
-    a:"For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPs connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
+    q:"Is REPS Coaching trying to replace Trainerize, PT Distinction and TrueCoach?",
+    a:"For coaching delivery — yes. Programmes, exercise library with video, nutrition with a food database, check-ins, progress, messaging, client view, notes, automations. The difference is REPS connects coaching delivery to the rest of your professional life: a verified public profile, enquiries, bookings and payments live on the same record. You stop running four tools that don't know about each other.",
   },
   {
     q:"Does it actually replace MyFitnessPal for nutrition?",
@@ -191,12 +191,12 @@ export const Route = createFileRoute("/features/coaching")({
   head: () => ({
     meta: [
       {
-        title:"Coaching — Deliver better coaching from one connected platform · REPs",
+        title:"Coaching — Deliver better coaching from one connected platform · REPS",
       },
       {
         name:"description",
         content:
-"Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging, progress, automations and AI assist — every coaching delivery tool a world-class trainer needs, in one workspace. Included in REPs Pro.",
+"Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging, progress, automations and AI assist — every coaching delivery tool a world-class trainer needs, in one workspace. Included in REPS Pro.",
       },
       {
         property:"og:title",
@@ -254,8 +254,8 @@ function CoachingPage() {
       <FinalCta
         heading="Deliver coaching clients can follow,"
         headingAccent="track and stay engaged with."
-        lede="Use REPs Pro to programme, feed, check in, track, message and support every client from one connected coaching workspace."
-        primary={{ to:"/signup", label:"Start using REPs Pro" }}
+        lede="Use REPS Pro to programme, feed, check in, track, message and support every client from one connected coaching workspace."
+        primary={{ to:"/signup", label:"Start using REPS Pro" }}
         secondary={{ to:"/for-professionals", label:"Explore all features" }}
       />
 
@@ -273,7 +273,7 @@ function Hero() {
     <section className="relative flex min-h-[640px] overflow-hidden lg:min-h-[780px]">
       <img
         src={heroCoaching.url}
-        alt="REPs-verified coach cueing a kettlebell squat with a client at a premium boutique gym at dusk"
+        alt="REPS-verified coach cueing a kettlebell squat with a client at a premium boutique gym at dusk"
         width={1920}
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -303,7 +303,7 @@ function Hero() {
           >
             Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging,
             progress and automations — every delivery tool a world-class coach needs, in one
-            workspace that also powers your REPs profile, Shop Front and bookings.
+            workspace that also powers your REPS profile, Shop Front and bookings.
           </p>
 
           <div
@@ -314,7 +314,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Start using REPs Pro <ArrowRight className="h-4 w-4" />
+              Start using REPS Pro <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#programme-delivery"
@@ -329,7 +329,7 @@ function Hero() {
             style={{ animationDuration:"640ms", animationDelay:"340ms", animationFillMode:"both" }}
           >
             <li className="inline-flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPs Pro
+              <BadgeCheck className="h-4 w-4 text-reps-orange" /> REPS Pro
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Workflow className="h-4 w-4 text-reps-orange" /> Connected to your client record
@@ -361,7 +361,7 @@ function ProblemSection() {
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <X className="h-3 w-3" /> Today, without REPs Coaching
+              <X className="h-3 w-3" /> Today, without REPS Coaching
             </span>
             <BlockHeading className="mt-4">Six apps. One overwhelmed coach.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -383,7 +383,7 @@ function ProblemSection() {
 
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With REPs Coaching
+              <Check className="h-3 w-3" /> With REPS Coaching
             </span>
             <BlockHeading className="mt-4">One workspace. Every client connected.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -496,7 +496,7 @@ const MEAL_OPTIONS: MealOption[] = [
   {
     label:"Manual",
     title:"Manual builder",
-    body:"Build the plan yourself from the REPs meal library or your own custom meals. Full control, full ownership.",
+    body:"Build the plan yourself from the REPS meal library or your own custom meals. Full control, full ownership.",
     bullets: ["Drag meals into the day","Live macro totals","Save as a personal template"],
     icon: UtensilsCrossed,
   },
@@ -701,7 +701,7 @@ function MessagingSection() {
         <SectionHeader
           eyebrow="Messaging"
           heading="One thread per client. Text, voice and form replies in the same place."
-          lede="Stop running a WhatsApp / Instagram / text-message juggle for every client. REPs messaging is built into the client record — text, voice notes up to 3 minutes, and check-in form replies all live in one thread you can search."
+          lede="Stop running a WhatsApp / Instagram / text-message juggle for every client. REPS messaging is built into the client record — text, voice notes up to 3 minutes, and check-in form replies all live in one thread you can search."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
@@ -808,7 +808,7 @@ function AccountabilitySection() {
             <p className="mt-4 text-[14.5px] leading-relaxed text-white/75">
               Clients rarely cancel because of one bad week. They drift because the small signals
               — a missed check-in, a quiet ten days, a flat progress chart — went unanswered.
-              REPs Coaching surfaces those signals while there's still time to respond.
+              REPS Coaching surfaces those signals while there's still time to respond.
             </p>
             <div className="mt-5 grid gap-2">
               {ACC_SCENARIOS.map((s) => (
@@ -909,7 +909,7 @@ function AiAssistSection() {
         <SectionHeader
           eyebrow="AI assist"
           heading="AI drafts the first version. You coach the result."
-          lede="No buzzwords. AI inside REPs drafts programmes from a client's goals and screening, summarises a week of check-ins so you can scan 14 clients in a minute, and suggests reply wording you can edit. Every output is a draft — nothing sends without you."
+          lede="No buzzwords. AI inside REPS drafts programmes from a client's goals and screening, summarises a week of check-ins so you can scan 14 clients in a minute, and suggests reply wording you can edit. Every output is a draft — nothing sends without you."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
@@ -917,7 +917,7 @@ function AiAssistSection() {
           <div>
             <BlockHeading>An assistant, not a substitute.</BlockHeading>
             <p className="mt-4 text-[14.5px] leading-relaxed text-white/75">
-              Coaching judgement is yours. REPs AI handles the busywork — the first programme
+              Coaching judgement is yours. REPS AI handles the busywork — the first programme
               draft, the check-in triage, the reply that would have taken you ten minutes to write
               at midnight. You stay in the driver's seat.
             </p>
@@ -943,7 +943,7 @@ function AiAssistSection() {
               to="/features/ai"
               className="mt-6 inline-flex h-11 items-center gap-2 rounded-[10px] border border-white/25 px-5 text-[13.5px] font-semibold text-white shadow-none hover:bg-white/10"
             >
-              How REPs uses AI <ArrowRight className="h-4 w-4" />
+              How REPS uses AI <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

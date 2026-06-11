@@ -8,7 +8,7 @@ export const Route = createFileRoute("/unsubscribe")({
   }),
   head: () => ({
     meta: [
-      { title: "Unsubscribe — REPs" },
+      { title: "Unsubscribe — REPS" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -76,7 +76,7 @@ function UnsubscribePage() {
         <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-[12px] bg-reps-orange-soft text-reps-orange">
           <MailX className="h-5 w-5" />
         </div>
-        <h1 className="text-[20px] font-semibold tracking-tight text-white">Unsubscribe from REPs emails</h1>
+        <h1 className="text-[20px] font-semibold tracking-tight text-white">Unsubscribe from REPS emails</h1>
 
         {view.state === "loading" && (
           <p className="mt-3 inline-flex items-center gap-2 text-[13px] text-white/55">
@@ -87,7 +87,7 @@ function UnsubscribePage() {
         {view.state === "ready" && (
           <>
             <p className="mt-3 text-[13.5px] text-white/65">
-              You'll stop receiving non-essential emails from REPs. You can still
+              You'll stop receiving non-essential emails from REPS. You can still
               receive important account messages.
             </p>
             <button

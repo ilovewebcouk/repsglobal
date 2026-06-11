@@ -27,7 +27,7 @@ export function ScenarioCards({
 
           <div className="mt-5 space-y-2">
             <Row
-              label="REPs"
+              label="REPS"
               value={s.repsCost}
               isWinner={s.winner === "reps"}
               isReps

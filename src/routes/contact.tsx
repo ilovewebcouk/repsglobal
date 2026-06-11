@@ -24,13 +24,13 @@ import { ContactForm } from "@/components/contact/ContactForm";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact REPs — talk to the team behind the register" },
+      { title: "Contact REPS — talk to the team behind the register" },
       {
         name: "description",
         content:
-          "For professionals joining REPs and training providers, awarding bodies, partners and press. Real humans, typical reply ~2hr on weekdays.",
+          "For professionals joining REPS and training providers, awarding bodies, partners and press. Real humans, typical reply ~2hr on weekdays.",
       },
-      { property: "og:title", content: "Contact REPs — talk to the team behind the register" },
+      { property: "og:title", content: "Contact REPS — talk to the team behind the register" },
       {
         property: "og:description",
         content:
@@ -91,12 +91,12 @@ const FAQ_ITEMS = [
     a: "We aim for a decision within 5 working days of receiving complete evidence (ID, qualification, insurance). Most pros hear back in 48 hours.",
   },
   {
-    q: "Does REPs charge a booking commission?",
+    q: "Does REPS charge a booking commission?",
     a: "No. There's no booking fee or commission of any kind. Every feature in your tier is included — no paid add-ons.",
   },
   {
-    q: "Can my course be recognised on REPs?",
-    a: "Yes — pick \"Training provider / partner\" above and choose \"Course recognition on REPs\". We'll come back with what we need to assess your qualification.",
+    q: "Can my course be recognised on REPS?",
+    a: "Yes — pick \"Training provider / partner\" above and choose \"Course recognition on REPS\". We'll come back with what we need to assess your qualification.",
   },
   {
     q: "How do bulk verifications work for training providers?",
@@ -152,7 +152,7 @@ function ContactPage() {
                 animationFillMode: "both",
               }}
             >
-              Whether you're a professional joining REPs or a training provider partnering with
+              Whether you're a professional joining REPS or a training provider partnering with
               us, you'll speak to a human who actually knows the product — not a ticket queue.
             </p>
 
@@ -295,7 +295,7 @@ function ContactPage() {
           </ul>
           <p className="mt-6 inline-flex items-center gap-2 text-[13px] text-white/55">
             <Handshake className="size-4 text-reps-orange" />
-            REPs is a remote-first global team — every message is read by a named person.
+            REPS is a remote-first global team — every message is read by a named person.
           </p>
         </div>
       </section>

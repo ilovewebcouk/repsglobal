@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * REPs Global Platform — Design System
+ * REPS Global Platform — Design System
  * Source of truth: docs/02_reps_visual_design_system.md
  * Brand: premium, dark operating-system + warm editorial marketplace.
  * Orange = primary action. Gold = verification/trust. No neon, no purple gradients.
@@ -15,7 +15,7 @@
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Inter Tight", "Inter", system-ui, -apple-system, sans-serif;
 
-  /* REPs radius system (FINAL) — buttons sharper than cards, panels softer than cards. */
+  /* REPS radius system (FINAL) — buttons sharper than cards, panels softer than cards. */
   --reps-radius-xs: 6px;
   --reps-radius-sm: 8px;
   --reps-radius-button: 10px;
@@ -26,7 +26,7 @@
   --reps-radius-hero: 24px;
   --reps-radius-pill: 999px;
 
-  /* shadcn aliases mapped to the REPs scale */
+  /* shadcn aliases mapped to the REPS scale */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 10px;
@@ -36,7 +36,7 @@
   --radius-3xl: 22px;
   --radius-4xl: 24px;
 
-  /* REPs brand tokens — surfaces */
+  /* REPS brand tokens — surfaces */
   --color-reps-black: var(--reps-black);
   --color-reps-ink: var(--reps-ink);
   --color-reps-midnight: var(--reps-midnight);
@@ -50,13 +50,13 @@
   --color-reps-stone: var(--reps-stone);
   --color-reps-charcoal: var(--reps-charcoal);
 
-  /* REPs brand tokens — text */
+  /* REPS brand tokens — text */
   --color-reps-text: var(--reps-text);
   --color-reps-text-soft: var(--reps-text-soft);
   --color-reps-muted: var(--reps-muted);
   --color-reps-muted-light: var(--reps-muted-light);
 
-  /* REPs brand tokens — accents */
+  /* REPS brand tokens — accents */
   --color-reps-orange: var(--reps-orange);
   --color-reps-orange-hover: var(--reps-orange-hover);
   --color-reps-orange-dark: var(--reps-orange-dark);
@@ -108,7 +108,7 @@
 }
 
 :root {
-  /* REPs surfaces — dark */
+  /* REPS surfaces — dark */
   --reps-black: #050608;
   --reps-ink: #0B0D10;
   --reps-midnight: #11161D;
@@ -117,19 +117,19 @@
   --reps-border: #2B333E;
   --reps-border-soft: #3A4350;
 
-  /* REPs surfaces — light */
+  /* REPS surfaces — light */
   --reps-ivory: #F6F1E8;
   --reps-warm-white: #FFFCF6;
   --reps-stone: #E6DED2;
   --reps-charcoal: #1B1C1E;
 
-  /* REPs text */
+  /* REPS text */
   --reps-text: #F7F3EA;
   --reps-text-soft: #D8DCE2;
   --reps-muted: #8D96A3;
   --reps-muted-light: #6D716F;
 
-  /* REPs accents — brand orange #FF7A00 */
+  /* REPS accents — brand orange #FF7A00 */
   --reps-orange: #FF7A00;
   --reps-orange-hover: #E96F00;
   --reps-orange-dark: #CC6200;
@@ -142,7 +142,7 @@
   --reps-blue: #5FA8FF;
 
   /* Coach shop-front accent palette — trainer-pickable accent for /c/$slug.
-     Page chrome stays REPs-locked; only the primary CTA + accent strokes shift. */
+     Page chrome stays REPS-locked; only the primary CTA + accent strokes shift. */
   --coach-accent-orange: #FF7A00;
   --coach-accent-teal: #0E8E86;
   --coach-accent-indigo: #4F46E5;

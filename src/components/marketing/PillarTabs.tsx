@@ -21,7 +21,7 @@ const TABS: Tab[] = [
     icon: Dumbbell,
     title: "Programmes your clients show off.",
     body:
-      "Weeks, workouts, sets, reps, rest, RPE and video demos — built in a clean editor and assigned in one click. Or one-line brief in, 12-week plan out, drafted by REPs AI.",
+      "Weeks, workouts, sets, reps, rest, RPE and video demos — built in a clean editor and assigned in one click. Or one-line brief in, 12-week plan out, drafted by REPS AI.",
     bullets: [
       "Week-by-week structure with progression",
       "Curated exercise library with video demos",

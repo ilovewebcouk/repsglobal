@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/dev/section-library")({
   head: () => ({
     meta: [
-      { title: "Section Library — REPs (internal)" },
+      { title: "Section Library — REPS (internal)" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -48,7 +48,7 @@ function SectionLibrary() {
         <div className="mx-auto max-w-[1320px] px-6 py-10 lg:px-10">
           <MarketingHeroEyebrow icon={Sparkles}>Internal · noindex</MarketingHeroEyebrow>
           <h1 className="mt-4 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
-            REPs Section Library
+            REPS Section Library
           </h1>
           <p className="mt-3 max-w-[720px] text-[15px] leading-relaxed text-white/70">
             Every reusable marketing primitive, rendered live. Compose pages from these — never hand-roll
@@ -114,7 +114,7 @@ function SectionLibrary() {
         </p>
         <div className="mt-6 rounded-[18px] border border-reps-border bg-reps-panel p-6">
           <MarketingHeroEyebrow icon={ShieldCheck} animate={false}>
-            REPs · Verified
+            REPS · Verified
           </MarketingHeroEyebrow>
           <h2 className="mt-4 font-display text-[34px] font-bold leading-tight text-white lg:text-[48px]">
             The personal trainer register clients already search
@@ -137,7 +137,7 @@ function SectionLibrary() {
 
       <Group id="blocks" title="50/50 blocks — ProductBlock + DeviceMockup">
         <p className="text-[14px] text-white/65">
-          Every feature/pillar page uses <code>ProductBlock</code> with a real REPs route inside{" "}
+          Every feature/pillar page uses <code>ProductBlock</code> with a real REPS route inside{" "}
           <code>DeviceMockup</code>. No bespoke mockup files.
         </p>
         <div className="mt-10 grid gap-16">
@@ -164,7 +164,7 @@ function SectionLibrary() {
       <Group id="annotated" title="Annotated mock — anatomy primitive">
         <p className="text-[14px] text-white/65">
           Use <code>AnnotatedMock</code> when the goal is to teach the reader what each part of a
-          REPs screen does. Live route inside a device, up to 6 numbered orange pills, matching
+          REPS screen does. Live route inside a device, up to 6 numbered orange pills, matching
           legend column. Max 6 callouts. Never anchor a pill over a face or critical text.
         </p>
         <div className="mt-8">
@@ -180,7 +180,7 @@ function SectionLibrary() {
               { x: "16%", y: "50%", title: "Credentials", body: "Qualifications + insurance + CPD." },
               { x: "82%", y: "58%", title: "Services & pricing", body: "Clients self-qualify." },
               { x: "14%", y: "80%", title: "Reviews", body: "Verified clients only. You can reply." },
-              { x: "84%", y: "82%", title: "Enquiry CTA", body: "One action. Into your REPs inbox." },
+              { x: "84%", y: "82%", title: "Enquiry CTA", body: "One action. Into your REPS inbox." },
             ]}
           />
         </div>
@@ -256,7 +256,7 @@ function SectionLibrary() {
             "Decorative emerald or any non-orange accent outside status semantics.",
             "Gold/yellow rating stars — stars are brand orange.",
             "shadow-* on buttons — buttons are flat.",
-            "\"UK\" / \"REPs UK\" / country qualifiers in product or marketing copy.",
+            "\"UK\" / \"REPS UK\" / country qualifiers in product or marketing copy.",
             "Naming CIMSPA — use \"Ofqual-regulated\" or \"recognised awarding body\".",
           ].map((t) => (
             <li

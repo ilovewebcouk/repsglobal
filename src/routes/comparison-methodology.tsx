@@ -6,9 +6,9 @@ import { PublicFooter } from"@/components/public/PublicFooter";
 import { DATA_VERIFIED_DATE } from"@/data/competitor-data";
 
 const URL ="https://repsglobal.lovable.app/comparison-methodology";
-const TITLE ="Comparison Methodology — How REPs Compares Competitor Software";
+const TITLE ="Comparison Methodology — How REPS Compares Competitor Software";
 const DESC =
-"How REPs compiles, reviews and maintains its competitor comparisons. Based on publicly available information, with a stated 'last checked' date and an open correction-request process.";
+"How REPS compiles, reviews and maintains its competitor comparisons. Based on publicly available information, with a stated 'last checked' date and an open correction-request process.";
 
 export const Route = createFileRoute("/comparison-methodology")({
   head: () => ({
@@ -64,7 +64,7 @@ function MethodologyPage() {
             <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" aria-hidden /> Comparison methodology
           </span>
           <h1 className="mt-5 font-display text-[40px] font-bold leading-tight text-white lg:text-[52px]">
-            How REPs compares competitor software.
+            How REPS compares competitor software.
           </h1>
           <p className="mt-5 text-[16px] leading-relaxed text-white/70">
             Our /compare pages are written to be factual, objective, verifiable
@@ -100,14 +100,14 @@ function MethodologyPage() {
               can verify it directly.
             </p>
             <p>
-              REPs&apos; own pricing is taken from the live REPs{""}
+              REPS&apos; own pricing is taken from the live REPS{""}
               <Link to="/pricing" className="text-reps-orange underline underline-offset-2 hover:text-white">
                 pricing page
               </Link>
-              . REPs has a 3-tier ladder (Verified, Pro, Studio). When we say a
+              . REPS has a 3-tier ladder (Verified, Pro, Studio). When we say a
               feature is &quot;included in your tier&quot;, we mean it&apos;s
-              included on the REPs tier shown next to the claim — not that
-              REPs ships a single universal plan.
+              included on the REPS tier shown next to the claim — not that
+              REPS ships a single universal plan.
             </p>
           </div>
         </div>
@@ -169,10 +169,10 @@ function MethodologyPage() {
                 internally as evidence only.
               </li>
               <li>
-                We don&apos;t treat REPs as a single flat plan in comparison
-                copy. REPs has a 3-tier ladder, and any &quot;everything
+                We don&apos;t treat REPS as a single flat plan in comparison
+                copy. REPS has a 3-tier ladder, and any &quot;everything
                 included&quot; framing always means &quot;inside your chosen
-                REPs tier&quot;.
+                REPS tier&quot;.
               </li>
             </ul>
           </div>

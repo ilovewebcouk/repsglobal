@@ -15,12 +15,12 @@ export function TestimonialFeature() {
           <div className="flex items-center gap-3">
             <Quote className="h-8 w-8 text-reps-orange" aria-hidden />
             <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/45">
-              Why coaches switch to REPs
+              Why coaches switch to REPS
             </span>
           </div>
           <blockquote className="mt-4 font-display text-[22px] font-semibold leading-snug text-white lg:text-[28px]">
             "I shut down my old Trainerize app, my booking link and my spreadsheet
-            on the same day. REPs runs the lot — and the Verified badge actually
+            on the same day. REPS runs the lot — and the Verified badge actually
             fills my diary."
           </blockquote>
           <div className="mt-6 flex items-center gap-4">
@@ -30,7 +30,7 @@ export function TestimonialFeature() {
             </Avatar>
             <figcaption className="text-[13px] leading-tight">
               <div className="font-semibold text-white">James Carter</div>
-              <div className="text-white/55">Strength Coach · Manchester · REPs Pro</div>
+              <div className="text-white/55">Strength Coach · Manchester · REPS Pro</div>
             </figcaption>
           </div>
         </div>

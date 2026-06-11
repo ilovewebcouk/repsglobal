@@ -99,7 +99,7 @@ function Sidebar({ active }: { active: ProActive }) {
     <aside className="hidden h-screen w-[232px] shrink-0 flex-col border-r border-reps-border bg-reps-midnight lg:flex">
       <Link to="/" className="flex items-center gap-3 px-5 pb-6 pt-6">
         <span className="font-display text-[26px] font-bold leading-none tracking-tight text-white">
-          REPs
+          REPS
         </span>
         <span className="border-l border-white/15 pl-3 text-[10px] leading-tight text-white/65">
           The Register of
@@ -148,7 +148,7 @@ function Sidebar({ active }: { active: ProActive }) {
             <div className="truncate text-[13px] font-semibold text-white">James Carter</div>
             <div className="truncate text-[11px] text-white/55">Personal Trainer</div>
             <span className="mt-1 inline-flex h-4 items-center rounded-full bg-reps-orange-soft px-2 text-[10px] font-semibold text-reps-orange">
-              REPs Level 3
+              REPS Level 3
             </span>
           </div>
         </div>

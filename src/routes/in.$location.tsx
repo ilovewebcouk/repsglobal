@@ -46,7 +46,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
     name: "London",
     region: "Greater London",
     blurb:
-      "Find REPs-verified personal trainers, Pilates instructors, nutritionists and coaches across central, east, west, north and south London.",
+      "Find REPS-verified personal trainers, Pilates instructors, nutritionists and coaches across central, east, west, north and south London.",
     count: 482,
     areas: ["Central London", "East London", "West London", "North London", "South London", "Canary Wharf", "Shoreditch", "Clapham", "Islington", "Hackney"],
     professions: [
@@ -62,7 +62,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
     name: "Manchester",
     region: "Greater Manchester",
     blurb:
-      "Browse REPs-verified fitness professionals across Manchester city centre, Salford, Didsbury, Altrincham and the wider region.",
+      "Browse REPS-verified fitness professionals across Manchester city centre, Salford, Didsbury, Altrincham and the wider region.",
     count: 164,
     areas: ["City Centre", "Salford", "Didsbury", "Altrincham", "Chorlton", "Trafford", "Stockport"],
     professions: [
@@ -78,7 +78,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
     name: "Birmingham",
     region: "West Midlands",
     blurb:
-      "Connect with REPs-verified personal trainers, coaches and nutritionists across Birmingham and the surrounding West Midlands.",
+      "Connect with REPS-verified personal trainers, coaches and nutritionists across Birmingham and the surrounding West Midlands.",
     count: 128,
     areas: ["City Centre", "Edgbaston", "Jewellery Quarter", "Solihull", "Sutton Coldfield"],
     professions: [
@@ -94,7 +94,7 @@ const LOCATIONS: Record<string, LocationMeta> = {
     name: "Edinburgh",
     region: "Lothian",
     blurb:
-      "Find REPs-verified fitness professionals across Edinburgh — Leith, New Town, Stockbridge, Morningside and beyond.",
+      "Find REPS-verified fitness professionals across Edinburgh — Leith, New Town, Stockbridge, Morningside and beyond.",
     count: 74,
     areas: ["New Town", "Leith", "Stockbridge", "Morningside", "Bruntsfield"],
     professions: [
@@ -117,7 +117,7 @@ function getLocation(slug: string): LocationMeta {
         .join(" "),
       region: "",
       blurb:
-        "REPs-verified personal trainers, Pilates instructors, nutritionists and coaches in your area — every professional identity, qualification and insurance checked.",
+        "REPS-verified personal trainers, Pilates instructors, nutritionists and coaches in your area — every professional identity, qualification and insurance checked.",
       count: 32,
       areas: ["Town Centre", "Surrounding Areas"],
       professions: [
@@ -140,12 +140,12 @@ export const Route = createFileRoute("/in/$location")({
     const loc = getLocation(params.location);
     return {
       meta: [
-        { title: `Personal Trainers & Coaches in ${loc.name} | REPs` },
+        { title: `Personal Trainers & Coaches in ${loc.name} | REPS` },
         {
           name: "description",
           content: `${loc.blurb} ${loc.count.toLocaleString()} verified professionals in ${loc.name}.`,
         },
-        { property: "og:title", content: `REPs-Verified Professionals in ${loc.name}` },
+        { property: "og:title", content: `REPS-Verified Professionals in ${loc.name}` },
         { property: "og:description", content: loc.blurb },
         { property: "og:url", content: `/in/${loc.slug}` },
       ],
@@ -231,7 +231,7 @@ const TRUST = [
 
 const faqsFor = (city: string) => [
   {
-    q: `What does REPs-verified mean in ${city}?`,
+    q: `What does REPS-verified mean in ${city}?`,
     a: `Every professional listed in ${city} has had their identity, qualifications, insurance and (where required) DBS checked by our verification team before going live on the platform.`,
   },
   {
@@ -387,7 +387,7 @@ function LocationLanding() {
               Featured in {loc.name}
             </h2>
             <p className="mt-1 text-[14px] text-reps-muted-light">
-              REPs-verified professionals accepting new clients near you.
+              REPS-verified professionals accepting new clients near you.
             </p>
           </div>
           <Link
@@ -461,7 +461,7 @@ function LocationLanding() {
             <div>
               <h2 className="font-display text-[20px] font-bold leading-tight text-reps-charcoal">
                 Why trust the pros
-                <br />on REPs in {loc.name}
+                <br />on REPS in {loc.name}
               </h2>
               <p className="mt-2 text-[13px] text-reps-muted-light">
                 Every professional has been checked before going live.

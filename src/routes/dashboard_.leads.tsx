@@ -21,13 +21,13 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/leads")({
   head: () => ({
     meta: [
-      { title: "Leads pipeline — REPs Professional" },
+      { title: "Leads pipeline — REPS Professional" },
       {
         name: "description",
         content:
-          "Track enquiries, prioritise follow-ups and convert leads into clients from your REPs professional dashboard.",
+          "Track enquiries, prioritise follow-ups and convert leads into clients from your REPS professional dashboard.",
       },
-      { property: "og:title", content: "Leads pipeline — REPs Professional" },
+      { property: "og:title", content: "Leads pipeline — REPS Professional" },
       {
         property: "og:description",
         content:
@@ -181,7 +181,7 @@ const LEADS: Lead[] = [
     name: "Sarah Johnson",
     initials: "SJ",
     goal: "Weight loss coaching",
-    source: "REPs profile",
+    source: "REPS profile",
     status: "New",
     value: "£600",
     followUp: "Today",
@@ -264,7 +264,7 @@ const FILTER_CHIPS = [
 
 const SOURCE_CHIPS = [
   "All sources",
-  "REPs profile",
+  "REPS profile",
   "Directory search",
   "Website",
   "Referral",
@@ -415,7 +415,7 @@ function PipelinePanel() {
 
 function SelectedLead() {
   const rows: [string, string][] = [
-    ["Source", "REPs profile"],
+    ["Source", "REPS profile"],
     ["Goal", "Weight loss coaching"],
     ["Estimated value", "£600"],
     ["Preferred format", "In-person and online"],
@@ -574,7 +574,7 @@ function FollowUpsCard() {
 
 function LeadSourcesCard() {
   const items = [
-    { label: "REPs profile", pct: 42 },
+    { label: "REPS profile", pct: 42 },
     { label: "Directory search", pct: 28 },
     { label: "Website", pct: 18 },
     { label: "Referral", pct: 12 },

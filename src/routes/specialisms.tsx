@@ -40,9 +40,9 @@ const heroSpecialisms = heroSpecialismsAsset.url;
 
 const CANONICAL ="https://repsglobal.lovable.app/specialisms";
 const META_TITLE =
-"Specialisms — verified personal trainers, coaches & nutritionists | REPs";
+"Specialisms — verified personal trainers, coaches & nutritionists | REPS";
 const META_DESC =
-"Browse every REPs specialism — personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors. Every listing is identity-checked, qualification-verified and insured.";
+"Browse every REPS specialism — personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors. Every listing is identity-checked, qualification-verified and insured.";
 
 export const Route = createFileRoute("/specialisms")({
   head: () => ({
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/specialisms")({
         children: JSON.stringify({
 "@context":"https://schema.org",
 "@type":"ItemList",
-          name:"REPs Specialisms",
+          name:"REPS Specialisms",
           itemListElement: SPEC_LIST_FOR_JSONLD(),
         }),
       },
@@ -118,7 +118,7 @@ const SPECIALISMS: Specialism[] = [
     title:"Personal Trainers",
     plural:"Personal trainers",
     intro:
-"The largest specialism on REPs. One-to-one coaches who write your programme, teach your lifts and hold the standard week after week — in the gym, at home or online.",
+"The largest specialism on REPS. One-to-one coaches who write your programme, teach your lifts and hold the standard week after week — in the gym, at home or online.",
     does: [
 "Programme design tailored to your goal, schedule and history",
 "1:1 sessions in the gym, your home, or a studio they teach from",
@@ -143,7 +143,7 @@ const SPECIALISMS: Specialism[] = [
         meaning:"Advanced training in areas like low back pain or obesity & diabetes.",
       },
       {
-        acronym:"REPs",
+        acronym:"REPS",
         full:"Register of Exercise Professionals",
         meaning:"The verified register clients search — identity, qualification and insurance on the public record.",
       },
@@ -188,7 +188,7 @@ const SPECIALISMS: Specialism[] = [
         meaning:"Bootcamp, circuits and small-group conditioning sessions.",
       },
       {
-        acronym:"REPs",
+        acronym:"REPS",
         full:"Register of Exercise Professionals",
         meaning:"L2 instructors hold full register status — same identity, qualification and insurance checks as L3+ pros.",
       },
@@ -283,7 +283,7 @@ const SPECIALISMS: Specialism[] = [
     title:"Nutritionists",
     plural:"Nutritionists",
     intro:
-"Evidence-based nutrition support — fat loss, performance, gut health, female hormones, sports nutrition. Every nutritionist on REPs is checked against a recognised register: AfN, SENr, or a degree-led equivalent.",
+"Evidence-based nutrition support — fat loss, performance, gut health, female hormones, sports nutrition. Every nutritionist on REPS is checked against a recognised register: AfN, SENr, or a degree-led equivalent.",
     does: [
 "Personalised plans for fat loss, muscle gain or sports performance",
 "Macro and food-first frameworks built around your real life",
@@ -368,7 +368,7 @@ const SPECIALISMS: Specialism[] = [
     title:"Pilates Instructors",
     plural:"Pilates instructors",
     intro:
-"Mat, reformer and rehabilitation Pilates — for posture, core control, mobility and long-term strength. Many REPs Pilates instructors also work alongside physios and rehab specialists.",
+"Mat, reformer and rehabilitation Pilates — for posture, core control, mobility and long-term strength. Many REPS Pilates instructors also work alongside physios and rehab specialists.",
     does: [
 "Mat-Pilates classes and 1:1 sessions for posture, core and mobility",
 "Reformer Pilates for resistance, control and rehabilitation",
@@ -415,7 +415,7 @@ type Register = {
 
 const REGISTERS: Register[] = [
   {
-    short:"REPs",
+    short:"REPS",
     full:"Register of Exercise Professionals",
     covers:"PTs, online coaches, group instructors, strength coaches",
     meaning:"The verified register the public searches — identity, qualification and insurance on the public record.",
@@ -478,23 +478,23 @@ const REGISTERS: Register[] = [
 const FAQS = [
   {
     q:"What's the difference between a nutritionist and a dietitian?",
-    a:"'Dietitian' is a legally protected title — only qualified clinical professionals can use it, and they're allowed to treat medical conditions. 'Nutritionist' isn't legally protected, so on REPs we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). For anything clinical, a REPs nutritionist will refer you on.",
+    a:"'Dietitian' is a legally protected title — only qualified clinical professionals can use it, and they're allowed to treat medical conditions. 'Nutritionist' isn't legally protected, so on REPS we only list nutritionists who hold ANutr or RNutr status with the Association for Nutrition (or an equivalent degree-led registration). For anything clinical, a REPS nutritionist will refer you on.",
   },
   {
     q:"Is a Level 3 personal trainer qualification enough?",
-    a:"Level 3 (RQF) is the recognised baseline that any insured PT must hold. For specialist populations — older adults, pre/post-natal, low back pain, obesity and diabetes — look for a Level 4 specialist credential on the profile. REPs shows both on every listing.",
+    a:"Level 3 (RQF) is the recognised baseline that any insured PT must hold. For specialist populations — older adults, pre/post-natal, low back pain, obesity and diabetes — look for a Level 4 specialist credential on the profile. REPS shows both on every listing.",
   },
   {
     q:"Do online coaches need different qualifications?",
-    a:"Online coaches still need a Level 3 PT minimum. The good ones also hold a recognised online-coaching certification covering remote programming, check-in structure and habit coaching — and their insurance explicitly covers remote work. REPs lists both.",
+    a:"Online coaches still need a Level 3 PT minimum. The good ones also hold a recognised online-coaching certification covering remote programming, check-in structure and habit coaching — and their insurance explicitly covers remote work. REPS lists both.",
   },
   {
     q:"What does 'Yoga Alliance Professionals registered' actually mean?",
     a:"It means the teacher's training hours (typically 200hr or 500hr) have been verified by an independent body and the training school itself is accredited. It's the most widely recognised standard for yoga teachers globally.",
   },
   {
-    q:"Who actually polices REPs registrations?",
-    a:"REPs verifies three things on every listing: identity (government photo ID), qualifications (checked against the issuing body), and insurance (current and policy-correct). If any of those lapse, the verified badge comes off the profile.",
+    q:"Who actually polices REPS registrations?",
+    a:"REPS verifies three things on every listing: identity (government photo ID), qualifications (checked against the issuing body), and insurance (current and policy-correct). If any of those lapse, the verified badge comes off the profile.",
   },
   {
     q:"Can one professional hold multiple specialisms?",
@@ -570,7 +570,7 @@ function Hero() {
             className="mt-6 animate-fade-in font-display text-[36px] font-bold leading-[1.04] text-white sm:text-[46px] lg:text-[60px]"
             style={{ animationDuration:"640ms", animationDelay:"80ms", animationFillMode:"both" }}
           >
-            Every REPs specialism.
+            Every REPS specialism.
             <br />
             <span className="text-reps-orange">All verified, all in one place.</span>
           </h1>
@@ -715,7 +715,7 @@ function SpecialismSection({ spec, isLast }: { spec: Specialism; isLast: boolean
               </div>
               <div>
                 <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                  What REPs verifies
+                  What REPS verifies
                 </h3>
                 <ul className="mt-3 flex flex-col gap-2.5 text-[14px] leading-relaxed text-white/80">
                   {spec.verifies.map((v) => (
@@ -812,7 +812,7 @@ function RegistersBlock() {
         <SectionHeader
           eyebrow="The registers, decoded"
           heading="Every acronym, in plain English."
-          lede="The fitness industry is full of letters after people's names. Here's what each register actually means — and which ones we cross-check before a profile goes live on REPs."
+          lede="The fitness industry is full of letters after people's names. Here's what each register actually means — and which ones we cross-check before a profile goes live on REPS."
         />
 
 
@@ -865,7 +865,7 @@ const VERIFY_STEPS = [
   {
     icon: Brain,
     title:"Qualifications",
-    body:"Every credential cross-checked against the body that issued it — REPs, AfN, YAP, UKSCA, BWY, SENr.",
+    body:"Every credential cross-checked against the body that issued it — REPS, AfN, YAP, UKSCA, BWY, SENr.",
   },
   {
     icon: ShieldCheck,
@@ -908,7 +908,7 @@ function CrossLinkStrip() {
     { label:"Personal trainers in London", to:"/in/$location", params: { location:"london" } },
     { label:"For professionals", to:"/for-professionals" },
     { label:"CPD & qualifications", to:"/cpd" },
-    { label:"About REPs", to:"/about" },
+    { label:"About REPS", to:"/about" },
   ];
   return (
     <section className="bg-reps-ink">
@@ -920,7 +920,7 @@ function CrossLinkStrip() {
                 Looking for something else?
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-white/65">
-                Jump into search, your city, or the rest of the REPs platform.
+                Jump into search, your city, or the rest of the REPS platform.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

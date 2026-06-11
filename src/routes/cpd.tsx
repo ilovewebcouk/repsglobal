@@ -78,9 +78,9 @@ const heroImg = cpdTutorMomentAsset.url;
 
 const CANONICAL = "https://repsglobal.lovable.app/cpd";
 const META_TITLE =
-  "Education, CPD & Career Growth for Fitness Professionals | REPs";
+  "Education, CPD & Career Growth for Fitness Professionals | REPS";
 const META_DESC =
-  "Build your professional profile, track your development and find recognised education that helps you stay credible, visible and trusted through REPs.";
+  "Build your professional profile, track your development and find recognised education that helps you stay credible, visible and trusted through REPS.";
 
 export const Route = createFileRoute("/cpd")({
   head: () => ({
@@ -125,7 +125,7 @@ const PROOF_CARDS = [
   {
     icon: ShieldCheck,
     title: "Stay verified",
-    body: "Keep your REPs status current as you complete CPD and renew insurance.",
+    body: "Keep your REPS status current as you complete CPD and renew insurance.",
   },
   {
     icon: TrendingUp,
@@ -148,7 +148,7 @@ const PATHWAYS = [
   {
     icon: ShieldCheck,
     title: "Foundation & verification",
-    outcome: "Get verified on REPs and meet baseline standards from day one.",
+    outcome: "Get verified on REPS and meet baseline standards from day one.",
     topics: ["Level 2/3 fundamentals", "Insurance & first aid", "Safeguarding"],
   },
   {
@@ -171,8 +171,8 @@ const PATHWAYS = [
   },
   {
     icon: Sparkles,
-    title: "REPs platform & AI skills",
-    outcome: "Use your shop-front, enquiries and AI tools to grow on REPs.",
+    title: "REPS platform & AI skills",
+    outcome: "Use your shop-front, enquiries and AI tools to grow on REPS.",
     topics: ["Shop-front", "Enquiry conversion", "AI assistant"],
   },
   {
@@ -236,7 +236,7 @@ const COURSES = [
   },
   {
     title: "Online Coaching Operations",
-    provider: "REPs Academy",
+    provider: "REPS Academy",
     points: 6,
     delivery: "Online",
     category: "Business growth",
@@ -268,7 +268,7 @@ const SPECIALISMS = [
 
 const PROVIDER_BENEFITS = [
   "Branded provider profiles with course catalogues",
-  "Verified-provider badge surfaced across REPs",
+  "Verified-provider badge surfaced across REPS",
   "Direct link to enquiries from member profiles",
   "Performance insights on enrolments and completions",
   "Tools to publish CPD, qualifications and short courses",
@@ -277,34 +277,34 @@ const PROVIDER_BENEFITS = [
 const FAQS = [
   {
     q: "What counts as CPD?",
-    a: "CPD is any structured learning that develops your practice — accredited courses, workshops, mentoring, webinars, conferences and reflective practice. REPs recognises CPD delivered by accredited training providers and equivalent industry bodies.",
+    a: "CPD is any structured learning that develops your practice — accredited courses, workshops, mentoring, webinars, conferences and reflective practice. REPS recognises CPD delivered by accredited training providers and equivalent industry bodies.",
   },
   {
     q: "Do I need CPD to stay verified?",
-    a: "Verified members are expected to maintain a current CPD record alongside insurance and qualifications. REPs makes it easy to log hours and surface them on your profile.",
+    a: "Verified members are expected to maintain a current CPD record alongside insurance and qualifications. REPS makes it easy to log hours and surface them on your profile.",
   },
   {
     q: "Can clients see my qualifications?",
-    a: "Yes. Your public REPs profile shows the qualifications, specialisms and verification status clients use to decide who to trust.",
+    a: "Yes. Your public REPS profile shows the qualifications, specialisms and verification status clients use to decide who to trust.",
   },
   {
     q: "Can I add existing qualifications?",
-    a: "Yes. You can add qualifications you already hold and link them to your REPs profile. Evidence is reviewed during verification.",
+    a: "Yes. You can add qualifications you already hold and link them to your REPS profile. Evidence is reviewed during verification.",
   },
   {
-    q: "Can training providers list courses on REPs?",
+    q: "Can training providers list courses on REPS?",
     a: "A dedicated provider experience is in development. Register your interest below and we'll bring you into the next intake.",
   },
   {
-    q: "Will REPs recommend CPD to me?",
+    q: "Will REPS recommend CPD to me?",
     a: "We're building learning recommendations that surface CPD relevant to your specialisms, goals and profile gaps. The recommendation preview on this page shows the direction.",
   },
   {
     q: "How do specialism areas work?",
-    a: "REPs shows specialism areas evidenced by recognised qualifications and CPD. We don't award badges for things you haven't proven — your specialism areas appear on your profile when the credential behind them is verified.",
+    a: "REPS shows specialism areas evidenced by recognised qualifications and CPD. We don't award badges for things you haven't proven — your specialism areas appear on your profile when the credential behind them is verified.",
   },
   {
-    q: "Can I use REPs without completing CPD?",
+    q: "Can I use REPS without completing CPD?",
     a: "Yes — you can join and build a profile. CPD becomes important when you want to stay verified, develop specialisms and grow visibility over time.",
   },
 ];
@@ -330,8 +330,8 @@ function CpdV2Page() {
         <FinalCta
           heading="Build your profile. Prove your standards."
           headingAccent="Grow your career."
-          lede="Join REPs to connect your verification, education, profile and professional development in one platform."
-          primary={{ to: "/signup", label: "Join REPs" }}
+          lede="Join REPS to connect your verification, education, profile and professional development in one platform."
+          primary={{ to: "/signup", label: "Join REPS" }}
         />
 
         <PublicFooter />
@@ -375,7 +375,7 @@ function Hero() {
           >
             Education and CPD that
             <br />
-            <span className="text-reps-orange">strengthens your REPs profile.</span>
+            <span className="text-reps-orange">strengthens your REPS profile.</span>
           </h1>
 
           <p
@@ -395,7 +395,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Join REPs <ArrowRight className="h-4 w-4" />
+              Join REPS <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#cpd-discovery"
@@ -497,7 +497,7 @@ function DevelopmentPassport() {
           <SectionHeader
             eyebrow="Professional Development Passport"
             heading="Your professional development, connected to your public profile."
-            lede="Qualifications, CPD, insurance and specialist development don't belong in a folder on your laptop. On REPs they support the public profile clients see — so the work you put in shows up where it matters."
+            lede="Qualifications, CPD, insurance and specialist development don't belong in a folder on your laptop. On REPS they support the public profile clients see — so the work you put in shows up where it matters."
             className="max-w-none"
           />
           <ul className="mt-6 flex flex-col gap-3 text-[14.5px] text-white/80">
@@ -651,7 +651,7 @@ function ProfessionalDevelopmentMockup() {
           <div className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink p-3.5">
             <div className="flex items-center gap-2 text-[12.5px] text-white/70">
               <Lock className="h-3.5 w-3.5 text-emerald-300" />
-              REPs renewal
+              REPS renewal
             </div>
             <span className="text-[12px] font-medium text-emerald-300">
               On track · 14 Mar 2027
@@ -695,7 +695,7 @@ function BeforeAfterTeardown() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Outcome"
-          heading="What a year of CPD does to your REPs profile."
+          heading="What a year of CPD does to your REPS profile."
           lede="Side-by-side: the same coach on day one, and after twelve months of logged CPD, verified credentials and specialism evidence. This is the trust signal clients are scanning for."
         />
 
@@ -723,7 +723,7 @@ function BeforeAfterTeardown() {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[16px] border border-reps-border bg-reps-panel px-5 py-4">
           <p className="text-[13px] leading-relaxed text-white/70">
-            Illustrative — built from the data points REPs surfaces on every
+            Illustrative — built from the data points REPS surfaces on every
             public profile. Your real profile updates the moment each
             credential is verified or each CPD entry is logged.
           </p>
@@ -852,7 +852,7 @@ function LearningPathways() {
         <SectionHeader
           eyebrow="Pathways"
           heading="Choose the pathway that matches your next stage."
-          lede="From day-one verification to specialist depth, REPs maps the recognised education that fits where you are in your career."
+          lede="From day-one verification to specialist depth, REPS maps the recognised education that fits where you are in your career."
         />
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1081,7 +1081,7 @@ function SpecialistAreas() {
         <SectionHeader
           eyebrow="Specialism areas"
           heading="Build visibility around your specialist areas."
-          lede="Specialism areas are evidenced through recognised qualifications and CPD — REPs doesn't hand out badges for things you haven't proven. When you complete the right credentials, your profile reflects them."
+          lede="Specialism areas are evidenced through recognised qualifications and CPD — REPS doesn't hand out badges for things you haven't proven. When you complete the right credentials, your profile reflects them."
         />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -1103,7 +1103,7 @@ function SpecialistAreas() {
         <Alert className="mt-6 rounded-[16px] border-reps-border bg-reps-panel text-white/70">
           <BadgeCheck className="h-4 w-4 text-reps-orange" />
           <AlertDescription className="text-[13px] text-white/70">
-            REPs displays specialism areas you can evidence with recognised
+            REPS displays specialism areas you can evidence with recognised
             qualifications and CPD. Where a formal specialist register exists,
             it is shown separately on your profile.
           </AlertDescription>
@@ -1132,8 +1132,8 @@ function TrainingProvidersBand() {
         <div>
           <SectionHeader
             eyebrow="Training providers"
-            heading="Training providers will have a stronger place inside REPs."
-            lede="REPs is being developed to give training providers clearer visibility, stronger provider profiles and a better route to present qualifications, CPD and professional education to the fitness industry."
+            heading="Training providers will have a stronger place inside REPS."
+            lede="REPS is being developed to give training providers clearer visibility, stronger provider profiles and a better route to present qualifications, CPD and professional education to the fitness industry."
             className="max-w-none"
           />
           <div className="mt-7">
@@ -1197,8 +1197,8 @@ function RecognitionStrip() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-24">
         <SectionHeader
           eyebrow="Verified training providers"
-          heading="Training providers, listed when they're verified by REPs."
-          lede="Verified training providers appear here once they've completed REPs verification — accrediting body checked, tutors named, refund and complaints policies published. We only list providers who meet the bar."
+          heading="Training providers, listed when they're verified by REPS."
+          lede="Verified training providers appear here once they've completed REPS verification — accrediting body checked, tutors named, refund and complaints policies published. We only list providers who meet the bar."
         />
 
         <Card className="mt-10 rounded-[18px] border-reps-border bg-reps-panel shadow-none">
@@ -1212,7 +1212,7 @@ function RecognitionStrip() {
                   First verified providers coming soon.
                 </div>
                 <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-white/70">
-                  REPs is onboarding the first cohort of verified training
+                  REPS is onboarding the first cohort of verified training
                   providers. Once verified, their courses, CPD points and
                   awarding body appear here — and feed automatically into
                   member profiles.

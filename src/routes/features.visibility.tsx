@@ -77,15 +77,15 @@ const PROFILE_CALLOUTS: Callout[] = [
     x:"84%",
     y:"82%",
     title:"Enquire / contact CTA",
-    body:"One clear action. Drops straight into your REPs inbox — no DMs, no missed leads.",
+    body:"One clear action. Drops straight into your REPS inbox — no DMs, no missed leads.",
   },
 ];
 
 const TRUST_SIGNALS = [
   {
     icon: ShieldCheck,
-    title:"REPs Verified",
-    body:"Identity and credentials checked by a human. Status, the public badge — and the only marker REPs guarantees.",
+    title:"REPS Verified",
+    body:"Identity and credentials checked by a human. Status, the public badge — and the only marker REPS guarantees.",
     accent:"emerald" as const,
   },
   {
@@ -139,7 +139,7 @@ const COMPARISON_ROWS = [
 const FAQ_ITEMS = [
   {
     q:"Will my profile rank at the top of search?",
-    a:"REPs is designed to help clients search, compare and contact suitable professionals with more confidence — not to promise a top slot. A complete, verified profile with real reviews is consistently more discoverable than an empty one.",
+    a:"REPS is designed to help clients search, compare and contact suitable professionals with more confidence — not to promise a top slot. A complete, verified profile with real reviews is consistently more discoverable than an empty one.",
   },
   {
     q:"Can I hide my profile if I'm fully booked?",
@@ -147,15 +147,15 @@ const FAQ_ITEMS = [
   },
   {
     q:"Who is allowed to leave a review?",
-    a:"Only clients with a verified booking or session record on REPs can post a review. There are no anonymous drive-by ratings.",
+    a:"Only clients with a verified booking or session record on REPS can post a review. There are no anonymous drive-by ratings.",
   },
   {
     q:"Do I need Pro to be visible?",
     a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded shop-front and the client management tools that turn enquiries into a working business.",
   },
   {
-    q:"Is my REPs profile indexed by search engines?",
-    a:"Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPs and beyond it.",
+    q:"Is my REPS profile indexed by search engines?",
+    a:"Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPS and beyond it.",
   },
   {
     q:"Can I reply to reviews?",
@@ -170,13 +170,13 @@ const FAQ_ITEMS = [
 export const Route = createFileRoute("/features/visibility")({
   head: () => ({
     meta: [
-      { title:"Visibility — Get found by clients before they choose · REPs" },
+      { title:"Visibility — Get found by clients before they choose · REPS" },
       {
         name:"description",
         content:
-"Build a verified REPs profile clients can find, trust and contact. Public profile, directory presence, reviews, specialisms and an enquiry inbox in one place.",
+"Build a verified REPS profile clients can find, trust and contact. Public profile, directory presence, reviews, specialisms and an enquiry inbox in one place.",
       },
-      { property:"og:title", content:"Visibility — REPs for Professionals" },
+      { property:"og:title", content:"Visibility — REPS for Professionals" },
       {
         property:"og:description",
         content:
@@ -220,7 +220,7 @@ function VisibilityPage() {
         heading="Build a profile clients can find,"
         headingAccent="trust and contact."
         lede="Join the verified register and create a professional presence that works beyond social media."
-        primary={{ to:"/signup", label:"Join REPs" }}
+        primary={{ to:"/signup", label:"Join REPS" }}
         secondary={{ to:"/pricing", label:"See pricing" }}
       />
 
@@ -238,7 +238,7 @@ function Hero() {
     <section className="relative flex min-h-[640px] overflow-hidden lg:min-h-[780px]">
       <img
         src={heroVisibility.url}
-        alt="Verified REPs trainer outside a premium boutique studio at dusk"
+        alt="Verified REPS trainer outside a premium boutique studio at dusk"
         width={1920}
         height={1280}
         className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -266,7 +266,7 @@ function Hero() {
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
-            Create a verified REPs profile that brings your credentials, reviews, specialisms and
+            Create a verified REPS profile that brings your credentials, reviews, specialisms and
             contact options into one public place clients can understand and act on — before they
             ever enter your coaching system.
           </p>
@@ -279,7 +279,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Join REPs <ArrowRight className="h-4 w-4" />
+              Join REPS <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#profile"
@@ -320,14 +320,14 @@ function ProblemSection() {
         <SectionHeader
           eyebrow="The visibility problem"
           heading="Most professionals are scattered. Clients are left guessing."
-          lede="Instagram bio, Linktree, an old website, screenshots in WhatsApp — prospects can't tell who's qualified, insured, experienced or actually right for them. REPs brings that trust layer into one professional profile."
+          lede="Instagram bio, Linktree, an old website, screenshots in WhatsApp — prospects can't tell who's qualified, insured, experienced or actually right for them. REPS brings that trust layer into one professional profile."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-8">
           {/* Before — scattered */}
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <X className="h-3 w-3" /> Today, without REPs
+              <X className="h-3 w-3" /> Today, without REPS
             </span>
             <BlockHeading className="mt-4">A scattered, unverifiable presence.</BlockHeading>
             <div className="mt-6 space-y-3">
@@ -350,10 +350,10 @@ function ProblemSection() {
             </p>
           </div>
 
-          {/* After — REPs */}
+          {/* After — REPS */}
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With REPs
+              <Check className="h-3 w-3" /> With REPS
             </span>
             <BlockHeading className="mt-4">One verified professional record.</BlockHeading>
             <ul className="mt-6 space-y-3">
@@ -375,7 +375,7 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              Most fitness software helps you manage clients <em>after</em> they sign up. REPs makes
+              Most fitness software helps you manage clients <em>after</em> they sign up. REPS makes
               you visible <em>before</em> they choose who to contact.
             </p>
           </div>
@@ -415,9 +415,9 @@ function ProfileSection() {
     <section id="profile" className="scroll-mt-24">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Your public REPs profile"
+          eyebrow="Your public REPS profile"
           heading="What clients see — and why they act on it."
-          lede="Every element on a verified REPs profile is there to help a stranger trust you in under thirty seconds. Six call-outs you can point at."
+          lede="Every element on a verified REPS profile is there to help a stranger trust you in under thirty seconds. Six call-outs you can point at."
         />
 
         <div className="mt-12">
@@ -454,7 +454,7 @@ function DiscoverySection() {
             <DeviceMockup
               device="laptop"
               src="/find-a-professional"
-              title="REPs directory search results"
+              title="REPS directory search results"
             />
           </MockupStage>
 
@@ -550,7 +550,7 @@ function ReviewsSection() {
         <SectionHeader
           eyebrow="Turn reviews into public proof"
           heading="Your best client outcomes deserve more than a WhatsApp screenshot."
-          lede="REPs requests a review 24 hours after a completed session and ties it to a verified client. Replies are public. Deletions aren't possible. That's why prospects believe what they read."
+          lede="REPS requests a review 24 hours after a completed session and ties it to a verified client. Replies are public. Deletions aren't possible. That's why prospects believe what they read."
         />
 
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
@@ -596,8 +596,8 @@ function SeoReachSection() {
     <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Found beyond REPs too"
-          heading="A verified REPs profile is a public, indexable page."
+          eyebrow="Found beyond REPS too"
+          heading="A verified REPS profile is a public, indexable page."
           lede="Hundreds of city and specialism landing pages surface verified pros to the wider web — with proper metadata and structured data, so search engines understand who you are, where you work and what you do."
         />
 

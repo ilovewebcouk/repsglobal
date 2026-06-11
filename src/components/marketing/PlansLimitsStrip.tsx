@@ -16,7 +16,7 @@ export function PlansLimitsStrip({
 }: {
   competitors?: Competitor[];
 }) {
-  // REPs always shown first.
+  // REPS always shown first.
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1.1fr_repeat(var(--n),minmax(0,1fr))]" style={{ ["--n" as never]: competitors.length }}>
       <RepsCard />
@@ -33,7 +33,7 @@ function RepsCard() {
       <div className="absolute right-4 top-4 inline-flex h-6 items-center rounded-full bg-reps-orange px-2.5 text-[10px] font-semibold uppercase tracking-wider text-white">
         Recommended
       </div>
-      <h3 className="font-display text-[20px] font-bold text-white">REPs Pro</h3>
+      <h3 className="font-display text-[20px] font-bold text-white">REPS Pro</h3>
       <p className="mt-1 text-[12.5px] text-white/60">{REPS_SIDE.bestFor}</p>
 
       <div className="mt-5 flex items-baseline gap-2">
@@ -51,7 +51,7 @@ function RepsCard() {
         </div>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">
           Directory profile, verification, CRM, bookings, payments, programmes,
-          check-ins, nutrition, client portal and REPs AI. No paid add-on stack,
+          check-ins, nutrition, client portal and REPS AI. No paid add-on stack,
           no per-client charges, no per-extra-trainer fee.
         </p>
       </div>

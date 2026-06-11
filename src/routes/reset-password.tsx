@@ -9,10 +9,10 @@ import { redirectAfterAuth } from "@/lib/auth-redirect";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Set a new password — REPs" },
-      { name: "description", content: "Choose a new password for your REPs account." },
-      { property: "og:title", content: "Set a new password — REPs" },
-      { property: "og:description", content: "Set a new password to regain access to your REPs account." },
+      { title: "Set a new password — REPS" },
+      { name: "description", content: "Choose a new password for your REPS account." },
+      { property: "og:title", content: "Set a new password — REPS" },
+      { property: "og:description", content: "Set a new password to regain access to your REPS account." },
     ],
   }),
   component: ResetPasswordPage,
@@ -22,7 +22,7 @@ const RULES = [
   "At least 12 characters",
   "Mix of upper and lowercase",
   "Includes a number or symbol",
-  "Not used on REPs before",
+  "Not used on REPS before",
 ];
 
 function ResetPasswordPage() {
@@ -74,7 +74,7 @@ function ResetPasswordPage() {
           <span className="text-reps-orange">new password.</span>
         </>
       }
-      intro="Pick something memorable but unique to REPs. We'll sign you in automatically once it's saved."
+      intro="Pick something memorable but unique to REPS. We'll sign you in automatically once it's saved."
     >
       <div className="text-center">
         <h2 className="font-display text-[24px] font-bold leading-tight text-reps-charcoal">

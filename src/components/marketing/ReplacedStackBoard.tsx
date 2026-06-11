@@ -40,7 +40,7 @@ const AFTER = [
   "Client messaging",
   "Content & lead magnets",
   "Branded client portal",
-  "REPs AI assistant",
+  "REPS AI assistant",
 ];
 
 export function ReplacedStackBoard() {
