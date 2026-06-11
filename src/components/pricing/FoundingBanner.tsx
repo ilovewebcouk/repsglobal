@@ -16,7 +16,7 @@ export function FoundingBanner() {
           Lock in <span className="font-semibold text-white">£59/mo Pro</span> before public launch.
         </span>
       </div>
-      <span className="text-[12px] text-white/55">30-day free trial · card required · then £59/mo unless cancelled</span>
+      <span className="text-[12px] text-white/55">30-day free trial · cancel anytime before day 30</span>
     </div>
   );
 }
