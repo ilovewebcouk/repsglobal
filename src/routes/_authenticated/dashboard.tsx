@@ -139,7 +139,7 @@ function DashboardPage() {
                 <>
                   <BadgeCheck className="size-3.5" /> Verified
                 </>
-              ) : submissionStatus === "submitted" || submissionStatus === "in_review" ? (
+              ) : submissionStatus === "submitted" ? (
                 <>
                   <Clock className="size-3.5" /> In review
                 </>
