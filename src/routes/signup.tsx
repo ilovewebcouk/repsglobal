@@ -1,7 +1,6 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Apple,
   ArrowRight,
   BadgeCheck,
   Eye,
