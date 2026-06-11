@@ -20,7 +20,6 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PortalRouteImport } from './routes/portal'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -152,11 +151,6 @@ const PricingRoute = PricingRouteImport.update({
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -568,7 +562,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -659,7 +652,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -750,7 +742,6 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/login': typeof LoginRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -843,7 +834,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/home-legacy'
     | '/how-it-works'
-    | '/login'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -934,7 +924,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/home-legacy'
     | '/how-it-works'
-    | '/login'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -1024,7 +1013,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/home-legacy'
     | '/how-it-works'
-    | '/login'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -1116,7 +1104,6 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HomeLegacyRoute: typeof HomeLegacyRoute
   HowItWorksRoute: typeof HowItWorksRoute
-  LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1263,13 +1250,6 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -1857,7 +1837,6 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   HomeLegacyRoute: HomeLegacyRoute,
   HowItWorksRoute: HowItWorksRoute,
-  LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,

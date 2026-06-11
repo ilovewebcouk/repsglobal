@@ -410,7 +410,7 @@ function ChromeBar({ coach }: { coach: Coach }) {
             </TooltipContent>
           </Tooltip>
           <Link
-            to="/login"
+            to="/auth"
             className="text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
           >
             Client login
@@ -1240,7 +1240,7 @@ function ContactSection({
                 ))}
               </div>
               <Link
-                to="/login"
+                to="/auth"
                 className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
               >
                 Existing client? Log in to your portal
