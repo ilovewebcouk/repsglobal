@@ -73,31 +73,33 @@ export const PRO_RESOURCES = [
 // About REPs mega-menu — 3 columns of institutional, trust and support pages.
 export const ABOUT_GROUPS: {
   heading: string;
-  links: { to: "/about" | "/careers" | "/press" | "/contact" | "/standards" | "/reviews" | "/complaints" | "/help" | "/faq"; label: string }[];
+  links: (
+    | { to: string; label: string; soon?: false }
+    | { label: string; soon: true }
+  )[];
 }[] = [
   {
     heading: "Organisation",
     links: [
       { to: "/about", label: "About REPs" },
-      { to: "/careers", label: "Careers" },
-      { to: "/press", label: "Press" },
+      { label: "Careers", soon: true },
+      { label: "Press", soon: true },
       { to: "/contact", label: "Contact" },
     ],
   },
   {
     heading: "Standards & trust",
     links: [
-      { to: "/standards", label: "Our Standards" },
-      
+      { label: "Our Standards", soon: true },
       { to: "/reviews", label: "Reviews" },
-      { to: "/complaints", label: "Complaints" },
+      { label: "Complaints", soon: true },
     ],
   },
   {
     heading: "Support",
     links: [
-      { to: "/help", label: "Help Centre" },
-      { to: "/faq", label: "FAQ" },
+      { label: "Help Centre", soon: true },
+      { label: "FAQ", soon: true },
     ],
   },
 ];
