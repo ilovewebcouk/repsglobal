@@ -55,7 +55,7 @@ async function assertProfessional(
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
-  const isPro = (roles ?? []).some((r) => r.role === "professional");
+  const isPro = (roles ?? []).some((r: { role: string }) => r.role === "professional");
   if (!isPro) throw new Error("Only professionals can manage clients");
 
   const { data: subscriptions } = await supabase
@@ -63,7 +63,7 @@ async function assertProfessional(
     .select("tier,status")
     .eq("user_id", userId);
   const hasProTier = (subscriptions ?? []).some(
-    (subscription) =>
+    (subscription: { tier: string; status: string }) =>
       (subscription.tier === "pro" || subscription.tier === "studio") &&
       ["active", "trialing", "past_due", "unpaid"].includes(subscription.status),
   );
