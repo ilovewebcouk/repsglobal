@@ -200,7 +200,7 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is there a free trial?",
-    a: "Yes — Pro includes a 30-day free trial with a card required at signup. You pay £0 today, then £59/month after 30 days unless you cancel during the trial. Verified does not include a trial, and Studio is waitlist-only.",
+    a: "Yes — Pro includes a 30-day free trial. You pay £0 today and you can cancel anytime before day 30 to avoid the first charge. Verified does not include a trial, and Studio is waitlist-only.",
   },
   {
     q: "What's the difference between Verified and Pro?",
