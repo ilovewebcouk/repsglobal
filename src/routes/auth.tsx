@@ -131,7 +131,7 @@ function LoginPage() {
 
             {/* Email + password */}
             <form className="mt-7 grid gap-4" onSubmit={handleSubmit}>
-              <div>
+              <div className="text-left">
                 <label
                   htmlFor="email"
                   className="text-[12px] font-semibold uppercase tracking-wider text-white/55"
