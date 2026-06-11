@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { RepsWordmark } from "@/components/RepsWordmark";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 
 type Search = { session_id?: string };
 
