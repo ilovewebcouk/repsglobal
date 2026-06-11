@@ -282,11 +282,11 @@ function LoginPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 Live on REPs
               </div>
-              <h2 className="mt-4 font-display text-[26px] font-bold leading-[1.15] tracking-[-0.01em] text-white">
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-[1.1] tracking-[-0.01em] text-white lg:text-[30px]">
                 This is what you&apos;re signing in to build.
               </h2>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/55">
-                A real Pro shop-front on REPs. Outcomes-led, verified, and built
+              <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+                A real Pro shop-front on REPs — outcomes-led, verified, and built
                 to convert the right clients.
               </p>
             </div>
