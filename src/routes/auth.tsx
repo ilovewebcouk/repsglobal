@@ -126,7 +126,7 @@ function LoginPage() {
         <div className="w-full max-w-[420px]">
           <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-sm">
             <div className="text-center">
-              <h1 className="font-display text-[30px] font-bold leading-tight text-white lg:text-[36px]">
+              <h1 className="font-display text-[24px] font-bold leading-tight text-white lg:text-[28px]">
                 Login to your account
               </h1>
               <p className="mt-2 text-[14px] leading-relaxed text-white/65">
