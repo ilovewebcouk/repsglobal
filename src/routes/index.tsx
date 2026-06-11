@@ -39,13 +39,13 @@ import proLaura from "@/assets/pro-laura.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "REPs — Find. Trust. Train. Transform." },
+      { title: "REPS — Find. Trust. Train. Transform." },
       {
         name: "description",
         content:
           "REPs connects you with verified fitness professionals you can trust to help you reach your goals.",
       },
-      { property: "og:title", content: "REPs — Find. Trust. Train. Transform." },
+      { property: "og:title", content: "REPS — Find. Trust. Train. Transform." },
       {
         property: "og:description",
         content:
@@ -478,7 +478,7 @@ function HomeV2() {
               "The world's register of verified fitness professionals — so you never have to guess who you're trusting your body with."
             </blockquote>
             <figcaption className="mt-5 text-[12px] uppercase tracking-[0.18em] text-reps-muted-light">
-              REPs — Since 2009
+              REPS — SINCE 2002
             </figcaption>
           </figure>
         </div>

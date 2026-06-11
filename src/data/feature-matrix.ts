@@ -42,7 +42,7 @@ export const FEATURE_GROUPS: Group[] = [
       {
         feature: "Industry-recognised REPs credential",
         cells: [
-          { kind: "yes", note: "REPs verified since 2009" },
+          { kind: "yes", note: "REPS verified since 2002" },
           { kind: "no" },
           { kind: "no" },
           { kind: "no" },

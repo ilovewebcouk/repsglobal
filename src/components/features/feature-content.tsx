@@ -30,7 +30,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
     hero: {
       eyebrow: "Verified profile",
       title: "A profile clients can trust on sight.",
-      sub: "Your REPs profile shows verified qualifications, insurance and reviews from real clients — checked by our team, on the public register since 2009.",
+      sub: "Your REPS profile shows verified qualifications, insurance and reviews from real clients — checked by our team, on the public register since 2002.",
       visual: <ProfileMockup />,
     },
     pillars: [

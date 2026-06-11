@@ -232,7 +232,7 @@ function ForProsPage() {
           <ProductBlock
             eyebrow="Pillar 1 · Visibility"
             title="Become the obvious choice in your area."
-            body="Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the verified register since 2009."
+            body="Trust gets decided before they message you. Your profile shows the badge, the qualifications, the insurance, the reviews — backed by the verified register since 2002."
             bullets={[
 "Verified badge backed by a 16-year register",
 "Qualifications, insurance and CPD shown live",
