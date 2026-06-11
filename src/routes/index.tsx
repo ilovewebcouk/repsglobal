@@ -29,9 +29,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 
 import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainersAsset from "@/assets/cta-band.jpg.asset.json";
-import ctaTrainersPortraitAsset from "@/assets/cta-band-portrait.jpg.asset.json";
 const ctaTrainers = ctaTrainersAsset.url;
-const ctaTrainersPortrait = ctaTrainersPortraitAsset.url;
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
@@ -491,9 +489,7 @@ function HomeV2() {
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           <div className="relative isolate overflow-hidden rounded-[24px] bg-reps-ink text-white shadow-[var(--reps-shadow-card)]">
             <div className="relative w-full md:absolute md:inset-0">
-              {/* Mobile (stacked): portrait crop, head fully in frame. md+: wide crop sits absolute behind the copy column. */}
-              <img src={ctaTrainersPortrait} alt="" className="block aspect-[4/5] w-full object-cover object-[60%_center] md:hidden" loading="lazy" />
-              <img src={ctaTrainers} alt="" className="hidden md:block md:h-full md:w-full md:object-cover md:object-[75%_center] lg:object-[80%_center]" loading="lazy" />
+              <img src={ctaTrainers} alt="" className="aspect-[5/4] w-full object-cover object-[100%_center] md:aspect-auto md:h-full md:object-[100%_top] lg:object-center" loading="lazy" />
               <div
                 className="absolute inset-0 hidden md:block"
                 style={{ backgroundImage: "linear-gradient(to bottom, transparent 0%, transparent 18%, rgba(11,13,16,0.38) 42%, rgba(11,13,16,0.72) 65%, #0B0D10 88%)" }}
