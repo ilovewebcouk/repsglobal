@@ -180,11 +180,6 @@ function DashboardPage() {
             <Link to="/dashboard-demo" className="hover:text-white">
               Demo dashboard
             </Link>
-            {data?.isAdmin && (
-              <Link to="/admin" className="hover:text-white">
-                Admin
-              </Link>
-            )}
           </div>
         </div>
       </header>
