@@ -1,6 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
 import {
   BadgeCheck,
   Bookmark,
@@ -97,6 +100,8 @@ type Pro = {
   /** Independent — REPS professionals choose where they train clients. */
   venues: ProVenue[];
   featured?: boolean;
+  /** Override slug for live DB pros — otherwise derived from name. */
+  slug?: string;
 };
 
 const directoryPros: Pro[] = [
@@ -261,9 +266,46 @@ function DirectoryPage() {
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
+  const listLive = useServerFn(listPublishedProfessionals);
+  const { data: livePros = [] } = useQuery({
+    queryKey: ["directory", "published"],
+    queryFn: () => listLive({ data: undefined }),
+    staleTime: 60_000,
+  });
+
+  const liveAsPros: Pro[] = React.useMemo(
+    () =>
+      livePros
+        .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
+        .map((r) => ({
+          name: r.trading_name || "REPS Professional",
+          role: (r.specialisms?.[0] as string) || "Personal Trainer",
+          distance: r.city ? `${r.city}` : "—",
+          rating: 5.0,
+          reviews: 0,
+          mode: r.in_person_available && r.online_available
+            ? "In-person & Online"
+            : r.online_available
+              ? "Online"
+              : "In-person",
+          tags: [
+            (r.specialisms?.[0] as string) || "Health & Fitness",
+            (r.specialisms?.[1] as string) || "Strength Training",
+            (r.specialisms?.[2] as string) || "Conditioning",
+          ] as [string, string, string],
+          blurb: r.headline || "REPS-verified professional.",
+          image: proJames,
+          venues: [],
+          slug: r.slug ?? undefined,
+        })),
+    [livePros],
+  );
+
+  const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
+
   const visiblePros = activeVenue
-    ? directoryPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
-    : directoryPros;
+    ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : mergedPros;
 
   const clearVenue = () =>
     navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
@@ -944,7 +986,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
           </Tooltip>
           <Link
             to="/pro/$slug"
-            params={{ slug: proSlug(pro.name) }}
+            params={{ slug: pro.slug ?? proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             {ctaLabel}
@@ -954,7 +996,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
         {/* Mobile full-width CTA */}
         <Link
           to="/pro/$slug"
-          params={{ slug: proSlug(pro.name) }}
+          params={{ slug: pro.slug ?? proSlug(pro.name) }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
           {ctaLabel}

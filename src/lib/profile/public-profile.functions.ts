@@ -23,7 +23,7 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     const { data, error } = await supabaseAdmin
       .from("professionals")
       .select(
-        "slug, trading_name, headline, specialisms, city, country, hourly_rate_pence, verification_status",
+        "slug, trading_name, headline, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available",
       )
       .eq("is_published", true)
       .order("updated_at", { ascending: false })
