@@ -802,7 +802,7 @@ function ReviewCard({
         <img
           src={r.proImage}
           alt=""
-          className="h-10 w-10 rounded-[14px] object-cover"
+          className="h-10 w-10 rounded-[12px] object-cover"
         />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-semibold text-reps-ink">{r.proName}</div>
