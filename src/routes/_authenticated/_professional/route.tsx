@@ -12,7 +12,14 @@ export const Route = createFileRoute("/_authenticated/_professional")({
     // 1) Ensure they're a signed-in professional
     const result = await requireRole(["professional"])(ctx);
 
-    // 2) Ensure they have an active paid subscription. Unpaid → /pricing.
+    // 2) Allow the post-checkout sync screen through without a sub check —
+    //    the webhook may not have landed yet. The screen itself polls and
+    //    forwards to /dashboard once the subscription row appears.
+    if (ctx.location.pathname.startsWith("/dashboard/syncing")) {
+      return result;
+    }
+
+    // 3) Ensure they have an active paid subscription. Unpaid → /pricing.
     //    REPS is paid-only — there is no in-app plan picker. /pricing is the
     //    single entry to checkout for both new and orphaned signups.
     const userId = result.user.id;
