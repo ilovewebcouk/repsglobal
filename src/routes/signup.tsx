@@ -377,7 +377,7 @@ function SignupPage() {
           <p className="text-[14px] text-white/70">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to="/auth"
               className="font-semibold text-reps-orange hover:underline"
             >
               Sign in

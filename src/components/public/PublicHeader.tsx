@@ -307,7 +307,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
               ) : (
                 <>
                   <Link
-                    to="/login"
+                    to="/auth"
                     className="hidden h-10 items-center whitespace-nowrap rounded-[10px] border border-white/25 px-4 text-[14px] font-medium text-white transition-colors hover:bg-white/10 sm:inline-flex"
                   >
                     Log in
@@ -937,7 +937,7 @@ function MobileDrawer({
         <div className="px-5 py-4">
           <div className="grid grid-cols-2 gap-2">
             <Link
-              to="/login"
+              to="/auth"
               onClick={onNavigate}
               className="inline-flex h-11 items-center justify-center rounded-[10px] border border-white/25 px-3 text-[14px] font-medium text-white transition-colors hover:bg-white/10"
             >

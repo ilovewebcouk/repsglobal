@@ -18,7 +18,7 @@ import { redirectAfterAuth } from "@/lib/auth-redirect";
 import proSophie from "@/assets/pro-sophie.jpg";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in to REPS — Your Professional Account" },
@@ -33,9 +33,9 @@ export const Route = createFileRoute("/login")({
         content:
           "Welcome back — sign in to REPS to access your professional dashboard.",
       },
-      { property: "og:url", content: "/login" },
+      { property: "og:url", content: "/auth" },
     ],
-    links: [{ rel: "canonical", href: "/login" }],
+    links: [{ rel: "canonical", href: "/auth" }],
   }),
   component: LoginPage,
 });

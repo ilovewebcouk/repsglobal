@@ -47,7 +47,7 @@ function ForgotPasswordPage() {
       topRight={
         <>
           Remembered it?{" "}
-          <Link to="/login" className="font-semibold text-reps-orange hover:underline">
+          <Link to="/auth" className="font-semibold text-reps-orange hover:underline">
             Sign in
           </Link>
         </>

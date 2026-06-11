@@ -48,7 +48,7 @@ function ResetPasswordPage() {
       const { error: updErr } = await supabase.auth.updateUser({ password });
       if (updErr) throw updErr;
       const { data } = await supabase.auth.getUser();
-      const to = data.user ? await redirectAfterAuth(data.user.id) : "/login";
+      const to = data.user ? await redirectAfterAuth(data.user.id) : "/auth";
       navigate({ to, replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't update password");
@@ -62,7 +62,7 @@ function ResetPasswordPage() {
       topRight={
         <>
           Back to{" "}
-          <Link to="/login" className="font-semibold text-reps-orange hover:underline">
+          <Link to="/auth" className="font-semibold text-reps-orange hover:underline">
             Sign in
           </Link>
         </>

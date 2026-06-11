@@ -20,7 +20,7 @@ export const Route = createFileRoute("/dashboard_/clients")({
   beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
-      throw redirect({ to: "/login", search: { redirect: location.href } });
+      throw redirect({ to: "/auth", search: { redirect: location.href } });
     }
   },
   head: () => ({
