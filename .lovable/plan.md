@@ -1,111 +1,102 @@
-# /reviews — 10/10 rework (revised)
+# /reviews — world-class rebuild plan
 
-## Brutal honest, corrected
+## Brutal honest truth
 
-I was wrong last round. Re-checked `src/routes/index.tsx`: homepage uses **dark hero on `bg-reps-black`** → **light body sections alternating `bg-reps-warm-white` / `bg-reps-ivory`** → **dark CTA card** → dark footer. `/reviews` is currently fully dark, which makes it look like a `/features/*` pillar page (pro-facing) instead of a public consumer landing page like `/` or `/in/london`. You were right to call it. We migrate `/reviews` to the homepage pattern.
+No, the current page is not 10/10. Three real problems:
 
-The other three calls also stand:
+1. **Theme mismatch + ghost nav.** We flipped the page to light (`bg-reps-warm-white`) while the global `PublicHeader` is built for dark surfaces. On a light hero the header reads as a grey strip with no contrast — it looks broken, not intentional. Every other top-level marketing page (`/about`, `/for-professionals`, `/features/*`, `/specialisms`, `/cpd`) sits on a **dark hero into dark body** with subtle `bg-reps-panel/15–/30` tinting for rhythm. `/` is the exception because it's the consumer landing page. `/reviews` is a **trust / proof pillar**, not a consumer landing — it belongs in the dark marketing system.
+2. **"Headline rating block" got orphaned.** The 4.9 + bars panel now sits in its own row beneath the stat strip, floating, with no relationship to anything around it. World-class review pages anchor the score *inside* the hero so the number is the hero.
+3. **It's still structured like Trustpilot.** Score → stats → methodology → feed. That's a review *aggregator*. REPs is not an aggregator — we're the register the reviews live on. The page should feel like a **trust pillar for the whole platform**, not a public leaderboard.
 
-- **Kill the "We don't hide critical feedback" section.** Showcasing 3★ reviews on the public hub is a sales-anti-pattern for pros. Replace with a pro-positive "Why pros choose to be reviewed on REPs" block. Trust comes from *method*, not from parading negativity.
-- **Remove the breadcrumb.** No other top-level marketing page has one.
-- **Standardise the stat strip with `/about`** (single bordered 4-up panel, `rounded-[22px]`, gap-px, `font-display 32→40`, uppercase `tracking-[0.14em]` labels). On a light section we use a soft surface variant; the structure is identical to `/about`.
-- **Broaden scope.** Add gyms, training providers, nutrition, Pilates, yoga to the explore-by-specialism tiles. Reword H1 to cover the whole platform.
+## What world-class looks like (reference register)
 
----
+Stripe Trust Center, Linear Changelog, Vercel Security, Notion Customers — dark, editorial, opinionated, proof-led. One big idea per section. No filter bars pretending to be a product.
 
-## New section order + theme map
+## New structure (dark, REPs-native)
 
 ```text
-1. Hero  (DARK — bg-reps-black, matches homepage hero)
-   - MarketingHeroEyebrow
-   - H1: "Reviews you can trust — for every fitness pro."
-   - Lede: every coach, studio, gym, nutritionist, training provider on
-     REPs — reviewed only by people who actually booked them.
-   - Search bar (placeholder behaviour, same UI tokens as homepage hero)
-   - 3 trust chips: Verified bookings · Moderated for legality, not
-     sentiment · Pro right of reply
-   - NO breadcrumb.
+1. Hero (dark, bg-reps-black)
+   ├─ MarketingHeroEyebrow: "Reviews on REPs"
+   ├─ H1: "Every review here came from a real booking."
+   ├─ Lede (16px): one sentence on verified-only + right of reply
+   ├─ Trust chips: Verified bookings · Moderated for legality · Pro right of reply
+   └─ FLOATING SCORE CARD (right column, lg+):
+        4.9 ★★★★★  ·  12,400+ verified reviews
+        5★ ████████ 84%
+        4★ ███      11%
+        3★ ▌         3%
+        2★ ▌         1%
+        1★ ▌         1%
+        → score lives IN the hero, not below it
 
-2. Headline rating panel  (LIGHT — bg-reps-warm-white)
-   - Keep the 4.9 score + breakdown bars but restyled for a light surface
-     (white card, reps-border, reps-text). Drop the three "honest stats"
-     chips — they move into the stat strip.
+2. Stat strip (dark, /about pattern — single rounded-[22px] panel, gap-px)
+   12,400 reviews · 4.9 avg · 96% would book again · 100% verified booking
+   (Standardised to match /about exactly. No second variant.)
 
-3. Stat strip  (LIGHT — same section as #2 OR bg-reps-ivory)
-   - SHARED pattern with /about: 4-up bordered panel, rounded-[22px],
-     gap-px, font-display 32→40, uppercase tracking labels.
-   - Numbers: "12,400+ verified reviews · 4.9 avg rating ·
-     96% would rebook · Median 4h to publish".
+3. "How a review gets on REPs" (4-step rail, dark)
+   Book → Train → Invited (only after booking confirmed) → Published
+   Each step a small card. Methodology, not a sales line.
 
-4. How REPs reviews work  (LIGHT — bg-reps-warm-white)
-   - 4-stage methodology: Book → Train → Invited to review → Published.
-   - The credibility engine. Tighten copy.
+4. Editor's picks (3 cards, dark)
+   Story-led — name + transformation + 1 pull-quote. Not generic stars.
 
-5. Editor's picks  (LIGHT — bg-reps-ivory)
-   - 3-card row of featured reviews on cream surface.
+5. Browse reviews by what you're looking for (8 tiles, dark)
+   PT · Online coach · Group ex · Strength · Nutritionist · Yoga · Pilates
+   · Gyms & Studios · Training providers (9 tiles, sm:2 / lg:3 / xl:5 mosaic)
 
-6. Browse reviews by specialism  (LIGHT — bg-reps-warm-white)
-   - Expand from 6 to 8 tiles: PT, Group Ex, Strength, Online Coaching,
-     Nutritionist, Yoga, Pilates, Gyms & Studios, Training Providers.
-     (sm:grid-cols-2 lg:grid-cols-4, two rows.)
+6. Live feed (dark, no filter bar pretending to work)
+   Two-column masonry, 8 reviews. Sort dropdown only (Most recent / Highest /
+   Most helpful) — no rating filter, no search input. Phase 1 = static.
 
-7. Full review feed  (LIGHT — bg-reps-ivory)
-   - Filter row: "Most recent / Highest rated / Most helpful".
-     DROP the "4★ and under" filter.
-   - Restyle ReviewCard for light surface (white card, soft border).
+7. "Why pros choose to be reviewed on REPs" (3 cards, dark — pro-positive)
+   ├─ Real clients only — no anonymous trolls
+   ├─ You own the response — public right of reply
+   └─ Reviews follow you across REPs (profile, shop-front, search, city pages)
+   Soft CTA → /for-professionals
 
-8. Why pros choose to be reviewed on REPs  (LIGHT — bg-reps-warm-white)
-   <-- REPLACES "We don't hide critical feedback".
-   - 3-card row aimed at the pro reader:
-     a) Reviews from real clients only — no anonymous trolls.
-     b) You own the response — public right of reply.
-     c) Reviews follow you across REPs — profile, shop-front, enquire,
-        search, profession + city pages.
-   - Soft CTA: "List your business on REPs" → /for-professionals.
+8. Trust mechanics (4 commitments, dark)
+   Verified-booking gating · Moderated for legality/abuse/spam (not sentiment)
+   · Right of reply · Reviews can't be bought, removed, or reordered for money
 
-9. Trust mechanics  (LIGHT — bg-reps-ivory)
-   - 4 short commitments. Reframe one card from
-     "critical reviews stay live" to
-     "Moderated for legality, abuse and spam — not for sentiment."
-
-10. FAQ  (LIGHT — bg-reps-warm-white)
-    - MarketingFaq primitive, 5 questions:
-      Who can leave a review? · Can a business respond? · How are fake
-      reviews handled? · Can reviews be edited later? · Where do reviews
-      show up across REPs?
-
-11. FinalCta  (DARK — shared <FinalCta /> component, matches homepage CTA)
-    - Find a coach by review → /find-a-professional
-    - How reviews work for pros → /for-professionals
+9. FAQ (MarketingFaq primitive, dark) — 5 Qs
+10. FinalCta (shared dark component) — two CTAs (find a pro / list your business)
 ```
 
-## Technical changes
+## Why this is 10/10 and the current page isn't
 
-**File:** `src/routes/reviews.tsx` only.
+- **One visual system.** Dark throughout = the header sits on a dark hero like every other marketing page. No more grey ghost-nav.
+- **Score is the hero, not a footnote.** The 4.9 + bars panel is anchored in the hero column, where world-class trust pages put it.
+- **Stat strip standardised.** Identical pattern to `/about` — only one stat-strip in the whole product.
+- **Pro-positive, not pillory.** "Why pros choose to be reviewed on REPs" replaces the old "we don't hide bad reviews" sales-anti-pattern.
+- **No fake interactivity.** Phase 1 honesty — sort dropdown only, no filter bar, no fake search.
+- **REPs-native.** Score → method → editor picks → browse by profession → feed → pro proof → mechanics → FAQ. Feels like REPs, not Trustpilot.
 
-- Remove breadcrumb `<nav aria-label="Breadcrumb">` block (~L340).
-- Switch root wrapper from `bg-reps-ink text-reps-text` to `bg-reps-warm-white text-reps-charcoal` (or equivalent light text token).
-- Hero stays dark (`bg-reps-black`) — copy/paste structure already used by homepage hero.
-- For each body section, swap dark surface classes:
-  - `bg-reps-panel/15` / `bg-reps-panel/30` → `bg-reps-warm-white` / `bg-reps-ivory`
-  - `border-reps-border` (dark) → keep the same token (it works on both — it's a neutral border var), but verify contrast and switch to a lighter border var if needed
-  - `text-white` / `text-white/70` etc → `text-reps-charcoal` / `text-reps-muted` (or whatever the homepage uses in light sections — mirror exactly)
-  - `bg-reps-panel/40` cards → `bg-white` cards with soft border + `var(--reps-shadow-card)` (matches the homepage Featured Pros + 4-step cards)
-- Refactor stat block to `/about` STATS pattern (single `rounded-[22px] border gap-px` panel, `font-display 32→40`, uppercase tracking labels) but on light surface to match the rest of the page.
-- Delete the "We don't hide critical feedback" section + its data array; add new "Why pros choose to be reviewed on REPs" 3-card row using `SectionEyebrow` + `SectionHeading`.
-- Expand `PROFESSION_TILES` 6 → 8.
-- Replace bottom dark CTA with the shared `<FinalCta />` component from `src/components/marketing/FinalCta.tsx` (already wired on `/cpd`, `/for-professionals`).
-- Hero MUST use `<HeroOverlay copySide="left" />` per the locked hero-overlay system, only if it has a background image. If hero stays flat dark with no image, skip overlay.
+## Out of scope (Phase 1)
 
-## Memory updates after lock-in
+Real review data, working sort, search, profession counts, auth, DB, payments, AI summaries, per-profession averages, response moderation backend.
 
-- Update `mem://design/locked-reviews` (create) with section order, theme map, surface tokens per section, and the "reviews are public consumer-landing, not pro-pillar" classification rule.
-- Add a Core note: "Public consumer-landing pages (/, /in/$location, /reviews, /find-a-professional) use the homepage theme pattern: dark hero + alternating warm-white/ivory body + dark FinalCta. /about and /features/* stay fully dark."
+## Technical notes
 
-## Out of scope (Phase 1, unchanged)
+- File: `src/routes/reviews.tsx` only.
+- Surfaces: `bg-reps-black` hero → `bg-reps-panel/15` and `/30` alternating body → dark FinalCta. Drop all `bg-reps-warm-white`, `bg-reps-ivory`, `text-reps-charcoal`.
+- Header stays default dark `PublicHeader` — no overrides.
+- Stat strip = exact `/about` pattern (`rounded-[22px] border border-reps-border bg-reps-border gap-px`, `font-display 32→40`, `uppercase tracking-[0.14em] text-white/55`).
+- Headline rating panel lives in hero right column at `lg:` with grid `lg:grid-cols-[1.1fr,1fr]`.
+- Type: `SectionEyebrow` / `SectionHeading` / `SectionHeader` everywhere. Hero lede 16px, section lede 15–15.5px.
+- Radius: hero 24, panels 22, cards 18, buttons 10, inputs 12 — no `rounded-xl/2xl/3xl`, no 14/20/28/32.
+- Vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`.
+- Use `HeroOverlay copySide="left"` (locked primitive) for the hero wash.
+- Use shared `<FinalCta />` — don't rebuild.
+- No breadcrumb. No filter pill row. No light surfaces anywhere.
+- Update `mem://design/locked-reviews` to reflect the dark rebuild and freeze.
 
-Real review data, functional search/sort, pro-response moderation backend, per-profession real counts, auth, DB, payments.
+## Audit expectations
 
-## Compliance
+`audit.sh` exits 0. Standard 14px pro-thumbnail exception only if a downscaled pro photo appears in editor picks (otherwise no exceptions).
 
-Will run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` after the edit. Expected: 0 violations from `reviews.tsx`. The 14px pro-thumbnail radius exception still applies if a scaled-down profile photo appears in a card.
+## What I need from you before I build
+
+Confirm:
+1. Dark-system rebuild (yes / tweak).
+2. Score panel anchored in hero (yes / keep as separate row).
+3. Drop the filter bar entirely, keep only a sort dropdown (yes / keep filters).
