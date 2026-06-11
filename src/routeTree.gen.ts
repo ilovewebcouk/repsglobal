@@ -87,6 +87,7 @@ import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } fr
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardProfileEditRouteImport } from './routes/_authenticated/_professional/dashboard_.profile-edit'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
+import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
 import { Route as AuthenticatedProfessionalProDashboardReviewsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalProDashboardReportsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reports'
 import { Route as AuthenticatedProfessionalProDashboardProgramsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.programs'
@@ -502,6 +503,12 @@ const AuthenticatedProfessionalDashboardProfileRoute =
     path: '/dashboard/profile',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardSyncingRoute =
+  AuthenticatedProfessionalDashboardSyncingRouteImport.update({
+    id: '/syncing',
+    path: '/syncing',
+    getParentRoute: () => AuthenticatedProfessionalDashboardRoute,
+  } as any)
 const AuthenticatedProfessionalProDashboardReviewsRoute =
   AuthenticatedProfessionalProDashboardReviewsRouteImport.update({
     id: '/dashboard_/reviews',
@@ -663,10 +670,11 @@ export interface FileRoutesByFullPath {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
-  '/dashboard': typeof AuthenticatedProfessionalDashboardRoute
+  '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
@@ -755,10 +763,11 @@ export interface FileRoutesByTo {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
-  '/dashboard': typeof AuthenticatedProfessionalDashboardRoute
+  '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug': typeof ProSlugIndexRoute
+  '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
@@ -852,10 +861,11 @@ export interface FileRoutesById {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
-  '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRoute
+  '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
@@ -951,6 +961,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/'
+    | '/dashboard/syncing'
     | '/dashboard/profile'
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
@@ -1043,6 +1054,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug'
+    | '/dashboard/syncing'
     | '/dashboard/profile'
     | '/dashboard/profile-edit'
     | '/dashboard/settings'
@@ -1139,6 +1151,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/'
+    | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/profile-edit'
     | '/_authenticated/_professional/dashboard_/settings'
@@ -1785,6 +1798,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard/syncing': {
+      id: '/_authenticated/_professional/dashboard/syncing'
+      path: '/syncing'
+      fullPath: '/dashboard/syncing'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardSyncingRouteImport
+      parentRoute: typeof AuthenticatedProfessionalDashboardRoute
+    }
     '/_authenticated/_professional/_pro/dashboard_/reviews': {
       id: '/_authenticated/_professional/_pro/dashboard_/reviews'
       path: '/dashboard/reviews'
@@ -1972,9 +1992,24 @@ const AuthenticatedProfessionalProRouteRouteWithChildren =
     AuthenticatedProfessionalProRouteRouteChildren,
   )
 
+interface AuthenticatedProfessionalDashboardRouteChildren {
+  AuthenticatedProfessionalDashboardSyncingRoute: typeof AuthenticatedProfessionalDashboardSyncingRoute
+}
+
+const AuthenticatedProfessionalDashboardRouteChildren: AuthenticatedProfessionalDashboardRouteChildren =
+  {
+    AuthenticatedProfessionalDashboardSyncingRoute:
+      AuthenticatedProfessionalDashboardSyncingRoute,
+  }
+
+const AuthenticatedProfessionalDashboardRouteWithChildren =
+  AuthenticatedProfessionalDashboardRoute._addFileChildren(
+    AuthenticatedProfessionalDashboardRouteChildren,
+  )
+
 interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalProRouteRoute: typeof AuthenticatedProfessionalProRouteRouteWithChildren
-  AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRoute
+  AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRouteWithChildren
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
@@ -1986,7 +2021,7 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
     AuthenticatedProfessionalProRouteRoute:
       AuthenticatedProfessionalProRouteRouteWithChildren,
     AuthenticatedProfessionalDashboardRoute:
-      AuthenticatedProfessionalDashboardRoute,
+      AuthenticatedProfessionalDashboardRouteWithChildren,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
     AuthenticatedProfessionalDashboardProfileEditRoute:
