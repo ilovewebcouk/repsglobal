@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
 import { syncMySubscription } from "@/lib/billing/billing.functions";
+import { ManageBillingButton } from "@/components/billing/ManageBillingButton";
 
 import {
   KpiRow,
