@@ -13,7 +13,7 @@ import {
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/business")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/business")({
   head: () => ({
     meta: [
       { title: "Business Tools — REPS Professional" },

@@ -34,7 +34,7 @@ import {
 import proJames from "@/assets/pro-james.jpg";
 import { ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/bookings")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/bookings")({
   head: () => ({
     meta: [
       { title: "Bookings — REPS Professional" },

@@ -16,7 +16,7 @@ import {
   submitVerification,
 } from "@/lib/verification/verification.functions";
 
-export const Route = createFileRoute("/_authenticated/dashboard_/verification")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
   head: () => ({ meta: [{ title: "Submit your credentials — REPS" }] }),
   component: VerificationPage,
 });

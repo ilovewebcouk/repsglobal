@@ -28,7 +28,7 @@ import {
   syncMySubscription,
 } from "@/lib/billing/billing.functions";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
     billing: typeof raw.billing === "string" ? raw.billing : undefined,
   }),

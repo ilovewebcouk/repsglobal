@@ -17,7 +17,7 @@ import {
 
 import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 
-export const Route = createFileRoute("/dashboard_/nutrition")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/nutrition")({
   head: () => ({
     meta: [
       { title: "Nutrition — REPS Professional" },
