@@ -319,28 +319,6 @@ function LoginPage() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-wider text-white/40">
-              <span className="h-px flex-1 bg-white/10" />
-              Or continue with
-              <span className="h-px flex-1 bg-white/10" />
-            </div>
-
-            {/* OAuth */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleApple}
-              disabled={appleLoading}
-              className="h-11 rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] font-semibold text-white hover:bg-white/[0.08] hover:text-white"
-            >
-              {appleLoading ? (
-                <Loader2 data-icon="inline-start" className="animate-spin" />
-              ) : (
-                <Apple data-icon="inline-start" />
-              )}
-              {appleLoading ? "Connecting…" : "Continue with Apple"}
-            </Button>
 
             <p className="mt-6 text-center text-[13px] text-white/55">
               Don&apos;t have an account?{" "}
