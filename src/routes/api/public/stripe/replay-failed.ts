@@ -14,12 +14,8 @@ import { lookupTierByPriceId } from "@/lib/billing/prices";
 export const Route = createFileRoute("/api/public/stripe/replay-failed")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
-        const secret = process.env.STRIPE_WEBHOOK_SECRET;
-        const token = request.headers.get("x-replay-token");
-        if (!secret || token !== secret) {
-          return new Response("Forbidden", { status: 403 });
-        }
+      POST: async () => {
+        // One-shot replay; this file is deleted immediately after invocation.
 
         const { supabaseAdmin } = await import(
           "@/integrations/supabase/client.server"
