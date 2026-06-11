@@ -2,7 +2,7 @@
  * Feature parity matrix — shared between the full /compare table and the
  * 2-column head-to-head pages. The cell-index mapping is the contract:
  *
- *   0 = REPs
+ *   0 = REPS
  *   1 = Trainerize
  *   2 = MyPTHub
  *   3 = PT Distinction
@@ -40,7 +40,7 @@ export const FEATURE_GROUPS: Group[] = [
         ],
       },
       {
-        feature: "Industry-recognised REPs credential",
+        feature: "Industry-recognised REPS credential",
         cells: [
           { kind: "yes", note: "REPS verified since 2002" },
           { kind: "no" },
@@ -243,7 +243,7 @@ export const FEATURE_GROUPS: Group[] = [
       {
         feature: "No platform commission on bookings",
         cells: [
-          { kind: "yes", note: "REPs takes no booking commission" },
+          { kind: "yes", note: "REPS takes no booking commission" },
           { kind: "partial", note: "Stripe Payments is an add-on" },
           { kind: "yes" },
           { kind: "yes" },

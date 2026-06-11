@@ -36,13 +36,13 @@ import heroGym from"@/assets/for-pros-hero-gym.jpg.asset.json";
 export const Route = createFileRoute("/for-professionals")({
   head: () => ({
     meta: [
-      { title:"Not just software. An AI operating system for fitness professionals — REPs" },
+      { title:"Not just software. An AI operating system for fitness professionals — REPS" },
       {
         name:"description",
         content:
-"REPs is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
+"REPS is the verified register the public already searches — and the AI operating system that runs the rest of your fitness business.",
       },
-      { property:"og:title", content:"Join REPs — For Professionals" },
+      { property:"og:title", content:"Join REPS — For Professionals" },
       {
         property:"og:description",
         content:"The register that brings you clients, and the AI operating system that runs your practice.",
@@ -141,7 +141,7 @@ function ForProsPage() {
                 className="mt-6 max-w-[540px] animate-fade-in text-[16px] leading-relaxed text-white/75"
                 style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
               >
-                REPs is built for fitness professionals who want to get found, win more
+                REPS is built for fitness professionals who want to get found, win more
                 clients, deliver better coaching and grow a sustainable business. One
                 platform. Every tool. Powered by AI.
               </p>
@@ -153,7 +153,7 @@ function ForProsPage() {
                   to="/signup"
                   className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
                 >
-                  Join REPs <ArrowRight className="h-4 w-4" />
+                  Join REPS <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/features/visibility"
@@ -195,7 +195,7 @@ function ForProsPage() {
                 className="absolute -inset-6 -z-10 rounded-[24px] bg-[radial-gradient(60%_55%_at_50%_40%,rgba(255,122,0,0.25),transparent_70%)] blur-2xl"
               />
               <PhoneFrame>
-                <ScaledFrame src="/portal/today" scale={0.32} title="REPs client portal preview" />
+                <ScaledFrame src="/portal/today" scale={0.32} title="REPS client portal preview" />
               </PhoneFrame>
             </div>
           </div>
@@ -216,7 +216,7 @@ function ForProsPage() {
               Software that also brings you clients.
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Trainerize, MyPTHub and PT Distinction give you software. REPs gives you software{""}
+              Trainerize, MyPTHub and PT Distinction give you software. REPS gives you software{""}
               <em>and</em> the clients to fill it — because the public already lands here when they're searching for a trusted pro.
             </p>
           </div>
@@ -279,7 +279,7 @@ function ForProsPage() {
             bullets={[
 "Leads pipeline from enquiry to booked consult, with AI scoring",
 "Calendar with availability, session types and online consults",
-"Card payments and subscriptions — every payment goes to you, no REPs cut",
+"Card payments and subscriptions — every payment goes to you, no REPS cut",
 "Live revenue, paid, pending and overdue at a glance",
             ]}
             imageLabel="Leads pipeline, calendar and payments in one view"
@@ -330,7 +330,7 @@ function ForProsPage() {
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-reps-orange-soft px-3 py-1 text-[12px] font-semibold text-reps-orange">
-                <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPs AI
+                <Wand2 className="h-3.5 w-3.5" /> Pillar 5 · REPS AI
               </span>
               <h2 className="mt-4 font-display text-[36px] font-bold leading-tight text-white lg:text-[52px]">
                 The AI layer behind your fitness business.

@@ -23,16 +23,16 @@ import proLaura from"@/assets/pro-laura.jpg";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title:"How REPs works — Find, enquire, train" },
+      { title:"How REPS works — Find, enquire, train" },
       {
         name:"description",
         content:
-"Find a verified exercise professional, enquire in minutes and start training. Here's how REPs works for clients.",
+"Find a verified exercise professional, enquire in minutes and start training. Here's how REPS works for clients.",
       },
-      { property:"og:title", content:"How REPs works" },
+      { property:"og:title", content:"How REPS works" },
       {
         property:"og:description",
-        content:"Find, enquire, train — the simple way to work with a verified REPs professional.",
+        content:"Find, enquire, train — the simple way to work with a verified REPS professional.",
       },
       { property:"og:url", content:"/how-it-works" },
     ],
@@ -48,7 +48,7 @@ const JOURNEY = [
     icon: Search,
     title:"Search the verified register",
     body:
-"Browse 25,000+ REPs-verified professionals by speciality, location or goal. Every profile shows qualifications, insurance and real client reviews — checked by our team.",
+"Browse 25,000+ REPS-verified professionals by speciality, location or goal. Every profile shows qualifications, insurance and real client reviews — checked by our team.",
     bullets: ["Filter by discipline, price and availability","See verified credentials at a glance","Compare reviews from real clients"],
     cta: { to:"/find-a-professional", label:"Find a professional" },
   },
@@ -76,13 +76,13 @@ const JOURNEY = [
 
 const TRUST = [
   { icon: BadgeCheck, title:"Verified credentials", body:"Every pro's qualifications, insurance and ID are checked before they appear in search." },
-  { icon: ShieldCheck, title:"Safeguarding standards", body:"REPs members sign and uphold our code of conduct — with a clear complaints process." },
+  { icon: ShieldCheck, title:"Safeguarding standards", body:"REPS members sign and uphold our code of conduct — with a clear complaints process." },
   { icon: Star, title:"Real reviews only", body:"Reviews come from clients with verified bookings. No anonymous ratings, no fakes." },
 ];
 
 const FAQS = [
   {
-    q:"Is it free to use REPs as a client?",
+    q:"Is it free to use REPS as a client?",
     a:"Yes. Searching, viewing profiles and enquiring is completely free. You only pay for the sessions you book with a professional.",
   },
   {
@@ -116,7 +116,7 @@ function HowItWorksPage() {
             Find. Enquire. <span className="text-reps-orange">Train.</span>
           </h1>
           <p className="mt-5 max-w-[620px] text-[16px] leading-relaxed text-white/70">
-            Working with a verified professional shouldn't be complicated. Here's exactly how REPs helps you go from
+            Working with a verified professional shouldn't be complicated. Here's exactly how REPS helps you go from
             scrolling to your first session — usually within a week.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -225,7 +225,7 @@ function HowItWorksPage() {
       <section className="bg-reps-panel/30">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="max-w-[720px]">
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPs</span>
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPS</span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-white lg:text-[40px]">
               The trust layer for the fitness industry since 2002.
             </h2>
@@ -287,7 +287,7 @@ function HowItWorksPage() {
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10">
           <div className="rounded-[22px] border border-reps-border bg-reps-panel p-10 text-center lg:p-14">
             <h2 className="font-display text-[32px] font-bold leading-tight text-white lg:text-[42px]">
-              Ready to find your <span className="text-reps-orange">REPs pro?</span>
+              Ready to find your <span className="text-reps-orange">REPS pro?</span>
             </h2>
             <p className="mx-auto mt-4 max-w-[560px] text-[15px] leading-relaxed text-white/65">
               Free to search, free to enquire. You only pay when you book a session — with a professional you can trust.

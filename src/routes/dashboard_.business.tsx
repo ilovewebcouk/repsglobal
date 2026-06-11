@@ -16,14 +16,14 @@ import { PCard, PPanel, ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/business")({
   head: () => ({
     meta: [
-      { title: "Business Tools — REPs Professional" },
+      { title: "Business Tools — REPS Professional" },
       {
         name: "description",
         content:
-          "Invoices, contracts, intake forms, waivers and HMRC-ready exports — run the admin side of your business without leaving REPs.",
+          "Invoices, contracts, intake forms, waivers and HMRC-ready exports — run the admin side of your business without leaving REPS.",
       },
-      { property: "og:title", content: "Business Tools — REPs Professional" },
-      { property: "og:description", content: "Business tools for REPs professionals." },
+      { property: "og:title", content: "Business Tools — REPS Professional" },
+      { property: "og:description", content: "Business tools for REPS professionals." },
       { property: "og:url", content: "/dashboard/business" },
     ],
     links: [{ rel: "canonical", href: "/dashboard/business" }],

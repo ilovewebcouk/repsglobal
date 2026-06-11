@@ -43,7 +43,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "REPs connects you with verified fitness professionals you can trust to help you reach your goals.",
+          "REPS connects you with verified fitness professionals you can trust to help you reach your goals.",
       },
       { property: "og:title", content: "REPS — Find. Trust. Train. Transform." },
       {
@@ -262,7 +262,7 @@ function HomeV2() {
             <div>
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Hand-picked</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-                Featured REPs Professionals
+                Featured REPS Professionals
               </h2>
             </div>
             <div className="flex items-center gap-4">
@@ -296,7 +296,7 @@ function HomeV2() {
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-reps-panel via-reps-panel/70 to-transparent" />
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
                     <BadgeCheck className="h-3 w-3" />
-                    REPs Verified
+                    REPS Verified
                   </span>
                 </div>
                 <div className="space-y-2 px-4 pb-4 pt-3">
@@ -369,7 +369,7 @@ function HomeV2() {
               Find the right coach in four steps.
             </h2>
             <p className="mt-3 text-[15px] text-reps-muted-light">
-              Every REPs professional clears the same bar — qualifications, insurance and CPD — so you start with a shortlist of people you can actually trust.
+              Every REPS professional clears the same bar — qualifications, insurance and CPD — so you start with a shortlist of people you can actually trust.
             </p>
           </div>
           <div className="relative mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -395,7 +395,7 @@ function HomeV2() {
           <div className="max-w-[680px]">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Real results</span>
             <h2 className="mt-2 font-display text-[34px] font-bold leading-tight text-reps-charcoal lg:text-[42px]">
-              Outcomes from people who train with REPs.
+              Outcomes from people who train with REPS.
             </h2>
             <p className="mt-3 text-[15px] text-reps-muted-light">
               These aren't testimonials. They're outcomes — measured, dated and tied to a real coach.
@@ -427,23 +427,23 @@ function HomeV2() {
       </section>
 
 
-      {/* ============ WHY TRUST REPs — stats + pillars + closing quote folded in ============ */}
+      {/* ============ WHY TRUST REPS — stats + pillars + closing quote folded in ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-start">
             <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPs</span>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Why REPS</span>
               <h2 className="mt-2 font-display text-[34px] font-bold leading-tight text-reps-charcoal lg:text-[42px]">
                 We set the bar every fitness professional should clear.
               </h2>
               <p className="mt-4 text-[15px] text-reps-muted-light">
-                The fitness industry doesn't have a regulator. REPs is the closest thing it has — a global register of verified, insured, continuously-educated exercise professionals.
+                The fitness industry doesn't have a regulator. REPS is the closest thing it has — a global register of verified, insured, continuously-educated exercise professionals.
               </p>
               <Link
                 to="/standards"
                 className="mt-6 inline-flex items-center gap-2 rounded-[10px] border border-reps-charcoal/15 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
               >
-                Read the REPs standard <ArrowRight className="h-3.5 w-3.5" />
+                Read the REPS standard <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -525,7 +525,7 @@ function HomeV2() {
                     to="/for-professionals"
                     className="inline-flex h-[48px] items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
                   >
-                    Become a REPs Pro <ArrowRight className="h-4 w-4" />
+                    Become a REPS Pro <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     to="/pricing"

@@ -37,13 +37,13 @@ import { ProShell } from "@/components/dashboard/ProShell";
 export const Route = createFileRoute("/dashboard_/bookings")({
   head: () => ({
     meta: [
-      { title: "Bookings — REPs Professional" },
+      { title: "Bookings — REPS Professional" },
       {
         name: "description",
         content:
-          "Track upcoming, completed, cancelled and refund-requested bookings across your REPs services.",
+          "Track upcoming, completed, cancelled and refund-requested bookings across your REPS services.",
       },
-      { property: "og:title", content: "Bookings — REPs Professional" },
+      { property: "og:title", content: "Bookings — REPS Professional" },
       {
         property: "og:description",
         content:
@@ -133,7 +133,7 @@ const BOOKINGS: Booking[] = [
     client: { name: "Sarah Johnson", initials: "SJ" },
     service: "1:1 Strength Coaching",
     type: "In-person",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Mon 31 May",
     time: "09:30",
     duration: "60 min",
@@ -169,7 +169,7 @@ const BOOKINGS: Booking[] = [
     client: { name: "Olivia Brennan", initials: "OB" },
     service: "Group Conditioning Class",
     type: "Class",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Mon 31 May",
     time: "18:00",
     duration: "50 min",
@@ -181,7 +181,7 @@ const BOOKINGS: Booking[] = [
     client: { name: "Marcus Hall", initials: "MH" },
     service: "1:1 Strength Coaching",
     type: "In-person",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Tue 1 Jun",
     time: "07:00",
     duration: "60 min",
@@ -205,7 +205,7 @@ const BOOKINGS: Booking[] = [
     client: { name: "Tom Whitfield", initials: "TW" },
     service: "1:1 Strength Coaching",
     type: "In-person",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Sat 29 May",
     time: "08:00",
     duration: "60 min",
@@ -229,7 +229,7 @@ const BOOKINGS: Booking[] = [
     client: { name: "Ben Adeyemi", initials: "BA" },
     service: "Onboarding Assessment",
     type: "In-person",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Fri 28 May",
     time: "12:00",
     duration: "75 min",
@@ -246,7 +246,7 @@ const REFUNDS = BOOKINGS.filter((b) => b.status === "Refund requested").concat([
     client: { name: "Lucy Hartwell", initials: "LH" },
     service: "Group Conditioning Class",
     type: "Class",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Wed 26 May",
     time: "18:00",
     duration: "50 min",
@@ -258,7 +258,7 @@ const REFUNDS = BOOKINGS.filter((b) => b.status === "Refund requested").concat([
     client: { name: "Noah Ellis", initials: "NE" },
     service: "Onboarding Assessment",
     type: "In-person",
-    location: "REPs Studio, Manchester",
+    location: "REPS Studio, Manchester",
     date: "Tue 25 May",
     time: "09:00",
     duration: "75 min",
@@ -318,7 +318,7 @@ function BookingsPage() {
     <ProShell
       active="Bookings"
       title="Bookings"
-      subtitle="Every session, consultation, class and online booking across your REPs services."
+      subtitle="Every session, consultation, class and online booking across your REPS services."
       actions={
         <>
           <button

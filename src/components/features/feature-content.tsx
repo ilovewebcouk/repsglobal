@@ -42,7 +42,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Trust",
         title: "Verification done properly.",
-        body: "Upload your qualifications, insurance and CPD once. Our standards team reviews within 24 hours and the Verified badge appears on your profile — visible everywhere REPs shows up.",
+        body: "Upload your qualifications, insurance and CPD once. Our standards team reviews within 24 hours and the Verified badge appears on your profile — visible everywhere REPS shows up.",
         bullets: [
           "Credentials checked by humans, not bots",
           "Insurance expiry tracked, reminders sent",
@@ -53,7 +53,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Reviews",
         title: "Reviews that mean something.",
-        body: "Only clients with a booking on REPs can leave a review. No anonymous burner accounts. No fake five-stars from cousins. Just a real, public, on-the-record reputation.",
+        body: "Only clients with a booking on REPS can leave a review. No anonymous burner accounts. No fake five-stars from cousins. Just a real, public, on-the-record reputation.",
         bullets: [
           "One client = one review per coach",
           "Public reply lets you respond on the record",
@@ -63,7 +63,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
     ],
     quote: {
       quote:
-        "Within two months of joining REPs I was fully booked. Clients arrive ready to commit because they already trust the badge.",
+        "Within two months of joining REPS I was fully booked. Clients arrive ready to commit because they already trust the badge.",
       name: "James Carter",
       role: "Level 4 PT · London",
       img: proJames,
@@ -75,7 +75,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
     hero: {
       eyebrow: "Lead pipeline",
       title: "Never lose another enquiry.",
-      sub: "Every enquiry from your REPs profile lands in a structured pipeline — New, Qualified, Booked — with the context you need to reply fast and convert.",
+      sub: "Every enquiry from your REPS profile lands in a structured pipeline — New, Qualified, Booked — with the context you need to reply fast and convert.",
       visual: <LeadsMockup />,
     },
     pillars: [
@@ -87,7 +87,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Capture",
         title: "Enquiry forms that qualify.",
-        body: "Your REPs profile asks the right questions up front — goal, frequency, location, budget — so the leads you receive are ready to book, not tyre-kickers.",
+        body: "Your REPS profile asks the right questions up front — goal, frequency, location, budget — so the leads you receive are ready to book, not tyre-kickers.",
         bullets: [
           "Custom intake questions per service",
           "Auto-tag by discipline and goal",
@@ -98,7 +98,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Convert",
         title: "Move leads through the pipeline.",
-        body: "Drag from New to Qualified to Booked. See response-time stats. Replies inside 24 hours convert 2.4× more often — and REPs nudges you when one is going cold.",
+        body: "Drag from New to Qualified to Booked. See response-time stats. Replies inside 24 hours convert 2.4× more often — and REPS nudges you when one is going cold.",
         bullets: [
           "Response time benchmarks per coach",
           "Auto-archive after 30 days of no reply",
@@ -132,7 +132,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Availability",
         title: "Your real schedule, always.",
-        body: "Connect Google, Apple or Outlook and REPs respects every meeting, school run and dentist appointment. Set rolling availability windows by service.",
+        body: "Connect Google, Apple or Outlook and REPS respects every meeting, school run and dentist appointment. Set rolling availability windows by service.",
         bullets: [
           "Per-service availability rules",
           "Buffer time before / after sessions",
@@ -177,7 +177,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Stripe-powered",
         title: "The payment stack you'd build if you had to.",
-        body: "REPs uses Stripe under the hood — the same infrastructure trusted by Apple, Amazon and Shopify. PCI compliance, 3D Secure, fraud protection. All built in.",
+        body: "REPS uses Stripe under the hood — the same infrastructure trusted by Apple, Amazon and Shopify. PCI compliance, 3D Secure, fraud protection. All built in.",
         bullets: [
           "Cards, Apple Pay, Google Pay, BACS",
           "Next-day payouts in 30+ currencies",
@@ -278,7 +278,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "Deliver",
         title: "Clients log sets, you see the data.",
-        body: "Clients tick off sets in the REPs app, log RPE and PRs. You see adherence and weights moving in real time — no chasing screenshots over WhatsApp.",
+        body: "Clients tick off sets in the REPS app, log RPE and PRs. You see adherence and weights moving in real time — no chasing screenshots over WhatsApp.",
         bullets: [
           "Adherence shown per programme",
           "PR detection across exercises",
@@ -288,7 +288,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
     ],
     quote: {
       quote:
-        "I deliver 14 clients on programmes now. Before REPs that would've been one Google sheet per person — chaos.",
+        "I deliver 14 clients on programmes now. Before REPS that would've been one Google sheet per person — chaos.",
       name: "Daniel Pereira",
       role: "Strength Coach · Bristol",
       img: proDaniel,
@@ -368,7 +368,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "AI",
         title: "Three smart drafts, every time (Business).",
-        body: "REPs reads the conversation context — the client's programme, their last check-in, the last 5 messages — and suggests three replies you can send with one tap.",
+        body: "REPS reads the conversation context — the client's programme, their last check-in, the last 5 messages — and suggests three replies you can send with one tap.",
         bullets: [
           "Tone-matched to your past replies",
           "Never sends without your approval",
@@ -405,7 +405,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
         body: "Stop guessing. Revenue trends, client retention, lead-to-book rate, programme adherence — every number a coaching business should know, charted for you.",
         bullets: [
           "Compare any period to the one before it",
-          "Benchmark against REPs averages",
+          "Benchmark against REPS averages",
           "Export to CSV for your accountant",
         ],
         visual: <InsightsMockup />,
@@ -413,7 +413,7 @@ export const FEATURE_CONTENT: Record<Exclude<FeatureLink["slug"], "shop-front">,
       {
         eyebrow: "AI",
         title: "The one thing to do this week.",
-        body: "REPs reads your data and surfaces the highest-leverage action — 'reply to 3 cold leads', 'check in on Marcus, 14 days since last session', 'raise prices on intro pack — 92% conversion'. One card. One action.",
+        body: "REPS reads your data and surfaces the highest-leverage action — 'reply to 3 cold leads', 'check in on Marcus, 14 days since last session', 'raise prices on intro pack — 92% conversion'. One card. One action.",
         bullets: [
           "Updated every Monday morning",
           "Dismissible — only the things you'd actually do",
