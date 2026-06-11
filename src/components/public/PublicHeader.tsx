@@ -283,7 +283,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
               {user ? (
-                <UserMenu user={user} onSignOut={signOut} />
+                <UserMenu user={user} isAdmin={isAdmin} onSignOut={signOut} />
               ) : (
                 <>
                   <Link
@@ -324,6 +324,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                     active={active}
                     city={city}
                     user={user}
+                    isAdmin={isAdmin}
                     onSignOut={signOut}
                     onNavigate={() => setMobileOpen(false)}
                   />
