@@ -342,12 +342,14 @@ function Sidebar({
 /* ------------------------------------------------------------------------- */
 
 function TopBar({
+  role,
   title,
   subtitle,
   actions,
   mobileNav,
   searchPlaceholder,
 }: {
+  role: Role;
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
@@ -371,7 +373,7 @@ function TopBar({
             ⌘K
           </kbd>
         </div>
-        <TierPreviewSwitch />
+        {role === "trainer" ? <TierPreviewSwitch /> : null}
         {actions}
         <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
@@ -438,6 +440,7 @@ export function DashboardShell({
         </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar
+            role={role}
             title={title}
             subtitle={subtitle}
             actions={actions}
