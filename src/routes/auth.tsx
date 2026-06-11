@@ -107,10 +107,12 @@ function LoginPage() {
         {/* ============ LEFT: FORM COLUMN ============ */}
         <div className="flex min-h-screen flex-col py-8 lg:py-10">
           {/* Wordmark */}
-          <Link to="/" className="inline-flex items-center gap-3 self-start">
-            <span className="font-display text-[28px] font-bold leading-none tracking-tight text-white">
-              REPS
-            </span>
+          <Link
+            to="/"
+            aria-label="REPs — back to home"
+            className="inline-flex items-center gap-3 self-start text-white"
+          >
+            <RepsWordmark className="h-6 w-auto" />
             <span className="hidden border-l border-white/15 pl-3 text-[10px] leading-tight text-white/55 sm:block">
               The Register of
               <br />
