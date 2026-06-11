@@ -28,7 +28,8 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 
 import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
-import ctaTrainers from "@/assets/cta-band.jpg";
+import ctaTrainersAsset from "@/assets/cta-band.jpg.asset.json";
+const ctaTrainers = ctaTrainersAsset.url;
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
