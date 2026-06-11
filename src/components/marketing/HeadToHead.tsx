@@ -289,7 +289,7 @@ export function HeadToHeadPage({ slug }: { slug: CompetitorSlug }) {
               </h3>
               <ul className="mt-4 space-y-3 text-[14px] text-white/80">
                 {[
-"The public register clients already search — verified, since 2009.",
+"The public register clients already search — verified, since 2002.",
 "Tier-based, but every feature in your tier is included. No add-on stack.",
 "AI as the operating layer, not a $12/mo add-on.",
 "GDPR-first, GBP pricing, REPs credential displayed on profile.",
