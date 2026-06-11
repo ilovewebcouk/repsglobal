@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Apple, Loader2 } from "lucide-react";
+import { Apple, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
@@ -67,6 +67,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (value: string): string | null => {
     const v = value.trim();
@@ -238,30 +239,42 @@ function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (passwordTouched) setPasswordError(validatePassword(e.target.value));
-                    if (error) setError(null);
-                  }}
-                  onBlur={() => {
-                    setPasswordTouched(true);
-                    setPasswordError(validatePassword(password));
-                  }}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  aria-invalid={passwordError ? true : undefined}
-                  aria-describedby={passwordError ? "password-error" : undefined}
-                  className={`h-11 rounded-[12px] bg-white/[0.04] text-white placeholder:text-white/30 ${
-                    passwordError
-                      ? "border-red-400/60 focus-visible:ring-red-400/40"
-                      : "border-white/15"
-                  }`}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordTouched) setPasswordError(validatePassword(e.target.value));
+                      if (error) setError(null);
+                    }}
+                    onBlur={() => {
+                      setPasswordTouched(true);
+                      setPasswordError(validatePassword(password));
+                    }}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    aria-invalid={passwordError ? true : undefined}
+                    aria-describedby={passwordError ? "password-error" : undefined}
+                    className={`h-11 rounded-[12px] bg-white/[0.04] pr-11 text-white placeholder:text-white/30 ${
+                      passwordError
+                        ? "border-red-400/60 focus-visible:ring-red-400/40"
+                        : "border-white/15"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    tabIndex={-1}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex size-8 items-center justify-center rounded-[8px] text-white/55 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
                 {passwordError && (
                   <p id="password-error" className="text-[12px] text-red-300">
                     {passwordError}
