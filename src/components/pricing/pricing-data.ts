@@ -63,8 +63,8 @@ export const PLANS: PlanCard[] = [
       "Enhanced directory placement",
     ],
     pricing: {
-      monthly: { price: "£59", was: "£79", period: "per month", meta: "Card required · £0 today · then billed monthly after 30 days" },
-      annual: { price: "£49", was: "£66", period: "per month", meta: "Card required · £590 billed yearly after trial · 2 months free" },
+      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly after 30-day trial" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free" },
     },
   },
   {
