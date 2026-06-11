@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/public/stripe/replay-failed")({
           user_id?: string | null;
         }> = [];
 
-        for (const row of (rows ?? []) as Array<{
+        for (const row of (rows ?? []) as unknown as Array<{
           id: string;
           event_type: string;
           payload: Stripe.Event;
