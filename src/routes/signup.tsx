@@ -557,27 +557,4 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function SocialButton({
-  label,
-  children,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white text-[13px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {children}
-      {label}
-    </button>
-  );
-}
 
