@@ -440,6 +440,7 @@ export function DashboardShell({
         </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar
+            role={role}
             title={title}
             subtitle={subtitle}
             actions={actions}
