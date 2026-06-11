@@ -5,11 +5,15 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getStripe } from "./stripe.server";
-import { PRICES, type BillingPeriod, type BillingTier, lookupTierByPriceId } from "./prices";
+import { CHECKOUT_OFFERS, getCheckoutOffer, type BillingPeriod, type PurchasableTier, checkoutOfferForPriceId } from "../billing";
 
 const checkoutInput = z.object({
-  tier: z.enum(["verified", "pro", "studio"]),
+  tier: z.enum(["verified", "pro"]),
   period: z.enum(["monthly", "annual"]),
+}).superRefine((value, ctx) => {
+  if (!getCheckoutOffer(value.tier, value.period)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This billing option is not available" });
+  }
 });
 
 function getOrigin(): string {
@@ -56,9 +60,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
 
-    const tier = data.tier as BillingTier;
+    const tier = data.tier as PurchasableTier;
     const period = data.period as BillingPeriod;
-    const price = PRICES[tier][period];
+    const offer = getCheckoutOffer(tier, period);
+    if (!offer) throw new Error("This billing option is not available");
 
     const customerId = await getOrCreateCustomer({ userId, email });
     const origin = getOrigin();
@@ -67,16 +72,18 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
-      line_items: [{ price: price.priceId, quantity: 1 }],
+      line_items: [{ price: offer.priceId, quantity: 1 }],
       success_url: `${origin}/dashboard?billing=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?billing=cancelled`,
       allow_promotion_codes: true,
+      payment_method_collection: "always",
       subscription_data: {
+        ...(offer.trialDays > 0 ? { trial_period_days: offer.trialDays } : {}),
         metadata: {
           reps_user_id: userId,
           tier,
           billing_period: period,
-          is_founding: String(price.founding),
+          is_founding: String(offer.founding),
         },
       },
       metadata: {
@@ -132,7 +139,7 @@ export const getMySubscription = createServerFn({ method: "GET" })
       };
     }
 
-    const lookup = data.stripe_price_id ? lookupTierByPriceId(data.stripe_price_id) : null;
+    const lookup = data.stripe_price_id ? checkoutOfferForPriceId(data.stripe_price_id) : null;
     return {
       tier: data.tier,
       billing_period: data.billing_period,
@@ -140,7 +147,7 @@ export const getMySubscription = createServerFn({ method: "GET" })
       current_period_end: data.current_period_end,
       cancel_at_period_end: data.cancel_at_period_end,
       is_founding: data.is_founding,
-      display: lookup ? PRICES[lookup.tier][lookup.period].display : null,
+      display: lookup ? CHECKOUT_OFFERS[lookup.tier].display : null,
     };
   });
 
@@ -166,7 +173,7 @@ export const syncMySubscription = createServerFn({ method: "POST" })
     }
     const sub = subs.data[0];
     const priceId = sub.items.data[0]?.price.id ?? null;
-    const lookup = priceId ? lookupTierByPriceId(priceId) : null;
+    const lookup = priceId ? checkoutOfferForPriceId(priceId) : null;
     const isLive = ["active", "trialing", "past_due", "unpaid"].includes(sub.status);
     const cpe =
       (sub as unknown as { current_period_end?: number }).current_period_end ??
