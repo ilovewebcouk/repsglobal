@@ -249,6 +249,7 @@ function DashboardPage() {
           <ol className="flex flex-col gap-3">
             {steps.map((step, index) => {
               const Icon = step.icon;
+              const isManageBilling = step.key === "plan" && hasPaidTier;
               return (
                 <li key={step.key} className="flex items-center gap-4 rounded-[16px] border border-reps-border bg-reps-panel p-4">
                   <div className={step.done ? "flex size-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300" : "flex size-10 items-center justify-center rounded-full bg-reps-orange-soft text-reps-orange"}>
@@ -259,7 +260,11 @@ function DashboardPage() {
                     <h2 className="font-display text-[16px] text-white">{step.title}</h2>
                     <p className="text-[12.5px] text-white/55">{step.desc}</p>
                   </div>
-                  <Button asChild variant={step.current ? "default" : "outline"} size="sm"><Link to={step.cta.to}>{step.cta.label}</Link></Button>
+                  {isManageBilling ? (
+                    <ManageBillingButton size="sm" label="Manage billing" />
+                  ) : (
+                    <Button asChild variant={step.current ? "default" : "outline"} size="sm"><Link to={step.cta.to}>{step.cta.label}</Link></Button>
+                  )}
                 </li>
               );
             })}
