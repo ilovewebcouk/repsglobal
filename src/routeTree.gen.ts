@@ -94,6 +94,7 @@ import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as DashboardClientsSlugRouteImport } from './routes/dashboard_.clients.$slug'
+import { Route as AuthenticatedDashboardVerificationRouteImport } from './routes/_authenticated/dashboard_.verification'
 import { Route as AuthenticatedDashboardStartRouteImport } from './routes/_authenticated/dashboard_.start'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -525,6 +526,12 @@ const DashboardClientsSlugRoute = DashboardClientsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => DashboardClientsRoute,
 } as any)
+const AuthenticatedDashboardVerificationRoute =
+  AuthenticatedDashboardVerificationRouteImport.update({
+    id: '/dashboard_/verification',
+    path: '/dashboard/verification',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardStartRoute =
   AuthenticatedDashboardStartRouteImport.update({
     id: '/dashboard_/start',
@@ -637,6 +644,7 @@ export interface FileRoutesByFullPath {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
+  '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -727,6 +735,7 @@ export interface FileRoutesByTo {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
+  '/dashboard/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -820,6 +829,7 @@ export interface FileRoutesById {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/dashboard_/start': typeof AuthenticatedDashboardStartRoute
+  '/_authenticated/dashboard_/verification': typeof AuthenticatedDashboardVerificationRoute
   '/dashboard_/clients/$slug': typeof DashboardClientsSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
@@ -913,6 +923,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/resources/'
     | '/dashboard/start'
+    | '/dashboard/verification'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -1003,6 +1014,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/resources'
     | '/dashboard/start'
+    | '/dashboard/verification'
     | '/dashboard/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -1095,6 +1107,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/resources/'
     | '/_authenticated/dashboard_/start'
+    | '/_authenticated/dashboard_/verification'
     | '/dashboard_/clients/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
@@ -1791,6 +1804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardClientsSlugRouteImport
       parentRoute: typeof DashboardClientsRoute
     }
+    '/_authenticated/dashboard_/verification': {
+      id: '/_authenticated/dashboard_/verification'
+      path: '/dashboard/verification'
+      fullPath: '/dashboard/verification'
+      preLoaderRoute: typeof AuthenticatedDashboardVerificationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard_/start': {
       id: '/_authenticated/dashboard_/start'
       path: '/dashboard/start'
@@ -1831,10 +1851,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
+  AuthenticatedDashboardVerificationRoute: typeof AuthenticatedDashboardVerificationRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
+  AuthenticatedDashboardVerificationRoute:
+    AuthenticatedDashboardVerificationRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
