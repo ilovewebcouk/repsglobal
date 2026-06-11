@@ -769,9 +769,11 @@ function DashboardFooter() {
    ============================================================ */
 
 function ProfileEditorPage() {
+  const tier = useTrainerTier();
   return (
     <ProShell
       active="Public Profile"
+      tier={tier}
       title="Profile editor"
       subtitle="Manage how your professional profile appears in the REPS directory."
       actions={
