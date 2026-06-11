@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProShell } from "@/components/dashboard/ProShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   Apple,
   AreaChart,
@@ -768,9 +769,11 @@ function DashboardFooter() {
    ============================================================ */
 
 function ProfileEditorPage() {
+  const tier = useTrainerTier();
   return (
     <ProShell
       active="Public Profile"
+      tier={tier}
       title="Profile editor"
       subtitle="Manage how your professional profile appears in the REPS directory."
       actions={

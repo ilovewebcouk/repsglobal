@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/_professional")({
     //    the webhook may not have landed yet. The screen itself polls and
     //    forwards to /dashboard once the subscription row appears.
     if (ctx.location.pathname.startsWith("/dashboard/syncing")) {
-      return result;
+      return { ...result, trainerTier: "verified" as const };
     }
 
     // 3) Ensure they have an active paid subscription. Unpaid → /pricing.
@@ -38,7 +38,10 @@ export const Route = createFileRoute("/_authenticated/_professional")({
       throw redirect({ to: "/pricing" });
     }
 
-    return result;
+    // Expose the resolved tier to all child routes via router context so the
+    // shared DashboardShell can render the right (tier-aware) nav.
+    const trainerTier = sub!.tier as "verified" | "pro" | "studio";
+    return { ...result, trainerTier };
   },
   head: () => ({
     meta: [{ name: "robots", content: "noindex" }],
