@@ -489,7 +489,7 @@ function ProfileEditorPage() {
   const [lastUploadedPath, setLastUploadedPath] = React.useState<string | null>(null);
   const [regenState, setRegenState] = React.useState<
     | { step: "confirm"; sourcePath: string; attempt: number }
-    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string; attempt: number }
+    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string; attempt: number; identityScore: number; identityReason: string }
     | null
   >(null);
 
