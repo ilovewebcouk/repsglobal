@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
 import { getProfessionLabel } from "@/lib/professions";
+import { getSpecialismLabel } from "@/lib/specialisms";
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
 import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
@@ -310,11 +311,14 @@ function DirectoryPage() {
             r.location?.latitude != null && r.location?.longitude != null
               ? { latitude: r.location.latitude, longitude: r.location.longitude }
               : undefined;
+          const specLabels = (r.specialisms ?? [])
+            .map((s) => getSpecialismLabel(s) ?? s)
+            .filter(Boolean) as string[];
           return {
             name: r.full_name || "REPS Professional",
             role:
               getProfessionLabel(r.primary_profession) ||
-              (r.specialisms?.[0] as string) ||
+              specLabels[0] ||
               "Personal Trainer",
             distance: town ?? "—",
             town: town ?? undefined,
@@ -327,9 +331,9 @@ function DirectoryPage() {
                 ? "Online" as const
                 : "In-person" as const,
             tags: [
-              (r.specialisms?.[0] as string) || "Health & Fitness",
-              (r.specialisms?.[1] as string) || "Strength Training",
-              (r.specialisms?.[2] as string) || "Conditioning",
+              specLabels[0] || "Health & Fitness",
+              specLabels[1] || "Strength Training",
+              specLabels[2] || "Conditioning",
             ] as [string, string, string],
             blurb: r.headline || "REPS-verified professional.",
             image: r.avatar_url || proJames,
