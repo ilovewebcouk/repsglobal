@@ -634,11 +634,7 @@ function ProfileEditorPage() {
               <div className="p-5">
                 <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-ink">
                   <div className="relative h-[88px] bg-gradient-to-br from-reps-orange/30 via-reps-panel to-reps-ink">
-                    {profile.cover_url ? (
-                      <img src={profile.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,122,0,0.35),transparent_55%)]" />
-                    )}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,122,0,0.35),transparent_55%)]" />
                   </div>
                   <div className="-mt-8 px-4 pb-4">
                     <div className="flex items-end justify-between">
