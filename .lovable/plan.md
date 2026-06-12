@@ -1,129 +1,203 @@
-# Step 1b — Cert upload: 10/10 hardening pass
+# Earned Professions — Qualifications dictate what you can call yourself
 
-This is a focused polish + trust pass on the flow we just shipped. No redesign of the dashboard, no new pages yet. It directly answers your three questions and adds the gaps that separate a "we read your PDF" tool from a real verification engine.
+## The core idea
 
----
+Today a pro picks `primary_profession` from a dropdown. That's a self-claim. After this change:
 
-## A. Your three direct questions
+- **Primary profession is derived** from approved `verification_submissions`, not chosen.
+- **Specialisms are derived** from approved CPD certificates (the existing `SPECIALISMS` list).
+- The profile editor **shows what they've unlocked**, with a clear "Upload a Level X in Y to unlock this title" path for everything else.
+- Admin can override (rare edge cases: degrees, overseas quals, dual professions).
 
-### 1. The green banner is unreadable
-
-That's a contrast bug — emerald text on a cream Dialog background. Two fixes:
-- Switch the AI-prefill banner to the standard dark `bg-reps-panel-soft` + emerald icon + white text we use elsewhere. Cream/light dialog background stays for readability of the form.
-- Add a confidence pill on the banner: `AI confidence: 92%` (high / medium / low chip) so the pro instantly knows whether to trust the prefill.
-
-### 2. Qualification number vs certificate number — yes, we need both
-
-Looking at your NCFE cert there are **two distinct numbers** and we're conflating them:
-- **Qualification Number** `500/8513/X` → this is the Ofqual register key. Every regulated qual has one. This is what tells us "this is a real, regulated qualification". This is the lookup key.
-- **Certificate Number** `50783547` → this is the learner-specific cert serial. Different field, different purpose (anti-fraud, complaint chain back to awarding body).
-- Plus: **Learner Number** `103864322` and **Centre Number** `8466641` — useful for chain-of-custody when an admin or awarding body needs to confirm.
-
-We'll capture all four, but only the first two are user-facing fields on the form. Learner/Centre go into the AI-extracted JSON for the admin reviewer.
-
-### 3. Are we keeping the certificate file? — Yes, and we should be clearer about it
-
-Today: the file already goes into the private `verification-docs` Supabase storage bucket, hashed (SHA-256), keyed by user id, RLS-locked. It's retained for the life of the submission so admin can review it and so the public `/verify/{token}` page can show "verified against original document on file".
-
-What to add:
-- Make this explicit in the upload dialog: "Your certificate is stored privately and only visible to you and REPs admins. We keep it on file so we can stand behind your verification."
-- Show a thumbnail of the uploaded file in the confirm step (so the pro can see we actually got the right page).
-- A "delete original file" option after verification approval (we keep the **hash + metadata**, lose the binary). GDPR-friendly, still defensible.
+This is REPs' moat. Nowhere else online enforces this.
 
 ---
 
-## B. What was missing that hurt your test today
+## Brutal-truth design decisions
 
-Walking through your NCFE upload:
-- **NCFE wasn't in our awarding-body list** → AI correctly read "NCFE" but had to fall back to "Other (specify)". Fix: NCFE is one of the biggest UK Ofqual awarding bodies for fitness — add it plus the obvious gaps (NCFE, OCR Cambridge, Pearson, City & Guilds, AIM Qualifications, Open Awards, TQUK, Gateway Qualifications, ProTrainings, EMD UK).
-- **Issue date came back as "2017" only** → full date `10/11/2017` was on the cert. Fix the prompt to require ISO date and split "Issue year" → "Issue date (dd/mm/yyyy)".
-- **CIMSPA/SkillsActive/Ofqual badges in the corner went unused** → these are positive trust signals the AI should flag back so the admin reviewer sees "✓ Ofqual badge detected, ✓ CIMSPA endorsement detected, ✓ awarding-body wordmark match" before they even open the doc.
+### 1. Split legally-loaded titles into tiers
 
----
+One bucket per profession isn't enough — UKSCA and AfN will (rightly) complain. Tiered titles:
 
-## C. The thing that takes this to 10/10: live Ofqual cross-check
+| Public title | Earned by (examples) |
+|---|---|
+| **Fitness Instructor** | L2 Certificate in Fitness Instructing / Gym Instructor |
+| **Personal Trainer** | L3 Diploma/Certificate in Personal Training (any Ofqual body) |
+| **Advanced Personal Trainer** | L4 PT + a recognised specialism (low back, obesity, GP referral) |
+| **Strength Coach** | L4 S&C, or BSc S&C, or BASES SEPAR |
+| **Accredited S&C Coach (ASCC)** | UKSCA ASCC verified |
+| **Nutrition Coach** | L4/L5 sports nutrition (Mac-Nutrition Uni, PN L2, Active IQ L4) |
+| **Registered Nutritionist (ANutr/RNutr)** | AfN register verified |
+| **Registered Dietitian** | HCPC register verified |
+| **Group Fitness Instructor** | L2 Group Ex / EMD UK |
+| **Pilates Instructor** | Body Control / STOTT / Polestar / L3 Pilates |
+| **Yoga Teacher** | 200hr Yoga Alliance / BWY / L3 Yoga |
 
-This is the single biggest trust upgrade and it's specific to regulated quals.
+Sensitive titles (Registered Nutritionist, Registered Dietitian, ASCC) require **external register verification**, not just a certificate. That's an admin checklist item plus a future API hit where one exists (AfN has a public register search; HCPC has one too).
 
-When the AI returns a **Qualification Number** in Ofqual format (`NNN/NNNN/X` regex), we hit the public Ofqual register API:
+### 2. Rules engine, not a giant hand-map
+
+Each approved submission produces a derived "title claim" via deterministic rules:
 
 ```
-https://register.ofqual.gov.uk/api/v2/Qualifications/{qual_no}
+rule = match(
+  level,                 // 1..7 (from qualification title)
+  subject_keywords,      // ["personal training", "strength conditioning", "nutrition", ...]
+  awarding_body_slug,    // from awarding-bodies.ts
+  regulator,             // Ofqual / SQA / null
+  ofqual_record,         // live status from the cache
+)
+→ { title_slug, confidence: high|medium|low, requires_admin_review: bool }
 ```
 
-…and we get back the official record: awarding body, full title, level, status, regulator dates. We then run three deterministic checks on the submission:
+Each rule fires on subject + minimum level + (optional) awarding-body whitelist. Highest-tier title wins. Lower-tier titles are still "held" (visible on profile as "Also qualified: L2 Gym Instructor") but the **headline title** is the highest.
 
-```
-[ Ofqual qual no on certificate ] ──→ Ofqual register API
-                                       │
-                                       ▼
-  ✓ Awarding body matches register (NCFE)
-  ✓ Qualification title matches register (within fuzzy threshold)
-  ✓ Qualification is currently/historically Live on the register
-  ✓ Level matches (Level 2)
-```
+### 3. Specialisms auto-map the same way
 
-If all four pass, we attach a **`regulator_verified: true`** flag to the submission. The admin reviewer sees a green "Ofqual-verified — matched on title, body and level" panel and approval becomes a one-click confirm instead of detective work.
+L3 Pre & Post-Natal Exercise → `pre-post-natal`. L4 Lower Back Pain → `posture-back-pain`. GP Referral → `rehab-injury`. Etc. We keep the existing 3-specialism cap, but the pro can only enable a specialism they've earned (or admin-granted).
 
-We cache the Ofqual response so we don't refetch on every view, and we refresh weekly. If the register is down we fall back to manual review — never block a pro because gov.uk is having a moment.
+### 4. Handle the edge cases on purpose
 
-This means: **regulated qualifications get a stronger, government-backed verification** ("Ofqual register-matched"), and the unregulated ones (UKSCA, NASM, Mac-Nutrition Uni, etc.) get our standard admin-eyes verification. The trust ladder on the public profile can distinguish the two: `Qualifications verified (3) — 2 Ofqual-matched`.
+- **Degrees** (BSc Sports Science, MSc Nutrition): no Ofqual number. Admin-verified evidence (transcript + screenshot from awarding university). Maps to L6/L7.
+- **Overseas quals** (NASM-CPT, ACE, CSCS, ISSA): no Ofqual record but well-known. We keep a curated allowlist with the title they earn (NASM-CPT → Personal Trainer, NSCA-CSCS → Strength Coach). Admin spot-checks.
+- **In-progress quals**: not eligible. "Studying for L3 PT" gets a `student` flag, not a title.
+- **Expired quals** (CPR/first aid, insurance): handled separately — they gate `is_published`, they don't grant a title.
+- **Dual professions** (PT + Yoga Teacher): pros can hold multiple titles. They pick which is `primary_profession` from their *earned* set; others appear as secondary titles on the profile.
+- **CIMSPA**: per memory, we never name CIMSPA in product copy. We can ingest the same level/subject pattern (it's just a recognition framework over the Ofqual quals).
+
+### 5. The legal/comms language
+
+Never write "you ARE a Personal Trainer". Always: "Your qualifications unlock the **Personal Trainer** title on REPs". This protects us if a register later contests a title.
 
 ---
 
-## D. Everything else in this pass (the polish that adds up to 10/10)
+## What the user sees
 
-Grouped by the value it unlocks:
+### A. Pro dashboard → CPD tab (today)
 
-**Higher AI accuracy**
-- Switch model to `google/gemini-2.5-pro` for cert extraction (image+text reasoning matters here more than latency; cost is fine for ~1 call per submission).
-- Stricter prompt: ask for both date formats, explicit Ofqual qual-no field, trust-badge detection (CIMSPA/SkillsActive/Ofqual REGULATED stamp), watermark/seal detection.
-- Pre-pass on PDFs: extract embedded text first (cheap, deterministic) and feed the AI both the text AND the rendered image — kills 80% of OCR misreads.
-- Per-field confidence (not just overall). Fields below 0.6 stay blank rather than being filled with a guess.
+Today: list of certificates with status chips.
+After: same list, **plus a new "Titles unlocked" panel above it**:
 
-**Better upload UX**
-- Drag-and-drop zone + paste-from-clipboard + mobile camera capture (`capture="environment"`).
-- Live thumbnail of the uploaded file in the confirm step.
-- Multi-file: front + back, or main cert + unit summary, up to 5 files per submission.
-- Auto-rotate / deskew warning if the AI can't read it confidently → "Photo looks tilted — retake?" toast with retake button.
-- Loading microcopy ("Reading awarding body…", "Cross-checking Ofqual register…", "Almost done…") instead of a single spinner — feels 2x faster.
+```
+Titles unlocked                                    [info]
+─────────────────────────────────────────────────────────
+✓ Personal Trainer            Primary title  [Change]
+✓ Pre & Post-Natal specialism
+✓ Lower Back Pain specialism (Level 4)
 
-**Stronger fraud signals (server-side, surfaced to admin only)**
-- Tamper signal: parse PDF metadata; flag any sign of edit-after-creation (modify date >> creation date, common editor signatures).
-- Image-edit signal: EXIF check on JPGs/PNGs; flag Photoshop/Affinity producers.
-- Name match strength: levenshtein distance, not just exact match (handles `SCOTT PARKER` vs `Scott Parker` vs `Scott S. Parker`).
-- Duplicate detection across the whole platform (already shipped via SHA-256) — surface it in the admin panel with a link to the other submission.
-- All signals are advisory — they help the human admin, they never auto-reject.
+Locked — what these need
+─────────────────────────
+🔒 Strength Coach    Upload a Level 4 S&C or UKSCA ASCC
+🔒 Nutrition Coach   Upload a Level 4+ sports nutrition cert
+🔒 Registered Nutritionist  AfN ANutr/RNutr — admin-verified
+```
 
-**Trust output (what the pro and the public see)**
-- Submission detail in dashboard: chip row for each signal — `Ofqual-matched`, `Name match: exact`, `File hash recorded`, `AI confidence: high`.
-- Public `/verify/{token}` page (already planned for Phase B) gets a "How we verified this" expander listing the same checks, dated and signed by the reviewing admin's initials.
+The `primary_profession` dropdown in **/dashboard/profile** is replaced with a **single read-only field** showing the current primary title + a "Change" link that opens a radio list of *earned* titles only. No free-pick.
 
-**Operational guardrails**
-- Rate-limit extractions per user: 10/day, 3/min. Stops accidental loops from chewing credits.
-- File-type validation server-side (PDF, JPG, PNG, HEIC). HEIC gets converted on upload.
-- Max file size stays 10MB; multi-page PDFs trimmed to first 5 pages before AI sees them.
+### B. Public profile
 
----
+The title under their name comes from `primary_profession` (still that column, still that slug — just now write-restricted to earned values). A small "Verified by REPs" tooltip lists the qualification that unlocked it. Secondary titles render as a small row underneath. Specialisms render as chips, each one traceable to a certificate.
 
-## E. Out of scope for this pass
+### C. Admin
 
-To keep this shippable in one go:
-- Stripe Identity gate (still Phase B as agreed).
-- DBS / insurance certificate upload (later step — same infrastructure but different verification rules).
-- Endorsement-from-peers / video proof / interview check — Phase 3 ideas, not now.
-- Multi-cert single-PDF auto-split (e.g. one PDF with 4 different certs in it) — needs more product thinking; for now we ask the pro to upload one cert per submission.
+`/admin/cpd` (already exists) gets a new column: **Title impact**. When admin approves a cert, the UI previews "Approving this will unlock: *Personal Trainer*, *Pre/Post-Natal*". Admin can override the derived title (with a reason field, audit-logged).
+
+A new admin view **/admin/titles** shows pros whose derived title differs from their `primary_profession` (data-quality dashboard).
+
+### D. Onboarding (new pros)
+
+The signup → profile step no longer asks "What's your profession?" first. It asks **"Upload your highest qualification"** first. The title is derived, then shown back as "You're set up as **Personal Trainer**". Specialisms come from later certs.
 
 ---
 
-## Technical summary (for reference)
+## Technical plan
 
-- `src/lib/cpd/awarding-bodies.ts` — add ~10 missing bodies; add `ofqualPattern?: RegExp` per body where applicable.
-- `src/lib/cpd/cpd.functions.ts` — switch model, expand prompt + Zod schema (qualification_no, learner_number, centre_number, trust_badges, tamper_signals, per-field confidence), add PDF text pre-extraction, rate-limit middleware, Ofqual API call (`lookupOfqualQualification`), tamper signal extractors.
-- `src/lib/cpd/ofqual.server.ts` (new) — fetch + 7-day cache against `register.ofqual.gov.uk`.
-- Migration: add `qualification_number`, `learner_number`, `centre_number`, `regulator_verified`, `regulator_record jsonb`, `trust_signals jsonb`, `tamper_signals jsonb` to `verification_submissions`. Add `ofqual_cache` table.
-- `UploadCertificateDialog.tsx` — fix banner contrast, add confidence pill, add thumbnail, add drag/drop + camera, split issue year → issue date, add qualification-number field, add multi-file, add per-field "AI" badges.
-- `CertificateCard.tsx` — show `Ofqual-matched` chip when applicable.
-- Storage: keep `verification-docs` bucket as-is; add "delete file after approval" toggle (defaults off).
+### Data model (one migration)
 
-After approval I'll ship this in one pass. Phase B (Stripe Identity + public `/verify/{token}` + TrustLadder on public profile + expiry nudges) follows once you've test-driven this on a couple of real certs.
+New tables:
+
+- **`profession_titles`** — canonical list of all titles (slug, label, tier 1-3, requires_register_verification bool, public_description). Seeded from the table above.
+- **`title_rules`** — the rules engine rows: `{ title_slug, min_level, subject_regex, awarding_body_slugs[] (nullable allowlist), priority, notes }`. Seeded ~25 rows.
+- **`pro_titles`** — derived rows: `{ professional_id, title_slug, source_submission_id, granted_at, granted_by ('system'|'admin'), admin_note, is_primary }`. One pro → many rows.
+- **`pro_specialisms_granted`** — same shape for specialisms (keeps existing `professionals.specialisms` text[] as the *active* selection, capped at 3).
+
+New columns:
+
+- `verification_submissions.derived_title_slug text` — what the rules engine returned at submission time (for admin review).
+- `verification_submissions.derived_specialism_slugs text[]`.
+- `professionals.primary_title_slug text` — replaces semantic use of `primary_profession`. We keep `primary_profession` writing for back-compat for one release, then deprecate.
+
+RLS: pros read their own `pro_titles`; everyone reads `profession_titles`; only admins write `title_rules`.
+
+### Rules engine (`src/lib/cpd/title-rules.ts`)
+
+Pure function: `deriveTitles(submission) → { titles: TitleClaim[], specialisms: SpecialismClaim[] }`. Unit-testable. Runs on:
+
+1. **AI extract finishes** (preview to the pro: "this looks like it'll unlock *Personal Trainer*").
+2. **Pro submits** (writes `derived_title_slug` for admin review).
+3. **Admin approves** (commits `pro_titles` row, recomputes primary title).
+
+### Server functions (`src/lib/cpd/titles.functions.ts`)
+
+- `myUnlockedTitles()` — for the dashboard panel.
+- `setPrimaryTitle({ title_slug })` — validates the title is in their earned set.
+- `previewTitlesForSubmission({ submission_id })` — used by admin approve UI.
+
+### Profile editor
+
+`/dashboard/profile` currently has a `<Select>` for profession. Replace with `<EarnedTitlePicker>` — radio list of earned titles only, with an inline "Want another title? See what you need" link to `/dashboard/cpd`.
+
+### Public profile
+
+`pro.$slug.index.tsx` (and `c.$slug.tsx` shop-front): title pulled from `pro_titles where is_primary`. Add a "How REPs verifies titles" tooltip linking to a new short explainer (`/how-titles-work` or inline on `/about-verification`).
+
+### Admin
+
+- `/admin/cpd` row gets "Will unlock: X". Approve action commits `pro_titles`.
+- `/admin/titles` — new page, mostly a table view + manual grant/revoke (audit-logged).
+
+### Edge cases handled in code
+
+- **Multi-cert PT**: highest-tier wins, lower titles kept as secondary.
+- **Expired quals**: still grant the title (it was earned), but flag on profile if no insurance/DBS.
+- **Revoked cert**: admin can revoke; `pro_titles` rows from that submission are removed; primary title falls back to next-best.
+- **No earned title**: profile cannot be published. Currently we already gate publish on `verification_status = verified`; this just adds "must have ≥1 title".
+
+### Not in scope for this pass
+
+- AfN/HCPC API integration (manual admin verification first; API later if traffic justifies).
+- Auto-translation of overseas quals beyond the curated allowlist (NASM/ACE/NSCA/ISSA).
+- A user-facing "Title roadmap" wizard ("you're 1 cert away from Advanced PT").
+- Migration of existing pros: a separate ops task once rules are live, with email + 30-day window to upload evidence or accept a downgrade.
+
+---
+
+## "Push it further — best ever" ideas worth doing
+
+1. **Trust receipts**: each public title links to a `/verify/<token>` page showing the awarding body, qual number, Ofqual record, approval date. Shareable URL. This is the single biggest differentiator vs Bark/Trainerize/Bookwhen.
+2. **Title-based search ranking**: `/find-a-professional` sorts higher-tier titles above lower-tier when filter = "Nutritionist". Registered Nutritionists outrank Nutrition Coaches.
+3. **Title badges with hover-explainer** on public profiles — explains what the title *means* to a confused client ("A Registered Nutritionist holds a degree-level qual recognised by the Association for Nutrition. They can give clinical nutrition advice.").
+4. **Refusal-with-suggestion** when a pro tries to set a title they haven't earned: don't just hide it — show "Locked — upload a L4 in Strength & Conditioning to unlock". Converts to CPD uploads.
+5. **Quarterly "title audit" email** to all pros: "Your titles: PT, Pre/Post-Natal. Anything new? Upload here." Drives retention + CPD reuploads.
+6. **Public stats page**: "247 Registered Nutritionists on REPs. 12 ASCC coaches." That number is impossible to fake and is great SEO/PR.
+7. **Cert-revoke alert**: if an awarding body publishes a revocation list (Ofqual occasionally does), we can match and auto-flag for admin. (Manual for v1, automated later.)
+
+---
+
+## Files this will touch (high level)
+
+- Migration: new tables + columns (one file).
+- New: `src/lib/cpd/title-rules.ts`, `src/lib/cpd/titles.functions.ts`, `src/components/cpd/EarnedTitlesPanel.tsx`, `src/components/profile/EarnedTitlePicker.tsx`, `src/routes/admin_.titles.tsx`, `src/routes/verify.$token.tsx` (trust receipt page, optional in v1).
+- Edited: `dashboard_.profile.tsx` (replace profession Select), `dashboard_.cpd.tsx` (add panel), `admin_.cpd.tsx` (preview + commit on approve), `pro.$slug.index.tsx` (read primary from `pro_titles`), `cpd.functions.ts` (call rules engine on submit/approve).
+
+## Order of build
+
+1. Seed `profession_titles` + `title_rules` + write `title-rules.ts` with unit tests.
+2. Migration + `titles.functions.ts`.
+3. Wire admin approve to commit `pro_titles`.
+4. Dashboard CPD "Titles unlocked" panel + locked roadmap.
+5. Profile editor: replace profession Select with earned picker.
+6. Public profile: read primary title from `pro_titles`.
+7. (Optional v1.5) `/verify/<token>` trust receipts + `/admin/titles`.
+
+This is the right move. It's the one feature competitors literally cannot copy without rebuilding their whole trust model.
