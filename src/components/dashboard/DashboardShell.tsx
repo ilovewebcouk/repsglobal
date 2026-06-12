@@ -118,6 +118,7 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
@@ -160,6 +161,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
     title: "Money & Admin",
     items: [
       { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
