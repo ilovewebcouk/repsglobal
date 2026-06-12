@@ -676,13 +676,13 @@ function ProfileEditorPage() {
             online_available: form.online_available,
             city: form.city || null,
             contact_phone: form.contact_phone || null,
-            public_email: form.public_email || null,
-            website: form.website || null,
             bio: form.bio || null,
             languages: form.languages,
             social_instagram: form.social_instagram || null,
             social_linkedin: form.social_linkedin || null,
             social_youtube: form.social_youtube || null,
+            social_tiktok: form.social_tiktok || null,
+            social_x: form.social_x || null,
           },
         });
       }
