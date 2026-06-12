@@ -85,7 +85,7 @@ REJECT the image unless ALL of these are true:
 
 If you reject, set isHeadshot=false and pick the single best matching category and a short, user-facing reason in plain English (1 sentence, no jargon, no markdown).
 
-If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image, tightly framing the face (forehead to chin, ear to ear). Quality score 1-5 reflects sharpness, lighting, and framing.
+If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image. The faceBox MUST enclose the WHOLE HEAD — from the top of the hair (NOT the eyebrows) down to the chin, and from the left ear to the right ear. Always include any hair above the forehead. NEVER return a box that only covers the lower face, mouth, or chin. Quality score 1-5 reflects sharpness, lighting, and framing.
 
 Return ONLY valid JSON matching the schema. No prose.`;
 
