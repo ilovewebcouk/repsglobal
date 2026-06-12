@@ -137,6 +137,7 @@ export function UserAccountMenu({
                 {user.email}
               </div>
               <Badge
+                variant="outline"
                 className={cn(
                   "mt-1 h-5 rounded-full border px-2 text-[10px] font-semibold uppercase tracking-wide",
                   roleBadgeClass(role),
