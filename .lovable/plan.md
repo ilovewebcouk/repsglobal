@@ -1,49 +1,56 @@
-## Problem
+## Scope
 
-In `src/routes/_authenticated/_professional/dashboard_.profile.tsx` the shared `Field` wrapper (line 208) renders as a `<label>`:
+Tighten the **Contact details** section of `/dashboard/profile`. Four moves you named.
 
-```tsx
-<label className={`flex flex-col gap-1.5 ${className}`}>
-  <span>{label}</span>
-  {children}
-  {hint ? <span>{hint}</span> : null}
-</label>
-```
+## Decisions
 
-Native `<label>` behaviour: a click anywhere inside it forwards to the first focusable control. For the "How you work with clients" row that control is the **In person** ToggleGroupItem — so clicking the hint text, the row padding, the gap between pills, or the "Hybrid" status pill toggles "In person" on/off. The same trap applies to every other `Field` that contains a `ToggleGroup`, `RadioGroup`, `Checkbox`, `Switch`, or multi-control composition.
+### 1. Remove "Public email" entirely
+Account email is captured at signup and lives in Settings. Duplicating it here implies a separate public address — confusing and off-pattern (all contact happens through the platform).
 
-Wrapping multiple distinct controls (and decorative status badges) in a single `<label>` is the bug. Labels should only wrap one control.
+- Delete the `Field` (line 1072 in `dashboard_.profile.tsx`).
+- Drop from form state, dirty check, completeness checklist, save payload, Zod schema, and the select/return in `dashboard-profile.functions.ts`.
+- Column `professionals.public_email` is left in the database (no destructive migration). It just stops being read or written.
 
-## Fix
+### 2. Remove "Website" entirely
+The shop-front is the website. URL is auto-generated as `/c/{slug}` and will be surfaced as its own sidebar link in the dashboard. No external website field belongs in this editor.
 
-Change `Field` to render a `<div>` instead of `<label>`, and render the label text as a non-interactive `<span>`. This stops the entire row from being a click proxy, while keeping the visual layout identical. Inputs/textarea/select inside Fields already have their own accessible names via the label text and aria, and users interact with them by clicking the actual control.
+- Delete the `Field` (line 1079).
+- Drop `website` from form state, dirty check, save payload, Zod schema, and the `professionals` select in `dashboard-profile.functions.ts`.
+- "Website or social link" row on the completeness checklist (line 174) becomes **"Social link"** and only checks the social fields.
+- Column `professionals.website` is left in the database for now (non-destructive).
 
-### Change in `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
+### 3. Languages spoken — curated picker, max 4
+Replace the free-text `ChipInput` with a small searchable multi-select drawn from a curated list. This is the "click in and pick from a list" pattern you referenced from the professions/specialisms work — not the free-text-Enter chip.
 
-```tsx
-function Field({ label, children, hint, className = "" }: { ... }) {
-  return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-[12px] font-medium text-white/70">{label}</span>
-      {children}
-      {hint ? <span className="text-[11px] text-white/45">{hint}</span> : null}
-    </div>
-  );
-}
-```
+- New component `LanguagePicker` in `src/components/forms/`. Sources from `src/lib/languages.ts` (≈30 most-spoken globally, English first, with an "Other…" escape hatch capped at 40 chars).
+- Render selected as removable chips; an "Add language" trigger opens a shadcn Command/Popover with search + checkmarks.
+- Hard cap at **4**. At the cap, add-trigger is disabled with a hint.
+- Zod schema: `z.array(z.string().min(1).max(40)).max(4)`. Server cap drops 20 → 4.
 
-That single change fixes the "click anywhere toggles In person" bug across the whole profile editor — including the tagline char counter row, the bio row, the work-mode row, and every future Field.
+### 4. Social links — wire correctly + extend
+Already persisting; the gap is icon coverage that matches the shop-front and clean handles.
 
-## Verification (must complete before declaring fixed)
+- Editor: add **TikTok** and **X** alongside Instagram / LinkedIn / YouTube — 5 inputs total, two-column on `sm`, three on `md`.
+- Normalise on save: strip `https://`, leading `@`, trailing slashes. Store the handle only (e.g. `katiegibbs`). Render layer prepends the canonical URL — prevents broken `https://https://…` links downstream.
+- Add `social_tiktok` and `social_x` (both `text`, nullable) to `professionals` via migration; add to the `select` and Zod schema in `dashboard-profile.functions.ts`.
+- Coach shop-front `/c/$slug` (locked visuals): the hardcoded `socials[]` at line 308 is replaced by a derivation from the saved fields. Visual layout unchanged — data source only.
 
-1. Hard reload `/dashboard/profile`.
-2. Click in empty space inside the "How you work with clients" row (around the pills, on the hint text, on the Hybrid badge) → confirm **In person / Online state does NOT change**.
-3. Click the pills themselves → confirm they still toggle and Hybrid badge appears when both are on.
-4. Spot-check other Fields: clicking the hint under Tagline / Bio / Postcode does not focus or mutate anything unexpected; clicking inside text inputs still focuses them as before.
-5. Re-screenshot the row to confirm no visual regression.
+## Out of scope this turn
 
-## Out of scope
+- Locked visuals on `/c/$slug` (only the data source for socials changes).
+- Verified-tier public profile `/pro/$slug`.
+- Settings-side account email management (already exists).
+- Tagline, Bio, Photo, Specialisms, AI assist.
+- Adding the new "Shop front" sidebar entry (separate task — you'll call it).
 
-- No visual changes.
-- No changes to the `DeliveryModePicker` toggle group itself — last turn's width fix stands.
-- Accessibility upgrade (giving each input a real `htmlFor`/`id` pair) is a separate, larger pass and not required to fix this bug.
+## Verification
+
+1. Contact section shows only **Phone**, **Languages (≤4, picker)**, **Socials (5 inputs)**. No Public email. No Website.
+2. Try to add a 5th language → blocked with hint; remove one → adder re-enables.
+3. Paste `https://instagram.com/@katiegibbs/` into Instagram → saved + reloaded as `katiegibbs`.
+4. Save → `/c/{slug}` shop-front shows the saved socials with correct working links, layout unchanged.
+5. Completeness rail: Contact details ticks on phone alone; "Social link" ticks on any one social.
+
+## Honest take (since you asked)
+
+The world-class move on this page is removing fields, not adding them. Two dead inputs gone, one free-text chip replaced with a constrained picker so the data is actually usable downstream (filters, SEO chips, shop-front badges), socials normalised so links don't break. I am deliberately NOT adding: WhatsApp, Calendly, "preferred contact method", "response time", or a public phone toggle. Those are mid-tier directory clutter. Hold the line — every contact route goes through REPs.
