@@ -280,98 +280,130 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         data.sourcePath,
       );
 
-      // Per-attempt variation so "Try again" produces meaningfully different
-      // takes without changing identity.
+      // Per-attempt variation. Vary LIGHTING register (not head angle) so
+      // "Try again" produces meaningfully different takes that still match
+      // the dark, industrial REPs vibe.
       const attempt = data.attempt ?? 0;
-      const variants = [
-        "Head perfectly square to camera, micro-smile, eyes to lens.",
-        "Head turned ~3° to the camera-left, warm half-smile, eyes to lens.",
-        "Head turned ~3° to the camera-right, warm half-smile, eyes to lens.",
-        "Slight chin-down, eyes to lens, soft closed-mouth smile.",
-        "Square to camera, gentle natural smile showing a hint of teeth.",
+      const lightingVariants = [
+        "Contrasty key light from camera-left at ~45°, subtle warm orange rim on hair and far shoulder, deep shadow falloff on the camera-right side. Background warm-orange ambient glow.",
+        "Cool steel-blue rim light from camera-right edge, neutral key from camera-left, deep near-black background with a faint cool highlight far off-camera.",
+        "Split lighting — strong key on one half of the face, the other half dropping into rich shadow but eyes still catching light. Background almost black with a single warm practical light far in the distance.",
+        "Soft Rembrandt lighting — small triangle of light on the shadow-side cheek, warm key from camera-left, gentle warm rim. Background charcoal with faint amber bokeh.",
+        "Clean broad key from slightly above eye-line, subtle warm orange kicker from behind on the hair, dark moody background. Skin lit confidently, no harsh shadows on the face itself.",
       ];
-      const variation = variants[attempt % variants.length];
+      const lighting = lightingVariants[attempt % lightingVariants.length];
 
-      const prompt = `Re-render this exact person as a premium directory profile photo. Aim: warm, friendly, in-focus, professional headshot — the kind of photo a client would actually click. NOT a moody fashion campaign. NOT a magazine cover. NOT cinematic. NOT editorial.
+      const callImageModel = async (
+        textPrompt: string,
+        inputDataUrl: string,
+      ): Promise<{ rawArr: Uint8Array; mime: string }> => {
+        const res = await fetch(`${GATEWAY}/chat/completions`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-pro-image-preview",
+            modalities: ["image", "text"],
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: textPrompt },
+                  { type: "image_url", image_url: { url: inputDataUrl } },
+                ],
+              },
+            ],
+          }),
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`AI regenerate failed: ${res.status} ${text.slice(0, 300)}`);
+        }
+        const body = (await res.json()) as {
+          choices?: Array<{
+            message?: {
+              images?: Array<{ image_url?: { url?: string } }>;
+              content?: string;
+            };
+          }>;
+        };
+        const imgUrl = body.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (!imgUrl || !imgUrl.startsWith("data:")) {
+          throw new Error("AI did not return an image.");
+        }
+        const commaIdx = imgUrl.indexOf(",");
+        const meta = imgUrl.slice(5, commaIdx);
+        const b64 = imgUrl.slice(commaIdx + 1);
+        const mime = meta.split(";")[0] || "image/png";
+        const bin = atob(b64);
+        const rawArr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
+        return { rawArr, mime };
+      };
 
-Identity lock (CRITICAL — do not change ANY of these):
+      const identityLock = `Identity lock (CRITICAL — do not change ANY of these):
 - The person in the output must be unmistakably the same individual as the source photo.
 - Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, facial hair, skin tone, age, ethnicity, gender presentation, and build EXACTLY as in the source.
 - Do not slim, smooth, beautify, restructure, re-age, or stylise the face. No "ideal" features. No plastic skin. Keep real skin texture, real pores, natural blemishes.
+- Output must read forward — never horizontally flip or mirror the face.`;
+
+      // PASS 1 — identity + wardrobe recolour on a neutral dark backdrop.
+      // We deliberately keep the lighting clean here so the model focuses on
+      // identity and clothing. Pass 2 does the cinematic relight.
+      const pass1Prompt = `Re-render this exact person as a high-end fitness-industry portrait. Square 1:1, head-and-shoulders, head in the upper-middle third with a small amount of headroom.
+
+${identityLock}
 
 Expression:
-- Natural, warm, approachable. ${variation}
-- Relaxed shoulders, confident but friendly. Not stern. Not scowling. Not posing hard.
+- Natural, confident, approachable. Relaxed shoulders. Slight closed-mouth smile or neutral assured expression. Eyes to lens. Not stern. Not scowling. Not over-posing.
 
-Framing:
-- Square 1:1. Head-and-shoulders. Head occupies roughly the upper-middle of the frame with a small amount of headroom and shoulders fully in.
-
-Lighting:
-- Soft, warm, natural-looking key light from the front-side. Gentle fill so the shadow side of the face stays open and friendly.
-- Even, flattering exposure on the skin. Sharp focus on the eyes.
-- NOT harsh. NOT high-contrast. NOT moody. NOT low-key. NOT dramatic rim-lighting. NOT a single-source spotlight.
+Clothing (CRITICAL):
+- Keep the subject's own garment SHAPE, fit, neckline and silhouette from the source.
+- RECOLOUR the garment to deep charcoal-black or jet black — a premium technical fabric (matte technical polo, fitted zip-top, or plain crew). Subtle fabric texture.
+- Absolutely NO logos, NO wordmarks, NO text, NO embroidery, NO badges, NO graphics anywhere on the garment.
 
 Background:
-- Softly out-of-focus warm neutral environment with gentle bokeh — e.g. a bright modern gym interior, or a warm out-of-focus indoor space.
-- Subject must clearly separate from the background. Background must NOT compete for attention. NO sharp brick, NO sharp plates, NO logos, NO text on the wall.
+- Plain, near-black studio backdrop with very subtle vignette. No props, no objects.
 
-Clothing:
-- KEEP the subject's own clothing exactly as it appears in the source — same garment, same colour, same neckline, same fit.
-- Do NOT redesign, restyle, or recolour clothing. Do NOT add any logo, wordmark, text, embroidery, badge, or graphic.
+Lighting:
+- Clean soft key from camera-left, gentle fill. Skin properly exposed, sharp focus on the eyes. No harsh highlights.
 
 Output quality:
-- Photoreal, crisp, high-detail, true-to-life colour. Looks like a real DSLR portrait taken by a competent professional photographer, not an AI render.
-- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO film-grain overlay.`;
+- Photoreal, crisp, high-detail, true-to-life colour and skin texture. Looks like a real DSLR portrait, not an AI render.
+- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO heavy film grain.`;
 
-      const res = await fetch(`${GATEWAY}/chat/completions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-pro-image-preview",
-          modalities: ["image", "text"],
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: dataUrl } },
-              ],
-            },
-          ],
-        }),
-      });
+      const pass1 = await callImageModel(pass1Prompt, dataUrl);
+      const pass1DataUrl = `data:${pass1.mime};base64,${(() => {
+        let s = "";
+        for (let i = 0; i < pass1.rawArr.length; i++) s += String.fromCharCode(pass1.rawArr[i]);
+        return btoa(s);
+      })()}`;
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`AI regenerate failed: ${res.status} ${text.slice(0, 300)}`);
-      }
-      const body = (await res.json()) as {
-        choices?: Array<{
-          message?: {
-            images?: Array<{ image_url?: { url?: string } }>;
-            content?: string;
-          };
-        }>;
-      };
-      const imgUrl = body.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!imgUrl || !imgUrl.startsWith("data:")) {
-        throw new Error("AI did not return an image.");
-      }
-      const commaIdx = imgUrl.indexOf(",");
-      const meta = imgUrl.slice(5, commaIdx);
-      const b64 = imgUrl.slice(commaIdx + 1);
-      const mime = meta.split(";")[0] || "image/png";
+      // PASS 2 — re-light + industrial REPs-vibe background. Uses pass-1
+      // output (already dark-apparel, no logos, identity-locked) as input.
+      const pass2Prompt = `Re-light and re-compose this exact portrait into a premium fitness-industry editorial headshot for a global directory of trainers. Square 1:1. Head-and-shoulders, head in the upper-middle third.
 
-      const bin = atob(b64);
-      const rawArr = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
+${identityLock}
 
-      // Save the AI output directly — the prompt asks for a square 1:1
-      // head-and-shoulders portrait, and post-process cropping with Jimp
-      // is not safe on the Worker runtime (see note above).
+Lighting:
+- ${lighting}
+- Sharp focus on the eyes. Skin properly exposed with rich, real tonal range — not flat, not blown-out, not plastic.
+
+Background:
+- Dark, atmospheric, industrial gym environment — heavily out-of-focus charcoal/near-black depth with faint suggestions of a rack silhouette, cage frame or hanging practical light. Subtle warm orange glow far off-camera-left echoing brand orange. NO sharp objects, NO readable text or logos in the background, NO bright window blowout.
+- Subject clearly separated from the background by light and depth-of-field.
+
+Clothing (preserve from input image):
+- Keep the dark technical garment from the input image exactly — same shape, same colour, same fit. Absolutely NO logos, NO wordmarks, NO text, NO embroidery, NO badges added.
+
+Output quality:
+- Photoreal, crisp, high-detail. Looks like a real DSLR editorial portrait by a professional photographer. Real skin texture and pores preserved. NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO heavy film grain, NO HDR look.`;
+
+      const pass2 = await callImageModel(pass2Prompt, pass1DataUrl);
+      const { rawArr, mime } = pass2;
+
       const ext = mime === "image/jpeg" ? "jpg" : "png";
       const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
