@@ -286,6 +286,32 @@ function ChipInput({
     if (values.map((s) => s.toLowerCase()).includes(v.toLowerCase())) {
       setDraft("");
       return;
+    }
+    onChange([...values, v]);
+    setDraft("");
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
+      {values.map((v, i) => (
+        <Chip key={`${v}-${i}`} onRemove={() => onChange(values.filter((_, idx) => idx !== i))}>
+          {v}
+        </Chip>
+      ))}
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            commit();
+          }
+        }}
+        onBlur={commit}
+        placeholder={placeholder}
+        className="flex-1 min-w-[140px] bg-transparent px-2 py-1 text-[12px] text-white placeholder:text-white/35 focus:outline-none"
+      />
+    </div>
+  );
 }
 
 function SecondaryProfessionPicker({
@@ -353,32 +379,6 @@ function SecondaryProfessionPicker({
           </SelectContent>
         </Select>
       )}
-    </div>
-  );
-}
-    onChange([...values, v]);
-    setDraft("");
-  };
-  return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
-      {values.map((v, i) => (
-        <Chip key={`${v}-${i}`} onRemove={() => onChange(values.filter((_, idx) => idx !== i))}>
-          {v}
-        </Chip>
-      ))}
-      <input
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === ",") {
-            e.preventDefault();
-            commit();
-          }
-        }}
-        onBlur={commit}
-        placeholder={placeholder}
-        className="flex-1 min-w-[140px] bg-transparent px-2 py-1 text-[12px] text-white placeholder:text-white/35 focus:outline-none"
-      />
     </div>
   );
 }
