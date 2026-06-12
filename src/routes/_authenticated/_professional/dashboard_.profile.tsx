@@ -34,6 +34,7 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import {
   validateAvatar,
+  processAvatar,
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
@@ -338,47 +339,12 @@ async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
   }
 }
 
-async function cropToSquareJpeg(
-  file: File,
-  faceBox: { x: number; y: number; width: number; height: number },
-  maxSize = 1024,
-): Promise<Blob> {
-  const img = await loadImageBitmap(file);
-  const W = img.naturalWidth;
-  const H = img.naturalHeight;
-  // face box in px
-  const fx = faceBox.x * W;
-  const fy = faceBox.y * H;
-  const fw = faceBox.width * W;
-  const fh = faceBox.height * H;
-  const cx = fx + fw / 2;
-  const cy = fy + fh / 2;
-  // Square side: pad face by ~60% (so the face fills ~62% of the crop).
-  const pad = 1.6;
-  let side = Math.max(fw, fh) * pad;
-  // Clamp side so the square stays inside the image when possible.
-  side = Math.min(side, Math.min(W, H));
-  let sx = cx - side / 2;
-  let sy = cy - side / 2;
-  if (sx < 0) sx = 0;
-  if (sy < 0) sy = 0;
-  if (sx + side > W) sx = W - side;
-  if (sy + side > H) sy = H - side;
-
-  const out = Math.min(maxSize, Math.round(side));
-  const canvas = document.createElement("canvas");
-  canvas.width = out;
-  canvas.height = out;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not available.");
-  ctx.drawImage(img, sx, sy, side, side, 0, 0, out, out);
-  return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("Couldn't encode image."))),
-      "image/jpeg",
-      0.88,
-    );
-  });
+function initialsFromName(name: string | null | undefined): string {
+  const n = (name ?? "").trim();
+  if (!n) return "?";
+  const parts = n.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 
@@ -446,6 +412,7 @@ function ProfileEditorPage() {
 
   // Bind server fns
   const runValidate = useServerFn(validateAvatar);
+  const runProcess = useServerFn(processAvatar);
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
@@ -484,7 +451,7 @@ function ProfileEditorPage() {
       toast.error("Not signed in.");
       return;
     }
-    const f = await pickFile("image/png,image/jpeg", 8 * 1024 * 1024);
+    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
     if (!f) return;
 
     // Pre-checks
@@ -495,8 +462,8 @@ function ProfileEditorPage() {
     // Quick dimension check
     try {
       const img = await loadImageBitmap(f);
-      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
-        setRejection({ reason: "This image is too small — please upload a photo at least 400 × 400 pixels.", category: "low_quality" });
+      if (img.naturalWidth < 512 || img.naturalHeight < 512) {
+        setRejection({ reason: "This image is too small — please upload a photo at least 512 × 512 pixels.", category: "low_quality" });
         return;
       }
     } catch {
@@ -521,17 +488,14 @@ function ProfileEditorPage() {
         return;
       }
 
-      // 3. Crop client-side using face box
+      // 3. Crop + resize on the server using the AI face box
       setAvatarBusy("cropping");
-      const cropped = await cropToSquareJpeg(f, result.faceBox, 1024);
-      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
-      await uploadFileToAvatars(finalPath, cropped, "image/jpeg");
+      const { path: finalPath } = await runProcess({
+        data: { tempPath, faceBox: result.faceBox },
+      });
 
       // 4. Commit
       await runCommit({ data: { path: finalPath, isAiGenerated: false } });
-
-      // 5. Best-effort clean up temp
-      void supabase.storage.from("avatars").remove([tempPath]);
 
       setLastUploadedPath(finalPath);
       setAvatarBusy(null);
@@ -660,7 +624,7 @@ function ProfileEditorPage() {
                     <Avatar className="size-20 ring-2 ring-reps-border">
                       {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" /> : null}
                       <AvatarFallback className="bg-reps-orange text-white">
-                        {(form.full_name || "?").slice(0, 2).toUpperCase()}
+                        {initialsFromName(form.full_name)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-reps-panel bg-reps-orange text-white">
@@ -704,7 +668,7 @@ function ProfileEditorPage() {
                       ) : null}
                     </div>
                     <p className="text-[11px] text-white/45">
-                      Real headshot only · JPG or PNG · max 8MB · we check uploads with AI to keep the directory trustworthy
+                      Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
                     </p>
                   </div>
                 </div>
@@ -858,7 +822,7 @@ function ProfileEditorPage() {
                       <Avatar className="size-16 ring-4 ring-reps-panel">
                         {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" /> : null}
                         <AvatarFallback className="bg-reps-orange text-white">
-                          {(form.full_name || "?").slice(0, 2).toUpperCase()}
+                          {initialsFromName(form.full_name)}
                         </AvatarFallback>
                       </Avatar>
                       {profile.verification_status === "verified" ? (
