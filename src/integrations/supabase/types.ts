@@ -408,8 +408,8 @@ export type Database = {
           doc_country: string | null
           doc_expiry: string | null
           doc_path_back: string | null
-          doc_path_front: string
-          doc_type: string
+          doc_path_front: string | null
+          doc_type: string | null
           file_sha256: string | null
           id: string
           liveness_passed: boolean | null
@@ -421,6 +421,12 @@ export type Database = {
           selfie_path: string | null
           status: string
           updated_at: string
+          vendor: string
+          veriff_decision: Json | null
+          veriff_reason: string | null
+          veriff_session_id: string | null
+          veriff_session_url: string | null
+          veriff_status: string | null
         }
         Insert: {
           admin_note?: string | null
@@ -429,8 +435,8 @@ export type Database = {
           doc_country?: string | null
           doc_expiry?: string | null
           doc_path_back?: string | null
-          doc_path_front: string
-          doc_type: string
+          doc_path_front?: string | null
+          doc_type?: string | null
           file_sha256?: string | null
           id?: string
           liveness_passed?: boolean | null
@@ -442,6 +448,12 @@ export type Database = {
           selfie_path?: string | null
           status?: string
           updated_at?: string
+          vendor?: string
+          veriff_decision?: Json | null
+          veriff_reason?: string | null
+          veriff_session_id?: string | null
+          veriff_session_url?: string | null
+          veriff_status?: string | null
         }
         Update: {
           admin_note?: string | null
@@ -450,8 +462,8 @@ export type Database = {
           doc_country?: string | null
           doc_expiry?: string | null
           doc_path_back?: string | null
-          doc_path_front?: string
-          doc_type?: string
+          doc_path_front?: string | null
+          doc_type?: string | null
           file_sha256?: string | null
           id?: string
           liveness_passed?: boolean | null
@@ -463,6 +475,12 @@ export type Database = {
           selfie_path?: string | null
           status?: string
           updated_at?: string
+          vendor?: string
+          veriff_decision?: Json | null
+          veriff_reason?: string | null
+          veriff_session_id?: string | null
+          veriff_session_url?: string | null
+          veriff_status?: string | null
         }
         Relationships: [
           {
