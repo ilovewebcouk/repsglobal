@@ -1,35 +1,75 @@
-# Show town, not council district
+## Goal
 
-## Problem
-`NR32 3FJ` currently resolves to **"East Suffolk"** (the council). It should resolve to **"Lowestoft"** (the town people actually know).
+Stop overloading one field with two jobs. Introduce a structured **Profession** (primary + up to 2 secondary) drawn from the canonical list, and rename the freeform one-liner to **Tagline**. Directory cards lead with Profession.
 
-The postcode resolver in `src/lib/profile/location.functions.ts` is reading `admin_district` from postcodes.io and writing it into `town`. postcodes.io returns a richer set of fields — `post_town` is the right one.
+## Data model
 
-## Change
+New columns on `professionals`:
+- `primary_profession TEXT` — slug from canonical list (`personal-trainer`, `nutritionist`, `strength-coach`, `online-coach`, `pilates-instructor`, `yoga-teacher`)
+- `secondary_professions TEXT[] DEFAULT '{}'` — max 2, validated by trigger, must not include the primary
+- Keep `headline` column (renamed in UI to "Tagline") — no DB rename, just relabel; avoids breaking migrations elsewhere.
 
-Single file: `src/lib/profile/location.functions.ts`
+Validation trigger: enforce `array_length(secondary_professions, 1) <= 2`, all values in the allowed enum-style list, no duplicates with primary.
 
-1. Extend the Zod schema for the postcodes.io response to include `post_town`, `parish`, and `admin_ward` (all already returned, just not validated/used).
-2. Replace the current `town` assignment with this fallback ladder:
-   ```
-   town = titleCase(post_town) ?? parish ?? admin_ward ?? admin_district
-   ```
-   `admin_district` stays as final fallback so we never write `null`.
-3. Keep `region = admin_district` (already what we store) — it's still useful internally for regional grouping / `/in/$location` pages, just never shown on cards.
-4. Add a small `titleCase()` helper — `post_town` arrives as ALL CAPS ("LOWESTOFT").
+Shared canonical list extracted to `src/lib/professions.ts` (single source of truth, currently inlined in `professions.$profession.tsx`). That route imports from the new module.
 
-## What re-resolves
-Existing rows keep their stored `town` until the pro re-saves their postcode. Two options:
+## Dashboard (`dashboard_.profile.tsx`)
 
-- **A. Lazy** — only new saves get the fix. Zero risk, slow rollout.
-- **B. Backfill** — one-shot migration that re-resolves every `professional_locations` row via postcodes.io bulk endpoint (`POST /postcodes`, up to 100 per call). Safe because we still have the full `postcode` stored.
+Replace the current "Professional title" field with two fields:
+1. **Profession** (required) — shadcn `Select` for primary, plus a "Add secondary profession" control (up to 2) using shadcn `Select` + `Badge` removable chips.
+2. **Tagline** (optional, ≤160 chars) — relabel existing `headline` input; helper text: *"One line that appears under your name on the directory card."*
 
-Recommend **B**, since the seeded/demo data will otherwise show "East Suffolk" etc. on the live directory until each pro logs in.
+Server fn `updateMyDashboardProfile`:
+- Add `primary_profession` (required), `secondary_professions` (array, ≤2) to Zod schema.
+- Keep `headline` as-is.
+
+`getMyDashboardProfile` returns the two new fields.
+
+## Publish gating
+
+`setPublished({ is_published: true })` server fn rejects publish when `primary_profession` is null. UI: disable the Publish toggle with tooltip *"Set your profession to publish"* until set.
+
+## Directory card (`find-a-professional.tsx` + `FeaturedProCard`)
+
+Under the pro's name, show **Profession** (resolved label from slug) as the primary line. Tagline drops off the card (still shown on profile page). Secondary professions render as small chips below the tag row when present.
+
+`listPublishedProfessionals` returns `primary_profession` + `secondary_professions`; `getPublicProfileBySlug` returns both for the profile page.
+
+## Profile page (`pro.$slug.index.tsx`)
+
+Hero: Profession label as eyebrow/sub-name (replaces current `headline` slot), Tagline beneath if present. Secondary professions as Badge chips. Schema.org `jobTitle` = primary profession label.
+
+## Backfill
+
+For existing rows where `primary_profession IS NULL`: leave null. They become unpublished automatically on next save. No guessing from `headline` — too unreliable, and the seed pros are few enough to set manually.
 
 ## Out of scope
-- Neighbourhood granularity for big cities ("Mayfair" instead of "London"). Possible follow-up using `parish`, but post_town is the correct default.
-- International postcodes. Still UK-only.
-- Any UI change — the card already renders `town`, we're just fixing what `town` contains.
 
-## Open question
-Backfill existing rows now (option B), or wait for pros to re-save (option A)?
+- Profession-based filtering on `/find-a-professional` (separate task — easy follow-up once data exists).
+- Wiring `primary_profession` into `/professions/$profession` listing queries (follow-up).
+- Onboarding signup-flow change (you chose "Required before Publish", not "Required at signup").
+
+## Technical notes
+
+- Canonical list lives in `src/lib/professions.ts` exporting `PROFESSIONS: { slug, label }[]` and `getProfessionLabel(slug)`.
+- DB validation via `BEFORE INSERT OR UPDATE` trigger (not CHECK — array length checks are fine in CHECK but a trigger keeps allowed-slug enforcement co-located).
+- No new table needed; the array column is sufficient for 0–2 secondaries.
+- `dashboard-profile.functions.ts` schema additions; no breaking changes to existing callers.
+
+## Files touched
+
+- new `src/lib/professions.ts`
+- new migration: columns + trigger + grants already in place (existing table)
+- `src/lib/profile/dashboard-profile.functions.ts` (read + update + Zod)
+- `src/lib/profile/profile.functions.ts` (`setPublished` gate)
+- `src/lib/profile/public-profile.functions.ts` (return new fields)
+- `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
+- `src/routes/find-a-professional.tsx`
+- `src/components/public/FeaturedProCard.tsx` (if used for live cards — currently mock)
+- `src/routes/pro.$slug.index.tsx`
+- `src/routes/professions.$profession.tsx` (import shared list)
+- `src/integrations/supabase/types.ts` (regenerates after migration)
+
+## Brutal-truth recap
+
+This is the right move and overdue. Without structured profession the directory cannot filter, the profession landing pages can't list real pros, and SEO schema is weak. Doing it now — before services, AI credits, nutrition — is correct sequencing.

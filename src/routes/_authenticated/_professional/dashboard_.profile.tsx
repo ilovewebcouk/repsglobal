@@ -41,9 +41,22 @@ import {
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
+import {
+  PROFESSIONS,
+  getProfessionLabel,
+  type ProfessionSlug,
+} from "@/lib/professions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   DashboardDialog,
   DashboardDialogContent,
@@ -82,6 +95,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 type FormState = {
   full_name: string;
   headline: string;
+  primary_profession: ProfessionSlug | "";
+  secondary_professions: ProfessionSlug[];
   city: string;
   public_phone: string;
   public_email: string;
@@ -98,6 +113,8 @@ function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
+    primary_profession: p.primary_profession ?? "",
+    secondary_professions: p.secondary_professions ?? [],
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
@@ -115,6 +132,8 @@ function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
     a.headline === b.headline &&
+    a.primary_profession === b.primary_profession &&
+    JSON.stringify(a.secondary_professions) === JSON.stringify(b.secondary_professions) &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
@@ -133,7 +152,7 @@ function completion(p: DashboardProfile): {
   checklist: { label: string; done: boolean }[];
 } {
   const checklist = [
-    { label: "Basic information", done: !!(p.full_name && p.headline && p.city) },
+    { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
     { label: "Profile photo", done: !!p.avatar_url },
     
@@ -291,6 +310,75 @@ function ChipInput({
         placeholder={placeholder}
         className="flex-1 min-w-[140px] bg-transparent px-2 py-1 text-[12px] text-white placeholder:text-white/35 focus:outline-none"
       />
+    </div>
+  );
+}
+
+function SecondaryProfessionPicker({
+  primary,
+  values,
+  onChange,
+}: {
+  primary: ProfessionSlug | null;
+  values: ProfessionSlug[];
+  onChange: (next: ProfessionSlug[]) => void;
+}) {
+  const available = PROFESSIONS.filter(
+    (p) => p.slug !== primary && !values.includes(p.slug),
+  );
+  const atMax = values.length >= 2;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
+      {values.map((s) => {
+        const label = getProfessionLabel(s);
+        if (!label) return null;
+        return (
+          <Badge
+            key={s}
+            variant="outline"
+            className="h-8 gap-1.5 rounded-full border-reps-orange-border bg-reps-orange-soft pl-3 pr-2 text-[12px] font-semibold text-reps-orange"
+          >
+            {label}
+            <button
+              type="button"
+              aria-label={`Remove ${label}`}
+              onClick={() => onChange(values.filter((v) => v !== s))}
+              className="flex h-5 w-5 items-center justify-center rounded-full text-reps-orange/70 hover:bg-reps-orange/10 hover:text-reps-orange"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        );
+      })}
+      {atMax || available.length === 0 ? (
+        atMax ? (
+          <span className="px-2 text-[11px] text-white/45">Max 2 added.</span>
+        ) : (
+          <span className="px-2 text-[11px] text-white/45">
+            {primary ? "No more professions to add." : "Choose your primary profession first."}
+          </span>
+        )
+      ) : (
+        <Select
+          value=""
+          onValueChange={(v) => {
+            if (!v) return;
+            onChange([...values, v as ProfessionSlug]);
+          }}
+        >
+          <SelectTrigger className="h-8 w-auto min-w-[180px] rounded-full border-dashed border-reps-border bg-transparent px-3 text-[12px] text-white/70">
+            <SelectValue placeholder="+ Add profession" />
+          </SelectTrigger>
+          <SelectContent>
+            {available.map((p) => (
+              <SelectItem key={p.slug} value={p.slug}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }
@@ -489,6 +577,8 @@ function ProfileEditorPage() {
           data: {
             full_name: form.full_name,
             headline: form.headline || null,
+            primary_profession: form.primary_profession || null,
+            secondary_professions: form.secondary_professions,
             city: form.city || null,
             public_phone: form.public_phone || null,
             public_email: form.public_email || null,
@@ -822,12 +912,29 @@ function ProfileEditorPage() {
                 <Field label="Full name">
                   <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
                 </Field>
-                <Field label="Professional title">
-                  <TextInput
-                    value={form.headline}
-                    onChange={(v) => set("headline", v)}
-                    placeholder="e.g. Strength & Conditioning Coach"
-                  />
+                <Field label="Profession" hint="The role clients see on the directory card. Required to publish.">
+                  <Select
+                    value={form.primary_profession || undefined}
+                    onValueChange={(v) => {
+                      set("primary_profession", v as ProfessionSlug);
+                      // Drop the new primary out of secondaries to avoid clash
+                      set(
+                        "secondary_professions",
+                        form.secondary_professions.filter((s) => s !== v),
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-10 rounded-[12px] border-reps-border bg-reps-ink text-[13px] text-white">
+                      <SelectValue placeholder="Choose your primary profession" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROFESSIONS.map((p) => (
+                        <SelectItem key={p.slug} value={p.slug}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 <Field label="Primary training postcode">
                   <TextInput
@@ -844,6 +951,20 @@ function ProfileEditorPage() {
                       Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
                     </p>
                   ) : null}
+                </Field>
+                <Field label="Also offer (optional)" hint="Up to 2 secondary professions — shown as chips on your profile." className="sm:col-span-2">
+                  <SecondaryProfessionPicker
+                    primary={form.primary_profession || null}
+                    values={form.secondary_professions}
+                    onChange={(v) => set("secondary_professions", v)}
+                  />
+                </Field>
+                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`} className="sm:col-span-2">
+                  <TextInput
+                    value={form.headline}
+                    onChange={(v) => set("headline", v.slice(0, 160))}
+                    placeholder="e.g. Helping busy professionals build strength and feel their best"
+                  />
                 </Field>
                 <Field label="Public phone">
                   <TextInput
@@ -974,8 +1095,28 @@ function ProfileEditorPage() {
                         {form.full_name || "Your name"}
                       </div>
                       <div className="text-[12px] text-white/60">
-                        {form.headline || "Your professional title"}
+                        {getProfessionLabel(form.primary_profession) || "Set your profession"}
                       </div>
+                      {form.secondary_professions.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {form.secondary_professions.map((s) => {
+                            const label = getProfessionLabel(s);
+                            return label ? (
+                              <span
+                                key={s}
+                                className="rounded-full bg-reps-panel-soft px-2 py-0.5 text-[10px] font-medium text-white/70"
+                              >
+                                {label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      ) : null}
+                      {form.headline ? (
+                        <p className="mt-2 text-[11.5px] leading-relaxed text-white/55">
+                          {form.headline}
+                        </p>
+                      ) : null}
                       {form.city ? (
                         <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
                           <span className="flex items-center gap-1">

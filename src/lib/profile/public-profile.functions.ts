@@ -33,33 +33,75 @@ async function fetchPrimaryLocations(
   return out;
 }
 
+const PRO_PUBLIC_COLUMNS =
+  "id, slug, headline, primary_profession, secondary_professions, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published";
+
+const PRO_LIST_COLUMNS =
+  "id, slug, headline, primary_profession, secondary_professions, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
+
+type ProPublicRow = {
+  id: string;
+  slug: string | null;
+  headline: string | null;
+  primary_profession: string | null;
+  secondary_professions: string[] | null;
+  bio: string | null;
+  specialisms: string[] | null;
+  city: string | null;
+  country: string | null;
+  online_available: boolean | null;
+  in_person_available: boolean | null;
+  hourly_rate_pence: number | null;
+  verification_status: string | null;
+  is_published: boolean | null;
+};
+
+type ProListRow = {
+  id: string;
+  slug: string | null;
+  headline: string | null;
+  primary_profession: string | null;
+  secondary_professions: string[] | null;
+  specialisms: string[] | null;
+  city: string | null;
+  country: string | null;
+  hourly_rate_pence: number | null;
+  verification_status: string | null;
+  in_person_available: boolean | null;
+  online_available: boolean | null;
+};
+
 export const getPublicProfileBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("professionals")
-      .select(
-        "id, slug, headline, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published",
-      )
+      .select(PRO_PUBLIC_COLUMNS)
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (error) throw error;
     if (!row) return null;
 
+    const r = row as unknown as ProPublicRow;
+
     const [{ data: prof }, locMap] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select("full_name, avatar_url")
-        .eq("id", row.id)
+        .eq("id", r.id)
         .maybeSingle(),
-      fetchPrimaryLocations([row.id]),
+      fetchPrimaryLocations([r.id]),
     ]);
-    const loc = locMap.get(row.id) ?? null;
+    const loc = locMap.get(r.id) ?? null;
 
     return {
-      ...row,
+      ...r,
+      primary_profession: r.primary_profession ?? null,
+      secondary_professions: Array.isArray(r.secondary_professions)
+        ? r.secondary_professions
+        : [],
       full_name: prof?.full_name ?? null,
       avatar_url: prof?.avatar_url ?? null,
       location: loc,
@@ -71,15 +113,13 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("professionals")
-      .select(
-        "id, slug, headline, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available",
-      )
+      .select(PRO_LIST_COLUMNS)
       .eq("is_published", true)
       .order("updated_at", { ascending: false })
       .limit(60);
     if (error) throw error;
-    const rows = data ?? [];
-    const ids = rows.map((r) => r.id).filter(Boolean) as string[];
+    const rows = (data ?? []) as unknown as ProListRow[];
+    const ids = rows.map((r) => r.id).filter(Boolean);
 
     let profileById = new Map<string, { full_name: string | null; avatar_url: string | null }>();
     if (ids.length) {
@@ -96,6 +136,10 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
 
     return rows.map((r) => ({
       ...r,
+      primary_profession: r.primary_profession ?? null,
+      secondary_professions: Array.isArray(r.secondary_professions)
+        ? r.secondary_professions
+        : [],
       full_name: profileById.get(r.id)?.full_name ?? null,
       avatar_url: profileById.get(r.id)?.avatar_url ?? null,
       location: locMap.get(r.id) ?? null,

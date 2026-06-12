@@ -28,6 +28,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
+import { getProfessionLabel } from "@/lib/professions";
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
@@ -204,11 +205,13 @@ type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
 
 function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
+  const professionLabel =
+    getProfessionLabel(row.primary_profession) ?? "REPS Verified Professional";
   return {
     slug: row.slug ?? "",
     name: row.full_name ?? "REPS Professional",
     firstName: (row.full_name ?? "").split(" ")[0] || "Coach",
-    role: "REPS Verified Professional",
+    role: professionLabel,
     location: row.location?.town ?? row.location?.postcode_outward ?? row.city ?? "Online",
     region: row.location?.region ?? row.country ?? "",
     rating: 0,
@@ -222,7 +225,12 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
-    specialisms: row.specialisms ?? [],
+    specialisms: [
+      ...(row.secondary_professions ?? [])
+        .map((s) => getProfessionLabel(s))
+        .filter((s): s is string => Boolean(s)),
+      ...(row.specialisms ?? []),
+    ],
     services: row.hourly_rate_pence
       ? [
           {
