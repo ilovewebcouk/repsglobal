@@ -626,6 +626,8 @@ function ProfileEditorPage() {
         aiPath: out.path,
         aiUrl: out.url,
         attempt,
+        identityScore: out.identityScore,
+        identityReason: out.identityReason,
       });
       setAvatarBusy(null);
     } catch (e) {
