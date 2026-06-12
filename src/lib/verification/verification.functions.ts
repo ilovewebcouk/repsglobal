@@ -14,6 +14,8 @@ const reviewInput = z.object({
   id: z.string().uuid(),
   decision: z.enum(["approved", "rejected", "changes_requested"]),
   admin_note: z.string().max(1000).optional().nullable(),
+  checklist: z.record(z.string(), z.boolean()).optional(),
+  unlocked_tier: z.enum(["verified", "pro", "studio"]).optional().nullable(),
 });
 
 export const submitVerification = createServerFn({ method: "POST" })
