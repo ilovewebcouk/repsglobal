@@ -509,7 +509,7 @@ function ProfileEditorPage() {
       setLastUploadedPath(null);
       invalidateProfile();
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't remove photo."),
+    onError: (e: unknown) => toast.error(humanizeAvatarError(e, "Couldn't remove photo.")),
   });
 
   const handlePickAvatar = async () => {
@@ -630,7 +630,7 @@ function ProfileEditorPage() {
       setAvatarBusy(null);
     } catch (e) {
       setAvatarBusy(null);
-      toast.error(e instanceof Error ? e.message : "Couldn't generate AI portrait.");
+      toast.error(humanizeAvatarError(e, "Couldn't generate AI portrait."));
     }
   };
 
@@ -643,7 +643,7 @@ function ProfileEditorPage() {
       toast.success("AI portrait saved as your profile photo.");
       invalidateProfile();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save AI portrait.");
+      toast.error(humanizeAvatarError(e, "Couldn't save AI portrait."));
     }
   };
 
