@@ -1,40 +1,33 @@
-# Fix AI avatar regeneration — match the directory demo look
+# Square dashboard avatars to match the directory
 
-## Problem
+Pro-uploaded/AI-regenerated avatars render as 18px-radius squares everywhere they appear in the directory (`/find-a-professional`, `/pro/$slug`, `/c/$slug`, `FeaturedProCard`, enquire summary). The dashboard currently renders them as circles via the shadcn `Avatar` primitive, so what the pro tunes in `/dashboard/profile` is not what visitors see. This change makes the dashboard a true WYSIWYG preview of the directory card.
 
-`regenerateAvatar` (`src/lib/profile/avatar-ai.functions.ts`) prompts Gemini for a "clean studio headshot, neutral charcoal background, plain T-shirt or polo with embroidered REPS wordmark on the chest." Output is exactly that: a flat school-portrait against a grey sweep, wearing a fake REPS tee.
+Scope: every avatar inside the authenticated dashboard surfaces — profile editor, topbar/user-card, settings, and the client/lead thumbnails in the demo content. No marketing pages, no directory pages (already square), no auth-page or root navbar avatar.
 
-Target look = `src/assets/pro-james.jpg`, `pro-sophie.jpg`, `pro-daniel.jpg`, `pro-laura.jpg` (the demo pros on `/find-a-professional`, `/in/$location`, `/c/$slug`): square, head-and-shoulders, face square to camera, soft directional key + subtle rim, **heavily blurred dark gym/training-floor backdrop**, muted film palette, subject in their own training kit.
+## Changes
 
-## Fix (prompt rewrite only, one file)
+**1. Profile editor — `src/routes/_authenticated/_professional/dashboard_.profile.tsx`**
+- Lines 620–624 and 818–822: swap `<Avatar className="size-20 ring-2 ring-reps-border">` / `size-16 ring-4 ring-reps-panel` for the same size but `rounded-[18px]` and add `rounded-[18px]` to the nested `AvatarImage` and `AvatarFallback`. Keep the ring; rings work on rounded-rect too.
 
-Rewrite the prompt string inside `regenerateAvatar.handler` so it asks for the demo-pro aesthetic:
+**2. Topbar user card — `src/components/dashboard/DashboardShell.tsx`**
+- Line 259–262 (`UserCard`): `<Avatar className="size-10 rounded-[18px]">` + `rounded-[18px]` on `AvatarImage` and `AvatarFallback`. (User said "everywhere", so the topbar chip squares up too — it's still 40px so it reads as a tile, not an app icon.)
 
-1. **Identity lock** — keep same face, age, ethnicity, gender presentation, hair, skin tone, build. Do not restyle the person.
-2. **Framing** — square, tight head-and-shoulders, subject facing camera straight on, calm confident expression, eyes to lens.
-3. **Lighting** — soft directional key on the face + subtle rim light; cinematic, editorial, photoreal. No flat studio softbox, no ring-light look, no yearbook lighting.
-4. **Background** — **dark, heavily blurred gym/training-floor scene** (racks, plates, turf, brick, low-key tones), shallow depth of field, creamy bokeh. Explicitly negative: "no neutral grey sweep, no charcoal studio backdrop, no plain wall."
-5. **Clothing** — **keep the subject's own clothing from the source photo**. Do not add a REPS T-shirt, polo, jersey, or any branded garment. Negatives: "no logos, no wordmarks, no text on clothing, no embroidered REPS lettering, no added branding."
-6. **Negatives against current failure mode** — "no school-portrait, no yearbook, no flat backdrop, no studio sweep, no 1990s portrait lighting, no added branded clothing."
+**3. Settings avatar — `src/routes/_authenticated/_professional/dashboard_.settings.tsx`**
+- Line 145: change the initials swatch from `rounded-full` to `rounded-[18px]`.
 
-No other code changes. `validateAvatar`, `processAvatar`, `commitAvatar`, the storage bucket, signed-URL TTL, and the dashboard UI all stay as-is. Stay on `google/gemini-3.1-flash-image-preview`.
+**4. Demo content (clients/leads/at-risk thumbnails) — `src/components/dashboard/DashboardDemoContent.tsx`**
+- Lines 497, 525, 680: change the four client/lead/seat avatar `<img>` tags from `rounded-full` to `rounded-[14px]` (small-photo exception per the locked radius memory — these are 32–40px scaled-down thumbnails that should read as the same shape as the larger 18px source). Status pills and progress bars on the same lines stay `rounded-full` — they are pills, not avatars.
 
-## Scope note re: trainer-imagery memory
-
-The `mem://design/trainer-imagery` rule ("any generated trainer image must carry a stitched REPS wordmark") was written for marketing assets generated into `src/assets/`. It conflicts with this avatar fix. I will treat **user-uploaded avatar regeneration as a separate surface** that does not carry the wordmark, and tighten the memory to scope the wordmark rule to marketing assets only. The marketing rule stays unchanged.
+**5. Untouched (intentionally circular)**
+- Step indicators / icon swatches with Lucide icons inside (`flex size-10 items-center justify-center rounded-full bg-…` in `_professional/dashboard.tsx:246`, `DashboardDemoContent.tsx:145`, `:387`, `:732`) — these are icon tiles, not avatars.
+- All `rounded-full` pills (badges, progress bars, toggle switch knob, notification count). These are not avatars.
 
 ## Out of scope
 
-- Re-running AI against existing avatars already in the DB.
-- Switching image model.
-- Validation / crop / commit pipeline.
-- Any marketing image in `src/assets/`.
-
-## Files touched
-
-- `src/lib/profile/avatar-ai.functions.ts` — `regenerateAvatar` prompt string only.
-- `.lovable/mem/design/trainer-imagery.md` — add one line scoping the wordmark rule to marketing assets; avatars exempt.
+- No change to AI prompt, crop math, validation, upload pipeline, or any `avatar-ai.functions.ts` logic.
+- No change to the shared `src/components/ui/avatar.tsx` shadcn primitive — keep it circular for any non-dashboard caller. We override per-usage in the dashboard files above. (Rationale: the primitive is also used by other parts of the app that should stay circular; a global change is broader than asked.)
+- Directory/marketing pages — already square at 18px.
 
 ## Verification
 
-On `/dashboard/profile`, upload a clear photo and hit "Regenerate with AI". Confirm output is square, face-on, dark blurred gym backdrop, subject in their own clothing, no REPS tee. Compare side-by-side with `src/assets/pro-james.jpg` for vibe match.
+After edits: load `/dashboard/profile` and confirm the 80px hero preview + 64px secondary preview render as 18px squares, identical in shape to a `/pro/$slug` hero. Load `/dashboard` and confirm the topbar user chip and demo client thumbnails are 18px / 14px squares. Compare side-by-side with `/find-a-professional` to confirm WYSIWYG.
