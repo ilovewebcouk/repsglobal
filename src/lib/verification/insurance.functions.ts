@@ -89,3 +89,33 @@ export const getDocSignedUrl = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { url: signed.signedUrl };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Generic upload to identity-docs / insurance-docs                           */
+/* -------------------------------------------------------------------------- */
+
+const uploadInput = z.object({
+  bucket: z.enum(["identity-docs", "insurance-docs"]),
+  file_data_url: z.string().startsWith("data:").max(15_000_000),
+  filename: z.string().min(1).max(200),
+});
+
+export const uploadVerificationAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => uploadInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const match = data.file_data_url.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) throw new Error("Invalid file payload");
+    const [, mime, b64] = match;
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
+    const sha256 = Array.from(new Uint8Array(hashBuf), (b) => b.toString(16).padStart(2, "0")).join("");
+    const ext = data.filename.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${userId}/${Date.now()}-${sha256.slice(0, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from(data.bucket)
+      .upload(path, bytes, { contentType: mime, upsert: false });
+    if (error) throw new Error(error.message);
+    return { path, sha256 };
+  });
