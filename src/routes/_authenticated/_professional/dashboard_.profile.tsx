@@ -34,7 +34,6 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import {
   validateAvatar,
-  processAvatar,
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
