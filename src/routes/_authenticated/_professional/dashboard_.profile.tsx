@@ -529,13 +529,16 @@ function ProfileEditorPage() {
         return;
       }
 
-      // 3. Crop + resize on the server using the AI face box
+      // 3. Client-side crop + resize using the AI face box
       setAvatarBusy("cropping");
-      const { path: finalPath } = await runProcess({
-        data: { tempPath, faceBox: result.faceBox },
-      });
+      const croppedBlob = await cropPortraitToJpegBlob(f, result.faceBox);
 
-      // 4. Commit
+      // 4. Upload cropped image to final path, then clean up temp.
+      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
+      await uploadFileToAvatars(finalPath, croppedBlob, "image/jpeg");
+      await supabase.storage.from("avatars").remove([tempPath]).catch(() => {});
+
+      // 5. Commit
       await runCommit({ data: { path: finalPath, isAiGenerated: false } });
 
       setLastUploadedPath(finalPath);
