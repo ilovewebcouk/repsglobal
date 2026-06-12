@@ -33,6 +33,10 @@ import {
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
 import {
+  getMyPrimaryLocation,
+  saveMyPrimaryPostcode,
+} from "@/lib/profile/location.functions";
+import {
   validateAvatar,
   commitAvatar,
   regenerateAvatar,
@@ -445,7 +449,8 @@ function ProfileEditorPage() {
   const fetchProfile = useServerFn(getMyDashboardProfile);
   const saveProfile = useServerFn(updateMyDashboardProfile);
   const saveAvatar = useServerFn(updateMyAvatar);
-  
+  const fetchLocation = useServerFn(getMyPrimaryLocation);
+  const savePostcode = useServerFn(saveMyPrimaryPostcode);
 
   const profileQuery = useSuspenseQuery({
     queryKey: ["my-dashboard-profile"],
@@ -453,36 +458,59 @@ function ProfileEditorPage() {
   });
   const profile = profileQuery.data;
 
+  const locationQuery = useSuspenseQuery({
+    queryKey: ["my-primary-location"],
+    queryFn: () => fetchLocation(),
+  });
+  const primaryLocation = locationQuery.data;
+
   const [form, setForm] = React.useState<FormState>(() => toForm(profile));
   React.useEffect(() => {
     // When server data refreshes after a save, reset the form baseline.
     setForm(toForm(profile));
   }, [profile]);
 
+  const initialPostcode = primaryLocation?.postcode ?? "";
+  const [postcode, setPostcode] = React.useState<string>(initialPostcode);
+  React.useEffect(() => {
+    setPostcode(primaryLocation?.postcode ?? "");
+  }, [primaryLocation?.postcode]);
+
   const original = React.useMemo(() => toForm(profile), [profile]);
-  const dirty = !equal(form, original);
+  const profileDirty = !equal(form, original);
+  const postcodeDirty = postcode.trim().toUpperCase() !== (initialPostcode ?? "").toUpperCase();
+  const dirty = profileDirty || postcodeDirty;
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      saveProfile({
-        data: {
-          full_name: form.full_name,
-          headline: form.headline || null,
-          city: form.city || null,
-          public_phone: form.public_phone || null,
-          public_email: form.public_email || null,
-          website: form.website || null,
-          bio: form.bio || null,
-          specialisms: form.specialisms,
-          languages: form.languages,
-          social_instagram: form.social_instagram || null,
-          social_linkedin: form.social_linkedin || null,
-          social_youtube: form.social_youtube || null,
-        },
-      }),
+    mutationFn: async () => {
+      // Save profile fields first (fast, in-DB).
+      if (profileDirty) {
+        await saveProfile({
+          data: {
+            full_name: form.full_name,
+            headline: form.headline || null,
+            city: form.city || null,
+            public_phone: form.public_phone || null,
+            public_email: form.public_email || null,
+            website: form.website || null,
+            bio: form.bio || null,
+            specialisms: form.specialisms,
+            languages: form.languages,
+            social_instagram: form.social_instagram || null,
+            social_linkedin: form.social_linkedin || null,
+            social_youtube: form.social_youtube || null,
+          },
+        });
+      }
+      // Then resolve + save postcode (external API call).
+      if (postcodeDirty && postcode.trim().length > 0) {
+        await savePostcode({ data: { postcode } });
+      }
+    },
     onSuccess: () => {
       toast.success("Profile saved.");
       void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-primary-location"] });
       void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
     },
     onError: (e: unknown) => {
