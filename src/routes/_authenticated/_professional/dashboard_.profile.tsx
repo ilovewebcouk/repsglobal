@@ -587,13 +587,14 @@ function ProfileEditorPage() {
             full_name: form.full_name,
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
-            secondary_professions: form.secondary_professions,
+            specialisms: form.specialisms,
+            in_person_available: form.in_person_available,
+            online_available: form.online_available,
             city: form.city || null,
             public_phone: form.public_phone || null,
             public_email: form.public_email || null,
             website: form.website || null,
             bio: form.bio || null,
-            specialisms: form.specialisms,
             languages: form.languages,
             social_instagram: form.social_instagram || null,
             social_linkedin: form.social_linkedin || null,
@@ -924,14 +925,7 @@ function ProfileEditorPage() {
                 <Field label="Profession" hint="The role clients see on the directory card. Required to publish.">
                   <Select
                     value={form.primary_profession || undefined}
-                    onValueChange={(v) => {
-                      set("primary_profession", v as ProfessionSlug);
-                      // Drop the new primary out of secondaries to avoid clash
-                      set(
-                        "secondary_professions",
-                        form.secondary_professions.filter((s) => s !== v),
-                      );
-                    }}
+                    onValueChange={(v) => set("primary_profession", v as ProfessionSlug)}
                   >
                     <SelectTrigger className="h-10 rounded-[12px] border-reps-border bg-reps-ink text-[13px] text-white">
                       <SelectValue placeholder="Choose your primary profession" />
@@ -961,11 +955,14 @@ function ProfileEditorPage() {
                     </p>
                   ) : null}
                 </Field>
-                <Field label="Also offer (optional)" hint="Up to 2 secondary professions — shown as chips on your profile." className="sm:col-span-2">
-                  <SecondaryProfessionPicker
-                    primary={form.primary_profession || null}
-                    values={form.secondary_professions}
-                    onChange={(v) => set("secondary_professions", v)}
+                <Field label="How you work with clients" hint="Pick at least one. Both = Hybrid." className="sm:col-span-2">
+                  <DeliveryModePicker
+                    inPerson={form.in_person_available}
+                    online={form.online_available}
+                    onChange={(next) => {
+                      set("in_person_available", next.inPerson);
+                      set("online_available", next.online);
+                    }}
                   />
                 </Field>
                 <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`} className="sm:col-span-2">
@@ -1054,13 +1051,12 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Specialisms"
-                subtitle="What clients should hire you for — keep it focused."
+                subtitle={`What clients should hire you for — pick up to ${MAX_SPECIALISMS}.`}
                 step="04"
               />
-              <ChipInput
+              <SpecialismPicker
                 values={form.specialisms}
                 onChange={(v) => set("specialisms", v)}
-                placeholder="Type and press Enter"
               />
             </Card>
           </div>
@@ -1106,10 +1102,10 @@ function ProfileEditorPage() {
                       <div className="text-[12px] text-white/60">
                         {getProfessionLabel(form.primary_profession) || "Set your profession"}
                       </div>
-                      {form.secondary_professions.length > 0 ? (
+                      {form.specialisms.length > 0 ? (
                         <div className="mt-1.5 flex flex-wrap gap-1">
-                          {form.secondary_professions.map((s) => {
-                            const label = getProfessionLabel(s);
+                          {form.specialisms.map((s) => {
+                            const label = getSpecialismLabel(s);
                             return label ? (
                               <span
                                 key={s}
@@ -1121,6 +1117,14 @@ function ProfileEditorPage() {
                           })}
                         </div>
                       ) : null}
+                      <div className="mt-1 text-[10.5px] text-white/45">
+                        {[
+                          form.in_person_available ? "In person" : null,
+                          form.online_available ? "Online" : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "Pick how you work with clients"}
+                      </div>
                       {form.headline ? (
                         <p className="mt-2 text-[11.5px] leading-relaxed text-white/55">
                           {form.headline}
