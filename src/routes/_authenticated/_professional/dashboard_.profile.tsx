@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Camera,
@@ -47,6 +47,11 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
       },
     ],
   }),
+  pendingComponent: () => (
+    <div className="flex h-screen items-center justify-center bg-reps-ink">
+      <Skeleton className="h-10 w-40 rounded-[10px]" />
+    </div>
+  ),
   component: ProfileEditorPage,
 });
 
@@ -317,25 +322,20 @@ function ProfileEditorPage() {
   const saveAvatar = useServerFn(updateMyAvatar);
   const saveCover = useServerFn(updateMyCover);
 
-  const profileQuery = useQuery({
+  const profileQuery = useSuspenseQuery({
     queryKey: ["my-dashboard-profile"],
     queryFn: () => fetchProfile(),
   });
   const profile = profileQuery.data;
 
-  const [form, setForm] = React.useState<FormState>(() =>
-    profile ? toForm(profile) : toForm(EMPTY_PROFILE),
-  );
+  const [form, setForm] = React.useState<FormState>(() => toForm(profile));
   React.useEffect(() => {
     // When server data refreshes after a save, reset the form baseline.
-    if (profile) setForm(toForm(profile));
+    setForm(toForm(profile));
   }, [profile]);
 
-  const original = React.useMemo(
-    () => (profile ? toForm(profile) : toForm(EMPTY_PROFILE)),
-    [profile],
-  );
-  const dirty = !!profile && !equal(form, original);
+  const original = React.useMemo(() => toForm(profile), [profile]);
+  const dirty = !equal(form, original);
 
   const saveMutation = useMutation({
     mutationFn: () =>
