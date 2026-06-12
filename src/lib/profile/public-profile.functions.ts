@@ -8,13 +8,19 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("professionals")
       .select(
-        "slug, trading_name, headline, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published",
+        "id, slug, trading_name, headline, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (error) throw error;
-    return row;
+    if (!row) return null;
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", row.id)
+      .maybeSingle();
+    return { ...row, avatar_url: prof?.avatar_url ?? null };
   });
 
 export const listPublishedProfessionals = createServerFn({ method: "GET" }).handler(
