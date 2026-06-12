@@ -99,6 +99,16 @@ function emptyToNull<T extends Record<string, unknown>>(o: T): T {
   return out as T;
 }
 
+function slugify(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
+
 export const updateMyDashboardProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => UpdateInput.parse(d))
@@ -113,10 +123,25 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       .eq("id", userId);
     if (pErr) throw pErr;
 
+    // Derive slug from full name (with numeric suffix on collision)
+    const base = slugify(cleaned.full_name) || "coach";
+    let slug = base;
+    for (let i = 2; i < 50; i++) {
+      const { data: clash } = await supabase
+        .from("professionals")
+        .select("id")
+        .eq("slug", slug)
+        .neq("id", userId)
+        .maybeSingle();
+      if (!clash) break;
+      slug = `${base}-${i}`;
+    }
+
     // Upsert professionals row
     const { error: proErr } = await supabase.from("professionals").upsert(
       {
         id: userId,
+        slug,
         headline: cleaned.headline ?? null,
         trading_name: cleaned.trading_name ?? null,
         city: cleaned.city ?? null,
@@ -134,7 +159,7 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     );
     if (proErr) throw proErr;
 
-    return { ok: true };
+    return { ok: true, slug };
   });
 
 /* -------------------------------------------------------------------------- */
