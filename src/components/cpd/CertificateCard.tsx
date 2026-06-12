@@ -75,6 +75,13 @@ export function CertificateCard({ cert, onDelete }: { cert: CertRow; onDelete?: 
             {cert.year ? ` · Issued ${cert.year}` : ""}
             {cert.expiry_date ? ` · Expires ${cert.expiry_date}` : ""}
           </div>
+          {cert.regulator_verified ? (
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-medium text-emerald-300">
+              <Landmark className="size-3" />
+              Ofqual register-matched
+              {cert.qualification_number ? <span className="text-emerald-300/70">· {cert.qualification_number}</span> : null}
+            </div>
+          ) : null}
           {(isChanges || isRejected) && cert.admin_note ? (
             <div className="mt-2 rounded-[8px] border border-amber-400/20 bg-amber-500/10 px-2 py-1.5 text-[11px] text-amber-200">
               {cert.admin_note}
