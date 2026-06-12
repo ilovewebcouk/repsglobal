@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
+import { useAccountMenu } from "@/hooks/use-account-menu";
 
 
 /* ------------------------------------------------------------------------- */
@@ -244,7 +245,16 @@ function NavSection({
 }
 
 function MemberCard({ member }: { member?: DashboardShellMember }) {
-  const initials = (member?.name ?? "REPS Member")
+  const account = useAccountMenu();
+  // Prefer the real signed-in user; fall back to the prop (mock previews).
+  const name = account.user?.name ?? member?.name ?? "REPS Member";
+  const email = account.user?.email ?? null;
+  const avatarUrl = account.avatarUrl ?? member?.avatarUrl ?? null;
+  const headline = email ?? member?.headline ?? "Professional";
+  const tierLabel = account.user
+    ? account.roleLabel
+    : member?.tierLabel ?? null;
+  const initials = name
     .split(/\s+/)
     .map((p) => p[0])
     .join("")
@@ -253,25 +263,23 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
   return (
     <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
       <Avatar className="size-10">
-        <AvatarImage src={member?.avatarUrl ?? proJames} alt="" />
-        <AvatarFallback>{initials}</AvatarFallback>
+        {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
+        <AvatarFallback className="bg-reps-orange text-white">{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13px] font-semibold text-white">
-          {member?.name ?? "REPS Member"}
-        </div>
-        <div className="truncate text-[11px] text-white/55">
-          {member?.headline ?? "Professional"}
-        </div>
-        {member?.tierLabel ? (
+        <div className="truncate text-[13px] font-semibold text-white">{name}</div>
+        <div className="truncate text-[11px] text-white/55">{headline}</div>
+        {tierLabel ? (
           <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange">
-            {member.tierLabel}
+            {tierLabel}
           </Badge>
         ) : null}
       </div>
     </div>
   );
 }
+
+
 
 function AdminBadge() {
   return (
