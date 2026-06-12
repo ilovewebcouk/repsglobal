@@ -2,6 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { PROFESSION_SLUGS, type ProfessionSlug } from "@/lib/professions";
+import {
+  SPECIALISM_SLUGS,
+  MAX_SPECIALISMS,
+  type SpecialismSlug,
+} from "@/lib/specialisms";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -14,13 +19,14 @@ export type DashboardProfile = {
   // professional fields
   headline: string | null; // "Tagline" in UI
   primary_profession: ProfessionSlug | null;
-  secondary_professions: ProfessionSlug[];
+  specialisms: SpecialismSlug[];
+  in_person_available: boolean;
+  online_available: boolean;
   city: string | null;
   public_phone: string | null;
   public_email: string | null;
   website: string | null;
   bio: string | null;
-  specialisms: string[];
   languages: string[];
   social_instagram: string | null;
   social_linkedin: string | null;
@@ -47,7 +53,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, primary_profession, secondary_professions, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, primary_profession, in_person_available, online_available, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -55,7 +61,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
 
     const proRow = (pro ?? {}) as Record<string, unknown>;
     const primary = proRow.primary_profession;
-    const secondaryRaw = proRow.secondary_professions;
+    const specialismsRaw = proRow.specialisms;
 
     return {
       full_name: profile?.full_name ?? "",
@@ -65,18 +71,19 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
         typeof primary === "string" && (PROFESSION_SLUGS as string[]).includes(primary)
           ? (primary as ProfessionSlug)
           : null,
-      secondary_professions: Array.isArray(secondaryRaw)
-        ? (secondaryRaw.filter(
-            (s): s is ProfessionSlug =>
-              typeof s === "string" && (PROFESSION_SLUGS as string[]).includes(s),
-          ) as ProfessionSlug[])
+      specialisms: Array.isArray(specialismsRaw)
+        ? (specialismsRaw.filter(
+            (s): s is SpecialismSlug =>
+              typeof s === "string" && (SPECIALISM_SLUGS as string[]).includes(s),
+          ) as SpecialismSlug[])
         : [],
+      in_person_available: (proRow.in_person_available as boolean | null) ?? true,
+      online_available: (proRow.online_available as boolean | null) ?? true,
       city: (proRow.city as string | null) ?? null,
       public_phone: (proRow.public_phone as string | null) ?? null,
       public_email: (proRow.public_email as string | null) ?? null,
       website: (proRow.website as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
-      specialisms: (proRow.specialisms as string[] | null) ?? [],
       languages: (proRow.languages as string[] | null) ?? [],
       social_instagram: (proRow.social_instagram as string | null) ?? null,
       social_linkedin: (proRow.social_linkedin as string | null) ?? null,
@@ -90,19 +97,25 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
 /* Update                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const ProfessionSlugSchema = z.enum(PROFESSION_SLUGS as [ProfessionSlug, ...ProfessionSlug[]]);
+const ProfessionSlugSchema = z.enum(
+  PROFESSION_SLUGS as [ProfessionSlug, ...ProfessionSlug[]],
+);
+const SpecialismSlugSchema = z.enum(
+  SPECIALISM_SLUGS as [SpecialismSlug, ...SpecialismSlug[]],
+);
 
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
   headline: z.string().trim().max(160).nullable().optional(),
   primary_profession: ProfessionSlugSchema.nullable().optional(),
-  secondary_professions: z.array(ProfessionSlugSchema).max(2).optional(),
+  specialisms: z.array(SpecialismSlugSchema).max(MAX_SPECIALISMS).optional(),
+  in_person_available: z.boolean().optional(),
+  online_available: z.boolean().optional(),
   city: z.string().trim().max(120).nullable().optional(),
   public_phone: z.string().trim().max(40).nullable().optional(),
   public_email: z.string().trim().email().max(255).nullable().or(z.literal("")).optional(),
   website: z.string().trim().max(255).nullable().optional(),
   bio: z.string().trim().max(4000).nullable().optional(),
-  specialisms: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   languages: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
   social_instagram: z.string().trim().max(120).nullable().optional(),
   social_linkedin: z.string().trim().max(120).nullable().optional(),
@@ -134,10 +147,12 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const cleaned = emptyToNull(data);
 
-    // De-dupe secondary against primary defensively (trigger also enforces).
-    const secondary = (cleaned.secondary_professions ?? []).filter(
-      (s) => s !== cleaned.primary_profession,
-    );
+    // Enforce at least one delivery mode when both are present.
+    const inPerson = cleaned.in_person_available ?? true;
+    const online = cleaned.online_available ?? true;
+    if (!inPerson && !online) {
+      throw new Error("Pick at least one delivery mode (in person or online).");
+    }
 
     // Update profiles.full_name
     const { error: pErr } = await supabase
@@ -165,13 +180,14 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       slug,
       headline: cleaned.headline ?? null,
       primary_profession: cleaned.primary_profession ?? null,
-      secondary_professions: secondary,
+      specialisms: cleaned.specialisms ?? [],
+      in_person_available: inPerson,
+      online_available: online,
       city: cleaned.city ?? null,
       public_phone: cleaned.public_phone ?? null,
       public_email: cleaned.public_email ?? null,
       website: cleaned.website ?? null,
       bio: cleaned.bio ?? null,
-      specialisms: cleaned.specialisms ?? [],
       languages: cleaned.languages ?? [],
       social_instagram: cleaned.social_instagram ?? null,
       social_linkedin: cleaned.social_linkedin ?? null,
