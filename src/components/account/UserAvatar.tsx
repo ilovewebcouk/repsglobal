@@ -38,7 +38,7 @@ export function UserAvatar({
     >
       {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[10px]" /> : null}
       <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-white/40">
-        {getInitials(name)}
+        {initialsFromName(name)}
       </AvatarFallback>
     </Avatar>
   );
