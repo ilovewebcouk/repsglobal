@@ -400,6 +400,142 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_documents: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          dob_on_doc: string | null
+          doc_country: string | null
+          doc_expiry: string | null
+          doc_path_back: string | null
+          doc_path_front: string
+          doc_type: string
+          file_sha256: string | null
+          id: string
+          liveness_passed: boolean | null
+          name_on_doc: string | null
+          professional_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_match_score: number | null
+          selfie_path: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          dob_on_doc?: string | null
+          doc_country?: string | null
+          doc_expiry?: string | null
+          doc_path_back?: string | null
+          doc_path_front: string
+          doc_type: string
+          file_sha256?: string | null
+          id?: string
+          liveness_passed?: boolean | null
+          name_on_doc?: string | null
+          professional_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_match_score?: number | null
+          selfie_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          dob_on_doc?: string | null
+          doc_country?: string | null
+          doc_expiry?: string | null
+          doc_path_back?: string | null
+          doc_path_front?: string
+          doc_type?: string
+          file_sha256?: string | null
+          id?: string
+          liveness_passed?: boolean | null
+          name_on_doc?: string | null
+          professional_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_match_score?: number | null
+          selfie_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_documents_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_policies: {
+        Row: {
+          admin_note: string | null
+          cover_amount_gbp: number | null
+          created_at: string
+          doc_path: string
+          expiry_date: string
+          file_sha256: string | null
+          id: string
+          policy_number: string | null
+          professional_id: string
+          provider: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          cover_amount_gbp?: number | null
+          created_at?: string
+          doc_path: string
+          expiry_date: string
+          file_sha256?: string | null
+          id?: string
+          policy_number?: string | null
+          professional_id: string
+          provider: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          cover_amount_gbp?: number | null
+          created_at?: string
+          doc_path?: string
+          expiry_date?: string
+          file_sha256?: string | null
+          id?: string
+          policy_number?: string | null
+          professional_id?: string
+          provider?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_policies_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ofqual_cache: {
         Row: {
           fetched_at: string
@@ -828,6 +964,56 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_decisions: {
+        Row: {
+          checklist: Json
+          created_at: string
+          decision: string
+          id: string
+          notes: string | null
+          professional_id: string
+          reviewer_id: string
+          submission_id: string | null
+          unlocked_specialisms: string[] | null
+          unlocked_tier: string | null
+          unlocked_title_slug: string | null
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          decision: string
+          id?: string
+          notes?: string | null
+          professional_id: string
+          reviewer_id: string
+          submission_id?: string | null
+          unlocked_specialisms?: string[] | null
+          unlocked_tier?: string | null
+          unlocked_title_slug?: string | null
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          decision?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          reviewer_id?: string
+          submission_id?: string | null
+          unlocked_specialisms?: string[] | null
+          unlocked_tier?: string | null
+          unlocked_title_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_decisions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_renewal_nudges: {
         Row: {
           id: string
@@ -865,6 +1051,8 @@ export type Database = {
           awarding_body_slug: string | null
           centre_number: string | null
           certificate_number: string | null
+          claimed_at: string | null
+          claimed_by: string | null
           created_at: string
           derived_specialism_slugs: string[] | null
           derived_title_slug: string | null
@@ -882,6 +1070,7 @@ export type Database = {
           qualification_number: string | null
           regulator_record: Json | null
           regulator_verified: boolean
+          review_checklist: Json
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["verification_submission_status"]
@@ -898,6 +1087,8 @@ export type Database = {
           awarding_body_slug?: string | null
           centre_number?: string | null
           certificate_number?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           derived_specialism_slugs?: string[] | null
           derived_title_slug?: string | null
@@ -915,6 +1106,7 @@ export type Database = {
           qualification_number?: string | null
           regulator_record?: Json | null
           regulator_verified?: boolean
+          review_checklist?: Json
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]
@@ -931,6 +1123,8 @@ export type Database = {
           awarding_body_slug?: string | null
           centre_number?: string | null
           certificate_number?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           derived_specialism_slugs?: string[] | null
           derived_title_slug?: string | null
@@ -948,6 +1142,7 @@ export type Database = {
           qualification_number?: string | null
           regulator_record?: Json | null
           regulator_verified?: boolean
+          review_checklist?: Json
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]

@@ -14,6 +14,8 @@ const reviewInput = z.object({
   id: z.string().uuid(),
   decision: z.enum(["approved", "rejected", "changes_requested"]),
   admin_note: z.string().max(1000).optional().nullable(),
+  checklist: z.record(z.string(), z.boolean()).optional(),
+  unlocked_tier: z.enum(["verified", "pro", "studio"]).optional().nullable(),
 });
 
 export const submitVerification = createServerFn({ method: "POST" })
@@ -139,9 +141,23 @@ export const reviewVerification = createServerFn({ method: "POST" })
         admin_note: data.admin_note ?? null,
         reviewed_by: userId,
         reviewed_at: new Date().toISOString(),
+        review_checklist: data.checklist ?? {},
+        claimed_by: null,
+        claimed_at: null,
       } as never)
       .eq("id", data.id);
     if (updErr) throw new Error(updErr.message);
+
+    // Immutable audit log entry — always written, regardless of outcome.
+    await supabaseAdmin.from("verification_decisions").insert({
+      submission_id: data.id,
+      professional_id: sub.professional_id,
+      reviewer_id: userId,
+      decision: data.decision,
+      notes: data.admin_note ?? null,
+      checklist: data.checklist ?? {},
+      unlocked_tier: data.unlocked_tier ?? (data.decision === "approved" ? "verified" : null),
+    } as never);
 
     if (data.decision === "approved") {
       await supabaseAdmin
@@ -262,3 +278,218 @@ export const getVerificationDocUrl = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { url: signed.signedUrl };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Claim / release optimistic lock                                            */
+/* -------------------------------------------------------------------------- */
+
+const CLAIM_TTL_MIN = 15;
+
+async function assertAdmin(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string,
+) {
+  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  if (!isAdmin) throw new Error("Forbidden");
+}
+
+export const claimVerification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const cutoff = new Date(Date.now() - CLAIM_TTL_MIN * 60_000).toISOString();
+    const { data: cur } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("claimed_by, claimed_at")
+      .eq("id", data.id)
+      .maybeSingle();
+    const c = cur as { claimed_by: string | null; claimed_at: string | null } | null;
+    if (c?.claimed_by && c.claimed_by !== context.userId && c.claimed_at && c.claimed_at > cutoff) {
+      throw new Error("Already claimed by another reviewer");
+    }
+    const { error } = await supabaseAdmin
+      .from("verification_submissions")
+      .update({ claimed_by: context.userId, claimed_at: new Date().toISOString() } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const releaseVerification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("verification_submissions")
+      .update({ claimed_by: null, claimed_at: null } as never)
+      .eq("id", data.id)
+      .eq("claimed_by", context.userId);
+    return { ok: true };
+  });
+
+/* -------------------------------------------------------------------------- */
+/* Queue stats                                                                */
+/* -------------------------------------------------------------------------- */
+
+export const getQueueStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+
+    const [{ count: pending }, { count: approved24h }, { count: rejected7d }, { data: decisions }] = await Promise.all([
+      supabaseAdmin
+        .from("verification_submissions")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["submitted", "changes_requested"]),
+      supabaseAdmin
+        .from("verification_decisions")
+        .select("id", { count: "exact", head: true })
+        .eq("decision", "approved")
+        .gte("created_at", since24h),
+      supabaseAdmin
+        .from("verification_decisions")
+        .select("id", { count: "exact", head: true })
+        .eq("decision", "rejected")
+        .gte("created_at", since7d),
+      supabaseAdmin
+        .from("verification_decisions")
+        .select("created_at, submission_id")
+        .gte("created_at", since7d)
+        .limit(200),
+    ]);
+
+    let avgMinutes: number | null = null;
+    if (decisions && decisions.length) {
+      const subIds = decisions.map((d) => d.submission_id).filter(Boolean) as string[];
+      if (subIds.length) {
+        const { data: subs } = await supabaseAdmin
+          .from("verification_submissions")
+          .select("id, created_at")
+          .in("id", subIds);
+        const subMap = new Map((subs ?? []).map((s) => [s.id, new Date(s.created_at).getTime()]));
+        const deltas = decisions
+          .map((d) => {
+            const sc = subMap.get(d.submission_id as string);
+            return sc ? new Date(d.created_at).getTime() - sc : null;
+          })
+          .filter((x): x is number => x != null && x >= 0);
+        if (deltas.length)
+          avgMinutes = Math.round(deltas.reduce((a, b) => a + b, 0) / deltas.length / 60_000);
+      }
+    }
+
+    const startToday = new Date();
+    startToday.setHours(0, 0, 0, 0);
+    const { count: mineToday } = await supabaseAdmin
+      .from("verification_decisions")
+      .select("id", { count: "exact", head: true })
+      .eq("reviewer_id", context.userId)
+      .gte("created_at", startToday.toISOString());
+
+    return {
+      pending: pending ?? 0,
+      approved24h: approved24h ?? 0,
+      rejected7d: rejected7d ?? 0,
+      mineToday: mineToday ?? 0,
+      avgMinutes,
+    };
+  });
+
+/* -------------------------------------------------------------------------- */
+/* Workspace — consolidated case payload                                      */
+/* -------------------------------------------------------------------------- */
+
+export const getReviewWorkspace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: sub, error } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!sub) throw new Error("Not found");
+
+    const pid = (sub as { professional_id: string }).professional_id;
+    const [proR, profileR, identityR, insuranceR, historyR] = await Promise.all([
+      supabaseAdmin
+        .from("professionals")
+        .select("id, trading_name, city, primary_profession, primary_title_slug, verification, slug")
+        .eq("id", pid)
+        .maybeSingle(),
+      supabaseAdmin.from("profiles").select("id, full_name, avatar_url").eq("id", pid).maybeSingle(),
+      supabaseAdmin
+        .from("identity_documents")
+        .select("*")
+        .eq("professional_id", pid)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("insurance_policies")
+        .select("*")
+        .eq("professional_id", pid)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("verification_decisions")
+        .select("decision, notes, created_at, reviewer_id")
+        .eq("professional_id", pid)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+
+    return {
+      submission: sub,
+      professional: proR.data,
+      profile: profileR.data,
+      identity: identityR.data,
+      insurance: insuranceR.data,
+      history: historyR.data ?? [],
+    };
+  });
+
+/* -------------------------------------------------------------------------- */
+/* Reminder email                                                             */
+/* -------------------------------------------------------------------------- */
+
+export const sendVerificationReminder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        professional_id: z.string().uuid(),
+        missing: z.array(z.enum(["identity", "selfie", "insurance", "cert"])),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: u } = await supabaseAdmin.auth.admin.getUserById(data.professional_id);
+    const email = u?.user?.email;
+    if (!email) throw new Error("No email on file");
+    await supabaseAdmin.rpc("enqueue_email", {
+      queue_name: "transactional",
+      payload: {
+        template: "verification_reminder",
+        to: email,
+        data: { missing: data.missing },
+      },
+    });
+    return { ok: true };
+  });
+
