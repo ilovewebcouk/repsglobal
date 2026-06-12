@@ -323,71 +323,113 @@ function ChipInput({
   );
 }
 
-function SecondaryProfessionPicker({
-  primary,
+function DeliveryModePicker({
+  inPerson,
+  online,
+  onChange,
+}: {
+  inPerson: boolean;
+  online: boolean;
+  onChange: (next: { inPerson: boolean; online: boolean }) => void;
+}) {
+  const Btn = ({
+    active,
+    onClick,
+    children,
+  }: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        "h-9 rounded-full border px-4 text-[12px] font-semibold transition-colors " +
+        (active
+          ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+          : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
+      }
+    >
+      {children}
+    </button>
+  );
+
+  const toggle = (key: "inPerson" | "online") => {
+    const next = {
+      inPerson: key === "inPerson" ? !inPerson : inPerson,
+      online: key === "online" ? !online : online,
+    };
+    if (!next.inPerson && !next.online) return; // enforce min 1
+    onChange(next);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Btn active={inPerson} onClick={() => toggle("inPerson")}>
+        In person
+      </Btn>
+      <Btn active={online} onClick={() => toggle("online")}>
+        Online
+      </Btn>
+      {inPerson && online ? (
+        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+          Hybrid
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function SpecialismPicker({
   values,
   onChange,
 }: {
-  primary: ProfessionSlug | null;
-  values: ProfessionSlug[];
-  onChange: (next: ProfessionSlug[]) => void;
+  values: SpecialismSlug[];
+  onChange: (next: SpecialismSlug[]) => void;
 }) {
-  const available = PROFESSIONS.filter(
-    (p) => p.slug !== primary && !values.includes(p.slug),
-  );
-  const atMax = values.length >= 2;
-
+  const atMax = values.length >= MAX_SPECIALISMS;
+  const toggle = (slug: SpecialismSlug) => {
+    if (values.includes(slug)) {
+      onChange(values.filter((v) => v !== slug));
+      return;
+    }
+    if (atMax) return;
+    onChange([...values, slug]);
+  };
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
-      {values.map((s) => {
-        const label = getProfessionLabel(s);
-        if (!label) return null;
-        return (
-          <Badge
-            key={s}
-            variant="outline"
-            className="h-8 gap-1.5 rounded-full border-reps-orange-border bg-reps-orange-soft pl-3 pr-2 text-[12px] font-semibold text-reps-orange"
-          >
-            {label}
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        {SPECIALISMS.map((s) => {
+          const active = values.includes(s.slug);
+          const disabled = !active && atMax;
+          return (
             <button
+              key={s.slug}
               type="button"
-              aria-label={`Remove ${label}`}
-              onClick={() => onChange(values.filter((v) => v !== s))}
-              className="flex h-5 w-5 items-center justify-center rounded-full text-reps-orange/70 hover:bg-reps-orange/10 hover:text-reps-orange"
+              onClick={() => toggle(s.slug)}
+              disabled={disabled}
+              aria-pressed={active}
+              className={
+                "h-9 rounded-full border px-3.5 text-[12px] font-semibold transition-colors " +
+                (active
+                  ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                  : disabled
+                    ? "border-reps-border bg-reps-ink text-white/30"
+                    : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
+              }
             >
-              <X className="h-3 w-3" />
+              {active ? <span className="mr-1.5">✓</span> : null}
+              {s.label}
             </button>
-          </Badge>
-        );
-      })}
-      {atMax || available.length === 0 ? (
-        atMax ? (
-          <span className="px-2 text-[11px] text-white/45">Max 2 added.</span>
-        ) : (
-          <span className="px-2 text-[11px] text-white/45">
-            {primary ? "No more professions to add." : "Choose your primary profession first."}
-          </span>
-        )
-      ) : (
-        <Select
-          value=""
-          onValueChange={(v) => {
-            if (!v) return;
-            onChange([...values, v as ProfessionSlug]);
-          }}
-        >
-          <SelectTrigger className="h-8 w-auto min-w-[180px] rounded-full border-dashed border-reps-border bg-transparent px-3 text-[12px] text-white/70">
-            <SelectValue placeholder="+ Add profession" />
-          </SelectTrigger>
-          <SelectContent>
-            {available.map((p) => (
-              <SelectItem key={p.slug} value={p.slug}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+          );
+        })}
+      </div>
+      <p className="text-[11px] text-white/45">
+        {values.length} / {MAX_SPECIALISMS} selected
+        {atMax ? " · max reached" : ""}
+      </p>
     </div>
   );
 }
