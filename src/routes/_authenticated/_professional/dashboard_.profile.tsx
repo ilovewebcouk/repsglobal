@@ -672,24 +672,39 @@ function ProfileEditorPage() {
                       <button
                         type="button"
                         onClick={handlePickAvatar}
-                        disabled={avatarMutation.isPending}
+                        disabled={avatarPending}
                         className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
                       >
-                        <Camera className="h-3.5 w-3.5" />
-                        {avatarMutation.isPending ? "Uploading…" : "Change photo"}
+                        {avatarBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                        {avatarBusy === "uploading" && "Uploading…"}
+                        {avatarBusy === "validating" && "Checking photo…"}
+                        {avatarBusy === "cropping" && "Cropping…"}
+                        {avatarBusy === "generating" && "Generating…"}
+                        {!avatarBusy && "Change photo"}
                       </button>
                       <button
                         type="button"
                         onClick={handleRemoveAvatar}
-                        disabled={!profile.avatar_url || avatarMutation.isPending}
+                        disabled={!profile.avatar_url || avatarPending}
                         className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/70 shadow-none transition-colors hover:text-white disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Remove
                       </button>
+                      {lastUploadedPath ? (
+                        <button
+                          type="button"
+                          onClick={handleStartRegenerate}
+                          disabled={avatarPending}
+                          className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none transition-colors hover:text-white disabled:opacity-50"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
+                          Generate AI portrait
+                        </button>
+                      ) : null}
                     </div>
                     <p className="text-[11px] text-white/45">
-                      Square image, at least 512 × 512 · JPG or PNG · max 4MB
+                      Real headshot only · JPG or PNG · max 8MB · we check uploads with AI to keep the directory trustworthy
                     </p>
                   </div>
                 </div>
