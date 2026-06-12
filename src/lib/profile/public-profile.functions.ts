@@ -39,6 +39,38 @@ const PRO_PUBLIC_COLUMNS =
 const PRO_LIST_COLUMNS =
   "id, slug, headline, primary_profession, secondary_professions, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
 
+type ProPublicRow = {
+  id: string;
+  slug: string | null;
+  headline: string | null;
+  primary_profession: string | null;
+  secondary_professions: string[] | null;
+  bio: string | null;
+  specialisms: string[] | null;
+  city: string | null;
+  country: string | null;
+  online_available: boolean | null;
+  in_person_available: boolean | null;
+  hourly_rate_pence: number | null;
+  verification_status: string | null;
+  is_published: boolean | null;
+};
+
+type ProListRow = {
+  id: string;
+  slug: string | null;
+  headline: string | null;
+  primary_profession: string | null;
+  secondary_professions: string[] | null;
+  specialisms: string[] | null;
+  city: string | null;
+  country: string | null;
+  hourly_rate_pence: number | null;
+  verification_status: string | null;
+  in_person_available: boolean | null;
+  online_available: boolean | null;
+};
+
 export const getPublicProfileBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
@@ -52,7 +84,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     if (error) throw error;
     if (!row) return null;
 
-    const r = row as unknown as Record<string, unknown> & { id: string };
+    const r = row as unknown as ProPublicRow;
 
     const [{ data: prof }, locMap] = await Promise.all([
       supabaseAdmin
@@ -66,9 +98,9 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
 
     return {
       ...r,
-      primary_profession: (r.primary_profession as string | null) ?? null,
+      primary_profession: r.primary_profession ?? null,
       secondary_professions: Array.isArray(r.secondary_professions)
-        ? (r.secondary_professions as string[])
+        ? r.secondary_professions
         : [],
       full_name: prof?.full_name ?? null,
       avatar_url: prof?.avatar_url ?? null,
@@ -86,7 +118,7 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
       .order("updated_at", { ascending: false })
       .limit(60);
     if (error) throw error;
-    const rows = (data ?? []) as unknown as Array<Record<string, unknown> & { id: string }>;
+    const rows = (data ?? []) as unknown as ProListRow[];
     const ids = rows.map((r) => r.id).filter(Boolean);
 
     let profileById = new Map<string, { full_name: string | null; avatar_url: string | null }>();
@@ -104,9 +136,9 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
 
     return rows.map((r) => ({
       ...r,
-      primary_profession: (r.primary_profession as string | null) ?? null,
+      primary_profession: r.primary_profession ?? null,
       secondary_professions: Array.isArray(r.secondary_professions)
-        ? (r.secondary_professions as string[])
+        ? r.secondary_professions
         : [],
       full_name: profileById.get(r.id)?.full_name ?? null,
       avatar_url: profileById.get(r.id)?.avatar_url ?? null,
