@@ -300,12 +300,51 @@ function IdentityCard({
     );
   }
 
+  if (!useManual) {
+    return (
+      <PPanel className="p-5">
+        <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
+        <p className="mt-1 text-[12px] text-white/55">
+          We use Veriff to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            variant="primary"
+            size="md"
+            disabled={veriff.isPending}
+            onClick={() => veriff.mutate()}
+          >
+            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setUseManual(true)}
+            className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline sm:ml-2"
+          >
+            Upload manually instead
+          </button>
+        </div>
+      </PPanel>
+    );
+  }
+
   return (
     <PPanel className="p-5">
-      <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
-      <p className="mt-1 text-[12px] text-white/55">
-        Upload a government-issued photo ID and a selfie. We never share these — they're used for verification only.
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-[16px] font-bold text-white">Identity (manual)</h3>
+          <p className="mt-1 text-[12px] text-white/55">
+            Upload a government-issued photo ID and a selfie. Reviewed within 24 hours.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setUseManual(false)}
+          className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline"
+        >
+          Use Veriff instead
+        </button>
+      </div>
       <div className="mt-4 space-y-3">
         <div>
           <label className="text-[12px] text-white/65">Document type</label>
