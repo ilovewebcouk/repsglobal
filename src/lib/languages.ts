@@ -1,0 +1,46 @@
+// Curated language list for the public profile editor.
+// English first (platform language), then ordered by global speaker count.
+// Keep this list short and useful — it is a discovery/SEO filter, not a survey.
+
+export const LANGUAGES: readonly string[] = [
+  "English",
+  "Spanish",
+  "Mandarin",
+  "Hindi",
+  "Arabic",
+  "Portuguese",
+  "Bengali",
+  "Russian",
+  "Japanese",
+  "French",
+  "German",
+  "Italian",
+  "Dutch",
+  "Polish",
+  "Turkish",
+  "Korean",
+  "Vietnamese",
+  "Thai",
+  "Indonesian",
+  "Malay",
+  "Tagalog",
+  "Urdu",
+  "Punjabi",
+  "Persian",
+  "Hebrew",
+  "Greek",
+  "Swedish",
+  "Norwegian",
+  "Danish",
+  "Finnish",
+  "Czech",
+  "Romanian",
+  "Hungarian",
+  "Ukrainian",
+  "Welsh",
+  "Irish",
+  "Swahili",
+  "Zulu",
+];
+
+export const MAX_LANGUAGES = 4;

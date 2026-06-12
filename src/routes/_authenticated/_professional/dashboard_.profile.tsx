@@ -8,8 +8,6 @@ import {
   CheckCircle2,
   ExternalLink,
   Eye,
-  Globe,
-  
   Instagram,
   Linkedin,
   MapPin,
@@ -34,6 +32,22 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
+import { LanguagePicker } from "@/components/forms/LanguagePicker";
+
+function TiktokIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+      <path d="M19.6 6.7a5.6 5.6 0 0 1-3.4-1.2 5.6 5.6 0 0 1-2.1-3.5h-3v13.2a2.6 2.6 0 1 1-1.9-2.5V9.5a5.7 5.7 0 1 0 4.9 5.7V9.1a8.5 8.5 0 0 0 5.5 1.9z" />
+    </svg>
+  );
+}
+function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.836L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
 import {
   getMyPrimaryLocation,
   saveMyPrimaryPostcode,
@@ -110,13 +124,13 @@ type FormState = {
   online_available: boolean;
   city: string;
   contact_phone: string;
-  public_email: string;
-  website: string;
   bio: string;
   languages: string[];
   social_instagram: string;
   social_linkedin: string;
   social_youtube: string;
+  social_tiktok: string;
+  social_x: string;
 };
 
 function toForm(p: DashboardProfile): FormState {
@@ -129,13 +143,13 @@ function toForm(p: DashboardProfile): FormState {
     online_available: p.online_available ?? true,
     city: p.city ?? "",
     contact_phone: p.contact_phone ?? "",
-    public_email: p.public_email ?? "",
-    website: p.website ?? "",
     bio: p.bio ?? "",
     languages: p.languages ?? [],
     social_instagram: p.social_instagram ?? "",
     social_linkedin: p.social_linkedin ?? "",
     social_youtube: p.social_youtube ?? "",
+    social_tiktok: p.social_tiktok ?? "",
+    social_x: p.social_x ?? "",
   };
 }
 
@@ -148,12 +162,12 @@ function equal(a: FormState, b: FormState): boolean {
     a.online_available === b.online_available &&
     a.city === b.city &&
     a.contact_phone === b.contact_phone &&
-    a.public_email === b.public_email &&
-    a.website === b.website &&
     a.bio === b.bio &&
     a.social_instagram === b.social_instagram &&
     a.social_linkedin === b.social_linkedin &&
     a.social_youtube === b.social_youtube &&
+    a.social_tiktok === b.social_tiktok &&
+    a.social_x === b.social_x &&
     JSON.stringify(a.specialisms) === JSON.stringify(b.specialisms) &&
     JSON.stringify(a.languages) === JSON.stringify(b.languages)
   );
@@ -167,11 +181,19 @@ function completion(p: DashboardProfile): {
     { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
     { label: "Profile photo", done: !!p.avatar_url },
-    
     { label: "Specialisms", done: (p.specialisms?.length ?? 0) >= 1 },
     { label: "Languages", done: (p.languages?.length ?? 0) >= 1 },
-    { label: "Contact details", done: !!(p.public_email && p.contact_phone) },
-    { label: "Website or social link", done: !!(p.website || p.social_instagram || p.social_linkedin || p.social_youtube) },
+    { label: "Contact details", done: !!p.contact_phone },
+    {
+      label: "Social link",
+      done: !!(
+        p.social_instagram ||
+        p.social_linkedin ||
+        p.social_youtube ||
+        p.social_tiktok ||
+        p.social_x
+      ),
+    },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
@@ -668,13 +690,13 @@ function ProfileEditorPage() {
             online_available: form.online_available,
             city: form.city || null,
             contact_phone: form.contact_phone || null,
-            public_email: form.public_email || null,
-            website: form.website || null,
             bio: form.bio || null,
             languages: form.languages,
             social_instagram: form.social_instagram || null,
             social_linkedin: form.social_linkedin || null,
             social_youtube: form.social_youtube || null,
+            social_tiktok: form.social_tiktok || null,
+            social_x: form.social_x || null,
           },
         });
       }
@@ -1069,48 +1091,43 @@ function ProfileEditorPage() {
                     }
                   />
                 </Field>
-                <Field label="Public email">
-                  <TextInput
-                    type="email"
-                    value={form.public_email}
-                    onChange={(v) => set("public_email", v)}
-                  />
-                </Field>
-                <Field label="Website" className="sm:col-span-2">
-                  <TextInput
-                    type="url"
-                    value={form.website}
-                    onChange={(v) => set("website", v)}
-                    prefix={<Globe className="h-3.5 w-3.5" />}
-                    placeholder="yourwebsite.com"
-                  />
-                </Field>
-                <Field label="Languages spoken" className="sm:col-span-2">
-                  <ChipInput
+                <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language." className="sm:col-span-2">
+                  <LanguagePicker
                     values={form.languages}
                     onChange={(v) => set("languages", v)}
-                    placeholder="Type and press Enter"
                   />
                 </Field>
-                <Field label="Social links" className="sm:col-span-2">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <Field label="Social links" hint="Just the handle — we'll build the link." className="sm:col-span-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                     <TextInput
                       value={form.social_instagram}
                       onChange={(v) => set("social_instagram", v)}
                       prefix={<Instagram className="h-3.5 w-3.5" />}
-                      placeholder="@handle"
+                      placeholder="instagram handle"
                     />
                     <TextInput
-                      value={form.social_linkedin}
-                      onChange={(v) => set("social_linkedin", v)}
-                      prefix={<Linkedin className="h-3.5 w-3.5" />}
-                      placeholder="profile-slug"
+                      value={form.social_tiktok}
+                      onChange={(v) => set("social_tiktok", v)}
+                      prefix={<TiktokIcon />}
+                      placeholder="tiktok handle"
+                    />
+                    <TextInput
+                      value={form.social_x}
+                      onChange={(v) => set("social_x", v)}
+                      prefix={<XIcon />}
+                      placeholder="x / twitter handle"
                     />
                     <TextInput
                       value={form.social_youtube}
                       onChange={(v) => set("social_youtube", v)}
                       prefix={<Youtube className="h-3.5 w-3.5" />}
-                      placeholder="@channel"
+                      placeholder="youtube channel"
+                    />
+                    <TextInput
+                      value={form.social_linkedin}
+                      onChange={(v) => set("social_linkedin", v)}
+                      prefix={<Linkedin className="h-3.5 w-3.5" />}
+                      placeholder="linkedin slug"
                     />
                   </div>
                 </Field>

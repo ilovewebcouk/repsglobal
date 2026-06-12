@@ -7,6 +7,7 @@ import {
   MAX_SPECIALISMS,
   type SpecialismSlug,
 } from "@/lib/specialisms";
+import { MAX_LANGUAGES } from "@/lib/languages";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -25,13 +26,13 @@ export type DashboardProfile = {
   city: string | null;
   /** Internal-only — never rendered on any public page. E.164 format. */
   contact_phone: string | null;
-  public_email: string | null;
-  website: string | null;
   bio: string | null;
   languages: string[];
   social_instagram: string | null;
   social_linkedin: string | null;
   social_youtube: string | null;
+  social_tiktok: string | null;
+  social_x: string | null;
   is_published: boolean;
   verification_status: string;
 };
@@ -54,7 +55,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, primary_profession, in_person_available, online_available, city, contact_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -82,13 +83,13 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       online_available: (proRow.online_available as boolean | null) ?? true,
       city: (proRow.city as string | null) ?? null,
       contact_phone: (proRow.contact_phone as string | null) ?? null,
-      public_email: (proRow.public_email as string | null) ?? null,
-      website: (proRow.website as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
       languages: (proRow.languages as string[] | null) ?? [],
       social_instagram: (proRow.social_instagram as string | null) ?? null,
       social_linkedin: (proRow.social_linkedin as string | null) ?? null,
       social_youtube: (proRow.social_youtube as string | null) ?? null,
+      social_tiktok: (proRow.social_tiktok as string | null) ?? null,
+      social_x: (proRow.social_x as string | null) ?? null,
       is_published: (proRow.is_published as boolean | null) ?? false,
       verification_status: (proRow.verification_status as string | null) ?? "pending",
     };
@@ -104,6 +105,26 @@ const ProfessionSlugSchema = z.enum(
 const SpecialismSlugSchema = z.enum(
   SPECIALISM_SLUGS as [SpecialismSlug, ...SpecialismSlug[]],
 );
+
+/**
+ * Normalise a social input down to a handle/slug.
+ * Strips protocol, host, leading @, trailing slash, and surrounding whitespace.
+ * Returns null for empty input so the column clears cleanly.
+ */
+function normaliseSocial(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  let v = String(raw).trim();
+  if (!v) return null;
+  // Strip protocol + host (anything up to and including the first '/')
+  v = v.replace(/^https?:\/\//i, "");
+  // If a host slipped in (e.g. instagram.com/handle), drop it.
+  if (v.includes("/")) {
+    const parts = v.split("/").filter(Boolean);
+    v = parts[parts.length - 1] ?? "";
+  }
+  v = v.replace(/^@+/, "").trim();
+  return v || null;
+}
 
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
@@ -121,13 +142,13 @@ const UpdateInput = z.object({
     .nullable()
     .or(z.literal(""))
     .optional(),
-  public_email: z.string().trim().email().max(255).nullable().or(z.literal("")).optional(),
-  website: z.string().trim().max(255).nullable().optional(),
   bio: z.string().trim().max(4000).nullable().optional(),
-  languages: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  languages: z.array(z.string().trim().min(1).max(40)).max(MAX_LANGUAGES).optional(),
   social_instagram: z.string().trim().max(120).nullable().optional(),
   social_linkedin: z.string().trim().max(120).nullable().optional(),
   social_youtube: z.string().trim().max(120).nullable().optional(),
+  social_tiktok: z.string().trim().max(120).nullable().optional(),
+  social_x: z.string().trim().max(120).nullable().optional(),
 });
 
 function emptyToNull<T extends Record<string, unknown>>(o: T): T {
@@ -193,13 +214,13 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       online_available: online,
       city: cleaned.city ?? null,
       contact_phone: cleaned.contact_phone ?? null,
-      public_email: cleaned.public_email ?? null,
-      website: cleaned.website ?? null,
       bio: cleaned.bio ?? null,
       languages: cleaned.languages ?? [],
-      social_instagram: cleaned.social_instagram ?? null,
-      social_linkedin: cleaned.social_linkedin ?? null,
-      social_youtube: cleaned.social_youtube ?? null,
+      social_instagram: normaliseSocial(cleaned.social_instagram),
+      social_linkedin: normaliseSocial(cleaned.social_linkedin),
+      social_youtube: normaliseSocial(cleaned.social_youtube),
+      social_tiktok: normaliseSocial(cleaned.social_tiktok),
+      social_x: normaliseSocial(cleaned.social_x),
     } as unknown as Record<string, unknown>;
 
     // Upsert professionals row
@@ -247,5 +268,5 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
       .update({ avatar_url: url })
       .eq("id", userId);
     if (error) throw error;
-    return { url };
+    return { ok: true, url };
   });
