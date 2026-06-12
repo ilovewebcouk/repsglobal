@@ -1,33 +1,34 @@
-# Square dashboard avatars to match the directory
+# Actually square the dashboard avatars (round 2)
 
-Pro-uploaded/AI-regenerated avatars render as 18px-radius squares everywhere they appear in the directory (`/find-a-professional`, `/pro/$slug`, `/c/$slug`, `FeaturedProCard`, enquire summary). The dashboard currently renders them as circles via the shadcn `Avatar` primitive, so what the pro tunes in `/dashboard/profile` is not what visitors see. This change makes the dashboard a true WYSIWYG preview of the directory card.
+The previous pass missed the topbar avatar entirely. It's not rendered by `DashboardShell` directly — the topbar uses `<UserAccountMenu surface="dashboard" />`, which renders `UserAvatar` from `src/components/account/UserAvatar.tsx`. That component wraps the shadcn `Avatar` primitive and never overrides `rounded-full`, so every topbar avatar (dashboard + public header) renders as a circle.
 
-Scope: every avatar inside the authenticated dashboard surfaces — profile editor, topbar/user-card, settings, and the client/lead thumbnails in the demo content. No marketing pages, no directory pages (already square), no auth-page or root navbar avatar.
+The sidebar member-card avatar was already edited last turn but is still showing as a circle in the live preview. The source is correct (`size-10 rounded-[14px]` on the root), so either dev-server HMR is stale or `tailwind-merge` isn't resolving the override for some reason. Re-touching the file in this turn will force a fresh compile and I'll verify in the browser.
 
 ## Changes
 
-**1. Profile editor — `src/routes/_authenticated/_professional/dashboard_.profile.tsx`**
-- Lines 620–624 and 818–822: swap `<Avatar className="size-20 ring-2 ring-reps-border">` / `size-16 ring-4 ring-reps-panel` for the same size but `rounded-[18px]` and add `rounded-[18px]` to the nested `AvatarImage` and `AvatarFallback`. Keep the ring; rings work on rounded-rect too.
+**1. `src/components/account/UserAvatar.tsx`** — single source of truth for the topbar + public-header avatar.
+- Add `rounded-[14px]` to the `Avatar` root's `cn(...)`.
+- Add `className="rounded-[14px]"` to the nested `AvatarImage`.
+- Add `rounded-[14px]` to the `AvatarFallback` className.
+- Keep the size/ring/text props exactly as-is. This is the only structural change.
+- Scope: applies to dashboard topbar AND public header. The user has said "all avatars are square"; making this shared primitive square is consistent with the directory cards and with the rule on `/find-a-professional`. Note this is a small visible change to the public navbar too — I'm calling it out as intentional and consistent, not a regression.
 
-**2. Topbar user card — `src/components/dashboard/DashboardShell.tsx`**
-- Line 259–262 (`UserCard`): `<Avatar className="size-10 rounded-[18px]">` + `rounded-[18px]` on `AvatarImage` and `AvatarFallback`. (User said "everywhere", so the topbar chip squares up too — it's still 40px so it reads as a tile, not an app icon.)
+**2. `src/components/dashboard/DashboardShell.tsx`** — re-touch the MemberCard avatar so HMR rebuilds it; same intent as last turn, no behaviour change.
+- Confirm lines 259–262 still read square (they do).
+- If after HMR the sidebar avatar is still circular, the fallback is to use an explicit `!rounded-[14px]` (with `!` important prefix) so we bypass any tailwind-merge edge case. Apply only if needed after verification.
 
-**3. Settings avatar — `src/routes/_authenticated/_professional/dashboard_.settings.tsx`**
-- Line 145: change the initials swatch from `rounded-full` to `rounded-[18px]`.
+## Verification (this is the part I skipped last time)
 
-**4. Demo content (clients/leads/at-risk thumbnails) — `src/components/dashboard/DashboardDemoContent.tsx`**
-- Lines 497, 525, 680: change the four client/lead/seat avatar `<img>` tags from `rounded-full` to `rounded-[14px]` (small-photo exception per the locked radius memory — these are 32–40px scaled-down thumbnails that should read as the same shape as the larger 18px source). Status pills and progress bars on the same lines stay `rounded-full` — they are pills, not avatars.
-
-**5. Untouched (intentionally circular)**
-- Step indicators / icon swatches with Lucide icons inside (`flex size-10 items-center justify-center rounded-full bg-…` in `_professional/dashboard.tsx:246`, `DashboardDemoContent.tsx:145`, `:387`, `:732`) — these are icon tiles, not avatars.
-- All `rounded-full` pills (badges, progress bars, toggle switch knob, notification count). These are not avatars.
+1. After the edit, `view_preview /dashboard` and screenshot.
+2. Zoom on top-right corner — confirm the topbar avatar is a 14px-radius square, not a circle.
+3. Zoom on bottom-left sidebar — confirm the member-card avatar is a 14px-radius square.
+4. Reload once with cache disabled if either is still circular, to rule out HMR.
+5. Only then report back to the user.
 
 ## Out of scope
 
-- No change to AI prompt, crop math, validation, upload pipeline, or any `avatar-ai.functions.ts` logic.
-- No change to the shared `src/components/ui/avatar.tsx` shadcn primitive — keep it circular for any non-dashboard caller. We override per-usage in the dashboard files above. (Rationale: the primitive is also used by other parts of the app that should stay circular; a global change is broader than asked.)
-- Directory/marketing pages — already square at 18px.
-
-## Verification
-
-After edits: load `/dashboard/profile` and confirm the 80px hero preview + 64px secondary preview render as 18px squares, identical in shape to a `/pro/$slug` hero. Load `/dashboard` and confirm the topbar user chip and demo client thumbnails are 18px / 14px squares. Compare side-by-side with `/find-a-professional` to confirm WYSIWYG.
+- Profile-editor avatars (`size-20` / `size-16`) at 18px — already verified square in last turn's edits to `dashboard_.profile.tsx`; not re-touched.
+- Settings page initials swatch — already squared at 18px.
+- Demo content client/lead thumbnails — already squared at 14px.
+- All the per-page `.flex h-X w-X rounded-full bg-reps-orange-soft …` initials swatches inside `_pro/dashboard_.*` routes (messages, clients, community, calendar, payments, check-ins, reviews). These are decorative initial chips, not user-avatar surfaces, and were not part of the original ask. Flag for a follow-up if you want them squared too.
+- `PublicHeader` itself — only its avatar changes (because it uses the shared `UserAvatar`); no other navbar styling touched.
