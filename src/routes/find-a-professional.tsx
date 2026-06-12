@@ -568,15 +568,23 @@ function DirectoryPage() {
                   <span className="relative">
                     <select
                       className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
-                      defaultValue="relevant"
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value as typeof sort)}
                     >
-                      <option value="relevant">Most relevant</option>
+                      <option value="recommended">Recommended</option>
                       <option value="rating">Top rated</option>
-                      <option value="distance">Nearest</option>
+                      <option value="nearest" disabled={!origin}>
+                        {origin ? "Nearest" : "Nearest (set your location)"}
+                      </option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-reps-muted-light" />
                   </span>
                 </label>
+              </div>
+
+              {/* Viewer origin chip — drives real distance + nearest sort */}
+              <div className="mt-3 flex items-center justify-end">
+                <ViewerOriginControl />
               </div>
 
               {/* Active filter chips */}
