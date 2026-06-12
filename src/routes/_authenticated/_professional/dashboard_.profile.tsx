@@ -944,6 +944,132 @@ function ProfileEditorPage() {
           </aside>
         </div>
       </div>
+
+      {/* Rejection dialog */}
+      <Dialog open={rejection !== null} onOpenChange={(o) => !o && setRejection(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-reps-orange" />
+              That photo can't be used
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-white/70">
+              {rejection?.reason}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
+            <p className="font-semibold text-white/85 mb-1">What we need</p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              <li>A clear photograph of you (not a logo, illustration or graphic)</li>
+              <li>Just you — no group photos</li>
+              <li>Head-and-shoulders, face clearly visible</li>
+              <li>Good lighting, in focus</li>
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRejection(null)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setRejection(null);
+                void handlePickAvatar();
+              }}
+            >
+              Try a different photo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate confirm + preview */}
+      <Dialog
+        open={regenState !== null}
+        onOpenChange={(o) => {
+          if (!o && avatarBusy !== "generating") setRegenState(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[520px]">
+          {regenState?.step === "confirm" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-reps-orange" />
+                  Generate a professional AI portrait?
+                </DialogTitle>
+                <DialogDescription className="pt-2 text-white/70">
+                  We'll create a studio-style portrait based on your photo. It will look like you, but it is an AI-generated image — not a real photograph. Your original photo stays available.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
+                Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setRegenState(null)} disabled={avatarBusy === "generating"}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmRegenerate} disabled={avatarBusy === "generating"}>
+                  {avatarBusy === "generating" ? (
+                    <>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-3.5 w-3.5" />
+                      Generate
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : regenState?.step === "preview" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Choose your photo</DialogTitle>
+                <DialogDescription className="pt-1 text-white/70">
+                  Side-by-side preview. The AI version is clearly a re-rendered portrait.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-[11px] uppercase tracking-wide text-white/55">Original</div>
+                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-border bg-reps-panel-soft">
+                    {regenState.originalUrl ? (
+                      <img src={regenState.originalUrl} alt="Original" className="h-full w-full object-cover" />
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-[11px] uppercase tracking-wide text-reps-orange flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> AI portrait
+                  </div>
+                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-orange/40 bg-reps-panel-soft">
+                    <img src={regenState.aiUrl} alt="AI portrait" className="h-full w-full object-cover" />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="flex-wrap gap-2">
+                <Button variant="outline" onClick={() => setRegenState(null)}>
+                  Keep original
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath })}
+                >
+                  Try again
+                </Button>
+                <Button onClick={handleUseAiVersion}>
+                  Use AI version
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
