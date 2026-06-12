@@ -357,25 +357,25 @@ function DeliveryModePicker({
     <div
       role="group"
       aria-label="How you work with clients"
-      className="flex flex-wrap items-center gap-2"
+      className="inline-flex w-fit max-w-full flex-wrap items-center gap-2"
     >
       <ToggleGroup
         type="multiple"
         value={value}
         onValueChange={handleChange}
-        className="gap-2"
+        className="w-fit justify-start gap-2"
       >
         <ToggleGroupItem
           value="in-person"
           aria-label="In person"
-          className="h-9 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
+          className="h-9 w-auto shrink-0 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
         >
           In person
         </ToggleGroupItem>
         <ToggleGroupItem
           value="online"
           aria-label="Online"
-          className="h-9 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
+          className="h-9 w-auto shrink-0 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
         >
           Online
         </ToggleGroupItem>
