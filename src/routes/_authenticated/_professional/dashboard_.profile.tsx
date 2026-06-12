@@ -573,12 +573,12 @@ function ProfileEditorPage() {
       subtitle="Manage how your professional profile appears in the REPS directory."
       actions={
         <>
-          <Button variant="outline" disabled={!profile.is_published} asChild>
+          <DashboardButton variant="ghost" disabled={!profile.is_published} asChild>
             <a href="/find-a-professional" target="_blank" rel="noreferrer">
-              <Eye data-icon="inline-start" />
+              <Eye className="h-3.5 w-3.5" />
               Preview public profile
             </a>
-          </Button>
+          </DashboardButton>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={!dirty || saveMutation.isPending}
@@ -642,14 +642,15 @@ function ProfileEditorPage() {
                         {avatarBusy === "generating" && "Generating…"}
                         {!avatarBusy && "Change photo"}
                       </button>
-                      <button
+                      <DashboardButton
                         type="button"
+                        variant="ghost"
                         onClick={handleRemoveAvatar}
                         disabled={!profile.avatar_url || avatarPending}
-                        className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/70 shadow-none transition-colors hover:text-white disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Remove
+                      </DashboardButton>
                       </button>
                       {lastUploadedPath ? (
                         <button
@@ -853,11 +854,11 @@ function ProfileEditorPage() {
                         {form.bio}
                       </p>
                     ) : null}
-                    <Button asChild variant="outline" className="mt-4 w-full">
+                    <DashboardButton asChild variant="ghost" className="mt-4 w-full">
                       <Link to="/find-a-professional">
-                        View full profile <ExternalLink data-icon="inline-end" />
+                        View full profile <ExternalLink className="h-3.5 w-3.5" />
                       </Link>
-                    </Button>
+                    </DashboardButton>
                   </div>
                 </div>
               </div>
