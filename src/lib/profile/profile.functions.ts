@@ -1,12 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { SPECIALISM_SLUGS, MAX_SPECIALISMS, type SpecialismSlug } from "@/lib/specialisms";
+
+const SpecialismEnum = z.enum(
+  SPECIALISM_SLUGS as [SpecialismSlug, ...SpecialismSlug[]],
+);
 
 const ProfileInput = z.object({
   trading_name: z.string().min(2).max(120),
   headline: z.string().max(160).optional().nullable(),
   bio: z.string().max(4000).optional().nullable(),
-  specialisms: z.array(z.string()).max(20),
+  specialisms: z.array(SpecialismEnum).max(MAX_SPECIALISMS),
   city: z.string().max(80).optional().nullable(),
   country: z.string().max(80).optional().nullable(),
   online_available: z.boolean(),
