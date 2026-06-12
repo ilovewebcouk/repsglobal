@@ -269,8 +269,13 @@ function AdminVerificationPage() {
                       <span className="truncate text-[13px] font-semibold text-white">{name}</span>
                       {claimed ? <Lock className="h-3 w-3 text-amber-400" /> : null}
                     </div>
-                    <div className="mt-0.5 truncate text-[11px] text-white/55">
-                      {r.qualification}
+                    <div className="mt-0.5 flex items-center gap-1.5">
+                      <span className="truncate text-[11px] text-white/55">{r.qualification}</span>
+                      {siblingCounts[r.professional_id] > 1 && (
+                        <span className="shrink-0 rounded-[6px] border border-reps-orange/30 bg-reps-orange-soft px-1.5 py-0.5 text-[10px] font-semibold text-reps-orange">
+                          +{siblingCounts[r.professional_id] - 1} more
+                        </span>
+                      )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
                       <span className="text-white/45">{relativeTime(r.created_at)} ago</span>
