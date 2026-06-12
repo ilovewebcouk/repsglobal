@@ -161,6 +161,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
     title: "Money & Admin",
     items: [
       { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
