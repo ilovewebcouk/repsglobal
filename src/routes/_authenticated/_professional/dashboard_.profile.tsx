@@ -516,7 +516,7 @@ function ProfileEditorPage() {
       return;
     }
     if (!sourcePath) return;
-    setRegenState({ step: "confirm", sourcePath });
+    setRegenState({ step: "confirm", sourcePath, attempt: 0 });
   };
 
   const handleConfirmRegenerate = async () => {
