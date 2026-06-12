@@ -445,6 +445,7 @@ export type Database = {
           cert_uploaded_at: string | null
           city: string | null
           country: string | null
+          cover_url: string | null
           created_at: string
           dbs_valid_until: string | null
           headline: string | null
@@ -453,21 +454,29 @@ export type Database = {
           in_person_available: boolean
           insurance_valid_until: string | null
           is_published: boolean
+          languages: string[]
           online_available: boolean
+          public_email: string | null
+          public_phone: string | null
           reps_level: Database["public"]["Enums"]["reps_level"] | null
           slug: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_youtube: string | null
           specialisms: string[]
           trading_name: string | null
           updated_at: string
           verification: Database["public"]["Enums"]["verification_status"]
           verification_grace_until: string | null
           verification_status: Database["public"]["Enums"]["verification_state"]
+          website: string | null
         }
         Insert: {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
           country?: string | null
+          cover_url?: string | null
           created_at?: string
           dbs_valid_until?: string | null
           headline?: string | null
@@ -476,21 +485,29 @@ export type Database = {
           in_person_available?: boolean
           insurance_valid_until?: string | null
           is_published?: boolean
+          languages?: string[]
           online_available?: boolean
+          public_email?: string | null
+          public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_youtube?: string | null
           specialisms?: string[]
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
+          website?: string | null
         }
         Update: {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
           country?: string | null
+          cover_url?: string | null
           created_at?: string
           dbs_valid_until?: string | null
           headline?: string | null
@@ -499,15 +516,22 @@ export type Database = {
           in_person_available?: boolean
           insurance_valid_until?: string | null
           is_published?: boolean
+          languages?: string[]
           online_available?: boolean
+          public_email?: string | null
+          public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_youtube?: string | null
           specialisms?: string[]
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
+          website?: string | null
         }
         Relationships: []
       }
