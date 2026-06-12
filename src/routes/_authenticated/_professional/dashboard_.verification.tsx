@@ -238,7 +238,36 @@ function IdentityCard({
 
   if (identity) {
     const isVeriff = identity.vendor === "veriff";
-    const inProgress = identity.status === "pending" && isVeriff && identity.veriff_status !== "submitted";
+    const veriffStarted = identity.veriff_status === "submitted";
+    const veriffStuck =
+      isVeriff &&
+      identity.status === "pending" &&
+      (identity.veriff_status === "created" ||
+        identity.veriff_status === "started" ||
+        identity.veriff_status === "abandoned" ||
+        !identity.veriff_status);
+    const inProgress = identity.status === "pending" && isVeriff && !veriffStuck;
+
+    const badgeLabel =
+      identity.status === "approved"
+        ? "ID-checked"
+        : identity.status === "rejected"
+          ? "Rejected"
+          : identity.status === "needs_more_info"
+            ? "More info needed"
+            : identity.status === "expired"
+              ? "Expired"
+              : veriffStuck
+                ? "Not started"
+                : "In review";
+
+    const badgeClass =
+      identity.status === "approved"
+        ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+        : identity.status === "rejected" || identity.status === "expired"
+          ? "border-red-400/30 bg-red-500/15 text-red-300"
+          : "border-amber-400/30 bg-amber-500/15 text-amber-300";
+
     return (
       <PPanel className="p-5">
         <div className="flex items-start justify-between gap-3">
@@ -248,28 +277,7 @@ function IdentityCard({
               {isVeriff ? "Veriff ID check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
             </p>
           </div>
-          <Badge
-            variant="neutral"
-            className={
-              identity.status === "approved"
-                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                : identity.status === "rejected" || identity.status === "expired"
-                  ? "border-red-400/30 bg-red-500/15 text-red-300"
-                  : identity.status === "needs_more_info"
-                    ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
-                    : "border-amber-400/30 bg-amber-500/15 text-amber-300"
-            }
-          >
-            {identity.status === "approved"
-              ? "ID-checked"
-              : identity.status === "rejected"
-                ? "Rejected"
-                : identity.status === "needs_more_info"
-                  ? "More info needed"
-                  : identity.status === "expired"
-                    ? "Expired"
-                    : "In review"}
-          </Badge>
+          <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
         {(identity.admin_note || identity.veriff_reason) && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
@@ -277,28 +285,38 @@ function IdentityCard({
             <span>{identity.admin_note || identity.veriff_reason}</span>
           </div>
         )}
-        {inProgress && identity.veriff_session_url && (
-          <a
-            href={identity.veriff_session_url}
-            className="mt-4 inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
-          >
-            Continue ID check
-          </a>
+        {veriffStuck && (
+          <p className="mt-3 text-[12px] text-white/55">
+            Your last ID check didn’t finish. Resume where you left off, or restart with a fresh session.
+          </p>
         )}
-        {(identity.status === "rejected" || identity.status === "needs_more_info" || identity.status === "expired") && (
-          <Button
-            variant="primary"
-            size="md"
-            className="mt-4"
-            disabled={veriff.isPending}
-            onClick={() => veriff.mutate()}
-          >
-            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
-          </Button>
-        )}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {(inProgress || veriffStuck) && identity.veriff_session_url && (
+            <a
+              href={identity.veriff_session_url}
+              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
+            >
+              {veriffStarted ? "Continue ID check" : "Resume ID check"}
+            </a>
+          )}
+          {(veriffStuck ||
+            identity.status === "rejected" ||
+            identity.status === "needs_more_info" ||
+            identity.status === "expired") && (
+            <Button
+              variant={veriffStuck ? "subtle" : "primary"}
+              size="md"
+              disabled={veriff.isPending}
+              onClick={() => veriff.mutate()}
+            >
+              {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
+            </Button>
+          )}
+        </div>
       </PPanel>
     );
   }
+
 
   if (!useManual) {
     return (

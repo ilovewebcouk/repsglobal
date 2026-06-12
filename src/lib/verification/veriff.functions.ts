@@ -58,6 +58,15 @@ export const createVeriffSession = createServerFn({ method: "POST" })
 
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
+    // Purge any prior in-progress Veriff rows so Restart works cleanly and
+    // the admin queue never sees abandoned sessions.
+    await supabase
+      .from("identity_documents")
+      .delete()
+      .eq("professional_id", userId)
+      .eq("status", "pending")
+      .in("veriff_status", ["created", "started", "abandoned"]);
+
     const { data: row, error } = await supabase
       .from("identity_documents")
       .insert({
