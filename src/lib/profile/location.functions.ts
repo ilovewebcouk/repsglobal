@@ -224,7 +224,7 @@ export const resolveViewerLatLng = createServerFn({ method: "POST" })
     if (!r) return null;
     return {
       postcode_outward: r.outcode,
-      town: r.admin_district,
+      town: deriveTown(r),
       region: r.region,
       latitude: r.latitude,
       longitude: r.longitude,
