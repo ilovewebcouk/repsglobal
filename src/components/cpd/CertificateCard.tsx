@@ -1,17 +1,18 @@
-import { Award, ShieldCheck, Clock, AlertTriangle, X } from "lucide-react";
+import { Award, ShieldCheck, Clock, AlertTriangle, Landmark, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export type CertRow = {
   id: string;
   awarding_body: string;
   qualification: string;
+  qualification_number?: string | null;
   year: number | null;
   expiry_date: string | null;
   status: "submitted" | "approved" | "rejected" | "changes_requested" | string;
   admin_note: string | null;
   verify_token: string | null;
+  regulator_verified?: boolean | null;
 };
 
 function expiryState(expiry: string | null): "ok" | "soon" | "expired" | "none" {
