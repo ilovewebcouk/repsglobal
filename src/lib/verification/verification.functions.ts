@@ -118,10 +118,15 @@ export const reviewVerification = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { TITLES } = await import("@/lib/cpd/titles-catalog");
+    const { deriveTitlesForSubmission } = await import("@/lib/cpd/title-rules");
+    const { SPECIALISM_SLUGS, MAX_SPECIALISMS } = await import("@/lib/specialisms");
 
     const { data: sub, error: subErr } = await supabaseAdmin
       .from("verification_submissions")
-      .select("id, professional_id")
+      .select(
+        "id, professional_id, qualification, awarding_body, awarding_body_slug, regulator_verified, derived_title_slug, derived_specialism_slugs",
+      )
       .eq("id", data.id)
       .maybeSingle();
     if (subErr) throw new Error(subErr.message);
@@ -146,6 +151,85 @@ export const reviewVerification = createServerFn({ method: "POST" })
           verification_status: "verified",
         } as never)
         .eq("id", sub.professional_id);
+
+      // Re-run the rules engine on the freshest server data (cheap, deterministic).
+      // We deliberately do NOT trust client-supplied derived_* columns blindly.
+      const rules = deriveTitlesForSubmission({
+        qualification: (sub as { qualification?: string | null }).qualification,
+        awarding_body: (sub as { awarding_body?: string | null }).awarding_body,
+        awarding_body_slug: (sub as { awarding_body_slug?: string | null }).awarding_body_slug ?? null,
+        ofqualVerified: !!(sub as { regulator_verified?: boolean | null }).regulator_verified,
+      });
+
+      // Commit each matched title EXCEPT those requiring external register
+      // verification (admin must use the manual grant tool for those).
+      const grantable = rules.titles.filter((t) => !t.requiresAdminReview);
+      if (grantable.length > 0) {
+        await supabaseAdmin
+          .from("pro_titles")
+          .upsert(
+            grantable.map((t) => ({
+              professional_id: sub.professional_id,
+              title_slug: t.title_slug,
+              source_submission_id: sub.id,
+              granted_by: "system",
+            })) as never,
+            { onConflict: "professional_id,title_slug,source_submission_id" },
+          );
+
+        // If the pro doesn't have a primary title yet, set the highest-tier
+        // matched title as their primary (and mirror into primary_profession).
+        const { data: proRow } = await supabaseAdmin
+          .from("professionals")
+          .select("primary_title_slug")
+          .eq("id", sub.professional_id)
+          .maybeSingle();
+        const currentPrimary =
+          (proRow as { primary_title_slug?: string | null } | null)?.primary_title_slug ?? null;
+        if (!currentPrimary) {
+          const top = grantable[0]; // already tier-sorted by the rules engine
+          const entry = TITLES.find((t) => t.slug === top.title_slug);
+          if (entry) {
+            await supabaseAdmin
+              .from("professionals")
+              .update({
+                primary_title_slug: entry.slug,
+                primary_profession: entry.professionSlug,
+              } as never)
+              .eq("id", sub.professional_id);
+            await supabaseAdmin
+              .from("pro_titles")
+              .update({ is_primary: true } as never)
+              .eq("professional_id", sub.professional_id)
+              .eq("title_slug", entry.slug)
+              .eq("source_submission_id", sub.id);
+          }
+        }
+      }
+
+      // Auto-add any newly derived specialisms to the pro's selection,
+      // up to MAX_SPECIALISMS. We don't remove existing picks.
+      const derivedSpecs = rules.specialisms.map((s) => s.slug);
+      if (derivedSpecs.length > 0) {
+        const { data: proSpec } = await supabaseAdmin
+          .from("professionals")
+          .select("specialisms")
+          .eq("id", sub.professional_id)
+          .maybeSingle();
+        const existing = ((proSpec as { specialisms?: string[] | null } | null)?.specialisms ?? [])
+          .filter((s) => (SPECIALISM_SLUGS as string[]).includes(s));
+        const merged = [...existing];
+        for (const s of derivedSpecs) {
+          if (merged.length >= MAX_SPECIALISMS) break;
+          if (!merged.includes(s)) merged.push(s);
+        }
+        if (merged.length !== existing.length) {
+          await supabaseAdmin
+            .from("professionals")
+            .update({ specialisms: merged } as never)
+            .eq("id", sub.professional_id);
+        }
+      }
     } else if (data.decision === "rejected") {
       await supabaseAdmin
         .from("professionals")
@@ -158,6 +242,7 @@ export const reviewVerification = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
 
 export const getVerificationDocUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
