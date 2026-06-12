@@ -63,11 +63,6 @@ export function SocialHandleInput({
         type="text"
         value={value}
         onChange={(e) => onChange(normalise(e.target.value))}
-        onPaste={(e) => {
-          // Let the browser insert, then normalise on the next tick via onChange.
-          // (Single source of truth is normalise() above.)
-          const _ = e;
-        }}
         placeholder={placeholder}
         autoComplete="off"
         spellCheck={false}
