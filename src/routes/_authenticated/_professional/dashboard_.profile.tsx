@@ -110,13 +110,13 @@ type FormState = {
   online_available: boolean;
   city: string;
   contact_phone: string;
-  public_email: string;
-  website: string;
   bio: string;
   languages: string[];
   social_instagram: string;
   social_linkedin: string;
   social_youtube: string;
+  social_tiktok: string;
+  social_x: string;
 };
 
 function toForm(p: DashboardProfile): FormState {
@@ -129,13 +129,13 @@ function toForm(p: DashboardProfile): FormState {
     online_available: p.online_available ?? true,
     city: p.city ?? "",
     contact_phone: p.contact_phone ?? "",
-    public_email: p.public_email ?? "",
-    website: p.website ?? "",
     bio: p.bio ?? "",
     languages: p.languages ?? [],
     social_instagram: p.social_instagram ?? "",
     social_linkedin: p.social_linkedin ?? "",
     social_youtube: p.social_youtube ?? "",
+    social_tiktok: p.social_tiktok ?? "",
+    social_x: p.social_x ?? "",
   };
 }
 
@@ -148,12 +148,12 @@ function equal(a: FormState, b: FormState): boolean {
     a.online_available === b.online_available &&
     a.city === b.city &&
     a.contact_phone === b.contact_phone &&
-    a.public_email === b.public_email &&
-    a.website === b.website &&
     a.bio === b.bio &&
     a.social_instagram === b.social_instagram &&
     a.social_linkedin === b.social_linkedin &&
     a.social_youtube === b.social_youtube &&
+    a.social_tiktok === b.social_tiktok &&
+    a.social_x === b.social_x &&
     JSON.stringify(a.specialisms) === JSON.stringify(b.specialisms) &&
     JSON.stringify(a.languages) === JSON.stringify(b.languages)
   );
@@ -167,11 +167,19 @@ function completion(p: DashboardProfile): {
     { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
     { label: "Profile photo", done: !!p.avatar_url },
-    
     { label: "Specialisms", done: (p.specialisms?.length ?? 0) >= 1 },
     { label: "Languages", done: (p.languages?.length ?? 0) >= 1 },
-    { label: "Contact details", done: !!(p.public_email && p.contact_phone) },
-    { label: "Website or social link", done: !!(p.website || p.social_instagram || p.social_linkedin || p.social_youtube) },
+    { label: "Contact details", done: !!p.contact_phone },
+    {
+      label: "Social link",
+      done: !!(
+        p.social_instagram ||
+        p.social_linkedin ||
+        p.social_youtube ||
+        p.social_tiktok ||
+        p.social_x
+      ),
+    },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
