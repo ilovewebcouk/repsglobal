@@ -116,7 +116,7 @@ export function UserAccountMenu({
           type="button"
           aria-label="Account menu"
           className={cn(
-            "inline-flex items-center justify-center rounded-full transition-shadow focus:outline-none",
+            "inline-flex items-center justify-center rounded-[10px] transition-shadow focus:outline-none",
             ringClass,
             className,
           )}
