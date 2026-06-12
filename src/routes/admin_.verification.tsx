@@ -21,11 +21,16 @@ import { useMemo, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
-import { Button } from "@/components/dashboard/ui/button";
-import { Badge } from "@/components/dashboard/ui/badge";
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/dashboard/ui/empty";
-import { Textarea } from "@/components/dashboard/ui/textarea";
-import { Input } from "@/components/dashboard/ui/input";
+import { DashboardButton as Button } from "@/components/dashboard/ui/button";
+import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
+import {
+  DashboardEmpty as Empty,
+  DashboardEmptyTitle as EmptyTitle,
+  DashboardEmptyDescription as EmptyDescription,
+  DashboardEmptyIcon as EmptyHeader,
+} from "@/components/dashboard/ui/empty";
+import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
+import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import {
