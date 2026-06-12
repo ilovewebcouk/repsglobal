@@ -491,7 +491,7 @@ function AdminVerificationPage() {
                   />
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Button
-                      variant="neutral"
+                      variant="subtle"
                       size="sm"
                       disabled={busy || missing.length === 0}
                       onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
