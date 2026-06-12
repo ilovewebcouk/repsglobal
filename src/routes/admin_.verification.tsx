@@ -17,11 +17,14 @@ import { useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   getVerificationDocUrl,
   listPendingVerifications,
   reviewVerification,
 } from "@/lib/verification/verification.functions";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
+import { getSpecialismLabel } from "@/lib/specialisms";
 
 export const Route = createFileRoute("/admin_/verification")({
   ssr: false,
@@ -149,6 +152,42 @@ function AdminVerificationPage() {
                         {r.qualification} · {r.awarding_body}
                         {r.year ? ` · ${r.year}` : ""}
                       </div>
+                      {(() => {
+                        const titleLabel = getTitleLabel(r.derived_title_slug);
+                        const specs = (r.derived_specialism_slugs ?? [])
+                          .map((s: string) => getSpecialismLabel(s))
+                          .filter(Boolean) as string[];
+                        if (!titleLabel && specs.length === 0 && !r.regulator_verified) return null;
+                        return (
+                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                            {titleLabel ? (
+                              <Badge
+                                variant="outline"
+                                className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                              >
+                                Will unlock: {titleLabel}
+                              </Badge>
+                            ) : null}
+                            {specs.slice(0, 3).map((s) => (
+                              <Badge
+                                key={s}
+                                variant="outline"
+                                className="border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                              >
+                                + {s}
+                              </Badge>
+                            ))}
+                            {r.regulator_verified ? (
+                              <Badge
+                                variant="outline"
+                                className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                              >
+                                Ofqual matched
+                              </Badge>
+                            ) : null}
+                          </div>
+                        );
+                      })()}
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {(r.doc_paths ?? []).map((p) => (
                           <button

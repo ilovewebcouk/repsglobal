@@ -34,6 +34,7 @@ import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 
 function TiktokIcon() {
   return (
@@ -1021,22 +1022,8 @@ function ProfileEditorPage() {
                 <Field label="Full name">
                   <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
                 </Field>
-                <Field label="Profession" hint="The role clients see on the directory card. Required to publish.">
-                  <Select
-                    value={form.primary_profession || undefined}
-                    onValueChange={(v) => set("primary_profession", v as ProfessionSlug)}
-                  >
-                    <SelectTrigger className="h-10 rounded-[12px] border-reps-border bg-reps-ink text-[13px] text-white">
-                      <SelectValue placeholder="Choose your primary profession" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROFESSIONS.map((p) => (
-                        <SelectItem key={p.slug} value={p.slug}>
-                          {p.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Field label="Profession" hint="Earned from your approved qualifications — not self-picked.">
+                  <EarnedTitlePicker />
                 </Field>
                 <Field label="Primary training postcode">
                   <TextInput
