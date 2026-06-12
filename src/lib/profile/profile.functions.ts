@@ -68,6 +68,18 @@ export const setPublished = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ is_published: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
+    if (data.is_published) {
+      const { data: row } = await context.supabase
+        .from("professionals")
+        .select("primary_profession")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const primary = (row as { primary_profession?: string | null } | null)
+        ?.primary_profession;
+      if (!primary) {
+        throw new Error("Set your profession before publishing your profile.");
+      }
+    }
     const { error } = await context.supabase
       .from("professionals")
       .update({ is_published: data.is_published })

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { PROFESSION_SLUGS, type ProfessionSlug } from "@/lib/professions";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -11,7 +12,9 @@ export type DashboardProfile = {
   full_name: string;
   avatar_url: string | null;
   // professional fields
-  headline: string | null; // "Professional title"
+  headline: string | null; // "Tagline" in UI
+  primary_profession: ProfessionSlug | null;
+  secondary_professions: ProfessionSlug[];
   city: string | null;
   public_phone: string | null;
   public_email: string | null;
@@ -44,28 +47,42 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, primary_profession, secondary_professions, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
     ]);
 
+    const proRow = (pro ?? {}) as Record<string, unknown>;
+    const primary = proRow.primary_profession;
+    const secondaryRaw = proRow.secondary_professions;
+
     return {
       full_name: profile?.full_name ?? "",
       avatar_url: profile?.avatar_url ?? null,
-      headline: pro?.headline ?? null,
-      city: pro?.city ?? null,
-      public_phone: pro?.public_phone ?? null,
-      public_email: pro?.public_email ?? null,
-      website: pro?.website ?? null,
-      bio: pro?.bio ?? null,
-      specialisms: pro?.specialisms ?? [],
-      languages: pro?.languages ?? [],
-      social_instagram: pro?.social_instagram ?? null,
-      social_linkedin: pro?.social_linkedin ?? null,
-      social_youtube: pro?.social_youtube ?? null,
-      is_published: pro?.is_published ?? false,
-      verification_status: pro?.verification_status ?? "pending",
+      headline: (proRow.headline as string | null) ?? null,
+      primary_profession:
+        typeof primary === "string" && (PROFESSION_SLUGS as string[]).includes(primary)
+          ? (primary as ProfessionSlug)
+          : null,
+      secondary_professions: Array.isArray(secondaryRaw)
+        ? (secondaryRaw.filter(
+            (s): s is ProfessionSlug =>
+              typeof s === "string" && (PROFESSION_SLUGS as string[]).includes(s),
+          ) as ProfessionSlug[])
+        : [],
+      city: (proRow.city as string | null) ?? null,
+      public_phone: (proRow.public_phone as string | null) ?? null,
+      public_email: (proRow.public_email as string | null) ?? null,
+      website: (proRow.website as string | null) ?? null,
+      bio: (proRow.bio as string | null) ?? null,
+      specialisms: (proRow.specialisms as string[] | null) ?? [],
+      languages: (proRow.languages as string[] | null) ?? [],
+      social_instagram: (proRow.social_instagram as string | null) ?? null,
+      social_linkedin: (proRow.social_linkedin as string | null) ?? null,
+      social_youtube: (proRow.social_youtube as string | null) ?? null,
+      is_published: (proRow.is_published as boolean | null) ?? false,
+      verification_status: (proRow.verification_status as string | null) ?? "pending",
     };
   });
 
@@ -73,9 +90,13 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
 /* Update                                                                      */
 /* -------------------------------------------------------------------------- */
 
+const ProfessionSlugSchema = z.enum(PROFESSION_SLUGS as [ProfessionSlug, ...ProfessionSlug[]]);
+
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
   headline: z.string().trim().max(160).nullable().optional(),
+  primary_profession: ProfessionSlugSchema.nullable().optional(),
+  secondary_professions: z.array(ProfessionSlugSchema).max(2).optional(),
   city: z.string().trim().max(120).nullable().optional(),
   public_phone: z.string().trim().max(40).nullable().optional(),
   public_email: z.string().trim().email().max(255).nullable().or(z.literal("")).optional(),
@@ -113,6 +134,11 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const cleaned = emptyToNull(data);
 
+    // De-dupe secondary against primary defensively (trigger also enforces).
+    const secondary = (cleaned.secondary_professions ?? []).filter(
+      (s) => s !== cleaned.primary_profession,
+    );
+
     // Update profiles.full_name
     const { error: pErr } = await supabase
       .from("profiles")
@@ -134,25 +160,29 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       slug = `${base}-${i}`;
     }
 
+    const upsertPayload = {
+      id: userId,
+      slug,
+      headline: cleaned.headline ?? null,
+      primary_profession: cleaned.primary_profession ?? null,
+      secondary_professions: secondary,
+      city: cleaned.city ?? null,
+      public_phone: cleaned.public_phone ?? null,
+      public_email: cleaned.public_email ?? null,
+      website: cleaned.website ?? null,
+      bio: cleaned.bio ?? null,
+      specialisms: cleaned.specialisms ?? [],
+      languages: cleaned.languages ?? [],
+      social_instagram: cleaned.social_instagram ?? null,
+      social_linkedin: cleaned.social_linkedin ?? null,
+      social_youtube: cleaned.social_youtube ?? null,
+    } as unknown as Record<string, unknown>;
+
     // Upsert professionals row
-    const { error: proErr } = await supabase.from("professionals").upsert(
-      {
-        id: userId,
-        slug,
-        headline: cleaned.headline ?? null,
-        city: cleaned.city ?? null,
-        public_phone: cleaned.public_phone ?? null,
-        public_email: cleaned.public_email ?? null,
-        website: cleaned.website ?? null,
-        bio: cleaned.bio ?? null,
-        specialisms: cleaned.specialisms ?? [],
-        languages: cleaned.languages ?? [],
-        social_instagram: cleaned.social_instagram ?? null,
-        social_linkedin: cleaned.social_linkedin ?? null,
-        social_youtube: cleaned.social_youtube ?? null,
-      },
-      { onConflict: "id" },
-    );
+    const { error: proErr } = await supabase
+      .from("professionals")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .upsert(upsertPayload as any, { onConflict: "id" });
     if (proErr) throw proErr;
 
     return { ok: true, slug };
@@ -195,4 +225,3 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
     if (error) throw error;
     return { url };
   });
-
