@@ -229,6 +229,18 @@ export const submitCertificate = createServerFn({ method: "POST" })
     const verifyToken = randomToken();
     const issueYear = data.issue_date ? Number(data.issue_date.slice(0, 4)) : null;
 
+    // Run the rules engine now so the pro sees a preview ("this looks like
+    // it'll unlock Personal Trainer") AND admin sees the same suggestion in
+    // the review queue. Nothing is granted until admin approves.
+    const derived = deriveTitlesForSubmission({
+      qualification: data.qualification,
+      awarding_body: data.awarding_body,
+      awarding_body_slug: data.awarding_body_slug ?? null,
+      ofqualVerified: regulatorVerified,
+    });
+    const derivedTitleSlug = derived.primary?.title_slug ?? null;
+    const derivedSpecialismSlugs = derived.specialisms.map((s) => s.slug);
+
     const { data: row, error } = await supabase
       .from("verification_submissions")
       .insert({
@@ -253,10 +265,13 @@ export const submitCertificate = createServerFn({ method: "POST" })
         regulator_verified: regulatorVerified,
         regulator_record: regulatorRecord as never,
         trust_signals: trustSignals as never,
+        derived_title_slug: derivedTitleSlug,
+        derived_specialism_slugs: derivedSpecialismSlugs,
       } as never)
       .select("id, status, created_at, verify_token, regulator_verified")
       .single();
     if (error) throw new Error(error.message);
+
 
     await supabase
       .from("professionals")
