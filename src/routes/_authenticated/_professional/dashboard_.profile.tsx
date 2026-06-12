@@ -1004,7 +1004,7 @@ function ProfileEditorPage() {
                     </p>
                   ) : null}
                 </Field>
-                <Field label="How you work with clients" hint="Pick one. Hybrid = both in person and online." className="sm:col-span-2">
+                <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid." className="sm:col-span-2">
                   <DeliveryModePicker
                     inPerson={form.in_person_available}
                     online={form.online_available}
