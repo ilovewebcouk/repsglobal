@@ -124,7 +124,7 @@ function DashboardPage() {
       desc: "Name, headline, bio, specialisms, city — what clients see.",
       done: profileComplete,
       current: hasPaidTier && !profileComplete,
-      cta: { label: profileComplete ? "Edit profile" : "Fill in profile", to: "/dashboard/profile-edit" },
+      cta: { label: profileComplete ? "Edit profile" : "Fill in profile", to: "/dashboard/profile" },
       icon: UserPen,
     },
     {
@@ -135,7 +135,7 @@ function DashboardPage() {
       current: hasPaidTier && profileComplete && !isVerified,
       cta: {
         label: hasSubmission ? "View submission" : "Submit credentials",
-        to: "/dashboard/verification",
+        to: "/dashboard/profile",
       },
       icon: FileText,
     },
@@ -145,7 +145,7 @@ function DashboardPage() {
       desc: "Go live on the REPS register so clients can find you.",
       done: isPublished,
       current: isVerified && !isPublished,
-      cta: { label: isPublished ? "View live page" : "Publish profile", to: "/dashboard/profile-edit" },
+      cta: { label: isPublished ? "View live page" : "Publish profile", to: "/dashboard/profile" },
       icon: ShieldCheck,
     },
   ];

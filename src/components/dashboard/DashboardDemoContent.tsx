@@ -402,7 +402,7 @@ export function ScheduleAndAi({ isLocked = false, statusData }: { isLocked?: boo
         <PanelHeader
           title="Your Professional Status"
           icon={Trophy}
-          right={<Button asChild variant="outline" size="sm" className="h-8 rounded-[8px] bg-reps-panel-soft border-reps-border text-[12px]"><Link to="/dashboard/profile-edit">View profile</Link></Button>}
+          right={<Button asChild variant="outline" size="sm" className="h-8 rounded-[8px] bg-reps-panel-soft border-reps-border text-[12px]"><Link to="/dashboard/profile">View profile</Link></Button>}
         />
         <ul className="space-y-3">
           <StatusRow

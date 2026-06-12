@@ -16,7 +16,7 @@ import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
  * If the tier is "verified", we keep the URL intact (so deep links keep
  * working) and render an in-shell upgrade panel explaining the Pro
  * feature behind this route with a CTA to /pricing — instead of the
- * silent redirect to /dashboard/profile-edit that we did before.
+ * silent redirect to /dashboard/profile that we did before.
  * ---------------------------------------------------------------- */
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro")({

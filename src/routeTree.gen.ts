@@ -83,9 +83,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
-import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
-import { Route as AuthenticatedProfessionalDashboardProfileEditRouteImport } from './routes/_authenticated/_professional/dashboard_.profile-edit'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
 import { Route as AuthenticatedProfessionalProDashboardReviewsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reviews'
@@ -479,22 +477,10 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedProfessionalDashboardVerificationRoute =
-  AuthenticatedProfessionalDashboardVerificationRouteImport.update({
-    id: '/dashboard_/verification',
-    path: '/dashboard/verification',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardSettingsRoute =
   AuthenticatedProfessionalDashboardSettingsRouteImport.update({
     id: '/dashboard_/settings',
     path: '/dashboard/settings',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
-const AuthenticatedProfessionalDashboardProfileEditRoute =
-  AuthenticatedProfessionalDashboardProfileEditRouteImport.update({
-    id: '/dashboard_/profile-edit',
-    path: '/dashboard/profile-edit',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
 const AuthenticatedProfessionalDashboardProfileRoute =
@@ -676,9 +662,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -769,9 +753,7 @@ export interface FileRoutesByTo {
   '/pro/$slug': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/dashboard/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -867,9 +849,7 @@ export interface FileRoutesById {
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/_authenticated/_professional/dashboard_/profile-edit': typeof AuthenticatedProfessionalDashboardProfileEditRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -963,9 +943,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/'
     | '/dashboard/syncing'
     | '/dashboard/profile'
-    | '/dashboard/profile-edit'
     | '/dashboard/settings'
-    | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1056,9 +1034,7 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/dashboard/syncing'
     | '/dashboard/profile'
-    | '/dashboard/profile-edit'
     | '/dashboard/settings'
-    | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1153,9 +1129,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/'
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/profile'
-    | '/_authenticated/_professional/dashboard_/profile-edit'
     | '/_authenticated/_professional/dashboard_/settings'
-    | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/stripe/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1770,25 +1744,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/_professional/dashboard_/verification': {
-      id: '/_authenticated/_professional/dashboard_/verification'
-      path: '/dashboard/verification'
-      fullPath: '/dashboard/verification'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardVerificationRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/settings': {
       id: '/_authenticated/_professional/dashboard_/settings'
       path: '/dashboard/settings'
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSettingsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
-    '/_authenticated/_professional/dashboard_/profile-edit': {
-      id: '/_authenticated/_professional/dashboard_/profile-edit'
-      path: '/dashboard/profile-edit'
-      fullPath: '/dashboard/profile-edit'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileEditRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
     '/_authenticated/_professional/dashboard_/profile': {
@@ -2011,9 +1971,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalProRouteRoute: typeof AuthenticatedProfessionalProRouteRouteWithChildren
   AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRouteWithChildren
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
-  AuthenticatedProfessionalDashboardProfileEditRoute: typeof AuthenticatedProfessionalDashboardProfileEditRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
-  AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
 }
 
 const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRouteRouteChildren =
@@ -2024,12 +1982,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardRouteWithChildren,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
-    AuthenticatedProfessionalDashboardProfileEditRoute:
-      AuthenticatedProfessionalDashboardProfileEditRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
-    AuthenticatedProfessionalDashboardVerificationRoute:
-      AuthenticatedProfessionalDashboardVerificationRoute,
   }
 
 const AuthenticatedProfessionalRouteRouteWithChildren =
