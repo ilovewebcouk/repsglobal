@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { matchAwardingBody, OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
+import { deriveTitlesForSubmission } from "./title-rules";
 
 /* -------------------------------------------------------------------------- *
  * AI extraction
