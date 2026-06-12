@@ -308,6 +308,7 @@ const EDITORIAL_PROMPT_BASE = `Re-render this exact person as a premium editoria
 Identity lock (NON-NEGOTIABLE — the output must be unmistakably the same human):
 - Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, facial hair, skin tone, apparent age, ethnicity, gender presentation, and build EXACTLY as in the source.
 - Do not slim, smooth, beautify, restructure, re-age, lighten, or stylise the face. No "ideal" features. No plastic skin. Keep real skin texture, real pores, natural blemishes, real freckles, real asymmetry.
+- Teeth: preserve the subject's dental characteristics EXACTLY as in the source — same shape, same spacing, same alignment, same colour, same natural asymmetry. Do NOT straighten, even, whiten, brighten, symmetrise, resize, or otherwise "correct" the teeth. Cosmetic dental retouching is forbidden.
 - If you cannot preserve identity, return the closest possible likeness — do not invent a new face.
 
 Clothing (their own, tidied):
@@ -316,8 +317,10 @@ Clothing (their own, tidied):
 - Do NOT restyle, recolour, redesign, swap, or replace the garment.
 - Do NOT add any logo, wordmark, text, embroidery, badge, graphic, or branding of any kind. The garment must be completely unbranded in the output.
 
-Background (editorial studio):
-- Clean editorial studio: either deep charcoal seamless OR a soft graduated mid-grey backdrop.
+Background (editorial studio — graduated charcoal seamless):
+- Graduated charcoal seamless backdrop. NOT a flat even wash.
+- Roughly one stop of falloff across the frame: slightly lifted (lighter charcoal) directly behind the head where the rim light naturally spills, deepening to near-black toward the frame edges and the lower corners.
+- The lift behind the head should be subtle and organic, like real light spill from a back-right rim — not a halo, not a vignette ring, not a circular glow.
 - No props. No gym equipment. No text. No logos. No furniture. No windows. No coffee-shop wash. No fake bokeh of plates or rigs.
 - Subject cleanly separated from background with gentle natural falloff.
 
