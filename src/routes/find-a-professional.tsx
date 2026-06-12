@@ -294,7 +294,7 @@ function DirectoryPage() {
             (r.specialisms?.[2] as string) || "Conditioning",
           ] as [string, string, string],
           blurb: r.headline || "REPS-verified professional.",
-          image: proJames,
+          image: r.avatar_url || proJames,
           venues: [],
           slug: r.slug ?? undefined,
         })),
