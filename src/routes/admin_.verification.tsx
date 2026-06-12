@@ -352,7 +352,7 @@ function AdminVerificationPage() {
                         }>SLA {sla.label}</span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={closeCase}>Close</Button>
+                    <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
                   </div>
                 </PCard>
 
@@ -363,9 +363,9 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Identity</h4>
                       {id ? (
-                        <Badge variant="outline" className={id.status === "approved" ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300" : "border-amber-400/30 bg-amber-500/15 text-amber-300"}>{id.status}</Badge>
+                        <Badge variant="neutral" className={id.status === "approved" ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300" : "border-amber-400/30 bg-amber-500/15 text-amber-300"}>{id.status}</Badge>
                       ) : (
-                        <Badge variant="outline" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
+                        <Badge variant="neutral" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
                       )}
                     </div>
                     {!id ? (
@@ -390,9 +390,9 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Insurance</h4>
                       {ins ? (
-                        <Badge variant="outline" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">{ins.status}</Badge>
+                        <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">{ins.status}</Badge>
                       ) : (
-                        <Badge variant="outline" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
+                        <Badge variant="neutral" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
                       )}
                     </div>
                     {!ins ? (
@@ -415,9 +415,9 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Qualification</h4>
                       {sub.regulator_verified ? (
-                        <Badge variant="outline" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">Ofqual</Badge>
+                        <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">Ofqual</Badge>
                       ) : (
-                        <Badge variant="outline" className="border-amber-400/30 bg-amber-500/15 text-amber-300">Manual</Badge>
+                        <Badge variant="neutral" className="border-amber-400/30 bg-amber-500/15 text-amber-300">Manual</Badge>
                       )}
                     </div>
                     <div className="space-y-1.5 text-[12px] text-white/75">
@@ -491,7 +491,7 @@ function AdminVerificationPage() {
                   />
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Button
-                      variant="outline"
+                      variant="neutral"
                       size="sm"
                       disabled={busy || missing.length === 0}
                       onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
@@ -499,10 +499,10 @@ function AdminVerificationPage() {
                       <Mail className="mr-1 h-3.5 w-3.5" /> Send reminder
                     </Button>
                     <div className="flex-1" />
-                    <Button variant="outline" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
+                    <Button variant="neutral" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
                       Request changes
                     </Button>
-                    <Button variant="outline" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
+                    <Button variant="neutral" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
                       Reject
                     </Button>
                     <Button
