@@ -4,6 +4,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
+import { useViewerOrigin } from "@/lib/useViewerOrigin";
+import { haversineMiles, formatMiles } from "@/lib/geo";
+import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
 import {
   BadgeCheck,
   Bookmark,
@@ -300,38 +303,91 @@ function DirectoryPage() {
     () =>
       livePros
         .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
-        .map((r) => ({
-          name: r.full_name || "REPS Professional",
-          role: (r.specialisms?.[0] as string) || "Personal Trainer",
-          distance: r.location?.town ?? r.location?.postcode_outward ?? r.city ?? "—",
-          rating: 5.0,
-          reviews: 0,
-          mode: r.in_person_available && r.online_available
-            ? "In-person & Online"
-            : r.online_available
-              ? "Online"
-              : "In-person",
-          tags: [
-            (r.specialisms?.[0] as string) || "Health & Fitness",
-            (r.specialisms?.[1] as string) || "Strength Training",
-            (r.specialisms?.[2] as string) || "Conditioning",
-          ] as [string, string, string],
-          blurb: r.headline || "REPS-verified professional.",
-          image: r.avatar_url || proJames,
-          venues: [],
-          slug: r.slug ?? undefined,
-        })),
+        .map((r) => {
+          const town = r.location?.town ?? r.location?.postcode_outward ?? r.city ?? null;
+          const coords =
+            r.location?.latitude != null && r.location?.longitude != null
+              ? { latitude: r.location.latitude, longitude: r.location.longitude }
+              : undefined;
+          return {
+            name: r.full_name || "REPS Professional",
+            role: (r.specialisms?.[0] as string) || "Personal Trainer",
+            distance: town ?? "—",
+            town: town ?? undefined,
+            coords,
+            rating: 0,
+            reviews: 0,
+            mode: r.in_person_available && r.online_available
+              ? "In-person & Online" as const
+              : r.online_available
+                ? "Online" as const
+                : "In-person" as const,
+            tags: [
+              (r.specialisms?.[0] as string) || "Health & Fitness",
+              (r.specialisms?.[1] as string) || "Strength Training",
+              (r.specialisms?.[2] as string) || "Conditioning",
+            ] as [string, string, string],
+            blurb: r.headline || "REPS-verified professional.",
+            image: r.avatar_url || proJames,
+            venues: [],
+            slug: r.slug ?? undefined,
+            live: true,
+          };
+        }),
     [livePros],
   );
 
   const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
 
-  const visiblePros = activeVenue
+  const venueFiltered = activeVenue
     ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
     : mergedPros;
 
+  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
+  const { origin } = useViewerOrigin();
+
+  // Sort
+  const [sort, setSort] = React.useState<"recommended" | "nearest" | "rating">(
+    "recommended",
+  );
+
+  // Fall back to Recommended if origin is cleared while Nearest is selected
+  React.useEffect(() => {
+    if (!origin && sort === "nearest") setSort("recommended");
+  }, [origin, sort]);
+
+  // Decorate with real miles when origin + coords both exist
+  type WithMiles = Pro & { _miles: number | null };
+  const decorated: WithMiles[] = React.useMemo(
+    () =>
+      venueFiltered.map((p) => ({
+        ...p,
+        _miles:
+          origin && p.coords
+            ? haversineMiles(origin, p.coords)
+            : null,
+      })),
+    [venueFiltered, origin],
+  );
+
+  const visiblePros = React.useMemo(() => {
+    const arr = [...decorated];
+    if (sort === "nearest" && origin) {
+      arr.sort((a, b) => {
+        if (a._miles == null && b._miles == null) return 0;
+        if (a._miles == null) return 1;
+        if (b._miles == null) return -1;
+        return a._miles - b._miles;
+      });
+    } else if (sort === "rating") {
+      arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+    }
+    return arr;
+  }, [decorated, sort, origin]);
+
   const clearVenue = () =>
     navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
+
 
   return (
     <div className="min-h-screen bg-reps-ivory">
