@@ -46,6 +46,12 @@ import {
   getProfessionLabel,
   type ProfessionSlug,
 } from "@/lib/professions";
+import {
+  SPECIALISMS,
+  MAX_SPECIALISMS,
+  getSpecialismLabel,
+  type SpecialismSlug,
+} from "@/lib/specialisms";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,13 +102,14 @@ type FormState = {
   full_name: string;
   headline: string;
   primary_profession: ProfessionSlug | "";
-  secondary_professions: ProfessionSlug[];
+  specialisms: SpecialismSlug[];
+  in_person_available: boolean;
+  online_available: boolean;
   city: string;
   public_phone: string;
   public_email: string;
   website: string;
   bio: string;
-  specialisms: string[];
   languages: string[];
   social_instagram: string;
   social_linkedin: string;
@@ -114,13 +121,14 @@ function toForm(p: DashboardProfile): FormState {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
     primary_profession: p.primary_profession ?? "",
-    secondary_professions: p.secondary_professions ?? [],
+    specialisms: p.specialisms ?? [],
+    in_person_available: p.in_person_available ?? true,
+    online_available: p.online_available ?? true,
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
     website: p.website ?? "",
     bio: p.bio ?? "",
-    specialisms: p.specialisms ?? [],
     languages: p.languages ?? [],
     social_instagram: p.social_instagram ?? "",
     social_linkedin: p.social_linkedin ?? "",
@@ -133,7 +141,8 @@ function equal(a: FormState, b: FormState): boolean {
     a.full_name === b.full_name &&
     a.headline === b.headline &&
     a.primary_profession === b.primary_profession &&
-    JSON.stringify(a.secondary_professions) === JSON.stringify(b.secondary_professions) &&
+    a.in_person_available === b.in_person_available &&
+    a.online_available === b.online_available &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
