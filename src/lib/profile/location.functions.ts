@@ -203,7 +203,7 @@ export const resolveViewerPostcode = createServerFn({ method: "POST" })
     const r = await lookupPostcode(pc);
     return {
       postcode_outward: r.outcode,
-      town: r.admin_district,
+      town: deriveTown(r),
       region: r.region,
       latitude: r.latitude,
       longitude: r.longitude,
