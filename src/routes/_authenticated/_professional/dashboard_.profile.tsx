@@ -1082,7 +1082,7 @@ function ProfileEditorPage() {
               <DashboardDialogHeader>
                 <DashboardDialogTitle>Choose your photo</DashboardDialogTitle>
                 <DashboardDialogDescription>
-                  Side-by-side preview. The AI version is clearly a re-rendered portrait.
+                  Editorial studio re-render of your photo. Same person, shot properly.
                 </DashboardDialogDescription>
               </DashboardDialogHeader>
               <div className="grid grid-cols-2 gap-3">
@@ -1103,6 +1103,16 @@ function ProfileEditorPage() {
                   </div>
                 </div>
               </div>
+              {regenState.identityScore >= 4 ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+                  <span className="inline-block size-1.5 rounded-full bg-emerald-400" />
+                  Likeness verified
+                </div>
+              ) : (
+                <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full border border-amber-400/30 bg-amber-500/15 px-2.5 py-1 text-[11px] font-medium text-amber-300">
+                  Likeness may have drifted — try again or keep your original
+                </div>
+              )}
               <DashboardDialogFooter className="flex-wrap gap-2">
                 <DashboardButton variant="ghost" onClick={() => setRegenState(null)}>
                   Keep original
