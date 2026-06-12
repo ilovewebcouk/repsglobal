@@ -46,6 +46,12 @@ import {
   getProfessionLabel,
   type ProfessionSlug,
 } from "@/lib/professions";
+import {
+  SPECIALISMS,
+  MAX_SPECIALISMS,
+  getSpecialismLabel,
+  type SpecialismSlug,
+} from "@/lib/specialisms";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,13 +102,14 @@ type FormState = {
   full_name: string;
   headline: string;
   primary_profession: ProfessionSlug | "";
-  secondary_professions: ProfessionSlug[];
+  specialisms: SpecialismSlug[];
+  in_person_available: boolean;
+  online_available: boolean;
   city: string;
   public_phone: string;
   public_email: string;
   website: string;
   bio: string;
-  specialisms: string[];
   languages: string[];
   social_instagram: string;
   social_linkedin: string;
@@ -114,13 +121,14 @@ function toForm(p: DashboardProfile): FormState {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
     primary_profession: p.primary_profession ?? "",
-    secondary_professions: p.secondary_professions ?? [],
+    specialisms: p.specialisms ?? [],
+    in_person_available: p.in_person_available ?? true,
+    online_available: p.online_available ?? true,
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
     website: p.website ?? "",
     bio: p.bio ?? "",
-    specialisms: p.specialisms ?? [],
     languages: p.languages ?? [],
     social_instagram: p.social_instagram ?? "",
     social_linkedin: p.social_linkedin ?? "",
@@ -133,7 +141,8 @@ function equal(a: FormState, b: FormState): boolean {
     a.full_name === b.full_name &&
     a.headline === b.headline &&
     a.primary_profession === b.primary_profession &&
-    JSON.stringify(a.secondary_professions) === JSON.stringify(b.secondary_professions) &&
+    a.in_person_available === b.in_person_available &&
+    a.online_available === b.online_available &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
@@ -314,71 +323,113 @@ function ChipInput({
   );
 }
 
-function SecondaryProfessionPicker({
-  primary,
+function DeliveryModePicker({
+  inPerson,
+  online,
+  onChange,
+}: {
+  inPerson: boolean;
+  online: boolean;
+  onChange: (next: { inPerson: boolean; online: boolean }) => void;
+}) {
+  const Btn = ({
+    active,
+    onClick,
+    children,
+  }: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        "h-9 rounded-full border px-4 text-[12px] font-semibold transition-colors " +
+        (active
+          ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+          : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
+      }
+    >
+      {children}
+    </button>
+  );
+
+  const toggle = (key: "inPerson" | "online") => {
+    const next = {
+      inPerson: key === "inPerson" ? !inPerson : inPerson,
+      online: key === "online" ? !online : online,
+    };
+    if (!next.inPerson && !next.online) return; // enforce min 1
+    onChange(next);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Btn active={inPerson} onClick={() => toggle("inPerson")}>
+        In person
+      </Btn>
+      <Btn active={online} onClick={() => toggle("online")}>
+        Online
+      </Btn>
+      {inPerson && online ? (
+        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+          Hybrid
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function SpecialismPicker({
   values,
   onChange,
 }: {
-  primary: ProfessionSlug | null;
-  values: ProfessionSlug[];
-  onChange: (next: ProfessionSlug[]) => void;
+  values: SpecialismSlug[];
+  onChange: (next: SpecialismSlug[]) => void;
 }) {
-  const available = PROFESSIONS.filter(
-    (p) => p.slug !== primary && !values.includes(p.slug),
-  );
-  const atMax = values.length >= 2;
-
+  const atMax = values.length >= MAX_SPECIALISMS;
+  const toggle = (slug: SpecialismSlug) => {
+    if (values.includes(slug)) {
+      onChange(values.filter((v) => v !== slug));
+      return;
+    }
+    if (atMax) return;
+    onChange([...values, slug]);
+  };
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
-      {values.map((s) => {
-        const label = getProfessionLabel(s);
-        if (!label) return null;
-        return (
-          <Badge
-            key={s}
-            variant="outline"
-            className="h-8 gap-1.5 rounded-full border-reps-orange-border bg-reps-orange-soft pl-3 pr-2 text-[12px] font-semibold text-reps-orange"
-          >
-            {label}
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        {SPECIALISMS.map((s) => {
+          const active = values.includes(s.slug);
+          const disabled = !active && atMax;
+          return (
             <button
+              key={s.slug}
               type="button"
-              aria-label={`Remove ${label}`}
-              onClick={() => onChange(values.filter((v) => v !== s))}
-              className="flex h-5 w-5 items-center justify-center rounded-full text-reps-orange/70 hover:bg-reps-orange/10 hover:text-reps-orange"
+              onClick={() => toggle(s.slug)}
+              disabled={disabled}
+              aria-pressed={active}
+              className={
+                "h-9 rounded-full border px-3.5 text-[12px] font-semibold transition-colors " +
+                (active
+                  ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                  : disabled
+                    ? "border-reps-border bg-reps-ink text-white/30"
+                    : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
+              }
             >
-              <X className="h-3 w-3" />
+              {active ? <span className="mr-1.5">✓</span> : null}
+              {s.label}
             </button>
-          </Badge>
-        );
-      })}
-      {atMax || available.length === 0 ? (
-        atMax ? (
-          <span className="px-2 text-[11px] text-white/45">Max 2 added.</span>
-        ) : (
-          <span className="px-2 text-[11px] text-white/45">
-            {primary ? "No more professions to add." : "Choose your primary profession first."}
-          </span>
-        )
-      ) : (
-        <Select
-          value=""
-          onValueChange={(v) => {
-            if (!v) return;
-            onChange([...values, v as ProfessionSlug]);
-          }}
-        >
-          <SelectTrigger className="h-8 w-auto min-w-[180px] rounded-full border-dashed border-reps-border bg-transparent px-3 text-[12px] text-white/70">
-            <SelectValue placeholder="+ Add profession" />
-          </SelectTrigger>
-          <SelectContent>
-            {available.map((p) => (
-              <SelectItem key={p.slug} value={p.slug}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+          );
+        })}
+      </div>
+      <p className="text-[11px] text-white/45">
+        {values.length} / {MAX_SPECIALISMS} selected
+        {atMax ? " · max reached" : ""}
+      </p>
     </div>
   );
 }
@@ -578,13 +629,14 @@ function ProfileEditorPage() {
             full_name: form.full_name,
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
-            secondary_professions: form.secondary_professions,
+            specialisms: form.specialisms,
+            in_person_available: form.in_person_available,
+            online_available: form.online_available,
             city: form.city || null,
             public_phone: form.public_phone || null,
             public_email: form.public_email || null,
             website: form.website || null,
             bio: form.bio || null,
-            specialisms: form.specialisms,
             languages: form.languages,
             social_instagram: form.social_instagram || null,
             social_linkedin: form.social_linkedin || null,
@@ -915,14 +967,7 @@ function ProfileEditorPage() {
                 <Field label="Profession" hint="The role clients see on the directory card. Required to publish.">
                   <Select
                     value={form.primary_profession || undefined}
-                    onValueChange={(v) => {
-                      set("primary_profession", v as ProfessionSlug);
-                      // Drop the new primary out of secondaries to avoid clash
-                      set(
-                        "secondary_professions",
-                        form.secondary_professions.filter((s) => s !== v),
-                      );
-                    }}
+                    onValueChange={(v) => set("primary_profession", v as ProfessionSlug)}
                   >
                     <SelectTrigger className="h-10 rounded-[12px] border-reps-border bg-reps-ink text-[13px] text-white">
                       <SelectValue placeholder="Choose your primary profession" />
@@ -952,11 +997,14 @@ function ProfileEditorPage() {
                     </p>
                   ) : null}
                 </Field>
-                <Field label="Also offer (optional)" hint="Up to 2 secondary professions — shown as chips on your profile." className="sm:col-span-2">
-                  <SecondaryProfessionPicker
-                    primary={form.primary_profession || null}
-                    values={form.secondary_professions}
-                    onChange={(v) => set("secondary_professions", v)}
+                <Field label="How you work with clients" hint="Pick at least one. Both = Hybrid." className="sm:col-span-2">
+                  <DeliveryModePicker
+                    inPerson={form.in_person_available}
+                    online={form.online_available}
+                    onChange={(next) => {
+                      set("in_person_available", next.inPerson);
+                      set("online_available", next.online);
+                    }}
                   />
                 </Field>
                 <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`} className="sm:col-span-2">
@@ -1045,13 +1093,12 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Specialisms"
-                subtitle="What clients should hire you for — keep it focused."
+                subtitle={`What clients should hire you for — pick up to ${MAX_SPECIALISMS}.`}
                 step="04"
               />
-              <ChipInput
+              <SpecialismPicker
                 values={form.specialisms}
                 onChange={(v) => set("specialisms", v)}
-                placeholder="Type and press Enter"
               />
             </Card>
           </div>
@@ -1097,10 +1144,10 @@ function ProfileEditorPage() {
                       <div className="text-[12px] text-white/60">
                         {getProfessionLabel(form.primary_profession) || "Set your profession"}
                       </div>
-                      {form.secondary_professions.length > 0 ? (
+                      {form.specialisms.length > 0 ? (
                         <div className="mt-1.5 flex flex-wrap gap-1">
-                          {form.secondary_professions.map((s) => {
-                            const label = getProfessionLabel(s);
+                          {form.specialisms.map((s) => {
+                            const label = getSpecialismLabel(s);
                             return label ? (
                               <span
                                 key={s}
@@ -1112,6 +1159,14 @@ function ProfileEditorPage() {
                           })}
                         </div>
                       ) : null}
+                      <div className="mt-1 text-[10.5px] text-white/45">
+                        {[
+                          form.in_person_available ? "In person" : null,
+                          form.online_available ? "Online" : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "Pick how you work with clients"}
+                      </div>
                       {form.headline ? (
                         <p className="mt-2 text-[11.5px] leading-relaxed text-white/55">
                           {form.headline}

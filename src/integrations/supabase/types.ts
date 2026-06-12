@@ -525,7 +525,6 @@ export type Database = {
           public_email: string | null
           public_phone: string | null
           reps_level: Database["public"]["Enums"]["reps_level"] | null
-          secondary_professions: string[]
           slug: string | null
           social_instagram: string | null
           social_linkedin: string | null
@@ -558,7 +557,6 @@ export type Database = {
           public_email?: string | null
           public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
-          secondary_professions?: string[]
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
@@ -591,7 +589,6 @@ export type Database = {
           public_email?: string | null
           public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
-          secondary_professions?: string[]
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null

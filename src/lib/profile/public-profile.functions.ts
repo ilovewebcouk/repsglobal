@@ -34,17 +34,16 @@ async function fetchPrimaryLocations(
 }
 
 const PRO_PUBLIC_COLUMNS =
-  "id, slug, headline, primary_profession, secondary_professions, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published";
+  "id, slug, headline, primary_profession, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published";
 
 const PRO_LIST_COLUMNS =
-  "id, slug, headline, primary_profession, secondary_professions, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
+  "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
 
 type ProPublicRow = {
   id: string;
   slug: string | null;
   headline: string | null;
   primary_profession: string | null;
-  secondary_professions: string[] | null;
   bio: string | null;
   specialisms: string[] | null;
   city: string | null;
@@ -61,7 +60,6 @@ type ProListRow = {
   slug: string | null;
   headline: string | null;
   primary_profession: string | null;
-  secondary_professions: string[] | null;
   specialisms: string[] | null;
   city: string | null;
   country: string | null;
@@ -99,9 +97,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     return {
       ...r,
       primary_profession: r.primary_profession ?? null,
-      secondary_professions: Array.isArray(r.secondary_professions)
-        ? r.secondary_professions
-        : [],
+      specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
       full_name: prof?.full_name ?? null,
       avatar_url: prof?.avatar_url ?? null,
       location: loc,
@@ -137,9 +133,7 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     return rows.map((r) => ({
       ...r,
       primary_profession: r.primary_profession ?? null,
-      secondary_professions: Array.isArray(r.secondary_professions)
-        ? r.secondary_professions
-        : [],
+      specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
       full_name: profileById.get(r.id)?.full_name ?? null,
       avatar_url: profileById.get(r.id)?.avatar_url ?? null,
       location: locMap.get(r.id) ?? null,
