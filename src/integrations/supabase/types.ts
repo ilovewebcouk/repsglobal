@@ -460,6 +460,60 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_titles: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          granted_at: string
+          granted_by: string
+          id: string
+          is_primary: boolean
+          professional_id: string
+          source_submission_id: string | null
+          title_slug: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          is_primary?: boolean
+          professional_id: string
+          source_submission_id?: string | null
+          title_slug: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          is_primary?: boolean
+          professional_id?: string
+          source_submission_id?: string | null
+          title_slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_titles_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pro_titles_source_submission_id_fkey"
+            columns: ["source_submission_id"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_locations: {
         Row: {
           country_code: string
@@ -548,6 +602,7 @@ export type Database = {
           languages: string[]
           online_available: boolean
           primary_profession: string | null
+          primary_title_slug: string | null
           public_email: string | null
           reps_level: Database["public"]["Enums"]["reps_level"] | null
           slug: string | null
@@ -587,6 +642,7 @@ export type Database = {
           languages?: string[]
           online_available?: boolean
           primary_profession?: string | null
+          primary_title_slug?: string | null
           public_email?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
@@ -626,6 +682,7 @@ export type Database = {
           languages?: string[]
           online_available?: boolean
           primary_profession?: string | null
+          primary_title_slug?: string | null
           public_email?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
@@ -809,6 +866,8 @@ export type Database = {
           centre_number: string | null
           certificate_number: string | null
           created_at: string
+          derived_specialism_slugs: string[] | null
+          derived_title_slug: string | null
           doc_paths: string[]
           duplicate_of: string | null
           expiry_date: string | null
@@ -840,6 +899,8 @@ export type Database = {
           centre_number?: string | null
           certificate_number?: string | null
           created_at?: string
+          derived_specialism_slugs?: string[] | null
+          derived_title_slug?: string | null
           doc_paths?: string[]
           duplicate_of?: string | null
           expiry_date?: string | null
@@ -871,6 +932,8 @@ export type Database = {
           centre_number?: string | null
           certificate_number?: string | null
           created_at?: string
+          derived_specialism_slugs?: string[] | null
+          derived_title_slug?: string | null
           doc_paths?: string[]
           duplicate_of?: string | null
           expiry_date?: string | null
