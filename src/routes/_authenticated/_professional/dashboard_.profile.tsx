@@ -207,11 +207,11 @@ function SectionHeader({ title, subtitle, step }: { title: string; subtitle?: st
 
 function Field({ label, children, hint, className = "" }: { label: string; children: React.ReactNode; hint?: string; className?: string }) {
   return (
-    <label className={`flex flex-col gap-1.5 ${className}`}>
+    <div className={`flex flex-col gap-1.5 ${className}`}>
       <span className="text-[12px] font-medium text-white/70">{label}</span>
       {children}
       {hint ? <span className="text-[11px] text-white/45">{hint}</span> : null}
-    </label>
+    </div>
   );
 }
 
