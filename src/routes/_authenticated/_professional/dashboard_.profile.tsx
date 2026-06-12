@@ -32,6 +32,22 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
+import { LanguagePicker } from "@/components/forms/LanguagePicker";
+
+function TiktokIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+      <path d="M19.6 6.7a5.6 5.6 0 0 1-3.4-1.2 5.6 5.6 0 0 1-2.1-3.5h-3v13.2a2.6 2.6 0 1 1-1.9-2.5V9.5a5.7 5.7 0 1 0 4.9 5.7V9.1a8.5 8.5 0 0 0 5.5 1.9z" />
+    </svg>
+  );
+}
+function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.836L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
 import {
   getMyPrimaryLocation,
   saveMyPrimaryPostcode,
