@@ -1,73 +1,76 @@
-# Dashboard UI kit — brutal honest take + fix plan
+# Dashboard UI kit — round 2
 
-## Brutal honest truth
+Extend `src/components/dashboard/ui/` with the remaining primitives the trainer and admin dashboards need. Same recipe as `DashboardDialog` / `DashboardButton`: Radix or shadcn underneath, REPs `reps-*` tokens baked in, dark-first, no light-theme leakage.
 
-You're right. What you're seeing isn't a "dashboard design" — it's **default shadcn light-theme primitives leaking into a dark product**. Two specific things in your screenshots:
+## What to build
 
-1. **The "That photo can't be used" dialog is unreadable** because `DialogContent` uses `bg-background` and `DialogDescription` uses `text-muted-foreground`. In our theme those resolve to the cream/off-white background and a low-contrast muted grey — so white-on-cream body text + a grey "What we need" card inside a cream sheet. It looks cheap because it literally is the default shadcn light card dropped onto a dark app.
-2. **The grey "Close" / "Remove" buttons** are `<Button variant="outline">`, which is `border-input bg-background hover:bg-accent` — again the light-theme tokens. They've never been on the public site because the public site uses our own ghost/transparent treatment (`bg-white/5 border-white/10 hover:bg-white/10`).
+All under `src/components/dashboard/ui/` and re-exported from `index.ts`.
 
-This is not a per-screen fix. Every dashboard page (trainer + admin) will keep regressing until the **primitives themselves** are dark-aware. The right move is to establish a **Dashboard UI kit** once, and have every dashboard surface consume it.
+1. **`input.tsx` → `DashboardInput`**
+   - `h-10`, `rounded-[12px]` (input radius), `bg-white/[0.04]`, `border border-white/12`, `text-white`, `placeholder:text-white/40`.
+   - Focus: `border-white/30`, `ring-2 ring-white/10`.
+   - `data-invalid` / `aria-invalid`: `border-red-400/50`, ring `ring-red-400/20`.
+   - Disabled: `opacity-50`, `cursor-not-allowed`.
 
-## What I propose
+2. **`textarea.tsx` → `DashboardTextarea`**
+   - Same token set as Input, `min-h-[96px]`, `rounded-[12px]`, `py-2.5`, `resize-y`.
 
-A single, small, dark-first component layer that mirrors the public site's visual language and is the only thing dashboards are allowed to use for dialogs, buttons, inputs, popovers, and toasts.
+3. **`select.tsx` → `DashboardSelect*`** (Radix Select wrapper)
+   - `DashboardSelectTrigger`: matches Input shell exactly (so a Select reads as an Input).
+   - `DashboardSelectContent`: `bg-reps-panel`, `border-reps-border`, `rounded-[14px]`, `text-white`, soft drop shadow, `z-50` (Radix handles stacking).
+   - `DashboardSelectItem`: `text-white/85`, hover/focus `bg-white/[0.06]`, selected check in `text-reps-orange`.
+   - Export Group/Label/Separator/ScrollUpButton/ScrollDownButton.
 
-### 1. Lock the token vocabulary (no new colors)
+4. **`card.tsx` → `DashboardCard` + Header/Title/Description/Content/Footer**
+   - Surface: `bg-reps-panel`, `border border-reps-border`, `rounded-[16px]` (standard card).
+   - Header `p-5 pb-3`, Content `p-5 pt-0`, Footer `p-5 pt-3 border-t border-white/8`.
+   - Title `text-[15px] font-semibold text-white`, Description `text-[13px] text-white/70`.
 
-Keep using the existing `reps-*` tokens already in `src/styles.css`. The kit will reference:
+5. **`badge.tsx` → `DashboardBadge`** (CVA, mirrors shadcn `Badge` shape)
+   - Variants: `neutral` (default — `bg-white/[0.06] text-white/80 border-white/12`), `orange` (`bg-reps-orange-soft text-reps-orange border-reps-orange-border`), `success` (emerald triplet per `mem://design/status-colors`), `warn` (amber, used sparingly), `danger` (`bg-red-500/10 text-red-300 border-red-400/25`).
+   - Pill shape (`rounded-full`), `h-5` / `text-[11px]`.
 
-- Surface: `bg-reps-panel` (cards/dialogs), `bg-reps-ink` (inputs/page)
-- Border: `border-reps-border`, hover `border-white/15`
-- Text: `text-white`, `text-white/70`, `text-white/55`, `text-white/45`
-- Primary action: `bg-reps-orange` / `hover:bg-reps-orange-hover` (white text)
-- Soft action: `bg-reps-orange-soft text-reps-orange border-reps-orange-border` (already used on chips)
-- Ghost/secondary (the "almost transparent" one you mean): `bg-white/[0.04] border-white/12 text-white hover:bg-white/[0.08]`
-- Destructive: same ghost shape, red text (`text-red-300 hover:bg-red-500/10 border-red-400/25`)
-- Status (emerald-only-for-status rule stays): `border-emerald-400/30 bg-emerald-500/15 text-emerald-300`
+6. **`empty.tsx` → `DashboardEmpty` + `DashboardEmptyTitle` / `Description` / `Actions`**
+   - Wraps shadcn `Empty` composition, locks dark tokens: `bg-white/[0.02]`, `border-dashed border-white/12`, `rounded-[16px]`, `text-white` headings, `text-white/65` body.
+   - Optional icon slot, `size-10` circle `bg-white/[0.06]`.
 
-Radii follow the existing locked scale (button 10, input 12, card/dialog 16–18, pill full). No new radii.
+7. **`tooltip.tsx` → `DashboardTooltip*`** (Radix Tooltip wrapper)
+   - Provider + Root + Trigger + Content.
+   - Content: `bg-reps-ink`, `text-white`, `text-[12px]`, `rounded-[8px]`, soft shadow, small `px-2.5 py-1.5`, arrow `fill-reps-ink`.
 
-### 2. New dashboard-scoped primitives
+8. **`alert-dialog.tsx` → `DashboardAlertDialog*`** (Radix AlertDialog wrapper)
+   - Mirrors `DashboardDialog` tokens (overlay, content surface, radius, close pattern).
+   - `Action` button → `DashboardButton variant="primary"` (or `destructive-ghost` when caller passes a `destructive` prop).
+   - `Cancel` button → `DashboardButton variant="ghost"`.
+   - Composition exports: Root, Trigger, Portal, Overlay, Content, Header, Footer, Title, Description, Action, Cancel.
 
-Add `src/components/dashboard/ui/` (kept separate from `src/components/ui/` so we don't fight shadcn's light defaults across the rest of the app):
+9. **`toast.tsx` → `DashboardToaster`** (Sonner theme)
+   - Re-export Sonner `toast` and a pre-themed `<DashboardToaster />` with `theme="dark"` and `toastOptions.classNames` mapping to: surface `bg-reps-panel border border-reps-border text-white rounded-[14px] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)]`, title `text-white`, description `text-white/70`, success icon `text-emerald-300`, error icon `text-red-300`, action button `DashboardButton primary`, cancel `DashboardButton ghost`.
+   - Mount `<DashboardToaster />` inside the authenticated layout (`src/routes/_authenticated/route.tsx`) so dashboard toasts pick up dark styling without affecting the public site's Sonner instance.
 
-- `DashboardDialog` — wraps Radix Dialog with `bg-reps-panel border border-reps-border rounded-[18px] text-white`, `shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)]`, overlay `bg-black/70 backdrop-blur-sm`. Title white, description `text-white/70`. Inner "What we need" type cards: `bg-white/[0.04] border-white/10 rounded-[14px]`.
-- `DashboardButton` variants:
-  - `primary` (orange, white text — current "Change photo")
-  - `ghost` (the transparent treatment from the public site — replaces today's grey `outline`)
-  - `subtle` (soft orange chip-button)
-  - `destructive-ghost` (red text, ghost shell)
-  - `link`
-  All flat (`shadow-none`), heights `h-9 / h-10`, radius `10px`.
-- `DashboardInput`, `DashboardTextarea`, `DashboardSelectTrigger` — already mostly inlined on the profile page; consolidate so admin reuses the same look (`bg-reps-ink border-reps-border rounded-[12px] text-white placeholder:text-white/35`).
-- `DashboardCard` — `bg-reps-panel border border-reps-border rounded-[18px] p-6`. Section eyebrow + number chip pattern already used on `dashboard_.profile.tsx` becomes the canonical card header.
-- `DashboardEmpty`, `DashboardBadge`, `DashboardTooltip` — thin wrappers locking dark tokens.
-- Toasts: keep Sonner but set theme="dark" with the panel/border tokens.
+## Style-guide page
 
-### 3. Style guide page (internal)
+Add `src/routes/_authenticated/_admin/dashboard_._design.tsx` (admin-only, `meta: [{ name: 'robots', content: 'noindex' }]`). Renders every primitive in every variant on a single scrollable page — buttons, inputs (default/focus/invalid/disabled), select (open), card, badge swatches, empty state, tooltip, dialog + alert-dialog triggers, and a row that fires success/error/info toasts. Used as visual QA when adding new primitives.
 
-Add `/dashboard/_design` (admin-only, noindex) that renders every variant on a dark surface so we (and you) can eyeball the kit and catch regressions. This becomes the single source of truth for dashboard UI — like the public mock-ups are for marketing.
+## ESLint guard
 
-### 4. Migration (incremental, low risk)
+Add a `no-restricted-imports` rule scoped to `src/routes/_authenticated/**` and `src/components/dashboard/**` that forbids importing from `@/components/ui/{button,dialog,alert-dialog,input,textarea,select,card,badge,empty,tooltip,sonner}`. Message: "Use the dashboard UI kit (`@/components/dashboard/ui`) — shadcn defaults are light-themed and break dark dashboards."
+- Existing `src/components/ui/*` files stay untouched (public/marketing surface keeps using them).
 
-I will not redesign locked screens. The migration is a token/component swap:
+## Memory + migration
 
-1. Ship the kit + the `/dashboard/_design` page.
-2. Replace `Dialog` → `DashboardDialog` and `Button variant="outline"` → `DashboardButton variant="ghost"` on the **profile editor first** (the screen in your screenshots). That fixes both issues you flagged.
-3. Sweep the rest of `_authenticated/` routes (trainer dashboard, admin dashboard, messages, reviews, billing) in one pass — search/replace, no layout changes.
-4. Record the rule in project memory: **dashboards may only import from `src/components/dashboard/ui/`** for dialogs/buttons/inputs. shadcn `Button variant="outline" / "secondary"` becomes forbidden inside `_authenticated/`.
+- Update `mem://design/dashboard-ui-kit` with the full primitive inventory + token map.
+- No sweep of existing dashboard routes in this PR — that's a follow-up. Add a short checklist to the memory note listing routes still on raw shadcn so the next sweep is mechanical.
 
-### 5. What this does NOT change
+## Out of scope
 
-- No change to public marketing pages, locked homepage/profile/enquire/coach shop-front, or the brand orange palette.
-- No new colors, no new radii, no new fonts.
-- No functional/behavioural changes — purely a presentation layer swap.
+- No changes to public/marketing pages, locked screens, `src/components/ui/*`, brand orange, or radius scale.
+- No new colors. Emerald only for status per existing rule.
+- No light-mode theming.
 
-## Open questions before I build it
+## Technical notes
 
-1. **Scope of first PR** — do you want me to (a) ship the kit + style guide + fix the profile editor dialog & buttons only, then sweep the rest in a follow-up, or (b) do the full sweep in one go?
-2. **Ghost button hover** — public site uses `hover:bg-white/10`. Confirm that's the "almost transparent" look you mean, vs. a slightly more visible `bg-white/[0.06]` resting state.
-3. **Admin dashboard** — same kit, or do you want admin to feel visibly different (e.g. cooler/greyer) from the trainer dashboard? My recommendation: same kit, identical tokens — admin is just another logged-in surface.
-
-Once you answer, I'll build it.
+- All Radix wrappers use `React.forwardRef` and preserve `data-state` / `data-side` so animation classes (`data-[state=open]:animate-in` etc.) keep working.
+- Sonner: install is already present (used on public side). The dashboard `<DashboardToaster />` is a second instance with dark styling; Sonner supports multiple toasters keyed by position — mount once inside `_authenticated` and consumers call `toast(...)` from `sonner` as normal.
+- AlertDialog: import `@radix-ui/react-alert-dialog` (add via `bun add` if not already a transitive dep — check first).
+- Tooltip provider wraps the authenticated layout once with `delayDuration={200}` so individual usages don't need their own provider.
