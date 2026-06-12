@@ -316,88 +316,11 @@ export const commitAvatar = createServerFn({ method: "POST" })
 /* Regenerate avatar (AI portrait)                                             */
 /* -------------------------------------------------------------------------- */
 
-/* Vision classification used internally to re-frame AI output. */
-async function classifyImageForFaceBox(
-  key: string,
-  dataUrl: string,
-): Promise<FaceBox> {
-  const res = await fetch(`${GATEWAY}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: `${SYSTEM_PROMPT}\n\nSchema:\n${VALIDATION_SCHEMA}` },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Classify this image per the schema." },
-            { type: "image_url", image_url: { url: dataUrl } },
-          ],
-        },
-      ],
-    }),
-  });
-  if (!res.ok) return { x: 0.15, y: 0.1, width: 0.7, height: 0.8 };
-  const body = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  try {
-    const parsed = JSON.parse(body.choices?.[0]?.message?.content ?? "") as {
-      faceBox?: FaceBox | null;
-    };
-    const box = parsed.faceBox;
-    if (
-      box &&
-      typeof box.x === "number" &&
-      typeof box.y === "number" &&
-      typeof box.width === "number" &&
-      typeof box.height === "number"
-    ) {
-      return {
-        x: Math.max(0, Math.min(1, box.x)),
-        y: Math.max(0, Math.min(1, box.y)),
-        width: Math.max(0.05, Math.min(1, box.width)),
-        height: Math.max(0.05, Math.min(1, box.height)),
-      };
-    }
-  } catch {
-    /* fall through */
-  }
-  return { x: 0.15, y: 0.1, width: 0.7, height: 0.8 };
-}
-
-/* Same portrait crop logic used by processAvatar — kept in sync. */
-async function cropToPortraitJpeg(
-  bytes: ArrayBuffer,
-  faceBox: FaceBox,
-): Promise<Uint8Array> {
-  const { Jimp } = await import("jimp");
-  const img = await Jimp.read(Buffer.from(bytes));
-  const W = img.bitmap.width;
-  const H = img.bitmap.height;
-  const fx = faceBox.x * W;
-  const fy = faceBox.y * H;
-  const fw = faceBox.width * W;
-  const fh = faceBox.height * H;
-  const cx = fx + fw / 2;
-  const cy = fy + fh / 2;
-  let side = Math.max(fw, fh) * 2.0;
-  side = Math.min(side, Math.min(W, H));
-  let sx = cx - side / 2;
-  let sy = cy - side * 0.38;
-  if (sx < 0) sx = 0;
-  if (sy < 0) sy = 0;
-  if (sx + side > W) sx = W - side;
-  if (sy + side > H) sy = H - side;
-  const sideR = Math.round(side);
-  img.crop({ x: Math.round(sx), y: Math.round(sy), w: sideR, h: sideR });
-  if (sideR > 1024) img.resize({ w: 1024, h: 1024 });
-  const buf = await img.getBuffer("image/jpeg", { quality: 92 });
-  return new Uint8Array(buf);
-}
+/* Note: post-AI face-detect + crop was removed — Jimp's PNG decoder
+   (pngjs → pako Inflate) is not compatible with the Cloudflare Workers
+   runtime and throws "Class constructor Inflate cannot be invoked
+   without 'new'". The image model is prompted for a square 1:1
+   head-and-shoulders portrait, so we save its output directly. */
 
 export const regenerateAvatar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -513,30 +436,16 @@ Output quality:
       const rawArr = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
 
-      // Re-frame the AI output so it matches the rest of the directory:
-      // face-detect → portrait crop → 1024 jpeg, identical to upload pipeline.
-      const aiDataUrl = `data:${mime};base64,${b64}`;
-      const faceBox = await classifyImageForFaceBox(key, aiDataUrl);
-      let finalBytes: Uint8Array;
-      try {
-        finalBytes = await cropToPortraitJpeg(
-          rawArr.buffer.slice(
-            rawArr.byteOffset,
-            rawArr.byteOffset + rawArr.byteLength,
-          ) as ArrayBuffer,
-          faceBox,
-        );
-      } catch {
-        // If Jimp fails, save the raw AI image as a fallback.
-        finalBytes = rawArr;
-      }
-
-      const path = `${userId}/avatar-ai-${Date.now()}.jpg`;
+      // Save the AI output directly — the prompt asks for a square 1:1
+      // head-and-shoulders portrait, and post-process cropping with Jimp
+      // is not safe on the Worker runtime (see note above).
+      const ext = mime === "image/jpeg" ? "jpg" : "png";
+      const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error: upErr } = await supabaseAdmin.storage
         .from("avatars")
-        .upload(path, finalBytes, {
-          contentType: "image/jpeg",
+        .upload(path, rawArr, {
+          contentType: mime,
           upsert: true,
           cacheControl: "31536000",
         });
