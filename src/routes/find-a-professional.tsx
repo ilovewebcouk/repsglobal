@@ -90,7 +90,12 @@ type ProVenue = {
 type Pro = {
   name: string;
   role: string;
+  /** Legacy display fallback (neighbourhood · miles). Used when no viewer origin. */
   distance: string;
+  /** Town/area label, used when computing live distance from viewer origin. */
+  town?: string;
+  /** Approximate lat/lng — when viewer origin is set, drives the real distance. */
+  coords?: { latitude: number; longitude: number };
   rating: number;
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
@@ -102,6 +107,8 @@ type Pro = {
   featured?: boolean;
   /** Override slug for live DB pros — otherwise derived from name. */
   slug?: string;
+  /** True for rows pulled from the DB (vs static visual seed data). */
+  live?: boolean;
 };
 
 const directoryPros: Pro[] = [
@@ -109,6 +116,8 @@ const directoryPros: Pro[] = [
     name: "James Wilson",
     role: "Personal Trainer",
     distance: "Mayfair · 0.8 mi",
+    town: "Mayfair",
+    coords: { latitude: 51.5083, longitude: -0.1521 },
     rating: 5.0,
     reviews: 128,
     mode: "In-person & Online",
@@ -125,6 +134,8 @@ const directoryPros: Pro[] = [
     name: "Sophie Taylor",
     role: "Pilates Instructor",
     distance: "Marylebone · 1.2 mi",
+    town: "Marylebone",
+    coords: { latitude: 51.5226, longitude: -0.1571 },
     rating: 5.0,
     reviews: 96,
     mode: "In-person & Online",
@@ -140,6 +151,8 @@ const directoryPros: Pro[] = [
     name: "Liam Roberts",
     role: "Strength Coach",
     distance: "Soho · 1.5 mi",
+    town: "Soho",
+    coords: { latitude: 51.5136, longitude: -0.1318 },
     rating: 4.9,
     reviews: 74,
     mode: "In-person",
@@ -155,6 +168,8 @@ const directoryPros: Pro[] = [
     name: "Priya Sharma",
     role: "Nutritionist",
     distance: "Fitzrovia · 2.1 mi",
+    town: "Fitzrovia",
+    coords: { latitude: 51.5202, longitude: -0.1392 },
     rating: 5.0,
     reviews: 112,
     mode: "Online",
@@ -167,6 +182,8 @@ const directoryPros: Pro[] = [
     name: "Daniel Hughes",
     role: "Personal Trainer",
     distance: "Covent Garden · 2.3 mi",
+    town: "Covent Garden",
+    coords: { latitude: 51.5117, longitude: -0.124 },
     rating: 4.8,
     reviews: 64,
     mode: "In-person & Online",
@@ -182,6 +199,8 @@ const directoryPros: Pro[] = [
     name: "Emily Carter",
     role: "Pilates Instructor",
     distance: "Bloomsbury · 2.4 mi",
+    town: "Bloomsbury",
+    coords: { latitude: 51.5226, longitude: -0.1278 },
     rating: 5.0,
     reviews: 88,
     mode: "In-person",
@@ -197,6 +216,8 @@ const directoryPros: Pro[] = [
     name: "Marcus Lee",
     role: "Strength Coach",
     distance: "Holborn · 2.6 mi",
+    town: "Holborn",
+    coords: { latitude: 51.5174, longitude: -0.1182 },
     rating: 4.9,
     reviews: 51,
     mode: "In-person & Online",
@@ -213,6 +234,8 @@ const directoryPros: Pro[] = [
     name: "Hannah Thompson",
     role: "Pre & Postnatal Specialist",
     distance: "Clerkenwell · 3.0 mi",
+    town: "Clerkenwell",
+    coords: { latitude: 51.5247, longitude: -0.1063 },
     rating: 5.0,
     reviews: 77,
     mode: "In-person & Online",
