@@ -400,6 +400,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ofqual_cache: {
+        Row: {
+          fetched_at: string
+          found: boolean
+          qualification_number: string
+          record: Json | null
+        }
+        Insert: {
+          fetched_at?: string
+          found?: boolean
+          qualification_number: string
+          record?: Json | null
+        }
+        Update: {
+          fetched_at?: string
+          found?: boolean
+          qualification_number?: string
+          record?: Json | null
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           created_at: string
@@ -785,6 +806,7 @@ export type Database = {
           ai_extraction: Json | null
           awarding_body: string
           awarding_body_slug: string | null
+          centre_number: string | null
           certificate_number: string | null
           created_at: string
           doc_paths: string[]
@@ -793,12 +815,19 @@ export type Database = {
           file_sha256: string | null
           holder_name: string | null
           id: string
+          issue_date: string | null
+          learner_number: string | null
           name_match: boolean | null
           professional_id: string
           qualification: string
+          qualification_number: string | null
+          regulator_record: Json | null
+          regulator_verified: boolean
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["verification_submission_status"]
+          tamper_signals: Json | null
+          trust_signals: Json | null
           updated_at: string
           verify_token: string | null
           year: number | null
@@ -808,6 +837,7 @@ export type Database = {
           ai_extraction?: Json | null
           awarding_body: string
           awarding_body_slug?: string | null
+          centre_number?: string | null
           certificate_number?: string | null
           created_at?: string
           doc_paths?: string[]
@@ -816,12 +846,19 @@ export type Database = {
           file_sha256?: string | null
           holder_name?: string | null
           id?: string
+          issue_date?: string | null
+          learner_number?: string | null
           name_match?: boolean | null
           professional_id: string
           qualification: string
+          qualification_number?: string | null
+          regulator_record?: Json | null
+          regulator_verified?: boolean
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]
+          tamper_signals?: Json | null
+          trust_signals?: Json | null
           updated_at?: string
           verify_token?: string | null
           year?: number | null
@@ -831,6 +868,7 @@ export type Database = {
           ai_extraction?: Json | null
           awarding_body?: string
           awarding_body_slug?: string | null
+          centre_number?: string | null
           certificate_number?: string | null
           created_at?: string
           doc_paths?: string[]
@@ -839,12 +877,19 @@ export type Database = {
           file_sha256?: string | null
           holder_name?: string | null
           id?: string
+          issue_date?: string | null
+          learner_number?: string | null
           name_match?: boolean | null
           professional_id?: string
           qualification?: string
+          qualification_number?: string | null
+          regulator_record?: Json | null
+          regulator_verified?: boolean
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]
+          tamper_signals?: Json | null
+          trust_signals?: Json | null
           updated_at?: string
           verify_token?: string | null
           year?: number | null
