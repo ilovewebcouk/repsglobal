@@ -1017,7 +1017,7 @@ function ProfileEditorPage() {
                 </DashboardButton>
                 <DashboardButton
                   variant="ghost"
-                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath })}
+                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath, attempt: regenState.attempt + 1 })}
                 >
                   Try again
                 </DashboardButton>
