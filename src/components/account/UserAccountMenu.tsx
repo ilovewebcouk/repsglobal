@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  ChevronDown,
   LogOut,
   ShieldCheck,
   Settings,
@@ -16,7 +15,6 @@ import {
   Users,
   BadgeCheck,
   Sparkles,
-  FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,7 +38,6 @@ type Item = {
   to: string;
   label: string;
   icon: LucideIcon;
-  accent?: boolean;
 };
 
 function itemsForRole(role: AccountRole): Item[] {
@@ -58,7 +55,6 @@ function itemsForRole(role: AccountRole): Item[] {
       return [
         { to: "/dashboard", label: "My dashboard", icon: LayoutDashboard },
         { to: "/dashboard/profile", label: "Public profile", icon: UserCircle },
-        { to: "/dashboard/profile-edit", label: "Edit profile", icon: FileText },
         { to: "/dashboard/leads", label: "Leads", icon: Target },
         { to: "/dashboard/messages", label: "Messages", icon: MessagesSquare },
         { to: "/dashboard/payments", label: "Payments", icon: CreditCard },
@@ -68,8 +64,6 @@ function itemsForRole(role: AccountRole): Item[] {
       return [
         { to: "/dashboard", label: "My dashboard", icon: LayoutDashboard },
         { to: "/dashboard/profile", label: "Public profile", icon: UserCircle },
-        { to: "/dashboard/profile-edit", label: "Edit profile", icon: FileText },
-        { to: "/dashboard/verification", label: "Verification", icon: BadgeCheck },
         { to: "/dashboard/settings", label: "Settings", icon: Settings },
       ];
     case "client":
@@ -109,17 +103,25 @@ export function UserAccountMenu({
   const dualProRole: AccountRole | null =
     isAdmin && isProfessional ? (tier ?? "verified") : null;
 
-  const triggerClass =
+  // The avatar IS the trigger. No chevron, no wrapper div, no name.
+  const ringClass =
     surface === "public"
-      ? "hidden h-10 items-center gap-2 rounded-[999px] border border-white/20 bg-white/[0.04] pl-1 pr-3 text-[13px] font-medium text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink sm:inline-flex"
-      : "inline-flex h-10 items-center gap-2 rounded-[999px] border border-reps-border bg-reps-panel pl-1 pr-3 text-[13px] font-medium text-white transition-colors hover:bg-reps-panel/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60";
+      ? "ring-1 ring-white/25 hover:ring-white/60 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink"
+      : "ring-1 ring-reps-border hover:ring-reps-orange/60 focus-visible:ring-2 focus-visible:ring-reps-orange/70";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" aria-label="Account menu" className={cn(triggerClass, className)}>
-          <UserAvatar name={user.name} avatarUrl={avatarUrl} size="sm" />
-          <ChevronDown className="size-3.5 opacity-70" aria-hidden />
+        <button
+          type="button"
+          aria-label="Account menu"
+          className={cn(
+            "inline-flex items-center justify-center rounded-full transition-shadow focus:outline-none",
+            ringClass,
+            className,
+          )}
+        >
+          <UserAvatar name={user.name} avatarUrl={avatarUrl} size="md" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
