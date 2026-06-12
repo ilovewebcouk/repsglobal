@@ -303,15 +303,38 @@ function pickFile(accept: string, maxBytes: number): Promise<File | null> {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = accept;
+    // Must be attached to the document for `change` to fire reliably across browsers
+    // (Safari in particular, and some Chrome/Firefox cases where the first selection
+    // silently does nothing on a detached input). Hide it offscreen.
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.style.top = "-9999px";
+    input.style.opacity = "0";
+    input.style.pointerEvents = "none";
+    document.body.appendChild(input);
+
+    let settled = false;
+    const cleanup = () => {
+      if (input.parentNode) input.parentNode.removeChild(input);
+    };
+    const finish = (file: File | null) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(file);
+    };
+
     input.onchange = () => {
       const f = input.files?.[0] ?? null;
       if (f && f.size > maxBytes) {
         toast.error(`File too large — max ${Math.round(maxBytes / 1024 / 1024)}MB.`);
-        resolve(null);
+        finish(null);
         return;
       }
-      resolve(f);
+      finish(f);
     };
+    // Native cancel event fires when the user dismisses the picker
+    input.oncancel = () => finish(null);
     input.click();
   });
 }
