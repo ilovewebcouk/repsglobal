@@ -23,7 +23,8 @@ export type DashboardProfile = {
   in_person_available: boolean;
   online_available: boolean;
   city: string | null;
-  public_phone: string | null;
+  /** Internal-only — never rendered on any public page. E.164 format. */
+  contact_phone: string | null;
   public_email: string | null;
   website: string | null;
   bio: string | null;
@@ -53,7 +54,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, primary_profession, in_person_available, online_available, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, primary_profession, in_person_available, online_available, city, contact_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -80,7 +81,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       in_person_available: (proRow.in_person_available as boolean | null) ?? true,
       online_available: (proRow.online_available as boolean | null) ?? true,
       city: (proRow.city as string | null) ?? null,
-      public_phone: (proRow.public_phone as string | null) ?? null,
+      contact_phone: (proRow.contact_phone as string | null) ?? null,
       public_email: (proRow.public_email as string | null) ?? null,
       website: (proRow.website as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
@@ -112,7 +113,14 @@ const UpdateInput = z.object({
   in_person_available: z.boolean().optional(),
   online_available: z.boolean().optional(),
   city: z.string().trim().max(120).nullable().optional(),
-  public_phone: z.string().trim().max(40).nullable().optional(),
+  // E.164: leading + then 7–15 digits (first digit 1–9). Stored internally only.
+  contact_phone: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{6,14}$/, "Enter a valid international phone number (e.g. +44 7911 123456).")
+    .nullable()
+    .or(z.literal(""))
+    .optional(),
   public_email: z.string().trim().email().max(255).nullable().or(z.literal("")).optional(),
   website: z.string().trim().max(255).nullable().optional(),
   bio: z.string().trim().max(4000).nullable().optional(),
@@ -184,7 +192,7 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       in_person_available: inPerson,
       online_available: online,
       city: cleaned.city ?? null,
-      public_phone: cleaned.public_phone ?? null,
+      contact_phone: cleaned.contact_phone ?? null,
       public_email: cleaned.public_email ?? null,
       website: cleaned.website ?? null,
       bio: cleaned.bio ?? null,
