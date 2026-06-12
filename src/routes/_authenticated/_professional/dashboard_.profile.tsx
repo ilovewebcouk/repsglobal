@@ -1047,6 +1047,14 @@ function ProfileEditorPage() {
                     onChange={(v) => set("headline", v.slice(0, 160))}
                     placeholder="e.g. Helping busy professionals build strength and feel their best"
                   />
+                  <div className="mt-2 flex justify-end">
+                    <AiCopyAssist
+                      field="tagline"
+                      value={form.headline}
+                      facts={aiFacts}
+                      onApply={(v) => set("headline", v.slice(0, 160))}
+                    />
+                  </div>
                 </Field>
                 <Field
                   label="Contact phone"
