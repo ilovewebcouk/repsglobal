@@ -32,9 +32,23 @@ import {
   
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
+import {
+  validateAvatar,
+  commitAvatar,
+  regenerateAvatar,
+} from "@/lib/profile/avatar-ai.functions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Sparkles, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile")({
   head: () => ({
@@ -300,15 +314,73 @@ function pickFile(accept: string, maxBytes: number): Promise<File | null> {
   });
 }
 
-async function uploadToAvatars(userId: string, kind: "avatar", file: File): Promise<string> {
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const path = `${userId}/${kind}-${Date.now()}.${ext}`;
+async function uploadFileToAvatars(path: string, file: Blob, contentType: string): Promise<void> {
   const { error } = await supabase.storage
     .from("avatars")
-    .upload(path, file, { cacheControl: "31536000", upsert: true });
+    .upload(path, file, { cacheControl: "31536000", upsert: true, contentType });
   if (error) throw error;
-  return path;
 }
+
+async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.decoding = "async";
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("Couldn't read image."));
+      img.src = url;
+    });
+    return img;
+  } finally {
+    // Revoke after load
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
+async function cropToSquareJpeg(
+  file: File,
+  faceBox: { x: number; y: number; width: number; height: number },
+  maxSize = 1024,
+): Promise<Blob> {
+  const img = await loadImageBitmap(file);
+  const W = img.naturalWidth;
+  const H = img.naturalHeight;
+  // face box in px
+  const fx = faceBox.x * W;
+  const fy = faceBox.y * H;
+  const fw = faceBox.width * W;
+  const fh = faceBox.height * H;
+  const cx = fx + fw / 2;
+  const cy = fy + fh / 2;
+  // Square side: pad face by ~60% (so the face fills ~62% of the crop).
+  const pad = 1.6;
+  let side = Math.max(fw, fh) * pad;
+  // Clamp side so the square stays inside the image when possible.
+  side = Math.min(side, Math.min(W, H));
+  let sx = cx - side / 2;
+  let sy = cy - side / 2;
+  if (sx < 0) sx = 0;
+  if (sy < 0) sy = 0;
+  if (sx + side > W) sx = W - side;
+  if (sy + side > H) sy = H - side;
+
+  const out = Math.min(maxSize, Math.round(side));
+  const canvas = document.createElement("canvas");
+  canvas.width = out;
+  canvas.height = out;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not available.");
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, out, out);
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Couldn't encode image."))),
+      "image/jpeg",
+      0.88,
+    );
+  });
+}
+
 
 /* ============================================================
    Page
@@ -372,30 +444,160 @@ function ProfileEditorPage() {
     return supabase.auth.getSession().then((r) => r.data.session?.user.id ?? null);
   }, []);
 
-  const avatarMutation = useMutation({
-    mutationFn: async (file: File | null) => {
+  // Bind server fns
+  const runValidate = useServerFn(validateAvatar);
+  const runCommit = useServerFn(commitAvatar);
+  const runRegenerate = useServerFn(regenerateAvatar);
+
+  // Avatar UI state
+  const [avatarBusy, setAvatarBusy] = React.useState<null | "uploading" | "validating" | "cropping" | "generating">(null);
+  const [rejection, setRejection] = React.useState<null | { reason: string; category: string }>(null);
+  const [lastUploadedPath, setLastUploadedPath] = React.useState<string | null>(null);
+  const [regenState, setRegenState] = React.useState<
+    | { step: "confirm"; sourcePath: string }
+    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string }
+    | null
+  >(null);
+
+  const invalidateProfile = () => {
+    void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+    void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
+  };
+
+  const removeMutation = useMutation({
+    mutationFn: async () => {
       const id = await userId;
       if (!id) throw new Error("Not signed in.");
-      const path = file ? await uploadToAvatars(id, "avatar", file) : null;
-      return saveAvatar({ data: { path } });
+      return saveAvatar({ data: { path: null } });
     },
     onSuccess: () => {
-      toast.success("Profile photo updated.");
-      void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
+      toast.success("Profile photo removed.");
+      setLastUploadedPath(null);
+      invalidateProfile();
     },
-    onError: (e: unknown) => {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
-    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't remove photo."),
   });
 
-
   const handlePickAvatar = async () => {
-    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
+    const id = await userId;
+    if (!id) {
+      toast.error("Not signed in.");
+      return;
+    }
+    const f = await pickFile("image/png,image/jpeg", 8 * 1024 * 1024);
     if (!f) return;
-    avatarMutation.mutate(f);
+
+    // Pre-checks
+    if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
+      setRejection({ reason: "SVGs and vector graphics aren't accepted — please upload a real photo of yourself.", category: "logo" });
+      return;
+    }
+    // Quick dimension check
+    try {
+      const img = await loadImageBitmap(f);
+      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
+        setRejection({ reason: "This image is too small — please upload a photo at least 400 × 400 pixels.", category: "low_quality" });
+        return;
+      }
+    } catch {
+      toast.error("Couldn't read this image.");
+      return;
+    }
+
+    try {
+      // 1. Upload original to temp path
+      setAvatarBusy("uploading");
+      const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+      const tempPath = `${id}/pending-${Date.now()}.${ext}`;
+      await uploadFileToAvatars(tempPath, f, f.type || "image/jpeg");
+
+      // 2. Validate with AI
+      setAvatarBusy("validating");
+      const result = await runValidate({ data: { path: tempPath } });
+      if (!result.ok) {
+        // Server already deleted the temp file on reject
+        setAvatarBusy(null);
+        setRejection({ reason: result.reason, category: result.category });
+        return;
+      }
+
+      // 3. Crop client-side using face box
+      setAvatarBusy("cropping");
+      const cropped = await cropToSquareJpeg(f, result.faceBox, 1024);
+      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
+      await uploadFileToAvatars(finalPath, cropped, "image/jpeg");
+
+      // 4. Commit
+      await runCommit({ data: { path: finalPath, isAiGenerated: false } });
+
+      // 5. Best-effort clean up temp
+      void supabase.storage.from("avatars").remove([tempPath]);
+
+      setLastUploadedPath(finalPath);
+      setAvatarBusy(null);
+      toast.success("Profile photo updated.");
+      invalidateProfile();
+    } catch (e) {
+      setAvatarBusy(null);
+      toast.error(e instanceof Error ? e.message : "Upload failed.");
+    }
   };
-  const handleRemoveAvatar = () => avatarMutation.mutate(null);
+
+  const handleRemoveAvatar = () => removeMutation.mutate();
+
+  const handleStartRegenerate = async () => {
+    const id = await userId;
+    if (!id) return;
+    // Use the just-uploaded path, or derive from current avatar_url if it points to user's folder.
+    let sourcePath = lastUploadedPath;
+    if (!sourcePath && profile.avatar_url) {
+      // We can't reliably get a storage path from a signed URL; require a fresh upload.
+      toast.error("Please upload a fresh photo first, then generate a professional version.");
+      return;
+    }
+    if (!sourcePath) return;
+    setRegenState({ step: "confirm", sourcePath });
+  };
+
+  const handleConfirmRegenerate = async () => {
+    if (!regenState || regenState.step !== "confirm") return;
+    const sourcePath = regenState.sourcePath;
+    try {
+      setAvatarBusy("generating");
+      const out = await runRegenerate({ data: { sourcePath } });
+      // Sign a temporary preview URL for the original cropped photo too
+      const { data: orig } = await supabase.storage
+        .from("avatars")
+        .createSignedUrl(sourcePath, 60 * 10);
+      setRegenState({
+        step: "preview",
+        sourcePath,
+        originalUrl: orig?.signedUrl ?? "",
+        aiPath: out.path,
+        aiUrl: out.url,
+      });
+      setAvatarBusy(null);
+    } catch (e) {
+      setAvatarBusy(null);
+      toast.error(e instanceof Error ? e.message : "Couldn't generate AI portrait.");
+    }
+  };
+
+  const handleUseAiVersion = async () => {
+    if (!regenState || regenState.step !== "preview") return;
+    try {
+      await runCommit({ data: { path: regenState.aiPath, isAiGenerated: true } });
+      setLastUploadedPath(regenState.aiPath);
+      setRegenState(null);
+      toast.success("AI portrait saved as your profile photo.");
+      invalidateProfile();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't save AI portrait.");
+    }
+  };
+
+  const avatarPending = avatarBusy !== null || removeMutation.isPending;
+
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
@@ -470,24 +672,39 @@ function ProfileEditorPage() {
                       <button
                         type="button"
                         onClick={handlePickAvatar}
-                        disabled={avatarMutation.isPending}
+                        disabled={avatarPending}
                         className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
                       >
-                        <Camera className="h-3.5 w-3.5" />
-                        {avatarMutation.isPending ? "Uploading…" : "Change photo"}
+                        {avatarBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                        {avatarBusy === "uploading" && "Uploading…"}
+                        {avatarBusy === "validating" && "Checking photo…"}
+                        {avatarBusy === "cropping" && "Cropping…"}
+                        {avatarBusy === "generating" && "Generating…"}
+                        {!avatarBusy && "Change photo"}
                       </button>
                       <button
                         type="button"
                         onClick={handleRemoveAvatar}
-                        disabled={!profile.avatar_url || avatarMutation.isPending}
+                        disabled={!profile.avatar_url || avatarPending}
                         className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/70 shadow-none transition-colors hover:text-white disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Remove
                       </button>
+                      {lastUploadedPath ? (
+                        <button
+                          type="button"
+                          onClick={handleStartRegenerate}
+                          disabled={avatarPending}
+                          className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none transition-colors hover:text-white disabled:opacity-50"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
+                          Generate AI portrait
+                        </button>
+                      ) : null}
                     </div>
                     <p className="text-[11px] text-white/45">
-                      Square image, at least 512 × 512 · JPG or PNG · max 4MB
+                      Real headshot only · JPG or PNG · max 8MB · we check uploads with AI to keep the directory trustworthy
                     </p>
                   </div>
                 </div>
@@ -727,6 +944,132 @@ function ProfileEditorPage() {
           </aside>
         </div>
       </div>
+
+      {/* Rejection dialog */}
+      <Dialog open={rejection !== null} onOpenChange={(o) => !o && setRejection(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-reps-orange" />
+              That photo can't be used
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-white/70">
+              {rejection?.reason}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
+            <p className="font-semibold text-white/85 mb-1">What we need</p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              <li>A clear photograph of you (not a logo, illustration or graphic)</li>
+              <li>Just you — no group photos</li>
+              <li>Head-and-shoulders, face clearly visible</li>
+              <li>Good lighting, in focus</li>
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRejection(null)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setRejection(null);
+                void handlePickAvatar();
+              }}
+            >
+              Try a different photo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate confirm + preview */}
+      <Dialog
+        open={regenState !== null}
+        onOpenChange={(o) => {
+          if (!o && avatarBusy !== "generating") setRegenState(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[520px]">
+          {regenState?.step === "confirm" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-reps-orange" />
+                  Generate a professional AI portrait?
+                </DialogTitle>
+                <DialogDescription className="pt-2 text-white/70">
+                  We'll create a studio-style portrait based on your photo. It will look like you, but it is an AI-generated image — not a real photograph. Your original photo stays available.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
+                Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setRegenState(null)} disabled={avatarBusy === "generating"}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmRegenerate} disabled={avatarBusy === "generating"}>
+                  {avatarBusy === "generating" ? (
+                    <>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-3.5 w-3.5" />
+                      Generate
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : regenState?.step === "preview" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Choose your photo</DialogTitle>
+                <DialogDescription className="pt-1 text-white/70">
+                  Side-by-side preview. The AI version is clearly a re-rendered portrait.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-[11px] uppercase tracking-wide text-white/55">Original</div>
+                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-border bg-reps-panel-soft">
+                    {regenState.originalUrl ? (
+                      <img src={regenState.originalUrl} alt="Original" className="h-full w-full object-cover" />
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-[11px] uppercase tracking-wide text-reps-orange flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> AI portrait
+                  </div>
+                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-orange/40 bg-reps-panel-soft">
+                    <img src={regenState.aiUrl} alt="AI portrait" className="h-full w-full object-cover" />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="flex-wrap gap-2">
+                <Button variant="outline" onClick={() => setRegenState(null)}>
+                  Keep original
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath })}
+                >
+                  Try again
+                </Button>
+                <Button onClick={handleUseAiVersion}>
+                  Use AI version
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
