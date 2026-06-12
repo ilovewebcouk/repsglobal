@@ -21,6 +21,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
+import { createVeriffSession } from "@/lib/verification/veriff.functions";
 import {
   myInsurance,
   saveInsurance,
@@ -145,23 +146,48 @@ function VerificationPage() {
 
 /* -------------------------------------------------------------------------- */
 
+type IdentityRow = {
+  id: string;
+  status: string;
+  vendor?: string | null;
+  doc_type?: string | null;
+  doc_path_front?: string | null;
+  selfie_path?: string | null;
+  name_on_doc?: string | null;
+  dob_on_doc?: string | null;
+  admin_note?: string | null;
+  veriff_session_url?: string | null;
+  veriff_status?: string | null;
+  veriff_reason?: string | null;
+};
+
 function IdentityCard({
   identity,
   onSaved,
 }: {
-  identity: { id: string; status: string; doc_type: string; doc_path_front: string; selfie_path?: string | null; name_on_doc?: string | null; dob_on_doc?: string | null; admin_note?: string | null } | null | undefined;
+  identity: IdentityRow | null | undefined;
   onSaved: () => void;
 }) {
   const upload = useServerFn(uploadVerificationAsset);
   const save = useServerFn(saveIdentity);
+  const startVeriff = useServerFn(createVeriffSession);
   const [docType, setDocType] = useState<"passport" | "driving_licence" | "national_id">("passport");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [frontPath, setFrontPath] = useState<string | null>(null);
   const [selfiePath, setSelfiePath] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [useManual, setUseManual] = useState(false);
   const frontRef = useRef<HTMLInputElement>(null);
   const selfieRef = useRef<HTMLInputElement>(null);
+
+  const veriff = useMutation({
+    mutationFn: async () => startVeriff({ data: {} }),
+    onSuccess: ({ url }) => {
+      window.location.href = url;
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Couldn't start ID check"),
+  });
 
   const onPickFront = async (f: File) => {
     setBusy(true);
@@ -211,13 +237,15 @@ function IdentityCard({
   });
 
   if (identity) {
+    const isVeriff = identity.vendor === "veriff";
+    const inProgress = identity.status === "pending" && isVeriff && identity.veriff_status !== "submitted";
     return (
       <PPanel className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
             <p className="mt-1 text-[12px] text-white/55">
-              {identity.doc_type} · {identity.name_on_doc || "—"}
+              {isVeriff ? "Veriff ID check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
             </p>
           </div>
           <Badge
@@ -225,30 +253,98 @@ function IdentityCard({
             className={
               identity.status === "approved"
                 ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                : identity.status === "rejected"
+                : identity.status === "rejected" || identity.status === "expired"
                   ? "border-red-400/30 bg-red-500/15 text-red-300"
-                  : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  : identity.status === "needs_more_info"
+                    ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                    : "border-amber-400/30 bg-amber-500/15 text-amber-300"
             }
           >
-            {identity.status === "approved" ? "Verified" : identity.status === "rejected" ? "Rejected" : "In review"}
+            {identity.status === "approved"
+              ? "ID-checked"
+              : identity.status === "rejected"
+                ? "Rejected"
+                : identity.status === "needs_more_info"
+                  ? "More info needed"
+                  : identity.status === "expired"
+                    ? "Expired"
+                    : "In review"}
           </Badge>
         </div>
-        {identity.admin_note && (
+        {(identity.admin_note || identity.veriff_reason) && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>{identity.admin_note}</span>
+            <span>{identity.admin_note || identity.veriff_reason}</span>
           </div>
         )}
+        {inProgress && identity.veriff_session_url && (
+          <a
+            href={identity.veriff_session_url}
+            className="mt-4 inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
+          >
+            Continue ID check
+          </a>
+        )}
+        {(identity.status === "rejected" || identity.status === "needs_more_info" || identity.status === "expired") && (
+          <Button
+            variant="primary"
+            size="md"
+            className="mt-4"
+            disabled={veriff.isPending}
+            onClick={() => veriff.mutate()}
+          >
+            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
+          </Button>
+        )}
+      </PPanel>
+    );
+  }
+
+  if (!useManual) {
+    return (
+      <PPanel className="p-5">
+        <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
+        <p className="mt-1 text-[12px] text-white/55">
+          We use Veriff to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            variant="primary"
+            size="md"
+            disabled={veriff.isPending}
+            onClick={() => veriff.mutate()}
+          >
+            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setUseManual(true)}
+            className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline sm:ml-2"
+          >
+            Upload manually instead
+          </button>
+        </div>
       </PPanel>
     );
   }
 
   return (
     <PPanel className="p-5">
-      <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
-      <p className="mt-1 text-[12px] text-white/55">
-        Upload a government-issued photo ID and a selfie. We never share these — they're used for verification only.
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-[16px] font-bold text-white">Identity (manual)</h3>
+          <p className="mt-1 text-[12px] text-white/55">
+            Upload a government-issued photo ID and a selfie. Reviewed within 24 hours.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setUseManual(false)}
+          className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline"
+        >
+          Use Veriff instead
+        </button>
+      </div>
       <div className="mt-4 space-y-3">
         <div>
           <label className="text-[12px] text-white/65">Document type</label>
