@@ -436,12 +436,16 @@ function AdminVerificationPage() {
                     <div className="space-y-1.5 text-[12px] text-white/75">
                       <div>{sub.qualification}</div>
                       <div className="text-white/55">{sub.awarding_body}</div>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {(sub.doc_paths ?? []).map((p) => (
-                          <DocChip key={p} onClick={() => openDoc("verification-docs", p)}>
-                            {p.split("/").pop()?.slice(0, 22) ?? "doc"}
-                          </DocChip>
-                        ))}
+                      <div className="pt-2">
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => setCertOpen(true)}
+                          className="w-full"
+                        >
+                          <FileText className="mr-1 h-3.5 w-3.5" />
+                          Review certificate ({(sub.doc_paths ?? []).length})
+                        </Button>
                       </div>
                     </div>
                   </PCard>
