@@ -9,7 +9,7 @@ import {
   ExternalLink,
   Eye,
   Globe,
-  Image as ImageIcon,
+  
   Instagram,
   Linkedin,
   MapPin,
