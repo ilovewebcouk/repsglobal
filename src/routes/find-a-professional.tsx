@@ -278,7 +278,7 @@ function DirectoryPage() {
       livePros
         .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
         .map((r) => ({
-          name: r.trading_name || "REPS Professional",
+          name: r.full_name || "REPS Professional",
           role: (r.specialisms?.[0] as string) || "Personal Trainer",
           distance: r.city ? `${r.city}` : "—",
           rating: 5.0,

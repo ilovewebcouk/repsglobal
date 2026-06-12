@@ -206,8 +206,8 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
   return {
     slug: row.slug ?? "",
-    name: row.trading_name ?? "REPS Professional",
-    firstName: (row.trading_name ?? "").split(" ")[0] || "Coach",
+    name: row.full_name ?? "REPS Professional",
+    firstName: (row.full_name ?? "").split(" ")[0] || "Coach",
     role: "REPS Verified Professional",
     location: row.city ?? "Online",
     region: row.country ?? "",

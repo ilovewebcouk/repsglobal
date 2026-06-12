@@ -78,7 +78,6 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 type FormState = {
   full_name: string;
   headline: string;
-  trading_name: string;
   city: string;
   public_phone: string;
   public_email: string;
@@ -95,7 +94,6 @@ function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
-    trading_name: p.trading_name ?? "",
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
@@ -113,7 +111,6 @@ function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
     a.headline === b.headline &&
-    a.trading_name === b.trading_name &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
@@ -471,7 +468,6 @@ function ProfileEditorPage() {
         data: {
           full_name: form.full_name,
           headline: form.headline || null,
-          trading_name: form.trading_name || null,
           city: form.city || null,
           public_phone: form.public_phone || null,
           public_email: form.public_email || null,
@@ -803,13 +799,6 @@ function ProfileEditorPage() {
                     value={form.headline}
                     onChange={(v) => set("headline", v)}
                     placeholder="e.g. Strength & Conditioning Coach"
-                  />
-                </Field>
-                <Field label="Business / gym name">
-                  <TextInput
-                    value={form.trading_name}
-                    onChange={(v) => set("trading_name", v)}
-                    placeholder="Optional"
                   />
                 </Field>
                 <Field label="Location">
