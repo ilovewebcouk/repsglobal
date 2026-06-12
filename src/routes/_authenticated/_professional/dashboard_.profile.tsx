@@ -412,6 +412,7 @@ function ProfileEditorPage() {
 
   // Bind server fns
   const runValidate = useServerFn(validateAvatar);
+  const runProcess = useServerFn(processAvatar);
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
@@ -450,7 +451,7 @@ function ProfileEditorPage() {
       toast.error("Not signed in.");
       return;
     }
-    const f = await pickFile("image/png,image/jpeg", 8 * 1024 * 1024);
+    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
     if (!f) return;
 
     // Pre-checks
@@ -461,8 +462,8 @@ function ProfileEditorPage() {
     // Quick dimension check
     try {
       const img = await loadImageBitmap(f);
-      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
-        setRejection({ reason: "This image is too small — please upload a photo at least 400 × 400 pixels.", category: "low_quality" });
+      if (img.naturalWidth < 512 || img.naturalHeight < 512) {
+        setRejection({ reason: "This image is too small — please upload a photo at least 512 × 512 pixels.", category: "low_quality" });
         return;
       }
     } catch {
@@ -487,17 +488,14 @@ function ProfileEditorPage() {
         return;
       }
 
-      // 3. Crop client-side using face box
+      // 3. Crop + resize on the server using the AI face box
       setAvatarBusy("cropping");
-      const cropped = await cropToSquareJpeg(f, result.faceBox, 1024);
-      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
-      await uploadFileToAvatars(finalPath, cropped, "image/jpeg");
+      const { path: finalPath } = await runProcess({
+        data: { tempPath, faceBox: result.faceBox },
+      });
 
       // 4. Commit
       await runCommit({ data: { path: finalPath, isAiGenerated: false } });
-
-      // 5. Best-effort clean up temp
-      void supabase.storage.from("avatars").remove([tempPath]);
 
       setLastUploadedPath(finalPath);
       setAvatarBusy(null);
