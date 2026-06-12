@@ -417,8 +417,8 @@ function ProfileEditorPage() {
   const [rejection, setRejection] = React.useState<null | { reason: string; category: string }>(null);
   const [lastUploadedPath, setLastUploadedPath] = React.useState<string | null>(null);
   const [regenState, setRegenState] = React.useState<
-    | { step: "confirm"; sourcePath: string }
-    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string }
+    | { step: "confirm"; sourcePath: string; attempt: number }
+    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string; attempt: number }
     | null
   >(null);
 
@@ -516,16 +516,16 @@ function ProfileEditorPage() {
       return;
     }
     if (!sourcePath) return;
-    setRegenState({ step: "confirm", sourcePath });
+    setRegenState({ step: "confirm", sourcePath, attempt: 0 });
   };
 
   const handleConfirmRegenerate = async () => {
     if (!regenState || regenState.step !== "confirm") return;
     const sourcePath = regenState.sourcePath;
+    const attempt = regenState.attempt;
     try {
       setAvatarBusy("generating");
-      const out = await runRegenerate({ data: { sourcePath } });
-      // Sign a temporary preview URL for the original cropped photo too
+      const out = await runRegenerate({ data: { sourcePath, attempt } });
       const { data: orig } = await supabase.storage
         .from("avatars")
         .createSignedUrl(sourcePath, 60 * 10);
@@ -535,6 +535,7 @@ function ProfileEditorPage() {
         originalUrl: orig?.signedUrl ?? "",
         aiPath: out.path,
         aiUrl: out.url,
+        attempt,
       });
       setAvatarBusy(null);
     } catch (e) {
@@ -1016,7 +1017,7 @@ function ProfileEditorPage() {
                 </DashboardButton>
                 <DashboardButton
                   variant="ghost"
-                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath })}
+                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath, attempt: regenState.attempt + 1 })}
                 >
                   Try again
                 </DashboardButton>
