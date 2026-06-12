@@ -33,6 +33,7 @@ import {
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
+import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 
 function TiktokIcon() {
   return (
@@ -1097,37 +1098,42 @@ function ProfileEditorPage() {
                     onChange={(v) => set("languages", v)}
                   />
                 </Field>
-                <Field label="Social links" hint="Just the handle — we'll build the link." className="sm:col-span-2">
+                <Field label="Social links" hint="Type just the handle — full URLs and @ symbols get cleaned up automatically." className="sm:col-span-2">
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    <TextInput
+                    <SocialHandleInput
                       value={form.social_instagram}
                       onChange={(v) => set("social_instagram", v)}
-                      prefix={<Instagram className="h-3.5 w-3.5" />}
-                      placeholder="instagram handle"
+                      icon={<Instagram className="h-3.5 w-3.5" />}
+                      prefix="instagram.com/"
+                      ariaLabel="Instagram handle"
                     />
-                    <TextInput
+                    <SocialHandleInput
                       value={form.social_tiktok}
                       onChange={(v) => set("social_tiktok", v)}
-                      prefix={<TiktokIcon />}
-                      placeholder="tiktok handle"
+                      icon={<TiktokIcon />}
+                      prefix="tiktok.com/@"
+                      ariaLabel="TikTok handle"
                     />
-                    <TextInput
+                    <SocialHandleInput
                       value={form.social_x}
                       onChange={(v) => set("social_x", v)}
-                      prefix={<XIcon />}
-                      placeholder="x / twitter handle"
+                      icon={<XIcon />}
+                      prefix="x.com/"
+                      ariaLabel="X / Twitter handle"
                     />
-                    <TextInput
+                    <SocialHandleInput
                       value={form.social_youtube}
                       onChange={(v) => set("social_youtube", v)}
-                      prefix={<Youtube className="h-3.5 w-3.5" />}
-                      placeholder="youtube channel"
+                      icon={<Youtube className="h-3.5 w-3.5" />}
+                      prefix="youtube.com/@"
+                      ariaLabel="YouTube channel"
                     />
-                    <TextInput
+                    <SocialHandleInput
                       value={form.social_linkedin}
                       onChange={(v) => set("social_linkedin", v)}
-                      prefix={<Linkedin className="h-3.5 w-3.5" />}
-                      placeholder="linkedin slug"
+                      icon={<Linkedin className="h-3.5 w-3.5" />}
+                      prefix="linkedin.com/in/"
+                      ariaLabel="LinkedIn slug"
                     />
                   </div>
                 </Field>
