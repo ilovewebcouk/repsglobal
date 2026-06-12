@@ -44,7 +44,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { TierPreviewSwitch } from "@/components/dashboard/TierPreviewSwitch";
+
 
 /* ------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -373,7 +373,7 @@ function TopBar({
             ⌘K
           </kbd>
         </div>
-        {role === "trainer" ? <TierPreviewSwitch /> : null}
+        
         {actions}
         <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
