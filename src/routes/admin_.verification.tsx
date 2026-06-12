@@ -291,13 +291,13 @@ function AdminVerificationPage() {
           {!selectedId && (
             <PPanel className="p-10">
               <Empty>
-                <EmptyHeader>
-                  <Shield className="mx-auto h-10 w-10 text-white/30" />
-                  <EmptyTitle>Select a case to review</EmptyTitle>
-                  <EmptyDescription>
-                    Pick a submission from the queue. Claiming a case locks it for 15 minutes so two reviewers don't collide.
-                  </EmptyDescription>
-                </EmptyHeader>
+                <EmptyIcon>
+                  <Shield />
+                </EmptyIcon>
+                <EmptyTitle>Select a case to review</EmptyTitle>
+                <EmptyDescription>
+                  Pick a submission from the queue. Claiming a case locks it for 15 minutes so two reviewers don&rsquo;t collide.
+                </EmptyDescription>
               </Empty>
             </PPanel>
           )}
