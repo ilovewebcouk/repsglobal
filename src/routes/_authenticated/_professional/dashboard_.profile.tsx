@@ -32,6 +32,7 @@ import {
   
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
+import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import {
   getMyPrimaryLocation,
   saveMyPrimaryPostcode,
@@ -107,7 +108,7 @@ type FormState = {
   in_person_available: boolean;
   online_available: boolean;
   city: string;
-  public_phone: string;
+  contact_phone: string;
   public_email: string;
   website: string;
   bio: string;
@@ -126,7 +127,7 @@ function toForm(p: DashboardProfile): FormState {
     in_person_available: p.in_person_available ?? true,
     online_available: p.online_available ?? true,
     city: p.city ?? "",
-    public_phone: p.public_phone ?? "",
+    contact_phone: p.contact_phone ?? "",
     public_email: p.public_email ?? "",
     website: p.website ?? "",
     bio: p.bio ?? "",
@@ -145,7 +146,7 @@ function equal(a: FormState, b: FormState): boolean {
     a.in_person_available === b.in_person_available &&
     a.online_available === b.online_available &&
     a.city === b.city &&
-    a.public_phone === b.public_phone &&
+    a.contact_phone === b.contact_phone &&
     a.public_email === b.public_email &&
     a.website === b.website &&
     a.bio === b.bio &&
@@ -168,7 +169,7 @@ function completion(p: DashboardProfile): {
     
     { label: "Specialisms", done: (p.specialisms?.length ?? 0) >= 1 },
     { label: "Languages", done: (p.languages?.length ?? 0) >= 1 },
-    { label: "Contact details", done: !!(p.public_email || p.public_phone) },
+    { label: "Contact details", done: !!(p.public_email && p.contact_phone) },
     { label: "Website or social link", done: !!(p.website || p.social_instagram || p.social_linkedin || p.social_youtube) },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
@@ -640,7 +641,7 @@ function ProfileEditorPage() {
             in_person_available: form.in_person_available,
             online_available: form.online_available,
             city: form.city || null,
-            public_phone: form.public_phone || null,
+            contact_phone: form.contact_phone || null,
             public_email: form.public_email || null,
             website: form.website || null,
             bio: form.bio || null,
@@ -1021,11 +1022,17 @@ function ProfileEditorPage() {
                     placeholder="e.g. Helping busy professionals build strength and feel their best"
                   />
                 </Field>
-                <Field label="Public phone">
-                  <TextInput
-                    type="tel"
-                    value={form.public_phone}
-                    onChange={(v) => set("public_phone", v)}
+                <Field
+                  label="Contact phone"
+                  hint="Used for account recovery and booking alerts. Never shown on your public profile."
+                >
+                  <PhoneField
+                    value={form.contact_phone}
+                    onChange={(v) => set("contact_phone", v)}
+                    invalid={
+                      form.contact_phone.length > 0 &&
+                      !isValidPhoneNumber(form.contact_phone)
+                    }
                   />
                 </Field>
                 <Field label="Public email">
