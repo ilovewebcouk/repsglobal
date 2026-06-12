@@ -1,31 +1,57 @@
-# Fix avatar upload failure + corner radius mismatch
+## Goal
 
-## Diagnosis (confirmed from production logs)
+Bring AI-enhanced avatars up to `/about`-page editorial quality. Result must read as **"the same person, shot properly by a real photographer"** — not as an AI portrait filter.
 
-1. **Upload failure** — The AI image-check server function call returns 500 with `Server function info not found for 964c43e6...`. The deployed preview build's client bundle references a server function ID that the server bundle doesn't have — a client/server build mismatch. The crop/Jimp code is already gone and the current source is correct; the deployed build is the problem.
-2. **Raw HTML in toast** — When that 500 happens, the platform returns an HTML error page and the toast prints it verbatim. Users must never see that.
-3. **Corner radius** — Directory result-card photos use 12px radius; the dashboard Profile editor avatar uses 18px on a smaller (80px) image, so it reads far too round.
+## What changes from today
 
-## Fix plan
+1. **Drop the REPS wordmark rule for user avatars.** The `mem://design/trainer-imagery` rule applies to *marketing imagery we generate* (about heroes, feature composites), not to portraits of real members. A trainer's photo should look like *their* brand, not REPs uniform.
+2. **Anchor every generation to the `/about` portrait style.** We pass the four `src/assets/about/*` portraits as **reference images alongside the user's photo**, so the model matches lighting, depth-of-field, skin rendering, and tonality — not just text instructions.
+3. **Clothes: their own, tidied.** Prompt explicitly preserves garment, colour, neckline, fit. Allowed cleanup: wrinkles, lint, visible third-party logos/text. Forbidden: restyling, recolouring, adding any logo/wordmark/badge.
+4. **Background: editorial studio.** Dark seamless or soft graduated grey, short-side key + subtle rim light. No fake gym bokeh, no warm coffee-shop wash. Matches the `/about` look.
+5. **Identity gate (world-class strict, with a recoverable path).** After generation, run a second vision pass that scores identity similarity vs the source on a 1–5 scale across face shape, jawline, hairline, skin tone, age, ethnicity. **Auto-reject and regenerate** if score < 4. Hard cap at 3 attempts; if all fail, surface "we couldn't preserve your likeness on this photo — try a different source" instead of silently shipping a drifted face. This is the right call for a register of real named people — drift on a verified directory is a credibility bomb, but a hard fail with no escape hatch is a worse UX.
+6. **Three crops from one session.**
+   - `1:1` head-and-shoulders → directory tile + dashboard avatar
+   - `4:5` mid-body → profile hero
+   - `16:9` environmental → shop-front hero (Pro+Studio only)
+   Generated once, stored together, used in the right surface.
+7. **Fair side-by-side compare.** Both panes render at identical size and identical 1:1 crop centred on the face box. The original is *not* shown raw if it was a full-body upload — it's auto-cropped to match. User judges photo quality, not framing.
+8. **Intake gate stays — gets sharper.** Existing `validateAvatar` keeps rejecting logos/groups/full-body. Add: reject if face is < 256px in source, reject sunglasses, reject heavy hat-shadow on eyes. Tell the user *what* to re-shoot.
 
-### 1. Force a clean, consistent build and reproduce
-- Trigger a fresh build of the current code and test the full upload flow live in the browser as the demo pro (pick photo → upload → AI validate → client crop → commit) on the actual preview.
-- If `Server function info not found` still reproduces on the fresh build, investigate the server-function registration itself (module import graph for `avatar-ai.functions.ts`, stable export shape) and restructure until client and server IDs match. I will not stop at "it builds" — the live flow must succeed.
+## Technical shape
 
-### 2. Bulletproof error handling (no raw HTML, ever)
-- Wrap all avatar server-function calls (`validateAvatar`, `commitAvatar`, `regenerateAvatar`) in a helper that detects HTML / non-JSON error bodies and replaces them with clean messages (e.g. "Our image check hit a server problem — please try again.").
-- Add a single automatic retry on transient 5xx for the validate step.
-- Clean up the temp upload from storage if any step after upload fails.
+Files touched:
 
-### 3. Corner radius consistency
-- Change the Profile editor avatar (80px, currently 18px radius) and the preview-card avatar (64px, currently 18px) to **12px** to match the directory result-card photo radius, including their fallback initials blocks. Buttons/cards around them untouched.
+- `src/lib/profile/avatar-ai.functions.ts` — rewrite `regenerateAvatar`:
+  - Load 2 `/about` portraits as base64 reference images (server-side, from the `.asset.json` URLs).
+  - New prompt: editorial studio brief + own-clothes-tidied + reference-anchored.
+  - Add `scoreIdentitySimilarity(originalDataUrl, generatedDataUrl)` server fn using `google/gemini-3-flash-preview` vision → 1–5 score + reason.
+  - Retry loop (max 3) inside `regenerateAvatar` until score ≥ 4 or cap reached.
+  - Return `{ path, url, identityScore, attemptsUsed }` so the UI can show "verified likeness" or the fallback.
+- `src/routes/_authenticated/_professional/dashboard_.profile.tsx` — compare UI:
+  - Re-crop the ORIGINAL preview to the same 1:1 face-centred crop as the AI version (using the `faceBox` from `validateAvatar`).
+  - Show a small "Likeness verified" emerald chip (uses the allowed status-color token triplet) when score ≥ 4.
+  - Buttons stay "Use this portrait" / "Keep original".
+- **Out of scope for this pass** (called out, not built):
+  - 4:5 and 16:9 crops — requires a `profiles` schema change (new columns) and surface wiring on `/pro/$slug` and `/c/$slug`. Plan it next, ship 1:1 properly first.
+  - Pro-tier environmental hero variant.
+  - Storing identity score in DB for audit.
 
-### 4. Verification (before claiming anything works)
-- Live browser test on the preview: sign in as demo pro, upload a real test headshot end-to-end → confirm success toast, avatar updates in editor, preview card, and navbar.
-- Re-check server logs: zero 500s on the avatar functions during the test.
-- Test the rejection path (upload a non-headshot) → clean, human-readable rejection message, no HTML.
-- Visual check of avatar corners in dashboard vs directory side by side.
+## What you'll see end-to-end
 
-## Technical details
-- Files: `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (error handling, retry, radius), possibly `src/lib/profile/avatar-ai.functions.ts` (registration restructure only if the mismatch reproduces on a fresh build).
-- No changes to locked Phase 1 visuals beyond the dashboard avatar radius correction (12px is the existing directory standard).
+1. Trainer uploads a photo.
+2. Intake gate: pass / reject with clear reason.
+3. AI generation: same person, their clothes (tidied), editorial studio, directional light.
+4. Auto-retry up to 3× if the face drifts. Either ships a verified-likeness portrait or tells the user honestly that this source can't be enhanced.
+5. Side-by-side comparison is fair: same crop, same size.
+6. "Use this portrait" → committed.
+
+## Out of scope (explicit)
+
+- No corner-radius changes.
+- No directory/profile/shop-front layout changes.
+- No new DB columns this pass.
+- REPS wordmark rule for *marketing imagery* stays as-is — only avatars are exempted.
+
+## Open question to confirm before build
+
+Should I update `mem://design/trainer-imagery` in the same pass to record the avatar exemption explicitly, so future agents don't re-apply the wordmark rule to user portraits? (Recommended yes.)
