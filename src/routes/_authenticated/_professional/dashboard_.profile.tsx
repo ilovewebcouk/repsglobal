@@ -522,10 +522,10 @@ function ProfileEditorPage() {
   const handleConfirmRegenerate = async () => {
     if (!regenState || regenState.step !== "confirm") return;
     const sourcePath = regenState.sourcePath;
+    const attempt = regenState.attempt;
     try {
       setAvatarBusy("generating");
-      const out = await runRegenerate({ data: { sourcePath } });
-      // Sign a temporary preview URL for the original cropped photo too
+      const out = await runRegenerate({ data: { sourcePath, attempt } });
       const { data: orig } = await supabase.storage
         .from("avatars")
         .createSignedUrl(sourcePath, 60 * 10);
@@ -535,6 +535,7 @@ function ProfileEditorPage() {
         originalUrl: orig?.signedUrl ?? "",
         aiPath: out.path,
         aiUrl: out.url,
+        attempt,
       });
       setAvatarBusy(null);
     } catch (e) {
