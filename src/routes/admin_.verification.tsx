@@ -97,6 +97,7 @@ function AdminVerificationPage() {
   const [note, setNote] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
+  const [certOpen, setCertOpen] = useState(false);
 
   const pending = useQuery({
     queryKey: ["admin-pending-verifications"],
