@@ -1,29 +1,31 @@
-# Fix avatar upload crash (Inflate error)
+# Fix avatar upload failure + corner radius mismatch
 
-## What's actually wrong
+## Diagnosis (confirmed from production logs)
 
-The "Class constructor Inflate cannot be invoked without 'new'" error comes from the Jimp image library, which is incompatible with our server runtime. The previous fix removed it from the **AI regenerate** path — but the **upload** path still uses it: after the AI validates your photo, the server tries to crop it with Jimp (`processAvatar` in `src/lib/profile/avatar-ai.functions.ts`, line 233) and crashes every time.
+1. **Upload failure** — The AI image-check server function call returns 500 with `Server function info not found for 964c43e6...`. The deployed preview build's client bundle references a server function ID that the server bundle doesn't have — a client/server build mismatch. The crop/Jimp code is already gone and the current source is correct; the deployed build is the problem.
+2. **Raw HTML in toast** — When that 500 happens, the platform returns an HTML error page and the toast prints it verbatim. Users must never see that.
+3. **Corner radius** — Directory result-card photos use 12px radius; the dashboard Profile editor avatar uses 18px on a smaller (80px) image, so it reads far too round.
 
-## The fix
+## Fix plan
 
-Move the crop into the browser, where it's fast and reliable — no server-side image decoding at all.
+### 1. Force a clean, consistent build and reproduce
+- Trigger a fresh build of the current code and test the full upload flow live in the browser as the demo pro (pick photo → upload → AI validate → client crop → commit) on the actual preview.
+- If `Server function info not found` still reproduces on the fresh build, investigate the server-function registration itself (module import graph for `avatar-ai.functions.ts`, stable export shape) and restructure until client and server IDs match. I will not stop at "it builds" — the live flow must succeed.
 
-1. **Client-side crop** (`dashboard_.profile.tsx`): after AI validation returns the face box, crop the original photo in the browser with a canvas using the exact same framing math as today (2.0× padding around the face, face centred ~38% from the top, square, max 1024px, JPEG q88). The browser already has the file in memory.
-2. **Upload the cropped JPEG directly** to the final storage path (`{userId}/avatar-{timestamp}.jpg`), then commit it as today.
-3. **Delete `processAvatar`'s Jimp code**: replace it with a tiny temp-file cleanup (delete the pending upload after the final image is committed) — no image decoding on the server.
-4. **Remove the `jimp` dependency** from the project entirely so this class of error can't come back.
+### 2. Bulletproof error handling (no raw HTML, ever)
+- Wrap all avatar server-function calls (`validateAvatar`, `commitAvatar`, `regenerateAvatar`) in a helper that detects HTML / non-JSON error bodies and replaces them with clean messages (e.g. "Our image check hit a server problem — please try again.").
+- Add a single automatic retry on transient 5xx for the validate step.
+- Clean up the temp upload from storage if any step after upload fails.
 
-Nothing else changes: AI validation gatekeeping, the rejection messages, the AI regenerate flow, and the commit/signing logic all stay exactly as they are.
+### 3. Corner radius consistency
+- Change the Profile editor avatar (80px, currently 18px radius) and the preview-card avatar (64px, currently 18px) to **12px** to match the directory result-card photo radius, including their fallback initials blocks. Buttons/cards around them untouched.
 
-## Verification (before claiming it's fixed)
-
-- Confirm zero references to Jimp remain anywhere in the codebase.
-- Confirm the build passes.
-- Exercise the full upload flow end-to-end in the preview as the demo pro (upload → validate → crop → commit) and confirm the photo saves with no red toast, plus check server logs for any Inflate/Jimp errors.
+### 4. Verification (before claiming anything works)
+- Live browser test on the preview: sign in as demo pro, upload a real test headshot end-to-end → confirm success toast, avatar updates in editor, preview card, and navbar.
+- Re-check server logs: zero 500s on the avatar functions during the test.
+- Test the rejection path (upload a non-headshot) → clean, human-readable rejection message, no HTML.
+- Visual check of avatar corners in dashboard vs directory side by side.
 
 ## Technical details
-
-- Crop math ported 1:1 from the current server implementation (face box → square side = max(fw,fh)×2.0, clamped to image bounds, vertical shift so face centre sits at 38%).
-- Canvas export via `canvas.toBlob("image/jpeg", 0.88)`; resize to 1024×1024 when larger.
-- Temp-file cleanup folded into the commit step (server-side, admin client) so no orphaned `pending-*` files accumulate.
-- Files touched: `src/lib/profile/avatar-ai.functions.ts`, `src/routes/_authenticated/_professional/dashboard_.profile.tsx`, `package.json` (remove jimp).
+- Files: `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (error handling, retry, radius), possibly `src/lib/profile/avatar-ai.functions.ts` (registration restructure only if the mismatch reproduces on a fresh build).
+- No changes to locked Phase 1 visuals beyond the dashboard avatar radius correction (12px is the existing directory standard).
