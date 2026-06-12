@@ -843,12 +843,29 @@ function ProfileEditorPage() {
                 <Field label="Full name">
                   <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
                 </Field>
-                <Field label="Professional title">
-                  <TextInput
-                    value={form.headline}
-                    onChange={(v) => set("headline", v)}
-                    placeholder="e.g. Strength & Conditioning Coach"
-                  />
+                <Field label="Profession" hint="The role clients see on the directory card. Required to publish.">
+                  <Select
+                    value={form.primary_profession || undefined}
+                    onValueChange={(v) => {
+                      set("primary_profession", v as ProfessionSlug);
+                      // Drop the new primary out of secondaries to avoid clash
+                      set(
+                        "secondary_professions",
+                        form.secondary_professions.filter((s) => s !== v),
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-10 rounded-[12px] border-reps-border bg-reps-ink text-[13px] text-white">
+                      <SelectValue placeholder="Choose your primary profession" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROFESSIONS.map((p) => (
+                        <SelectItem key={p.slug} value={p.slug}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 <Field label="Primary training postcode">
                   <TextInput
@@ -865,6 +882,20 @@ function ProfileEditorPage() {
                       Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
                     </p>
                   ) : null}
+                </Field>
+                <Field label="Also offer (optional)" hint="Up to 2 secondary professions — shown as chips on your profile." className="sm:col-span-2">
+                  <SecondaryProfessionPicker
+                    primary={form.primary_profession || null}
+                    values={form.secondary_professions}
+                    onChange={(v) => set("secondary_professions", v)}
+                  />
+                </Field>
+                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`} className="sm:col-span-2">
+                  <TextInput
+                    value={form.headline}
+                    onChange={(v) => set("headline", v.slice(0, 160))}
+                    placeholder="e.g. Helping busy professionals build strength and feel their best"
+                  />
                 </Field>
                 <Field label="Public phone">
                   <TextInput
@@ -995,8 +1026,28 @@ function ProfileEditorPage() {
                         {form.full_name || "Your name"}
                       </div>
                       <div className="text-[12px] text-white/60">
-                        {form.headline || "Your professional title"}
+                        {getProfessionLabel(form.primary_profession) || "Set your profession"}
                       </div>
+                      {form.secondary_professions.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {form.secondary_professions.map((s) => {
+                            const label = getProfessionLabel(s);
+                            return label ? (
+                              <span
+                                key={s}
+                                className="rounded-full bg-reps-panel-soft px-2 py-0.5 text-[10px] font-medium text-white/70"
+                              >
+                                {label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      ) : null}
+                      {form.headline ? (
+                        <p className="mt-2 text-[11.5px] leading-relaxed text-white/55">
+                          {form.headline}
+                        </p>
+                      ) : null}
                       {form.city ? (
                         <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
                           <span className="flex items-center gap-1">
