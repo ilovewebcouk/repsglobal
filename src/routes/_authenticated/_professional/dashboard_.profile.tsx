@@ -32,9 +32,23 @@ import {
   
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
+import {
+  validateAvatar,
+  commitAvatar,
+  regenerateAvatar,
+} from "@/lib/profile/avatar-ai.functions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Sparkles, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile")({
   head: () => ({
