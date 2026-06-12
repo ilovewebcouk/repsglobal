@@ -9,7 +9,7 @@ import {
   ExternalLink,
   Eye,
   Globe,
-  Image as ImageIcon,
+  
   Instagram,
   Linkedin,
   MapPin,
@@ -29,7 +29,7 @@ import {
   getMyDashboardProfile,
   updateMyDashboardProfile,
   updateMyAvatar,
-  updateMyCover,
+  
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
 import { Button } from "@/components/ui/button";
@@ -119,7 +119,7 @@ function completion(p: DashboardProfile): {
     { label: "Basic information", done: !!(p.full_name && p.headline && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
     { label: "Profile photo", done: !!p.avatar_url },
-    { label: "Cover image", done: !!p.cover_url },
+    
     { label: "Specialisms", done: (p.specialisms?.length ?? 0) >= 1 },
     { label: "Languages", done: (p.languages?.length ?? 0) >= 1 },
     { label: "Contact details", done: !!(p.public_email || p.public_phone) },
@@ -300,7 +300,7 @@ function pickFile(accept: string, maxBytes: number): Promise<File | null> {
   });
 }
 
-async function uploadToAvatars(userId: string, kind: "avatar" | "cover", file: File): Promise<string> {
+async function uploadToAvatars(userId: string, kind: "avatar", file: File): Promise<string> {
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
   const path = `${userId}/${kind}-${Date.now()}.${ext}`;
   const { error } = await supabase.storage
@@ -320,7 +320,7 @@ function ProfileEditorPage() {
   const fetchProfile = useServerFn(getMyDashboardProfile);
   const saveProfile = useServerFn(updateMyDashboardProfile);
   const saveAvatar = useServerFn(updateMyAvatar);
-  const saveCover = useServerFn(updateMyCover);
+  
 
   const profileQuery = useSuspenseQuery({
     queryKey: ["my-dashboard-profile"],
@@ -389,21 +389,6 @@ function ProfileEditorPage() {
     },
   });
 
-  const coverMutation = useMutation({
-    mutationFn: async (file: File | null) => {
-      const id = await userId;
-      if (!id) throw new Error("Not signed in.");
-      const path = file ? await uploadToAvatars(id, "cover", file) : null;
-      return saveCover({ data: { path } });
-    },
-    onSuccess: () => {
-      toast.success("Cover image updated.");
-      void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-    },
-    onError: (e: unknown) => {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
-    },
-  });
 
   const handlePickAvatar = async () => {
     const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
@@ -411,11 +396,6 @@ function ProfileEditorPage() {
     avatarMutation.mutate(f);
   };
   const handleRemoveAvatar = () => avatarMutation.mutate(null);
-  const handlePickCover = async () => {
-    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
-    if (!f) return;
-    coverMutation.mutate(f);
-  };
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
@@ -465,36 +445,14 @@ function ProfileEditorPage() {
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
-            {/* Photo + cover */}
+            {/* Profile photo */}
             <Card>
               <SectionHeader
-                title="Profile photo & cover"
-                subtitle="High-quality images help clients trust and recognise you."
+                title="Profile photo"
+                subtitle="A clear headshot helps clients trust and recognise you."
                 step="01"
               />
               <div className="flex flex-col gap-5">
-                <div className="relative h-[180px] overflow-hidden rounded-[16px] border border-reps-border bg-gradient-to-br from-reps-panel-soft via-reps-panel to-reps-ink">
-                  {profile.cover_url ? (
-                    <img src={profile.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,122,0,0.18),transparent_55%),radial-gradient(circle_at_80%_70%,rgba(95,168,255,0.12),transparent_60%)]" />
-                  )}
-                  <div className="absolute bottom-3 right-3">
-                    <button
-                      type="button"
-                      onClick={handlePickCover}
-                      disabled={coverMutation.isPending}
-                      className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-ink/80 px-3 text-[12px] font-semibold text-white shadow-none backdrop-blur transition-colors hover:bg-reps-ink disabled:opacity-60"
-                    >
-                      <ImageIcon className="h-3.5 w-3.5" />
-                      {coverMutation.isPending ? "Uploading…" : "Change cover"}
-                    </button>
-                  </div>
-                  <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-reps-ink/70 px-2.5 py-1 text-[11px] font-medium text-white/75 backdrop-blur">
-                    Recommended 1600 × 480 · JPG or PNG
-                  </div>
-                </div>
-
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <Avatar className="size-20 ring-2 ring-reps-border">
@@ -676,11 +634,7 @@ function ProfileEditorPage() {
               <div className="p-5">
                 <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-ink">
                   <div className="relative h-[88px] bg-gradient-to-br from-reps-orange/30 via-reps-panel to-reps-ink">
-                    {profile.cover_url ? (
-                      <img src={profile.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,122,0,0.35),transparent_55%)]" />
-                    )}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,122,0,0.35),transparent_55%)]" />
                   </div>
                   <div className="-mt-8 px-4 pb-4">
                     <div className="flex items-end justify-between">
