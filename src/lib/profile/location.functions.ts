@@ -42,7 +42,26 @@ type PostcodesIoResult = {
   region: string | null;
   longitude: number;
   latitude: number;
+  ttwa: string | null;
+  bua: string | null;
+  parish: string | null;
 };
+
+/**
+ * Pick the most recognisable place name for a postcode.
+ *
+ * postcodes.io's `post_town` field is always null on the free tier, so we
+ * fall back to the Travel-to-Work Area (which maps cleanly: NR32 → Lowestoft,
+ * SW1A → London, M1 → Manchester, EH1 → Edinburgh). `bua` and `admin_district`
+ * are last-ditch fallbacks; `admin_district` is council-level ("East Suffolk")
+ * which we want to avoid showing publicly.
+ */
+function deriveTown(r: PostcodesIoResult): string | null {
+  const raw = r.ttwa ?? r.bua ?? r.parish ?? r.admin_district;
+  if (!raw) return null;
+  // bua values like "Leeds (Leeds)" — strip the parenthetical suffix.
+  return raw.replace(/\s*\(.+\)\s*$/, "").trim() || null;
+}
 
 async function lookupPostcode(pc: string): Promise<PostcodesIoResult> {
   const res = await fetch(
