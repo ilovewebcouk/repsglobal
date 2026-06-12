@@ -509,6 +509,7 @@ export type Database = {
           bio: string | null
           cert_uploaded_at: string | null
           city: string | null
+          contact_phone: string | null
           country: string | null
           cover_url: string | null
           created_at: string
@@ -523,7 +524,6 @@ export type Database = {
           online_available: boolean
           primary_profession: string | null
           public_email: string | null
-          public_phone: string | null
           reps_level: Database["public"]["Enums"]["reps_level"] | null
           slug: string | null
           social_instagram: string | null
@@ -541,6 +541,7 @@ export type Database = {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
+          contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
           created_at?: string
@@ -555,7 +556,6 @@ export type Database = {
           online_available?: boolean
           primary_profession?: string | null
           public_email?: string | null
-          public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
           social_instagram?: string | null
@@ -573,6 +573,7 @@ export type Database = {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
+          contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
           created_at?: string
@@ -587,7 +588,6 @@ export type Database = {
           online_available?: boolean
           primary_profession?: string | null
           public_email?: string | null
-          public_phone?: string | null
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
           social_instagram?: string | null

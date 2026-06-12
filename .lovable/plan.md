@@ -1,96 +1,77 @@
-# Expand professions, add delivery modes, replace secondary-professions with curated specialisms
+## Decision (LOCKED)
 
-## Final profession list (7) — replaces current 6
+- Phone number is collected, **never displayed on any public page**.
+- All client ↔ pro communication goes through the platform (in-app messages + email notifications). No public phone, no public email-as-CTA, no WhatsApp deep-links.
+- SMS = Phase 3 (transactional only). WhatsApp = not on the Phase 2 roadmap.
+- Phone is **required at profile activation** (a profile can't be published without one).
 
-REPs scope = Level 2–4 only. Each slug maps to a clean qualification path:
+## What changes
 
-| Slug | Label | Qual |
-|---|---|---|
-| `personal-trainer` | Personal Trainer | L3 |
-| `fitness-instructor` | Fitness Instructor | L2 — **new** |
-| `group-fitness-instructor` | Group Fitness Instructor | L2 — **new** |
-| `strength-coach` | Strength Coach | L3/L4 |
-| `nutritionist` | Nutritionist | L4 |
-| `pilates-instructor` | Pilates Instructor | L3 |
-| `yoga-teacher` | Yoga Teacher | L3 |
+### 1. Database
 
-**Removed:** `online-coach` (it's a delivery mode, not a profession).
+- Rename `professionals.public_phone` → `professionals.contact_phone` (the field is no longer "public"; the old name is misleading and tempts future code into rendering it).
+- Add `CHECK` constraint: must match E.164 (`^\+[1-9]\d{6,14}$`) when not null.
+- Backfill: existing values are GB numbers entered as freeform. Migration normalises any value starting with `07` → `+447...`, leaves already-E.164 values intact, and nulls anything else (handful of rows, safe).
+- RLS already scopes `professionals` rows to the owner + admin; no change. Service-role reads in public server fns must continue NOT to select this column.
 
-## Specialisms — curated dropdown, max 3, replaces "secondary professions"
+### 2. Server functions
 
-Drop `secondary_professions` entirely. Use the existing `specialisms TEXT[]` column with a curated allow-list (16). Pros pick up to **3** in the dashboard. Already rendered on directory cards and profile.
+- `dashboard-profile.functions.ts`: rename field in select, zod schema, return type, save payload. Zod becomes `z.string().regex(E164).nullable()`.
+- `public-profile.functions.ts`: confirmed it never selects phone today — add an inline comment + a code-level allowlist so a future dev can't accidentally add it. (Belt-and-braces: add a TypeScript `Omit<…, "contact_phone">` on the public return type.)
+- New validation rule in `publishProfile` (or the existing publish/activate path): reject if `contact_phone` is null. Returns a typed `MissingPhone` error the dashboard surfaces inline.
 
-Canonical list (slug → label):
+### 3. Dashboard UI
 
-```
-fat-loss              Fat Loss
-muscle-gain           Muscle Gain
-strength              Strength
-hybrid-functional     Hybrid / Functional Fitness
-endurance-running     Endurance & Running
-sports-performance    Sports Performance
-pre-post-natal        Pre & Post-Natal
-over-50s              Over-50s
-youth                 Youth (under-18s)
-rehab-injury          Rehab & Injury
-mobility              Mobility
-posture-back-pain     Posture & Back Pain
-weight-management     Weight Management
-habit-lifestyle       Habit & Lifestyle
-nutrition-coaching    Nutrition Coaching
-online-coaching       Online Coaching
-```
+- `dashboard_.profile.tsx`:
+  - Rename `Public phone` field → **"Contact phone"** with helper text: *"Used for account recovery and booking alerts. Never shown on your public profile."*
+  - Replace freeform `<Input>` with a proper international phone field — `react-phone-number-input` (MIT, ~13kb, ships libphonenumber-js). Country selector + flag + live national formatting + E.164 storage. Wrapped in our shadcn `Field` so it matches the dark theme (custom `inputComponent` + custom `countrySelectComponent` that re-uses shadcn `Select` + `Input` styling — no library default CSS imported).
+  - Default country = **GB** (most pros are UK today; selector still shows all 250+ countries).
+  - Validate with `isValidPhoneNumber()` on blur; `data-invalid` + inline error.
+  - Checklist item "Contact details" now requires phone AND email (today it's OR).
+  - Publish button is disabled with tooltip "Add a contact phone first" when missing.
 
-## Delivery modes — new field, same pass
+### 4. Public pages — explicit no-op guardrails
 
-Reuse the existing `online_available` + `in_person_available` booleans on `professionals` (already in the schema, already true by default). No new column needed. Surface them in the dashboard as a `ToggleGroup` (multi, min 1): **In person**, **Online**, with a derived "Hybrid" badge on the directory card when both are true.
+- Audit and confirm zero references to `contact_phone` / `public_phone` in:
+  - `src/routes/pro.$slug.index.tsx`
+  - `src/routes/c.$slug.tsx`
+  - `src/routes/pro.$slug.enquire.tsx`
+  - `src/routes/in.$location.tsx`
+  - `src/lib/profile/public-profile.functions.ts`
+  - any FeaturedProCard / search card
+- Add a one-line ESLint-style code comment at the top of `public-profile.functions.ts`: *"NEVER select `contact_phone` here. Phone is internal-only."*
 
-This is the cleanest path — leverages columns that already exist instead of adding a third array we'd have to keep in sync.
+### 5. Memory
 
-## Database migration
-
-1. **Drop `secondary_professions`** column from `public.professionals`.
-2. **Rewrite trigger** `validate_professional_professions`:
-   - Allow-list updated to the 7-slug list above (no `online-coach`, adds `fitness-instructor`, `group-fitness-instructor`).
-   - Add validation for `specialisms`: every entry must be in the 16-slug allow-list, max 3, no duplicates.
-   - Remove all secondary-profession branches.
-3. **Data migration (same migration, after schema changes):**
-   - `UPDATE professionals SET primary_profession = NULL, is_published = false WHERE primary_profession = 'online-coach'` — forces re-pick; their card disappears until they choose a valid profession. They keep tagline, services, photos.
-   - `UPDATE professionals SET specialisms = '{}'` — wipe the 3 existing free-text values so the new validation never fails on legacy data.
-
-Existing `online_available` / `in_person_available` booleans need no migration.
-
-## Code changes
-
-- `src/lib/professions.ts` — replace 6-slug list with 7-slug list above.
-- `src/lib/specialisms.ts` — **new** canonical 16-slug list + label helper + `MAX_SPECIALISMS = 3`.
-- `src/lib/profile/dashboard-profile.functions.ts`
-  - Drop `secondary_professions` from select + Zod schema + return shape.
-  - Add `specialisms: z.array(specialismSlugEnum).max(3)` (replaces current free-text `max(20)`).
-  - Keep `online_available`, `in_person_available` (already there or add to schema if missing).
-- `src/lib/profile/public-profile.functions.ts` — drop `secondary_professions` from select; keep `specialisms`, `online_available`, `in_person_available`.
-- `src/lib/profile/profile.functions.ts` — update Zod `specialisms` cap to 3, enum-validated.
-- `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
-  - **Remove** secondary-profession picker (the `Badge`-chip "Add secondary" UI from the previous pass).
-  - **Replace** with a curated **Specialisms** `ToggleGroup` (multi, max 3) using the 16-slug list. Disable further selection at 3, show "3/3 selected".
-  - **Add** delivery-mode `ToggleGroup` (multi, min 1) under Profession: In person / Online → writes to `in_person_available` / `online_available`.
-  - Update preview to show: primary profession, specialism chips, delivery hint.
-- `src/routes/find-a-professional.tsx`
-  - Card already shows specialisms — switch to label-resolved values from canonical map.
-  - Append delivery suffix to the profession line: "Personal Trainer · Online & In person" / "· Online" / "· In person".
-- `src/routes/pro.$slug.index.tsx`
-  - Drop any secondary-profession rendering from the previous pass.
-  - Show specialisms (already rendered, just ensure resolved labels).
-  - Show delivery modes in the hero meta row.
-- `src/integrations/supabase/types.ts` — regenerated after migration runs.
+- Add `mem://policy/contact-channels`:
+  - Phone is internal-only; never rendered publicly.
+  - All comms go through the platform (in-app messages + email notifications today; push later).
+  - SMS is Phase 3, transactional only (booking confirmed / reminder). WhatsApp is not in scope.
+  - Email notifications use the existing pgmq queue infra.
 
 ## Out of scope
 
-- Directory filter UI for specialism or delivery mode (data only this pass).
-- Profession-based filtering on `/find-a-professional` (still pending from earlier pass).
-- Onboarding signup-flow change.
-- Editorial pages at `/specialisms` (separate locked page, different concept).
+- The in-app client portal messaging UI (separate feature, separate plan).
+- Twilio / SMS integration.
+- Phone 2FA / OTP auth (Supabase phone auth wiring).
+- WhatsApp Business API.
+- Migrating the booking-notification email templates to include phone.
 
-## Brutal-truth recap
+## Technical details
 
-Folding secondary-professions into specialisms is the right call — the previous design had two fields doing almost the same job (a "secondary profession" of Strength Coach is functionally identical to a "specialism" of Strength). One curated list, capped at 3, is sharper for the pro, sharper for the searcher, and sharper for SEO. Dropping `online-coach` and using the existing `online_available` boolean closes the loop cleanly without adding a third array to keep in sync.
+- Library: `react-phone-number-input` + bundled `libphonenumber-js`. Install via `bun add`.
+- Storage shape: `text` column, format `+[country][subscriber]`, max 16 chars.
+- Regex check: `^\+[1-9]\d{6,14}$` (E.164 max 15 digits + leading `+`).
+- Display formatting on dashboard (read-only summary card): `formatPhoneNumberIntl(value)` → `+44 7911 123456`.
+- Backfill SQL handles three cases: already starts with `+` → keep; starts with `07` and 11 digits → `'+44' || substring(value, 2)`; everything else → `NULL`.
+- TypeScript: bump the public-profile return type to `Omit<DashboardProRow, "contact_phone">` so a future select-mistake fails at compile time.
+
+## Files touched
+
+- migration (rename + check constraint + backfill)
+- `src/lib/profile/dashboard-profile.functions.ts`
+- `src/lib/profile/public-profile.functions.ts` (comment + type guard only)
+- `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
+- `src/components/forms/PhoneField.tsx` (new)
+- `mem://policy/contact-channels` (new) + `mem://index.md` (entry)
+- `package.json` (+ `react-phone-number-input`)
