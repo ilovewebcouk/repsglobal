@@ -59,6 +59,7 @@ import {
   TOP_PROFESSIONS,
 } from "./nav-config";
 import { FEATURE_GROUPS } from "@/components/features/feature-config";
+import { initialsFromName } from "@/lib/initials";
 
 
 type Variant = "transparent" | "solid";
