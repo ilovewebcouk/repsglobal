@@ -33,6 +33,10 @@ import {
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
 import {
+  getMyPrimaryLocation,
+  saveMyPrimaryPostcode,
+} from "@/lib/profile/location.functions";
+import {
   validateAvatar,
   commitAvatar,
   regenerateAvatar,
@@ -78,7 +82,6 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 type FormState = {
   full_name: string;
   headline: string;
-  trading_name: string;
   city: string;
   public_phone: string;
   public_email: string;
@@ -95,7 +98,6 @@ function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
-    trading_name: p.trading_name ?? "",
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
@@ -113,7 +115,6 @@ function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
     a.headline === b.headline &&
-    a.trading_name === b.trading_name &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
@@ -448,7 +449,8 @@ function ProfileEditorPage() {
   const fetchProfile = useServerFn(getMyDashboardProfile);
   const saveProfile = useServerFn(updateMyDashboardProfile);
   const saveAvatar = useServerFn(updateMyAvatar);
-  
+  const fetchLocation = useServerFn(getMyPrimaryLocation);
+  const savePostcode = useServerFn(saveMyPrimaryPostcode);
 
   const profileQuery = useSuspenseQuery({
     queryKey: ["my-dashboard-profile"],
@@ -456,37 +458,59 @@ function ProfileEditorPage() {
   });
   const profile = profileQuery.data;
 
+  const locationQuery = useSuspenseQuery({
+    queryKey: ["my-primary-location"],
+    queryFn: () => fetchLocation(),
+  });
+  const primaryLocation = locationQuery.data;
+
   const [form, setForm] = React.useState<FormState>(() => toForm(profile));
   React.useEffect(() => {
     // When server data refreshes after a save, reset the form baseline.
     setForm(toForm(profile));
   }, [profile]);
 
+  const initialPostcode = primaryLocation?.postcode ?? "";
+  const [postcode, setPostcode] = React.useState<string>(initialPostcode);
+  React.useEffect(() => {
+    setPostcode(primaryLocation?.postcode ?? "");
+  }, [primaryLocation?.postcode]);
+
   const original = React.useMemo(() => toForm(profile), [profile]);
-  const dirty = !equal(form, original);
+  const profileDirty = !equal(form, original);
+  const postcodeDirty = postcode.trim().toUpperCase() !== (initialPostcode ?? "").toUpperCase();
+  const dirty = profileDirty || postcodeDirty;
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      saveProfile({
-        data: {
-          full_name: form.full_name,
-          headline: form.headline || null,
-          trading_name: form.trading_name || null,
-          city: form.city || null,
-          public_phone: form.public_phone || null,
-          public_email: form.public_email || null,
-          website: form.website || null,
-          bio: form.bio || null,
-          specialisms: form.specialisms,
-          languages: form.languages,
-          social_instagram: form.social_instagram || null,
-          social_linkedin: form.social_linkedin || null,
-          social_youtube: form.social_youtube || null,
-        },
-      }),
+    mutationFn: async () => {
+      // Save profile fields first (fast, in-DB).
+      if (profileDirty) {
+        await saveProfile({
+          data: {
+            full_name: form.full_name,
+            headline: form.headline || null,
+            city: form.city || null,
+            public_phone: form.public_phone || null,
+            public_email: form.public_email || null,
+            website: form.website || null,
+            bio: form.bio || null,
+            specialisms: form.specialisms,
+            languages: form.languages,
+            social_instagram: form.social_instagram || null,
+            social_linkedin: form.social_linkedin || null,
+            social_youtube: form.social_youtube || null,
+          },
+        });
+      }
+      // Then resolve + save postcode (external API call).
+      if (postcodeDirty && postcode.trim().length > 0) {
+        await savePostcode({ data: { postcode } });
+      }
+    },
     onSuccess: () => {
       toast.success("Profile saved.");
       void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-primary-location"] });
       void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
     },
     onError: (e: unknown) => {
@@ -805,20 +829,21 @@ function ProfileEditorPage() {
                     placeholder="e.g. Strength & Conditioning Coach"
                   />
                 </Field>
-                <Field label="Business / gym name">
+                <Field label="Primary training postcode">
                   <TextInput
-                    value={form.trading_name}
-                    onChange={(v) => set("trading_name", v)}
-                    placeholder="Optional"
-                  />
-                </Field>
-                <Field label="Location">
-                  <TextInput
-                    value={form.city}
-                    onChange={(v) => set("city", v)}
+                    value={postcode}
+                    onChange={(v) => setPostcode(v.toUpperCase())}
                     prefix={<MapPin className="h-3.5 w-3.5" />}
-                    placeholder="City"
+                    placeholder="e.g. SW1A 1AA"
                   />
+                  <p className="mt-1.5 text-[11px] text-white/50">
+                    We use this to calculate distance and show your town. Your full postcode is never shown publicly.
+                  </p>
+                  {primaryLocation?.town ? (
+                    <p className="mt-1 text-[11px] text-white/60">
+                      Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                    </p>
+                  ) : null}
                 </Field>
                 <Field label="Public phone">
                   <TextInput

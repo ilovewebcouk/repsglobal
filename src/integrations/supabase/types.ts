@@ -439,6 +439,71 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_locations: {
+        Row: {
+          country_code: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          is_public: boolean
+          label: string | null
+          latitude: number | null
+          longitude: number | null
+          postcode: string | null
+          postcode_outward: string | null
+          professional_id: string
+          region: string | null
+          service_radius_miles: number | null
+          town: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          is_public?: boolean
+          label?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          postcode?: string | null
+          postcode_outward?: string | null
+          professional_id: string
+          region?: string | null
+          service_radius_miles?: number | null
+          town?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          is_public?: boolean
+          label?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          postcode?: string | null
+          postcode_outward?: string | null
+          professional_id?: string
+          region?: string | null
+          service_radius_miles?: number | null
+          town?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_locations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           bio: string | null

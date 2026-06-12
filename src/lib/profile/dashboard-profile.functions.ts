@@ -12,7 +12,6 @@ export type DashboardProfile = {
   avatar_url: string | null;
   // professional fields
   headline: string | null; // "Professional title"
-  trading_name: string | null; // "Business / gym name"
   city: string | null;
   public_phone: string | null;
   public_email: string | null;
@@ -45,7 +44,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, trading_name, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -55,7 +54,6 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       full_name: profile?.full_name ?? "",
       avatar_url: profile?.avatar_url ?? null,
       headline: pro?.headline ?? null,
-      trading_name: pro?.trading_name ?? null,
       city: pro?.city ?? null,
       public_phone: pro?.public_phone ?? null,
       public_email: pro?.public_email ?? null,
@@ -78,7 +76,6 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
   headline: z.string().trim().max(160).nullable().optional(),
-  trading_name: z.string().trim().max(160).nullable().optional(),
   city: z.string().trim().max(120).nullable().optional(),
   public_phone: z.string().trim().max(40).nullable().optional(),
   public_email: z.string().trim().email().max(255).nullable().or(z.literal("")).optional(),
@@ -143,7 +140,6 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
         id: userId,
         slug,
         headline: cleaned.headline ?? null,
-        trading_name: cleaned.trading_name ?? null,
         city: cleaned.city ?? null,
         public_phone: cleaned.public_phone ?? null,
         public_email: cleaned.public_email ?? null,

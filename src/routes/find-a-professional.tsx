@@ -4,6 +4,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
+import { useViewerOrigin } from "@/lib/useViewerOrigin";
+import { haversineMiles, formatMiles } from "@/lib/geo";
+import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
 import {
   BadgeCheck,
   Bookmark,
@@ -90,7 +93,12 @@ type ProVenue = {
 type Pro = {
   name: string;
   role: string;
+  /** Legacy display fallback (neighbourhood · miles). Used when no viewer origin. */
   distance: string;
+  /** Town/area label, used when computing live distance from viewer origin. */
+  town?: string;
+  /** Approximate lat/lng — when viewer origin is set, drives the real distance. */
+  coords?: { latitude: number; longitude: number };
   rating: number;
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
@@ -102,6 +110,8 @@ type Pro = {
   featured?: boolean;
   /** Override slug for live DB pros — otherwise derived from name. */
   slug?: string;
+  /** True for rows pulled from the DB (vs static visual seed data). */
+  live?: boolean;
 };
 
 const directoryPros: Pro[] = [
@@ -109,6 +119,8 @@ const directoryPros: Pro[] = [
     name: "James Wilson",
     role: "Personal Trainer",
     distance: "Mayfair · 0.8 mi",
+    town: "Mayfair",
+    coords: { latitude: 51.5083, longitude: -0.1521 },
     rating: 5.0,
     reviews: 128,
     mode: "In-person & Online",
@@ -125,6 +137,8 @@ const directoryPros: Pro[] = [
     name: "Sophie Taylor",
     role: "Pilates Instructor",
     distance: "Marylebone · 1.2 mi",
+    town: "Marylebone",
+    coords: { latitude: 51.5226, longitude: -0.1571 },
     rating: 5.0,
     reviews: 96,
     mode: "In-person & Online",
@@ -140,6 +154,8 @@ const directoryPros: Pro[] = [
     name: "Liam Roberts",
     role: "Strength Coach",
     distance: "Soho · 1.5 mi",
+    town: "Soho",
+    coords: { latitude: 51.5136, longitude: -0.1318 },
     rating: 4.9,
     reviews: 74,
     mode: "In-person",
@@ -155,6 +171,8 @@ const directoryPros: Pro[] = [
     name: "Priya Sharma",
     role: "Nutritionist",
     distance: "Fitzrovia · 2.1 mi",
+    town: "Fitzrovia",
+    coords: { latitude: 51.5202, longitude: -0.1392 },
     rating: 5.0,
     reviews: 112,
     mode: "Online",
@@ -167,6 +185,8 @@ const directoryPros: Pro[] = [
     name: "Daniel Hughes",
     role: "Personal Trainer",
     distance: "Covent Garden · 2.3 mi",
+    town: "Covent Garden",
+    coords: { latitude: 51.5117, longitude: -0.124 },
     rating: 4.8,
     reviews: 64,
     mode: "In-person & Online",
@@ -182,6 +202,8 @@ const directoryPros: Pro[] = [
     name: "Emily Carter",
     role: "Pilates Instructor",
     distance: "Bloomsbury · 2.4 mi",
+    town: "Bloomsbury",
+    coords: { latitude: 51.5226, longitude: -0.1278 },
     rating: 5.0,
     reviews: 88,
     mode: "In-person",
@@ -197,6 +219,8 @@ const directoryPros: Pro[] = [
     name: "Marcus Lee",
     role: "Strength Coach",
     distance: "Holborn · 2.6 mi",
+    town: "Holborn",
+    coords: { latitude: 51.5174, longitude: -0.1182 },
     rating: 4.9,
     reviews: 51,
     mode: "In-person & Online",
@@ -213,6 +237,8 @@ const directoryPros: Pro[] = [
     name: "Hannah Thompson",
     role: "Pre & Postnatal Specialist",
     distance: "Clerkenwell · 3.0 mi",
+    town: "Clerkenwell",
+    coords: { latitude: 51.5247, longitude: -0.1063 },
     rating: 5.0,
     reviews: 77,
     mode: "In-person & Online",
@@ -277,38 +303,91 @@ function DirectoryPage() {
     () =>
       livePros
         .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
-        .map((r) => ({
-          name: r.trading_name || "REPS Professional",
-          role: (r.specialisms?.[0] as string) || "Personal Trainer",
-          distance: r.city ? `${r.city}` : "—",
-          rating: 5.0,
-          reviews: 0,
-          mode: r.in_person_available && r.online_available
-            ? "In-person & Online"
-            : r.online_available
-              ? "Online"
-              : "In-person",
-          tags: [
-            (r.specialisms?.[0] as string) || "Health & Fitness",
-            (r.specialisms?.[1] as string) || "Strength Training",
-            (r.specialisms?.[2] as string) || "Conditioning",
-          ] as [string, string, string],
-          blurb: r.headline || "REPS-verified professional.",
-          image: r.avatar_url || proJames,
-          venues: [],
-          slug: r.slug ?? undefined,
-        })),
+        .map((r) => {
+          const town = r.location?.town ?? r.location?.postcode_outward ?? r.city ?? null;
+          const coords =
+            r.location?.latitude != null && r.location?.longitude != null
+              ? { latitude: r.location.latitude, longitude: r.location.longitude }
+              : undefined;
+          return {
+            name: r.full_name || "REPS Professional",
+            role: (r.specialisms?.[0] as string) || "Personal Trainer",
+            distance: town ?? "—",
+            town: town ?? undefined,
+            coords,
+            rating: 0,
+            reviews: 0,
+            mode: r.in_person_available && r.online_available
+              ? "In-person & Online" as const
+              : r.online_available
+                ? "Online" as const
+                : "In-person" as const,
+            tags: [
+              (r.specialisms?.[0] as string) || "Health & Fitness",
+              (r.specialisms?.[1] as string) || "Strength Training",
+              (r.specialisms?.[2] as string) || "Conditioning",
+            ] as [string, string, string],
+            blurb: r.headline || "REPS-verified professional.",
+            image: r.avatar_url || proJames,
+            venues: [],
+            slug: r.slug ?? undefined,
+            live: true,
+          };
+        }),
     [livePros],
   );
 
   const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
 
-  const visiblePros = activeVenue
+  const venueFiltered = activeVenue
     ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
     : mergedPros;
 
+  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
+  const { origin } = useViewerOrigin();
+
+  // Sort
+  const [sort, setSort] = React.useState<"recommended" | "nearest" | "rating">(
+    "recommended",
+  );
+
+  // Fall back to Recommended if origin is cleared while Nearest is selected
+  React.useEffect(() => {
+    if (!origin && sort === "nearest") setSort("recommended");
+  }, [origin, sort]);
+
+  // Decorate with real miles when origin + coords both exist
+  type WithMiles = Pro & { _miles: number | null };
+  const decorated: WithMiles[] = React.useMemo(
+    () =>
+      venueFiltered.map((p) => ({
+        ...p,
+        _miles:
+          origin && p.coords
+            ? haversineMiles(origin, p.coords)
+            : null,
+      })),
+    [venueFiltered, origin],
+  );
+
+  const visiblePros = React.useMemo(() => {
+    const arr = [...decorated];
+    if (sort === "nearest" && origin) {
+      arr.sort((a, b) => {
+        if (a._miles == null && b._miles == null) return 0;
+        if (a._miles == null) return 1;
+        if (b._miles == null) return -1;
+        return a._miles - b._miles;
+      });
+    } else if (sort === "rating") {
+      arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+    }
+    return arr;
+  }, [decorated, sort, origin]);
+
   const clearVenue = () =>
     navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
+
 
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -489,15 +568,23 @@ function DirectoryPage() {
                   <span className="relative">
                     <select
                       className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
-                      defaultValue="relevant"
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value as typeof sort)}
                     >
-                      <option value="relevant">Most relevant</option>
+                      <option value="recommended">Recommended</option>
                       <option value="rating">Top rated</option>
-                      <option value="distance">Nearest</option>
+                      <option value="nearest" disabled={!origin}>
+                        {origin ? "Nearest" : "Nearest (set your location)"}
+                      </option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-reps-muted-light" />
                   </span>
                 </label>
+              </div>
+
+              {/* Viewer origin chip — drives real distance + nearest sort */}
+              <div className="mt-3 flex items-center justify-end">
+                <ViewerOriginControl />
               </div>
 
               {/* Active filter chips */}
@@ -829,7 +916,7 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: string }) {
+function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: number | null }; ctaLabel?: string }) {
   const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
@@ -918,13 +1005,19 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
-              {pro.distance}
+              {pro._miles != null && pro.town
+                ? `${pro.town} · ${formatMiles(pro._miles)}`
+                : pro.town ?? pro.distance}
             </span>
-            <span className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-              <span>({pro.reviews})</span>
-            </span>
+            {pro.live && pro.reviews === 0 ? (
+              <span className="text-reps-muted-light/80">No reviews yet</span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+                <span>({pro.reviews})</span>
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
