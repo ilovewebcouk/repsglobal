@@ -1,50 +1,26 @@
-## Brutal honest truth
+## Diagnosis (confirmed, not guessed)
 
-The save fn, the avatar fn, and the cover fn are wired correctly. The reason "Save failed" appears and your avatar never lands is **not** the form, the schema, or RLS — it's the dev server.
+I reproduced the exact failure by calling the avatar-save server function directly with a real signed-in session. The photo upload itself **works** (your file is in storage), but the final step — writing the photo URL onto your profile — is rejected by the database with:
 
-When I deleted `dashboard_.verification.tsx` and `dashboard_.profile-edit.tsx` earlier, Vite cached a broken module graph that still tries to load the deleted file. Every `createServerFn` call is being SSR-routed through that broken graph and crashing with `h3 swallowed SSR error: {"status":500,"unhandled":true,"message":"HTTPError"}`. The toast just surfaces it as "Save failed."
+```
+42501: permission denied for function is_coach_of
+```
 
-Evidence:
-- Your avatar file IS in storage (`avatars/49402cd7-…/avatar-1781245534370.png`) — the browser upload worked.
-- `profiles.avatar_url` for your user is still `NULL` — proving the *server fn* that signs the URL and writes it never completed.
-- Sandbox stderr is full of `Failed to load url …/dashboard_.verification.tsx` and `h3 swallowed SSR error: 500 HTTPError` — every server fn invocation 500s.
-- `routeTree.gen.ts` on disk is already clean; only Vite's in-memory cache is stale. The previous "restart dev server" call didn't clear `node_modules/.vite`.
+**Why:** the access rule "Pros view their clients' profile" on the `profiles` table calls the helper function `is_coach_of(...)`. That function was created without granting signed-in users permission to execute it. So any profile update by a signed-in user trips that rule and fails — that's the "Upload failed" toast (and it would also break "Save changes" the same way in some cases).
 
-You're also right to kill the cover. We never designed a public surface that consumes `cover_url`, so it's dead weight in the editor.
+I audited every helper function in the database and found **two** with this problem:
 
-## Plan
+| Function | Used by | Missing permission |
+|---|---|---|
+| `is_coach_of` | profiles + clients access rules | signed-in users |
+| `has_active_tier` | client roster access rule | signed-in users |
 
-### 1. Force-clear the wedged Vite cache
-- `rm -rf node_modules/.vite .vite dist .nitro` (whichever exist).
-- Restart the dev server.
-- Re-test one server fn (`getMyDashboardProfile`) and confirm SSR returns 200, not "HTTPError 500".
+Everything else checked out: sign-in works, URL signing works, table permissions are correct, the server code is correct, and the dev server is healthy (the earlier stale-cache 500s are gone — the failures in the logs from before 06:33 were the old issue; this one is new and purely database-side).
 
-Without this step nothing else matters — every save will keep failing regardless of what we change.
+## Fix
 
-### 2. Remove the cover photo feature entirely
-Files:
-- `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
-  - Delete the cover image card / "Change cover" / "Remove cover" UI block.
-  - Delete `coverMutation`, `saveCover`, `handlePickCover`, the `<img src={profile.cover_url}>` preview, and any "Cover photo" entry in the completion checklist (drop the denominator from 8 → 7 accordingly).
-  - Stop importing `updateMyCover`.
-- `src/lib/profile/dashboard-profile.functions.ts`
-  - Delete `updateMyCover`.
-  - Remove `cover_url` from the `DashboardProfile` type, from the `select(...)` list, and from the returned object in `getMyDashboardProfile`.
-- DB: **leave the `cover_url` column in place** (dormant). Dropping a column needs a migration and approval; the column being unused is harmless. If you want it gone, say so and I'll add a `DROP COLUMN` migration.
+1. **One small migration** granting signed-in users permission to execute `is_coach_of` and `has_active_tier`. No table or code changes needed.
+2. **Verify end-to-end**: re-run the same direct call that failed — it should now save the photo URL. Your already-uploaded photo (from your last attempt) gets linked to your profile in that same verification step, so it will appear immediately.
+3. You then refresh `/dashboard/profile` — avatar should show in the editor, the top-right menu, and the sidebar footer.
 
-### 3. Verify end-to-end as Demo Verified Pro
-After the cache clear + cover removal:
-- Sign in as `demo-pro@repsuk.org` (the account whose uid `49402cd7…` already has an avatar sitting in storage).
-- Type in Full name + a few basic fields → click **Save changes** → expect green "Profile saved" toast, no 500 in sandbox log, and `profiles.full_name` / `professionals.*` updated in DB.
-- Click **Change photo** → pick an image → expect "Profile photo updated" toast, signed URL written into `profiles.avatar_url`, and the avatar showing in the TopBar + sidebar footer immediately.
-- Confirm there is no cover UI anywhere on the page.
-
-### 4. Out of scope (next step, separately)
-- Wiring the saved profile data through to the public `/pro/$slug` page.
-- Admin verify → auto-publish loop.
-- Re-adding cover photo later if we ever design a public surface that needs it.
-
-## Technical notes
-- Stale Vite cache is the actual root cause; the symptoms (Save failed, avatar not appearing) are both downstream of every server fn returning 500.
-- `professionals` UPDATE RLS policy with the `is_published / verification / verification_status` subquery WITH CHECK is fine — the upsert doesn't touch those columns, so the locked values are preserved and the policy passes. No RLS change required.
-- The `avatars` bucket is private; signed URLs are valid for 1 year. That's correct behaviour; no need to make the bucket public.
+No locked screens are touched; this is backend-only.
