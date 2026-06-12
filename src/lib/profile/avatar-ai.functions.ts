@@ -316,16 +316,15 @@ Clothing (their own, tidied):
 - Do NOT restyle, recolour, redesign, swap, or replace the garment.
 - Do NOT add any logo, wordmark, text, embroidery, badge, graphic, or branding of any kind. The garment must be completely unbranded in the output.
 
-Background (contextual fitness environment — heavily defocused):
-- Place the subject inside a real premium training environment, but render it HEAVILY out of focus (shallow depth of field, f/1.4–f/2 look). The environment must read as atmosphere, NEVER as a recognisable scene.
-- Pick whichever fits the subject best (vary across portraits — do NOT default to the same one every time):
-  • Dark high-end gym floor: hints of a power rack, plate tree, dumbbell row, or turf lane dissolving into shadow.
-  • Boutique studio: warm tungsten pools, blurred mirrors, soft concrete/brick wall, ambient cable highlights.
-  • Outdoor athletic: pre-dawn track, shaded park, stadium tunnel, sea wall — natural cool ambient light.
-  • Combat / strength loft: blurred heavy bag, chalk haze, industrial windows far behind.
-- Dominant tonality must stay DARK and moody (charcoal, near-black, deep slate, warm shadow) so the face is the hero. NO bright daylit gyms. NO white walls. NO mid-grey seamless studio backdrops. NO commercial chain-gym look. NO clinic / corporate office / home interior.
-- Background must contain NO readable text, NO logos, NO brand marks, NO other people, NO equipment in sharp focus.
-- Subject is razor-sharp; background bokeh is creamy and continuous with gentle coloured highlights. Subject cleanly separated with natural falloff and a faint atmospheric haze.
+Background (PRESERVE the source background — heavy editorial retouch only):
+- KEEP the subject's actual background from the source photo. Same location, same elements, same general composition, same geometry. Do NOT invent a new scene. Do NOT relocate the subject. Do NOT replace the environment with a stock gym, studio, or stylised setting. The subject must stay in the same place they were photographed.
+- Treat the source background as raw input for a world-class retoucher. Apply heavy editorial finishing:
+  • Push depth of field — strong but believable optical defocus on everything behind the subject, as if reshot on a fast prime (f/1.4–f/2). Subject razor-sharp; background creamy, continuous, no double-image artefacts.
+  • Deepen shadows in the background, hold mids on the subject, regrade the whole frame to a cohesive cinematic palette that matches the source's existing colour temperature and light direction — do NOT override the source lighting with a new look.
+  • Add atmospheric subject/background separation: subtle haze, natural falloff, gentle rim/edge light that lifts the subject off the plate.
+  • Clean distractions only: remove visible third-party logos/wordmarks/text, stray people in the deep background, blown highlights, lens flare, clutter, dust, and obvious sensor marks. Do NOT add new objects, new equipment, or invented architectural elements.
+  • Background must contain NO readable text, NO logos, NO brand marks, NO other people, NO equipment in sharp focus after the retouch.
+- Fallback ONLY when the source background is genuinely unusable (selfie tight against a blank wall, no environment visible, white clinical room, fully blown-out window behind subject, severe crop with nothing to work with): replace it with a clean, neutral dark backdrop — a soft charcoal-to-near-black gradient with a gentle vignette. NO invented gym, NO fake bokeh scene, NO stylised location. Honest neutral backdrop only. Use this fallback sparingly — when in doubt, preserve and retouch the original.
 
 Lighting (premium editorial):
 - Directional soft key light from camera-left at roughly 45°, short-side lit, sculpting the jaw and cheekbone.
