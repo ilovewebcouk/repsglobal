@@ -33,6 +33,7 @@ import {
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
+import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 
 function TiktokIcon() {
   return (
