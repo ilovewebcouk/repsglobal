@@ -23,12 +23,22 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     const { data, error } = await supabaseAdmin
       .from("professionals")
       .select(
-        "slug, trading_name, headline, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available",
+        "id, slug, trading_name, headline, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available",
       )
       .eq("is_published", true)
       .order("updated_at", { ascending: false })
       .limit(60);
     if (error) throw error;
-    return data ?? [];
+    const rows = data ?? [];
+    const ids = rows.map((r) => r.id).filter(Boolean) as string[];
+    let avatarById = new Map<string, string | null>();
+    if (ids.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, avatar_url")
+        .in("id", ids);
+      avatarById = new Map((profs ?? []).map((p) => [p.id, p.avatar_url]));
+    }
+    return rows.map((r) => ({ ...r, avatar_url: avatarById.get(r.id) ?? null }));
   },
 );
