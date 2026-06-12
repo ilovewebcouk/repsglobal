@@ -333,45 +333,58 @@ function DeliveryModePicker({
   online: boolean;
   onChange: (next: { inPerson: boolean; online: boolean }) => void;
 }) {
-  const current: "in-person" | "online" | "hybrid" =
-    inPerson && online ? "hybrid" : online ? "online" : "in-person";
+  const value = React.useMemo(() => {
+    const v: string[] = [];
+    if (inPerson) v.push("in-person");
+    if (online) v.push("online");
+    return v;
+  }, [inPerson, online]);
 
-  const options: Array<{
-    value: "in-person" | "online" | "hybrid";
-    label: string;
-    next: { inPerson: boolean; online: boolean };
-  }> = [
-    { value: "in-person", label: "In person", next: { inPerson: true, online: false } },
-    { value: "online", label: "Online", next: { inPerson: false, online: true } },
-    { value: "hybrid", label: "Hybrid", next: { inPerson: true, online: true } },
-  ];
+  const handleChange = (next: string[]) => {
+    // Enforce min 1: ignore an attempt to clear the last active mode.
+    if (next.length === 0) return;
+    onChange({
+      inPerson: next.includes("in-person"),
+      online: next.includes("online"),
+    });
+  };
+
+  const isHybrid = inPerson && online;
 
   return (
     <div
-      role="radiogroup"
+      role="group"
       aria-label="How you work with clients"
       className="flex flex-wrap items-center gap-2"
     >
-      {options.map((opt) => {
-        const active = current === opt.value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(opt.next)}
-            className={
-              "h-9 rounded-full border px-4 text-[12px] font-semibold transition-colors " +
-              (active
-                ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
-            }
-          >
-            {opt.label}
-          </button>
-        );
-      })}
+      <ToggleGroup
+        type="multiple"
+        value={value}
+        onValueChange={handleChange}
+        className="gap-2"
+      >
+        <ToggleGroupItem
+          value="in-person"
+          aria-label="In person"
+          className="h-9 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
+        >
+          In person
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="online"
+          aria-label="Online"
+          className="h-9 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
+        >
+          Online
+        </ToggleGroupItem>
+      </ToggleGroup>
+      <span aria-live="polite" className="contents">
+        {isHybrid ? (
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+            Hybrid
+          </span>
+        ) : null}
+      </span>
     </div>
   );
 }
