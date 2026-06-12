@@ -417,8 +417,8 @@ function ProfileEditorPage() {
   const [rejection, setRejection] = React.useState<null | { reason: string; category: string }>(null);
   const [lastUploadedPath, setLastUploadedPath] = React.useState<string | null>(null);
   const [regenState, setRegenState] = React.useState<
-    | { step: "confirm"; sourcePath: string }
-    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string }
+    | { step: "confirm"; sourcePath: string; attempt: number }
+    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string; attempt: number }
     | null
   >(null);
 
