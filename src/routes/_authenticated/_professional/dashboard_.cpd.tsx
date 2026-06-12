@@ -19,6 +19,7 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { CertificateCard, type CertRow } from "@/components/cpd/CertificateCard";
 import { UploadCertificateDialog } from "@/components/cpd/UploadCertificateDialog";
+import { EarnedTitlesPanel } from "@/components/cpd/EarnedTitlesPanel";
 import { myCertificates, deletePendingCertificate } from "@/lib/cpd/cpd.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/cpd")({
@@ -173,6 +174,8 @@ function CpdPage() {
               </div>
             </div>
           </PPanel>
+
+          <EarnedTitlesPanel />
 
           <PPanel>
             <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
