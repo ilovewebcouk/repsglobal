@@ -188,7 +188,6 @@ function IdentityCard({
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Couldn't start ID check"),
   });
-...
   if (identity) {
     const isVeriff = identity.vendor === "veriff";
     const inProgress = identity.status === "pending" && isVeriff && identity.veriff_status !== "submitted";
