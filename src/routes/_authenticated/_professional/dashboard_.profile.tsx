@@ -906,9 +906,9 @@ function ProfileEditorPage() {
               <div className="flex flex-col gap-5">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <Avatar className="size-20 rounded-[12px] ring-2 ring-reps-border">
-                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[12px]" /> : null}
-                      <AvatarFallback className="rounded-[12px] bg-reps-orange text-white">
+                    <Avatar className="size-20 rounded-[8px] ring-2 ring-reps-border">
+                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[8px]" /> : null}
+                      <AvatarFallback className="rounded-[8px] bg-reps-orange text-white">
                         {initialsFromName(form.full_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -1131,9 +1131,9 @@ function ProfileEditorPage() {
                   </div>
                   <div className="-mt-8 px-4 pb-4">
                     <div className="flex items-end justify-between">
-                      <Avatar className="size-16 rounded-[12px] ring-4 ring-reps-panel">
-                        {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[12px]" /> : null}
-                        <AvatarFallback className="rounded-[12px] bg-reps-orange text-white">
+                      <Avatar className="size-16 rounded-[8px] ring-4 ring-reps-panel">
+                        {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[8px]" /> : null}
+                        <AvatarFallback className="rounded-[8px] bg-reps-orange text-white">
                           {initialsFromName(form.full_name)}
                         </AvatarFallback>
                       </Avatar>
