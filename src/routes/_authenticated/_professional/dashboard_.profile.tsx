@@ -1134,6 +1134,14 @@ function ProfileEditorPage() {
                   onChange={(v) => set("bio", v.slice(0, 1200))}
                   placeholder="Tell clients about your experience, approach and who you help."
                 />
+                <div className="mt-2 flex justify-end">
+                  <AiCopyAssist
+                    field="bio"
+                    value={form.bio}
+                    facts={aiFacts}
+                    onApply={(v) => set("bio", v.slice(0, 1200))}
+                  />
+                </div>
               </Field>
             </Card>
 
