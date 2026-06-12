@@ -316,10 +316,98 @@ export const commitAvatar = createServerFn({ method: "POST" })
 /* Regenerate avatar (AI portrait)                                             */
 /* -------------------------------------------------------------------------- */
 
+/* Vision classification used internally to re-frame AI output. */
+async function classifyImageForFaceBox(
+  key: string,
+  dataUrl: string,
+): Promise<FaceBox> {
+  const res = await fetch(`${GATEWAY}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: `${SYSTEM_PROMPT}\n\nSchema:\n${VALIDATION_SCHEMA}` },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Classify this image per the schema." },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+    }),
+  });
+  if (!res.ok) return { x: 0.15, y: 0.1, width: 0.7, height: 0.8 };
+  const body = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  try {
+    const parsed = JSON.parse(body.choices?.[0]?.message?.content ?? "") as {
+      faceBox?: FaceBox | null;
+    };
+    const box = parsed.faceBox;
+    if (
+      box &&
+      typeof box.x === "number" &&
+      typeof box.y === "number" &&
+      typeof box.width === "number" &&
+      typeof box.height === "number"
+    ) {
+      return {
+        x: Math.max(0, Math.min(1, box.x)),
+        y: Math.max(0, Math.min(1, box.y)),
+        width: Math.max(0.05, Math.min(1, box.width)),
+        height: Math.max(0.05, Math.min(1, box.height)),
+      };
+    }
+  } catch {
+    /* fall through */
+  }
+  return { x: 0.15, y: 0.1, width: 0.7, height: 0.8 };
+}
+
+/* Same portrait crop logic used by processAvatar — kept in sync. */
+async function cropToPortraitJpeg(
+  bytes: ArrayBuffer,
+  faceBox: FaceBox,
+): Promise<Uint8Array> {
+  const { Jimp } = await import("jimp");
+  const img = await Jimp.read(Buffer.from(bytes));
+  const W = img.bitmap.width;
+  const H = img.bitmap.height;
+  const fx = faceBox.x * W;
+  const fy = faceBox.y * H;
+  const fw = faceBox.width * W;
+  const fh = faceBox.height * H;
+  const cx = fx + fw / 2;
+  const cy = fy + fh / 2;
+  let side = Math.max(fw, fh) * 2.0;
+  side = Math.min(side, Math.min(W, H));
+  let sx = cx - side / 2;
+  let sy = cy - side * 0.38;
+  if (sx < 0) sx = 0;
+  if (sy < 0) sy = 0;
+  if (sx + side > W) sx = W - side;
+  if (sy + side > H) sy = H - side;
+  const sideR = Math.round(side);
+  img.crop({ x: Math.round(sx), y: Math.round(sy), w: sideR, h: sideR });
+  if (sideR > 1024) img.resize({ w: 1024, h: 1024 });
+  const buf = await img.getBuffer("image/jpeg", { quality: 92 });
+  return new Uint8Array(buf);
+}
+
 export const regenerateAvatar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ sourcePath: z.string().min(1).max(500) }).parse(d),
+    z
+      .object({
+        sourcePath: z.string().min(1).max(500),
+        attempt: z.number().int().min(0).max(20).optional(),
+      })
+      .parse(d),
   )
   .handler(
     async ({
@@ -336,35 +424,48 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         data.sourcePath,
       );
 
-      const prompt = `Re-render this person as a cinematic, editorial fitness-professional portrait for a premium directory listing. Match the look of high-end fitness editorial photography (think Lululemon / Nike campaign portraits): photoreal, moody, atmospheric — NOT a studio headshot, NOT a school portrait, NOT a yearbook photo.
+      // Per-attempt variation so "Try again" produces meaningfully different
+      // takes without changing identity.
+      const attempt = data.attempt ?? 0;
+      const variants = [
+        "Head perfectly square to camera, micro-smile, eyes to lens.",
+        "Head turned ~3° to the camera-left, warm half-smile, eyes to lens.",
+        "Head turned ~3° to the camera-right, warm half-smile, eyes to lens.",
+        "Slight chin-down, eyes to lens, soft closed-mouth smile.",
+        "Square to camera, gentle natural smile showing a hint of teeth.",
+      ];
+      const variation = variants[attempt % variants.length];
 
-Identity (lock — do not change):
-- Same face, age, ethnicity, gender presentation, hair, skin tone, and approximate build as the source photo. The person must be unmistakably the same individual.
+      const prompt = `Re-render this exact person as a premium directory profile photo. Aim: warm, friendly, in-focus, professional headshot — the kind of photo a client would actually click. NOT a moody fashion campaign. NOT a magazine cover. NOT cinematic. NOT editorial.
+
+Identity lock (CRITICAL — do not change ANY of these):
+- The person in the output must be unmistakably the same individual as the source photo.
+- Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, facial hair, skin tone, age, ethnicity, gender presentation, and build EXACTLY as in the source.
+- Do not slim, smooth, beautify, restructure, re-age, or stylise the face. No "ideal" features. No plastic skin. Keep real skin texture, real pores, natural blemishes.
+
+Expression:
+- Natural, warm, approachable. ${variation}
+- Relaxed shoulders, confident but friendly. Not stern. Not scowling. Not posing hard.
 
 Framing:
-- Square 1:1 aspect, tight head-and-shoulders crop.
-- Subject facing the camera straight on, eyes to lens, calm confident expression, relaxed shoulders.
+- Square 1:1. Head-and-shoulders. Head occupies roughly the upper-middle of the frame with a small amount of headroom and shoulders fully in.
 
 Lighting:
-- Soft directional key light on the face plus a subtle rim/edge light separating the subject from the background.
-- Cinematic, editorial, photoreal. Gentle film grain. Muted, low-key palette.
-- NO flat studio softbox, NO ring-light look, NO bright even lighting, NO yearbook lighting.
+- Soft, warm, natural-looking key light from the front-side. Gentle fill so the shadow side of the face stays open and friendly.
+- Even, flattering exposure on the skin. Sharp focus on the eyes.
+- NOT harsh. NOT high-contrast. NOT moody. NOT low-key. NOT dramatic rim-lighting. NOT a single-source spotlight.
 
 Background:
-- Dark, heavily blurred gym / training-floor scene behind the subject — racks, plates, turf, brick, low-key tones, warm or cool ambient highlights. Shallow depth of field, creamy bokeh.
-- The background must read as a real training environment, not a backdrop.
-- NO neutral grey sweep, NO charcoal studio backdrop, NO plain wall, NO white background, NO seamless paper.
+- Softly out-of-focus warm neutral environment with gentle bokeh — e.g. a bright modern gym interior, or a warm out-of-focus indoor space.
+- Subject must clearly separate from the background. Background must NOT compete for attention. NO sharp brick, NO sharp plates, NO logos, NO text on the wall.
 
 Clothing:
-- KEEP the subject's own clothing exactly as it appears in the source photo (same garment, same colour, same style).
-- Do NOT swap, replace, restyle, or re-colour their clothing.
-- Do NOT add any T-shirt, polo, jersey, tank, or branded garment.
-- NO logos, NO wordmarks, NO text, NO embroidery, NO "REPS" lettering, NO numbers, NO graphics on the clothing.
+- KEEP the subject's own clothing exactly as it appears in the source — same garment, same colour, same neckline, same fit.
+- Do NOT redesign, restyle, or recolour clothing. Do NOT add any logo, wordmark, text, embroidery, badge, or graphic.
 
-Overall:
-- Photorealistic, high detail, professional fitness editorial.
-- NO illustration, NO cartoon, NO 3D render, NO painterly style.
-- NO school-portrait, NO yearbook, NO flat backdrop, NO studio sweep, NO 1990s portrait lighting, NO added branded clothing.`;
+Output quality:
+- Photoreal, crisp, high-detail, true-to-life colour. Looks like a real DSLR portrait taken by a competent professional photographer, not an AI render.
+- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO film-grain overlay.`;
 
       const res = await fetch(`${GATEWAY}/chat/completions`, {
         method: "POST",
@@ -373,7 +474,7 @@ Overall:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3.1-flash-image-preview",
+          model: "google/gemini-3-pro-image-preview",
           modalities: ["image", "text"],
           messages: [
             {
@@ -403,22 +504,42 @@ Overall:
       if (!imgUrl || !imgUrl.startsWith("data:")) {
         throw new Error("AI did not return an image.");
       }
-      // data:image/png;base64,XXXX
       const commaIdx = imgUrl.indexOf(",");
-      const meta = imgUrl.slice(5, commaIdx); // image/png;base64
+      const meta = imgUrl.slice(5, commaIdx);
       const b64 = imgUrl.slice(commaIdx + 1);
       const mime = meta.split(";")[0] || "image/png";
-      const ext = mime === "image/jpeg" ? "jpg" : "png";
 
       const bin = atob(b64);
-      const arr = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      const rawArr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
 
-      const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
+      // Re-frame the AI output so it matches the rest of the directory:
+      // face-detect → portrait crop → 1024 jpeg, identical to upload pipeline.
+      const aiDataUrl = `data:${mime};base64,${b64}`;
+      const faceBox = await classifyImageForFaceBox(key, aiDataUrl);
+      let finalBytes: Uint8Array;
+      try {
+        finalBytes = await cropToPortraitJpeg(
+          rawArr.buffer.slice(
+            rawArr.byteOffset,
+            rawArr.byteOffset + rawArr.byteLength,
+          ) as ArrayBuffer,
+          faceBox,
+        );
+      } catch {
+        // If Jimp fails, save the raw AI image as a fallback.
+        finalBytes = rawArr;
+      }
+
+      const path = `${userId}/avatar-ai-${Date.now()}.jpg`;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error: upErr } = await supabaseAdmin.storage
         .from("avatars")
-        .upload(path, arr, { contentType: mime, upsert: true, cacheControl: "31536000" });
+        .upload(path, finalBytes, {
+          contentType: "image/jpeg",
+          upsert: true,
+          cacheControl: "31536000",
+        });
       if (upErr) throw upErr;
 
       const url = await signOneYearUrl(path);
