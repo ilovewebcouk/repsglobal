@@ -143,12 +143,9 @@ function LanguageRow({ value }: { value: string }) {
   return (
     <SelectItem
       value={value}
-      className={itemClass + " [&>span:first-child]:hidden pr-2"}
+      className={itemClass + " [&_svg]:text-reps-orange"}
     >
-      <span className="inline-flex w-full items-center justify-between gap-2">
-        <span>{value}</span>
-        <Check className="size-3.5 text-reps-orange opacity-0 data-[checked]:opacity-100" />
-      </span>
+      {value}
     </SelectItem>
   );
 }
