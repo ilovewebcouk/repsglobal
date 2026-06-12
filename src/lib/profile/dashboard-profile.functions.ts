@@ -11,7 +11,6 @@ export type DashboardProfile = {
   full_name: string;
   avatar_url: string | null;
   // professional fields
-  cover_url: string | null;
   headline: string | null; // "Professional title"
   trading_name: string | null; // "Business / gym name"
   city: string | null;
@@ -46,7 +45,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "cover_url, headline, trading_name, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
+          "headline, trading_name, city, public_phone, public_email, website, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, is_published, verification_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -55,7 +54,6 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
     return {
       full_name: profile?.full_name ?? "",
       avatar_url: profile?.avatar_url ?? null,
-      cover_url: pro?.cover_url ?? null,
       headline: pro?.headline ?? null,
       trading_name: pro?.trading_name ?? null,
       city: pro?.city ?? null,
@@ -177,19 +175,3 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
     return { url };
   });
 
-export const updateMyCover = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z
-      .object({ path: z.string().min(1).max(500).nullable() })
-      .parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const url = data.path ? await signOneYearUrl(data.path) : null;
-    const { error } = await supabase
-      .from("professionals")
-      .upsert({ id: userId, cover_url: url }, { onConflict: "id" });
-    if (error) throw error;
-    return { url };
-  });
