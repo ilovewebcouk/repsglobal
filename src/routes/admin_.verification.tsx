@@ -551,6 +551,33 @@ function AdminVerificationPage() {
                     </ul>
                   </PCard>
                 )}
+
+                <CertDrawer
+                  open={certOpen}
+                  onOpenChange={setCertOpen}
+                  cert={{
+                    id: sub.id,
+                    qualification: sub.qualification ?? "Qualification",
+                    awarding_body: sub.awarding_body ?? "",
+                    year: typeof (sub as { year?: number | null }).year === "number" ? (sub as { year?: number | null }).year : null,
+                    expiry_date: (sub as { expiry_date?: string | null }).expiry_date ?? null,
+                    doc_paths: sub.doc_paths ?? [],
+                    regulator_verified: sub.regulator_verified ?? null,
+                    derived_title_label: titleLabel,
+                    status: (sub as { status?: string }).status ?? "submitted",
+                    holder_name: sub.holder_name ?? null,
+                    professional_name: prof?.full_name ?? null,
+                  }}
+                  crossChecks={crossChecks}
+                  resolveDocUrl={async (path) => {
+                    const { url } = await signUrl({ data: { bucket: "verification-docs", path } });
+                    return url;
+                  }}
+                  busy={busy}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate("approved"); }}
+                  onReject={() => { setCertOpen(false); decideMutation.mutate("rejected"); }}
+                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate("changes_requested"); }}
+                />
               </>
             );
           })()}
