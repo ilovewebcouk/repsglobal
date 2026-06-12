@@ -3,7 +3,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ProfileInput = z.object({
-  slug: z.string().min(3).max(60).regex(/^[a-z0-9-]+$/, "lowercase letters, numbers, hyphens only"),
   trading_name: z.string().min(2).max(120),
   headline: z.string().max(160).optional().nullable(),
   bio: z.string().max(4000).optional().nullable(),
@@ -14,6 +13,16 @@ const ProfileInput = z.object({
   in_person_available: z.boolean(),
   hourly_rate_pence: z.number().int().min(0).max(1_000_00).optional().nullable(),
 });
+
+function slugify(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
 
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -32,18 +41,23 @@ export const saveMyProfile = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ProfileInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    // ensure slug uniqueness
-    const { data: clash } = await supabase
-      .from("professionals")
-      .select("id")
-      .eq("slug", data.slug)
-      .neq("id", userId)
-      .maybeSingle();
-    if (clash) throw new Error("That handle is already taken — try another.");
+    const base = slugify(data.trading_name) || "coach";
+    // Find an unused slug derived from full name (base, base-2, base-3…)
+    let slug = base;
+    for (let i = 2; i < 50; i++) {
+      const { data: clash } = await supabase
+        .from("professionals")
+        .select("id")
+        .eq("slug", slug)
+        .neq("id", userId)
+        .maybeSingle();
+      if (!clash) break;
+      slug = `${base}-${i}`;
+    }
 
     const { data: row, error } = await supabase
       .from("professionals")
-      .upsert({ id: userId, ...data }, { onConflict: "id" })
+      .upsert({ id: userId, slug, ...data }, { onConflict: "id" })
       .select()
       .single();
     if (error) throw error;

@@ -218,7 +218,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       ...(row.online_available ? (["Online"] as const) : []),
     ] as Pro["modes"],
     blurb: row.headline ?? "",
-    image: proJames,
+    image: row.avatar_url || proJames,
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
