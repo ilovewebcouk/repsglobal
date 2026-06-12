@@ -41,9 +41,22 @@ import {
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
+import {
+  PROFESSIONS,
+  getProfessionLabel,
+  type ProfessionSlug,
+} from "@/lib/professions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   DashboardDialog,
   DashboardDialogContent,
@@ -82,6 +95,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 type FormState = {
   full_name: string;
   headline: string;
+  primary_profession: ProfessionSlug | "";
+  secondary_professions: ProfessionSlug[];
   city: string;
   public_phone: string;
   public_email: string;
@@ -98,6 +113,8 @@ function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
     headline: p.headline ?? "",
+    primary_profession: p.primary_profession ?? "",
+    secondary_professions: p.secondary_professions ?? [],
     city: p.city ?? "",
     public_phone: p.public_phone ?? "",
     public_email: p.public_email ?? "",
@@ -115,6 +132,8 @@ function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
     a.headline === b.headline &&
+    a.primary_profession === b.primary_profession &&
+    JSON.stringify(a.secondary_professions) === JSON.stringify(b.secondary_professions) &&
     a.city === b.city &&
     a.public_phone === b.public_phone &&
     a.public_email === b.public_email &&
@@ -133,7 +152,7 @@ function completion(p: DashboardProfile): {
   checklist: { label: string; done: boolean }[];
 } {
   const checklist = [
-    { label: "Basic information", done: !!(p.full_name && p.headline && p.city) },
+    { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
     { label: "Profile photo", done: !!p.avatar_url },
     
@@ -489,6 +508,8 @@ function ProfileEditorPage() {
           data: {
             full_name: form.full_name,
             headline: form.headline || null,
+            primary_profession: form.primary_profession || null,
+            secondary_professions: form.secondary_professions,
             city: form.city || null,
             public_phone: form.public_phone || null,
             public_email: form.public_email || null,
