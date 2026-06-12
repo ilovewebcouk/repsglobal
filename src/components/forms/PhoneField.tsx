@@ -15,7 +15,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -77,17 +76,14 @@ export function PhoneField({
           aria-label="Country"
           className="h-8 w-auto gap-1.5 rounded-[8px] border-0 bg-transparent px-2 py-0 text-[12px] font-medium text-white/85 shadow-none hover:bg-white/5 focus:ring-0 data-[state=open]:bg-white/10 [&>svg:last-child]:opacity-60"
         >
-          <span className="flex items-center gap-1.5">
-            {FlagFor ? (
-              <span className="inline-flex h-3.5 w-5 overflow-hidden rounded-[2px]">
-                <FlagFor title={country} />
-              </span>
-            ) : null}
-            <span className="tabular-nums text-white/70">
-              +{getCountryCallingCode(country)}
+          {FlagFor ? (
+            <span className="inline-flex h-3.5 w-5 overflow-hidden rounded-[2px]">
+              <FlagFor title={country} />
             </span>
+          ) : null}
+          <span className="tabular-nums text-white/70">
+            +{getCountryCallingCode(country)}
           </span>
-          <SelectValue className="sr-only" />
         </SelectTrigger>
         <SelectContent className="max-h-[320px] w-[280px]">
           {COUNTRY_OPTIONS.map((c) => {
