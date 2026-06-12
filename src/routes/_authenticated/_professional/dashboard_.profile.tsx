@@ -286,7 +286,76 @@ function ChipInput({
     if (values.map((s) => s.toLowerCase()).includes(v.toLowerCase())) {
       setDraft("");
       return;
-    }
+}
+
+function SecondaryProfessionPicker({
+  primary,
+  values,
+  onChange,
+}: {
+  primary: ProfessionSlug | null;
+  values: ProfessionSlug[];
+  onChange: (next: ProfessionSlug[]) => void;
+}) {
+  const available = PROFESSIONS.filter(
+    (p) => p.slug !== primary && !values.includes(p.slug),
+  );
+  const atMax = values.length >= 2;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink p-2">
+      {values.map((s) => {
+        const label = getProfessionLabel(s);
+        if (!label) return null;
+        return (
+          <Badge
+            key={s}
+            variant="outline"
+            className="h-8 gap-1.5 rounded-full border-reps-orange-border bg-reps-orange-soft pl-3 pr-2 text-[12px] font-semibold text-reps-orange"
+          >
+            {label}
+            <button
+              type="button"
+              aria-label={`Remove ${label}`}
+              onClick={() => onChange(values.filter((v) => v !== s))}
+              className="flex h-5 w-5 items-center justify-center rounded-full text-reps-orange/70 hover:bg-reps-orange/10 hover:text-reps-orange"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        );
+      })}
+      {atMax || available.length === 0 ? (
+        atMax ? (
+          <span className="px-2 text-[11px] text-white/45">Max 2 added.</span>
+        ) : (
+          <span className="px-2 text-[11px] text-white/45">
+            {primary ? "No more professions to add." : "Choose your primary profession first."}
+          </span>
+        )
+      ) : (
+        <Select
+          value=""
+          onValueChange={(v) => {
+            if (!v) return;
+            onChange([...values, v as ProfessionSlug]);
+          }}
+        >
+          <SelectTrigger className="h-8 w-auto min-w-[180px] rounded-full border-dashed border-reps-border bg-transparent px-3 text-[12px] text-white/70">
+            <SelectValue placeholder="+ Add profession" />
+          </SelectTrigger>
+          <SelectContent>
+            {available.map((p) => (
+              <SelectItem key={p.slug} value={p.slug}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
     onChange([...values, v]);
     setDraft("");
   };
