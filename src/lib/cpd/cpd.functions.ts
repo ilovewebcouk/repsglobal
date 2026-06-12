@@ -2,23 +2,24 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { matchAwardingBody } from "./awarding-bodies";
+import { matchAwardingBody, OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
 
 /* -------------------------------------------------------------------------- *
  * AI extraction
  * -------------------------------------------------------------------------- */
 
-// Zod schema we expect the model to populate. Kept loose (everything nullable)
-// because real certificates are messy — we'd rather leave a field blank than
-// hallucinate.
 const ExtractionSchema = z.object({
   awarding_body: z.string().nullable(),
   qualification: z.string().nullable(),
-  issue_date: z.string().nullable(), // YYYY-MM-DD if confident
+  qualification_number: z.string().nullable(), // e.g. "500/8513/X" (Ofqual)
+  issue_date: z.string().nullable(),           // YYYY-MM-DD if confident
   expiry_date: z.string().nullable(),
-  certificate_number: z.string().nullable(),
+  certificate_number: z.string().nullable(),   // learner cert serial
+  learner_number: z.string().nullable(),
+  centre_number: z.string().nullable(),
   holder_name: z.string().nullable(),
-  regulator: z.string().nullable(), // e.g. "Ofqual"
+  regulator: z.string().nullable(),            // e.g. "Ofqual"
+  trust_badges: z.array(z.string()).nullable(),// e.g. ["Ofqual REGULATED", "CIMSPA endorsed"]
   confidence: z.number().min(0).max(1).nullable(),
 });
 
@@ -27,7 +28,7 @@ export type ExtractionResult = z.infer<typeof ExtractionSchema> & {
 };
 
 const extractInput = z.object({
-  file_data_url: z.string().startsWith("data:").max(15_000_000), // ~10MB base64
+  file_data_url: z.string().startsWith("data:").max(15_000_000),
   filename: z.string().min(1).max(200),
 });
 
@@ -38,26 +39,30 @@ export const extractCertificateFields = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI extraction unavailable");
 
-    // Build multimodal content block: PDF → file, image → image_url
     const mime = data.file_data_url.match(/^data:([^;]+);/)?.[1] ?? "application/octet-stream";
     const isPdf = mime === "application/pdf";
     const contentBlocks: unknown[] = [
       {
         type: "text",
         text: [
-          "You are extracting fields from a fitness / coaching qualification certificate.",
+          "You are extracting fields from a fitness, sport or coaching qualification certificate.",
           "Return a single JSON object — no prose, no markdown — matching this exact shape:",
           "{",
-          '  "awarding_body": string | null,        // body that issued it, e.g. "Active IQ"',
-          '  "qualification": string | null,        // full title, e.g. "Level 3 Diploma in Personal Training"',
-          '  "issue_date": string | null,           // YYYY-MM-DD if confident',
-          '  "expiry_date": string | null,          // YYYY-MM-DD if printed on the cert',
-          '  "certificate_number": string | null,',
-          '  "holder_name": string | null,          // person the cert is awarded to',
-          '  "regulator": string | null,            // e.g. "Ofqual" if mentioned',
+          '  "awarding_body": string | null,        // body that issued it, e.g. "NCFE", "Active IQ"',
+          '  "qualification": string | null,        // full title, e.g. "Level 2 Certificate in Fitness Instructing"',
+          '  "qualification_number": string | null, // Ofqual register number in the format NNN/NNNN/X (e.g. "500/8513/X"). Look near the bottom of UK regulated certs. Null if not visible.',
+          '  "issue_date": string | null,           // YYYY-MM-DD. If only a year is printed, return YYYY-01-01 with low confidence.',
+          '  "expiry_date": string | null,          // YYYY-MM-DD if printed',
+          '  "certificate_number": string | null,   // learner-specific certificate serial (NOT the qualification number)',
+          '  "learner_number": string | null,       // learner / candidate ID if printed',
+          '  "centre_number": string | null,        // training centre number if printed',
+          '  "holder_name": string | null,          // person the cert is awarded to, as printed',
+          '  "regulator": string | null,            // e.g. "Ofqual", "SQA", "Qualifications Wales"',
+          '  "trust_badges": string[] | null,       // any visible trust marks, e.g. ["Ofqual REGULATED", "CIMSPA endorsed", "SkillsActive approved"]',
           '  "confidence": number                   // 0..1 overall confidence in the extraction',
           "}",
           "Rules: if a field is not clearly visible, set it to null. Do not guess. Do not invent dates.",
+          "The qualification_number and the certificate_number are different fields — never put the same value in both.",
         ].join("\n"),
       },
     ];
@@ -78,7 +83,8 @@ export const extractCertificateFields = createServerFn({ method: "POST" })
         "Lovable-API-Key": apiKey,
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        // Pro model: image+text reasoning matters more than latency here.
+        model: "google/gemini-2.5-pro",
         response_format: { type: "json_object" },
         messages: [{ role: "user", content: contentBlocks }],
       }),
@@ -97,26 +103,27 @@ export const extractCertificateFields = createServerFn({ method: "POST" })
     try {
       parsed = ExtractionSchema.parse(JSON.parse(raw));
     } catch {
-      // Model returned malformed output — return a blank extraction rather than crash
       parsed = {
         awarding_body: null,
         qualification: null,
+        qualification_number: null,
         issue_date: null,
         expiry_date: null,
         certificate_number: null,
+        learner_number: null,
+        centre_number: null,
         holder_name: null,
         regulator: null,
+        trust_badges: null,
         confidence: 0,
       };
     }
 
-    // Low-confidence sanity: drop any single field whose confidence is the only signal of life
     const minConf = parsed.confidence ?? 0;
     const lowConf = minConf < 0.5;
 
     return {
       ...parsed,
-      // If overall confidence is low, blank issue/expiry to avoid bad pre-fills
       issue_date: lowConf ? null : parsed.issue_date,
       expiry_date: lowConf ? null : parsed.expiry_date,
       awarding_body_slug: matchAwardingBody(parsed.awarding_body)?.slug ?? null,
@@ -131,17 +138,20 @@ const submitInput = z.object({
   awarding_body: z.string().min(2).max(160),
   awarding_body_slug: z.string().max(60).nullable().optional(),
   qualification: z.string().min(2).max(200),
-  issue_year: z.number().int().min(1980).max(2100).nullable().optional(),
-  expiry_date: z.string().nullable().optional(), // YYYY-MM-DD
+  qualification_number: z.string().max(60).nullable().optional(),
+  issue_date: z.string().nullable().optional(), // YYYY-MM-DD
+  expiry_date: z.string().nullable().optional(),
   certificate_number: z.string().max(120).nullable().optional(),
+  learner_number: z.string().max(120).nullable().optional(),
+  centre_number: z.string().max(120).nullable().optional(),
   holder_name: z.string().max(160).nullable().optional(),
   file_sha256: z.string().length(64),
   doc_paths: z.array(z.string().min(1)).min(1).max(5),
   ai_extraction: z.record(z.unknown()).nullable().optional(),
+  trust_badges: z.array(z.string()).nullable().optional(),
 });
 
 function randomToken(): string {
-  // 22-char URL-safe random — collision-resistant for verify links
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -167,6 +177,40 @@ export const submitCertificate = createServerFn({ method: "POST" })
         ? verifiedName.toLowerCase().trim() === data.holder_name.toLowerCase().trim()
         : null;
 
+    // Ofqual cross-check (only when the qual number matches the regulator format)
+    let regulatorVerified = false;
+    let regulatorRecord: unknown = null;
+    const trustSignals: Record<string, unknown> = {
+      trust_badges_detected: data.trust_badges ?? [],
+      name_match: nameMatch,
+    };
+
+    if (data.qualification_number && OFQUAL_QUAL_NO_REGEX.test(data.qualification_number.trim())) {
+      try {
+        const { lookupOfqualQualification } = await import("./ofqual.server");
+        const result = await lookupOfqualQualification(data.qualification_number, {
+          awardingBody: data.awarding_body,
+          qualification: data.qualification,
+        });
+        regulatorRecord = result.record;
+        if (result.found && result.matches) {
+          // We treat a match as verified when title + body line up AND status looks live.
+          // The admin still rubber-stamps it; this just unlocks the green "Ofqual-matched" chip.
+          regulatorVerified = result.matches.awardingBody && result.matches.title && result.matches.isLive;
+          trustSignals.ofqual = {
+            found: true,
+            awarding_body_match: result.matches.awardingBody,
+            title_match: result.matches.title,
+            is_live: result.matches.isLive,
+          };
+        } else {
+          trustSignals.ofqual = { found: false };
+        }
+      } catch {
+        trustSignals.ofqual = { error: true };
+      }
+    }
+
     // Duplicate detection across the whole platform via service role
     let duplicateOf: string | null = null;
     {
@@ -182,6 +226,7 @@ export const submitCertificate = createServerFn({ method: "POST" })
     }
 
     const verifyToken = randomToken();
+    const issueYear = data.issue_date ? Number(data.issue_date.slice(0, 4)) : null;
 
     const { data: row, error } = await supabase
       .from("verification_submissions")
@@ -190,9 +235,13 @@ export const submitCertificate = createServerFn({ method: "POST" })
         awarding_body: data.awarding_body,
         awarding_body_slug: data.awarding_body_slug ?? null,
         qualification: data.qualification,
-        year: data.issue_year ?? null,
+        qualification_number: data.qualification_number?.trim() || null,
+        year: issueYear,
+        issue_date: data.issue_date || null,
         expiry_date: data.expiry_date ?? null,
         certificate_number: data.certificate_number ?? null,
+        learner_number: data.learner_number ?? null,
+        centre_number: data.centre_number ?? null,
         holder_name: data.holder_name ?? null,
         file_sha256: data.file_sha256,
         doc_paths: data.doc_paths,
@@ -200,8 +249,11 @@ export const submitCertificate = createServerFn({ method: "POST" })
         verify_token: verifyToken,
         name_match: nameMatch,
         duplicate_of: duplicateOf,
+        regulator_verified: regulatorVerified,
+        regulator_record: regulatorRecord as never,
+        trust_signals: trustSignals as never,
       } as never)
-      .select("id, status, created_at, verify_token")
+      .select("id, status, created_at, verify_token, regulator_verified")
       .single();
     if (error) throw new Error(error.message);
 
@@ -224,7 +276,7 @@ export const myCertificates = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("verification_submissions")
       .select(
-        "id, awarding_body, awarding_body_slug, qualification, year, expiry_date, certificate_number, holder_name, status, admin_note, verify_token, created_at, reviewed_at",
+        "id, awarding_body, awarding_body_slug, qualification, qualification_number, year, issue_date, expiry_date, certificate_number, holder_name, status, admin_note, verify_token, regulator_verified, created_at, reviewed_at",
       )
       .eq("professional_id", userId)
       .order("created_at", { ascending: false });
@@ -266,13 +318,11 @@ export const uploadCertificateFile = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Decode base64 payload
     const match = data.file_data_url.match(/^data:([^;]+);base64,(.+)$/);
     if (!match) throw new Error("Invalid file payload");
     const [, mime, b64] = match;
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
-    // SHA-256 hash for duplicate detection
     const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
     const sha256 = Array.from(new Uint8Array(hashBuf), (b) => b.toString(16).padStart(2, "0")).join("");
 
