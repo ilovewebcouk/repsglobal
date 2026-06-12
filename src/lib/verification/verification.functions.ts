@@ -141,9 +141,23 @@ export const reviewVerification = createServerFn({ method: "POST" })
         admin_note: data.admin_note ?? null,
         reviewed_by: userId,
         reviewed_at: new Date().toISOString(),
+        review_checklist: data.checklist ?? {},
+        claimed_by: null,
+        claimed_at: null,
       } as never)
       .eq("id", data.id);
     if (updErr) throw new Error(updErr.message);
+
+    // Immutable audit log entry — always written, regardless of outcome.
+    await supabaseAdmin.from("verification_decisions").insert({
+      submission_id: data.id,
+      professional_id: sub.professional_id,
+      reviewer_id: userId,
+      decision: data.decision,
+      notes: data.admin_note ?? null,
+      checklist: data.checklist ?? {},
+      unlocked_tier: data.unlocked_tier ?? (data.decision === "approved" ? "verified" : null),
+    } as never);
 
     if (data.decision === "approved") {
       await supabaseAdmin
