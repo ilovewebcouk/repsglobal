@@ -1,6 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DashboardToaster,
+  DashboardTooltipProvider,
+} from "@/components/dashboard/ui";
 
 /**
  * Managed auth gate for Phase 2.0.
@@ -21,5 +25,10 @@ export const Route = createFileRoute("/_authenticated")({
     }
     return { user: data.user };
   },
-  component: () => <Outlet />,
+  component: () => (
+    <DashboardTooltipProvider delayDuration={200}>
+      <Outlet />
+      <DashboardToaster />
+    </DashboardTooltipProvider>
+  ),
 });
