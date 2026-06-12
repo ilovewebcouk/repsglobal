@@ -34,6 +34,7 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import {
   validateAvatar,
+  processAvatar,
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
@@ -338,47 +339,12 @@ async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
   }
 }
 
-async function cropToSquareJpeg(
-  file: File,
-  faceBox: { x: number; y: number; width: number; height: number },
-  maxSize = 1024,
-): Promise<Blob> {
-  const img = await loadImageBitmap(file);
-  const W = img.naturalWidth;
-  const H = img.naturalHeight;
-  // face box in px
-  const fx = faceBox.x * W;
-  const fy = faceBox.y * H;
-  const fw = faceBox.width * W;
-  const fh = faceBox.height * H;
-  const cx = fx + fw / 2;
-  const cy = fy + fh / 2;
-  // Square side: pad face by ~60% (so the face fills ~62% of the crop).
-  const pad = 1.6;
-  let side = Math.max(fw, fh) * pad;
-  // Clamp side so the square stays inside the image when possible.
-  side = Math.min(side, Math.min(W, H));
-  let sx = cx - side / 2;
-  let sy = cy - side / 2;
-  if (sx < 0) sx = 0;
-  if (sy < 0) sy = 0;
-  if (sx + side > W) sx = W - side;
-  if (sy + side > H) sy = H - side;
-
-  const out = Math.min(maxSize, Math.round(side));
-  const canvas = document.createElement("canvas");
-  canvas.width = out;
-  canvas.height = out;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not available.");
-  ctx.drawImage(img, sx, sy, side, side, 0, 0, out, out);
-  return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("Couldn't encode image."))),
-      "image/jpeg",
-      0.88,
-    );
-  });
+function initialsFromName(name: string | null | undefined): string {
+  const n = (name ?? "").trim();
+  if (!n) return "?";
+  const parts = n.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 
