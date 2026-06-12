@@ -44,6 +44,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 
 
 /* ------------------------------------------------------------------------- */
@@ -378,6 +379,7 @@ function TopBar({
         <Button variant="outline" size="icon" aria-label="Notifications" disabled>
           <Bell className="h-4 w-4" />
         </Button>
+        <UserAccountMenu surface="dashboard" />
       </div>
     </header>
   );
