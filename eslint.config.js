@@ -36,5 +36,38 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: [
+      "src/routes/_authenticated/**/*.{ts,tsx}",
+      "src/components/dashboard/**/*.{ts,tsx}",
+    ],
+    ignores: ["src/components/dashboard/ui/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@/components/ui/button",
+                "@/components/ui/dialog",
+                "@/components/ui/alert-dialog",
+                "@/components/ui/input",
+                "@/components/ui/textarea",
+                "@/components/ui/select",
+                "@/components/ui/card",
+                "@/components/ui/badge",
+                "@/components/ui/empty",
+                "@/components/ui/tooltip",
+                "@/components/ui/sonner",
+              ],
+              message:
+                "Use the dashboard UI kit (`@/components/dashboard/ui`) — shadcn defaults are light-themed and break dark dashboards.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   eslintPluginPrettier,
 );
