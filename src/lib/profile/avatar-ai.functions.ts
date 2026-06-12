@@ -316,10 +316,16 @@ Clothing (their own, tidied):
 - Do NOT restyle, recolour, redesign, swap, or replace the garment.
 - Do NOT add any logo, wordmark, text, embroidery, badge, graphic, or branding of any kind. The garment must be completely unbranded in the output.
 
-Background (editorial studio):
-- Clean editorial studio: either deep charcoal seamless OR a soft graduated mid-grey backdrop.
-- No props. No gym equipment. No text. No logos. No furniture. No windows. No coffee-shop wash. No fake bokeh of plates or rigs.
-- Subject cleanly separated from background with gentle natural falloff.
+Background (contextual fitness environment — heavily defocused):
+- Place the subject inside a real premium training environment, but render it HEAVILY out of focus (shallow depth of field, f/1.4–f/2 look). The environment must read as atmosphere, NEVER as a recognisable scene.
+- Pick whichever fits the subject best (vary across portraits — do NOT default to the same one every time):
+  • Dark high-end gym floor: hints of a power rack, plate tree, dumbbell row, or turf lane dissolving into shadow.
+  • Boutique studio: warm tungsten pools, blurred mirrors, soft concrete/brick wall, ambient cable highlights.
+  • Outdoor athletic: pre-dawn track, shaded park, stadium tunnel, sea wall — natural cool ambient light.
+  • Combat / strength loft: blurred heavy bag, chalk haze, industrial windows far behind.
+- Dominant tonality must stay DARK and moody (charcoal, near-black, deep slate, warm shadow) so the face is the hero. NO bright daylit gyms. NO white walls. NO mid-grey seamless studio backdrops. NO commercial chain-gym look. NO clinic / corporate office / home interior.
+- Background must contain NO readable text, NO logos, NO brand marks, NO other people, NO equipment in sharp focus.
+- Subject is razor-sharp; background bokeh is creamy and continuous with gentle coloured highlights. Subject cleanly separated with natural falloff and a faint atmospheric haze.
 
 Lighting (premium editorial):
 - Directional soft key light from camera-left at roughly 45°, short-side lit, sculpting the jaw and cheekbone.
