@@ -136,8 +136,8 @@ function AiCopyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 border-reps-border bg-reps-panel p-0 text-white sm:max-w-[640px]">
+        <DialogHeader className="shrink-0 border-b border-reps-border/60 px-6 pt-6 pb-4">
           <DialogTitle className="font-display text-[18px] text-white">
             {mode === "draft" ? `Draft your ${fieldLabel}` : `Improve your ${fieldLabel}`}
           </DialogTitle>
@@ -148,32 +148,34 @@ function AiCopyDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {hasContent ? (
-          <div className="flex gap-1 rounded-[10px] bg-reps-ink p-1 text-[12.5px]">
-            <ModeTab active={mode === "improve"} onClick={() => setMode("improve")}>
-              Improve
-            </ModeTab>
-            <ModeTab active={mode === "draft"} onClick={() => setMode("draft")}>
-              Start over
-            </ModeTab>
-          </div>
-        ) : null}
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+          {hasContent ? (
+            <div className="flex gap-1 rounded-[10px] bg-reps-ink p-1 text-[12.5px]">
+              <ModeTab active={mode === "improve"} onClick={() => setMode("improve")}>
+                Improve
+              </ModeTab>
+              <ModeTab active={mode === "draft"} onClick={() => setMode("draft")}>
+                Start over
+              </ModeTab>
+            </div>
+          ) : null}
 
-        {mode === "draft" ? (
-          <DraftPane
-            field={field}
-            facts={facts}
-            factsReady={factsReady}
-            onApply={onApply}
-          />
-        ) : (
-          <ImprovePane
-            field={field}
-            facts={facts}
-            currentValue={currentValue}
-            onApply={onApply}
-          />
-        )}
+          {mode === "draft" ? (
+            <DraftPane
+              field={field}
+              facts={facts}
+              factsReady={factsReady}
+              onApply={onApply}
+            />
+          ) : (
+            <ImprovePane
+              field={field}
+              facts={facts}
+              currentValue={currentValue}
+              onApply={onApply}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
