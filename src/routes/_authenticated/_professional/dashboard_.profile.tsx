@@ -624,7 +624,7 @@ function ProfileEditorPage() {
                     <Avatar className="size-20 ring-2 ring-reps-border">
                       {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" /> : null}
                       <AvatarFallback className="bg-reps-orange text-white">
-                        {(form.full_name || "?").slice(0, 2).toUpperCase()}
+                        {initialsFromName(form.full_name)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-reps-panel bg-reps-orange text-white">
@@ -668,7 +668,7 @@ function ProfileEditorPage() {
                       ) : null}
                     </div>
                     <p className="text-[11px] text-white/45">
-                      Real headshot only · JPG or PNG · max 8MB · we check uploads with AI to keep the directory trustworthy
+                      Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
                     </p>
                   </div>
                 </div>
@@ -822,7 +822,7 @@ function ProfileEditorPage() {
                       <Avatar className="size-16 ring-4 ring-reps-panel">
                         {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" /> : null}
                         <AvatarFallback className="bg-reps-orange text-white">
-                          {(form.full_name || "?").slice(0, 2).toUpperCase()}
+                          {initialsFromName(form.full_name)}
                         </AvatarFallback>
                       </Avatar>
                       {profile.verification_status === "verified" ? (
