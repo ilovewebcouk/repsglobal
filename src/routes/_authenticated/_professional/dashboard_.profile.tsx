@@ -8,8 +8,6 @@ import {
   CheckCircle2,
   ExternalLink,
   Eye,
-  Globe,
-  
   Instagram,
   Linkedin,
   MapPin,
