@@ -115,6 +115,12 @@ function AdminVerificationPage() {
     enabled: !!selectedId,
   });
 
+  const siblingCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const r of pending.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
+    return counts;
+  }, [pending.data]);
+
   const rows = useMemo(() => {
     let list = pending.data ?? [];
     if (filter === "mine") {
