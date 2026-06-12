@@ -40,13 +40,14 @@ export function UserAvatar({
   return (
     <Avatar
       className={cn(
+        "rounded-[10px]",
         SIZES[size],
         ring && "ring-1 ring-white/15",
         className,
       )}
     >
-      {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
-      <AvatarFallback className="bg-reps-orange font-semibold text-white">
+      {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[10px]" /> : null}
+      <AvatarFallback className="rounded-[10px] bg-reps-orange font-semibold text-white">
         {getInitials(name)}
       </AvatarFallback>
     </Avatar>
