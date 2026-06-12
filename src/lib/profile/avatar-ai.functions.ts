@@ -280,18 +280,18 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         data.sourcePath,
       );
 
-      // Per-attempt variation. Vary LIGHTING register (not head angle) so
-      // "Try again" produces meaningfully different takes that still match
-      // the dark, industrial REPs vibe.
+      // Per-attempt variation. Vary BACKDROP TONE only. Identity, wardrobe
+      // and lighting stay constant so the directory looks consistent across
+      // 400 trainers without making everyone look like the same person.
       const attempt = data.attempt ?? 0;
-      const lightingVariants = [
-        "Contrasty key light from camera-left at ~45°, subtle warm orange rim on hair and far shoulder, deep shadow falloff on the camera-right side. Background warm-orange ambient glow.",
-        "Cool steel-blue rim light from camera-right edge, neutral key from camera-left, deep near-black background with a faint cool highlight far off-camera.",
-        "Split lighting — strong key on one half of the face, the other half dropping into rich shadow but eyes still catching light. Background almost black with a single warm practical light far in the distance.",
-        "Soft Rembrandt lighting — small triangle of light on the shadow-side cheek, warm key from camera-left, gentle warm rim. Background charcoal with faint amber bokeh.",
-        "Clean broad key from slightly above eye-line, subtle warm orange kicker from behind on the hair, dark moody background. Skin lit confidently, no harsh shadows on the face itself.",
+      const backdropVariants = [
+        "deep charcoal falling to warm grey, very subtle vignette",
+        "cool slate falling to soft graphite, very subtle vignette",
+        "warm taupe falling to deep brown, very subtle vignette",
+        "neutral mid-grey seamless studio paper, very subtle vignette",
+        "soft near-black with a gentle radial falloff, very subtle vignette",
       ];
-      const lighting = lightingVariants[attempt % lightingVariants.length];
+      const backdrop = backdropVariants[attempt % backdropVariants.length];
 
       const callImageModel = async (
         textPrompt: string,
@@ -343,66 +343,43 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         return { rawArr, mime };
       };
 
-      const identityLock = `Identity lock (CRITICAL — do not change ANY of these):
+      // Single-pass "studio retouch". Identity, wardrobe, hair and age are
+      // preserved exactly — we only replace the background and clean up the
+      // lighting so a self-shot phone photo reads like a competent
+      // photographer took it. No industrial gym. No wardrobe recolour.
+      const prompt = `Re-render this exact person as a clean, professional studio headshot — as if a competent portrait photographer reshot the same person, on the same day, in their current clothes, in a neutral studio. Square 1:1, head-and-shoulders, eyeline ~38% from the top with ~12% headroom.
+
+Identity lock (CRITICAL — do not change ANY of these):
 - The person in the output must be unmistakably the same individual as the source photo.
-- Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, facial hair, skin tone, age, ethnicity, gender presentation, and build EXACTLY as in the source.
-- Do not slim, smooth, beautify, restructure, re-age, or stylise the face. No "ideal" features. No plastic skin. Keep real skin texture, real pores, natural blemishes.
-- Output must read forward — never horizontally flip or mirror the face.`;
+- Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, hair STYLE (do not restyle, do not shorten, do not change parting), facial hair (beard/stubble exactly as in source), skin tone, skin texture, wrinkles, age, ethnicity, gender presentation, and build EXACTLY as in the source.
+- Do NOT de-age. Do NOT slim or reshape the face. Do NOT smooth or beautify the skin. Keep real skin texture, real pores, natural lines and blemishes.
+- Output must read forward — never horizontally flip or mirror the face.
 
-      // PASS 1 — identity + wardrobe recolour on a neutral dark backdrop.
-      // We deliberately keep the lighting clean here so the model focuses on
-      // identity and clothing. Pass 2 does the cinematic relight.
-      const pass1Prompt = `Re-render this exact person as a high-end fitness-industry portrait. Square 1:1, head-and-shoulders, head in the upper-middle third with a small amount of headroom.
+Wardrobe lock (CRITICAL):
+- Keep the subject's ORIGINAL garment from the source photo — same garment type, same colour, same fit, same neckline, same fabric, same visible logos/branding (if any).
+- Do NOT recolour the garment. A coral top stays coral. A North Face fleece stays a North Face fleece. A white t-shirt stays white.
+- Do NOT swap the garment for a "fitness" outfit. Do NOT add logos, wordmarks, text, embroidery or badges that were not in the source.
 
-${identityLock}
+Background:
+- Replace whatever is behind the subject with a soft neutral studio backdrop: ${backdrop}. No props. No furniture. No gym equipment. No windows. No text.
+
+Lighting:
+- Soft large key light from camera-left at ~45°, gentle fill from camera-right, subtle hair light. Natural skin tones. No heavy orange rim. No split or Rembrandt drama. No coloured gels. Sharp focus on the eyes.
 
 Expression:
-- Natural, confident, approachable. Relaxed shoulders. Slight closed-mouth smile or neutral assured expression. Eyes to lens. Not stern. Not scowling. Not over-posing.
-
-Clothing (CRITICAL):
-- Keep the subject's own garment SHAPE, fit, neckline and silhouette from the source.
-- RECOLOUR the garment to deep charcoal-black or jet black — a premium technical fabric (matte technical polo, fitted zip-top, or plain crew). Subtle fabric texture.
-- Absolutely NO logos, NO wordmarks, NO text, NO embroidery, NO badges, NO graphics anywhere on the garment.
-
-Background:
-- Plain, near-black studio backdrop with very subtle vignette. No props, no objects.
-
-Lighting:
-- Clean soft key from camera-left, gentle fill. Skin properly exposed, sharp focus on the eyes. No harsh highlights.
+- Keep the subject's expression from the source where possible. If the source is smiling, keep the smile. If the source is neutral, keep it neutral. Relaxed shoulders. Eyes to lens.
 
 Output quality:
-- Photoreal, crisp, high-detail, true-to-life colour and skin texture. Looks like a real DSLR portrait, not an AI render.
-- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO heavy film grain.`;
+- Photoreal, crisp, true-to-life colour and skin texture. Looks like a real DSLR portrait, not an AI render.
+- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO heavy film grain.
 
-      const pass1 = await callImageModel(pass1Prompt, dataUrl);
-      const pass1DataUrl = `data:${pass1.mime};base64,${(() => {
-        let s = "";
-        for (let i = 0; i < pass1.rawArr.length; i++) s += String.fromCharCode(pass1.rawArr[i]);
-        return btoa(s);
-      })()}`;
+Negative prompt (do NOT do any of these):
+- No industrial gym, no warehouse, no rack silhouettes, no cage lights, no orange rim light, no warm orange ambient wash.
+- No wardrobe change, no garment recolour, no added logos or text.
+- No age change, no hair restyle, no face slimming, no plastic-skin beauty retouch.
+- No mirroring or horizontal flip.`;
 
-      // PASS 2 — re-light + industrial REPs-vibe background. Uses pass-1
-      // output (already dark-apparel, no logos, identity-locked) as input.
-      const pass2Prompt = `Re-light and re-compose this exact portrait into a premium fitness-industry editorial headshot for a global directory of trainers. Square 1:1. Head-and-shoulders, head in the upper-middle third.
-
-${identityLock}
-
-Lighting:
-- ${lighting}
-- Sharp focus on the eyes. Skin properly exposed with rich, real tonal range — not flat, not blown-out, not plastic.
-
-Background:
-- Dark, atmospheric, industrial gym environment — heavily out-of-focus charcoal/near-black depth with faint suggestions of a rack silhouette, cage frame or hanging practical light. Subtle warm orange glow far off-camera-left echoing brand orange. NO sharp objects, NO readable text or logos in the background, NO bright window blowout.
-- Subject clearly separated from the background by light and depth-of-field.
-
-Clothing (preserve from input image):
-- Keep the dark technical garment from the input image exactly — same shape, same colour, same fit. Absolutely NO logos, NO wordmarks, NO text, NO embroidery, NO badges added.
-
-Output quality:
-- Photoreal, crisp, high-detail. Looks like a real DSLR editorial portrait by a professional photographer. Real skin texture and pores preserved. NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO heavy film grain, NO HDR look.`;
-
-      const pass2 = await callImageModel(pass2Prompt, pass1DataUrl);
-      const { rawArr, mime } = pass2;
+      const { rawArr, mime } = await callImageModel(prompt, dataUrl);
 
       const ext = mime === "image/jpeg" ? "jpg" : "png";
       const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
