@@ -517,6 +517,10 @@ export type Database = {
           headline: string | null
           hourly_rate_pence: number | null
           id: string
+          identity_status: string
+          identity_verified_at: string | null
+          identity_verified_dob: string | null
+          identity_verified_name: string | null
           in_person_available: boolean
           insurance_valid_until: string | null
           is_published: boolean
@@ -532,6 +536,7 @@ export type Database = {
           social_x: string | null
           social_youtube: string | null
           specialisms: string[]
+          stripe_identity_session_id: string | null
           trading_name: string | null
           updated_at: string
           verification: Database["public"]["Enums"]["verification_status"]
@@ -551,6 +556,10 @@ export type Database = {
           headline?: string | null
           hourly_rate_pence?: number | null
           id: string
+          identity_status?: string
+          identity_verified_at?: string | null
+          identity_verified_dob?: string | null
+          identity_verified_name?: string | null
           in_person_available?: boolean
           insurance_valid_until?: string | null
           is_published?: boolean
@@ -566,6 +575,7 @@ export type Database = {
           social_x?: string | null
           social_youtube?: string | null
           specialisms?: string[]
+          stripe_identity_session_id?: string | null
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -585,6 +595,10 @@ export type Database = {
           headline?: string | null
           hourly_rate_pence?: number | null
           id?: string
+          identity_status?: string
+          identity_verified_at?: string | null
+          identity_verified_dob?: string | null
+          identity_verified_name?: string | null
           in_person_available?: boolean
           insurance_valid_until?: string | null
           is_published?: boolean
@@ -600,6 +614,7 @@ export type Database = {
           social_x?: string | null
           social_youtube?: string | null
           specialisms?: string[]
+          stripe_identity_session_id?: string | null
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -735,50 +750,113 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_renewal_nudges: {
+        Row: {
+          id: string
+          kind: string
+          sent_at: string
+          submission_id: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          sent_at?: string
+          submission_id: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          sent_at?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_renewal_nudges_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_submissions: {
         Row: {
           admin_note: string | null
+          ai_extraction: Json | null
           awarding_body: string
+          awarding_body_slug: string | null
+          certificate_number: string | null
           created_at: string
           doc_paths: string[]
+          duplicate_of: string | null
+          expiry_date: string | null
+          file_sha256: string | null
+          holder_name: string | null
           id: string
+          name_match: boolean | null
           professional_id: string
           qualification: string
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["verification_submission_status"]
           updated_at: string
+          verify_token: string | null
           year: number | null
         }
         Insert: {
           admin_note?: string | null
+          ai_extraction?: Json | null
           awarding_body: string
+          awarding_body_slug?: string | null
+          certificate_number?: string | null
           created_at?: string
           doc_paths?: string[]
+          duplicate_of?: string | null
+          expiry_date?: string | null
+          file_sha256?: string | null
+          holder_name?: string | null
           id?: string
+          name_match?: boolean | null
           professional_id: string
           qualification: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]
           updated_at?: string
+          verify_token?: string | null
           year?: number | null
         }
         Update: {
           admin_note?: string | null
+          ai_extraction?: Json | null
           awarding_body?: string
+          awarding_body_slug?: string | null
+          certificate_number?: string | null
           created_at?: string
           doc_paths?: string[]
+          duplicate_of?: string | null
+          expiry_date?: string | null
+          file_sha256?: string | null
+          holder_name?: string | null
           id?: string
+          name_match?: boolean | null
           professional_id?: string
           qualification?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["verification_submission_status"]
           updated_at?: string
+          verify_token?: string | null
           year?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "verification_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "verification_submissions_professional_id_fkey"
             columns: ["professional_id"]
@@ -811,6 +889,23 @@ export type Database = {
           id: string
           professional_id: string
           status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
+      get_public_verify_record: {
+        Args: { _token: string }
+        Returns: {
+          approved_at: string
+          awarding_body: string
+          awarding_body_slug: string
+          certificate_number: string
+          expiry_date: string
+          holder_name: string
+          id: string
+          issue_year: number
+          professional_full_name: string
+          professional_id: string
+          professional_slug: string
+          qualification: string
         }[]
       }
       has_active_tier: {
