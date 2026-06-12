@@ -444,30 +444,160 @@ function ProfileEditorPage() {
     return supabase.auth.getSession().then((r) => r.data.session?.user.id ?? null);
   }, []);
 
-  const avatarMutation = useMutation({
-    mutationFn: async (file: File | null) => {
+  // Bind server fns
+  const runValidate = useServerFn(validateAvatar);
+  const runCommit = useServerFn(commitAvatar);
+  const runRegenerate = useServerFn(regenerateAvatar);
+
+  // Avatar UI state
+  const [avatarBusy, setAvatarBusy] = React.useState<null | "uploading" | "validating" | "cropping" | "generating">(null);
+  const [rejection, setRejection] = React.useState<null | { reason: string; category: string }>(null);
+  const [lastUploadedPath, setLastUploadedPath] = React.useState<string | null>(null);
+  const [regenState, setRegenState] = React.useState<
+    | { step: "confirm"; sourcePath: string }
+    | { step: "preview"; sourcePath: string; originalUrl: string; aiPath: string; aiUrl: string }
+    | null
+  >(null);
+
+  const invalidateProfile = () => {
+    void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+    void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
+  };
+
+  const removeMutation = useMutation({
+    mutationFn: async () => {
       const id = await userId;
       if (!id) throw new Error("Not signed in.");
-      const path = file ? await uploadToAvatars(id, "avatar", file) : null;
-      return saveAvatar({ data: { path } });
+      return saveAvatar({ data: { path: null } });
     },
     onSuccess: () => {
-      toast.success("Profile photo updated.");
-      void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
+      toast.success("Profile photo removed.");
+      setLastUploadedPath(null);
+      invalidateProfile();
     },
-    onError: (e: unknown) => {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
-    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't remove photo."),
   });
 
-
   const handlePickAvatar = async () => {
-    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
+    const id = await userId;
+    if (!id) {
+      toast.error("Not signed in.");
+      return;
+    }
+    const f = await pickFile("image/png,image/jpeg", 8 * 1024 * 1024);
     if (!f) return;
-    avatarMutation.mutate(f);
+
+    // Pre-checks
+    if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
+      setRejection({ reason: "SVGs and vector graphics aren't accepted — please upload a real photo of yourself.", category: "logo" });
+      return;
+    }
+    // Quick dimension check
+    try {
+      const img = await loadImageBitmap(f);
+      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
+        setRejection({ reason: "This image is too small — please upload a photo at least 400 × 400 pixels.", category: "low_quality" });
+        return;
+      }
+    } catch {
+      toast.error("Couldn't read this image.");
+      return;
+    }
+
+    try {
+      // 1. Upload original to temp path
+      setAvatarBusy("uploading");
+      const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+      const tempPath = `${id}/pending-${Date.now()}.${ext}`;
+      await uploadFileToAvatars(tempPath, f, f.type || "image/jpeg");
+
+      // 2. Validate with AI
+      setAvatarBusy("validating");
+      const result = await runValidate({ data: { path: tempPath } });
+      if (!result.ok) {
+        // Server already deleted the temp file on reject
+        setAvatarBusy(null);
+        setRejection({ reason: result.reason, category: result.category });
+        return;
+      }
+
+      // 3. Crop client-side using face box
+      setAvatarBusy("cropping");
+      const cropped = await cropToSquareJpeg(f, result.faceBox, 1024);
+      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
+      await uploadFileToAvatars(finalPath, cropped, "image/jpeg");
+
+      // 4. Commit
+      await runCommit({ data: { path: finalPath, isAiGenerated: false } });
+
+      // 5. Best-effort clean up temp
+      void supabase.storage.from("avatars").remove([tempPath]);
+
+      setLastUploadedPath(finalPath);
+      setAvatarBusy(null);
+      toast.success("Profile photo updated.");
+      invalidateProfile();
+    } catch (e) {
+      setAvatarBusy(null);
+      toast.error(e instanceof Error ? e.message : "Upload failed.");
+    }
   };
-  const handleRemoveAvatar = () => avatarMutation.mutate(null);
+
+  const handleRemoveAvatar = () => removeMutation.mutate();
+
+  const handleStartRegenerate = async () => {
+    const id = await userId;
+    if (!id) return;
+    // Use the just-uploaded path, or derive from current avatar_url if it points to user's folder.
+    let sourcePath = lastUploadedPath;
+    if (!sourcePath && profile.avatar_url) {
+      // We can't reliably get a storage path from a signed URL; require a fresh upload.
+      toast.error("Please upload a fresh photo first, then generate a professional version.");
+      return;
+    }
+    if (!sourcePath) return;
+    setRegenState({ step: "confirm", sourcePath });
+  };
+
+  const handleConfirmRegenerate = async () => {
+    if (!regenState || regenState.step !== "confirm") return;
+    const sourcePath = regenState.sourcePath;
+    try {
+      setAvatarBusy("generating");
+      const out = await runRegenerate({ data: { sourcePath } });
+      // Sign a temporary preview URL for the original cropped photo too
+      const { data: orig } = await supabase.storage
+        .from("avatars")
+        .createSignedUrl(sourcePath, 60 * 10);
+      setRegenState({
+        step: "preview",
+        sourcePath,
+        originalUrl: orig?.signedUrl ?? "",
+        aiPath: out.path,
+        aiUrl: out.url,
+      });
+      setAvatarBusy(null);
+    } catch (e) {
+      setAvatarBusy(null);
+      toast.error(e instanceof Error ? e.message : "Couldn't generate AI portrait.");
+    }
+  };
+
+  const handleUseAiVersion = async () => {
+    if (!regenState || regenState.step !== "preview") return;
+    try {
+      await runCommit({ data: { path: regenState.aiPath, isAiGenerated: true } });
+      setLastUploadedPath(regenState.aiPath);
+      setRegenState(null);
+      toast.success("AI portrait saved as your profile photo.");
+      invalidateProfile();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't save AI portrait.");
+    }
+  };
+
+  const avatarPending = avatarBusy !== null || removeMutation.isPending;
+
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
