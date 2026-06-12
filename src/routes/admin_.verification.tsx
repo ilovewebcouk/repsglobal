@@ -499,10 +499,10 @@ function AdminVerificationPage() {
                       <Mail className="mr-1 h-3.5 w-3.5" /> Send reminder
                     </Button>
                     <div className="flex-1" />
-                    <Button variant="neutral" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
                       Request changes
                     </Button>
-                    <Button variant="neutral" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
                       Reject
                     </Button>
                     <Button
