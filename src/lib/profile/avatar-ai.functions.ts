@@ -206,6 +206,76 @@ export const validateAvatar = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/* Process avatar (server-side crop + resize)                                  */
+/* -------------------------------------------------------------------------- */
+
+export const processAvatar = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        tempPath: z.string().min(1).max(500),
+        faceBox: z.object({
+          x: z.number(),
+          y: z.number(),
+          width: z.number(),
+          height: z.number(),
+        }),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ path: string }> => {
+    const { userId } = context;
+    if (!data.tempPath.startsWith(`${userId}/`)) {
+      throw new Error("Forbidden: path is not in your folder.");
+    }
+
+    const { Jimp } = await import("jimp");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { bytes } = await downloadBucketFileAsDataUrl("avatars", data.tempPath);
+    const img = await Jimp.read(Buffer.from(bytes));
+    const W = img.bitmap.width;
+    const H = img.bitmap.height;
+
+    // Compute square crop centred on face, padded ~60% around the face box.
+    const fx = data.faceBox.x * W;
+    const fy = data.faceBox.y * H;
+    const fw = data.faceBox.width * W;
+    const fh = data.faceBox.height * H;
+    const cx = fx + fw / 2;
+    const cy = fy + fh / 2;
+    let side = Math.max(fw, fh) * 1.6;
+    side = Math.min(side, Math.min(W, H));
+    let sx = cx - side / 2;
+    let sy = cy - side / 2;
+    if (sx < 0) sx = 0;
+    if (sy < 0) sy = 0;
+    if (sx + side > W) sx = W - side;
+    if (sy + side > H) sy = H - side;
+
+    const sideR = Math.round(side);
+    img.crop({ x: Math.round(sx), y: Math.round(sy), w: sideR, h: sideR });
+    if (sideR > 1024) img.resize({ w: 1024, h: 1024 });
+    const jpegBuf = await img.getBuffer("image/jpeg", { quality: 88 });
+
+    const finalPath = `${userId}/avatar-${Date.now()}.jpg`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("avatars")
+      .upload(finalPath, jpegBuf, {
+        contentType: "image/jpeg",
+        upsert: true,
+        cacheControl: "31536000",
+      });
+    if (upErr) throw upErr;
+
+    // Best-effort cleanup of the original upload.
+    await supabaseAdmin.storage.from("avatars").remove([data.tempPath]).catch(() => {});
+
+    return { path: finalPath };
+  });
+
+/* -------------------------------------------------------------------------- */
 /* Commit avatar (sign + write to profiles)                                    */
 /* -------------------------------------------------------------------------- */
 
