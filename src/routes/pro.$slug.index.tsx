@@ -29,6 +29,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 import { getProfessionLabel } from "@/lib/professions";
+import { getSpecialismLabel } from "@/lib/specialisms";
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
@@ -225,7 +226,9 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
-    specialisms: [...(row.specialisms ?? [])],
+    specialisms: (row.specialisms ?? [])
+      .map((s) => getSpecialismLabel(s) ?? s)
+      .filter(Boolean),
     services: row.hourly_rate_pence
       ? [
           {
