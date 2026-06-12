@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { initialsFromName } from "@/lib/initials";
 
 const SIZES = {
   sm: "size-7 text-[11px]",
@@ -18,17 +19,6 @@ export type UserAvatarProps = {
   ring?: boolean;
 };
 
-function getInitials(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?"
-  );
-}
 
 export function UserAvatar({
   name,
