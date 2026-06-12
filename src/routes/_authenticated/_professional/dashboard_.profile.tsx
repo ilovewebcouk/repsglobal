@@ -42,13 +42,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DashboardDialog,
+  DashboardDialogContent,
+  DashboardDialogDescription,
+  DashboardDialogFooter,
+  DashboardDialogHeader,
+  DashboardDialogTitle,
+  DashboardDialogNote,
+  DashboardButton,
+} from "@/components/dashboard/ui";
 import { Sparkles, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile")({
@@ -571,12 +573,12 @@ function ProfileEditorPage() {
       subtitle="Manage how your professional profile appears in the REPS directory."
       actions={
         <>
-          <Button variant="outline" disabled={!profile.is_published} asChild>
+          <DashboardButton variant="ghost" disabled={!profile.is_published} asChild>
             <a href="/find-a-professional" target="_blank" rel="noreferrer">
-              <Eye data-icon="inline-start" />
+              <Eye className="h-3.5 w-3.5" />
               Preview public profile
             </a>
-          </Button>
+          </DashboardButton>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={!dirty || saveMutation.isPending}
@@ -640,15 +642,15 @@ function ProfileEditorPage() {
                         {avatarBusy === "generating" && "Generating…"}
                         {!avatarBusy && "Change photo"}
                       </button>
-                      <button
+                      <DashboardButton
                         type="button"
+                        variant="ghost"
                         onClick={handleRemoveAvatar}
                         disabled={!profile.avatar_url || avatarPending}
-                        className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/70 shadow-none transition-colors hover:text-white disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Remove
-                      </button>
+                      </DashboardButton>
                       {lastUploadedPath ? (
                         <button
                           type="button"
@@ -851,11 +853,11 @@ function ProfileEditorPage() {
                         {form.bio}
                       </p>
                     ) : null}
-                    <Button asChild variant="outline" className="mt-4 w-full">
+                    <DashboardButton asChild variant="ghost" className="mt-4 w-full">
                       <Link to="/find-a-professional">
-                        View full profile <ExternalLink data-icon="inline-end" />
+                        View full profile <ExternalLink className="h-3.5 w-3.5" />
                       </Link>
-                    </Button>
+                    </DashboardButton>
                   </div>
                 </div>
               </div>
@@ -904,72 +906,70 @@ function ProfileEditorPage() {
       </div>
 
       {/* Rejection dialog */}
-      <Dialog open={rejection !== null} onOpenChange={(o) => !o && setRejection(null)}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      <DashboardDialog open={rejection !== null} onOpenChange={(o: boolean) => !o && setRejection(null)}>
+        <DashboardDialogContent className="sm:max-w-[420px]">
+          <DashboardDialogHeader>
+            <DashboardDialogTitle>
               <AlertTriangle className="h-4 w-4 text-reps-orange" />
               That photo can't be used
-            </DialogTitle>
-            <DialogDescription className="pt-2 text-white/70">
+            </DashboardDialogTitle>
+            <DashboardDialogDescription>
               {rejection?.reason}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
-            <p className="font-semibold text-white/85 mb-1">What we need</p>
-            <ul className="list-disc pl-4 space-y-0.5">
+            </DashboardDialogDescription>
+          </DashboardDialogHeader>
+          <DashboardDialogNote>
+            <p className="mb-1 text-[12px] font-semibold text-white">What we need</p>
+            <ul className="list-disc space-y-0.5 pl-4 text-white/70">
               <li>A clear photograph of you (not a logo, illustration or graphic)</li>
               <li>Just you — no group photos</li>
               <li>Head-and-shoulders, face clearly visible</li>
               <li>Good lighting, in focus</li>
             </ul>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setRejection(null)}
-            >
+          </DashboardDialogNote>
+          <DashboardDialogFooter>
+            <DashboardButton variant="ghost" onClick={() => setRejection(null)}>
               Close
-            </Button>
-            <Button
+            </DashboardButton>
+            <DashboardButton
+              variant="primary"
               onClick={() => {
                 setRejection(null);
                 void handlePickAvatar();
               }}
             >
               Try a different photo
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </DashboardButton>
+          </DashboardDialogFooter>
+        </DashboardDialogContent>
+      </DashboardDialog>
 
       {/* Regenerate confirm + preview */}
-      <Dialog
+      <DashboardDialog
         open={regenState !== null}
-        onOpenChange={(o) => {
+        onOpenChange={(o: boolean) => {
           if (!o && avatarBusy !== "generating") setRegenState(null);
         }}
       >
-        <DialogContent className="sm:max-w-[520px]">
+        <DashboardDialogContent className="sm:max-w-[520px]">
           {regenState?.step === "confirm" ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+              <DashboardDialogHeader>
+                <DashboardDialogTitle>
                   <Sparkles className="h-4 w-4 text-reps-orange" />
                   Generate a professional AI portrait?
-                </DialogTitle>
-                <DialogDescription className="pt-2 text-white/70">
+                </DashboardDialogTitle>
+                <DashboardDialogDescription>
                   We'll create a studio-style portrait based on your photo. It will look like you, but it is an AI-generated image — not a real photograph. Your original photo stays available.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/50 p-3 text-[12px] text-white/70">
+                </DashboardDialogDescription>
+              </DashboardDialogHeader>
+              <DashboardDialogNote>
                 Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setRegenState(null)} disabled={avatarBusy === "generating"}>
+              </DashboardDialogNote>
+              <DashboardDialogFooter>
+                <DashboardButton variant="ghost" onClick={() => setRegenState(null)} disabled={avatarBusy === "generating"}>
                   Cancel
-                </Button>
-                <Button onClick={handleConfirmRegenerate} disabled={avatarBusy === "generating"}>
+                </DashboardButton>
+                <DashboardButton variant="primary" onClick={handleConfirmRegenerate} disabled={avatarBusy === "generating"}>
                   {avatarBusy === "generating" ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
@@ -981,17 +981,17 @@ function ProfileEditorPage() {
                       Generate
                     </>
                   )}
-                </Button>
-              </DialogFooter>
+                </DashboardButton>
+              </DashboardDialogFooter>
             </>
           ) : regenState?.step === "preview" ? (
             <>
-              <DialogHeader>
-                <DialogTitle>Choose your photo</DialogTitle>
-                <DialogDescription className="pt-1 text-white/70">
+              <DashboardDialogHeader>
+                <DashboardDialogTitle>Choose your photo</DashboardDialogTitle>
+                <DashboardDialogDescription>
                   Side-by-side preview. The AI version is clearly a re-rendered portrait.
-                </DialogDescription>
-              </DialogHeader>
+                </DashboardDialogDescription>
+              </DashboardDialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <div className="text-[11px] uppercase tracking-wide text-white/55">Original</div>
@@ -1002,7 +1002,7 @@ function ProfileEditorPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <div className="text-[11px] uppercase tracking-wide text-reps-orange flex items-center gap-1">
+                  <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-reps-orange">
                     <Sparkles className="h-3 w-3" /> AI portrait
                   </div>
                   <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-orange/40 bg-reps-panel-soft">
@@ -1010,24 +1010,24 @@ function ProfileEditorPage() {
                   </div>
                 </div>
               </div>
-              <DialogFooter className="flex-wrap gap-2">
-                <Button variant="outline" onClick={() => setRegenState(null)}>
+              <DashboardDialogFooter className="flex-wrap gap-2">
+                <DashboardButton variant="ghost" onClick={() => setRegenState(null)}>
                   Keep original
-                </Button>
-                <Button
-                  variant="outline"
+                </DashboardButton>
+                <DashboardButton
+                  variant="ghost"
                   onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath })}
                 >
                   Try again
-                </Button>
-                <Button onClick={handleUseAiVersion}>
+                </DashboardButton>
+                <DashboardButton variant="primary" onClick={handleUseAiVersion}>
                   Use AI version
-                </Button>
-              </DialogFooter>
+                </DashboardButton>
+              </DashboardDialogFooter>
             </>
           ) : null}
-        </DialogContent>
-      </Dialog>
+        </DashboardDialogContent>
+      </DashboardDialog>
     </DashboardShell>
   );
 }
