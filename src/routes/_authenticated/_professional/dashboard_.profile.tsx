@@ -651,7 +651,6 @@ function ProfileEditorPage() {
                         <Trash2 className="h-3.5 w-3.5" />
                         Remove
                       </DashboardButton>
-                      </button>
                       {lastUploadedPath ? (
                         <button
                           type="button"
