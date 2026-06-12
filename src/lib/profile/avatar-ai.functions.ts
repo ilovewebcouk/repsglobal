@@ -330,14 +330,35 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         data.sourcePath,
       );
 
-      const prompt = `Re-render this person as a clean, professional studio headshot suitable for a fitness-industry professional directory.
+      const prompt = `Re-render this person as a cinematic, editorial fitness-professional portrait for a premium directory listing. Match the look of high-end fitness editorial photography (think Lululemon / Nike campaign portraits): photoreal, moody, atmospheric — NOT a studio headshot, NOT a school portrait, NOT a yearbook photo.
 
-Requirements:
-- Keep the same person's facial identity, age, ethnicity, gender presentation, hair, and approximate build. Do NOT change their face.
-- Neutral, softly-lit studio background (charcoal or warm grey).
-- Head-and-shoulders framing, square aspect, facing slightly forward, calm confident expression.
-- Wearing a fitted plain T-shirt or polo. On the left chest, embroider the wordmark "REPS" in ALL CAPS, white, crisp medium weight, with realistic stitched thread texture. No other text, no other logos, no watermarks.
-- Photorealistic, high detail, no illustration or cartoon style.`;
+Identity (lock — do not change):
+- Same face, age, ethnicity, gender presentation, hair, skin tone, and approximate build as the source photo. The person must be unmistakably the same individual.
+
+Framing:
+- Square 1:1 aspect, tight head-and-shoulders crop.
+- Subject facing the camera straight on, eyes to lens, calm confident expression, relaxed shoulders.
+
+Lighting:
+- Soft directional key light on the face plus a subtle rim/edge light separating the subject from the background.
+- Cinematic, editorial, photoreal. Gentle film grain. Muted, low-key palette.
+- NO flat studio softbox, NO ring-light look, NO bright even lighting, NO yearbook lighting.
+
+Background:
+- Dark, heavily blurred gym / training-floor scene behind the subject — racks, plates, turf, brick, low-key tones, warm or cool ambient highlights. Shallow depth of field, creamy bokeh.
+- The background must read as a real training environment, not a backdrop.
+- NO neutral grey sweep, NO charcoal studio backdrop, NO plain wall, NO white background, NO seamless paper.
+
+Clothing:
+- KEEP the subject's own clothing exactly as it appears in the source photo (same garment, same colour, same style).
+- Do NOT swap, replace, restyle, or re-colour their clothing.
+- Do NOT add any T-shirt, polo, jersey, tank, or branded garment.
+- NO logos, NO wordmarks, NO text, NO embroidery, NO "REPS" lettering, NO numbers, NO graphics on the clothing.
+
+Overall:
+- Photorealistic, high detail, professional fitness editorial.
+- NO illustration, NO cartoon, NO 3D render, NO painterly style.
+- NO school-portrait, NO yearbook, NO flat backdrop, NO studio sweep, NO 1990s portrait lighting, NO added branded clothing.`;
 
       const res = await fetch(`${GATEWAY}/chat/completions`, {
         method: "POST",
