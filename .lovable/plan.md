@@ -1,44 +1,29 @@
-## Problem
+# Fix avatar upload crash (Inflate error)
 
-`regenerateAvatar` (and `validateAvatar`) in `src/lib/profile/avatar-ai.functions.ts` dynamically import `jimp` and call `Jimp.read(...)` inside the server function. Jimp's PNG decoder pulls in `pngjs` → `pako`. On Cloudflare workerd (our server runtime), `pako`'s `Inflate` class gets bundled in a way that calls it as a plain function, producing:
+## What's actually wrong
 
-> Class constructor Inflate cannot be invoked without 'new'
+The "Class constructor Inflate cannot be invoked without 'new'" error comes from the Jimp image library, which is incompatible with our server runtime. The previous fix removed it from the **AI regenerate** path — but the **upload** path still uses it: after the AI validates your photo, the server tries to crop it with Jimp (`processAvatar` in `src/lib/profile/avatar-ai.functions.ts`, line 233) and crashes every time.
 
-That bubbles back through the server-fn RPC and the dashboard surfaces it as the red toast in the screenshot. This started the moment we added the post-AI face-detect + crop pass.
+## The fix
 
-This is a runtime-environment incompatibility, not a logic bug. Jimp is not Worker-safe.
+Move the crop into the browser, where it's fast and reliable — no server-side image decoding at all.
 
-## Fix (one file: `src/lib/profile/avatar-ai.functions.ts`)
+1. **Client-side crop** (`dashboard_.profile.tsx`): after AI validation returns the face box, crop the original photo in the browser with a canvas using the exact same framing math as today (2.0× padding around the face, face centred ~38% from the top, square, max 1024px, JPEG q88). The browser already has the file in memory.
+2. **Upload the cropped JPEG directly** to the final storage path (`{userId}/avatar-{timestamp}.jpg`), then commit it as today.
+3. **Delete `processAvatar`'s Jimp code**: replace it with a tiny temp-file cleanup (delete the pending upload after the final image is committed) — no image decoding on the server.
+4. **Remove the `jimp` dependency** from the project entirely so this class of error can't come back.
 
-1. **Drop all `Jimp` usage from the server functions.**
-   - Remove the dynamic `await import("jimp")` calls and the `classifyImageForFaceBox` / `cropToPortraitJpeg` Jimp helpers from both `validateAvatar` and `regenerateAvatar`.
-   - The AI prompt already enforces a square 1024px headshot composition; we save the model output (or the raw upload for validate) directly to storage as JPEG.
-   - `validateAvatar` keeps its model-based moderation/classification call — only the Jimp face-box / crop step is removed; if classification rejects the image, behavior is unchanged.
+Nothing else changes: AI validation gatekeeping, the rejection messages, the AI regenerate flow, and the commit/signing logic all stay exactly as they are.
 
-2. **Keep the regen quality work intact.**
-   - Pro model, identity-lock prompt, variation tokens per `attempt`, warm-light/soft-bokeh language all stay exactly as they are — only the post-process crop pass is removed.
+## Verification (before claiming it's fixed)
 
-3. **Re-do framing on the client (already in place).**
-   - Direct uploads continue to use the existing browser-side square crop in the dashboard profile flow, so manual uploads stay 1:1 framed.
-   - AI output is already square from the model, so no extra crop is needed for parity.
+- Confirm zero references to Jimp remain anywhere in the codebase.
+- Confirm the build passes.
+- Exercise the full upload flow end-to-end in the preview as the demo pro (upload → validate → crop → commit) and confirm the photo saves with no red toast, plus check server logs for any Inflate/Jimp errors.
 
-4. **No other files change.**
-   - `dashboard_.profile.tsx`, `UserAvatar`, `UserAccountMenu`, initials helper — all unchanged.
-   - No new dependencies. We are removing a server dependency, not adding one.
+## Technical details
 
-## Why not swap Jimp for a Worker-safe lib
-
-`@cf-wasm/photon` or `wasm-vips` would work but adds a meaningful WASM bundle and a second code path for a feature (server-side face-crop) the AI prompt already handles. Not worth it for this pass. If we later need true server-side image processing (e.g., for arbitrary user uploads), that's a separate decision.
-
-## Out of scope
-
-- Changing the AI model or prompt.
-- Re-introducing server-side face detection in any form.
-- Touching the upload/crop flow on the client.
-- Any UI changes to the dashboard, topbar avatar, or directory.
-
-## Verification
-
-- Trigger "Regenerate" on `/dashboard/profile` — should complete without the red toast and save a square portrait to storage.
-- Trigger a manual upload — should still save a 1:1 cropped JPEG (client-side crop unchanged).
-- Topbar + sidebar avatars continue to show identical initials when no image is set.
+- Crop math ported 1:1 from the current server implementation (face box → square side = max(fw,fh)×2.0, clamped to image bounds, vertical shift so face centre sits at 38%).
+- Canvas export via `canvas.toBlob("image/jpeg", 0.88)`; resize to 1024×1024 when larger.
+- Temp-file cleanup folded into the commit step (server-side, admin client) so no orphaned `pending-*` files accumulate.
+- Files touched: `src/lib/profile/avatar-ai.functions.ts`, `src/routes/_authenticated/_professional/dashboard_.profile.tsx`, `package.json` (remove jimp).
