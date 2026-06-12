@@ -27,11 +27,12 @@ import {
   DashboardEmpty as Empty,
   DashboardEmptyTitle as EmptyTitle,
   DashboardEmptyDescription as EmptyDescription,
-  DashboardEmptyIcon as EmptyHeader,
+  DashboardEmptyIcon as EmptyIcon,
 } from "@/components/dashboard/ui/empty";
 import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CertDrawer } from "@/components/verification/CertDrawer";
 
 import {
   claimVerification,
@@ -96,6 +97,7 @@ function AdminVerificationPage() {
   const [note, setNote] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
+  const [certOpen, setCertOpen] = useState(false);
 
   const pending = useQuery({
     queryKey: ["admin-pending-verifications"],
@@ -112,6 +114,12 @@ function AdminVerificationPage() {
     queryFn: () => (selectedId ? fetchCase({ data: { id: selectedId } }) : null),
     enabled: !!selectedId,
   });
+
+  const siblingCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const r of pending.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
+    return counts;
+  }, [pending.data]);
 
   const rows = useMemo(() => {
     let list = pending.data ?? [];
@@ -261,8 +269,13 @@ function AdminVerificationPage() {
                       <span className="truncate text-[13px] font-semibold text-white">{name}</span>
                       {claimed ? <Lock className="h-3 w-3 text-amber-400" /> : null}
                     </div>
-                    <div className="mt-0.5 truncate text-[11px] text-white/55">
-                      {r.qualification}
+                    <div className="mt-0.5 flex items-center gap-1.5">
+                      <span className="truncate text-[11px] text-white/55">{r.qualification}</span>
+                      {siblingCounts[r.professional_id] > 1 && (
+                        <span className="shrink-0 rounded-[6px] border border-reps-orange/30 bg-reps-orange-soft px-1.5 py-0.5 text-[10px] font-semibold text-reps-orange">
+                          +{siblingCounts[r.professional_id] - 1} more
+                        </span>
+                      )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
                       <span className="text-white/45">{relativeTime(r.created_at)} ago</span>
@@ -290,13 +303,13 @@ function AdminVerificationPage() {
           {!selectedId && (
             <PPanel className="p-10">
               <Empty>
-                <EmptyHeader>
-                  <Shield className="mx-auto h-10 w-10 text-white/30" />
-                  <EmptyTitle>Select a case to review</EmptyTitle>
-                  <EmptyDescription>
-                    Pick a submission from the queue. Claiming a case locks it for 15 minutes so two reviewers don't collide.
-                  </EmptyDescription>
-                </EmptyHeader>
+                <EmptyIcon>
+                  <Shield />
+                </EmptyIcon>
+                <EmptyTitle>Select a case to review</EmptyTitle>
+                <EmptyDescription>
+                  Pick a submission from the queue. Claiming a case locks it for 15 minutes so two reviewers don&rsquo;t collide.
+                </EmptyDescription>
               </Empty>
             </PPanel>
           )}
@@ -423,12 +436,16 @@ function AdminVerificationPage() {
                     <div className="space-y-1.5 text-[12px] text-white/75">
                       <div>{sub.qualification}</div>
                       <div className="text-white/55">{sub.awarding_body}</div>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {(sub.doc_paths ?? []).map((p) => (
-                          <DocChip key={p} onClick={() => openDoc("verification-docs", p)}>
-                            {p.split("/").pop()?.slice(0, 22) ?? "doc"}
-                          </DocChip>
-                        ))}
+                      <div className="pt-2">
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => setCertOpen(true)}
+                          className="w-full"
+                        >
+                          <FileText className="mr-1 h-3.5 w-3.5" />
+                          Review certificate ({(sub.doc_paths ?? []).length})
+                        </Button>
                       </div>
                     </div>
                   </PCard>
@@ -534,6 +551,33 @@ function AdminVerificationPage() {
                     </ul>
                   </PCard>
                 )}
+
+                <CertDrawer
+                  open={certOpen}
+                  onOpenChange={setCertOpen}
+                  cert={{
+                    id: sub.id,
+                    qualification: sub.qualification ?? "Qualification",
+                    awarding_body: sub.awarding_body ?? "",
+                    year: typeof (sub as { year?: number | null }).year === "number" ? (sub as { year?: number | null }).year : null,
+                    expiry_date: (sub as { expiry_date?: string | null }).expiry_date ?? null,
+                    doc_paths: sub.doc_paths ?? [],
+                    regulator_verified: sub.regulator_verified ?? null,
+                    derived_title_label: titleLabel,
+                    status: (sub as { status?: string }).status ?? "submitted",
+                    holder_name: sub.holder_name ?? null,
+                    professional_name: prof?.full_name ?? null,
+                  }}
+                  crossChecks={crossChecks}
+                  resolveDocUrl={async (path) => {
+                    const { url } = await signUrl({ data: { bucket: "verification-docs", path } });
+                    return url;
+                  }}
+                  busy={busy}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate("approved"); }}
+                  onReject={() => { setCertOpen(false); decideMutation.mutate("rejected"); }}
+                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate("changes_requested"); }}
+                />
               </>
             );
           })()}
