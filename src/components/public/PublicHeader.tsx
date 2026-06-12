@@ -59,6 +59,7 @@ import {
   TOP_PROFESSIONS,
 } from "./nav-config";
 import { FEATURE_GROUPS } from "@/components/features/feature-config";
+import { initialsFromName } from "@/lib/initials";
 
 
 type Variant = "transparent" | "solid";
@@ -778,12 +779,7 @@ function UserMenu({
   isAdmin: boolean;
   onSignOut: () => void;
 }) {
-  const initials = user.name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const initials = initialsFromName(user.name);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
