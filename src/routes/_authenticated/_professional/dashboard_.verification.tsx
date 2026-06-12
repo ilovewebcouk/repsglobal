@@ -188,7 +188,54 @@ function IdentityCard({
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Couldn't start ID check"),
   });
-  if (identity) {
+
+  const onPickFront = async (f: File) => {
+    setBusy(true);
+    try {
+      const dataUrl = await fileToDataUrl(f);
+      const { path } = await upload({ data: { bucket: "identity-docs", file_data_url: dataUrl, filename: f.name } });
+      setFrontPath(path);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const onPickSelfie = async (f: File) => {
+    setBusy(true);
+    try {
+      const dataUrl = await fileToDataUrl(f);
+      const { path } = await upload({ data: { bucket: "identity-docs", file_data_url: dataUrl, filename: f.name } });
+      setSelfiePath(path);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (!frontPath) throw new Error("Photo ID required");
+      if (!selfiePath) throw new Error("Selfie required");
+      if (!name.trim()) throw new Error("Name on document required");
+      await save({
+        data: {
+          doc_type: docType,
+          doc_path_front: frontPath,
+          selfie_path: selfiePath,
+          name_on_doc: name.trim(),
+          dob_on_doc: dob || null,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Identity submitted");
+      onSaved();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
+
     const isVeriff = identity.vendor === "veriff";
     const inProgress = identity.status === "pending" && isVeriff && identity.veriff_status !== "submitted";
     return (
