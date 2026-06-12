@@ -258,7 +258,7 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
     <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
       <Avatar className="size-10 rounded-[14px]">
         {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[14px]" /> : null}
-        <AvatarFallback className="rounded-[14px] bg-reps-orange text-white">{initials}</AvatarFallback>
+        <AvatarFallback className="rounded-[14px] bg-reps-panel-soft text-white/40">{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="truncate text-[13px] font-semibold text-white">{name}</div>
