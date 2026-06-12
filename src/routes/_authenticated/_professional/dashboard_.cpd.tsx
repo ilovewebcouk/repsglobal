@@ -15,7 +15,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 
-export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/cpd")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/cpd")({
   head: () => ({
     meta: [
       { title: "Education & CPD — REPS Professional" },
