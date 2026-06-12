@@ -1,84 +1,47 @@
-# Avatar AI validation, auto-crop, and opt-in regenerate
+# Server-side avatar crop + 4 MB cap + 512 px min + initials fallback
 
-Hard reject anything that isn't a real headshot, auto-crop to a centered square on the face, and offer an optional "Generate a professional version" button as a clearly-labelled alternative. New uploads only — existing avatars untouched.
+## What changes
 
-## User-facing flow
+**1. Move cropping to the server**
+- Add a new `processAvatar` server function in `src/lib/profile/avatar-ai.functions.ts` that:
+  - Downloads the uploaded temp file from the `avatars` bucket
+  - Crops it to a square centred on the AI-detected face box, with ~60% padding around the face (same maths as the current client-side crop)
+  - Resizes to 1024 × 1024 and re-encodes as JPEG, quality 88
+  - Uploads the result to `{userId}/avatar-{ts}.jpg`
+  - Returns the final path
+- Use **Jimp** (pure-JS, Worker-compatible). Sharp/canvas don't run in the Cloudflare Workers runtime; Jimp does.
+- Install: `bun add jimp`
+- Authorise the path the same way `validateAvatar` does (must start with `{userId}/`).
 
-1. Pro clicks **Change photo** on `/dashboard/profile`.
-2. Client-side pre-checks (instant, free):
-   - Reject SVG by mime / extension.
-   - Reject files > 8MB or < 200×200px.
-3. File uploads to the `avatars` bucket as a temp path (`{userId}/pending-{ts}.{ext}`).
-4. New server fn `validateAndProcessAvatar` runs:
-   - Calls Lovable AI (`google/gemini-3-flash-preview`, vision + structured output) to classify the image.
-   - If **not a valid headshot** → delete temp file, return `{ ok: false, reason }`. UI shows a hard-reject dialog with the reason ("This looks like a logo", "Group photo — we need a solo headshot", "Face not clearly visible", etc.) and a **Try again** button. No fallback path.
-   - If **valid** → use the returned face bounding box to crop server-side to a centered square (with ~30% padding around the face), re-encode as JPEG (max 1024×1024, quality 88), upload to final path `{userId}/avatar-{ts}.jpg`, delete the temp file, sign a 1-year URL, write to `profiles.avatar_url`.
-5. On success, show the cropped result with two buttons:
-   - **Keep this photo** (default — done).
-   - **Generate a professional version** (opens regenerate dialog — see below).
+**2. Simplify the client flow**
+- In `dashboard_.profile.tsx` `handlePickAvatar`:
+  - Step 1: upload original to `{userId}/pending-{ts}.{ext}` (unchanged)
+  - Step 2: call `validateAvatar` (unchanged — hard-rejects non-headshots)
+  - Step 3 (new): call `processAvatar({ tempPath, faceBox })` instead of cropping client-side
+  - Step 4: call `commitAvatar` with the returned final path (unchanged)
+- Delete the client-side `cropToSquareJpeg` helper.
+- The "Cropping…" busy state still shows while the server is processing.
 
-## AI validation contract
+**3. Tighten size limits**
+- Max upload size: **8 MB → 4 MB**.
+- Minimum dimensions: **200 × 200 → 512 × 512** (matches the previous standard).
+- Update the helper copy under the upload button to say: *"Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy"*.
+- Update the corresponding error toasts to reflect the new numbers.
 
-Single Lovable AI call, structured output via `Output.object`:
+**4. Initials fallback when no avatar**
+- The shadcn `Avatar` already renders `AvatarFallback` (initials on orange) when no `avatar_url` is set — confirmed on the profile photo card and the live preview card. No change needed there.
+- One small fix: the current fallback uses `(form.full_name || "?").slice(0, 2).toUpperCase()`. Switch to a helper that returns the first letter of the first and last word (e.g. "James Wilson" → "JW", "Cher" → "CH"), with `?` as the last-resort fallback. Apply in both fallback sites on this page.
 
-```ts
-{
-  isHeadshot: boolean,        // true only if: single human face, photograph, front-facing-ish, face visible
-  rejectionReason: string | null,  // short human-facing reason when isHeadshot=false
-  rejectionCategory: "logo" | "illustration" | "group" | "full_body" | "face_obscured" | "low_quality" | "not_a_person" | null,
-  faceBox: { x: number, y: number, width: number, height: number } | null,  // normalized 0-1, relative to original image
-  qualityScore: 1 | 2 | 3 | 4 | 5,
-}
-```
+## Technical notes
 
-System prompt makes the bar explicit: photograph of one real human, face clearly visible, no logos / illustrations / group shots / heavily-obscured faces (sunglasses + hat together = reject).
+- All work is in `src/lib/profile/avatar-ai.functions.ts` (new server fn + Jimp import) and `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (remove client crop, change limits, swap initials helper).
+- No DB schema changes. No changes to any locked screens or other pages.
+- Jimp adds ~400 KB to the server bundle but is the standard Worker-safe option; no native binaries, no `__dirname` issues.
 
-## Opt-in "Generate a professional version"
+## Verification before handing back
 
-Clearly-labelled dialog, not silent enhancement. Two-step:
-
-1. User clicks the button → confirmation modal explains: *"We'll create an AI-generated portrait based on your photo. This is clearly a re-rendered image — use it only if you're comfortable with that. Your original stays available."*
-2. On confirm, call new server fn `regenerateAvatar`:
-   - Sends the cropped headshot to `google/gemini-3.1-flash-image-preview` (image edit) with prompt: clean professional studio portrait, neutral background, keep facial identity, no text/logos, REPS wordmark stitched onto polo/T-shirt (per `mem://design/trainer-imagery`).
-   - Returns base64 PNG, uploads to `{userId}/avatar-ai-{ts}.png`, signs URL.
-3. Modal shows **side-by-side**: Original cropped vs AI-generated. Buttons: **Use AI version** / **Keep original** / **Try again**.
-4. The AI version, if used, is the one written to `profiles.avatar_url`. Original cropped version stays in storage (not deleted) so they can revert.
-
-Tagged in DB with a new `profiles.avatar_is_ai_generated boolean` flag (default false) so we can later surface a small "AI portrait" indicator internally if we ever want to — not exposed publicly in v1.
-
-## Files
-
-**New**
-- `src/lib/profile/avatar-ai.functions.ts` — `validateAndProcessAvatar({ path })`, `regenerateAvatar({ sourcePath })`. Both protected with `requireSupabaseAuth`. Server-side cropping via `sharp`-free pure-JS (use the existing image pipeline — if none, do crop with `@napi-rs/canvas` alternative; **fallback: use `Jimp`** which is pure-JS and Worker-compatible). Lovable AI calls go through the existing AI gateway pattern (see `connecting-to-ai-models-tanstack`).
-- `src/components/dashboard/AvatarRejectionDialog.tsx` — shadcn Dialog showing the rejection reason + Try again.
-- `src/components/dashboard/AvatarRegenerateDialog.tsx` — confirm → side-by-side preview → choose.
-
-**Migration**
-- Add `profiles.avatar_is_ai_generated boolean not null default false`.
-
-**Edited**
-- `src/routes/_authenticated/_professional/dashboard_.profile.tsx` — replace the current `avatarMutation` flow: upload to temp path → call `validateAndProcessAvatar` → on reject show dialog, on accept refresh profile + show "Generate AI version?" CTA next to the avatar.
-- `src/lib/profile/dashboard-profile.functions.ts` — `updateMyAvatar` stays for the "remove" case but the upload-and-set logic moves into `validateAndProcessAvatar`.
-
-## Worker-runtime notes (server-runtime constraints)
-
-- `sharp` is NOT Worker-compatible — do not use it. Use `Jimp` (pure JS) for cropping/resizing, which works in the workerd runtime.
-- Lovable AI image responses come back as base64 PNG (per `ai-image-generation`) — non-streaming is fine here since this is a one-shot generation called from a server function returning JSON. Use `stream: false`.
-
-## What's explicitly out of scope (v1)
-
-- Retroactive scanning of existing avatars.
-- Auto-enhance (lighting/sharpness touch-ups) without regeneration — too easy to abuse, ship later if asked.
-- Public "AI portrait" badge on profiles.
-- Admin manual override of rejections (can add later if false-positive rate is high).
-
-## Cost / latency expectations
-
-- Validation call: ~1–2s, fractions of a cent per upload.
-- Crop + re-encode: <500ms server-side.
-- AI regenerate: ~5–10s, ~1–3 cents per call. Only runs when user explicitly clicks.
-
-## Risks
-
-- **False positives** on the validation model (rejecting genuine headshots). Mitigate by writing a clear rejection reason and a one-click retry. If we see >5% false-reject rate in practice, add an "admin review" path.
-- **Identity drift** on AI regeneration — the model may change facial features. Mitigated by the explicit side-by-side compare + opt-in, not silent. Worst case the user keeps the original.
+- Reproduce the full flow against a test user: upload a real headshot → confirm `pending-…` then `avatar-…jpg` (1024 px square) appear in storage, and `profiles.avatar_url` is updated.
+- Upload a 6 MB photo → confirm it is rejected client-side with the 4 MB message.
+- Upload a 300 × 300 photo → confirm rejected with the 512 × 512 message.
+- Upload a logo → confirm hard-rejected by AI validation.
+- Sign out / view a profile with no avatar → confirm initials render.
