@@ -494,7 +494,7 @@ export function PerformanceRow({ isLocked = false }: { isLocked?: boolean }) {
         <ul className="space-y-3">
           {CLIENT_ALERTS.map((a) => (
             <li key={a.name} className="flex items-start gap-3">
-              <img src={a.avatar} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+              <img src={a.avatar} alt="" className="h-9 w-9 shrink-0 rounded-[14px] object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[13px] font-semibold text-white">{a.name}</span>
@@ -522,7 +522,7 @@ export function PerformanceRow({ isLocked = false }: { isLocked?: boolean }) {
         <ul className="mt-3 space-y-2.5">
           {LEADS.map((l) => (
             <li key={l.name} className="flex items-center gap-3">
-              <img src={l.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+              <img src={l.avatar} alt="" className="h-8 w-8 rounded-[14px] object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[12.5px] font-semibold text-white">{l.name}</div>
                 <div className="truncate text-[10.5px] text-white/55">{l.sub}</div>
@@ -677,7 +677,7 @@ export function SpotlightRow({ isLocked = false }: { isLocked?: boolean }) {
         <div className="grid grid-cols-3 gap-2">
           {SPOTLIGHT.map((s) => (
             <div key={s.name} className="rounded-[12px] border border-reps-border bg-reps-panel-soft p-3 text-center">
-              <img src={s.avatar} alt="" className="mx-auto h-10 w-10 rounded-full object-cover" />
+              <img src={s.avatar} alt="" className="mx-auto h-10 w-10 rounded-[14px] object-cover" />
               <div className="mt-2 truncate text-[11px] font-semibold text-white">{s.name.split(" ")[0]}</div>
               <div className="text-[10px] font-bold text-reps-orange">{s.delta}</div>
             </div>

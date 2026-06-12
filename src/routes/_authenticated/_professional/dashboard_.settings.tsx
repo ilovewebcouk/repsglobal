@@ -142,7 +142,7 @@ function SettingsPage() {
             </Row>
             <Row label="Profile photo">
               <div className="flex items-center gap-3">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-reps-orange-soft text-[14px] font-bold text-reps-orange">JC</span>
+                <span className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-reps-orange-soft text-[14px] font-bold text-reps-orange">JC</span>
                 <button type="button" className="flex h-9 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/85 shadow-none hover:text-white">Upload new</button>
                 <button type="button" className="flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/60 shadow-none hover:text-rose-300">
                   <Trash2 className="h-3.5 w-3.5" /> Remove
