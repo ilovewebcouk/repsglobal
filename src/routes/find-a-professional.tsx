@@ -4,6 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
+import { getProfessionLabel } from "@/lib/professions";
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
 import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
@@ -311,7 +312,10 @@ function DirectoryPage() {
               : undefined;
           return {
             name: r.full_name || "REPS Professional",
-            role: (r.specialisms?.[0] as string) || "Personal Trainer",
+            role:
+              getProfessionLabel(r.primary_profession) ||
+              (r.specialisms?.[0] as string) ||
+              "Personal Trainer",
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
