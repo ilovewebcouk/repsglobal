@@ -236,6 +236,7 @@ function IdentityCard({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
+  if (identity) {
     const isVeriff = identity.vendor === "veriff";
     const inProgress = identity.status === "pending" && isVeriff && identity.veriff_status !== "submitted";
     return (
