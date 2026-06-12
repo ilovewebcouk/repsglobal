@@ -225,12 +225,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
-    specialisms: [
-      ...(row.secondary_professions ?? [])
-        .map((s) => getProfessionLabel(s))
-        .filter((s): s is string => Boolean(s)),
-      ...(row.specialisms ?? []),
-    ],
+    specialisms: [...(row.specialisms ?? [])],
     services: row.hourly_rate_pence
       ? [
           {
