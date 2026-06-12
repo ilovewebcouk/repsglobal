@@ -304,7 +304,7 @@ function IdentityCard({
             identity.status === "needs_more_info" ||
             identity.status === "expired") && (
             <Button
-              variant={veriffStuck ? "secondary" : "primary"}
+              variant={veriffStuck ? "subtle" : "primary"}
               size="md"
               disabled={veriff.isPending}
               onClick={() => veriff.mutate()}
