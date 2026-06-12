@@ -50,13 +50,3 @@ Placement: small left-chest for editorial / single-subject; centred chest for wi
 - `about-professionals.jpg` — two trainers conferring at loading-bay doorway
 
 Re-generate any image whose chest logo drifts from the actual `logo.svg`.
-
-## User AI portrait recipe (dashboard regenerate flow)
-Applies to `regenerateAvatar` in `src/lib/profile/avatar-ai.functions.ts` — the AI portrait a Pro generates from their own uploaded selfie.
-
-- **NO REPS wordmark.** No logos, no text, no embroidery, no badges anywhere on the garment. Explicit negative in the prompt.
-- **Wardrobe:** recolour the subject's own garment to deep charcoal-black / jet black premium technical fabric (matte polo, fitted zip-top, or plain crew). Preserve garment shape, neckline, fit. Never keep beige/pastel/coloured tops — vibe match collapses without dark apparel.
-- **Lighting:** dark, contrasty, editorial — variants rotate by lighting register (warm orange rim / cool steel rim / split / Rembrandt / clean broad with warm kicker). NOT bright LinkedIn. NOT soft brochure.
-- **Background:** near-black industrial gym depth — faint rack silhouette, subtle warm orange glow far off-camera-left. No readable text, no logos, no window blowout.
-- **Two-pass chain** (mandatory): pass 1 = identity + dark wardrobe on neutral dark backdrop; pass 2 = relight + industrial background using pass-1 output as input. Single-pass results are flat — don't ship them.
-- **Identity lock + forward-reading** rules from the project-owned wordmark section above still apply (face preservation, no flip).

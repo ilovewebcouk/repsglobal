@@ -280,107 +280,98 @@ export const regenerateAvatar = createServerFn({ method: "POST" })
         data.sourcePath,
       );
 
-      // Per-attempt variation. Vary BACKDROP TONE only. Identity, wardrobe
-      // and lighting stay constant so the directory looks consistent across
-      // 400 trainers without making everyone look like the same person.
+      // Per-attempt variation so "Try again" produces meaningfully different
+      // takes without changing identity.
       const attempt = data.attempt ?? 0;
-      const backdropVariants = [
-        "deep charcoal falling to warm grey, very subtle vignette",
-        "cool slate falling to soft graphite, very subtle vignette",
-        "warm taupe falling to deep brown, very subtle vignette",
-        "neutral mid-grey seamless studio paper, very subtle vignette",
-        "soft near-black with a gentle radial falloff, very subtle vignette",
+      const variants = [
+        "Head perfectly square to camera, micro-smile, eyes to lens.",
+        "Head turned ~3° to the camera-left, warm half-smile, eyes to lens.",
+        "Head turned ~3° to the camera-right, warm half-smile, eyes to lens.",
+        "Slight chin-down, eyes to lens, soft closed-mouth smile.",
+        "Square to camera, gentle natural smile showing a hint of teeth.",
       ];
-      const backdrop = backdropVariants[attempt % backdropVariants.length];
+      const variation = variants[attempt % variants.length];
 
-      const callImageModel = async (
-        textPrompt: string,
-        inputDataUrl: string,
-      ): Promise<{ rawArr: Uint8Array; mime: string }> => {
-        const res = await fetch(`${GATEWAY}/chat/completions`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-3-pro-image-preview",
-            modalities: ["image", "text"],
-            messages: [
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: textPrompt },
-                  { type: "image_url", image_url: { url: inputDataUrl } },
-                ],
-              },
-            ],
-          }),
-        });
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(`AI regenerate failed: ${res.status} ${text.slice(0, 300)}`);
-        }
-        const body = (await res.json()) as {
-          choices?: Array<{
-            message?: {
-              images?: Array<{ image_url?: { url?: string } }>;
-              content?: string;
-            };
-          }>;
-        };
-        const imgUrl = body.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        if (!imgUrl || !imgUrl.startsWith("data:")) {
-          throw new Error("AI did not return an image.");
-        }
-        const commaIdx = imgUrl.indexOf(",");
-        const meta = imgUrl.slice(5, commaIdx);
-        const b64 = imgUrl.slice(commaIdx + 1);
-        const mime = meta.split(";")[0] || "image/png";
-        const bin = atob(b64);
-        const rawArr = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
-        return { rawArr, mime };
-      };
-
-      // Single-pass "studio retouch". Identity, wardrobe, hair and age are
-      // preserved exactly — we only replace the background and clean up the
-      // lighting so a self-shot phone photo reads like a competent
-      // photographer took it. No industrial gym. No wardrobe recolour.
-      const prompt = `Re-render this exact person as a clean, professional studio headshot — as if a competent portrait photographer reshot the same person, on the same day, in their current clothes, in a neutral studio. Square 1:1, head-and-shoulders, eyeline ~38% from the top with ~12% headroom.
+      const prompt = `Re-render this exact person as a premium directory profile photo. Aim: warm, friendly, in-focus, professional headshot — the kind of photo a client would actually click. NOT a moody fashion campaign. NOT a magazine cover. NOT cinematic. NOT editorial.
 
 Identity lock (CRITICAL — do not change ANY of these):
 - The person in the output must be unmistakably the same individual as the source photo.
-- Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, hair STYLE (do not restyle, do not shorten, do not change parting), facial hair (beard/stubble exactly as in source), skin tone, skin texture, wrinkles, age, ethnicity, gender presentation, and build EXACTLY as in the source.
-- Do NOT de-age. Do NOT slim or reshape the face. Do NOT smooth or beautify the skin. Keep real skin texture, real pores, natural lines and blemishes.
-- Output must read forward — never horizontally flip or mirror the face.
-
-Wardrobe lock (CRITICAL):
-- Keep the subject's ORIGINAL garment from the source photo — same garment type, same colour, same fit, same neckline, same fabric, same visible logos/branding (if any).
-- Do NOT recolour the garment. A coral top stays coral. A North Face fleece stays a North Face fleece. A white t-shirt stays white.
-- Do NOT swap the garment for a "fitness" outfit. Do NOT add logos, wordmarks, text, embroidery or badges that were not in the source.
-
-Background:
-- Replace whatever is behind the subject with a soft neutral studio backdrop: ${backdrop}. No props. No furniture. No gym equipment. No windows. No text.
-
-Lighting:
-- Soft large key light from camera-left at ~45°, gentle fill from camera-right, subtle hair light. Natural skin tones. No heavy orange rim. No split or Rembrandt drama. No coloured gels. Sharp focus on the eyes.
+- Preserve face shape, jawline, cheekbones, nose, lips, eye shape, eye colour, eyebrow shape, hairline, hair colour, hair texture, hair length, facial hair, skin tone, age, ethnicity, gender presentation, and build EXACTLY as in the source.
+- Do not slim, smooth, beautify, restructure, re-age, or stylise the face. No "ideal" features. No plastic skin. Keep real skin texture, real pores, natural blemishes.
 
 Expression:
-- Keep the subject's expression from the source where possible. If the source is smiling, keep the smile. If the source is neutral, keep it neutral. Relaxed shoulders. Eyes to lens.
+- Natural, warm, approachable. ${variation}
+- Relaxed shoulders, confident but friendly. Not stern. Not scowling. Not posing hard.
+
+Framing:
+- Square 1:1. Head-and-shoulders. Head occupies roughly the upper-middle of the frame with a small amount of headroom and shoulders fully in.
+
+Lighting:
+- Soft, warm, natural-looking key light from the front-side. Gentle fill so the shadow side of the face stays open and friendly.
+- Even, flattering exposure on the skin. Sharp focus on the eyes.
+- NOT harsh. NOT high-contrast. NOT moody. NOT low-key. NOT dramatic rim-lighting. NOT a single-source spotlight.
+
+Background:
+- Softly out-of-focus warm neutral environment with gentle bokeh — e.g. a bright modern gym interior, or a warm out-of-focus indoor space.
+- Subject must clearly separate from the background. Background must NOT compete for attention. NO sharp brick, NO sharp plates, NO logos, NO text on the wall.
+
+Clothing:
+- KEEP the subject's own clothing exactly as it appears in the source — same garment, same colour, same neckline, same fit.
+- Do NOT redesign, restyle, or recolour clothing. Do NOT add any logo, wordmark, text, embroidery, badge, or graphic.
 
 Output quality:
-- Photoreal, crisp, true-to-life colour and skin texture. Looks like a real DSLR portrait, not an AI render.
-- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO heavy film grain.
+- Photoreal, crisp, high-detail, true-to-life colour. Looks like a real DSLR portrait taken by a competent professional photographer, not an AI render.
+- NO illustration, NO painting, NO 3D, NO cartoon, NO smoothing filter, NO HDR look, NO film-grain overlay.`;
 
-Negative prompt (do NOT do any of these):
-- No industrial gym, no warehouse, no rack silhouettes, no cage lights, no orange rim light, no warm orange ambient wash.
-- No wardrobe change, no garment recolour, no added logos or text.
-- No age change, no hair restyle, no face slimming, no plastic-skin beauty retouch.
-- No mirroring or horizontal flip.`;
+      const res = await fetch(`${GATEWAY}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-pro-image-preview",
+          modalities: ["image", "text"],
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                { type: "image_url", image_url: { url: dataUrl } },
+              ],
+            },
+          ],
+        }),
+      });
 
-      const { rawArr, mime } = await callImageModel(prompt, dataUrl);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`AI regenerate failed: ${res.status} ${text.slice(0, 300)}`);
+      }
+      const body = (await res.json()) as {
+        choices?: Array<{
+          message?: {
+            images?: Array<{ image_url?: { url?: string } }>;
+            content?: string;
+          };
+        }>;
+      };
+      const imgUrl = body.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!imgUrl || !imgUrl.startsWith("data:")) {
+        throw new Error("AI did not return an image.");
+      }
+      const commaIdx = imgUrl.indexOf(",");
+      const meta = imgUrl.slice(5, commaIdx);
+      const b64 = imgUrl.slice(commaIdx + 1);
+      const mime = meta.split(";")[0] || "image/png";
 
+      const bin = atob(b64);
+      const rawArr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
+
+      // Save the AI output directly — the prompt asks for a square 1:1
+      // head-and-shoulders portrait, and post-process cropping with Jimp
+      // is not safe on the Worker runtime (see note above).
       const ext = mime === "image/jpeg" ? "jpg" : "png";
       const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
