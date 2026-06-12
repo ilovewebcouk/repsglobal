@@ -252,12 +252,7 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
   const tierLabel = account.user
     ? account.roleLabel
     : member?.tierLabel ?? null;
-  const initials = name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = initialsFromName(name);
   return (
     <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
       <Avatar className="size-10">
