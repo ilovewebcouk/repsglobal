@@ -33,6 +33,7 @@ import {
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
+import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import {
   getMyPrimaryLocation,
   saveMyPrimaryPostcode,
