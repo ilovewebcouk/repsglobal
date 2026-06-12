@@ -76,7 +76,7 @@ export const listPendingVerifications = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("verification_submissions")
       .select(
-        "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at",
+        "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, derived_title_slug, derived_specialism_slugs, regulator_verified",
       )
       .in("status", ["submitted", "changes_requested"])
       .order("created_at", { ascending: true });
