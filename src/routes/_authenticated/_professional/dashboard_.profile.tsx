@@ -1082,7 +1082,7 @@ function ProfileEditorPage() {
               <DashboardDialogHeader>
                 <DashboardDialogTitle>Choose your photo</DashboardDialogTitle>
                 <DashboardDialogDescription>
-                  Editorial re-render of your photo, set in a premium training environment. Same person, shot properly.
+                  Editorial retouch of your photo. Same person, same place, properly shot — just finished like a magazine.
                 </DashboardDialogDescription>
               </DashboardDialogHeader>
               <div className="grid grid-cols-2 gap-3">
