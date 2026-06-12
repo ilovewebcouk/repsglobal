@@ -436,30 +436,16 @@ Output quality:
       const rawArr = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) rawArr[i] = bin.charCodeAt(i);
 
-      // Re-frame the AI output so it matches the rest of the directory:
-      // face-detect → portrait crop → 1024 jpeg, identical to upload pipeline.
-      const aiDataUrl = `data:${mime};base64,${b64}`;
-      const faceBox = await classifyImageForFaceBox(key, aiDataUrl);
-      let finalBytes: Uint8Array;
-      try {
-        finalBytes = await cropToPortraitJpeg(
-          rawArr.buffer.slice(
-            rawArr.byteOffset,
-            rawArr.byteOffset + rawArr.byteLength,
-          ) as ArrayBuffer,
-          faceBox,
-        );
-      } catch {
-        // If Jimp fails, save the raw AI image as a fallback.
-        finalBytes = rawArr;
-      }
-
-      const path = `${userId}/avatar-ai-${Date.now()}.jpg`;
+      // Save the AI output directly — the prompt asks for a square 1:1
+      // head-and-shoulders portrait, and post-process cropping with Jimp
+      // is not safe on the Worker runtime (see note above).
+      const ext = mime === "image/jpeg" ? "jpg" : "png";
+      const path = `${userId}/avatar-ai-${Date.now()}.${ext}`;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error: upErr } = await supabaseAdmin.storage
         .from("avatars")
-        .upload(path, finalBytes, {
-          contentType: "image/jpeg",
+        .upload(path, rawArr, {
+          contentType: mime,
           upsert: true,
           cacheControl: "31536000",
         });
