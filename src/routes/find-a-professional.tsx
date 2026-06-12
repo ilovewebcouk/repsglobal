@@ -280,7 +280,7 @@ function DirectoryPage() {
         .map((r) => ({
           name: r.full_name || "REPS Professional",
           role: (r.specialisms?.[0] as string) || "Personal Trainer",
-          distance: r.city ? `${r.city}` : "—",
+          distance: r.location?.town ?? r.location?.postcode_outward ?? r.city ?? "—",
           rating: 5.0,
           reviews: 0,
           mode: r.in_person_available && r.online_available

@@ -209,8 +209,8 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     name: row.full_name ?? "REPS Professional",
     firstName: (row.full_name ?? "").split(" ")[0] || "Coach",
     role: "REPS Verified Professional",
-    location: row.city ?? "Online",
-    region: row.country ?? "",
+    location: row.location?.town ?? row.location?.postcode_outward ?? row.city ?? "Online",
+    region: row.location?.region ?? row.country ?? "",
     rating: 0,
     reviews: 0,
     modes: [
