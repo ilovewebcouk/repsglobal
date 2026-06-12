@@ -452,7 +452,7 @@ function ProfileEditorPage() {
 
   // Bind server fns
   const runValidate = useServerFn(validateAvatar);
-  const runProcess = useServerFn(processAvatar);
+  
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
