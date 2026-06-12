@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Award,
   BookOpen,
   Calendar as CalendarIcon,
-  Download,
   ExternalLink,
   GraduationCap,
   Plus,
@@ -11,30 +12,25 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import { CertificateCard, type CertRow } from "@/components/cpd/CertificateCard";
+import { UploadCertificateDialog } from "@/components/cpd/UploadCertificateDialog";
+import { myCertificates, deletePendingCertificate } from "@/lib/cpd/cpd.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/cpd")({
   head: () => ({
     meta: [
       { title: "Education & CPD — REPS Professional" },
-      { name: "description", content: "Track your CPD points, certificates and upcoming courses." },
-      { property: "og:title", content: "Education & CPD — REPS Professional" },
-      { property: "og:description", content: "CPD points, certificates and courses." },
-      { property: "og:url", content: "/dashboard/cpd" },
+      { name: "description", content: "Upload certificates and track your verified qualifications." },
     ],
     links: [{ rel: "canonical", href: "/dashboard/cpd" }],
   }),
   component: CpdPage,
 });
-
-const CERTS = [
-  { name: "REPS Level 3 — Personal Trainer", issuer: "REPS", date: "Mar 2022", points: 30, verified: true },
-  { name: "Strength & Conditioning Coach L2", issuer: "UKSCA", date: "Jul 2023", points: 18, verified: true },
-  { name: "Nutrition for Sport — L3", issuer: "Active IQ", date: "Nov 2023", points: 12, verified: true },
-  { name: "Pre & Post-natal Specialist", issuer: "FitPro", date: "Feb 2024", points: 10, verified: false },
-];
 
 const COURSES = [
   { name: "Behaviour Change for Coaches", provider: "Mac-Nutrition Uni", date: "12 Jun 2026", points: 8, format: "Online · live" },
@@ -81,43 +77,92 @@ function Ring({ pct, value, label }: { pct: number; value: string; label: string
 }
 
 function CpdPage() {
+  const tier = useTrainerTier();
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const qc = useQueryClient();
+
+  const fetchCerts = useServerFn(myCertificates);
+  const deleteCert = useServerFn(deletePendingCertificate);
+
+  const { data: certs = [] } = useQuery({
+    queryKey: ["my-certificates"],
+    queryFn: () => fetchCerts(),
+  });
+
+  const del = useMutation({
+    mutationFn: (id: string) => deleteCert({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Removed.");
+      void qc.invalidateQueries({ queryKey: ["my-certificates"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const certRows = certs as unknown as CertRow[];
+  const approvedCount = certRows.filter((c) => c.status === "approved").length;
+  const pendingCount = certRows.filter(
+    (c) => c.status === "submitted" || c.status === "changes_requested",
+  ).length;
+
   return (
-    <DashboardShell role="trainer" tier="pro"
+    <DashboardShell
+      role="trainer"
+      tier={tier === "verified" ? "verified" : "pro"}
       active="Education & CPD"
       title="Education & CPD"
-      subtitle="Maintain your REPS status and grow your practice."
+      subtitle="Upload certificates to get verified — then keep them current."
       actions={
         <>
-          <button type="button" className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 shadow-none hover:text-white">
+          <button
+            type="button"
+            onClick={() => setUploadOpen(true)}
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+          >
             <Upload className="h-4 w-4" />
-            Upload evidence
-          </button>
-          <button type="button" className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover">
-            <Plus className="h-4 w-4" />
-            Log activity
+            Upload certificate
           </button>
         </>
       }
     >
+      <UploadCertificateDialog
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        onSubmitted={() => void qc.invalidateQueries({ queryKey: ["my-certificates"] })}
+      />
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* LEFT */}
         <div className="space-y-6 xl:col-span-8">
           <PPanel className="p-5">
             <div className="flex flex-wrap items-center gap-6">
-              <Ring pct={68} value="34" label="of 50 pts" />
+              <Ring
+                pct={Math.min(100, approvedCount * 25)}
+                value={String(approvedCount)}
+                label="verified"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-[15px] font-semibold text-white">Current CPD cycle</h3>
-                  <span className="flex h-5 items-center gap-1 rounded-full bg-emerald-500/12 px-2 text-[10px] font-semibold text-emerald-300">
-                    <ShieldCheck className="h-3 w-3" /> On track
-                  </span>
+                  <h3 className="text-[15px] font-semibold text-white">Verification status</h3>
+                  {approvedCount > 0 ? (
+                    <span className="flex h-5 items-center gap-1 rounded-full bg-emerald-500/12 px-2 text-[10px] font-semibold text-emerald-300">
+                      <ShieldCheck className="h-3 w-3" /> Verified
+                    </span>
+                  ) : (
+                    <span className="flex h-5 items-center rounded-full bg-amber-500/12 px-2 text-[10px] font-semibold text-amber-300">
+                      Unverified
+                    </span>
+                  )}
                 </div>
-                <p className="mt-1 text-[13px] text-white/65">Cycle: 01 Apr 2026 — 31 Mar 2027. You need 16 more points by 31 March.</p>
+                <p className="mt-1 text-[13px] text-white/65">
+                  {approvedCount === 0
+                    ? "Upload your first certificate to start the verification process."
+                    : `You have ${approvedCount} verified qualification${approvedCount === 1 ? "" : "s"} on your public profile.`}
+                </p>
                 <div className="mt-3 grid grid-cols-3 gap-3">
                   {[
-                    { label: "Logged this cycle", value: "34 pts" },
-                    { label: "Pending evidence", value: "2 items" },
-                    { label: "Audit risk", value: "Low" },
+                    { label: "Verified", value: String(approvedCount) },
+                    { label: "Pending review", value: String(pendingCount) },
+                    { label: "Total uploads", value: String(certRows.length) },
                   ].map((s) => (
                     <div key={s.label} className="rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2">
                       <div className="text-[10px] font-semibold uppercase tracking-wider text-white/50">{s.label}</div>
@@ -132,40 +177,36 @@ function CpdPage() {
           <PPanel>
             <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Certificates & qualifications</h3>
-              <button type="button" className="flex h-8 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none hover:text-white">
+              <button
+                type="button"
+                onClick={() => setUploadOpen(true)}
+                className="flex h-8 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/75 shadow-none hover:text-white"
+              >
                 <Plus className="h-3.5 w-3.5" /> Add
               </button>
             </div>
-            <ul className="grid grid-cols-1 gap-3 p-5 md:grid-cols-2">
-              {CERTS.map((c) => (
-                <li key={c.name} className="rounded-[16px] border border-reps-border bg-reps-panel-soft p-4">
-                  <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                      <Award className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[13px] font-semibold text-white">{c.name}</span>
-                        {c.verified ? (
-                          <span className="flex h-5 shrink-0 items-center gap-1 rounded-full bg-emerald-500/12 px-2 text-[10px] font-semibold text-emerald-300">
-                            <ShieldCheck className="h-3 w-3" /> Verified
-                          </span>
-                        ) : (
-                          <span className="flex h-5 shrink-0 items-center rounded-full bg-amber-500/12 px-2 text-[10px] font-semibold text-amber-300">Pending</span>
-                        )}
-                      </div>
-                      <div className="mt-0.5 text-[11px] text-white/55">{c.issuer} · Issued {c.date}</div>
-                      <div className="mt-2 flex items-center justify-between text-[12px]">
-                        <span className="text-white/65">{c.points} CPD points</span>
-                        <button type="button" className="flex items-center gap-1 text-reps-orange hover:text-reps-orange-hover">
-                          <Download className="h-3 w-3" /> PDF
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {certRows.length === 0 ? (
+              <div className="px-5 py-12 text-center">
+                <div className="text-[14px] font-semibold text-white">No certificates yet</div>
+                <p className="mx-auto mt-1 max-w-sm text-[13px] text-white/55">
+                  Drop a PDF or photo of your certificate. Our AI reads it, you confirm, and a REPs admin verifies it — usually within 24h.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUploadOpen(true)}
+                  className="mx-auto mt-4 flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+                >
+                  <Upload className="size-4" />
+                  Upload your first certificate
+                </button>
+              </div>
+            ) : (
+              <ul className="grid grid-cols-1 gap-3 p-5 md:grid-cols-2">
+                {certRows.map((c) => (
+                  <CertificateCard key={c.id} cert={c} onDelete={(id) => del.mutate(id)} />
+                ))}
+              </ul>
+            )}
           </PPanel>
 
           <PPanel>
@@ -242,11 +283,13 @@ function CpdPage() {
 
           <PCard>
             <h3 className="text-[14px] font-semibold text-white">REPS membership</h3>
-            <p className="mt-1 text-[12px] text-white/55">REPS Level 3 · Verified Pro</p>
+            <p className="mt-1 text-[12px] text-white/55">
+              {approvedCount > 0 ? "Verified Professional" : "Unverified — upload a certificate"}
+            </p>
             <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft p-3 text-[12px]">
-              <div className="flex justify-between text-white/65"><span>Membership renewal</span><span className="text-white">01 Apr 2027</span></div>
-              <div className="mt-1 flex justify-between text-white/65"><span>Insurance</span><span className="text-emerald-300">Active</span></div>
-              <div className="mt-1 flex justify-between text-white/65"><span>DBS check</span><span className="text-white">Valid until Jul 2027</span></div>
+              <div className="flex justify-between text-white/65"><span>Insurance</span><span className="text-white/45">Not yet provided</span></div>
+              <div className="mt-1 flex justify-between text-white/65"><span>DBS check</span><span className="text-white/45">Not yet provided</span></div>
+              <div className="mt-1 flex justify-between text-white/65"><span>First-aid</span><span className="text-white/45">Not yet provided</span></div>
             </div>
           </PCard>
         </div>
