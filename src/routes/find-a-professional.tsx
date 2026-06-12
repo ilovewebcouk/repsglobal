@@ -916,7 +916,7 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: string }) {
+function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: number | null }; ctaLabel?: string }) {
   const photoSize = pro.featured ? 160 : 112;
   const mobilePhotoSize = pro.featured ? 96 : 80;
 
@@ -1005,13 +1005,19 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro; ctaLabel?: stri
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
-              {pro.distance}
+              {pro._miles != null && pro.town
+                ? `${pro.town} · ${formatMiles(pro._miles)}`
+                : pro.town ?? pro.distance}
             </span>
-            <span className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-              <span>({pro.reviews})</span>
-            </span>
+            {pro.live && pro.reviews === 0 ? (
+              <span className="text-reps-muted-light/80">No reviews yet</span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+                <span>({pro.reviews})</span>
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
