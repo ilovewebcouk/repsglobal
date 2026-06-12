@@ -629,6 +629,31 @@ function ProfileEditorPage() {
   const postcodeDirty = postcode.trim().toUpperCase() !== (initialPostcode ?? "").toUpperCase();
   const dirty = profileDirty || postcodeDirty;
 
+  // Facts passed to the AI copy assistant — never sent to a public surface.
+  const aiFacts = React.useMemo<AiCopyFacts>(
+    () => ({
+      full_name: form.full_name,
+      primary_profession: form.primary_profession
+        ? getProfessionLabel(form.primary_profession) || form.primary_profession
+        : "",
+      specialisms: form.specialisms
+        .map((s) => getSpecialismLabel(s) ?? s)
+        .filter(Boolean) as string[],
+      city: primaryLocation?.town || form.city || "",
+      in_person_available: form.in_person_available,
+      online_available: form.online_available,
+    }),
+    [
+      form.full_name,
+      form.primary_profession,
+      form.specialisms,
+      form.city,
+      form.in_person_available,
+      form.online_available,
+      primaryLocation?.town,
+    ],
+  );
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       // Save profile fields first (fast, in-DB).
