@@ -42,13 +42,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DashboardDialog,
+  DashboardDialogContent,
+  DashboardDialogDescription,
+  DashboardDialogFooter,
+  DashboardDialogHeader,
+  DashboardDialogTitle,
+  DashboardDialogNote,
+  DashboardButton,
+} from "@/components/dashboard/ui";
 import { Sparkles, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/profile")({
