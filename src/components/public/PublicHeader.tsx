@@ -50,6 +50,7 @@ import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type Resourc
 import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
+import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import {
   RESOURCE_TOPICS,
   PRO_RESOURCES,
@@ -283,7 +284,7 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
               {user ? (
-                <UserMenu user={user} isAdmin={isAdmin} onSignOut={signOut} />
+                <UserAccountMenu surface="public" />
               ) : (
                 <>
                   <Link
