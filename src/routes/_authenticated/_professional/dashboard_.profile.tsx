@@ -332,52 +332,45 @@ function DeliveryModePicker({
   online: boolean;
   onChange: (next: { inPerson: boolean; online: boolean }) => void;
 }) {
-  const Btn = ({
-    active,
-    onClick,
-    children,
-  }: {
-    active: boolean;
-    onClick: () => void;
-    children: React.ReactNode;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        "h-9 rounded-full border px-4 text-[12px] font-semibold transition-colors " +
-        (active
-          ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-          : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
-      }
-    >
-      {children}
-    </button>
-  );
+  const current: "in-person" | "online" | "hybrid" =
+    inPerson && online ? "hybrid" : online ? "online" : "in-person";
 
-  const toggle = (key: "inPerson" | "online") => {
-    const next = {
-      inPerson: key === "inPerson" ? !inPerson : inPerson,
-      online: key === "online" ? !online : online,
-    };
-    if (!next.inPerson && !next.online) return; // enforce min 1
-    onChange(next);
-  };
+  const options: Array<{
+    value: "in-person" | "online" | "hybrid";
+    label: string;
+    next: { inPerson: boolean; online: boolean };
+  }> = [
+    { value: "in-person", label: "In person", next: { inPerson: true, online: false } },
+    { value: "online", label: "Online", next: { inPerson: false, online: true } },
+    { value: "hybrid", label: "Hybrid", next: { inPerson: true, online: true } },
+  ];
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Btn active={inPerson} onClick={() => toggle("inPerson")}>
-        In person
-      </Btn>
-      <Btn active={online} onClick={() => toggle("online")}>
-        Online
-      </Btn>
-      {inPerson && online ? (
-        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
-          Hybrid
-        </span>
-      ) : null}
+    <div
+      role="radiogroup"
+      aria-label="How you work with clients"
+      className="flex flex-wrap items-center gap-2"
+    >
+      {options.map((opt) => {
+        const active = current === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(opt.next)}
+            className={
+              "h-9 rounded-full border px-4 text-[12px] font-semibold transition-colors " +
+              (active
+                ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
+            }
+          >
+            {opt.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -997,7 +990,7 @@ function ProfileEditorPage() {
                     </p>
                   ) : null}
                 </Field>
-                <Field label="How you work with clients" hint="Pick at least one. Both = Hybrid." className="sm:col-span-2">
+                <Field label="How you work with clients" hint="Pick one. Hybrid = both in person and online." className="sm:col-span-2">
                   <DeliveryModePicker
                     inPerson={form.in_person_available}
                     online={form.online_available}
