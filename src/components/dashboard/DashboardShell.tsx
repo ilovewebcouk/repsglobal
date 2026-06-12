@@ -118,8 +118,6 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
-      { icon: FileText, label: "Edit Profile", to: "/dashboard/profile-edit" },
-      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
   },
@@ -153,7 +151,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile-edit" },
+      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
     ],
   },
   {
