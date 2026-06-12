@@ -85,7 +85,7 @@ REJECT the image unless ALL of these are true:
 
 If you reject, set isHeadshot=false and pick the single best matching category and a short, user-facing reason in plain English (1 sentence, no jargon, no markdown).
 
-If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image, tightly framing the face (forehead to chin, ear to ear). Quality score 1-5 reflects sharpness, lighting, and framing.
+If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image. The faceBox MUST enclose the WHOLE HEAD — from the top of the hair (NOT the eyebrows) down to the chin, and from the left ear to the right ear. Always include any hair above the forehead. NEVER return a box that only covers the lower face, mouth, or chin. Quality score 1-5 reflects sharpness, lighting, and framing.
 
 Return ONLY valid JSON matching the schema. No prose.`;
 
@@ -238,17 +238,23 @@ export const processAvatar = createServerFn({ method: "POST" })
     const W = img.bitmap.width;
     const H = img.bitmap.height;
 
-    // Compute square crop centred on face, padded ~60% around the face box.
+    // Compute square crop around the face with portrait framing:
+    // - generous padding (2.0×) so a slightly-off face box still produces a usable headshot
+    // - shift the square UP so the face sits in the upper third of the frame
+    //   (eye-line in the upper-third = classic portrait composition; prevents
+    //   the chin/mouth-only crop when the AI returns a low face box)
     const fx = data.faceBox.x * W;
     const fy = data.faceBox.y * H;
     const fw = data.faceBox.width * W;
     const fh = data.faceBox.height * H;
     const cx = fx + fw / 2;
     const cy = fy + fh / 2;
-    let side = Math.max(fw, fh) * 1.6;
+    let side = Math.max(fw, fh) * 2.0;
     side = Math.min(side, Math.min(W, H));
     let sx = cx - side / 2;
-    let sy = cy - side / 2;
+    // Shift the crop upward so the face's vertical centre lands ~38% from the top.
+    // (cy - 0.5*side puts face centre at 50%; we want it at ~38%, so push top up by 0.12*side.)
+    let sy = cy - side * 0.38;
     if (sx < 0) sx = 0;
     if (sy < 0) sy = 0;
     if (sx + side > W) sx = W - side;
