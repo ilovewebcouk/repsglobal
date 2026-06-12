@@ -21,7 +21,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
-import { createVeriffSession } from "@/lib/verification/veriff.functions";
+import { createVeriffSession, syncVeriffStatus } from "@/lib/verification/veriff.functions";
 import {
   myInsurance,
   saveInsurance,
@@ -56,10 +56,27 @@ function VerificationPage() {
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
+  const syncVeriff = useServerFn(syncVeriffStatus);
 
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
+
+  // Self-healing Veriff sync: while a Veriff check is pending, poll Veriff's
+  // API server-side so the row updates even if the webhook never arrives.
+  const pendingVeriff =
+    identity.data?.vendor === "veriff" && identity.data?.status === "pending";
+  useQuery({
+    queryKey: ["veriff-sync", identity.data?.id],
+    queryFn: async () => {
+      const r = await syncVeriff();
+      if (r.changed) qc.invalidateQueries({ queryKey: ["my-identity"] });
+      return r;
+    },
+    enabled: !!pendingVeriff,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
 
   const idDone = !!identity.data;
   const idApproved = identity.data?.status === "approved";
