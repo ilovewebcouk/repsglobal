@@ -1077,48 +1077,43 @@ function ProfileEditorPage() {
                     }
                   />
                 </Field>
-                <Field label="Public email">
-                  <TextInput
-                    type="email"
-                    value={form.public_email}
-                    onChange={(v) => set("public_email", v)}
-                  />
-                </Field>
-                <Field label="Website" className="sm:col-span-2">
-                  <TextInput
-                    type="url"
-                    value={form.website}
-                    onChange={(v) => set("website", v)}
-                    prefix={<Globe className="h-3.5 w-3.5" />}
-                    placeholder="yourwebsite.com"
-                  />
-                </Field>
-                <Field label="Languages spoken" className="sm:col-span-2">
-                  <ChipInput
+                <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language." className="sm:col-span-2">
+                  <LanguagePicker
                     values={form.languages}
                     onChange={(v) => set("languages", v)}
-                    placeholder="Type and press Enter"
                   />
                 </Field>
-                <Field label="Social links" className="sm:col-span-2">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <Field label="Social links" hint="Just the handle — we'll build the link." className="sm:col-span-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                     <TextInput
                       value={form.social_instagram}
                       onChange={(v) => set("social_instagram", v)}
                       prefix={<Instagram className="h-3.5 w-3.5" />}
-                      placeholder="@handle"
+                      placeholder="instagram handle"
                     />
                     <TextInput
-                      value={form.social_linkedin}
-                      onChange={(v) => set("social_linkedin", v)}
-                      prefix={<Linkedin className="h-3.5 w-3.5" />}
-                      placeholder="profile-slug"
+                      value={form.social_tiktok}
+                      onChange={(v) => set("social_tiktok", v)}
+                      prefix={<TiktokIcon />}
+                      placeholder="tiktok handle"
+                    />
+                    <TextInput
+                      value={form.social_x}
+                      onChange={(v) => set("social_x", v)}
+                      prefix={<XIcon />}
+                      placeholder="x / twitter handle"
                     />
                     <TextInput
                       value={form.social_youtube}
                       onChange={(v) => set("social_youtube", v)}
                       prefix={<Youtube className="h-3.5 w-3.5" />}
-                      placeholder="@channel"
+                      placeholder="youtube channel"
+                    />
+                    <TextInput
+                      value={form.social_linkedin}
+                      onChange={(v) => set("social_linkedin", v)}
+                      prefix={<Linkedin className="h-3.5 w-3.5" />}
+                      placeholder="linkedin slug"
                     />
                   </div>
                 </Field>
