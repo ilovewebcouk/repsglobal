@@ -286,7 +286,8 @@ export const getVerificationDocUrl = createServerFn({ method: "POST" })
 const CLAIM_TTL_MIN = 15;
 
 async function assertAdmin(
-  supabase: { rpc: (n: string, a: object) => Promise<{ data: unknown }> },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   userId: string,
 ) {
   const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
