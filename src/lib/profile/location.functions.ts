@@ -135,6 +135,7 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
       throw new Error("That doesn't look like a valid UK postcode.");
     }
     const r = await lookupPostcode(pc);
+    const town = deriveTown(r);
 
     // Does the pro already have a primary row?
     const { data: existing } = await supabase
@@ -150,7 +151,7 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
       label: "Primary training postcode",
       postcode: r.postcode,
       postcode_outward: r.outcode,
-      town: r.admin_district,
+      town,
       region: r.region,
       country_code: "GB",
       latitude: r.latitude,
@@ -176,12 +177,12 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
     // reads (admin lists, dashboard greeting) stay in sync.
     await supabase
       .from("professionals")
-      .update({ city: r.admin_district })
+      .update({ city: town })
       .eq("id", userId);
 
     return {
       postcode_outward: r.outcode,
-      town: r.admin_district,
+      town,
       region: r.region,
     };
   });
