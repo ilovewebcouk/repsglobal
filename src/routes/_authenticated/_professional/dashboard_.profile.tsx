@@ -829,13 +829,21 @@ function ProfileEditorPage() {
                     placeholder="e.g. Strength & Conditioning Coach"
                   />
                 </Field>
-                <Field label="Location">
+                <Field label="Primary training postcode">
                   <TextInput
-                    value={form.city}
-                    onChange={(v) => set("city", v)}
+                    value={postcode}
+                    onChange={(v) => setPostcode(v.toUpperCase())}
                     prefix={<MapPin className="h-3.5 w-3.5" />}
-                    placeholder="City"
+                    placeholder="e.g. SW1A 1AA"
                   />
+                  <p className="mt-1.5 text-[11px] text-white/50">
+                    We use this to calculate distance and show your town. Your full postcode is never shown publicly.
+                  </p>
+                  {primaryLocation?.town ? (
+                    <p className="mt-1 text-[11px] text-white/60">
+                      Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                    </p>
+                  ) : null}
                 </Field>
                 <Field label="Public phone">
                   <TextInput
