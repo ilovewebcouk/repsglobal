@@ -528,6 +528,8 @@ export type Database = {
           slug: string | null
           social_instagram: string | null
           social_linkedin: string | null
+          social_tiktok: string | null
+          social_x: string | null
           social_youtube: string | null
           specialisms: string[]
           trading_name: string | null
@@ -560,6 +562,8 @@ export type Database = {
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_x?: string | null
           social_youtube?: string | null
           specialisms?: string[]
           trading_name?: string | null
@@ -592,6 +596,8 @@ export type Database = {
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_x?: string | null
           social_youtube?: string | null
           specialisms?: string[]
           trading_name?: string | null
