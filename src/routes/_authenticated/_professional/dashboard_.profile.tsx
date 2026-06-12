@@ -34,7 +34,6 @@ import {
 } from "@/lib/profile/dashboard-profile.functions";
 import {
   validateAvatar,
-  processAvatar,
   commitAvatar,
   regenerateAvatar,
 } from "@/lib/profile/avatar-ai.functions";
@@ -336,9 +335,54 @@ async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
     });
     return img;
   } finally {
-    // Revoke after load
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+}
+
+/**
+ * Crop a head-and-shoulders portrait around a normalized face box (0..1).
+ * Mirrors the previous server crop math: 2.0× padding around the face,
+ * face vertical centre at ~38% from the top, square output, max 1024×1024,
+ * JPEG q88. Runs entirely in the browser — no server image decoding.
+ */
+async function cropPortraitToJpegBlob(
+  file: File,
+  faceBox: { x: number; y: number; width: number; height: number },
+): Promise<Blob> {
+  const img = await loadImageBitmap(file);
+  const W = img.naturalWidth;
+  const H = img.naturalHeight;
+  const fx = faceBox.x * W;
+  const fy = faceBox.y * H;
+  const fw = faceBox.width * W;
+  const fh = faceBox.height * H;
+  const cx = fx + fw / 2;
+  const cy = fy + fh / 2;
+  let side = Math.max(fw, fh) * 2.0;
+  side = Math.min(side, Math.min(W, H));
+  let sx = cx - side / 2;
+  let sy = cy - side * 0.38;
+  if (sx < 0) sx = 0;
+  if (sy < 0) sy = 0;
+  if (sx + side > W) sx = W - side;
+  if (sy + side > H) sy = H - side;
+
+  const sideR = Math.round(side);
+  const out = Math.min(1024, sideR);
+  const canvas = document.createElement("canvas");
+  canvas.width = out;
+  canvas.height = out;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported.");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, Math.round(sx), Math.round(sy), sideR, sideR, 0, 0, out, out);
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Couldn't encode image."))),
+      "image/jpeg",
+      0.88,
+    );
+  });
 }
 
 import { initialsFromName } from "@/lib/initials";
@@ -408,7 +452,7 @@ function ProfileEditorPage() {
 
   // Bind server fns
   const runValidate = useServerFn(validateAvatar);
-  const runProcess = useServerFn(processAvatar);
+  
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
@@ -484,13 +528,16 @@ function ProfileEditorPage() {
         return;
       }
 
-      // 3. Crop + resize on the server using the AI face box
+      // 3. Client-side crop + resize using the AI face box
       setAvatarBusy("cropping");
-      const { path: finalPath } = await runProcess({
-        data: { tempPath, faceBox: result.faceBox },
-      });
+      const croppedBlob = await cropPortraitToJpegBlob(f, result.faceBox);
 
-      // 4. Commit
+      // 4. Upload cropped image to final path, then clean up temp.
+      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
+      await uploadFileToAvatars(finalPath, croppedBlob, "image/jpeg");
+      await supabase.storage.from("avatars").remove([tempPath]).catch(() => {});
+
+      // 5. Commit
       await runCommit({ data: { path: finalPath, isAiGenerated: false } });
 
       setLastUploadedPath(finalPath);
