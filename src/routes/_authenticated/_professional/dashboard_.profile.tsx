@@ -385,7 +385,34 @@ async function cropPortraitToJpegBlob(
   });
 }
 
+/**
+ * Strip raw HTML / JSON server error bodies down to a friendly message.
+ * Server function failures sometimes surface as a full HTML error page
+ * (e.g. h3 500 with `<!doctype html>...`) — never show that to a user.
+ */
+function humanizeAvatarError(err: unknown, fallback: string): string {
+  const raw = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  if (!raw) return fallback;
+  const trimmed = raw.trim();
+  // Looks like HTML or a stringified server error envelope
+  if (
+    trimmed.startsWith("<") ||
+    /<!doctype/i.test(trimmed) ||
+    trimmed.includes("HTTPError") ||
+    trimmed.includes("unhandled") ||
+    /Server function info not found/i.test(trimmed) ||
+    /Failed to fetch/i.test(trimmed)
+  ) {
+    return "Our image check hit a server problem — please try again in a moment.";
+  }
+  // Too long or contains markup — sanitize to first sentence
+  const stripped = trimmed.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (stripped.length > 180) return fallback;
+  return stripped || fallback;
+}
+
 import { initialsFromName } from "@/lib/initials";
+
 
 
 /* ============================================================
@@ -511,18 +538,30 @@ function ProfileEditorPage() {
       return;
     }
 
+    let tempPath: string | null = null;
     try {
       // 1. Upload original to temp path
       setAvatarBusy("uploading");
       const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
-      const tempPath = `${id}/pending-${Date.now()}.${ext}`;
+      tempPath = `${id}/pending-${Date.now()}.${ext}`;
       await uploadFileToAvatars(tempPath, f, f.type || "image/jpeg");
 
-      // 2. Validate with AI
+      // 2. Validate with AI — one retry on transient failure
       setAvatarBusy("validating");
-      const result = await runValidate({ data: { path: tempPath } });
+      let result;
+      try {
+        result = await runValidate({ data: { path: tempPath } });
+      } catch (firstErr) {
+        await new Promise((r) => setTimeout(r, 600));
+        try {
+          result = await runValidate({ data: { path: tempPath } });
+        } catch {
+          throw firstErr;
+        }
+      }
       if (!result.ok) {
         // Server already deleted the temp file on reject
+        tempPath = null;
         setAvatarBusy(null);
         setRejection({ reason: result.reason, category: result.category });
         return;
@@ -536,6 +575,7 @@ function ProfileEditorPage() {
       const finalPath = `${id}/avatar-${Date.now()}.jpg`;
       await uploadFileToAvatars(finalPath, croppedBlob, "image/jpeg");
       await supabase.storage.from("avatars").remove([tempPath]).catch(() => {});
+      tempPath = null;
 
       // 5. Commit
       await runCommit({ data: { path: finalPath, isAiGenerated: false } });
@@ -546,7 +586,10 @@ function ProfileEditorPage() {
       invalidateProfile();
     } catch (e) {
       setAvatarBusy(null);
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      if (tempPath) {
+        await supabase.storage.from("avatars").remove([tempPath]).catch(() => {});
+      }
+      toast.error(humanizeAvatarError(e, "Upload failed — please try again."));
     }
   };
 
@@ -665,9 +708,9 @@ function ProfileEditorPage() {
               <div className="flex flex-col gap-5">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <Avatar className="size-20 rounded-[18px] ring-2 ring-reps-border">
-                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[18px]" /> : null}
-                      <AvatarFallback className="rounded-[18px] bg-reps-orange text-white">
+                    <Avatar className="size-20 rounded-[12px] ring-2 ring-reps-border">
+                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[12px]" /> : null}
+                      <AvatarFallback className="rounded-[12px] bg-reps-orange text-white">
                         {initialsFromName(form.full_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -863,9 +906,9 @@ function ProfileEditorPage() {
                   </div>
                   <div className="-mt-8 px-4 pb-4">
                     <div className="flex items-end justify-between">
-                      <Avatar className="size-16 rounded-[18px] ring-4 ring-reps-panel">
-                        {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[18px]" /> : null}
-                        <AvatarFallback className="rounded-[18px] bg-reps-orange text-white">
+                      <Avatar className="size-16 rounded-[12px] ring-4 ring-reps-panel">
+                        {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[12px]" /> : null}
+                        <AvatarFallback className="rounded-[12px] bg-reps-orange text-white">
                           {initialsFromName(form.full_name)}
                         </AvatarFallback>
                       </Avatar>
