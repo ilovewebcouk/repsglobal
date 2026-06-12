@@ -1,3 +1,6 @@
+// ⚠️ NEVER select `contact_phone` in any query in this file.
+// Phone numbers are internal-only (account recovery + booking alerts).
+// All client ↔ pro communication routes through the platform.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
