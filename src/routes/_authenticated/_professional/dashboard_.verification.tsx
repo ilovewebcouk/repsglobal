@@ -196,6 +196,7 @@ type IdentityRow = {
   stripe_vs_url?: string | null;
   stripe_status?: string | null;
   stripe_reason?: string | null;
+  created_at?: string | null;
 };
 
 function IdentityCard({
