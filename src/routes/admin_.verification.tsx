@@ -455,7 +455,7 @@ function AdminVerificationPage() {
                         {pro?.city && <span className="text-[12px] text-white/55">· {pro.city}</span>}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-white/55">
-                        <span>Submitted {relativeTime(sub.created_at)} ago</span>
+                        <span>Submitted <TimeAgo iso={sub.created_at} /></span>
                         {sla && (
                           <>
                             <span>·</span>
@@ -468,7 +468,7 @@ function AdminVerificationPage() {
                           <>
                             <span>·</span>
                             <span className={isApproved ? "text-emerald-300" : "text-red-300"}>
-                              {isApproved ? "Approved" : "Rejected"} {relativeTime(sub.reviewed_at)} ago
+                              {isApproved ? "Approved" : "Rejected"} <TimeAgo iso={sub.reviewed_at} />
                             </span>
                           </>
                         )}
