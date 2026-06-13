@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   BadgeCheck,
   Calendar,
@@ -38,7 +39,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import proJames from "@/assets/pro-james.jpg";
+import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
+import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
 
 /* ------------------------------------------------------------------ */
 /* Route                                                               */
@@ -113,12 +117,130 @@ const BUDGET = ["Under £50 / session", "£50–£80 / session", "£80–£120 /
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
+type ServiceOption = {
+  id: string; // synthetic id used for radio state ("svc:<uuid>" or "fallback:<id>")
+  serviceUuid: string | null;
+  label: string;
+  desc: string;
+  price: string;
+};
+
 function EnquirePage() {
   const { slug } = Route.useParams();
-  const pro = getPro(slug);
+  const router = useRouter();
+  const fallbackPro = getPro(slug);
 
-  const [service, setService] = useState(pro.services[0].id);
+  // Live overlay (name, avatar, services). Falls back to static if not found.
+  const liveQuery = useQuery({
+    queryKey: ["shop-front-public", slug],
+    queryFn: () => getShopFrontBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+
+  const pro = useMemo(() => {
+    const live = liveQuery.data;
+    if (!live) return fallbackPro;
+    const sf = live.shopFront;
+    return {
+      ...fallbackPro,
+      name: sf.full_name ?? fallbackPro.name,
+      image: sf.avatar_url || fallbackPro.image,
+      city: sf.city ?? fallbackPro.city,
+    };
+  }, [liveQuery.data, fallbackPro]);
+
+  const serviceOptions: ServiceOption[] = useMemo(() => {
+    const live = liveQuery.data;
+    if (live && live.services.length) {
+      return live.services.map((s) => ({
+        id: `svc:${s.id}`,
+        serviceUuid: s.id,
+        label: s.title,
+        desc: s.description ?? "",
+        price: s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
+      }));
+    }
+    return fallbackPro.services.map((s) => ({
+      id: `fallback:${s.id}`,
+      serviceUuid: null,
+      label: s.label,
+      desc: s.desc,
+      price: s.price,
+    }));
+  }, [liveQuery.data, fallbackPro.services]);
+
+  const [service, setService] = useState<string>(serviceOptions[0]?.id ?? "");
   const [goals, setGoals] = useState<string[]>([GOALS[0], GOALS[1]]);
+  const [frequency, setFrequency] = useState(FREQUENCY[0]);
+  const [startBy, setStartBy] = useState(TIMEFRAME[0]);
+  const [budget, setBudget] = useState(BUDGET[0]);
+  const [message, setMessage] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderPhone, setSenderPhone] = useState("");
+  const [senderLocation, setSenderLocation] = useState("");
+  const [agreed, setAgreed] = useState(true);
+
+  // Re-seed selected service if options change after load
+  useMemo(() => {
+    if (serviceOptions.length && !serviceOptions.find((o) => o.id === service)) {
+      setService(serviceOptions[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceOptions]);
+
+  type EnquiryInput = {
+    slug: string;
+    service_id: string | null;
+    sender_name: string;
+    sender_email: string;
+    sender_phone: string | null;
+    goals: string[];
+    frequency: string;
+    start_by: string;
+    budget: string;
+    location: string | null;
+    message: string;
+  };
+
+  const mutation = useMutation({
+    mutationFn: (vars: EnquiryInput) => submitEnquiry({ data: vars }),
+    onSuccess: () => {
+      toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
+      router.navigate({ to: "/pro/$slug", params: { slug } });
+    },
+    onError: (err: unknown) => {
+      const m = err instanceof Error ? err.message : "Couldn't send your enquiry.";
+      toast.error(m);
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!agreed) {
+      toast.error("Please agree to the terms and privacy policy.");
+      return;
+    }
+    if (message.trim().length < 10) {
+      toast.error("Please write a short message (at least 10 characters).");
+      return;
+    }
+    const selected = serviceOptions.find((o) => o.id === service);
+    mutation.mutate({
+      slug,
+      service_id: selected?.serviceUuid ?? null,
+      sender_name: senderName,
+      sender_email: senderEmail,
+      sender_phone: senderPhone || null,
+      goals,
+      frequency,
+      start_by: startBy,
+      budget,
+      location: senderLocation || null,
+      message,
+    });
+  }
+
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
@@ -157,7 +279,7 @@ function EnquirePage() {
       <section className="mx-auto max-w-[1320px] px-6 pb-20 lg:px-10">
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           {/* FORM */}
-          <form className="flex flex-col gap-5">
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
             {/* Steps */}
             <div className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <span className="flex size-6 items-center justify-center rounded-full bg-reps-orange text-white">1</span>
@@ -181,7 +303,7 @@ function EnquirePage() {
                 onValueChange={setService}
                 className="grid gap-3 sm:grid-cols-2"
               >
-                {pro.services.map((s) => {
+                {serviceOptions.map((s) => {
                   const checked = service === s.id;
                   return (
                     <label
@@ -240,9 +362,9 @@ function EnquirePage() {
               </ToggleGroup>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                <SelectField label="Frequency" icon={Target} options={FREQUENCY} defaultValue={FREQUENCY[0]} />
-                <SelectField label="Start by" icon={Calendar} options={TIMEFRAME} defaultValue={TIMEFRAME[0]} />
-                <SelectField label="Budget guide" icon={Clock} options={BUDGET} defaultValue={BUDGET[0]} />
+                <SelectField label="Frequency" icon={Target} options={FREQUENCY} value={frequency} onValueChange={setFrequency} />
+                <SelectField label="Start by" icon={Calendar} options={TIMEFRAME} value={startBy} onValueChange={setStartBy} />
+                <SelectField label="Budget guide" icon={Clock} options={BUDGET} value={budget} onValueChange={setBudget} />
               </div>
             </FormCard>
 
@@ -254,26 +376,32 @@ function EnquirePage() {
             >
               <Textarea
                 rows={6}
+                required
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 placeholder={`Hi ${pro.name.split(" ")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
                 className="w-full rounded-[12px] border-reps-stone bg-reps-ivory px-4 py-3 text-[14px] leading-relaxed text-reps-charcoal placeholder:text-reps-muted-light focus-visible:border-reps-orange focus-visible:ring-0"
               />
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <InputField label="Your name" icon={UserRound} type="text" placeholder="Full name" />
-                <InputField label="Email" icon={Mail} type="email" placeholder="you@example.com" />
-                <InputField label="Phone (optional)" icon={Phone} type="tel" placeholder="+44 7…" />
+                <InputField label="Your name" icon={UserRound} type="text" placeholder="Full name" value={senderName} onChange={setSenderName} required />
+                <InputField label="Email" icon={Mail} type="email" placeholder="you@example.com" value={senderEmail} onChange={setSenderEmail} required />
+                <InputField label="Phone (optional)" icon={Phone} type="tel" placeholder="+44 7…" value={senderPhone} onChange={setSenderPhone} />
                 <InputField
                   label="Your area / postcode"
                   icon={MapPin}
                   type="text"
                   placeholder={`e.g. EC2A — central ${pro.city}`}
+                  value={senderLocation}
+                  onChange={setSenderLocation}
                 />
               </div>
 
               <label className="mt-5 flex items-start gap-2.5 text-[12.5px] text-reps-muted-light">
                 <Checkbox
                   id="terms"
-                  defaultChecked
+                  checked={agreed}
+                  onCheckedChange={(c) => setAgreed(c === true)}
                   className="mt-0.5 border-reps-stone data-[state=checked]:border-reps-orange data-[state=checked]:bg-reps-orange data-[state=checked]:text-white"
                 />
                 <span>
@@ -296,11 +424,12 @@ function EnquirePage() {
                 </Link>
               </Button>
               <Button
-                type="button"
+                type="submit"
+                disabled={mutation.isPending}
                 className="h-11 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
               >
                 <Send data-icon="inline-start" />
-                Send enquiry to {pro.name.split(" ")[0]}
+                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split(" ")[0]}`}
                 <ChevronRight data-icon="inline-end" />
               </Button>
             </div>
@@ -430,12 +559,14 @@ function SelectField({
   label,
   icon: Icon,
   options,
-  defaultValue,
+  value,
+  onValueChange,
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   options: string[];
-  defaultValue: string;
+  value: string;
+  onValueChange: (v: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-[12px] border border-reps-stone bg-reps-ivory px-3.5 py-2.5">
@@ -444,7 +575,7 @@ function SelectField({
       </span>
       <div className="flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 shrink-0 text-reps-muted-light" />
-        <Select defaultValue={defaultValue}>
+        <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[13px] font-normal text-reps-charcoal shadow-none focus:ring-0 focus-visible:ring-0 [&>svg]:size-3.5">
             <SelectValue />
           </SelectTrigger>
@@ -468,11 +599,17 @@ function InputField({
   icon: Icon,
   type,
   placeholder,
+  value,
+  onChange,
+  required,
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   type: string;
   placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-1 rounded-[12px] border border-reps-stone bg-reps-ivory px-3.5 py-2.5">
@@ -484,6 +621,9 @@ function InputField({
         <Input
           type={type}
           placeholder={placeholder}
+          value={value}
+          required={required}
+          onChange={(e) => onChange(e.target.value)}
           className="h-auto w-full border-0 bg-transparent p-0 text-[13px] text-reps-charcoal shadow-none placeholder:text-reps-muted-light focus-visible:ring-0"
         />
       </div>
