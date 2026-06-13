@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { createCheckoutSession } from "@/lib/billing/billing.functions";
-import { getStripeClient } from "@/lib/billing/stripe-client";
+import { getStripeClient, getStripeEnvironment } from "@/lib/billing/stripe-client";
 import { Button } from "@/components/ui/button";
 
 type CheckoutSearch = {
@@ -58,7 +58,11 @@ function CheckoutPage() {
     (async () => {
       try {
         const result = await startCheckout({
-          data: { tier: search.tier, period: search.period },
+          data: {
+            tier: search.tier,
+            period: search.period,
+            environment: getStripeEnvironment(),
+          },
         });
         if (cancelled) return;
         if (!result?.clientSecret) {

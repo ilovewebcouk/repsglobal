@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { createPortalSession } from "@/lib/billing/billing.functions";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 type Props = React.ComponentProps<typeof Button> & {
   label?: string;
@@ -29,7 +30,7 @@ export function ManageBillingButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      const result = await openPortal();
+      const result = await openPortal({ data: { environment: getStripeEnvironment() } });
       if (result?.url) {
         window.location.href = result.url;
         return;
