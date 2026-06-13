@@ -1282,37 +1282,53 @@ function ProfileEditorPage() {
                 step="04"
               />
               <div className="flex flex-col gap-5">
-                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`}>
-                  <TextInput
-                    value={form.headline}
-                    onChange={(v) => set("headline", v.slice(0, 160))}
-                    placeholder="e.g. Helping busy professionals build strength and feel their best"
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <AiCopyAssist
-                      field="tagline"
+                <div data-field="headline">
+                  <Field
+                    label="Tagline"
+                    hint="One line that appears under your name on the directory card."
+                    counter={`${form.headline.length} / 160`}
+                    error={errors.headline}
+                    warn={warns.headline}
+                  >
+                    <TextInput
                       value={form.headline}
-                      facts={aiFacts}
-                      onApply={(v) => set("headline", v.slice(0, 160))}
+                      onChange={(v) => set("headline", v.slice(0, 160))}
+                      placeholder="e.g. Helping busy professionals build strength and feel their best"
                     />
-                  </div>
-                </Field>
-                <Field label="About" hint={`${form.bio.length} / 1200 characters · Lead with credibility — credentials, results, and who you help.`}>
-                  <TextArea
-                    rows={8}
-                    value={form.bio}
-                    onChange={(v) => set("bio", v.slice(0, 1200))}
-                    placeholder="Tell clients about your experience, approach and who you help."
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <AiCopyAssist
-                      field="bio"
+                    <div className="mt-2 flex justify-end">
+                      <AiCopyAssist
+                        field="tagline"
+                        value={form.headline}
+                        facts={aiFacts}
+                        onApply={(v) => set("headline", v.slice(0, 160))}
+                      />
+                    </div>
+                  </Field>
+                </div>
+                <div data-field="bio">
+                  <Field
+                    label="About"
+                    hint="Lead with credibility — credentials, results, and who you help."
+                    counter={`${form.bio.length} / 1,200`}
+                    error={errors.bio}
+                    warn={warns.bio}
+                  >
+                    <TextArea
+                      rows={8}
                       value={form.bio}
-                      facts={aiFacts}
-                      onApply={(v) => set("bio", v.slice(0, 1200))}
+                      onChange={(v) => set("bio", v.slice(0, 1200))}
+                      placeholder="Tell clients about your experience, approach and who you help."
                     />
-                  </div>
-                </Field>
+                    <div className="mt-2 flex justify-end">
+                      <AiCopyAssist
+                        field="bio"
+                        value={form.bio}
+                        facts={aiFacts}
+                        onApply={(v) => set("bio", v.slice(0, 1200))}
+                      />
+                    </div>
+                  </Field>
+                </div>
               </div>
             </Card>
 
