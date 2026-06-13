@@ -383,11 +383,41 @@ function AdminVerificationPage() {
                     </div>
                     {!id ? (
                       <p className="text-[12px] text-white/55">No ID submitted. Send a reminder to request one.</p>
+                    ) : id.vendor === "stripe" ? (
+                      <div className="space-y-1.5 text-[12px] text-white/75">
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+                          <span className="font-semibold text-white">Stripe Identity</span>
+                          {id.stripe_status && (
+                            <span className="rounded-[6px] bg-white/5 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white/60">
+                              {id.stripe_status}
+                            </span>
+                          )}
+                        </div>
+                        <div><span className="text-white/45">Name</span> · {id.name_on_doc || "—"}</div>
+                        <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
+                        <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"} {id.doc_country ? `(${id.doc_country})` : ""}</div>
+                        {id.stripe_reason && (
+                          <div className="mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                            {id.stripe_reason}
+                          </div>
+                        )}
+                        {id.stripe_vs_id && (
+                          <a
+                            href={`https://dashboard.stripe.com/identity/verification-sessions/${id.stripe_vs_id}`}
+                            target="_blank"
+                            rel="noopener"
+                            className="mt-1 inline-flex items-center gap-1 text-[11px] text-white/55 hover:text-white"
+                          >
+                            Open in Stripe Dashboard <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
                     ) : id.vendor === "veriff" ? (
                       <div className="space-y-1.5 text-[12px] text-white/75">
                         <div className="flex items-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-                          <span className="font-semibold text-white">Veriff</span>
+                          <span className="font-semibold text-white">Veriff (legacy)</span>
                           {id.veriff_status && (
                             <span className="rounded-[6px] bg-white/5 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white/60">
                               {id.veriff_status}
@@ -402,16 +432,6 @@ function AdminVerificationPage() {
                           <div className="mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
                             {id.veriff_reason}
                           </div>
-                        )}
-                        {id.veriff_session_id && (
-                          <a
-                            href={`https://station.veriff.com/verifications/${id.veriff_session_id}`}
-                            target="_blank"
-                            rel="noopener"
-                            className="mt-1 inline-flex items-center gap-1 text-[11px] text-white/55 hover:text-white"
-                          >
-                            Open in Veriff Station <ExternalLink className="h-3 w-3" />
-                          </a>
                         )}
                       </div>
                     ) : (
