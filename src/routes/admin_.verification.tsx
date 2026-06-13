@@ -86,29 +86,45 @@ const STATUS_DOT: Record<CheckStatus, string> = {
   skip: "bg-white/15",
 };
 
+type StatusFilter = "submitted" | "approved" | "rejected" | "changes_requested";
+type TopTab = "qualifications" | "identity";
+
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  submitted: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  changes_requested: "Changes",
+};
+
 function AdminVerificationPage() {
   const qc = useQueryClient();
+  const fetchList = useServerFn(listVerifications);
   const fetchPending = useServerFn(listPendingVerifications);
   const fetchStats = useServerFn(getQueueStats);
   const fetchCase = useServerFn(getReviewWorkspace);
   const claim = useServerFn(claimVerification);
   const release = useServerFn(releaseVerification);
   const decide = useServerFn(reviewVerification);
+  const revoke = useServerFn(revokeQualification);
   const remind = useServerFn(sendVerificationReminder);
   const signUrl = useServerFn(getDocSignedUrl);
 
+  const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "mine" | "sla">("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
   const [search, setSearch] = useState("");
   const [note, setNote] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [certOpen, setCertOpen] = useState(false);
 
-  const pending = useQuery({
-    queryKey: ["admin-pending-verifications"],
-    queryFn: () => fetchPending(),
-    refetchInterval: 30_000,
+  const listing = useQuery({
+    queryKey: ["admin-verifications", statusFilter],
+    queryFn: () =>
+      statusFilter === "submitted"
+        ? fetchPending()
+        : fetchList({ data: { statuses: [statusFilter] } }),
+    refetchInterval: statusFilter === "submitted" ? 30_000 : false,
   });
   const stats = useQuery({
     queryKey: ["admin-queue-stats"],
@@ -123,18 +139,12 @@ function AdminVerificationPage() {
 
   const siblingCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const r of pending.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
+    for (const r of listing.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
     return counts;
-  }, [pending.data]);
+  }, [listing.data]);
 
   const rows = useMemo(() => {
-    let list = pending.data ?? [];
-    if (filter === "mine") {
-      // best-effort client filter using claimed_by — server returns it via raw select; safe fallback to []
-      list = list.filter((r) => (r as { claimed_by?: string | null }).claimed_by != null);
-    } else if (filter === "sla") {
-      list = list.filter((r) => Date.now() - new Date(r.created_at).getTime() > 22 * 3600 * 1000);
-    }
+    let list = listing.data ?? [];
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -145,7 +155,8 @@ function AdminVerificationPage() {
       );
     }
     return list;
-  }, [pending.data, filter, search]);
+  }, [listing.data, search]);
+
 
   const selectCase = async (id: string) => {
     setSelectedId(id);
