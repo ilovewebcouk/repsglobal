@@ -10,16 +10,12 @@ import {
   CheckCircle2,
   ExternalLink,
   Eye,
-  Instagram,
-  Linkedin,
   MapPin,
-  Plus,
   Save,
   ShieldCheck,
   Star,
   Trash2,
   X,
-  Youtube,
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -35,7 +31,9 @@ import {
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
-import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+// SocialHandleInput is rendered via SocialLinksPicker now.
+import { SocialLinksPicker } from "@/components/profile/SocialLinksPicker";
+import { SaveStatusPill, type SaveStatus } from "@/components/profile/SaveStatusPill";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
 import { getTrustState } from "@/lib/verification/trust.functions";
@@ -45,20 +43,8 @@ import { getTrustState } from "@/lib/verification/trust.functions";
 
 
 
-function TiktokIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
-      <path d="M19.6 6.7a5.6 5.6 0 0 1-3.4-1.2 5.6 5.6 0 0 1-2.1-3.5h-3v13.2a2.6 2.6 0 1 1-1.9-2.5V9.5a5.7 5.7 0 1 0 4.9 5.7V9.1a8.5 8.5 0 0 0 5.5 1.9z" />
-    </svg>
-  );
-}
-function XIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.836L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
-}
+
+
 import {
   getMyPrimaryLocation,
   saveMyPrimaryPostcode,
@@ -245,12 +231,45 @@ function SectionHeader({ title, subtitle, step }: { title: string; subtitle?: st
   );
 }
 
-function Field({ label, children, hint, className = "" }: { label: string; children: React.ReactNode; hint?: string; className?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+  error,
+  warn,
+  counter,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+  error?: string;
+  warn?: string;
+  counter?: string;
+  className?: string;
+}) {
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-[12px] font-medium text-white/70">{label}</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[12px] font-medium text-white/70">{label}</span>
+        {counter ? (
+          <span
+            className={`text-[10.5px] font-medium tabular-nums ${
+              error ? "text-red-300" : warn ? "text-amber-300" : "text-white/40"
+            }`}
+          >
+            {counter}
+          </span>
+        ) : null}
+      </div>
       {children}
-      {hint ? <span className="text-[11px] text-white/45">{hint}</span> : null}
+      {error ? (
+        <span className="text-[11px] font-medium text-red-300">{error}</span>
+      ) : warn ? (
+        <span className="text-[11px] font-medium text-amber-300">{warn}</span>
+      ) : hint ? (
+        <span className="text-[11px] text-white/45">{hint}</span>
+      ) : null}
     </div>
   );
 }
@@ -742,6 +761,11 @@ function ProfileEditorPage() {
     ],
   );
 
+  // Track whether the in-flight save was kicked off manually (toast)
+  // vs by the debounced auto-save (silent — status pill only).
+  const manualSaveRef = React.useRef(false);
+  const [lastSavedAt, setLastSavedAt] = React.useState<number | null>(null);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       // Save profile fields first (fast, in-DB).
@@ -772,16 +796,26 @@ function ProfileEditorPage() {
       }
     },
     onSuccess: () => {
-      toast.success("Profile saved.");
+      if (manualSaveRef.current) toast.success("Profile saved.");
+      setLastSavedAt(Date.now());
+      manualSaveRef.current = false;
       void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       void queryClient.invalidateQueries({ queryKey: ["my-primary-location"] });
       void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
     },
     onError: (e: unknown) => {
-      const msg = e instanceof Error ? e.message : "Save failed.";
-      toast.error(msg);
+      if (manualSaveRef.current) {
+        const msg = e instanceof Error ? e.message : "Save failed.";
+        toast.error(msg);
+      }
+      manualSaveRef.current = false;
     },
   });
+
+  const triggerManualSave = React.useCallback(() => {
+    manualSaveRef.current = true;
+    saveMutation.mutate();
+  }, [saveMutation]);
 
   const userId = React.useMemo(() => {
     // We need the user id for the storage path. Pull from supabase auth synchronously via cache.
@@ -968,6 +1002,103 @@ function ProfileEditorPage() {
 
   const { pct, checklist } = completion(profile);
 
+  /* ----------------------------------------------------------------
+     Inline validation — pure client-side, runs on every render.
+     ---------------------------------------------------------------- */
+  type FieldKey =
+    | "full_name"
+    | "headline"
+    | "bio"
+    | "contact_phone"
+    | "postcode";
+  const errors = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
+    const e: Partial<Record<FieldKey, string>> = {};
+    if (!form.full_name.trim()) e.full_name = "Full name is required.";
+    else if (form.full_name.trim().length > 80) e.full_name = "Keep your name under 80 characters.";
+    if (form.headline.length > 160) e.headline = "Tagline must be 160 characters or fewer.";
+    if (form.bio.length > 1200) e.bio = "About must be 1200 characters or fewer.";
+    if (form.contact_phone.length > 0 && !isValidPhoneNumber(form.contact_phone))
+      e.contact_phone = "Enter a valid phone number with country code.";
+    const pc = postcode.trim();
+    if (pc.length > 0 && pc.length > 10) e.postcode = "Postcode looks too long.";
+    return e;
+  }, [form.full_name, form.headline, form.bio, form.contact_phone, postcode]);
+
+  const warns = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
+    const w: Partial<Record<FieldKey, string>> = {};
+    if (form.headline.length >= 144 && form.headline.length <= 160)
+      w.headline = "Approaching the 160-character limit.";
+    if (form.bio.length >= 1080 && form.bio.length <= 1200)
+      w.bio = "Approaching the 1,200-character limit.";
+    return w;
+  }, [form.headline, form.bio]);
+
+  const hasErrors = Object.keys(errors).length > 0;
+
+  /* ----------------------------------------------------------------
+     Auto-save — 1.5s debounce after last edit. Silent (status pill).
+     ---------------------------------------------------------------- */
+  const autoSaveTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => {
+    if (!dirty) return;
+    if (hasErrors) return;
+    if (avatarBusy !== null) return;
+    if (saveMutation.isPending) return;
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      manualSaveRef.current = false;
+      saveMutation.mutate();
+    }, 1500);
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, postcode, dirty, hasErrors, avatarBusy, saveMutation.isPending]);
+
+  /* ----------------------------------------------------------------
+     Tab-close guard — warn if dirty edits are unsaved.
+     ---------------------------------------------------------------- */
+  React.useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!dirty || saveMutation.isPending) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty, saveMutation.isPending]);
+
+  /* ----------------------------------------------------------------
+     Derived status pill state.
+     ---------------------------------------------------------------- */
+  const status: SaveStatus = React.useMemo(() => {
+    if (saveMutation.isPending) return { kind: "saving" };
+    if (saveMutation.isError) return { kind: "error", onRetry: triggerManualSave };
+    if (dirty) return { kind: "editing" };
+    if (lastSavedAt && Date.now() - lastSavedAt < 5 * 60_000)
+      return { kind: "saved", at: lastSavedAt };
+    return { kind: "idle" };
+  }, [saveMutation.isPending, saveMutation.isError, dirty, lastSavedAt, triggerManualSave]);
+
+  /* ----------------------------------------------------------------
+     Manual save — scroll to first error if validation blocks save.
+     ---------------------------------------------------------------- */
+  const handleManualSave = () => {
+    if (hasErrors) {
+      const firstKey = Object.keys(errors)[0];
+      if (firstKey) {
+        const el = document.querySelector(`[data-field="${firstKey}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
+        }
+      }
+      return;
+    }
+    triggerManualSave();
+  };
+
 
   return (
     <DashboardShell
@@ -984,12 +1115,13 @@ function ProfileEditorPage() {
               Preview public profile
             </a>
           </DashboardButton>
+          <SaveStatusPill status={status} />
           <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={!dirty || saveMutation.isPending}
+            onClick={handleManualSave}
+            disabled={(!dirty || saveMutation.isPending) && status.kind !== "error"}
           >
             <Save data-icon="inline-start" />
-            {saveMutation.isPending ? "Saving…" : "Save changes"}
+            {saveMutation.isPending ? "Saving…" : dirty ? "Save now" : "Save changes"}
           </Button>
         </>
       }
@@ -1076,9 +1208,11 @@ function ProfileEditorPage() {
                 step="02"
               />
               <div className="flex flex-col gap-4">
-                <Field label="Full name">
-                  <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
-                </Field>
+                <div data-field="full_name">
+                  <Field label="Full name" error={errors.full_name}>
+                    <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
+                  </Field>
+                </div>
                 <Field label="Profession">
                   <EarnedTitlePicker />
                 </Field>
@@ -1093,22 +1227,24 @@ function ProfileEditorPage() {
                 step="03"
               />
               <div className="flex flex-col gap-4">
-                <Field label="Primary training postcode">
-                  <TextInput
-                    value={postcode}
-                    onChange={(v) => setPostcode(v.toUpperCase())}
-                    prefix={<MapPin className="h-3.5 w-3.5" />}
-                    placeholder="e.g. SW1A 1AA"
-                  />
-                  <p className="mt-1.5 text-[11px] text-white/50">
-                    We use this to calculate distance and show your town. Your full postcode is never shown publicly.
-                  </p>
-                  {primaryLocation?.town ? (
-                    <p className="mt-1 text-[11px] text-white/60">
-                      Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                <div data-field="postcode">
+                  <Field label="Primary training postcode" error={errors.postcode}>
+                    <TextInput
+                      value={postcode}
+                      onChange={(v) => setPostcode(v.toUpperCase())}
+                      prefix={<MapPin className="h-3.5 w-3.5" />}
+                      placeholder="e.g. SW1A 1AA"
+                    />
+                    <p className="mt-1.5 text-[11px] text-white/50">
+                      We use this to calculate distance and show your town. Your full postcode is never shown publicly.
                     </p>
-                  ) : null}
-                </Field>
+                    {primaryLocation?.town ? (
+                      <p className="mt-1 text-[11px] text-white/60">
+                        Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                      </p>
+                    ) : null}
+                  </Field>
+                </div>
                 <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid.">
                   <DeliveryModePicker
                     inPerson={form.in_person_available}
@@ -1130,37 +1266,53 @@ function ProfileEditorPage() {
                 step="04"
               />
               <div className="flex flex-col gap-5">
-                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`}>
-                  <TextInput
-                    value={form.headline}
-                    onChange={(v) => set("headline", v.slice(0, 160))}
-                    placeholder="e.g. Helping busy professionals build strength and feel their best"
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <AiCopyAssist
-                      field="tagline"
+                <div data-field="headline">
+                  <Field
+                    label="Tagline"
+                    hint="One line that appears under your name on the directory card."
+                    counter={`${form.headline.length} / 160`}
+                    error={errors.headline}
+                    warn={warns.headline}
+                  >
+                    <TextInput
                       value={form.headline}
-                      facts={aiFacts}
-                      onApply={(v) => set("headline", v.slice(0, 160))}
+                      onChange={(v) => set("headline", v.slice(0, 160))}
+                      placeholder="e.g. Helping busy professionals build strength and feel their best"
                     />
-                  </div>
-                </Field>
-                <Field label="About" hint={`${form.bio.length} / 1200 characters · Lead with credibility — credentials, results, and who you help.`}>
-                  <TextArea
-                    rows={8}
-                    value={form.bio}
-                    onChange={(v) => set("bio", v.slice(0, 1200))}
-                    placeholder="Tell clients about your experience, approach and who you help."
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <AiCopyAssist
-                      field="bio"
+                    <div className="mt-2 flex justify-end">
+                      <AiCopyAssist
+                        field="tagline"
+                        value={form.headline}
+                        facts={aiFacts}
+                        onApply={(v) => set("headline", v.slice(0, 160))}
+                      />
+                    </div>
+                  </Field>
+                </div>
+                <div data-field="bio">
+                  <Field
+                    label="About"
+                    hint="Lead with credibility — credentials, results, and who you help."
+                    counter={`${form.bio.length} / 1,200`}
+                    error={errors.bio}
+                    warn={warns.bio}
+                  >
+                    <TextArea
+                      rows={8}
                       value={form.bio}
-                      facts={aiFacts}
-                      onApply={(v) => set("bio", v.slice(0, 1200))}
+                      onChange={(v) => set("bio", v.slice(0, 1200))}
+                      placeholder="Tell clients about your experience, approach and who you help."
                     />
-                  </div>
-                </Field>
+                    <div className="mt-2 flex justify-end">
+                      <AiCopyAssist
+                        field="bio"
+                        value={form.bio}
+                        facts={aiFacts}
+                        onApply={(v) => set("bio", v.slice(0, 1200))}
+                      />
+                    </div>
+                  </Field>
+                </div>
               </div>
             </Card>
 
@@ -1191,75 +1343,17 @@ function ProfileEditorPage() {
                     onChange={(v) => set("languages", v)}
                   />
                 </Field>
-                <Field label="Social links" hint="Type just the handle — full URLs and @ symbols get cleaned up automatically.">
-                  <details
-                    className="group rounded-[12px] border border-reps-border bg-reps-ink/40 [&_summary::-webkit-details-marker]:hidden"
-                    open={
-                      !!(
-                        form.social_instagram ||
-                        form.social_tiktok ||
-                        form.social_x ||
-                        form.social_youtube ||
-                        form.social_linkedin
-                      )
-                    }
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between px-3 py-2.5 text-[12px] font-semibold text-white/75 hover:text-white">
-                      <span className="flex items-center gap-2">
-                        <Plus className="h-3.5 w-3.5 transition-transform group-open:rotate-45" />
-                        {(() => {
-                          const filled = [
-                            form.social_instagram,
-                            form.social_tiktok,
-                            form.social_x,
-                            form.social_youtube,
-                            form.social_linkedin,
-                          ].filter(Boolean).length;
-                          return filled === 0
-                            ? "Add a social link"
-                            : `${filled} link${filled === 1 ? "" : "s"} added · edit`;
-                        })()}
-                      </span>
-                      <span className="text-[11px] font-medium text-white/45">Instagram · TikTok · X · YouTube · LinkedIn</span>
-                    </summary>
-                    <div className="grid grid-cols-1 gap-2 border-t border-reps-border p-3 sm:grid-cols-2">
-                      <SocialHandleInput
-                        value={form.social_instagram}
-                        onChange={(v) => set("social_instagram", v)}
-                        icon={<Instagram className="h-3.5 w-3.5" />}
-                        prefix="instagram.com/"
-                        ariaLabel="Instagram handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_tiktok}
-                        onChange={(v) => set("social_tiktok", v)}
-                        icon={<TiktokIcon />}
-                        prefix="tiktok.com/@"
-                        ariaLabel="TikTok handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_x}
-                        onChange={(v) => set("social_x", v)}
-                        icon={<XIcon />}
-                        prefix="x.com/"
-                        ariaLabel="X / Twitter handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_youtube}
-                        onChange={(v) => set("social_youtube", v)}
-                        icon={<Youtube className="h-3.5 w-3.5" />}
-                        prefix="youtube.com/@"
-                        ariaLabel="YouTube channel"
-                      />
-                      <SocialHandleInput
-                        value={form.social_linkedin}
-                        onChange={(v) => set("social_linkedin", v)}
-                        icon={<Linkedin className="h-3.5 w-3.5" />}
-                        prefix="linkedin.com/in/"
-                        ariaLabel="LinkedIn slug"
-                      />
-                    </div>
-                  </details>
+                <Field label="Social links" hint="Add the platforms you use. Paste a full URL or @ handle — we clean it up automatically.">
+                  <SocialLinksPicker
+                    values={{
+                      social_instagram: form.social_instagram,
+                      social_tiktok: form.social_tiktok,
+                      social_x: form.social_x,
+                      social_youtube: form.social_youtube,
+                      social_linkedin: form.social_linkedin,
+                    }}
+                    onChange={(field, value) => set(field, value)}
+                  />
                 </Field>
               </div>
             </Card>
@@ -1277,16 +1371,15 @@ function ProfileEditorPage() {
                   07
                 </span>
               </div>
-              <Field label="Contact phone">
-                <PhoneField
-                  value={form.contact_phone}
-                  onChange={(v) => set("contact_phone", v)}
-                  invalid={
-                    form.contact_phone.length > 0 &&
-                    !isValidPhoneNumber(form.contact_phone)
-                  }
-                />
-              </Field>
+              <div data-field="contact_phone">
+                <Field label="Contact phone" error={errors.contact_phone}>
+                  <PhoneField
+                    value={form.contact_phone}
+                    onChange={(v) => set("contact_phone", v)}
+                    invalid={!!errors.contact_phone}
+                  />
+                </Field>
+              </div>
             </section>
 
           </div>
