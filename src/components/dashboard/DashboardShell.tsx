@@ -303,12 +303,6 @@ function Sidebar({
   active: DashboardActive;
   member?: DashboardShellMember;
 }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Verification module owns the sidebar while inside /dashboard/verification/*
-  // for BOTH Verified and Pro tiers. Locked — see VERIFICATION_MODULE_NAV.
-  const inVerificationModule =
-    role === "trainer" && pathname.startsWith("/dashboard/verification");
-
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
@@ -326,12 +320,11 @@ function Sidebar({
       {role === "admin" ? <AdminBadge /> : null}
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-        {inVerificationModule ? (
-          <VerificationModuleNav />
-        ) : (
-          groups.map((g) => <NavSection key={g.title} group={g} active={active} />)
-        )}
+        {groups.map((g) => (
+          <NavSection key={g.title} group={g} active={active} />
+        ))}
       </nav>
+
 
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />
