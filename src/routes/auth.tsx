@@ -124,19 +124,12 @@ function LoginPage() {
       if (signInError) throw signInError;
       if (data.user) {
         if (search.next === "checkout" && search.tier && search.period) {
-          try {
-            const result = await startCheckout({
-              data: { tier: search.tier, period: search.period },
-            });
-            if (result?.url) {
-              window.location.href = result.url;
-              return;
-            }
-          } catch (err) {
-            console.error(err);
-            setError(err instanceof Error ? err.message : "Could not start checkout");
-            return;
-          }
+          navigate({
+            to: "/checkout",
+            search: { tier: search.tier, period: search.period } as never,
+            replace: true,
+          });
+          return;
         }
         const to = await redirectAfterAuth(data.user.id);
         navigate({ to, replace: true });
