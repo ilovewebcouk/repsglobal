@@ -63,6 +63,69 @@ export const myVerificationSubmissions = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+const SUBMISSION_STATUSES = [
+  "submitted",
+  "approved",
+  "rejected",
+  "changes_requested",
+] as const;
+
+async function fetchSubmissionsByStatus(statuses: readonly string[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data, error } = await supabaseAdmin
+    .from("verification_submissions")
+    .select(
+      "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, reviewed_by, derived_title_slug, derived_specialism_slugs, regulator_verified, claimed_by, claimed_at",
+    )
+    .in("status", statuses as never)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const proIds = Array.from(new Set((data ?? []).map((r) => r.professional_id)));
+  let profByPro: Record<string, { full_name: string | null; trading_name: string | null; city: string | null }> = {};
+  if (proIds.length) {
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("id, trading_name, city")
+      .in("id", proIds);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", proIds);
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+    profByPro = Object.fromEntries(
+      (pros ?? []).map((p) => [
+        p.id,
+        { full_name: profileMap.get(p.id) ?? null, trading_name: p.trading_name, city: p.city },
+      ]),
+    );
+  }
+
+  return (data ?? []).map((r) => ({ ...r, professional: profByPro[r.professional_id] ?? null }));
+}
+
+/**
+ * Generic admin index of verification submissions filtered by status.
+ * Used by the admin Verification page to switch between Pending / Approved /
+ * Rejected / Changes-requested tabs.
+ */
+export const listVerifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        statuses: z.array(z.enum(SUBMISSION_STATUSES)).min(1).max(4),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    return fetchSubmissionsByStatus(data.statuses);
+  });
+
 export const listPendingVerifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -72,41 +135,9 @@ export const listPendingVerifications = createServerFn({ method: "GET" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden");
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data, error } = await supabaseAdmin
-      .from("verification_submissions")
-      .select(
-        "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, derived_title_slug, derived_specialism_slugs, regulator_verified",
-      )
-      .in("status", ["submitted", "changes_requested"])
-      .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-
-    // Fetch professional + profile info in one go
-    const proIds = Array.from(new Set((data ?? []).map((r) => r.professional_id)));
-    let profByPro: Record<string, { full_name: string | null; trading_name: string | null; city: string | null }> = {};
-    if (proIds.length) {
-      const { data: pros } = await supabaseAdmin
-        .from("professionals")
-        .select("id, trading_name, city")
-        .in("id", proIds);
-      const { data: profiles } = await supabaseAdmin
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", proIds);
-      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
-      profByPro = Object.fromEntries(
-        (pros ?? []).map((p) => [
-          p.id,
-          { full_name: profileMap.get(p.id) ?? null, trading_name: p.trading_name, city: p.city },
-        ]),
-      );
-    }
-
-    return (data ?? []).map((r) => ({ ...r, professional: profByPro[r.professional_id] ?? null }));
+    return fetchSubmissionsByStatus(["submitted", "changes_requested"] as const);
   });
+
 
 export const reviewVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -492,4 +523,117 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Revoke an already-approved qualification                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Revoke a previously-approved qualification submission. Deletes any
+ * `pro_titles` rows granted by that submission (titles came from this
+ * qualification, so they go with it), writes a `verification_decisions`
+ * audit row, and — if the pro has no remaining approved submissions —
+ * flips `professionals.verification_status` back to `unverified` and
+ * clears `primary_title_slug` if it pointed at a now-deleted title.
+ */
+export const revokeQualification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        submission_id: z.string().uuid(),
+        reason: z.string().min(8).max(1000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: sub, error: subErr } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("id, professional_id, status")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (subErr) throw new Error(subErr.message);
+    if (!sub) throw new Error("Submission not found");
+    if ((sub as { status: string }).status !== "approved") {
+      throw new Error("Only approved submissions can be revoked");
+    }
+    const proId = (sub as { professional_id: string }).professional_id;
+
+    // 1. Capture which titles came from this submission (for primary cleanup).
+    const { data: grantedTitles } = await supabaseAdmin
+      .from("pro_titles")
+      .select("title_slug, is_primary")
+      .eq("source_submission_id", data.submission_id);
+    const revokedSlugs = ((grantedTitles ?? []) as { title_slug: string; is_primary: boolean }[]).map(
+      (t) => t.title_slug,
+    );
+
+    // 2. Delete the titles granted by this submission.
+    await supabaseAdmin
+      .from("pro_titles")
+      .delete()
+      .eq("source_submission_id", data.submission_id);
+
+    // 3. Flip submission status back. Reuse 'rejected' + prefix admin_note so
+    //    revocations are filterable in the admin list ("REVOKED:" prefix).
+    await supabaseAdmin
+      .from("verification_submissions")
+      .update({
+        status: "rejected",
+        admin_note: `REVOKED: ${data.reason}`,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      } as never)
+      .eq("id", data.submission_id);
+
+    // 4. Audit row.
+    await supabaseAdmin.from("verification_decisions").insert({
+      submission_id: data.submission_id,
+      professional_id: proId,
+      reviewer_id: context.userId,
+      decision: "rejected",
+      notes: `REVOKED: ${data.reason}`,
+      checklist: {},
+    } as never);
+
+    // 5. If the pro has no remaining approved submissions, downgrade them.
+    const { count: stillApproved } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("id", { count: "exact", head: true })
+      .eq("professional_id", proId)
+      .eq("status", "approved");
+
+    if (!stillApproved || stillApproved === 0) {
+      await supabaseAdmin
+        .from("professionals")
+        .update({
+          verification: "unverified",
+          verification_status: "unverified",
+          primary_title_slug: null,
+        } as never)
+        .eq("id", proId);
+    } else if (revokedSlugs.length > 0) {
+      // Still has other approvals, but the primary title may have been one of
+      // the revoked ones. If so, clear it — the pro can re-pick from what's left.
+      const { data: proRow } = await supabaseAdmin
+        .from("professionals")
+        .select("primary_title_slug")
+        .eq("id", proId)
+        .maybeSingle();
+      const currentPrimary =
+        (proRow as { primary_title_slug?: string | null } | null)?.primary_title_slug ?? null;
+      if (currentPrimary && revokedSlugs.includes(currentPrimary)) {
+        await supabaseAdmin
+          .from("professionals")
+          .update({ primary_title_slug: null } as never)
+          .eq("id", proId);
+      }
+    }
+
+    return { ok: true, revoked_titles: revokedSlugs };
+  });
+
 

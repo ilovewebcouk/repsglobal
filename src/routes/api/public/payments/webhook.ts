@@ -121,6 +121,41 @@ function mapIdentityStatus(s: string | null | undefined, eventType: string): str
   return "pending";
 }
 
+/**
+ * Normalise a human name for cross-checking: lowercase, drop common titles
+ * ("Mr", "Mrs", "Ms", "Dr", "Prof"), strip punctuation, collapse whitespace,
+ * and return as a sorted Set of word tokens.
+ */
+function nameTokens(raw: string | null | undefined): Set<string> {
+  if (!raw) return new Set();
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/[.,'’`-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const titles = new Set(["mr", "mrs", "ms", "mx", "miss", "dr", "prof", "professor", "sir", "dame"]);
+  return new Set(
+    cleaned
+      .split(" ")
+      .filter((t) => t.length > 0 && !titles.has(t)),
+  );
+}
+
+/**
+ * Subset name match. Passes if every token of one name is contained in the
+ * other (e.g. "James Wilson" ↔ "James Robert Wilson"). Both sides must have
+ * at least 2 tokens to count as a real check.
+ */
+function namesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
+  const ta = nameTokens(a);
+  const tb = nameTokens(b);
+  if (ta.size < 2 || tb.size < 2) return false;
+  const aSubset = [...ta].every((t) => tb.has(t));
+  const bSubset = [...tb].every((t) => ta.has(t));
+  return aSubset || bSubset;
+}
+
+
 async function handleIdentityEvent(
   stripe: Stripe,
   event: { type: string; data: { object: unknown } },
@@ -149,6 +184,8 @@ async function handleIdentityEvent(
     status: mappedStatus,
   };
 
+  let docName: string | null = null;
+
   if (vs.status === "verified") {
     try {
       const full = await stripe.identity.verificationSessions.retrieve(vs.id, {
@@ -157,7 +194,10 @@ async function handleIdentityEvent(
       const out = full.verified_outputs;
       if (out) {
         const name = [out.first_name, out.last_name].filter(Boolean).join(" ").trim();
-        if (name) patch.name_on_doc = name;
+        if (name) {
+          patch.name_on_doc = name;
+          docName = name;
+        }
         if (out.dob) {
           const { year, month, day } = out.dob;
           if (year && month && day) {
@@ -170,10 +210,29 @@ async function handleIdentityEvent(
     }
   }
 
-  if (mappedStatus === "approved" || mappedStatus === "rejected") {
+  // Name-match gate: Stripe Identity verifies the doc/selfie but does not
+  // confirm the name on the ID matches the REPS profile. If we get an
+  // auto-approve from Stripe AND have a doc name, cross-check against
+  // profiles.full_name and downgrade to needs_more_info on mismatch.
+  if (mappedStatus === "approved" && docName) {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("full_name")
+      .eq("id", row.professional_id)
+      .maybeSingle();
+    const profileName = (profile as { full_name?: string | null } | null)?.full_name ?? null;
+    if (profileName && !namesMatch(docName, profileName)) {
+      patch.status = "needs_more_info";
+      patch.stripe_reason = `Name on ID ("${docName}") does not match your REPS profile name ("${profileName}"). Update your profile to match your legal name, or restart the check with the correct ID.`;
+      patch.admin_note = "Auto-flagged: name mismatch with profile";
+    }
+  }
+
+  const finalStatus = patch.status as string;
+  if (finalStatus === "approved" || finalStatus === "rejected" || finalStatus === "needs_more_info") {
     patch.reviewed_at = new Date().toISOString();
   }
-  if (mappedStatus === "approved") {
+  if (finalStatus === "approved") {
     patch.admin_note = "Auto-approved by Stripe Identity";
   }
 
@@ -183,6 +242,7 @@ async function handleIdentityEvent(
     .eq("id", row.id);
   if (upErr) throw new Error(upErr.message);
 }
+
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {

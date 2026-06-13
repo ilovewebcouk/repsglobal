@@ -39,10 +39,16 @@ import {
   getQueueStats,
   getReviewWorkspace,
   listPendingVerifications,
+  listVerifications,
   releaseVerification,
   reviewVerification,
+  revokeQualification,
   sendVerificationReminder,
 } from "@/lib/verification/verification.functions";
+import {
+  listIdentityChecks,
+  adminOverrideIdentity,
+} from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, type CheckStatus } from "@/lib/verification/cross-checks";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
@@ -80,29 +86,45 @@ const STATUS_DOT: Record<CheckStatus, string> = {
   skip: "bg-white/15",
 };
 
+type StatusFilter = "submitted" | "approved" | "rejected" | "changes_requested";
+type TopTab = "qualifications" | "identity";
+
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  submitted: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  changes_requested: "Changes",
+};
+
 function AdminVerificationPage() {
   const qc = useQueryClient();
+  const fetchList = useServerFn(listVerifications);
   const fetchPending = useServerFn(listPendingVerifications);
   const fetchStats = useServerFn(getQueueStats);
   const fetchCase = useServerFn(getReviewWorkspace);
   const claim = useServerFn(claimVerification);
   const release = useServerFn(releaseVerification);
   const decide = useServerFn(reviewVerification);
+  const revoke = useServerFn(revokeQualification);
   const remind = useServerFn(sendVerificationReminder);
   const signUrl = useServerFn(getDocSignedUrl);
 
+  const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "mine" | "sla">("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
   const [search, setSearch] = useState("");
   const [note, setNote] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [certOpen, setCertOpen] = useState(false);
 
-  const pending = useQuery({
-    queryKey: ["admin-pending-verifications"],
-    queryFn: () => fetchPending(),
-    refetchInterval: 30_000,
+  const listing = useQuery({
+    queryKey: ["admin-verifications", statusFilter],
+    queryFn: () =>
+      statusFilter === "submitted"
+        ? fetchPending()
+        : fetchList({ data: { statuses: [statusFilter] } }),
+    refetchInterval: statusFilter === "submitted" ? 30_000 : false,
   });
   const stats = useQuery({
     queryKey: ["admin-queue-stats"],
@@ -117,18 +139,12 @@ function AdminVerificationPage() {
 
   const siblingCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const r of pending.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
+    for (const r of listing.data ?? []) counts[r.professional_id] = (counts[r.professional_id] ?? 0) + 1;
     return counts;
-  }, [pending.data]);
+  }, [listing.data]);
 
   const rows = useMemo(() => {
-    let list = pending.data ?? [];
-    if (filter === "mine") {
-      // best-effort client filter using claimed_by — server returns it via raw select; safe fallback to []
-      list = list.filter((r) => (r as { claimed_by?: string | null }).claimed_by != null);
-    } else if (filter === "sla") {
-      list = list.filter((r) => Date.now() - new Date(r.created_at).getTime() > 22 * 3600 * 1000);
-    }
+    let list = listing.data ?? [];
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -139,7 +155,8 @@ function AdminVerificationPage() {
       );
     }
     return list;
-  }, [pending.data, filter, search]);
+  }, [listing.data, search]);
+
 
   const selectCase = async (id: string) => {
     setSelectedId(id);
@@ -175,7 +192,7 @@ function AdminVerificationPage() {
       setSelectedId(null);
       setNote("");
       setChecks({});
-      qc.invalidateQueries({ queryKey: ["admin-pending-verifications"] });
+      qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
     },
     onError: (e) => alert(e instanceof Error ? e.message : "Decision failed"),
@@ -220,7 +237,27 @@ function AdminVerificationPage() {
         ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+      {/* Top-level tab toggle */}
+      <div className="mt-6 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
+        {(["qualifications", "identity"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => { setTopTab(t); setSelectedId(null); }}
+            className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold capitalize transition ${
+              topTab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
+            }`}
+          >
+            {t === "qualifications" ? "Qualifications" : "Identity checks"}
+          </button>
+        ))}
+      </div>
+
+      {topTab === "identity" ? (
+        <div className="mt-4">
+          <AdminIdentityTab signUrl={signUrl} adminOverride={adminOverrideIdentity} />
+        </div>
+      ) : (
+      <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
         {/* QUEUE */}
         <PPanel className="flex flex-col">
           <div className="border-b border-reps-border p-3">
@@ -233,26 +270,26 @@ function AdminVerificationPage() {
                 className="pl-8"
               />
             </div>
-            <div className="mt-2 flex gap-1">
-              {(["all", "mine", "sla"] as const).map((f) => (
+            <div className="mt-2 grid grid-cols-4 gap-1">
+              {(["submitted", "approved", "changes_requested", "rejected"] as StatusFilter[]).map((f) => (
                 <button
                   key={f}
-                  onClick={() => setFilter(f)}
-                  className={`flex-1 rounded-[8px] px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                    filter === f ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
+                  onClick={() => { setStatusFilter(f); setSelectedId(null); }}
+                  className={`rounded-[8px] px-1.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+                    statusFilter === f ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
                   }`}
                 >
-                  {f === "sla" ? "SLA risk" : f}
+                  {STATUS_LABEL[f]}
                 </button>
               ))}
             </div>
           </div>
           <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
-            {pending.isLoading && (
-              <li className="p-6 text-center text-[12px] text-white/55">Loading queue…</li>
+            {listing.isLoading && (
+              <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
             )}
-            {!pending.isLoading && rows.length === 0 && (
-              <li className="p-6 text-center text-[12px] text-white/55">Queue clear.</li>
+            {!listing.isLoading && rows.length === 0 && (
+              <li className="p-6 text-center text-[12px] text-white/55">No {STATUS_LABEL[statusFilter].toLowerCase()} cases.</li>
             )}
             {rows.map((r) => {
               const sel = r.id === selectedId;
@@ -320,11 +357,11 @@ function AdminVerificationPage() {
 
           {selectedId && workspace.data && (() => {
             const w = workspace.data;
-            const sub = w.submission as Record<string, unknown> & { id: string; qualification?: string; awarding_body?: string; doc_paths?: string[]; created_at: string; derived_title_slug?: string | null; regulator_verified?: boolean | null; holder_name?: string | null };
+            const sub = w.submission as Record<string, unknown> & { id: string; qualification?: string; awarding_body?: string; doc_paths?: string[]; created_at: string; reviewed_at?: string | null; derived_title_slug?: string | null; regulator_verified?: boolean | null; holder_name?: string | null };
             const id = w.identity as Record<string, unknown> & { name_on_doc?: string; dob_on_doc?: string; doc_type?: string; doc_path_front?: string; doc_path_back?: string; selfie_path?: string; doc_expiry?: string; doc_country?: string; status?: string; vendor?: string; veriff_session_id?: string; veriff_session_url?: string; veriff_status?: string; veriff_reason?: string | null; stripe_vs_id?: string; stripe_status?: string; stripe_reason?: string | null } | null;
             const ins = w.insurance as Record<string, unknown> & { provider?: string; policy_number?: string; cover_amount_gbp?: number; expiry_date?: string; doc_path?: string; status?: string } | null;
             const prof = w.profile as { full_name?: string | null } | null;
-            const pro = w.professional as { id: string; city?: string | null } | null;
+            const pro = w.professional as { id: string; city?: string | null; slug?: string | null } | null;
 
             const crossChecks = runCrossChecks({
               profileName: prof?.full_name ?? null,
@@ -344,6 +381,26 @@ function AdminVerificationPage() {
             if (!ins) missing.push("insurance");
 
             const canApprovePro = !!id && !!ins;
+            const isApproved = (sub as { status?: string }).status === "approved";
+
+            const handleRevoke = async () => {
+              const reason = window.prompt(
+                "Reason for revoking this approved qualification (required, min 8 chars). This will delete any titles granted from this certificate.",
+              );
+              if (!reason || reason.trim().length < 8) return;
+              if (!window.confirm(`Revoke "${sub.qualification}" for ${prof?.full_name || "this pro"}?`)) return;
+              setBusy(true);
+              try {
+                await revoke({ data: { submission_id: sub.id, reason: reason.trim() } });
+                setSelectedId(null);
+                qc.invalidateQueries({ queryKey: ["admin-verifications"] });
+                qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
+              } catch (e) {
+                alert(e instanceof Error ? e.message : "Revoke failed");
+              } finally {
+                setBusy(false);
+              }
+            };
 
             return (
               <>
@@ -365,9 +422,42 @@ function AdminVerificationPage() {
                         }>SLA {sla.label}</span>
                       </div>
                     </div>
-                    <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                    <div className="flex items-center gap-2">
+                      {isApproved && (
+                        <Button
+                          variant="subtle"
+                          size="sm"
+                          disabled={busy}
+                          onClick={handleRevoke}
+                          className="border-red-400/40 text-red-300 hover:border-red-300 hover:text-red-200"
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                      <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                    </div>
                   </div>
+                  {isApproved && (
+                    <div className="mt-3 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-[11.5px] text-emerald-200">
+                      Approved {sub.reviewed_at ? `${relativeTime(sub.reviewed_at)} ago` : ""}
+                      {titleLabel ? ` · Granted title: ${titleLabel}` : ""}
+                      {pro?.slug && (
+                        <>
+                          {" · "}
+                          <a
+                            href={`/pro/${pro.slug}`}
+                            target="_blank"
+                            rel="noopener"
+                            className="underline hover:no-underline"
+                          >
+                            View public profile
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </PCard>
+
 
                 {/* Artefacts grid */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -634,6 +724,7 @@ function AdminVerificationPage() {
           })()}
         </div>
       </div>
+      )}
     </DashboardShell>
   );
 }
@@ -650,3 +741,171 @@ function DocChip({ children, onClick }: { children: React.ReactNode; onClick: ()
     </button>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Identity tab — admin index of all identity_documents                       */
+/* -------------------------------------------------------------------------- */
+
+type IdentityStatus = "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
+
+const IDENTITY_STATUS_LABEL: Record<IdentityStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  needs_more_info: "More info",
+  expired: "Expired",
+};
+
+function AdminIdentityTab({
+  signUrl,
+  adminOverride,
+}: {
+  signUrl: unknown;
+  adminOverride: typeof adminOverrideIdentity;
+}) {
+  const qc = useQueryClient();
+  const fetchIdentities = useServerFn(listIdentityChecks);
+  const override = useServerFn(adminOverride);
+  const [status, setStatus] = useState<IdentityStatus>("pending");
+  const [search, setSearch] = useState("");
+
+  const query = useQuery({
+    queryKey: ["admin-identity-checks", status],
+    queryFn: () => fetchIdentities({ data: { statuses: [status] } }),
+    refetchInterval: status === "pending" ? 30_000 : false,
+  });
+
+  const rows = useMemo(() => {
+    const list = (query.data ?? []) as Array<{
+      id: string;
+      profile_name: string | null;
+      doc_type: string | null;
+      name_on_doc: string | null;
+      status: string;
+      vendor: string | null;
+      stripe_status: string | null;
+      stripe_reason: string | null;
+      admin_note: string | null;
+      created_at: string;
+      reviewed_at: string | null;
+    }>;
+    if (!search.trim()) return list;
+    const q = search.toLowerCase();
+    return list.filter(
+      (r) =>
+        (r.profile_name ?? "").toLowerCase().includes(q) ||
+        (r.name_on_doc ?? "").toLowerCase().includes(q),
+    );
+  }, [query.data, search]);
+
+  const doOverride = async (id: string, decision: "approved" | "rejected" | "needs_more_info") => {
+    const reason = window.prompt(
+      `Reason for marking this identity check as "${decision}" (required, min 8 chars):`,
+    );
+    if (!reason || reason.trim().length < 8) return;
+    try {
+      await override({ data: { identity_id: id, decision, reason: reason.trim() } });
+      qc.invalidateQueries({ queryKey: ["admin-identity-checks"] });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Override failed");
+    }
+  };
+
+  return (
+    <PPanel className="p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1">
+          {(["pending", "approved", "needs_more_info", "rejected", "expired"] as IdentityStatus[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={`rounded-[8px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                status === s ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              {IDENTITY_STATUS_LABEL[s]}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:w-64">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <Input
+            placeholder="Search by name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
+
+      <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/55">
+        Identity checks confirm who the person is. They do <span className="text-white/80">not</span> grant
+        professional titles — those come from approved qualifications.
+      </p>
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-left text-[12px]">
+          <thead className="text-[10.5px] uppercase tracking-wide text-white/45">
+            <tr>
+              <th className="pb-2 pr-3">Person</th>
+              <th className="pb-2 pr-3">Name on doc</th>
+              <th className="pb-2 pr-3">Vendor</th>
+              <th className="pb-2 pr-3">Status</th>
+              <th className="pb-2 pr-3">Submitted</th>
+              <th className="pb-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-reps-border text-white/80">
+            {query.isLoading && (
+              <tr><td colSpan={6} className="py-6 text-center text-white/55">Loading…</td></tr>
+            )}
+            {!query.isLoading && rows.length === 0 && (
+              <tr><td colSpan={6} className="py-6 text-center text-white/55">No {IDENTITY_STATUS_LABEL[status].toLowerCase()} checks.</td></tr>
+            )}
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td className="py-2 pr-3 font-semibold text-white">{r.profile_name || "—"}</td>
+                <td className="py-2 pr-3">{r.name_on_doc || "—"}</td>
+                <td className="py-2 pr-3 text-white/60">{r.vendor ?? "manual"}{r.stripe_status ? ` · ${r.stripe_status}` : ""}</td>
+                <td className="py-2 pr-3">
+                  <Badge
+                    variant="neutral"
+                    className={
+                      r.status === "approved"
+                        ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                        : r.status === "rejected" || r.status === "expired"
+                          ? "border-red-400/30 bg-red-500/15 text-red-300"
+                          : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                    }
+                  >
+                    {r.status}
+                  </Badge>
+                  {r.stripe_reason && (
+                    <div className="mt-1 max-w-xs text-[10.5px] text-amber-200/80">{r.stripe_reason}</div>
+                  )}
+                </td>
+                <td className="py-2 pr-3 text-white/55">{new Date(r.created_at).toLocaleDateString()}</td>
+                <td className="py-2">
+                  <div className="flex flex-wrap gap-1">
+                    {r.status !== "approved" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
+                    )}
+                    {r.status !== "rejected" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
+                    )}
+                    {r.status !== "needs_more_info" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* signUrl prop intentionally accepted for future per-row doc preview */}
+      <span className="hidden">{typeof signUrl}</span>
+    </PPanel>
+  );
+}
+
