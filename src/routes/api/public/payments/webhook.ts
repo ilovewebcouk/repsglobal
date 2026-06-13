@@ -241,6 +241,28 @@ async function handleIdentityEvent(
     .update(patch as never)
     .eq("id", row.id);
   if (upErr) throw new Error(upErr.message);
+
+  // Mirror identity state onto professionals so other systems (cert name-match,
+  // public profile badges, "verified since" copy) have a single source of truth.
+  const proPatch: Record<string, unknown> = {
+    stripe_identity_session_id: vs.id,
+  };
+  if (finalStatus === "approved") {
+    proPatch.identity_status = "verified";
+    proPatch.identity_verified_at = new Date().toISOString();
+    if (docName) proPatch.identity_verified_name = docName;
+    if (patch.dob_on_doc) proPatch.identity_verified_dob = patch.dob_on_doc;
+  } else if (finalStatus === "rejected") {
+    proPatch.identity_status = "rejected";
+  } else if (finalStatus === "needs_more_info") {
+    proPatch.identity_status = "needs_more_info";
+  } else {
+    proPatch.identity_status = "pending";
+  }
+  await supabaseAdmin
+    .from("professionals")
+    .update(proPatch as never)
+    .eq("id", row.professional_id);
 }
 
 

@@ -7,11 +7,11 @@ import {
   Circle,
   FileText,
   Loader2,
-  Shield,
   ShieldCheck,
   Upload,
   UserCircle,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,6 +29,7 @@ import {
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
 import { myVerificationSubmissions } from "@/lib/verification/verification.functions";
+import { myUnlockedTitles } from "@/lib/cpd/titles.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
   head: () => ({
@@ -53,7 +54,7 @@ function fileToDataUrl(f: File): Promise<string> {
   });
 }
 
-type Step = { key: string; label: string; done: boolean; pending?: boolean; required?: boolean };
+
 
 function VerificationPage() {
   const qc = useQueryClient();
@@ -63,10 +64,12 @@ function VerificationPage() {
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
+  const fetchTitles = useServerFn(myUnlockedTitles);
 
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
+  const titles = useQuery({ queryKey: ["my-unlocked-titles"], queryFn: () => fetchTitles() });
 
   // When Stripe Identity redirects back, refetch and clear the query param.
   useEffect(() => {
@@ -96,21 +99,35 @@ function VerificationPage() {
     refetchOnWindowFocus: true,
   });
 
-  const idDone = !!identity.data;
   const idApproved = identity.data?.status === "approved";
-  const selfieDone = !!identity.data?.selfie_path;
-  const insDone = !!insurance.data;
   const insApproved = insurance.data?.status === "active";
-  const certDone = (certs.data ?? []).length > 0;
-  const certApproved = (certs.data ?? []).some((c) => c.status === "approved");
+  const approvedCerts = (certs.data ?? []).filter((c) => c.status === "approved");
+  const certApproved = approvedCerts.length > 0;
+  const pendingCerts = (certs.data ?? []).filter(
+    (c) => c.status === "submitted" || c.status === "changes_requested",
+  ).length;
 
-  const steps: Step[] = [
-    { key: "identity", label: "Photo ID", done: idApproved, pending: idDone && !idApproved, required: true },
-    { key: "selfie", label: "Selfie", done: selfieDone, required: true },
-    { key: "cert", label: "Qualification", done: certApproved, pending: certDone && !certApproved, required: true },
-    { key: "insurance", label: "Insurance", done: insApproved, pending: insDone && !insApproved, required: false },
+  const primaryTitle =
+    titles.data?.unlocked.find((t) => t.is_primary) ?? titles.data?.unlocked[0] ?? null;
+
+  // Next renewal date across insurance + cert expiries.
+  const renewals: { label: string; date: string }[] = [];
+  if (insurance.data?.expiry_date) {
+    renewals.push({ label: "Insurance", date: insurance.data.expiry_date });
+  }
+  for (const c of approvedCerts) {
+    if (c.expiry_date) renewals.push({ label: c.qualification, date: c.expiry_date });
+  }
+  renewals.sort((a, b) => a.date.localeCompare(b.date));
+  const nextRenewal = renewals[0] ?? null;
+
+  const checks = [
+    { key: "identity", label: "Identity", done: idApproved, pending: !!identity.data && !idApproved },
+    { key: "insurance", label: "Insurance", done: insApproved, pending: !!insurance.data && !insApproved },
+    { key: "qualifications", label: "Qualifications", done: certApproved, pending: pendingCerts > 0 && !certApproved },
   ];
-  const completed = steps.filter((s) => s.done).length;
+  const completed = checks.filter((c) => c.done).length;
+  const allDone = completed === checks.length;
 
   return (
     <DashboardShell
@@ -118,51 +135,80 @@ function VerificationPage() {
       tier={tier}
       active="Verification"
       title="Verification"
-      subtitle="Upload your ID, qualification and insurance. We'll review within 24 hours."
+      subtitle="Your trust posture on REPs. Three checks. One page."
     >
-      {/* Progress strip */}
+      {/* Trust meter */}
       <section id="overview" className="scroll-mt-24">
         <PCard>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-start gap-6">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft">
-                <ShieldCheck className="h-6 w-6 text-reps-orange" />
+              <span
+                className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                  allDone ? "bg-emerald-500/15 text-emerald-300" : "bg-reps-orange-soft text-reps-orange"
+                }`}
+              >
+                <ShieldCheck className="h-7 w-7" />
               </span>
               <div>
-                <div className="font-display text-[18px] font-bold text-white">
-                  {completed === steps.length ? "Fully verified" : `${completed} of ${steps.length} complete`}
+                <div className="font-display text-[20px] font-bold text-white">
+                  {allDone ? "Fully verified" : `${completed} of ${checks.length} complete`}
                 </div>
                 <div className="text-[12px] text-white/55">
-                  {completed === steps.length
-                    ? "All checks passed. You're on the public register."
+                  {allDone
+                    ? "All checks passed. You're trusted across REPs."
                     : idApproved && certApproved
                       ? "Verified tier active. Add insurance to unlock Pro."
-                      : "Complete each step to get verified."}
+                      : "Complete each check below to get verified."}
                 </div>
               </div>
             </div>
-            <div className="ml-auto flex flex-wrap gap-2">
-              {steps.map((s) => (
-                <span
-                  key={s.key}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                    s.done
-                      ? "bg-emerald-500/15 text-emerald-300"
-                      : s.pending
-                        ? "bg-amber-500/15 text-amber-300"
-                        : "bg-white/5 text-white/55"
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {checks.map((c) => (
+                <a
+                  href={`#${c.key}`}
+                  key={c.key}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold ${
+                    c.done
+                      ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      : c.pending
+                        ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                        : "border border-white/10 bg-white/5 text-white/55"
                   }`}
                 >
-                  {s.done ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
-                  {s.label}
-                </span>
+                  {c.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+                  {c.label}
+                </a>
               ))}
             </div>
           </div>
+
+          {(primaryTitle || nextRenewal) && (
+            <div className="mt-5 grid grid-cols-1 gap-3 border-t border-reps-border pt-4 sm:grid-cols-2">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  Public title
+                </div>
+                <div className="mt-1 text-[14px] font-semibold text-white">
+                  {primaryTitle?.label ?? <span className="text-white/45">Earned once a qualification is approved</span>}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  Next renewal
+                </div>
+                <div className="mt-1 text-[14px] font-semibold text-white">
+                  {nextRenewal
+                    ? <>{nextRenewal.date} <span className="font-normal text-white/55">· {nextRenewal.label}</span></>
+                    : <span className="font-normal text-white/45">No upcoming renewals</span>}
+                </div>
+              </div>
+            </div>
+          )}
         </PCard>
       </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mt-6 space-y-6">
         <section id="identity" className="scroll-mt-24">
           <IdentityCard
             identity={identity.data}
@@ -178,11 +224,6 @@ function VerificationPage() {
         <section id="qualifications" className="scroll-mt-24">
           <CertCard certs={certs.data ?? []} />
         </section>
-        <TierUnlockCard
-          identityApproved={idApproved}
-          certApproved={certApproved}
-          insApproved={insApproved}
-        />
       </div>
     </DashboardShell>
   );
@@ -655,41 +696,73 @@ function InsuranceCard({
 
 /* -------------------------------------------------------------------------- */
 
-function CertCard({ certs }: { certs: ReadonlyArray<{ id: string; qualification: string; status: string }> }) {
+type CertRowLite = {
+  id: string;
+  qualification: string;
+  awarding_body?: string | null;
+  year?: number | null;
+  expiry_date?: string | null;
+  status: string;
+  regulator_verified?: boolean | null;
+};
+
+function CertCard({ certs }: { certs: ReadonlyArray<CertRowLite> }) {
+  const approved = certs.filter((c) => c.status === "approved");
+  const pending = certs.filter((c) => c.status === "submitted" || c.status === "changes_requested");
   return (
     <PPanel className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-[16px] font-bold text-white">Qualifications</h3>
           <p className="mt-1 text-[12px] text-white/55">
-            Upload your Level 2 / 3 / 4 certificates. Once verified your title is set automatically.
+            {approved.length} approved · {pending.length} pending review
           </p>
         </div>
         <Button variant="subtle" size="sm" asChild>
-          <Link to="/dashboard/cpd">Manage</Link>
+          <Link to="/dashboard/cpd">
+            Manage on Education &amp; CPD
+            <ArrowRight className="ml-1 size-3.5" />
+          </Link>
         </Button>
       </div>
       {certs.length === 0 ? (
         <div className="mt-4 rounded-[12px] border-2 border-dashed border-white/15 px-4 py-6 text-center text-[12px] text-white/55">
-          No certificates yet — head to Education & CPD to upload your first one.
+          No certificates yet — head to Education &amp; CPD to upload your first one.
         </div>
       ) : (
-        <ul className="mt-3 space-y-2">
-          {certs.slice(0, 3).map((c) => (
-            <li key={c.id} className="flex items-center justify-between rounded-[10px] bg-white/[0.03] px-3 py-2 text-[12px]">
-              <span className="truncate text-white/80">{c.qualification}</span>
-              <Badge
-                variant="neutral"
-                className={
-                  c.status === "approved"
-                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                    : c.status === "rejected"
-                      ? "border-red-400/30 bg-red-500/15 text-red-300"
-                      : "border-amber-400/30 bg-amber-500/15 text-amber-300"
-                }
-              >
-                {c.status}
-              </Badge>
+        <ul className="mt-4 space-y-2">
+          {certs.map((c) => (
+            <li
+              key={c.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] bg-white/[0.03] px-3 py-2.5 text-[12px]"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-white">{c.qualification}</div>
+                <div className="mt-0.5 text-[11px] text-white/55">
+                  {c.awarding_body ?? "—"}
+                  {c.year ? ` · ${c.year}` : ""}
+                  {c.expiry_date ? ` · expires ${c.expiry_date}` : ""}
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {c.regulator_verified && (
+                  <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+                    Ofqual
+                  </Badge>
+                )}
+                <Badge
+                  variant="neutral"
+                  className={
+                    c.status === "approved"
+                      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      : c.status === "rejected"
+                        ? "border-red-400/30 bg-red-500/15 text-red-300"
+                        : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  }
+                >
+                  {c.status}
+                </Badge>
+              </div>
             </li>
           ))}
         </ul>
@@ -698,83 +771,4 @@ function CertCard({ certs }: { certs: ReadonlyArray<{ id: string; qualification:
   );
 }
 
-/* -------------------------------------------------------------------------- */
 
-function TierUnlockCard({
-  identityApproved,
-  certApproved,
-  insApproved,
-}: {
-  identityApproved: boolean;
-  certApproved: boolean;
-  insApproved: boolean;
-}) {
-  const verified = identityApproved && certApproved;
-  const pro = verified && insApproved;
-  return (
-    <PPanel className="p-5">
-      <h3 className="font-display text-[16px] font-bold text-white">What you unlock</h3>
-      <div className="mt-3 space-y-3">
-        <TierRow
-          icon={ShieldCheck}
-          label="Verified"
-          price="£99/yr"
-          unlocked={verified}
-          requirements={[
-            { label: "Photo ID + selfie", done: identityApproved },
-            { label: "Qualification", done: certApproved },
-          ]}
-        />
-        <TierRow
-          icon={Shield}
-          label="Pro (Founding)"
-          price="£59/mo"
-          unlocked={pro}
-          requirements={[
-            { label: "Verified status", done: verified },
-            { label: "Public liability insurance", done: insApproved },
-          ]}
-        />
-      </div>
-    </PPanel>
-  );
-}
-
-function TierRow({
-  icon: Icon,
-  label,
-  price,
-  unlocked,
-  requirements,
-}: {
-  icon: React.ElementType;
-  label: string;
-  price: string;
-  unlocked: boolean;
-  requirements: { label: string; done: boolean }[];
-}) {
-  return (
-    <div className={`rounded-[12px] border px-3 py-3 ${unlocked ? "border-emerald-400/30 bg-emerald-500/10" : "border-reps-border bg-white/[0.02]"}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className={`h-4 w-4 ${unlocked ? "text-emerald-300" : "text-white/55"}`} />
-          <span className="font-semibold text-white">{label}</span>
-          <span className="text-[12px] text-white/55">· {price}</span>
-        </div>
-        {unlocked && (
-          <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-            Unlocked
-          </Badge>
-        )}
-      </div>
-      <ul className="mt-2 space-y-1 text-[12px] text-white/70">
-        {requirements.map((r) => (
-          <li key={r.label} className="flex items-center gap-1.5">
-            {r.done ? <CheckCircle2 className="h-3 w-3 text-emerald-300" /> : <Circle className="h-3 w-3 text-white/35" />}
-            <span>{r.label}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}

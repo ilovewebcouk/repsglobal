@@ -56,7 +56,9 @@ export const myVerificationSubmissions = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("verification_submissions")
-      .select("id, awarding_body, qualification, year, status, admin_note, created_at, reviewed_at, doc_paths")
+      .select(
+        "id, awarding_body, qualification, qualification_number, year, expiry_date, status, admin_note, created_at, reviewed_at, doc_paths, regulator_verified, derived_title_slug",
+      )
       .eq("professional_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
