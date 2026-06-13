@@ -127,6 +127,7 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
