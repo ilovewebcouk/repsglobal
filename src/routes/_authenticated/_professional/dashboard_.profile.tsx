@@ -36,6 +36,8 @@ import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+import { SocialLinksPicker } from "@/components/profile/SocialLinksPicker";
+import { SaveStatusPill, type SaveStatus } from "@/components/profile/SaveStatusPill";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
 import { getTrustState } from "@/lib/verification/trust.functions";
