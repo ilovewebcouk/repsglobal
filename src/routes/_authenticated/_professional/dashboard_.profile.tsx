@@ -777,6 +777,11 @@ function ProfileEditorPage() {
     ],
   );
 
+  // Track whether the in-flight save was kicked off manually (toast)
+  // vs by the debounced auto-save (silent — status pill only).
+  const manualSaveRef = React.useRef(false);
+  const [lastSavedAt, setLastSavedAt] = React.useState<number | null>(null);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       // Save profile fields first (fast, in-DB).
@@ -807,16 +812,26 @@ function ProfileEditorPage() {
       }
     },
     onSuccess: () => {
-      toast.success("Profile saved.");
+      if (manualSaveRef.current) toast.success("Profile saved.");
+      setLastSavedAt(Date.now());
+      manualSaveRef.current = false;
       void queryClient.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       void queryClient.invalidateQueries({ queryKey: ["my-primary-location"] });
       void queryClient.invalidateQueries({ queryKey: ["account-profile"] });
     },
     onError: (e: unknown) => {
-      const msg = e instanceof Error ? e.message : "Save failed.";
-      toast.error(msg);
+      if (manualSaveRef.current) {
+        const msg = e instanceof Error ? e.message : "Save failed.";
+        toast.error(msg);
+      }
+      manualSaveRef.current = false;
     },
   });
+
+  const triggerManualSave = React.useCallback(() => {
+    manualSaveRef.current = true;
+    saveMutation.mutate();
+  }, [saveMutation]);
 
   const userId = React.useMemo(() => {
     // We need the user id for the storage path. Pull from supabase auth synchronously via cache.
