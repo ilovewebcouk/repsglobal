@@ -118,6 +118,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 
 type FormState = {
   full_name: string;
+  display_name: string;
+  business_name: string;
   headline: string;
   primary_profession: ProfessionSlug | "";
   specialisms: SpecialismSlug[];
@@ -137,6 +139,8 @@ type FormState = {
 function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
+    display_name: p.display_name ?? "",
+    business_name: p.business_name ?? "",
     headline: p.headline ?? "",
     primary_profession: p.primary_profession ?? "",
     specialisms: p.specialisms ?? [],
@@ -157,6 +161,8 @@ function toForm(p: DashboardProfile): FormState {
 function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
+    a.display_name === b.display_name &&
+    a.business_name === b.business_name &&
     a.headline === b.headline &&
     a.primary_profession === b.primary_profession &&
     a.in_person_available === b.in_person_available &&
