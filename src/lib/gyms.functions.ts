@@ -23,6 +23,21 @@ export type GymOption = {
   area: string | null;
   city: string | null;
   status: "active" | "pending_review" | "rejected";
+  source?: "curated" | "google_places" | "user_submission";
+  coach_count?: number;
+};
+
+export type ExternalGymOption = {
+  placeId: string;
+  name: string;
+  formattedAddress: string;
+  area: string | null;
+  city: string | null;
+};
+
+export type SearchResults = {
+  local: GymOption[];
+  external: ExternalGymOption[];
 };
 
 export type ProGym = {
