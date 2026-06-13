@@ -688,3 +688,171 @@ function DocChip({ children, onClick }: { children: React.ReactNode; onClick: ()
     </button>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Identity tab — admin index of all identity_documents                       */
+/* -------------------------------------------------------------------------- */
+
+type IdentityStatus = "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
+
+const IDENTITY_STATUS_LABEL: Record<IdentityStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  needs_more_info: "More info",
+  expired: "Expired",
+};
+
+function AdminIdentityTab({
+  signUrl,
+  adminOverride,
+}: {
+  signUrl: ReturnType<typeof useServerFn<typeof getDocSignedUrl>>;
+  adminOverride: typeof adminOverrideIdentity;
+}) {
+  const qc = useQueryClient();
+  const fetchIdentities = useServerFn(listIdentityChecks);
+  const override = useServerFn(adminOverride);
+  const [status, setStatus] = useState<IdentityStatus>("pending");
+  const [search, setSearch] = useState("");
+
+  const query = useQuery({
+    queryKey: ["admin-identity-checks", status],
+    queryFn: () => fetchIdentities({ data: { statuses: [status] } }),
+    refetchInterval: status === "pending" ? 30_000 : false,
+  });
+
+  const rows = useMemo(() => {
+    const list = (query.data ?? []) as Array<{
+      id: string;
+      profile_name: string | null;
+      doc_type: string | null;
+      name_on_doc: string | null;
+      status: string;
+      vendor: string | null;
+      stripe_status: string | null;
+      stripe_reason: string | null;
+      admin_note: string | null;
+      created_at: string;
+      reviewed_at: string | null;
+    }>;
+    if (!search.trim()) return list;
+    const q = search.toLowerCase();
+    return list.filter(
+      (r) =>
+        (r.profile_name ?? "").toLowerCase().includes(q) ||
+        (r.name_on_doc ?? "").toLowerCase().includes(q),
+    );
+  }, [query.data, search]);
+
+  const doOverride = async (id: string, decision: "approved" | "rejected" | "needs_more_info") => {
+    const reason = window.prompt(
+      `Reason for marking this identity check as "${decision}" (required, min 8 chars):`,
+    );
+    if (!reason || reason.trim().length < 8) return;
+    try {
+      await override({ data: { identity_id: id, decision, reason: reason.trim() } });
+      qc.invalidateQueries({ queryKey: ["admin-identity-checks"] });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Override failed");
+    }
+  };
+
+  return (
+    <PPanel className="p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1">
+          {(["pending", "approved", "needs_more_info", "rejected", "expired"] as IdentityStatus[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={`rounded-[8px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                status === s ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              {IDENTITY_STATUS_LABEL[s]}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:w-64">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <Input
+            placeholder="Search by name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
+
+      <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/55">
+        Identity checks confirm who the person is. They do <span className="text-white/80">not</span> grant
+        professional titles — those come from approved qualifications.
+      </p>
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-left text-[12px]">
+          <thead className="text-[10.5px] uppercase tracking-wide text-white/45">
+            <tr>
+              <th className="pb-2 pr-3">Person</th>
+              <th className="pb-2 pr-3">Name on doc</th>
+              <th className="pb-2 pr-3">Vendor</th>
+              <th className="pb-2 pr-3">Status</th>
+              <th className="pb-2 pr-3">Submitted</th>
+              <th className="pb-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-reps-border text-white/80">
+            {query.isLoading && (
+              <tr><td colSpan={6} className="py-6 text-center text-white/55">Loading…</td></tr>
+            )}
+            {!query.isLoading && rows.length === 0 && (
+              <tr><td colSpan={6} className="py-6 text-center text-white/55">No {IDENTITY_STATUS_LABEL[status].toLowerCase()} checks.</td></tr>
+            )}
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td className="py-2 pr-3 font-semibold text-white">{r.profile_name || "—"}</td>
+                <td className="py-2 pr-3">{r.name_on_doc || "—"}</td>
+                <td className="py-2 pr-3 text-white/60">{r.vendor ?? "manual"}{r.stripe_status ? ` · ${r.stripe_status}` : ""}</td>
+                <td className="py-2 pr-3">
+                  <Badge
+                    variant="neutral"
+                    className={
+                      r.status === "approved"
+                        ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                        : r.status === "rejected" || r.status === "expired"
+                          ? "border-red-400/30 bg-red-500/15 text-red-300"
+                          : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                    }
+                  >
+                    {r.status}
+                  </Badge>
+                  {r.stripe_reason && (
+                    <div className="mt-1 max-w-xs text-[10.5px] text-amber-200/80">{r.stripe_reason}</div>
+                  )}
+                </td>
+                <td className="py-2 pr-3 text-white/55">{new Date(r.created_at).toLocaleDateString()}</td>
+                <td className="py-2">
+                  <div className="flex flex-wrap gap-1">
+                    {r.status !== "approved" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
+                    )}
+                    {r.status !== "rejected" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
+                    )}
+                    {r.status !== "needs_more_info" && (
+                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* signUrl prop intentionally accepted for future per-row doc preview */}
+      <span className="hidden">{typeof signUrl}</span>
+    </PPanel>
+  );
+}
+
