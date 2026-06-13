@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { syncMySubscription } from "@/lib/billing/billing.functions";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 type Search = { session_id?: string };
 
@@ -66,7 +67,7 @@ function SyncingPage() {
       // Webhook fallback: actively pull the latest subscription from Stripe.
       if (SYNC_ATTEMPTS.has(attempts)) {
         try {
-          await syncMySubscription();
+          await syncMySubscription({ data: { environment: getStripeEnvironment() } });
         } catch {
           /* non-fatal; next poll will retry */
         }

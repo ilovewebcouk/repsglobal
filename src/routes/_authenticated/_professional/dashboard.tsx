@@ -30,6 +30,7 @@ import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
 import { syncMySubscription } from "@/lib/billing/billing.functions";
 import { ManageBillingButton } from "@/components/billing/ManageBillingButton";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 import {
   KpiRow,
@@ -75,7 +76,7 @@ function DashboardPage() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => syncSub({ data: undefined }),
+    mutationFn: () => syncSub({ data: { environment: getStripeEnvironment() } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-status"] });
     },

@@ -36,6 +36,7 @@ import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
 import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import {
   myInsurance,
   uploadVerificationAsset,
@@ -265,7 +266,13 @@ function IdentityBody({
   const selfieRef = useRef<HTMLInputElement>(null);
 
   const stripeId = useMutation({
-    mutationFn: async () => startStripe({ data: { return_path: "/dashboard/verification" } }),
+    mutationFn: async () =>
+      startStripe({
+        data: {
+          return_path: "/dashboard/verification",
+          environment: getStripeEnvironment(),
+        },
+      }),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
