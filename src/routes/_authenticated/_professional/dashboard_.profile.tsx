@@ -1243,22 +1243,24 @@ function ProfileEditorPage() {
                 step="03"
               />
               <div className="flex flex-col gap-4">
-                <Field label="Primary training postcode">
-                  <TextInput
-                    value={postcode}
-                    onChange={(v) => setPostcode(v.toUpperCase())}
-                    prefix={<MapPin className="h-3.5 w-3.5" />}
-                    placeholder="e.g. SW1A 1AA"
-                  />
-                  <p className="mt-1.5 text-[11px] text-white/50">
-                    We use this to calculate distance and show your town. Your full postcode is never shown publicly.
-                  </p>
-                  {primaryLocation?.town ? (
-                    <p className="mt-1 text-[11px] text-white/60">
-                      Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                <div data-field="postcode">
+                  <Field label="Primary training postcode" error={errors.postcode}>
+                    <TextInput
+                      value={postcode}
+                      onChange={(v) => setPostcode(v.toUpperCase())}
+                      prefix={<MapPin className="h-3.5 w-3.5" />}
+                      placeholder="e.g. SW1A 1AA"
+                    />
+                    <p className="mt-1.5 text-[11px] text-white/50">
+                      We use this to calculate distance and show your town. Your full postcode is never shown publicly.
                     </p>
-                  ) : null}
-                </Field>
+                    {primaryLocation?.town ? (
+                      <p className="mt-1 text-[11px] text-white/60">
+                        Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
+                      </p>
+                    ) : null}
+                  </Field>
+                </div>
                 <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid.">
                   <DeliveryModePicker
                     inPerson={form.in_person_available}
