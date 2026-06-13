@@ -53,7 +53,17 @@ export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
     const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
     const venue = venueRaw && VALID_VENUE_SLUGS.has(venueRaw) ? venueRaw : undefined;
-    return { venue };
+    const str = (k: string) =>
+      typeof raw[k] === "string" && (raw[k] as string).length > 0
+        ? ((raw[k] as string).slice(0, 120))
+        : undefined;
+    return {
+      venue,
+      city: str("city"),
+      profession: str("profession"),
+      specialism: str("specialism"),
+      q: str("q"),
+    };
   },
   head: () => ({
     meta: [
