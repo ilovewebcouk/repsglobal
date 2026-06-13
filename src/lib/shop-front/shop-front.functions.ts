@@ -182,7 +182,10 @@ export const upsertMyShopFront = createServerFn({ method: "POST" })
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const patch: Record<string, unknown> = { ...data, professional_id: userId };
+    const patch = { ...data, professional_id: userId } as {
+      professional_id: string;
+      published_at?: string;
+    } & z.infer<typeof ShopFrontUpsertSchema>;
     if (data.is_published === true) patch.published_at = new Date().toISOString();
 
     const { data: row, error } = await supabaseAdmin
