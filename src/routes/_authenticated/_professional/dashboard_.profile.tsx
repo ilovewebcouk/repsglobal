@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { getTrustState } from "@/lib/verification/trust.functions";
+
 
 import { toast } from "sonner";
 import {
@@ -946,6 +946,10 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
+        {/* Verification hero — distinct from profile polish. Drives the Verified badge. */}
+        <VerificationCard />
+
+
 
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
@@ -1275,7 +1279,10 @@ function ProfileEditorPage() {
 
             {/* Completion */}
             <Card>
-              <SectionHeader title="Profile completion" />
+              <SectionHeader
+                title="Profile polish"
+                subtitle="Optional — make your profile irresistible to clients. Doesn't affect your Verified badge."
+              />
               <CompletionRing pct={pct} />
               <ul className="mt-4 space-y-2">
                 {checklist.map((c) => (
@@ -1463,10 +1470,10 @@ function CompletionRing({ pct }: { pct: number }) {
       </div>
       <div className="flex-1">
         <div className="text-[13px] font-semibold text-white">
-          {pct === 100 ? "Profile complete" : pct >= 70 ? "Almost there" : "Keep going"}
+          {pct === 100 ? "Polished" : pct >= 70 ? "Almost there" : "Keep going"}
         </div>
         <p className="text-[11px] text-white/55">
-          Complete every section to unlock priority directory placement.
+          Cosmetic — helps you convert. Verification (above) is what unlocks your badge.
         </p>
       </div>
     </div>
