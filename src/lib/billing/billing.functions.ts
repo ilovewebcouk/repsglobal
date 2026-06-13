@@ -185,8 +185,9 @@ export const syncMySubscription = createServerFn({ method: "POST" })
       return { synced: false, tier: "free" as const };
     }
     const sub = subs.data[0];
-    const priceId = sub.items.data[0]?.price.id ?? null;
-    const lookup = priceId ? checkoutOfferForPriceId(priceId) : null;
+    const item = sub.items.data[0];
+    const priceLookup = item?.price.lookup_key ?? item?.price.id ?? null;
+    const lookup = priceLookup ? checkoutOfferForPriceId(priceLookup) : null;
     const isLive = ["active", "trialing", "past_due", "unpaid"].includes(sub.status);
     const cpe =
       (sub as unknown as { current_period_end?: number }).current_period_end ??
