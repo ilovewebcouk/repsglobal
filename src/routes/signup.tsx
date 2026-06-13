@@ -136,21 +136,10 @@ export const Route = createFileRoute("/signup")({
     if (isPaid) {
       throw redirect({ to: "/dashboard" });
     }
-
-    if (typeof window !== "undefined" && search.tier && search.period) {
-      try {
-        const result = await createCheckoutSession({
-          data: { tier: search.tier, period: search.period },
-        });
-        if (result?.url) {
-          window.location.href = result.url;
-          // Block route render while the browser navigates to Stripe
-          await new Promise(() => {});
-        }
-      } catch {
-        // Fall through and render the page (which will surface the error path)
-      }
-    }
+    // Note: checkout is kicked from the component (continueAfterAuth) after
+    // sign-up returns a session. Never call createCheckoutSession from a
+    // loader — public route loaders have no auth context during SSR /
+    // prerender, and the email-link round-trip races session restore.
   },
 
   head: () => ({
