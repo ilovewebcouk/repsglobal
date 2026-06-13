@@ -376,3 +376,176 @@ export const adminUpdateGym = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+/* ----------------------------- Google Places import ----------------------------- */
+
+const importInput = z.object({ placeId: z.string().min(5).max(200) });
+
+export const importGoogleGym = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => importInput.parse(d))
+  .handler(async ({ data, context }) => {
+    // Rate limit: max 10 Google imports per pro per hour.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count: recent } = await supabaseAdmin
+      .from("gyms")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by", context.userId)
+      .eq("source", "google_places")
+      .gt("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+    if ((recent ?? 0) >= 10) {
+      throw new Error("Hourly limit reached for new gym imports. Try again in a bit.");
+    }
+
+    // Check existing first.
+    const { data: existing } = await supabaseAdmin
+      .from("gyms")
+      .select("id, slug, name, chain_slug, chain_name, area, city, status, source")
+      .eq("google_place_id", data.placeId)
+      .maybeSingle();
+
+    let gym = existing as GymOption | null;
+    if (!gym) {
+      const { placeDetails, matchChain } = await import("./google-places.server");
+      const d = await placeDetails(data.placeId);
+      if (!d) throw new Error("That place isn't an operational gym.");
+      const chain = matchChain(d.name);
+      const baseSlug = slugify(`${d.name}-${d.area || d.locality || ""}`);
+      let slug = baseSlug || `gym-${data.placeId.slice(0, 8)}`;
+      // Slug collision handler
+      for (let n = 1; n < 8; n++) {
+        const { data: clash } = await supabaseAdmin
+          .from("gyms")
+          .select("id")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (!clash) break;
+        slug = `${baseSlug}-${n + 1}`;
+      }
+      const { data: inserted, error: insErr } = await supabaseAdmin
+        .from("gyms")
+        .insert({
+          slug,
+          name: d.name,
+          area: d.area,
+          city: d.locality,
+          postcode: d.postcode,
+          lat: d.lat,
+          lng: d.lng,
+          chain_slug: chain.chain_slug,
+          chain_name: chain.chain_name,
+          google_place_id: d.placeId,
+          source: "google_places",
+          business_status: d.businessStatus,
+          status: "active",
+          claim_status: "unclaimed",
+          created_by: context.userId,
+        })
+        .select("id, slug, name, chain_slug, chain_name, area, city, status, source")
+        .single();
+      if (insErr) {
+        // Race-condition: another pro imported simultaneously. Re-fetch.
+        if (insErr.code === "23505") {
+          const { data: again } = await supabaseAdmin
+            .from("gyms")
+            .select("id, slug, name, chain_slug, chain_name, area, city, status, source")
+            .eq("google_place_id", data.placeId)
+            .maybeSingle();
+          if (!again) throw new Error(insErr.message);
+          gym = again as GymOption;
+        } else {
+          throw new Error(insErr.message);
+        }
+      } else {
+        gym = inserted as GymOption;
+      }
+    }
+    if (!gym) throw new Error("Couldn't import gym.");
+
+    // Attach to caller.
+    const { data: mine } = await context.supabase
+      .from("professional_gyms")
+      .select("position")
+      .eq("professional_id", context.userId);
+    const used = new Set((mine ?? []).map((r) => r.position));
+    let pos = -1;
+    for (let i = 0; i < 3; i++) {
+      if (!used.has(i)) { pos = i; break; }
+    }
+    if (pos === -1) throw new Error("You can list up to 3 gyms.");
+    const { error: linkErr } = await context.supabase.from("professional_gyms").insert({
+      professional_id: context.userId,
+      gym_id: gym.id,
+      position: pos,
+    });
+    if (linkErr) {
+      if (linkErr.code === "23505") throw new Error("This gym is already on your profile.");
+      throw new Error(linkErr.message);
+    }
+    return { ok: true as const, gym };
+  });
+
+/* ----------------------------- admin: promote google → curated ----------------------------- */
+
+const promoteInput = z.object({
+  id: z.string().uuid(),
+  logo_url: z.string().url().optional().nullable(),
+  tagline: z.string().trim().max(140).optional().nullable(),
+  chain_slug: z.string().trim().max(60).optional().nullable(),
+  chain_name: z.string().trim().max(80).optional().nullable(),
+});
+
+export const adminPromoteGym = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => promoteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: roleOk } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (!roleOk) throw new Error("Forbidden");
+    const patch: Record<string, unknown> = { source: "curated" };
+    if (data.logo_url !== undefined) patch.logo_url = data.logo_url;
+    if (data.tagline !== undefined) patch.tagline = data.tagline;
+    if (data.chain_slug !== undefined) patch.chain_slug = data.chain_slug;
+    if (data.chain_name !== undefined) patch.chain_name = data.chain_name;
+    const { error } = await context.supabase.from("gyms").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+/* ----------------------------- admin: geocode backfill ----------------------------- */
+
+export const adminGeocodeBackfill = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: roleOk } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (!roleOk) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { geocodeAddress } = await import("./google-places.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("gyms")
+      .select("id, name, area, city, postcode")
+      .is("lat", null)
+      .eq("status", "active")
+      .limit(60);
+    if (error) throw new Error(error.message);
+    let done = 0;
+    let failed = 0;
+    for (const g of (rows ?? []) as Array<{ id: string; name: string; area: string | null; city: string | null; postcode: string | null }>) {
+      const addr = [g.name, g.area, g.city, g.postcode, "UK"].filter(Boolean).join(", ");
+      try {
+        const geo = await geocodeAddress(addr);
+        if (!geo) { failed++; continue; }
+        await supabaseAdmin
+          .from("gyms")
+          .update({ lat: geo.lat, lng: geo.lng, postcode: g.postcode ?? geo.postcode })
+          .eq("id", g.id);
+        done++;
+      } catch {
+        failed++;
+      }
+    }
+    return { done, failed, total: rows?.length ?? 0 };
+  });
