@@ -598,11 +598,17 @@ function InputField({
   icon: Icon,
   type,
   placeholder,
+  value,
+  onChange,
+  required,
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   type: string;
   placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-1 rounded-[12px] border border-reps-stone bg-reps-ivory px-3.5 py-2.5">
@@ -614,6 +620,9 @@ function InputField({
         <Input
           type={type}
           placeholder={placeholder}
+          value={value}
+          required={required}
+          onChange={(e) => onChange(e.target.value)}
           className="h-auto w-full border-0 bg-transparent p-0 text-[13px] text-reps-charcoal shadow-none placeholder:text-reps-muted-light focus-visible:ring-0"
         />
       </div>
