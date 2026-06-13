@@ -30,7 +30,7 @@ Locked visual mock-ups are the source of truth. Data wiring only — no redesign
 - Slug derived from `display_name`.
 - **DoD**: pro cannot edit legal name after approval; admin override writes `identity_name_changes` row.
 
-### 0c — Qualifications hard/soft gates + adaptive action bar
+### 0c — Qualifications hard/soft gates ✅ DONE + adaptive action bar
 - **Hard gates** (cannot Approve through): name match ≥0.85, awarding body recognised (Ofqual list, never CIMSPA), not expired, cert number format valid, file fingerprint not duplicate.
 - **Soft gates** (typed override reason): OCR-vs-typed name, year plausible, insurance present (Pro-only block).
 - **Adaptive action bar**:
