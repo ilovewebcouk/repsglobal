@@ -287,22 +287,31 @@ function TextInput({
   placeholder,
   prefix,
   type = "text",
+  disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   prefix?: React.ReactNode;
   type?: "text" | "email" | "tel" | "url";
+  disabled?: boolean;
 }) {
   return (
-    <div className="flex h-10 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white">
+    <div
+      className={
+        "flex h-10 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white" +
+        (disabled ? " opacity-60" : "")
+      }
+    >
       {prefix ? <span className="text-white/45">{prefix}</span> : null}
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/35 focus:outline-none"
+        disabled={disabled}
+        readOnly={disabled}
+        className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/35 focus:outline-none disabled:cursor-not-allowed"
       />
     </div>
   );
