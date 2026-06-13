@@ -87,6 +87,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
+import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
@@ -504,6 +505,12 @@ const AuthenticatedProfessionalDashboardVerificationRoute =
     path: '/dashboard/verification',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardShopFrontRoute =
+  AuthenticatedProfessionalDashboardShopFrontRouteImport.update({
+    id: '/dashboard_/shop-front',
+    path: '/dashboard/shop-front',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardSettingsRoute =
   AuthenticatedProfessionalDashboardSettingsRouteImport.update({
     id: '/dashboard_/settings',
@@ -694,6 +701,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -789,6 +797,7 @@ export interface FileRoutesByTo {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -889,6 +898,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -987,6 +997,7 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/profile'
     | '/dashboard/settings'
+    | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -1082,6 +1093,7 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/profile'
     | '/dashboard/settings'
+    | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -1181,6 +1193,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/settings'
+    | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -1825,6 +1838,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardVerificationRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/shop-front': {
+      id: '/_authenticated/_professional/dashboard_/shop-front'
+      path: '/dashboard/shop-front'
+      fullPath: '/dashboard/shop-front'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardShopFrontRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/settings': {
       id: '/_authenticated/_professional/dashboard_/settings'
       path: '/dashboard/settings'
@@ -2051,6 +2071,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
+  AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
 }
 
@@ -2066,6 +2087,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardProfileRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
+    AuthenticatedProfessionalDashboardShopFrontRoute:
+      AuthenticatedProfessionalDashboardShopFrontRoute,
     AuthenticatedProfessionalDashboardVerificationRoute:
       AuthenticatedProfessionalDashboardVerificationRoute,
   }
