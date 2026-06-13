@@ -315,6 +315,23 @@ function IdentityCard({
             <span>{reason}</span>
           </div>
         )}
+        {identity.status === "pending" && !reason && (() => {
+          const ageMs = identity.created_at ? Date.now() - new Date(identity.created_at).getTime() : 0;
+          const overTenMin = ageMs > 10 * 60 * 1000;
+          return (
+            <div className="mt-3 rounded-[10px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[12px] text-white/65">
+              Usually takes 1–5 minutes — refresh or check back shortly.
+              {overTenMin && (
+                <>
+                  {" "}
+                  <a href="mailto:support@repsuk.org" className="text-reps-orange hover:underline">
+                    Taking longer than expected? Contact support.
+                  </a>
+                </>
+              )}
+            </div>
+          );
+        })()}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {stripeInProgress && identity.stripe_vs_url && (
             <a
