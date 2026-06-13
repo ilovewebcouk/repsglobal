@@ -227,10 +227,19 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
               }
               break;
             }
+            case "identity.verification_session.verified":
+            case "identity.verification_session.requires_input":
+            case "identity.verification_session.processing":
+            case "identity.verification_session.canceled":
+            case "identity.verification_session.created": {
+              await handleIdentityEvent(stripe, event);
+              break;
+            }
             default:
               // No-op for unhandled events; the row stays for audit.
               break;
           }
+
         } catch (err) {
           processingError = err instanceof Error ? err.message : String(err);
           console.error(`[stripe-webhook] error handling ${event.type}:`, processingError);
