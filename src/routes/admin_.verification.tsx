@@ -823,7 +823,7 @@ function AdminVerificationPage() {
                           <span className={`mt-1 h-1.5 w-1.5 rounded-full ${h.decision === "approved" ? "bg-emerald-400" : h.decision === "rejected" ? "bg-red-400" : "bg-amber-400"}`} />
                           <div className="flex-1">
                             <span className="font-semibold text-white">{h.decision}</span>
-                            <span className="ml-2 text-white/45">{relativeTime(h.created_at)} ago</span>
+                            <span className="ml-2 text-white/45"><TimeAgo iso={h.created_at} /></span>
                             {h.notes && <div className="text-white/55">{h.notes}</div>}
                           </div>
                         </li>
