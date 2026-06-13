@@ -78,10 +78,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      ui_mode: "embedded",
       customer: customerId,
       line_items: [{ price: stripePrice.id, quantity: 1 }],
-      success_url: `${origin}/dashboard/syncing?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?billing=cancelled`,
+      return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
       allow_promotion_codes: true,
       payment_method_collection: "always",
       subscription_data: {
@@ -100,7 +100,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       },
     });
 
-    return { url: session.url };
+    return { clientSecret: session.client_secret ?? "" };
   });
 
 export const createPortalSession = createServerFn({ method: "POST" })
