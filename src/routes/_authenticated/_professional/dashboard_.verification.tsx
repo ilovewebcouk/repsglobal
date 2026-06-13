@@ -121,55 +121,63 @@ function VerificationPage() {
       subtitle="Upload your ID, qualification and insurance. We'll review within 24 hours."
     >
       {/* Progress strip */}
-      <PCard>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft">
-              <ShieldCheck className="h-6 w-6 text-reps-orange" />
-            </span>
-            <div>
-              <div className="font-display text-[18px] font-bold text-white">
-                {completed === steps.length ? "Fully verified" : `${completed} of ${steps.length} complete`}
-              </div>
-              <div className="text-[12px] text-white/55">
-                {completed === steps.length
-                  ? "All checks passed. You're on the public register."
-                  : idApproved && certApproved
-                    ? "Verified tier active. Add insurance to unlock Pro."
-                    : "Complete each step to get verified."}
+      <section id="overview" className="scroll-mt-24">
+        <PCard>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft">
+                <ShieldCheck className="h-6 w-6 text-reps-orange" />
+              </span>
+              <div>
+                <div className="font-display text-[18px] font-bold text-white">
+                  {completed === steps.length ? "Fully verified" : `${completed} of ${steps.length} complete`}
+                </div>
+                <div className="text-[12px] text-white/55">
+                  {completed === steps.length
+                    ? "All checks passed. You're on the public register."
+                    : idApproved && certApproved
+                      ? "Verified tier active. Add insurance to unlock Pro."
+                      : "Complete each step to get verified."}
+                </div>
               </div>
             </div>
+            <div className="ml-auto flex flex-wrap gap-2">
+              {steps.map((s) => (
+                <span
+                  key={s.key}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                    s.done
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : s.pending
+                        ? "bg-amber-500/15 text-amber-300"
+                        : "bg-white/5 text-white/55"
+                  }`}
+                >
+                  {s.done ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+                  {s.label}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            {steps.map((s) => (
-              <span
-                key={s.key}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                  s.done
-                    ? "bg-emerald-500/15 text-emerald-300"
-                    : s.pending
-                      ? "bg-amber-500/15 text-amber-300"
-                      : "bg-white/5 text-white/55"
-                }`}
-              >
-                {s.done ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
-                {s.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </PCard>
+        </PCard>
+      </section>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <IdentityCard
-          identity={identity.data}
-          onSaved={() => qc.invalidateQueries({ queryKey: ["my-identity"] })}
-        />
-        <InsuranceCard
-          insurance={insurance.data}
-          onSaved={() => qc.invalidateQueries({ queryKey: ["my-insurance"] })}
-        />
-        <CertCard certs={certs.data ?? []} />
+        <section id="identity" className="scroll-mt-24">
+          <IdentityCard
+            identity={identity.data}
+            onSaved={() => qc.invalidateQueries({ queryKey: ["my-identity"] })}
+          />
+        </section>
+        <section id="insurance" className="scroll-mt-24">
+          <InsuranceCard
+            insurance={insurance.data}
+            onSaved={() => qc.invalidateQueries({ queryKey: ["my-insurance"] })}
+          />
+        </section>
+        <section id="qualifications" className="scroll-mt-24">
+          <CertCard certs={certs.data ?? []} />
+        </section>
         <TierUnlockCard
           identityApproved={idApproved}
           certApproved={certApproved}
