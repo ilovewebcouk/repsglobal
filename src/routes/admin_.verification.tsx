@@ -671,6 +671,7 @@ function AdminVerificationPage() {
           })()}
         </div>
       </div>
+      )}
     </DashboardShell>
   );
 }
