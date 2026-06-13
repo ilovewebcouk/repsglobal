@@ -270,16 +270,9 @@ function IdentityCard({
   });
 
   if (identity) {
-    const isVeriff = identity.vendor === "veriff";
-    const veriffStarted = identity.veriff_status === "submitted";
-    const veriffStuck =
-      isVeriff &&
-      identity.status === "pending" &&
-      (identity.veriff_status === "created" ||
-        identity.veriff_status === "started" ||
-        identity.veriff_status === "abandoned" ||
-        !identity.veriff_status);
-    const inProgress = identity.status === "pending" && isVeriff && !veriffStuck;
+    const isStripe = identity.vendor === "stripe";
+    const stripeInProgress =
+      isStripe && identity.status === "pending" && !!identity.stripe_vs_url;
 
     const badgeLabel =
       identity.status === "approved"
@@ -290,9 +283,7 @@ function IdentityCard({
             ? "More info needed"
             : identity.status === "expired"
               ? "Expired"
-              : veriffStuck
-                ? "Not started"
-                : "In review";
+              : "In review";
 
     const badgeClass =
       identity.status === "approved"
@@ -301,48 +292,44 @@ function IdentityCard({
           ? "border-red-400/30 bg-red-500/15 text-red-300"
           : "border-amber-400/30 bg-amber-500/15 text-amber-300";
 
+    const reason = identity.admin_note || identity.stripe_reason;
+
     return (
       <PPanel className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
             <p className="mt-1 text-[12px] text-white/55">
-              {isVeriff ? "Veriff ID check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
+              {isStripe ? "Stripe Identity check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
             </p>
           </div>
           <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
-        {(identity.admin_note || identity.veriff_reason) && (
+        {reason && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>{identity.admin_note || identity.veriff_reason}</span>
+            <span>{reason}</span>
           </div>
         )}
-        {veriffStuck && (
-          <p className="mt-3 text-[12px] text-white/55">
-            Your last ID check didn’t finish. Resume where you left off, or restart with a fresh session.
-          </p>
-        )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {(inProgress || veriffStuck) && identity.veriff_session_url && (
+          {stripeInProgress && identity.stripe_vs_url && (
             <a
-              href={identity.veriff_session_url}
+              href={identity.stripe_vs_url}
               className="inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
             >
-              {veriffStarted ? "Continue ID check" : "Resume ID check"}
+              Continue ID check
             </a>
           )}
-          {(veriffStuck ||
-            identity.status === "rejected" ||
+          {(identity.status === "rejected" ||
             identity.status === "needs_more_info" ||
             identity.status === "expired") && (
             <Button
-              variant={veriffStuck ? "subtle" : "primary"}
+              variant="primary"
               size="md"
-              disabled={veriff.isPending}
-              onClick={() => veriff.mutate()}
+              disabled={stripeId.isPending}
+              onClick={() => stripeId.mutate()}
             >
-              {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
+              {stripeId.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
             </Button>
           )}
         </div>
@@ -356,16 +343,16 @@ function IdentityCard({
       <PPanel className="p-5">
         <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
         <p className="mt-1 text-[12px] text-white/55">
-          We use Veriff to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
+          We use Stripe Identity to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button
             variant="primary"
             size="md"
-            disabled={veriff.isPending}
-            onClick={() => veriff.mutate()}
+            disabled={stripeId.isPending}
+            onClick={() => stripeId.mutate()}
           >
-            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
+            {stripeId.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
           </Button>
           <button
             type="button"
@@ -393,7 +380,7 @@ function IdentityCard({
           onClick={() => setUseManual(false)}
           className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline"
         >
-          Use Veriff instead
+          Use Stripe Identity instead
         </button>
       </div>
       <div className="mt-4 space-y-3">
