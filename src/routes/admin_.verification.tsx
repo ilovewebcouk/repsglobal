@@ -53,21 +53,14 @@ import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-verify";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
+import { TimeAgo } from "@/components/verification/TimeAgo";
+import { absoluteDateTime, relativeTime } from "@/lib/verification/format-time";
 
 export const Route = createFileRoute("/admin_/verification")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminVerificationPage,
 });
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diff / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  return `${Math.round(hrs / 24)}d`;
-}
 
 function slaRemaining(iso: string): { label: string; tone: "ok" | "warn" | "breach" } {
   const ageMs = Date.now() - new Date(iso).getTime();
@@ -334,12 +327,12 @@ function AdminVerificationPage() {
                       )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
-                      <span className="text-white/45">
+                      <span className="text-white/45" title={absoluteDateTime(reviewedAt ?? r.created_at)}>
                         {isPending
-                          ? `Submitted ${relativeTime(r.created_at)} ago`
+                          ? <>Submitted <TimeAgo iso={r.created_at} className="text-white/45" /></>
                           : reviewedAt
-                            ? `${STATUS_LABEL[r.status as StatusFilter] ?? r.status} ${relativeTime(reviewedAt)} ago`
-                            : `${relativeTime(r.created_at)} ago`}
+                            ? <>{STATUS_LABEL[r.status as StatusFilter] ?? r.status} <TimeAgo iso={reviewedAt} className="text-white/45" /></>
+                            : <TimeAgo iso={r.created_at} className="text-white/45" />}
                       </span>
                       {sla && (
                         <span
@@ -462,7 +455,7 @@ function AdminVerificationPage() {
                         {pro?.city && <span className="text-[12px] text-white/55">· {pro.city}</span>}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-white/55">
-                        <span>Submitted {relativeTime(sub.created_at)} ago</span>
+                        <span>Submitted <TimeAgo iso={sub.created_at} /></span>
                         {sla && (
                           <>
                             <span>·</span>
@@ -475,7 +468,7 @@ function AdminVerificationPage() {
                           <>
                             <span>·</span>
                             <span className={isApproved ? "text-emerald-300" : "text-red-300"}>
-                              {isApproved ? "Approved" : "Rejected"} {relativeTime(sub.reviewed_at)} ago
+                              {isApproved ? "Approved" : "Rejected"} <TimeAgo iso={sub.reviewed_at} />
                             </span>
                           </>
                         )}
@@ -498,7 +491,7 @@ function AdminVerificationPage() {
                   </div>
                   {isApproved && (
                     <div className="mt-3 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-[11.5px] text-emerald-200">
-                      Approved {sub.reviewed_at ? `${relativeTime(sub.reviewed_at)} ago` : ""}
+                      Approved {sub.reviewed_at ? <TimeAgo iso={sub.reviewed_at} /> : ""}
                       {titleLabel ? ` · Granted title: ${titleLabel}` : ""}
                       {pro?.slug && (
                         <>
@@ -830,7 +823,7 @@ function AdminVerificationPage() {
                           <span className={`mt-1 h-1.5 w-1.5 rounded-full ${h.decision === "approved" ? "bg-emerald-400" : h.decision === "rejected" ? "bg-red-400" : "bg-amber-400"}`} />
                           <div className="flex-1">
                             <span className="font-semibold text-white">{h.decision}</span>
-                            <span className="ml-2 text-white/45">{relativeTime(h.created_at)} ago</span>
+                            <span className="ml-2 text-white/45"><TimeAgo iso={h.created_at} /></span>
                             {h.notes && <div className="text-white/55">{h.notes}</div>}
                           </div>
                         </li>
@@ -1030,7 +1023,7 @@ function AdminIdentityTab({
                     <div className="mt-1 max-w-xs text-[10.5px] text-amber-200/80">{r.stripe_reason}</div>
                   )}
                 </td>
-                <td className="py-2 pr-3 text-white/55">{new Date(r.created_at).toLocaleDateString()}</td>
+                <td className="py-2 pr-3 text-white/55" title={absoluteDateTime(r.created_at)}>{new Date(r.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1">
                     {r.status !== "approved" && (

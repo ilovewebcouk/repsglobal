@@ -47,13 +47,13 @@ Locked visual mock-ups are the source of truth. Data wiring only — no redesign
 - One-click verify buttons: Ofqual Register (when qual number matches `NNN/NNNN/X`) + awarding-body lookup page (`src/lib/verification/awarding-body-verify.ts`).
 - **DoD**: each approved cert has stored cert number + verify link rendered in admin row.
 
-### 0e — Observability, flags, full timestamps
-- `verification_decisions` (actor, decision, gates_passed_json, override_reason, stripe_event_id, ts).
-- `identity_name_changes` audit log.
-- `feature_flags` table for dark-launch.
-- Date + HH:MM everywhere, relative-time tooltip, sort by most recent, resubmission count.
-- Views `v_identity_review_queue`, `v_qualifications_review_queue`.
-- **DoD**: every state transition has a decisions row with full timestamp.
+### 0e — Observability, flags, full timestamps ✅ DONE
+- `verification_decisions` already extended (0a/0c): `stripe_event_id` unique, `gates_snapshot`, `override_reason`.
+- `identity_name_changes` audit log live (0b).
+- `feature_flags` table seeded with 11 Phase 2.1 flags (0a–0e on, A–G off).
+- `TimeAgo` component (`src/components/verification/TimeAgo.tsx`) renders `5m ago` with a full `13 Jun 2026 · 18:42` tooltip everywhere in admin verification.
+- Views `v_identity_review_queue` and `v_qualifications_review_queue` (security_invoker) with `resubmission_count` and `submission_count`.
+- **DoD**: every state transition has a decisions row with full timestamp; relative time always tooltips an absolute one.
 
 ## Pro-side state matrix (locked copy + CTA)
 
