@@ -33,6 +33,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
@@ -62,6 +63,7 @@ import { Route as DevSectionLibraryRouteImport } from './routes/dev.section-libr
 import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.reps-vs-trainerize'
 import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -230,6 +232,11 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -374,6 +381,11 @@ const CompareRepsVsMypthubRoute = CompareRepsVsMypthubRouteImport.update({
   id: '/compare_/reps-vs-mypthub',
   path: '/compare/reps-vs-mypthub',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => CheckoutRoute,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
@@ -645,6 +657,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -681,6 +694,7 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -744,6 +758,7 @@ export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -780,6 +795,7 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -844,6 +860,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -881,6 +898,7 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
   '/compare_/reps-vs-trainerize': typeof CompareRepsVsTrainerizeRoute
@@ -947,6 +965,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -983,6 +1002,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/c/$slug'
+    | '/checkout/return'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
@@ -1046,6 +1066,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1082,6 +1103,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/verification'
     | '/c/$slug'
+    | '/checkout/return'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
     | '/compare/reps-vs-trainerize'
@@ -1145,6 +1167,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1182,6 +1205,7 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/verification'
     | '/c/$slug'
+    | '/checkout/return'
     | '/compare_/reps-vs-mypthub'
     | '/compare_/reps-vs-pt-distinction'
     | '/compare_/reps-vs-trainerize'
@@ -1248,6 +1272,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ContactRoute: typeof ContactRoute
@@ -1485,6 +1510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -1687,6 +1719,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/compare/reps-vs-mypthub'
       preLoaderRoute: typeof CompareRepsVsMypthubRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof CheckoutRoute
     }
     '/c/$slug': {
       id: '/c/$slug'
@@ -2154,6 +2193,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CheckoutRouteChildren {
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutReturnRoute: CheckoutReturnRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2176,6 +2227,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ContactRoute: ContactRoute,
