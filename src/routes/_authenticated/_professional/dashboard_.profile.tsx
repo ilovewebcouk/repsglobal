@@ -1018,6 +1018,103 @@ function ProfileEditorPage() {
 
   const { pct, checklist } = completion(profile);
 
+  /* ----------------------------------------------------------------
+     Inline validation — pure client-side, runs on every render.
+     ---------------------------------------------------------------- */
+  type FieldKey =
+    | "full_name"
+    | "headline"
+    | "bio"
+    | "contact_phone"
+    | "postcode";
+  const errors = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
+    const e: Partial<Record<FieldKey, string>> = {};
+    if (!form.full_name.trim()) e.full_name = "Full name is required.";
+    else if (form.full_name.trim().length > 80) e.full_name = "Keep your name under 80 characters.";
+    if (form.headline.length > 160) e.headline = "Tagline must be 160 characters or fewer.";
+    if (form.bio.length > 1200) e.bio = "About must be 1200 characters or fewer.";
+    if (form.contact_phone.length > 0 && !isValidPhoneNumber(form.contact_phone))
+      e.contact_phone = "Enter a valid phone number with country code.";
+    const pc = postcode.trim();
+    if (pc.length > 0 && pc.length > 10) e.postcode = "Postcode looks too long.";
+    return e;
+  }, [form.full_name, form.headline, form.bio, form.contact_phone, postcode]);
+
+  const warns = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
+    const w: Partial<Record<FieldKey, string>> = {};
+    if (form.headline.length >= 144 && form.headline.length <= 160)
+      w.headline = "Approaching the 160-character limit.";
+    if (form.bio.length >= 1080 && form.bio.length <= 1200)
+      w.bio = "Approaching the 1,200-character limit.";
+    return w;
+  }, [form.headline, form.bio]);
+
+  const hasErrors = Object.keys(errors).length > 0;
+
+  /* ----------------------------------------------------------------
+     Auto-save — 1.5s debounce after last edit. Silent (status pill).
+     ---------------------------------------------------------------- */
+  const autoSaveTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => {
+    if (!dirty) return;
+    if (hasErrors) return;
+    if (avatarBusy !== null) return;
+    if (saveMutation.isPending) return;
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      manualSaveRef.current = false;
+      saveMutation.mutate();
+    }, 1500);
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, postcode, dirty, hasErrors, avatarBusy, saveMutation.isPending]);
+
+  /* ----------------------------------------------------------------
+     Tab-close guard — warn if dirty edits are unsaved.
+     ---------------------------------------------------------------- */
+  React.useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!dirty || saveMutation.isPending) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty, saveMutation.isPending]);
+
+  /* ----------------------------------------------------------------
+     Derived status pill state.
+     ---------------------------------------------------------------- */
+  const status: SaveStatus = React.useMemo(() => {
+    if (saveMutation.isPending) return { kind: "saving" };
+    if (saveMutation.isError) return { kind: "error", onRetry: triggerManualSave };
+    if (dirty) return { kind: "editing" };
+    if (lastSavedAt && Date.now() - lastSavedAt < 5 * 60_000)
+      return { kind: "saved", at: lastSavedAt };
+    return { kind: "idle" };
+  }, [saveMutation.isPending, saveMutation.isError, dirty, lastSavedAt, triggerManualSave]);
+
+  /* ----------------------------------------------------------------
+     Manual save — scroll to first error if validation blocks save.
+     ---------------------------------------------------------------- */
+  const handleManualSave = () => {
+    if (hasErrors) {
+      const firstKey = Object.keys(errors)[0];
+      if (firstKey) {
+        const el = document.querySelector(`[data-field="${firstKey}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
+        }
+      }
+      return;
+    }
+    triggerManualSave();
+  };
+
 
   return (
     <DashboardShell
@@ -1034,12 +1131,13 @@ function ProfileEditorPage() {
               Preview public profile
             </a>
           </DashboardButton>
+          <SaveStatusPill status={status} />
           <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={!dirty || saveMutation.isPending}
+            onClick={handleManualSave}
+            disabled={(!dirty || saveMutation.isPending) && status.kind !== "error"}
           >
             <Save data-icon="inline-start" />
-            {saveMutation.isPending ? "Saving…" : "Save changes"}
+            {saveMutation.isPending ? "Saving…" : dirty ? "Save now" : "Save changes"}
           </Button>
         </>
       }
