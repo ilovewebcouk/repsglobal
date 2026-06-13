@@ -77,6 +77,7 @@ import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
+import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
@@ -449,6 +450,11 @@ const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   path: '/u/insurance/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => ProSlugRoute,
+} as any)
 const ProSlugEnquireRoute = ProSlugEnquireRouteImport.update({
   id: '/enquire',
   path: '/enquire',
@@ -702,6 +708,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -799,6 +806,7 @@ export interface FileRoutesByTo {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -901,6 +909,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -1001,6 +1010,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/dashboard/syncing'
@@ -1098,6 +1108,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug'
     | '/dashboard/syncing'
@@ -1199,6 +1210,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard_/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/_authenticated/_professional/dashboard/syncing'
@@ -1781,6 +1793,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UInsuranceSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$slug/review': {
+      id: '/pro/$slug/review'
+      path: '/review'
+      fullPath: '/pro/$slug/review'
+      preLoaderRoute: typeof ProSlugReviewRouteImport
+      parentRoute: typeof ProSlugRoute
+    }
     '/pro/$slug/enquire': {
       id: '/pro/$slug/enquire'
       path: '/enquire'
@@ -2137,11 +2156,13 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
+  ProSlugReviewRoute: typeof ProSlugReviewRoute
   ProSlugIndexRoute: typeof ProSlugIndexRoute
 }
 
 const ProSlugRouteChildren: ProSlugRouteChildren = {
   ProSlugEnquireRoute: ProSlugEnquireRoute,
+  ProSlugReviewRoute: ProSlugReviewRoute,
   ProSlugIndexRoute: ProSlugIndexRoute,
 }
 
