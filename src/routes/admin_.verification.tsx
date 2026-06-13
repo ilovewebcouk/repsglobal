@@ -397,17 +397,37 @@ function AdminVerificationPage() {
               regulatorVerified: sub.regulator_verified ?? null,
               insuranceExpiry: ins?.expiry_date ?? null,
               insuranceCover: ins?.cover_amount_gbp ?? null,
+              duplicateFileSha: (sub as { duplicate_of?: string | null }).duplicate_of ? true : null,
             });
 
-            const sla = slaRemaining(sub.created_at);
+            const gates = evaluateGates({
+              profileName: prof?.full_name ?? null,
+              certHolderName: sub.holder_name ?? null,
+              idDocName: id?.name_on_doc ?? null,
+              regulatorVerified: sub.regulator_verified ?? null,
+              insuranceExpiry: ins?.expiry_date ?? null,
+              insuranceCover: ins?.cover_amount_gbp ?? null,
+              certNumberPresent: !!((sub as { certificate_number?: string | null }).certificate_number || (sub as { qualification_number?: string | null }).qualification_number),
+              expiryDate: (sub as { expiry_date?: string | null }).expiry_date ?? null,
+              issueYear: (sub as { year?: number | null }).year ?? null,
+              duplicateFileSha: (sub as { duplicate_of?: string | null }).duplicate_of ? true : null,
+            });
+
+            const subStatus = (sub as { status?: string }).status;
+            const isPending = subStatus === "submitted" || subStatus === "changes_requested";
+            const sla = isPending ? slaRemaining(sub.created_at) : null;
             const titleLabel = getTitleLabel(sub.derived_title_slug ?? null);
             const missing: ("identity" | "selfie" | "insurance" | "cert")[] = [];
             if (!id) missing.push("identity");
             else if (!id.selfie_path) missing.push("selfie");
             if (!ins) missing.push("insurance");
 
-            const canApprovePro = !!id && !!ins;
-            const isApproved = (sub as { status?: string }).status === "approved";
+            const canApprovePro = !!id && !!ins && gates.hardPassed;
+            const isApproved = subStatus === "approved";
+            const isFinal = subStatus === "approved" || subStatus === "rejected";
+            const overrideOk = overrideReason.trim().length >= 8;
+            const approveAllowed = gates.hardPassed || overrideOk;
+            const gatesSnap = { hardPassed: gates.hardPassed, blockingReasons: gates.blockingReasons, hardGates: gates.hardGates, softGates: gates.softGates };
 
             const handleRevoke = async () => {
               const reason = window.prompt(
