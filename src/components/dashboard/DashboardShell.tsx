@@ -165,6 +165,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
