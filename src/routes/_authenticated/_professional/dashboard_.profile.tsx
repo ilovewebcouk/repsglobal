@@ -10,16 +10,12 @@ import {
   CheckCircle2,
   ExternalLink,
   Eye,
-  Instagram,
-  Linkedin,
   MapPin,
-  Plus,
   Save,
   ShieldCheck,
   Star,
   Trash2,
   X,
-  Youtube,
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
