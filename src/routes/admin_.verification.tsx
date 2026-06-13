@@ -53,21 +53,14 @@ import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-verify";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
+import { TimeAgo } from "@/components/verification/TimeAgo";
+import { absoluteDateTime, relativeTime } from "@/lib/verification/format-time";
 
 export const Route = createFileRoute("/admin_/verification")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminVerificationPage,
 });
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diff / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  return `${Math.round(hrs / 24)}d`;
-}
 
 function slaRemaining(iso: string): { label: string; tone: "ok" | "warn" | "breach" } {
   const ageMs = Date.now() - new Date(iso).getTime();
