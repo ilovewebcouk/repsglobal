@@ -2,14 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHost } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 /**
  * Create a Stripe Identity VerificationSession for the current professional
  * and persist the hosted URL on a fresh identity_documents row.
  *
- * Uses the shared connector-gateway Stripe client so the mode (sandbox vs
- * live) auto-switches between preview and published environments — same
- * pattern as Payments. No raw STRIPE_SECRET_KEY usage.
+ * Uses the shared connector-gateway Stripe client with the environment derived
+ * from the active client token, so preview stays in test and production stays live.
  */
 export const createStripeIdentitySession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -17,6 +17,7 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     z
       .object({
         return_path: z.string().startsWith("/").optional(),
+        environment: z.enum(["sandbox", "live"]).optional(),
       })
       .parse(d ?? {}),
   )
@@ -31,8 +32,8 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     const returnPath = data.return_path ?? "/dashboard/profile";
     const returnUrl = `${origin}${returnPath}?stripe_identity=complete#identity`;
 
-    const { createStripeClient, resolveStripeEnv } = await import("@/lib/billing/stripe.server");
-    const env = resolveStripeEnv();
+    const { createStripeClient } = await import("@/lib/billing/stripe.server");
+    const env = data.environment ?? getStripeEnvironment();
     const stripe = createStripeClient(env);
 
     const session = await stripe.identity.verificationSessions.create({
