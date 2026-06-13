@@ -1,16 +1,18 @@
 /**
- * Trust block — the canonical "verification" surface for every paying member.
+ * Trust surfaces for the canonical "verification" flow on /dashboard/profile.
  *
- * Lives on `/dashboard/profile`. Tier-blind: identical UI and behaviour for
- * Verified and Pro members. Three ticks:
- *   1. Identity      — Stripe Identity approved
- *   2. Insurance     — active policy, not expired
- *   3. Qualifications — ≥1 approved cert (managed on /dashboard/cpd)
+ * Tier-blind: identical UI and behaviour for every paying member (Verified
+ * or Pro). Three exports:
  *
- * `getTrustState` is the single read for the status strip. The Identity and
- * Insurance cards keep their own queries for the form state required to
- * submit; the read used for the badge in those cards is reconciled with
- * `getTrustState` on the parent.
+ *   - `TrustStatusStrip`     slim 3-tick status strip (Identity / Insurance /
+ *                            Qualifications). Qualifications is read-only and
+ *                            links to /dashboard/cpd.
+ *   - `IdentityProfileCard`  numbered profile card (step 05) — Stripe Identity
+ *                            with manual fallback.
+ *   - `InsuranceProfileCard` numbered profile card (step 06) — public liability.
+ *
+ * No "Verified vs Pro" copy. No "What you unlock". Qualifications is NOT
+ * editable here — its status mirrors what Education & CPD says.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -24,13 +26,11 @@ import {
   Circle,
   FileText,
   Loader2,
-  ShieldCheck,
   Upload,
   UserCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
@@ -53,25 +53,53 @@ function fileToDataUrl(f: File): Promise<string> {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Top-level block                                                            */
+/* Shared "profile card" wrapper — visually identical to Profile photo / Bio  */
+/* -------------------------------------------------------------------------- */
+
+function ProfileCard({
+  title,
+  subtitle,
+  step,
+  children,
+  id,
+}: {
+  title: string;
+  subtitle?: string;
+  step?: string;
+  children: React.ReactNode;
+  id?: string;
+}) {
+  return (
+    <section
+      id={id}
+      className="scroll-mt-24 rounded-[16px] border border-reps-border bg-reps-panel p-5"
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="font-display text-[15px] font-semibold text-white">{title}</h2>
+          {subtitle ? <p className="mt-0.5 text-[12px] text-white/55">{subtitle}</p> : null}
+        </div>
+        {step ? (
+          <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
+            {step}
+          </span>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Stripe Identity return → toast + invalidate + scroll                       */
 /* -------------------------------------------------------------------------- */
 
 type StripeIdentitySearch = { stripe_identity?: string };
 
-export function TrustBlock() {
+function useStripeIdentityReturn() {
   const qc = useQueryClient();
   const router = useRouter();
   const search = useSearch({ strict: false }) as StripeIdentitySearch;
-
-  const fetchTrust = useServerFn(getTrustState);
-  const fetchIdentity = useServerFn(myIdentity);
-  const fetchInsurance = useServerFn(myInsurance);
-
-  const trust = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
-  const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
-  const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
-
-  // Handle Stripe Identity redirect back to Public Profile.
   useEffect(() => {
     if (search.stripe_identity === "complete") {
       qc.invalidateQueries({ queryKey: ["my-identity"] });
@@ -83,119 +111,81 @@ export function TrustBlock() {
         hash: "identity",
         replace: true,
       });
-      // Scroll to identity section
       setTimeout(() => {
         document.getElementById("identity")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
+      }, 120);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.stripe_identity]);
+}
 
-  // Poll while Stripe Identity is pending.
-  const pendingStripe =
-    identity.data?.vendor === "stripe" && identity.data?.status === "pending";
-  useQuery({
-    queryKey: ["identity-poll", identity.data?.id],
-    queryFn: async () => {
-      await qc.invalidateQueries({ queryKey: ["my-identity"] });
-      await qc.invalidateQueries({ queryKey: ["my-trust-state"] });
-      return true;
-    },
-    enabled: !!pendingStripe,
-    refetchInterval: 8000,
-    refetchOnWindowFocus: true,
-  });
+/* -------------------------------------------------------------------------- */
+/* TrustStatusStrip — slim 3-tick header                                      */
+/* -------------------------------------------------------------------------- */
+
+export function TrustStatusStrip() {
+  useStripeIdentityReturn();
+  const fetchTrust = useServerFn(getTrustState);
+  const trust = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
 
   const t = trust.data;
-  const checks = [
-    { key: "identity", label: "Identity", done: !!t?.ticks.identity, pending: t?.identity.status === "pending" },
-    { key: "insurance", label: "Insurance", done: !!t?.ticks.insurance, pending: t?.insurance.status === "pending" },
-    {
-      key: "qualifications",
-      label: "Qualifications",
-      done: !!t?.ticks.qualifications,
-      pending: false,
-    },
-  ];
   const completed = t?.completedCount ?? 0;
   const allDone = completed === 3;
 
+  const chip = (label: string, done: boolean, pending: boolean, href: string, external: boolean) => {
+    const cls = done
+      ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+      : pending
+        ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+        : "border border-white/10 bg-white/5 text-white/55";
+    const inner = (
+      <>
+        {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+        {label}
+      </>
+    );
+    return external ? (
+      <Link
+        to={href}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:text-white ${cls}`}
+      >
+        {inner}
+      </Link>
+    ) : (
+      <a
+        href={href}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:text-white ${cls}`}
+      >
+        {inner}
+      </a>
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Status strip */}
-      <PCard>
-        <div className="flex flex-wrap items-start gap-6">
-          <div className="flex items-center gap-3">
-            <span
-              className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                allDone ? "bg-emerald-500/15 text-emerald-300" : "bg-reps-orange-soft text-reps-orange"
-              }`}
-            >
-              <ShieldCheck className="h-7 w-7" />
-            </span>
-            <div>
-              <div className="font-display text-[20px] font-bold text-white">
-                {allDone ? "Fully verified" : `${completed} of 3 complete`}
-              </div>
-              <div className="text-[12px] text-white/55">
-                {allDone
-                  ? "All three checks passed — your profile carries every trust mark."
-                  : "Complete each check below to earn the full trust badge."}
-              </div>
-            </div>
-          </div>
-
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            {checks.map((c) => (
-              <a
-                href={`#${c.key}`}
-                key={c.key}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                  c.done
-                    ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                    : c.pending
-                      ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
-                      : "border border-white/10 bg-white/5 text-white/55"
-                }`}
-              >
-                {c.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
-                {c.label}
-              </a>
-            ))}
-          </div>
+    <section className="rounded-[16px] border border-reps-border bg-reps-panel p-5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="font-display text-[15px] font-semibold text-white">
+            {allDone ? "Fully verified" : `${completed} of 3 verification checks complete`}
+          </h2>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            {allDone
+              ? "All three checks passed — your profile carries every trust mark."
+              : "Verification is universal to every member — identity, insurance, and your qualifications."}
+          </p>
         </div>
-      </PCard>
-
-      <section id="identity" className="scroll-mt-24">
-        <IdentityCard
-          identity={identity.data}
-          onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["my-identity"] });
-            qc.invalidateQueries({ queryKey: ["my-trust-state"] });
-          }}
-        />
-      </section>
-      <section id="insurance" className="scroll-mt-24">
-        <InsuranceCard
-          insurance={insurance.data}
-          onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["my-insurance"] });
-            qc.invalidateQueries({ queryKey: ["my-trust-state"] });
-          }}
-        />
-      </section>
-      <section id="qualifications" className="scroll-mt-24">
-        <QualificationsSummaryCard
-          count={t?.qualifications.count ?? 0}
-          titles={t?.qualifications.titles ?? []}
-        />
-      </section>
-    </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {chip("Identity", !!t?.ticks.identity, t?.identity.status === "pending", "#identity", false)}
+          {chip("Insurance", !!t?.ticks.insurance, t?.insurance.status === "pending", "#insurance", false)}
+          {chip("Qualifications", !!t?.ticks.qualifications, false, "/dashboard/cpd", true)}
+        </div>
+      </div>
+    </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Identity                                                                   */
+/* IdentityProfileCard                                                        */
 /* -------------------------------------------------------------------------- */
 
 type IdentityRow = {
@@ -215,7 +205,44 @@ type IdentityRow = {
   created_at?: string | null;
 };
 
-function IdentityCard({
+export function IdentityProfileCard({ step }: { step?: string }) {
+  const qc = useQueryClient();
+  const fetchIdentity = useServerFn(myIdentity);
+  const identityQ = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
+  const identity = identityQ.data as IdentityRow | null | undefined;
+
+  // Poll while Stripe Identity is pending.
+  const pendingStripe = identity?.vendor === "stripe" && identity?.status === "pending";
+  useQuery({
+    queryKey: ["identity-poll", identity?.id],
+    queryFn: async () => {
+      await qc.invalidateQueries({ queryKey: ["my-identity"] });
+      await qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+      return true;
+    },
+    enabled: !!pendingStripe,
+    refetchInterval: 8000,
+    refetchOnWindowFocus: true,
+  });
+
+  const onSaved = () => {
+    qc.invalidateQueries({ queryKey: ["my-identity"] });
+    qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+  };
+
+  return (
+    <ProfileCard
+      id="identity"
+      step={step}
+      title="Identity"
+      subtitle="Confirm who you are with Stripe Identity. Encrypted, never shown on your public profile."
+    >
+      <IdentityBody identity={identity} onSaved={onSaved} />
+    </ProfileCard>
+  );
+}
+
+function IdentityBody({
   identity,
   onSaved,
 }: {
@@ -292,8 +319,10 @@ function IdentityCard({
 
   if (identity) {
     const isStripe = identity.vendor === "stripe";
+    const ageMs = identity.created_at ? Date.now() - new Date(identity.created_at).getTime() : 0;
+    const staleStripe = ageMs > 60 * 60 * 1000; // 1h → treat the stored URL as expired
     const stripeInProgress =
-      isStripe && identity.status === "pending" && !!identity.stripe_vs_url;
+      isStripe && identity.status === "pending" && !!identity.stripe_vs_url && !staleStripe;
 
     const badgeLabel =
       identity.status === "approved"
@@ -316,14 +345,12 @@ function IdentityCard({
     const reason = identity.admin_note || identity.stripe_reason;
 
     return (
-      <PPanel className="p-5">
+      <div>
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
-            <p className="mt-1 text-[12px] text-white/55">
-              {isStripe ? "Stripe Identity check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
-            </p>
-          </div>
+          <p className="text-[12px] text-white/65">
+            {isStripe ? "Stripe Identity check" : identity.doc_type || "Document"}
+            {identity.name_on_doc ? ` · ${identity.name_on_doc}` : ""}
+          </p>
           <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
         {reason && (
@@ -333,12 +360,13 @@ function IdentityCard({
           </div>
         )}
         {identity.status === "pending" && !reason && (() => {
-          const ageMs = identity.created_at ? Date.now() - new Date(identity.created_at).getTime() : 0;
           const overTenMin = ageMs > 10 * 60 * 1000;
           return (
             <div className="mt-3 rounded-[10px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[12px] text-white/65">
-              Usually takes 1–5 minutes — refresh or check back shortly.
-              {overTenMin && (
+              {staleStripe
+                ? "This ID check session has expired. Start a new one to continue."
+                : "Usually takes 1–5 minutes — refresh or check back shortly."}
+              {!staleStripe && overTenMin && (
                 <>
                   {" "}
                   <a href="mailto:support@repsuk.org" className="text-reps-orange hover:underline">
@@ -353,12 +381,15 @@ function IdentityCard({
           {stripeInProgress && identity.stripe_vs_url && (
             <a
               href={identity.stripe_vs_url}
-              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
             >
               Continue ID check
             </a>
           )}
-          {(identity.status === "rejected" ||
+          {(staleStripe ||
+            identity.status === "rejected" ||
             identity.status === "needs_more_info" ||
             identity.status === "expired") && (
             <Button
@@ -371,18 +402,14 @@ function IdentityCard({
             </Button>
           )}
         </div>
-      </PPanel>
+      </div>
     );
   }
 
   if (!useManual) {
     return (
-      <PPanel className="p-5">
-        <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
-        <p className="mt-1 text-[12px] text-white/55">
-          We use Stripe Identity to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
-        </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button
             variant="primary"
             size="md"
@@ -399,19 +426,16 @@ function IdentityCard({
             Upload manually instead
           </button>
         </div>
-      </PPanel>
+      </div>
     );
   }
 
   return (
-    <PPanel className="p-5">
+    <div>
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-[16px] font-bold text-white">Identity (manual)</h3>
-          <p className="mt-1 text-[12px] text-white/55">
-            Upload a government-issued photo ID and a selfie. Reviewed within 24 hours.
-          </p>
-        </div>
+        <p className="text-[12px] text-white/65">
+          Upload a government-issued photo ID and a selfie. Reviewed within 24 hours.
+        </p>
         <button
           type="button"
           onClick={() => setUseManual(false)}
@@ -492,7 +516,7 @@ function IdentityCard({
           {submit.isPending ? <Loader2 className="size-4 animate-spin" /> : "Submit for verification"}
         </Button>
       </div>
-    </PPanel>
+    </div>
   );
 }
 
@@ -524,24 +548,46 @@ function FileSlot({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Insurance                                                                  */
+/* InsuranceProfileCard                                                       */
 /* -------------------------------------------------------------------------- */
 
-function InsuranceCard({
+type InsuranceRow = {
+  id: string;
+  status: string;
+  provider: string;
+  expiry_date: string;
+  cover_amount_gbp?: number | null;
+  admin_note?: string | null;
+} | null | undefined;
+
+export function InsuranceProfileCard({ step }: { step?: string }) {
+  const qc = useQueryClient();
+  const fetchInsurance = useServerFn(myInsurance);
+  const insuranceQ = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
+  const insurance = insuranceQ.data as InsuranceRow;
+
+  const onSaved = () => {
+    qc.invalidateQueries({ queryKey: ["my-insurance"] });
+    qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+  };
+
+  return (
+    <ProfileCard
+      id="insurance"
+      step={step}
+      title="Insurance"
+      subtitle="Public liability insurance — £1m minimum cover recommended. Adds the Insured tick to your profile."
+    >
+      <InsuranceBody insurance={insurance} onSaved={onSaved} />
+    </ProfileCard>
+  );
+}
+
+function InsuranceBody({
   insurance,
   onSaved,
 }: {
-  insurance:
-    | {
-        id: string;
-        status: string;
-        provider: string;
-        expiry_date: string;
-        cover_amount_gbp?: number | null;
-        admin_note?: string | null;
-      }
-    | null
-    | undefined;
+  insurance: InsuranceRow;
   onSaved: () => void;
 }) {
   const upload = useServerFn(uploadVerificationAsset);
@@ -587,15 +633,12 @@ function InsuranceCard({
 
   if (insurance) {
     return (
-      <PPanel className="p-5">
+      <div>
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="font-display text-[16px] font-bold text-white">Insurance</h3>
-            <p className="mt-1 text-[12px] text-white/55">
-              {insurance.provider} · expires {insurance.expiry_date}
-              {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
-            </p>
-          </div>
+          <p className="text-[12px] text-white/65">
+            {insurance.provider} · expires {insurance.expiry_date}
+            {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
+          </p>
           <Badge
             variant="neutral"
             className={
@@ -614,93 +657,63 @@ function InsuranceCard({
             {insurance.admin_note}
           </div>
         )}
-      </PPanel>
+      </div>
     );
   }
 
   return (
-    <PPanel className="p-5">
-      <h3 className="font-display text-[16px] font-bold text-white">Insurance</h3>
-      <p className="mt-1 text-[12px] text-white/55">
-        Public liability insurance — £1m minimum cover recommended. Unlocks the Insured tick on your profile.
-      </p>
-      <div className="mt-4 space-y-3">
-        <div>
-          <label className="text-[12px] text-white/65">Provider</label>
-          <Input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. Insure4Sport" />
-        </div>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <div>
-            <label className="text-[12px] text-white/65">Policy number</label>
-            <Input value={policy} onChange={(e) => setPolicy(e.target.value)} placeholder="Optional" />
-          </div>
-          <div>
-            <label className="text-[12px] text-white/65">Cover (£m)</label>
-            <Input
-              type="number"
-              step="0.5"
-              min="0"
-              value={cover}
-              onChange={(e) => setCover(e.target.value)}
-              placeholder="1"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="text-[12px] text-white/65">Expiry date</label>
-          <Input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
-        </div>
-        <FileSlot label="Insurance certificate" icon={Upload} done={!!docPath} onClick={() => fileRef.current?.click()} />
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*,application/pdf"
-          className="hidden"
-          onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
-        />
-        <Button
-          variant="primary"
-          size="md"
-          disabled={submit.isPending}
-          onClick={() => submit.mutate()}
-          className="w-full"
-        >
-          {submit.isPending ? <Loader2 className="size-4 animate-spin" /> : "Submit insurance"}
-        </Button>
+    <div className="space-y-3">
+      <div>
+        <label className="text-[12px] text-white/65">Provider</label>
+        <Input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. Insure4Sport" />
       </div>
-    </PPanel>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div>
+          <label className="text-[12px] text-white/65">Policy number</label>
+          <Input value={policy} onChange={(e) => setPolicy(e.target.value)} placeholder="Optional" />
+        </div>
+        <div>
+          <label className="text-[12px] text-white/65">Cover (£m)</label>
+          <Input
+            type="number"
+            step="0.5"
+            min="0"
+            value={cover}
+            onChange={(e) => setCover(e.target.value)}
+            placeholder="1"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="text-[12px] text-white/65">Expiry date</label>
+        <Input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
+      </div>
+      <FileSlot label="Insurance certificate" icon={Upload} done={!!docPath} onClick={() => fileRef.current?.click()} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,application/pdf"
+        className="hidden"
+        onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
+      />
+      <Button
+        variant="primary"
+        size="md"
+        disabled={submit.isPending}
+        onClick={() => submit.mutate()}
+        className="w-full"
+      >
+        {submit.isPending ? <Loader2 className="size-4 animate-spin" /> : "Submit insurance"}
+      </Button>
+    </div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Qualifications — read-only summary; manage lives on /dashboard/cpd          */
+/* Back-compat: legacy `<TrustBlock />` import is deliberately not exported.  */
+/* Compose `TrustStatusStrip` + `IdentityProfileCard` + `InsuranceProfileCard` */
+/* directly inside the Public Profile route.                                   */
 /* -------------------------------------------------------------------------- */
 
-function QualificationsSummaryCard({
-  count,
-  titles,
-}: {
-  count: number;
-  titles: string[];
-}) {
-  return (
-    <PPanel className="p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-display text-[16px] font-bold text-white">Qualifications</h3>
-          <p className="mt-1 text-[12px] text-white/55">
-            {count === 0
-              ? "No qualifications approved yet — upload your first certificate to set your public title."
-              : `${count} approved · ${titles.length > 0 ? titles.join(" · ") : "Earned titles will appear here"}`}
-          </p>
-        </div>
-        <Button variant="subtle" size="sm" asChild>
-          <Link to="/dashboard/cpd">
-            Manage on Education &amp; CPD
-            <ArrowRight className="ml-1 size-3.5" />
-          </Link>
-        </Button>
-      </div>
-    </PPanel>
-  );
-}
+// Re-export ArrowRight for any external consumers that imported it via this module.
+export { ArrowRight };
