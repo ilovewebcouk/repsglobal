@@ -1,110 +1,89 @@
-## Principle
+## What’s wrong right now
 
-Verification is **universal and identical** for every paying member. Tier (Verified £99/yr vs Pro £59/mo) is irrelevant to the badge — Pro just adds client-management software on top. Every member runs the same three-step flow and gets the same public ticks.
+- The current experience is not cohesive: Identity + Insurance have been dropped into Public Profile, but they read like a separate module rather than part of the profile setup flow.
+- The screen in your screenshot is still the old verification UI: `Back to dashboard`, `1 of 4 complete`, `What you unlock`, and tier copy. That means the old verification route is still being reached/rendered somewhere in the flow.
+- `Continue ID check` is not returning users to the clean Public Profile trust area reliably.
+- Qualifications are over-emphasised on this page. Based on your product logic, they should be managed in Education & CPD and only surface here as trust status.
 
-**Scope of this phase: backend + dashboard + the member's own Public Profile only.** Directory cards, search results, `/c/$slug` shopfront, city pages and profession pages are explicitly OUT until backend is proven.
+## Brutally honest target
 
-## Target shape
+If I were doing this from scratch within your existing dashboard system:
 
-```text
-Public Profile  (/dashboard/profile)  ← trust + presentation, one page
-  ┌─────────────────────────────────────────────┐
-  │  Verification status strip                  │
-  │  ●─●─○   2 of 3 complete · Visible in REPs  │
-  │  ID ✓   Insurance ✓   Qualifications …      │
-  └─────────────────────────────────────────────┘
-  ├─ Identity                  (Stripe ID check, status pill)
-  ├─ Insurance                 (provider, cover, expiry, cert upload)
-  ├─ Qualifications summary    (titles earned + "Manage on Education & CPD →")
-  └─ Photo / bio / services / specialisms / location  (existing, untouched)
+- **Public Profile is the only trust home.** No separate member-facing Verification module.
+- **Identity and Insurance are profile trust tasks**, styled in the same numbered system as Profile photo / Basic information / Bio.
+- **Qualifications are not an editable card here.** They appear as a read-only trust row or status chip that says the title/qualification state is pulled from Education & CPD, with one clear link to manage it there.
+- **No tier framing inside verification.** No “What you unlock”, no Verified vs Pro comparison, no “required for Pro tier” copy inside the trust workflow.
+- **Stripe return lands back on `/dashboard/profile#identity`** and the page refetches state, highlights Identity, and stays in the normal dashboard shell.
+- **Old `/dashboard/verification` UI becomes unreachable** for professionals.
 
-Education & CPD  (/dashboard/cpd)
-  └─ unchanged: cert upload, awarding body, title derivation
+## Plan
 
-/dashboard/verification           ← DELETED (or thin redirect)
-Sidebar "Verification" entry      ← REMOVED
-"What you unlock" tier ladder     ← REMOVED from dashboard (lives on /pricing)
-```
+### 1) Run a proper QA pass and capture the broken paths
+- Re-auth in preview and test the live flow end to end.
+- Capture screenshots for:
+  - `/dashboard/profile` before clicking ID check
+  - the click target for `Continue ID check`
+  - where Stripe returns after submit
+  - sidebar/nav state on return
+  - Education & CPD qualification state
+- Confirm whether the old screen is coming from:
+  - the old `/dashboard/verification` route still being mounted
+  - stale saved Stripe session URLs
+  - old return URLs stored in pending identity rows
+  - sidebar logic that swaps to a special verification nav
 
-Three ticks, identical for Verified and Pro:
-1. **Identity ✓** — Stripe Identity approved.
-2. **Insurance ✓** — valid policy + cert, not expired.
-3. **Qualifications ✓** — at least one approved cert; earned titles populate the public title slot.
+### 2) Lock the information architecture
+- Make **Public Profile** the only member-facing trust surface.
+- Keep only these trust elements on profile:
+  - **Identity** — actionable here
+  - **Insurance** — actionable here
+  - **Qualifications** — read-only summary, managed in Education & CPD
+- Remove all member-facing tier/upgrade copy from the trust area.
+- Decide the exact placement so it feels native to the profile editor rather than bolted on.
 
-## Out of scope (explicit)
+### 3) Redesign the trust section to match the dashboard properly
+- Replace the current large standalone TrustBlock layout with a structure that matches the page’s numbered cards.
+- Recommended shape:
+  - a slim trust/status strip near the top
+  - **Identity** card with one primary action
+  - **Insurance** card with the form/upload state
+  - **Qualifications** row/card showing approved status, earned title, and link to Education & CPD
+- Make numbering and hierarchy visually consistent with the rest of Public Profile.
+- Remove the current awkward two-column “verification module inside profile” feel.
 
-- Directory / search result cards (`FeaturedProCard`, `ProCard`, search grid).
-- `/c/$slug` public shopfront.
-- City pages (`/in/$location`) and profession pages (`/professions/$profession`).
-- Locked Phase 1 routes (`/`, `/pro/$slug`, `/pro/$slug/enquire`, marketing pillars).
-- Messaging, reviews, DBS, first-aid, Veriff fallback.
-- Renewal cron, admin review queues (deferred to a later plan).
+### 4) Fix the routing and stale-screen problem
+- Update the ID-check flow so **every new Stripe session returns to `/dashboard/profile?stripe_identity=complete#identity`**.
+- Remove or hard-redirect the old professional verification route so it cannot render the legacy UI anymore.
+- Remove the special verification sidebar state (`Back to dashboard` module shell) for professionals.
+- Add stale-session handling so `Continue ID check` does not reuse broken/expired hosted-session URLs.
+- Ensure any legacy links/search params that still point to verification resolve safely back into Public Profile.
 
-None of the above are touched until the dashboard ↔ Public Profile loop is signed off.
+### 5) Align copy with the product truth
+- Verification is **universal** across paying members, not a Pro upgrade.
+- Insurance copy should not frame it as a Pro-only requirement inside this flow.
+- Qualifications copy should explain that titles and status are derived from Education & CPD, not edited here.
+- Keep trust copy factual, short, and operational.
 
-## Changes
+### 6) Final QA and acceptance checks
+- Verify that clicking `Continue ID check` never shows the old verification screen.
+- Verify sidebar stays the normal dashboard sidebar with the correct active state.
+- Verify the user always lands back on Public Profile after ID submission.
+- Verify qualifications status updates from Education & CPD and is only linked here.
+- Verify no old `What you unlock` / Verified vs Pro trust copy remains in the dashboard trust flow.
+- Compare final screenshots against current state and confirm the page feels like one coherent profile workflow.
 
-### 1. Backend — single source of truth for the 3 ticks
-Files: `src/lib/verification/verification.functions.ts` (+ new `getTrustState` server fn)
+## Technical details
 
-- Add one authenticated server fn `getTrustState()` that returns:
-  ```ts
-  {
-    identity: { status, verifiedName, verifiedAt },
-    insurance: { status, provider, coverGbp, expiryDate, certUrl },
-    qualifications: { count, titles: string[], latestApprovedAt },
-    ticks: { identity: boolean, insurance: boolean, qualifications: boolean },
-    completedCount: 0|1|2|3,
-  }
-  ```
-- Reads from `professionals` (identity_*), `insurance_policies` (active + expiry ≥ today), `verification_submissions` (approved) + `pro_titles`.
-- Tier-blind. No `subscription.tier` checks anywhere in this fn.
-- Every other surface (status strip, Identity card, Insurance card, Qualifications summary) consumes this one fn — no parallel queries.
+- Current evidence points to two technical issues:
+  1. the old verification route/sidebar pattern still exists in the app flow
+  2. Stripe Identity sessions can resume/return through stale URLs, which can surface the old screen again
+- Likely implementation tasks:
+  - retire or redirect `dashboard_.verification.tsx`
+  - remove the verification-only sidebar branch in `DashboardShell.tsx`
+  - refactor `TrustBlock.tsx` so qualifications become read-only + deep-link to CPD
+  - harden `stripe-identity.functions.ts` return-path handling
+  - add stale-session restart logic for pending Stripe identity sessions
 
-### 2. Stripe Identity return URL
-File: `src/lib/verification/stripe-identity.functions.ts`
+## Deliverable after implementation
 
-- Change `return_url` from `/dashboard/verification?...` to `/dashboard/profile?stripe_identity=complete#identity`.
-- Webhook (`src/routes/api/public/payments/webhook.ts`) already writes `identity_status`/`identity_verified_name`/`identity_verified_at` (PR 1 from prior turn) — leave as-is.
-
-### 3. Public Profile becomes the trust home
-File: `src/routes/_authenticated/_professional/dashboard_.profile.tsx`
-
-- Add a **Verification status strip** at the very top, fed by `getTrustState`. Merge with the existing "Visible in REPs directory" bar so there's one bar, not two.
-- Add three collapsible sections beneath it, in order: **Identity**, **Insurance**, **Qualifications (summary)**. Lift `IdentityCard` and `InsuranceCard` as-is from `dashboard_.verification.tsx`.
-- Qualifications section here is **read-only**: lists earned titles + count + "Manage on Education & CPD →". Upload/edit only on `/dashboard/cpd`.
-- On mount, if `?stripe_identity=complete`, toast + scroll to `#identity` + refetch `getTrustState`.
-
-### 4. Delete the Verification page + sidebar entry
-Files: `src/routes/_authenticated/_professional/dashboard_.verification.tsx`, `src/components/dashboard/DashboardShell.tsx`
-
-- Delete `dashboard_.verification.tsx` (or 1-line redirect to `/dashboard/profile#verification`).
-- Remove `Verification` from `VERIFIED_NAV` and `PRO_NAV`.
-- Delete `VERIFICATION_MODULE_NAV` + `inVerificationModule` branch in `Sidebar`.
-- Delete `TierUnlockCard` and any "What you unlock" component only used by the verification page.
-
-### 5. CPD page
-File: `src/routes/_authenticated/_professional/dashboard_.cpd.tsx`
-
-- Unchanged behaviour. Add a "← Back to Public Profile" hint at the top so users coming from the Qualifications summary have a return path.
-
-### 6. Tier-blind sweep
-- Grep for `useTrainerTier` / `subscription.tier` inside verification UI/state. Remove any conditional that gates Identity, Insurance or Qualifications behaviour on tier.
-- Tier checks stay only on truly Pro-only client-management features.
-
-## Acceptance (this phase)
-
-- `getTrustState()` returns correct values for: brand-new account, identity-only, identity+insurance, fully verified.
-- `/dashboard/verification` no longer in the sidebar; route either 404s or 302s to `/dashboard/profile#verification`.
-- Public Profile shows 3-dot strip with live data — refetches after Stripe return.
-- Stripe ID check returns to Public Profile, not a dead route.
-- A Verified-tier and a Pro-tier account see the **identical** Trust block.
-- No "What you unlock / Verified vs Pro" copy anywhere on the dashboard.
-- **Directory / shopfront / city / profession pages: completely unchanged** — confirmed by `git diff` touching none of those files.
-
-## Next phase (NOT in this plan, listed for visibility)
-
-Once the above is signed off and stable, separate plan to wire the verified state into:
-- Directory result cards (tick + earned title).
-- `/c/$slug` shopfront trust band.
-- City / profession page "Verified" filter and badges.
+A Public Profile page that feels world-class because it behaves like **one clean profile completion workflow**: numbered, coherent, trust-focused, no duplicate module, no broken sidebar, and no old verification screen resurfacing.

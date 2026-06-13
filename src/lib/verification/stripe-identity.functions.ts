@@ -24,7 +24,10 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     const host = getRequestHost();
-    const origin = host?.startsWith("localhost") ? `http://${host}` : `https://${host}`;
+    const fallbackOrigin = process.env.PUBLIC_SITE_URL ?? "https://repsuk.org";
+    const origin = host
+      ? host.startsWith("localhost") ? `http://${host}` : `https://${host}`
+      : fallbackOrigin;
     const returnPath = data.return_path ?? "/dashboard/profile";
     const returnUrl = `${origin}${returnPath}?stripe_identity=complete#identity`;
 
