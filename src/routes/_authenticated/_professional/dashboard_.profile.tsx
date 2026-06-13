@@ -1224,9 +1224,11 @@ function ProfileEditorPage() {
                 step="02"
               />
               <div className="flex flex-col gap-4">
-                <Field label="Full name">
-                  <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
-                </Field>
+                <div data-field="full_name">
+                  <Field label="Full name" error={errors.full_name}>
+                    <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
+                  </Field>
+                </div>
                 <Field label="Profession">
                   <EarnedTitlePicker />
                 </Field>
