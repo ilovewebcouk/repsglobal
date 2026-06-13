@@ -342,7 +342,7 @@ export const adminListGyms = createServerFn({ method: "POST" })
     let q = supabaseAdmin
       .from("gyms")
       .select(
-        "id, slug, name, chain_slug, chain_name, area, city, status, created_by, created_at",
+        "id, slug, name, chain_slug, chain_name, area, city, status, source, lat, created_by, created_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
