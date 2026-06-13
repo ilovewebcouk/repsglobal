@@ -424,11 +424,12 @@ function EnquirePage() {
                 </Link>
               </Button>
               <Button
-                type="button"
+                type="submit"
+                disabled={mutation.isPending}
                 className="h-11 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
               >
                 <Send data-icon="inline-start" />
-                Send enquiry to {pro.name.split(" ")[0]}
+                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split(" ")[0]}`}
                 <ChevronRight data-icon="inline-end" />
               </Button>
             </div>
