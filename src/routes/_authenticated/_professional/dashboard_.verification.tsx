@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,7 +21,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
-import { createVeriffSession, syncVeriffStatus } from "@/lib/verification/veriff.functions";
+import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import {
   myInsurance,
   saveInsurance,
@@ -36,6 +36,9 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/v
       { name: "description", content: "Upload your ID, insurance and qualifications to verify your REPS profile." },
     ],
     links: [{ rel: "canonical", href: "/dashboard/verification" }],
+  }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
   }),
   component: VerificationPage,
 });
@@ -53,28 +56,41 @@ type Step = { key: string; label: string; done: boolean; pending?: boolean; requ
 
 function VerificationPage() {
   const qc = useQueryClient();
+  const router = useRouter();
+  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" });
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
-  const syncVeriff = useServerFn(syncVeriffStatus);
 
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
 
-  // Self-healing Veriff sync: while a Veriff check is pending, poll Veriff's
-  // API server-side so the row updates even if the webhook never arrives.
-  const pendingVeriff =
-    identity.data?.vendor === "veriff" && identity.data?.status === "pending";
+  // When Stripe Identity redirects back, refetch and clear the query param.
+  useEffect(() => {
+    if (search.stripe_identity === "complete") {
+      qc.invalidateQueries({ queryKey: ["my-identity"] });
+      toast.success("ID check submitted — we'll confirm shortly.");
+      router.navigate({
+        to: "/dashboard/verification",
+        search: {},
+        replace: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.stripe_identity]);
+
+  // Light poll while a Stripe Identity check is pending in case the webhook lags.
+  const pendingStripe =
+    identity.data?.vendor === "stripe" && identity.data?.status === "pending";
   useQuery({
-    queryKey: ["veriff-sync", identity.data?.id],
+    queryKey: ["identity-poll", identity.data?.id],
     queryFn: async () => {
-      const r = await syncVeriff();
-      if (r.changed) qc.invalidateQueries({ queryKey: ["my-identity"] });
-      return r;
+      await qc.invalidateQueries({ queryKey: ["my-identity"] });
+      return true;
     },
-    enabled: !!pendingVeriff,
-    refetchInterval: 15000,
+    enabled: !!pendingStripe,
+    refetchInterval: 8000,
     refetchOnWindowFocus: true,
   });
 
@@ -173,9 +189,10 @@ type IdentityRow = {
   name_on_doc?: string | null;
   dob_on_doc?: string | null;
   admin_note?: string | null;
-  veriff_session_url?: string | null;
-  veriff_status?: string | null;
-  veriff_reason?: string | null;
+  stripe_vs_id?: string | null;
+  stripe_vs_url?: string | null;
+  stripe_status?: string | null;
+  stripe_reason?: string | null;
 };
 
 function IdentityCard({
@@ -187,7 +204,7 @@ function IdentityCard({
 }) {
   const upload = useServerFn(uploadVerificationAsset);
   const save = useServerFn(saveIdentity);
-  const startVeriff = useServerFn(createVeriffSession);
+  const startStripe = useServerFn(createStripeIdentitySession);
   const [docType, setDocType] = useState<"passport" | "driving_licence" | "national_id">("passport");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -198,8 +215,8 @@ function IdentityCard({
   const frontRef = useRef<HTMLInputElement>(null);
   const selfieRef = useRef<HTMLInputElement>(null);
 
-  const veriff = useMutation({
-    mutationFn: async () => startVeriff({ data: {} }),
+  const stripeId = useMutation({
+    mutationFn: async () => startStripe({ data: {} }),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
@@ -254,16 +271,9 @@ function IdentityCard({
   });
 
   if (identity) {
-    const isVeriff = identity.vendor === "veriff";
-    const veriffStarted = identity.veriff_status === "submitted";
-    const veriffStuck =
-      isVeriff &&
-      identity.status === "pending" &&
-      (identity.veriff_status === "created" ||
-        identity.veriff_status === "started" ||
-        identity.veriff_status === "abandoned" ||
-        !identity.veriff_status);
-    const inProgress = identity.status === "pending" && isVeriff && !veriffStuck;
+    const isStripe = identity.vendor === "stripe";
+    const stripeInProgress =
+      isStripe && identity.status === "pending" && !!identity.stripe_vs_url;
 
     const badgeLabel =
       identity.status === "approved"
@@ -274,9 +284,7 @@ function IdentityCard({
             ? "More info needed"
             : identity.status === "expired"
               ? "Expired"
-              : veriffStuck
-                ? "Not started"
-                : "In review";
+              : "In review";
 
     const badgeClass =
       identity.status === "approved"
@@ -285,48 +293,44 @@ function IdentityCard({
           ? "border-red-400/30 bg-red-500/15 text-red-300"
           : "border-amber-400/30 bg-amber-500/15 text-amber-300";
 
+    const reason = identity.admin_note || identity.stripe_reason;
+
     return (
       <PPanel className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
             <p className="mt-1 text-[12px] text-white/55">
-              {isVeriff ? "Veriff ID check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
+              {isStripe ? "Stripe Identity check" : identity.doc_type || "Document"} · {identity.name_on_doc || "—"}
             </p>
           </div>
           <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
-        {(identity.admin_note || identity.veriff_reason) && (
+        {reason && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>{identity.admin_note || identity.veriff_reason}</span>
+            <span>{reason}</span>
           </div>
         )}
-        {veriffStuck && (
-          <p className="mt-3 text-[12px] text-white/55">
-            Your last ID check didn’t finish. Resume where you left off, or restart with a fresh session.
-          </p>
-        )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {(inProgress || veriffStuck) && identity.veriff_session_url && (
+          {stripeInProgress && identity.stripe_vs_url && (
             <a
-              href={identity.veriff_session_url}
+              href={identity.stripe_vs_url}
               className="inline-flex h-9 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white"
             >
-              {veriffStarted ? "Continue ID check" : "Resume ID check"}
+              Continue ID check
             </a>
           )}
-          {(veriffStuck ||
-            identity.status === "rejected" ||
+          {(identity.status === "rejected" ||
             identity.status === "needs_more_info" ||
             identity.status === "expired") && (
             <Button
-              variant={veriffStuck ? "subtle" : "primary"}
+              variant="primary"
               size="md"
-              disabled={veriff.isPending}
-              onClick={() => veriff.mutate()}
+              disabled={stripeId.isPending}
+              onClick={() => stripeId.mutate()}
             >
-              {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
+              {stripeId.isPending ? <Loader2 className="size-4 animate-spin" /> : "Restart ID check"}
             </Button>
           )}
         </div>
@@ -340,16 +344,16 @@ function IdentityCard({
       <PPanel className="p-5">
         <h3 className="font-display text-[16px] font-bold text-white">Identity</h3>
         <p className="mt-1 text-[12px] text-white/55">
-          We use Veriff to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
+          We use Stripe Identity to confirm your ID with a 60-second photo + selfie check. Encrypted, never shown on your profile.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button
             variant="primary"
             size="md"
-            disabled={veriff.isPending}
-            onClick={() => veriff.mutate()}
+            disabled={stripeId.isPending}
+            onClick={() => stripeId.mutate()}
           >
-            {veriff.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
+            {stripeId.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
           </Button>
           <button
             type="button"
@@ -377,7 +381,7 @@ function IdentityCard({
           onClick={() => setUseManual(false)}
           className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline"
         >
-          Use Veriff instead
+          Use Stripe Identity instead
         </button>
       </div>
       <div className="mt-4 space-y-3">
