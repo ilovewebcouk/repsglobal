@@ -816,6 +816,7 @@ function ProgramsPage() {
       }
     >
       <div className="space-y-5">
+        <ProgrammeGeneratorWaitlist />
         <ProgrammeSelectorRow />
         <Tabs />
 
