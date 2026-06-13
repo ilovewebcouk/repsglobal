@@ -414,6 +414,103 @@ export type Database = {
         }
         Relationships: []
       }
+      enquiries: {
+        Row: {
+          archived_at: string | null
+          budget: string | null
+          created_at: string
+          frequency: string | null
+          goals: string[]
+          id: string
+          ip_hash: string | null
+          location: string | null
+          message: string
+          professional_id: string
+          read_at: string | null
+          replied_at: string | null
+          sender_email: string
+          sender_name: string
+          sender_phone: string | null
+          sender_user_id: string | null
+          service_id: string | null
+          source: string
+          start_by: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          budget?: string | null
+          created_at?: string
+          frequency?: string | null
+          goals?: string[]
+          id?: string
+          ip_hash?: string | null
+          location?: string | null
+          message: string
+          professional_id: string
+          read_at?: string | null
+          replied_at?: string | null
+          sender_email: string
+          sender_name: string
+          sender_phone?: string | null
+          sender_user_id?: string | null
+          service_id?: string | null
+          source?: string
+          start_by?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          budget?: string | null
+          created_at?: string
+          frequency?: string | null
+          goals?: string[]
+          id?: string
+          ip_hash?: string | null
+          location?: string | null
+          message?: string
+          professional_id?: string
+          read_at?: string | null
+          replied_at?: string | null
+          sender_email?: string
+          sender_name?: string
+          sender_phone?: string | null
+          sender_user_id?: string | null
+          service_id?: string | null
+          source?: string
+          start_by?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiries_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+          {
+            foreignKeyName: "enquiries_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_flags: {
         Row: {
           audience: Json
@@ -1187,6 +1284,228 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      programmes_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          note: string | null
+          professional_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          note?: string | null
+          professional_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          note?: string | null
+          professional_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programmes_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programmes_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          body: string
+          client_name: string
+          client_user_id: string | null
+          created_at: string
+          id: string
+          professional_id: string
+          published_at: string | null
+          rating: number
+          responded_at: string | null
+          response: string | null
+          source: string
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          client_name: string
+          client_user_id?: string | null
+          created_at?: string
+          id?: string
+          professional_id: string
+          published_at?: string | null
+          rating: number
+          responded_at?: string | null
+          response?: string | null
+          source?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          client_name?: string
+          client_user_id?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string
+          published_at?: string | null
+          rating?: number
+          responded_at?: string | null
+          response?: string | null
+          source?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          mode: string
+          price_label: string | null
+          price_pence: number | null
+          professional_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          mode?: string
+          price_label?: string | null
+          price_pence?: number | null
+          professional_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          mode?: string
+          price_label?: string | null
+          price_pence?: number | null
+          professional_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      shop_fronts: {
+        Row: {
+          about: string | null
+          accent_hex: string | null
+          created_at: string
+          hero_image_url: string | null
+          is_published: boolean
+          layout_variant: string
+          professional_id: string
+          published_at: string | null
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          about?: string | null
+          accent_hex?: string | null
+          created_at?: string
+          hero_image_url?: string | null
+          is_published?: boolean
+          layout_variant?: string
+          professional_id: string
+          published_at?: string | null
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          about?: string | null
+          accent_hex?: string | null
+          created_at?: string
+          hero_image_url?: string | null
+          is_published?: boolean
+          layout_variant?: string
+          professional_id?: string
+          published_at?: string | null
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_fronts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shop_fronts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
