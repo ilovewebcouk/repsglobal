@@ -72,17 +72,13 @@ export const submitEnquiry = createServerFn({ method: "POST" })
 
     // Notify the pro by email (best-effort — never block the submission).
     try {
-      const [{ data: proRow }, { data: prof }] = await Promise.all([
-        supabaseAdmin.from("professionals").select("contact_email").eq("id", pro.id).maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name").eq("id", pro.id).maybeSingle(),
-      ]);
-      // Fall back to auth email if no contact_email on the professional row.
-      let recipient =
-        (proRow as { contact_email?: string | null } | null)?.contact_email ?? null;
-      if (!recipient) {
-        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(pro.id);
-        recipient = authUser?.user?.email ?? null;
-      }
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", pro.id)
+        .maybeSingle();
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(pro.id);
+      const recipient = authUser?.user?.email ?? null;
       if (recipient) {
         const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
         const fullName = prof?.full_name ?? "";
