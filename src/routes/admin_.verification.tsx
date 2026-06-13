@@ -39,10 +39,16 @@ import {
   getQueueStats,
   getReviewWorkspace,
   listPendingVerifications,
+  listVerifications,
   releaseVerification,
   reviewVerification,
+  revokeQualification,
   sendVerificationReminder,
 } from "@/lib/verification/verification.functions";
+import {
+  listIdentityChecks,
+  adminOverrideIdentity,
+} from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, type CheckStatus } from "@/lib/verification/cross-checks";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
