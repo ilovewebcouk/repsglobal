@@ -183,7 +183,10 @@ function equal(a: FormState, b: FormState): boolean {
   );
 }
 
-function completion(p: DashboardProfile): {
+function completion(
+  p: DashboardProfile,
+  trust?: { identityApproved: boolean; insuranceActive: boolean } | null,
+): {
   pct: number;
   checklist: { label: string; done: boolean }[];
 } {
@@ -204,10 +207,13 @@ function completion(p: DashboardProfile): {
         p.social_x
       ),
     },
+    { label: "Identity verified", done: !!trust?.identityApproved },
+    { label: "Insurance on file", done: !!trust?.insuranceActive },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
 }
+
 
 /* ============================================================
    Primitives (kept visually identical to the locked mock-up)
