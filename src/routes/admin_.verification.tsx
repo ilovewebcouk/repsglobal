@@ -51,6 +51,7 @@ import {
 } from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
+import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-verify";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 export const Route = createFileRoute("/admin_/verification")({
