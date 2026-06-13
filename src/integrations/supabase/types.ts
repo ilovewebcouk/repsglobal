@@ -1202,8 +1202,10 @@ export type Database = {
           checklist: Json
           created_at: string
           decision: string
+          gates_snapshot: Json | null
           id: string
           notes: string | null
+          override_reason: string | null
           professional_id: string
           reviewer_id: string
           stripe_event_id: string | null
@@ -1216,8 +1218,10 @@ export type Database = {
           checklist?: Json
           created_at?: string
           decision: string
+          gates_snapshot?: Json | null
           id?: string
           notes?: string | null
+          override_reason?: string | null
           professional_id: string
           reviewer_id: string
           stripe_event_id?: string | null
@@ -1230,8 +1234,10 @@ export type Database = {
           checklist?: Json
           created_at?: string
           decision?: string
+          gates_snapshot?: Json | null
           id?: string
           notes?: string | null
+          override_reason?: string | null
           professional_id?: string
           reviewer_id?: string
           stripe_event_id?: string | null

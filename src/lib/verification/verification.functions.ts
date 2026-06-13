@@ -16,6 +16,8 @@ const reviewInput = z.object({
   admin_note: z.string().max(1000).optional().nullable(),
   checklist: z.record(z.string(), z.boolean()).optional(),
   unlocked_tier: z.enum(["verified", "pro", "studio"]).optional().nullable(),
+  gates_snapshot: z.record(z.string(), z.unknown()).optional().nullable(),
+  override_reason: z.string().max(500).optional().nullable(),
 });
 
 export const submitVerification = createServerFn({ method: "POST" })
@@ -167,6 +169,18 @@ export const reviewVerification = createServerFn({ method: "POST" })
     if (subErr) throw new Error(subErr.message);
     if (!sub) throw new Error("Submission not found");
 
+    // Sub-pass 0c: enforce hard gates on Approve. Reviewer must either pass
+    // every hard gate or type an override reason (≥8 chars).
+    if (data.decision === "approved") {
+      const snap = (data.gates_snapshot ?? null) as { hardPassed?: boolean; blockingReasons?: string[] } | null;
+      const overrideOk = (data.override_reason ?? "").trim().length >= 8;
+      if (snap && snap.hardPassed === false && !overrideOk) {
+        throw new Error(
+          `Cannot approve — failing checks: ${(snap.blockingReasons ?? []).join(", ") || "unknown"}. Provide an override reason (≥8 chars).`,
+        );
+      }
+    }
+
     const { error: updErr } = await supabaseAdmin
       .from("verification_submissions")
       .update({
@@ -190,6 +204,8 @@ export const reviewVerification = createServerFn({ method: "POST" })
       notes: data.admin_note ?? null,
       checklist: data.checklist ?? {},
       unlocked_tier: data.unlocked_tier ?? (data.decision === "approved" ? "verified" : null),
+      gates_snapshot: data.gates_snapshot ?? null,
+      override_reason: data.override_reason ?? null,
     } as never);
 
     if (data.decision === "approved") {

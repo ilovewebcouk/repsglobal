@@ -31,7 +31,7 @@ import {
 } from "@/components/dashboard/ui/empty";
 import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { CertDrawer } from "@/components/verification/CertDrawer";
 
 import {
@@ -50,7 +50,7 @@ import {
   adminOverrideIdentity,
 } from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
-import { runCrossChecks, type CheckStatus } from "@/lib/verification/cross-checks";
+import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 export const Route = createFileRoute("/admin_/verification")({
@@ -114,6 +114,7 @@ function AdminVerificationPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
   const [search, setSearch] = useState("");
   const [note, setNote] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [certOpen, setCertOpen] = useState(false);
@@ -161,6 +162,7 @@ function AdminVerificationPage() {
   const selectCase = async (id: string) => {
     setSelectedId(id);
     setNote("");
+    setOverrideReason("");
     setChecks({});
     try {
       await claim({ data: { id } });
@@ -179,18 +181,32 @@ function AdminVerificationPage() {
   };
 
   const decideMutation = useMutation({
-    mutationFn: async (decision: "approved" | "rejected" | "changes_requested") => {
+    mutationFn: async (args: {
+      decision: "approved" | "rejected" | "changes_requested";
+      unlocked_tier?: "verified" | "pro" | "studio" | null;
+      gates_snapshot?: Record<string, unknown> | null;
+      override_reason?: string | null;
+    }) => {
       if (!selectedId) return;
-      if (decision !== "approved" && !note.trim()) throw new Error("Note required for rejection / changes");
+      if (args.decision !== "approved" && !note.trim()) throw new Error("Note required for rejection / changes");
       setBusy(true);
       await decide({
-        data: { id: selectedId, decision, admin_note: note.trim() || null, checklist: checks },
+        data: {
+          id: selectedId,
+          decision: args.decision,
+          admin_note: note.trim() || null,
+          checklist: checks,
+          unlocked_tier: args.unlocked_tier ?? null,
+          gates_snapshot: args.gates_snapshot ?? null,
+          override_reason: args.override_reason ?? null,
+        },
       });
     },
     onSettled: () => {
       setBusy(false);
       setSelectedId(null);
       setNote("");
+      setOverrideReason("");
       setChecks({});
       qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
@@ -293,9 +309,11 @@ function AdminVerificationPage() {
             )}
             {rows.map((r) => {
               const sel = r.id === selectedId;
-              const sla = slaRemaining(r.created_at);
+              const isPending = r.status === "submitted" || r.status === "changes_requested";
+              const sla = isPending ? slaRemaining(r.created_at) : null;
               const name = r.professional?.full_name || r.professional?.trading_name || "Unnamed";
               const claimed = (r as { claimed_by?: string | null }).claimed_by;
+              const reviewedAt = (r as { reviewed_at?: string | null }).reviewed_at;
               return (
                 <li key={r.id}>
                   <button
@@ -315,18 +333,26 @@ function AdminVerificationPage() {
                       )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
-                      <span className="text-white/45">{relativeTime(r.created_at)} ago</span>
-                      <span
-                        className={`rounded-[6px] px-1.5 py-0.5 font-semibold ${
-                          sla.tone === "breach"
-                            ? "bg-red-500/15 text-red-300"
-                            : sla.tone === "warn"
-                              ? "bg-amber-500/15 text-amber-300"
-                              : "bg-emerald-500/15 text-emerald-300"
-                        }`}
-                      >
-                        {sla.label}
+                      <span className="text-white/45">
+                        {isPending
+                          ? `Submitted ${relativeTime(r.created_at)} ago`
+                          : reviewedAt
+                            ? `${STATUS_LABEL[r.status as StatusFilter] ?? r.status} ${relativeTime(reviewedAt)} ago`
+                            : `${relativeTime(r.created_at)} ago`}
                       </span>
+                      {sla && (
+                        <span
+                          className={`rounded-[6px] px-1.5 py-0.5 font-semibold ${
+                            sla.tone === "breach"
+                              ? "bg-red-500/15 text-red-300"
+                              : sla.tone === "warn"
+                                ? "bg-amber-500/15 text-amber-300"
+                                : "bg-emerald-500/15 text-emerald-300"
+                          }`}
+                        >
+                          {sla.label}
+                        </span>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -371,17 +397,37 @@ function AdminVerificationPage() {
               regulatorVerified: sub.regulator_verified ?? null,
               insuranceExpiry: ins?.expiry_date ?? null,
               insuranceCover: ins?.cover_amount_gbp ?? null,
+              duplicateFileSha: (sub as { duplicate_of?: string | null }).duplicate_of ? true : null,
             });
 
-            const sla = slaRemaining(sub.created_at);
+            const gates = evaluateGates({
+              profileName: prof?.full_name ?? null,
+              certHolderName: sub.holder_name ?? null,
+              idDocName: id?.name_on_doc ?? null,
+              regulatorVerified: sub.regulator_verified ?? null,
+              insuranceExpiry: ins?.expiry_date ?? null,
+              insuranceCover: ins?.cover_amount_gbp ?? null,
+              certNumberPresent: !!((sub as { certificate_number?: string | null }).certificate_number || (sub as { qualification_number?: string | null }).qualification_number),
+              expiryDate: (sub as { expiry_date?: string | null }).expiry_date ?? null,
+              issueYear: (sub as { year?: number | null }).year ?? null,
+              duplicateFileSha: (sub as { duplicate_of?: string | null }).duplicate_of ? true : null,
+            });
+
+            const subStatus = (sub as { status?: string }).status;
+            const isPending = subStatus === "submitted" || subStatus === "changes_requested";
+            const sla = isPending ? slaRemaining(sub.created_at) : null;
             const titleLabel = getTitleLabel(sub.derived_title_slug ?? null);
             const missing: ("identity" | "selfie" | "insurance" | "cert")[] = [];
             if (!id) missing.push("identity");
             else if (!id.selfie_path) missing.push("selfie");
             if (!ins) missing.push("insurance");
 
-            const canApprovePro = !!id && !!ins;
-            const isApproved = (sub as { status?: string }).status === "approved";
+            const canApprovePro = !!id && !!ins && gates.hardPassed;
+            const isApproved = subStatus === "approved";
+            const isFinal = subStatus === "approved" || subStatus === "rejected";
+            const overrideOk = overrideReason.trim().length >= 8;
+            const approveAllowed = gates.hardPassed || overrideOk;
+            const gatesSnap = { hardPassed: gates.hardPassed, blockingReasons: gates.blockingReasons, hardGates: gates.hardGates, softGates: gates.softGates };
 
             const handleRevoke = async () => {
               const reason = window.prompt(
@@ -416,10 +462,22 @@ function AdminVerificationPage() {
                       </div>
                       <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-white/55">
                         <span>Submitted {relativeTime(sub.created_at)} ago</span>
-                        <span>·</span>
-                        <span className={
-                          sla.tone === "breach" ? "text-red-300" : sla.tone === "warn" ? "text-amber-300" : "text-emerald-300"
-                        }>SLA {sla.label}</span>
+                        {sla && (
+                          <>
+                            <span>·</span>
+                            <span className={
+                              sla.tone === "breach" ? "text-red-300" : sla.tone === "warn" ? "text-amber-300" : "text-emerald-300"
+                            }>SLA {sla.label}</span>
+                          </>
+                        )}
+                        {isFinal && sub.reviewed_at && (
+                          <>
+                            <span>·</span>
+                            <span className={isApproved ? "text-emerald-300" : "text-red-300"}>
+                              {isApproved ? "Approved" : "Rejected"} {relativeTime(sub.reviewed_at)} ago
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -606,40 +664,55 @@ function AdminVerificationPage() {
                   </div>
                 </PCard>
 
-                {/* Unlock preview */}
+                {/* Gates — auto-derived */}
                 <PCard>
-                  <h4 className="mb-2 font-display text-[14px] font-bold text-white">If you approve</h4>
-                  <div className="grid grid-cols-1 gap-2 text-[12px] text-white/75 sm:grid-cols-3">
-                    <div><span className="text-white/45">Tier</span> · <span className="text-emerald-300 font-semibold">{canApprovePro ? "Pro-eligible" : "Verified only"}</span></div>
-                    <div><span className="text-white/45">Title</span> · {titleLabel || "—"}</div>
-                    <div><span className="text-white/45">ID checked</span> · {id ? "Yes" : "No"}</div>
+                  <h4 className="mb-2 font-display text-[14px] font-bold text-white">
+                    Gates {gates.hardPassed
+                      ? <span className="ml-2 rounded-[6px] border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-emerald-300">All pass</span>
+                      : <span className="ml-2 rounded-[6px] border border-red-400/30 bg-red-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-red-300">{gates.blockingReasons.length} failing</span>
+                    }
+                  </h4>
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                    {gates.hardGates.map((g) => (
+                      <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-white/[0.03] px-2.5 py-2 text-[12px]">
+                        {g.passed
+                          ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                          : <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />}
+                        <span className="flex-1 text-white/80">{g.label}</span>
+                        <span className="text-white/45 text-[11px]">{g.detail}</span>
+                      </div>
+                    ))}
                   </div>
-                  {!canApprovePro && (
-                    <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      <span>Pro tier needs identity + insurance. You can still approve as Verified.</span>
+                  {gates.softGates.length > 0 && (
+                    <div className="mt-3">
+                      <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">Soft warnings</div>
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                        {gates.softGates.map((g) => (
+                          <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-amber-500/5 border border-amber-400/20 px-2.5 py-2 text-[12px]">
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-300" />
+                            <span className="flex-1 text-amber-100/85">{g.label}</span>
+                            <span className="text-amber-200/60 text-[11px]">{g.detail}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </PCard>
 
                 {/* Decision */}
+                {isFinal ? (
+                  <PCard>
+                    <div className="text-[12.5px] text-white/65">
+                      This case is {isApproved ? "approved" : "rejected"}. {isApproved ? "Use Revoke above to reverse." : "The pro can re-submit."}
+                    </div>
+                  </PCard>
+                ) : (
                 <PCard>
-                  <h4 className="mb-3 font-display text-[14px] font-bold text-white">Decision</h4>
-                  <div className="space-y-2 text-[12px] text-white/80">
-                    {[
-                      { key: "identity", label: "Identity matches qualification" },
-                      { key: "insurance", label: "Insurance current and adequate" },
-                      { key: "qualification", label: "Qualification verified" },
-                    ].map((c) => (
-                      <label key={c.key} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={!!checks[c.key]}
-                          onCheckedChange={(v) => setChecks((p) => ({ ...p, [c.key]: !!v }))}
-                        />
-                        <span>{c.label}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <h4 className="mb-1 font-display text-[14px] font-bold text-white">Decision</h4>
+                  <p className="text-[11.5px] text-white/55">
+                    Tier on approve: <span className="text-white/85 font-semibold">{canApprovePro ? "Pro-eligible" : "Verified only"}</span>
+                    {titleLabel ? ` · Title: ${titleLabel}` : ""}
+                  </p>
                   <Textarea
                     className="mt-3"
                     placeholder="Reviewer notes (required for reject / changes)"
@@ -647,32 +720,61 @@ function AdminVerificationPage() {
                     onChange={(e) => setNote(e.target.value)}
                     rows={3}
                   />
+                  {!gates.hardPassed && (
+                    <div className="mt-3">
+                      <div className="mb-1 flex items-center gap-2 text-[11px] text-red-300">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Override required to approve. Failing: {gates.blockingReasons.join(", ")}
+                      </div>
+                      <Input
+                        placeholder="Type override reason (≥8 chars) — recorded permanently"
+                        value={overrideReason}
+                        onChange={(e) => setOverrideReason(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="subtle"
-                      size="sm"
-                      disabled={busy || missing.length === 0}
-                      onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
-                    >
-                      <Mail className="mr-1 h-3.5 w-3.5" /> Send reminder
-                    </Button>
+                    {missing.length > 0 && (
+                      <Button
+                        variant="subtle"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
+                      >
+                        <Mail className="mr-1 h-3.5 w-3.5" /> Request {missing.join(" + ")}
+                      </Button>
+                    )}
                     <div className="flex-1" />
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
                       Request changes
                     </Button>
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
                       Reject
                     </Button>
+                    {canApprovePro && approveAllowed && (
+                      <Button
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "pro", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
+                        className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+                        title="Approves with Pro eligibility (identity + insurance present)"
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Pro"}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
-                      disabled={busy}
-                      onClick={() => decideMutation.mutate("approved")}
-                      className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+                      disabled={busy || !approveAllowed}
+                      onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
+                      className={canApprovePro ? "" : "bg-reps-orange text-white hover:bg-reps-orange-hover"}
+                      variant={canApprovePro ? "subtle" : undefined}
+                      title={approveAllowed ? "Approves at Verified tier" : `Failing: ${gates.blockingReasons.join(", ")}`}
                     >
-                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : `Approve → ${canApprovePro ? "Pro-eligible" : "Verified"}`}
+                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Verified"}
                     </Button>
                   </div>
                 </PCard>
+                )}
 
                 {/* History */}
                 {w.history.length > 0 && (
@@ -715,9 +817,9 @@ function AdminVerificationPage() {
                     return url;
                   }}
                   busy={busy}
-                  onApprove={() => { setCertOpen(false); decideMutation.mutate("approved"); }}
-                  onReject={() => { setCertOpen(false); decideMutation.mutate("rejected"); }}
-                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate("changes_requested"); }}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: canApprovePro ? "pro" : "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
+                  onReject={() => { setCertOpen(false); decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap }); }}
+                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap }); }}
                 />
               </>
             );
