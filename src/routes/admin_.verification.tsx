@@ -664,40 +664,55 @@ function AdminVerificationPage() {
                   </div>
                 </PCard>
 
-                {/* Unlock preview */}
+                {/* Gates — auto-derived */}
                 <PCard>
-                  <h4 className="mb-2 font-display text-[14px] font-bold text-white">If you approve</h4>
-                  <div className="grid grid-cols-1 gap-2 text-[12px] text-white/75 sm:grid-cols-3">
-                    <div><span className="text-white/45">Tier</span> · <span className="text-emerald-300 font-semibold">{canApprovePro ? "Pro-eligible" : "Verified only"}</span></div>
-                    <div><span className="text-white/45">Title</span> · {titleLabel || "—"}</div>
-                    <div><span className="text-white/45">ID checked</span> · {id ? "Yes" : "No"}</div>
+                  <h4 className="mb-2 font-display text-[14px] font-bold text-white">
+                    Gates {gates.hardPassed
+                      ? <span className="ml-2 rounded-[6px] border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-emerald-300">All pass</span>
+                      : <span className="ml-2 rounded-[6px] border border-red-400/30 bg-red-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-red-300">{gates.blockingReasons.length} failing</span>
+                    }
+                  </h4>
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                    {gates.hardGates.map((g) => (
+                      <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-white/[0.03] px-2.5 py-2 text-[12px]">
+                        {g.passed
+                          ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                          : <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />}
+                        <span className="flex-1 text-white/80">{g.label}</span>
+                        <span className="text-white/45 text-[11px]">{g.detail}</span>
+                      </div>
+                    ))}
                   </div>
-                  {!canApprovePro && (
-                    <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      <span>Pro tier needs identity + insurance. You can still approve as Verified.</span>
+                  {gates.softGates.length > 0 && (
+                    <div className="mt-3">
+                      <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">Soft warnings</div>
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                        {gates.softGates.map((g) => (
+                          <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-amber-500/5 border border-amber-400/20 px-2.5 py-2 text-[12px]">
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-300" />
+                            <span className="flex-1 text-amber-100/85">{g.label}</span>
+                            <span className="text-amber-200/60 text-[11px]">{g.detail}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </PCard>
 
                 {/* Decision */}
+                {isFinal ? (
+                  <PCard>
+                    <div className="text-[12.5px] text-white/65">
+                      This case is {isApproved ? "approved" : "rejected"}. {isApproved ? "Use Revoke above to reverse." : "The pro can re-submit."}
+                    </div>
+                  </PCard>
+                ) : (
                 <PCard>
-                  <h4 className="mb-3 font-display text-[14px] font-bold text-white">Decision</h4>
-                  <div className="space-y-2 text-[12px] text-white/80">
-                    {[
-                      { key: "identity", label: "Identity matches qualification" },
-                      { key: "insurance", label: "Insurance current and adequate" },
-                      { key: "qualification", label: "Qualification verified" },
-                    ].map((c) => (
-                      <label key={c.key} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={!!checks[c.key]}
-                          onCheckedChange={(v) => setChecks((p) => ({ ...p, [c.key]: !!v }))}
-                        />
-                        <span>{c.label}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <h4 className="mb-1 font-display text-[14px] font-bold text-white">Decision</h4>
+                  <p className="text-[11.5px] text-white/55">
+                    Tier on approve: <span className="text-white/85 font-semibold">{canApprovePro ? "Pro-eligible" : "Verified only"}</span>
+                    {titleLabel ? ` · Title: ${titleLabel}` : ""}
+                  </p>
                   <Textarea
                     className="mt-3"
                     placeholder="Reviewer notes (required for reject / changes)"
@@ -705,32 +720,61 @@ function AdminVerificationPage() {
                     onChange={(e) => setNote(e.target.value)}
                     rows={3}
                   />
+                  {!gates.hardPassed && (
+                    <div className="mt-3">
+                      <div className="mb-1 flex items-center gap-2 text-[11px] text-red-300">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Override required to approve. Failing: {gates.blockingReasons.join(", ")}
+                      </div>
+                      <Input
+                        placeholder="Type override reason (≥8 chars) — recorded permanently"
+                        value={overrideReason}
+                        onChange={(e) => setOverrideReason(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="subtle"
-                      size="sm"
-                      disabled={busy || missing.length === 0}
-                      onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
-                    >
-                      <Mail className="mr-1 h-3.5 w-3.5" /> Send reminder
-                    </Button>
+                    {missing.length > 0 && (
+                      <Button
+                        variant="subtle"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
+                      >
+                        <Mail className="mr-1 h-3.5 w-3.5" /> Request {missing.join(" + ")}
+                      </Button>
+                    )}
                     <div className="flex-1" />
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("changes_requested")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
                       Request changes
                     </Button>
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate("rejected")}>
+                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
                       Reject
                     </Button>
+                    {canApprovePro && approveAllowed && (
+                      <Button
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "pro", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
+                        className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+                        title="Approves with Pro eligibility (identity + insurance present)"
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Pro"}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
-                      disabled={busy}
-                      onClick={() => decideMutation.mutate("approved")}
-                      className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+                      disabled={busy || !approveAllowed}
+                      onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
+                      className={canApprovePro ? "" : "bg-reps-orange text-white hover:bg-reps-orange-hover"}
+                      variant={canApprovePro ? "subtle" : undefined}
+                      title={approveAllowed ? "Approves at Verified tier" : `Failing: ${gates.blockingReasons.join(", ")}`}
                     >
-                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : `Approve → ${canApprovePro ? "Pro-eligible" : "Verified"}`}
+                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Verified"}
                     </Button>
                   </div>
                 </PCard>
+                )}
 
                 {/* History */}
                 {w.history.length > 0 && (
