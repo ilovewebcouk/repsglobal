@@ -78,7 +78,7 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
     .select(
       "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, reviewed_by, derived_title_slug, derived_specialism_slugs, regulator_verified, claimed_by, claimed_at",
     )
-    .in("status", statuses as string[])
+    .in("status", statuses as never)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
 
