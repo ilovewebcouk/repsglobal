@@ -94,6 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Find verified personal trainers, Pilates instructors, nutritionists and coaches you can trust.",
       },
+      { name: "robots", content: "noindex, nofollow" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "REPS — Find. Trust. Train. Transform." },
       {
