@@ -916,7 +916,13 @@ function ProfileEditorPage() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const { pct, checklist } = completion(profile);
+  const fetchTrust = useServerFn(getTrustState);
+  const trustQ = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
+  const { pct, checklist } = completion(profile, {
+    identityApproved: trustQ.data?.ticks.identity ?? false,
+    insuranceActive: trustQ.data?.ticks.insurance ?? false,
+  });
+
 
   return (
     <DashboardShell
