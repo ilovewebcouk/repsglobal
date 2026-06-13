@@ -57,11 +57,11 @@ const searchInput = z.object({
 
 export const searchGyms = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => searchInput.parse(d))
-  .handler(async ({ data }): Promise<GymOption[]> => {
+  .handler(async ({ data }): Promise<SearchResults> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("gyms")
-      .select("id, slug, name, chain_slug, chain_name, area, city, status")
+      .select("id, slug, name, chain_slug, chain_name, area, city, status, source")
       .eq("status", "active")
       .order("name", { ascending: true })
       .limit(data.limit);
@@ -72,7 +72,59 @@ export const searchGyms = createServerFn({ method: "POST" })
     }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return (rows ?? []) as GymOption[];
+    const local = (rows ?? []) as GymOption[];
+
+    // Density counts for any local results (powers "· N trainers here" hint).
+    let withCounts: GymOption[] = local;
+    if (local.length > 0) {
+      const ids = local.map((g) => g.id);
+      const { data: counts } = await supabaseAdmin
+        .from("professional_gyms")
+        .select("gym_id")
+        .in("gym_id", ids);
+      const tally = new Map<string, number>();
+      for (const r of (counts ?? []) as Array<{ gym_id: string }>) {
+        tally.set(r.gym_id, (tally.get(r.gym_id) ?? 0) + 1);
+      }
+      withCounts = local.map((g) => ({ ...g, coach_count: tally.get(g.id) ?? 0 }));
+    }
+
+    // Google fallback when local results are sparse.
+    let external: ExternalGymOption[] = [];
+    if (term.length >= 3 && local.length < 5) {
+      try {
+        const { placesTextSearch } = await import("./google-places.server");
+        const hits = await placesTextSearch(term, { maxResults: 8 });
+        // De-dupe against already-imported Google rows in local set.
+        const { data: known } = await supabaseAdmin
+          .from("gyms")
+          .select("google_place_id")
+          .in(
+            "google_place_id",
+            hits.map((h) => h.placeId),
+          );
+        const knownIds = new Set(
+          ((known ?? []) as Array<{ google_place_id: string | null }>)
+            .map((r) => r.google_place_id)
+            .filter(Boolean) as string[],
+        );
+        external = hits
+          .filter((h) => !knownIds.has(h.placeId))
+          .slice(0, 5)
+          .map((h) => ({
+            placeId: h.placeId,
+            name: h.name,
+            formattedAddress: h.formattedAddress,
+            area: h.area,
+            city: h.locality,
+          }));
+      } catch (e) {
+        // Soft-fail external search — local results are still useful.
+        console.warn("[searchGyms] external fallback failed:", e instanceof Error ? e.message : e);
+      }
+    }
+
+    return { local: withCounts, external };
   });
 
 /* ----------------------------- my gyms ----------------------------- */
