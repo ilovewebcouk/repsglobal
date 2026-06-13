@@ -45,7 +45,7 @@ export const myIdentity = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("identity_documents")
-      .select("id, doc_type, doc_country, name_on_doc, dob_on_doc, doc_expiry, selfie_path, doc_path_front, doc_path_back, status, admin_note, created_at, reviewed_at, vendor, veriff_session_id, veriff_session_url, veriff_status, veriff_reason")
+      .select("id, doc_type, doc_country, name_on_doc, dob_on_doc, doc_expiry, selfie_path, doc_path_front, doc_path_back, status, admin_note, created_at, reviewed_at, vendor, veriff_session_id, veriff_session_url, veriff_status, veriff_reason, stripe_vs_id, stripe_vs_url, stripe_status, stripe_reason")
       .eq("professional_id", userId)
       .order("created_at", { ascending: false })
       .limit(1)
