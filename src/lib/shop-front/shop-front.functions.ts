@@ -218,7 +218,9 @@ export const upsertMyService = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { ...data, professional_id: userId };
+    const patch = { ...data, professional_id: userId } as z.infer<typeof ServiceUpsertSchema> & {
+      professional_id: string;
+    };
     const { data: row, error } = await supabaseAdmin
       .from("services")
       .upsert(patch)
