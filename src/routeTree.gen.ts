@@ -84,6 +84,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhooksVeriffRouteImport } from './routes/api/public/webhooks/veriff'
+import { Route as ApiPublicWebhooksStripeIdentityRouteImport } from './routes/api/public/webhooks/stripe-identity'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
@@ -486,6 +487,12 @@ const ApiPublicWebhooksVeriffRoute = ApiPublicWebhooksVeriffRouteImport.update({
   path: '/api/public/webhooks/veriff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksStripeIdentityRoute =
+  ApiPublicWebhooksStripeIdentityRouteImport.update({
+    id: '/api/public/webhooks/stripe-identity',
+    path: '/api/public/webhooks/stripe-identity',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe/webhook',
   path: '/api/public/stripe/webhook',
@@ -687,6 +694,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
   '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -781,6 +789,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
   '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -880,6 +889,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
   '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -977,6 +987,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
+    | '/api/public/webhooks/stripe-identity'
     | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1071,6 +1082,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
+    | '/api/public/webhooks/stripe-identity'
     | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1169,6 +1181,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/stripe/webhook'
+    | '/api/public/webhooks/stripe-identity'
     | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -1257,6 +1270,7 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicWebhooksStripeIdentityRoute: typeof ApiPublicWebhooksStripeIdentityRoute
   ApiPublicWebhooksVeriffRoute: typeof ApiPublicWebhooksVeriffRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -1790,6 +1804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksVeriffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/stripe-identity': {
+      id: '/api/public/webhooks/stripe-identity'
+      path: '/api/public/webhooks/stripe-identity'
+      fullPath: '/api/public/webhooks/stripe-identity'
+      preLoaderRoute: typeof ApiPublicWebhooksStripeIdentityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/stripe/webhook': {
       id: '/api/public/stripe/webhook'
       path: '/api/public/stripe/webhook'
@@ -2148,6 +2169,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicWebhooksStripeIdentityRoute: ApiPublicWebhooksStripeIdentityRoute,
   ApiPublicWebhooksVeriffRoute: ApiPublicWebhooksVeriffRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
