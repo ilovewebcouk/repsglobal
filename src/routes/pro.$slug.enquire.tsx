@@ -362,9 +362,9 @@ function EnquirePage() {
               </ToggleGroup>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                <SelectField label="Frequency" icon={Target} options={FREQUENCY} defaultValue={FREQUENCY[0]} />
-                <SelectField label="Start by" icon={Calendar} options={TIMEFRAME} defaultValue={TIMEFRAME[0]} />
-                <SelectField label="Budget guide" icon={Clock} options={BUDGET} defaultValue={BUDGET[0]} />
+                <SelectField label="Frequency" icon={Target} options={FREQUENCY} value={frequency} onValueChange={setFrequency} />
+                <SelectField label="Start by" icon={Calendar} options={TIMEFRAME} value={startBy} onValueChange={setStartBy} />
+                <SelectField label="Budget guide" icon={Clock} options={BUDGET} value={budget} onValueChange={setBudget} />
               </div>
             </FormCard>
 
@@ -376,26 +376,32 @@ function EnquirePage() {
             >
               <Textarea
                 rows={6}
+                required
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 placeholder={`Hi ${pro.name.split(" ")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
                 className="w-full rounded-[12px] border-reps-stone bg-reps-ivory px-4 py-3 text-[14px] leading-relaxed text-reps-charcoal placeholder:text-reps-muted-light focus-visible:border-reps-orange focus-visible:ring-0"
               />
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <InputField label="Your name" icon={UserRound} type="text" placeholder="Full name" />
-                <InputField label="Email" icon={Mail} type="email" placeholder="you@example.com" />
-                <InputField label="Phone (optional)" icon={Phone} type="tel" placeholder="+44 7…" />
+                <InputField label="Your name" icon={UserRound} type="text" placeholder="Full name" value={senderName} onChange={setSenderName} required />
+                <InputField label="Email" icon={Mail} type="email" placeholder="you@example.com" value={senderEmail} onChange={setSenderEmail} required />
+                <InputField label="Phone (optional)" icon={Phone} type="tel" placeholder="+44 7…" value={senderPhone} onChange={setSenderPhone} />
                 <InputField
                   label="Your area / postcode"
                   icon={MapPin}
                   type="text"
                   placeholder={`e.g. EC2A — central ${pro.city}`}
+                  value={senderLocation}
+                  onChange={setSenderLocation}
                 />
               </div>
 
               <label className="mt-5 flex items-start gap-2.5 text-[12.5px] text-reps-muted-light">
                 <Checkbox
                   id="terms"
-                  defaultChecked
+                  checked={agreed}
+                  onCheckedChange={(c) => setAgreed(c === true)}
                   className="mt-0.5 border-reps-stone data-[state=checked]:border-reps-orange data-[state=checked]:bg-reps-orange data-[state=checked]:text-white"
                 />
                 <span>
