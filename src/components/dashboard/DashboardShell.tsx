@@ -21,6 +21,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Store,
   Sparkles,
   Star,
   Target,
