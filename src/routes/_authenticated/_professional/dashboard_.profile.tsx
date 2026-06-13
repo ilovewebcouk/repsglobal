@@ -934,20 +934,9 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Status bar */}
-        <div className="flex flex-col items-start justify-between gap-3 rounded-[22px] border border-reps-border bg-reps-panel px-5 py-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-reps-orange-soft text-reps-orange">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <div>
-              <div className="text-[14px] font-semibold text-white">Public profile</div>
-              <div className="text-[12px] text-white/55">
-                {profile.is_published ? "Visible in REPS directory" : "Draft — not visible yet"}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Trust block — Identity, Insurance, Qualifications. Tier-blind. */}
+        <TrustBlock />
+
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
