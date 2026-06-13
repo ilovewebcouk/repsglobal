@@ -38,11 +38,11 @@ import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions"
 import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import {
   myInsurance,
-  saveInsurance,
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { InsuranceUploadDialog } from "@/components/verification/InsuranceUploadDialog";
+
 
 
 function fileToDataUrl(f: File): Promise<string> {
