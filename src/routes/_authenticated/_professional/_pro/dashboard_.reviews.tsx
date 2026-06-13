@@ -114,6 +114,24 @@ function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
   );
 }
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("") || "C";
+}
+
+function formatDate(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86_400_000);
+  if (d < 1) return "today";
+  if (d === 1) return "yesterday";
+  if (d < 30) return `${d} days ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 function ReviewsPage() {
   const qc = useQueryClient();
   const { data: liveReviews = [] } = useQuery({
