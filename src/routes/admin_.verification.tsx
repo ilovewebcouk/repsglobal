@@ -309,9 +309,11 @@ function AdminVerificationPage() {
             )}
             {rows.map((r) => {
               const sel = r.id === selectedId;
-              const sla = slaRemaining(r.created_at);
+              const isPending = r.status === "submitted" || r.status === "changes_requested";
+              const sla = isPending ? slaRemaining(r.created_at) : null;
               const name = r.professional?.full_name || r.professional?.trading_name || "Unnamed";
               const claimed = (r as { claimed_by?: string | null }).claimed_by;
+              const reviewedAt = (r as { reviewed_at?: string | null }).reviewed_at;
               return (
                 <li key={r.id}>
                   <button
@@ -331,18 +333,26 @@ function AdminVerificationPage() {
                       )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
-                      <span className="text-white/45">{relativeTime(r.created_at)} ago</span>
-                      <span
-                        className={`rounded-[6px] px-1.5 py-0.5 font-semibold ${
-                          sla.tone === "breach"
-                            ? "bg-red-500/15 text-red-300"
-                            : sla.tone === "warn"
-                              ? "bg-amber-500/15 text-amber-300"
-                              : "bg-emerald-500/15 text-emerald-300"
-                        }`}
-                      >
-                        {sla.label}
+                      <span className="text-white/45">
+                        {isPending
+                          ? `Submitted ${relativeTime(r.created_at)} ago`
+                          : reviewedAt
+                            ? `${STATUS_LABEL[r.status as StatusFilter] ?? r.status} ${relativeTime(reviewedAt)} ago`
+                            : `${relativeTime(r.created_at)} ago`}
                       </span>
+                      {sla && (
+                        <span
+                          className={`rounded-[6px] px-1.5 py-0.5 font-semibold ${
+                            sla.tone === "breach"
+                              ? "bg-red-500/15 text-red-300"
+                              : sla.tone === "warn"
+                                ? "bg-amber-500/15 text-amber-300"
+                                : "bg-emerald-500/15 text-emerald-300"
+                          }`}
+                        >
+                          {sla.label}
+                        </span>
+                      )}
                     </div>
                   </button>
                 </li>
