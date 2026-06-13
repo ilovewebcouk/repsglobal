@@ -1023,7 +1023,7 @@ function AdminIdentityTab({
                     <div className="mt-1 max-w-xs text-[10.5px] text-amber-200/80">{r.stripe_reason}</div>
                   )}
                 </td>
-                <td className="py-2 pr-3 text-white/55">{new Date(r.created_at).toLocaleDateString()}</td>
+                <td className="py-2 pr-3 text-white/55" title={absoluteDateTime(r.created_at)}>{new Date(r.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1">
                     {r.status !== "approved" && (
