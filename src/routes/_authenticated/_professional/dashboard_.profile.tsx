@@ -1176,10 +1176,8 @@ function ProfileEditorPage() {
               />
             </Card>
 
-            {/* Verification — Identity (05) + Insurance (06). Universal to every member. */}
-            <IdentityProfileCard step="05" />
-            <InsuranceProfileCard step="06" />
           </div>
+
 
           <aside className="flex flex-col gap-4 xl:col-span-4">
             {/* Preview */}
