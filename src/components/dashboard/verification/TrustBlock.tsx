@@ -42,6 +42,8 @@ import {
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { InsuranceUploadDialog } from "@/components/verification/InsuranceUploadDialog";
+
 
 function fileToDataUrl(f: File): Promise<string> {
   return new Promise((resolve, reject) => {
