@@ -59,6 +59,7 @@ function VerificationPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" });
+  const tier = useTrainerTier();
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
