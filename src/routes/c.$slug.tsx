@@ -322,6 +322,30 @@ const COACHES: Record<string, Coach> = {
 /* Route                                                              */
 /* ------------------------------------------------------------------ */
 
+function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[]): Coach {
+  const liveTiers: Tier[] = services.map((s, i) => ({
+    slug: s.id,
+    name: s.title,
+    eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
+    price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
+    unit: s.duration_minutes ? `${s.duration_minutes} min` : "per session",
+    blurb: s.description ?? "",
+    includes: [],
+    highlight: s.is_featured || i === 1,
+  }));
+  return {
+    ...base,
+    name: sf.full_name ?? base.name,
+    promise: sf.tagline ?? base.promise,
+    bio: sf.about ? sf.about.split(/\n\n+/).filter(Boolean) : base.bio,
+    heroImage: sf.hero_image_url ?? base.heroImage,
+    city: sf.city ?? base.city,
+    specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
+    tiers: liveTiers.length ? liveTiers : base.tiers,
+  };
+}
+
+
 export const Route = createFileRoute("/c/$slug")({
   head: ({ params }) => {
     const coach = COACHES[params.slug] ?? COACHES["james-wilson"];
