@@ -117,12 +117,117 @@ const BUDGET = ["Under £50 / session", "£50–£80 / session", "£80–£120 /
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
+type ServiceOption = {
+  id: string; // synthetic id used for radio state ("svc:<uuid>" or "fallback:<id>")
+  serviceUuid: string | null;
+  label: string;
+  desc: string;
+  price: string;
+};
+
 function EnquirePage() {
   const { slug } = Route.useParams();
-  const pro = getPro(slug);
+  const router = useRouter();
+  const fallbackPro = getPro(slug);
 
-  const [service, setService] = useState(pro.services[0].id);
+  // Live overlay (name, avatar, services). Falls back to static if not found.
+  const liveQuery = useQuery({
+    queryKey: ["shop-front-public", slug],
+    queryFn: () => getShopFrontBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+
+  const pro = useMemo(() => {
+    const live = liveQuery.data;
+    if (!live) return fallbackPro;
+    const sf = live.shopFront;
+    return {
+      ...fallbackPro,
+      name: sf.full_name ?? fallbackPro.name,
+      image: sf.avatar_url || fallbackPro.image,
+      city: sf.city ?? fallbackPro.city,
+    };
+  }, [liveQuery.data, fallbackPro]);
+
+  const serviceOptions: ServiceOption[] = useMemo(() => {
+    const live = liveQuery.data;
+    if (live && live.services.length) {
+      return live.services.map((s) => ({
+        id: `svc:${s.id}`,
+        serviceUuid: s.id,
+        label: s.title,
+        desc: s.description ?? "",
+        price: s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
+      }));
+    }
+    return fallbackPro.services.map((s) => ({
+      id: `fallback:${s.id}`,
+      serviceUuid: null,
+      label: s.label,
+      desc: s.desc,
+      price: s.price,
+    }));
+  }, [liveQuery.data, fallbackPro.services]);
+
+  const [service, setService] = useState<string>(serviceOptions[0]?.id ?? "");
   const [goals, setGoals] = useState<string[]>([GOALS[0], GOALS[1]]);
+  const [frequency, setFrequency] = useState(FREQUENCY[0]);
+  const [startBy, setStartBy] = useState(TIMEFRAME[0]);
+  const [budget, setBudget] = useState(BUDGET[0]);
+  const [message, setMessage] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderPhone, setSenderPhone] = useState("");
+  const [senderLocation, setSenderLocation] = useState("");
+  const [agreed, setAgreed] = useState(true);
+
+  // Re-seed selected service if options change after load
+  useMemo(() => {
+    if (serviceOptions.length && !serviceOptions.find((o) => o.id === service)) {
+      setService(serviceOptions[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceOptions]);
+
+  const mutation = useMutation({
+    mutationFn: (vars: Parameters<typeof submitEnquiry>[0]["data"]) =>
+      submitEnquiry({ data: vars }),
+    onSuccess: () => {
+      toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
+      router.navigate({ to: "/pro/$slug", params: { slug } });
+    },
+    onError: (err: unknown) => {
+      const m = err instanceof Error ? err.message : "Couldn't send your enquiry.";
+      toast.error(m);
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!agreed) {
+      toast.error("Please agree to the terms and privacy policy.");
+      return;
+    }
+    if (message.trim().length < 10) {
+      toast.error("Please write a short message (at least 10 characters).");
+      return;
+    }
+    const selected = serviceOptions.find((o) => o.id === service);
+    mutation.mutate({
+      slug,
+      service_id: selected?.serviceUuid ?? null,
+      sender_name: senderName,
+      sender_email: senderEmail,
+      sender_phone: senderPhone || null,
+      goals,
+      frequency,
+      start_by: startBy,
+      budget,
+      location: senderLocation || null,
+      message,
+    });
+  }
+
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
