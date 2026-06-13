@@ -146,7 +146,7 @@ function ShopFrontEditorPage() {
   return (
     <DashboardShell
       role="trainer"
-      active="Public Profile"
+      active="Shop-front"
       tier={tier}
       title="Shop-front"
       subtitle={
