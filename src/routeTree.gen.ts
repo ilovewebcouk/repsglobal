@@ -83,7 +83,6 @@ import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as ApiPublicWebhooksVeriffRouteImport } from './routes/api/public/webhooks/veriff'
 import { Route as ApiPublicWebhooksStripeIdentityRouteImport } from './routes/api/public/webhooks/stripe-identity'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
@@ -482,11 +481,6 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWebhooksVeriffRoute = ApiPublicWebhooksVeriffRouteImport.update({
-  id: '/api/public/webhooks/veriff',
-  path: '/api/public/webhooks/veriff',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicWebhooksStripeIdentityRoute =
   ApiPublicWebhooksStripeIdentityRouteImport.update({
     id: '/api/public/webhooks/stripe-identity',
@@ -695,7 +689,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
-  '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -790,7 +783,6 @@ export interface FileRoutesByTo {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
-  '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -890,7 +882,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/webhooks/stripe-identity': typeof ApiPublicWebhooksStripeIdentityRoute
-  '/api/public/webhooks/veriff': typeof ApiPublicWebhooksVeriffRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -988,7 +979,6 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/api/public/webhooks/stripe-identity'
-    | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1083,7 +1073,6 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/api/public/stripe/webhook'
     | '/api/public/webhooks/stripe-identity'
-    | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1182,7 +1171,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/stripe/webhook'
     | '/api/public/webhooks/stripe-identity'
-    | '/api/public/webhooks/veriff'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1271,7 +1259,6 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicWebhooksStripeIdentityRoute: typeof ApiPublicWebhooksStripeIdentityRoute
-  ApiPublicWebhooksVeriffRoute: typeof ApiPublicWebhooksVeriffRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1797,13 +1784,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/veriff': {
-      id: '/api/public/webhooks/veriff'
-      path: '/api/public/webhooks/veriff'
-      fullPath: '/api/public/webhooks/veriff'
-      preLoaderRoute: typeof ApiPublicWebhooksVeriffRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/webhooks/stripe-identity': {
       id: '/api/public/webhooks/stripe-identity'
       path: '/api/public/webhooks/stripe-identity'
@@ -2170,7 +2150,6 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicWebhooksStripeIdentityRoute: ApiPublicWebhooksStripeIdentityRoute,
-  ApiPublicWebhooksVeriffRoute: ApiPublicWebhooksVeriffRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
