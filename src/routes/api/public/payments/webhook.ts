@@ -188,6 +188,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               }
               break;
             }
+            case "identity.verification_session.created":
+            case "identity.verification_session.processing":
+            case "identity.verification_session.requires_input":
+            case "identity.verification_session.verified":
+            case "identity.verification_session.canceled": {
+              await handleIdentityEvent(stripe, event, env);
+              break;
+            }
             default:
               break;
           }
