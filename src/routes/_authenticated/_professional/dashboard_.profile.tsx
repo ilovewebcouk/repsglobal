@@ -1280,23 +1280,7 @@ function ProfileEditorPage() {
               </ul>
             </Card>
 
-            {/* Verification status (read-only summary) */}
-            <Card>
-              <SectionHeader
-                title="Verification status"
-                subtitle="Trust signals shown on your public profile."
-              />
-              <div className="flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-ink px-3 py-2.5">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-reps-orange" />
-                  <span className="text-[12px] font-medium text-white/85">REPS Verified Member</span>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-reps-orange-soft px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
-                  <CheckCircle2 className="h-3 w-3" />
-                  {profile.verification_status === "verified" ? "Verified" : "Pending"}
-                </span>
-              </div>
-            </Card>
+            {/* Verification trust block lives at the top of the page now. */}
           </aside>
         </div>
       </div>
