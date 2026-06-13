@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHost } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 /**
  * Create a Stripe Identity VerificationSession for the current professional
@@ -17,7 +16,7 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     z
       .object({
         return_path: z.string().startsWith("/").optional(),
-        environment: z.enum(["sandbox", "live"]).optional(),
+        environment: z.enum(["sandbox", "live"]),
       })
       .parse(d ?? {}),
   )
@@ -33,7 +32,7 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     const returnUrl = `${origin}${returnPath}?stripe_identity=complete#identity`;
 
     const { createStripeClient } = await import("@/lib/billing/stripe.server");
-    const env = data.environment ?? getStripeEnvironment();
+    const env = data.environment;
     const stripe = createStripeClient(env);
 
     const session = await stripe.identity.verificationSessions.create({
