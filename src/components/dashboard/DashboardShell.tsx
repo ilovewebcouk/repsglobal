@@ -21,6 +21,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Store,
   Sparkles,
   Star,
   Target,
@@ -74,6 +75,7 @@ export type TrainerActive =
   | "Community"
   | "Education & CPD"
   | "Public Profile"
+  | "Shop-front"
   | "Edit Profile"
   | "Verification"
   | "Payments"
@@ -125,6 +127,7 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
@@ -162,6 +165,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
