@@ -35,7 +35,11 @@ import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist"
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
-import { TrustBlock } from "@/components/dashboard/verification/TrustBlock";
+import {
+  TrustStatusStrip,
+  IdentityProfileCard,
+  InsuranceProfileCard,
+} from "@/components/dashboard/verification/TrustBlock";
 
 function TiktokIcon() {
   return (
@@ -934,9 +938,8 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Trust block — Identity, Insurance, Qualifications. Tier-blind. */}
-        <TrustBlock />
-
+        {/* Trust status strip — Identity, Insurance, Qualifications. Tier-blind. */}
+        <TrustStatusStrip />
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
@@ -1160,6 +1163,10 @@ function ProfileEditorPage() {
                 onChange={(v) => set("specialisms", v)}
               />
             </Card>
+
+            {/* Verification — Identity (05) + Insurance (06). Universal to every member. */}
+            <IdentityProfileCard step="05" />
+            <InsuranceProfileCard step="06" />
           </div>
 
           <aside className="flex flex-col gap-4 xl:col-span-4">
