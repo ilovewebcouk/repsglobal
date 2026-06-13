@@ -195,7 +195,12 @@ export const updateEnquiryStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { status: data.status };
+    const patch: {
+      status: string;
+      read_at?: string;
+      replied_at?: string;
+      archived_at?: string;
+    } = { status: data.status };
     if (data.status === "read") patch.read_at = new Date().toISOString();
     if (data.status === "replied") patch.replied_at = new Date().toISOString();
     if (data.status === "archived") patch.archived_at = new Date().toISOString();
