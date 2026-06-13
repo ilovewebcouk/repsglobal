@@ -462,10 +462,22 @@ function AdminVerificationPage() {
                       </div>
                       <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-white/55">
                         <span>Submitted {relativeTime(sub.created_at)} ago</span>
-                        <span>·</span>
-                        <span className={
-                          sla.tone === "breach" ? "text-red-300" : sla.tone === "warn" ? "text-amber-300" : "text-emerald-300"
-                        }>SLA {sla.label}</span>
+                        {sla && (
+                          <>
+                            <span>·</span>
+                            <span className={
+                              sla.tone === "breach" ? "text-red-300" : sla.tone === "warn" ? "text-amber-300" : "text-emerald-300"
+                            }>SLA {sla.label}</span>
+                          </>
+                        )}
+                        {isFinal && sub.reviewed_at && (
+                          <>
+                            <span>·</span>
+                            <span className={isApproved ? "text-emerald-300" : "text-red-300"}>
+                              {isApproved ? "Approved" : "Rejected"} {relativeTime(sub.reviewed_at)} ago
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
