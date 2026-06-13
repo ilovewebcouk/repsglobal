@@ -31,7 +31,7 @@ import {
 } from "@/components/dashboard/ui/empty";
 import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { CertDrawer } from "@/components/verification/CertDrawer";
 
 import {
