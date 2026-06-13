@@ -28,6 +28,9 @@ import {
   UserCheck,
   UserCircle,
   Users,
+  ArrowLeft,
+  FileBadge,
+  Fingerprint,
   type LucideIcon,
 } from "lucide-react";
 
