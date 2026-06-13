@@ -104,7 +104,13 @@ function EnquiriesInboxPage() {
   const newCount = enquiries.filter((e) => e.status === "new").length;
 
   return (
-    <DashboardShell role="trainer" tier={tier} active="Enquiries">
+    <DashboardShell
+      role="trainer"
+      tier={tier}
+      active="Enquiries"
+      title="Enquiries"
+      subtitle="Private messages from your REPS profile"
+    >
       <div className="flex flex-col gap-4">
         <div className="flex items-end justify-between gap-3">
           <div>
