@@ -34,6 +34,7 @@ import { LanguagePicker } from "@/components/forms/LanguagePicker";
 // SocialHandleInput is rendered via SocialLinksPicker now.
 import { SocialLinksPicker } from "@/components/profile/SocialLinksPicker";
 import { SaveStatusPill, type SaveStatus } from "@/components/profile/SaveStatusPill";
+import { GymPicker } from "@/components/profile/GymPicker";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
 import { getTrustState } from "@/lib/verification/trust.functions";
