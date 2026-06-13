@@ -1,4 +1,11 @@
+import * as React from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  isOnProgrammeWaitlist,
+  joinProgrammeWaitlist,
+} from "@/lib/programmes/waitlist.functions";
 import {
   CheckCircle2,
   ChevronDown,
