@@ -1144,13 +1144,6 @@ function ProfileEditorPage() {
             </a>
           </DashboardButton>
           <SaveStatusPill status={status} />
-          <Button
-            onClick={handleManualSave}
-            disabled={(!dirty || saveMutation.isPending) && status.kind !== "error"}
-          >
-            <Save data-icon="inline-start" />
-            {saveMutation.isPending ? "Saving…" : dirty ? "Save now" : "Save changes"}
-          </Button>
         </>
       }
     >
