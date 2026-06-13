@@ -72,6 +72,8 @@ function friendlyAuthError(message: string): string {
 
 function LoginPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const startCheckout = useServerFn(createCheckoutSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -80,7 +82,7 @@ function LoginPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (value: string): string | null => {
