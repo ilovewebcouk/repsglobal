@@ -134,7 +134,12 @@ export const updateLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      stage?: LeadStage;
+      priority?: LeadPriority | null;
+      estimated_value_pence?: number | null;
+      follow_up_at?: string | null;
+    } = {};
     if (data.stage !== undefined) patch.stage = data.stage;
     if (data.priority !== undefined) patch.priority = data.priority;
     if (data.estimated_value_pence !== undefined)
@@ -331,7 +336,7 @@ export const getLeadKpis = createServerFn({ method: "GET" })
 export type LeadActivityDTO = {
   id: string;
   type: string;
-  payload: Record<string, unknown>;
+  payload_json: string;
   created_at: string;
 };
 
@@ -352,7 +357,7 @@ export const listLeadActivity = createServerFn({ method: "POST" })
     return (rows ?? []).map((r) => ({
       id: r.id,
       type: r.type,
-      payload: (r.payload ?? {}) as Record<string, unknown>,
+      payload_json: JSON.stringify(r.payload ?? {}),
       created_at: r.created_at,
     }));
   });
