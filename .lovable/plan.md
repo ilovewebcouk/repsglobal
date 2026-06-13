@@ -1,15 +1,24 @@
-## Plan: wire your Stripe test keys
+## Switch staging.repsuk.org to Stripe Test mode
 
-I checked the codebase and the publishable key is **not actually used anywhere** — there's no Stripe.js / Elements on the client. Checkout and Identity both run server-side via `STRIPE_SECRET_KEY`, and the webhook uses `STRIPE_WEBHOOK_SECRET`. So we only need to set two runtime secrets.
+### Steps you'll do in Stripe Dashboard
+1. Toggle Stripe Dashboard to **Test mode** (top-left).
+2. **Developers → API keys** → copy the `sk_test_…` Secret key.
+3. **Developers → Webhooks → Add endpoint**:
+   - URL: `https://staging.repsuk.org/api/public/stripe/webhook`
+   - Events: the full list we agreed (5 Identity + Checkout + Customer.subscription + Invoice + Customer + Payment_method + optional Charge/dispute).
+   - Save, then copy the **Signing secret** (`whsec_…`).
+4. In Test mode, re-create the Verified £99/yr and Pro Founding £59/mo **Products + Prices**, and copy the new `price_…` IDs.
 
-### Steps
+### Steps I'll do in the project (build mode)
+1. Use `update_secret` to rotate:
+   - `STRIPE_SECRET_KEY` → your new `sk_test_…`
+   - `STRIPE_WEBHOOK_SECRET` → your new test-mode `whsec_…`
+2. Update `src/lib/billing.ts` to point the Verified and Pro Founding price IDs at the new **test-mode** `price_…` IDs (keeping the live IDs noted in a comment for the production swap later).
+3. Confirm `/api/public/stripe/webhook` is reachable on staging (no code change expected) and re-test the Identity flow end-to-end: start verification → upload docs → webhook flips the row to `approved`.
 
-1. Open the secure update form for `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (single modal, both fields).
-   - `STRIPE_SECRET_KEY` → your `sk_test_…` standard secret key
-   - `STRIPE_WEBHOOK_SECRET` → the `whsec_…` from the single webhook endpoint covering Checkout, Billing, and Identity events
-2. No file edits, no `.env` changes, no publishable key needed.
-3. After saving, the Verified £99/yr and Pro Founding £59/mo Checkout flows + the Stripe Identity verification flow will be live in test mode end-to-end.
+### Production (later, separate task)
+When you publish to `repsglobal.lovable.app`, we'll swap the same two secrets back to the `sk_live_…` / live `whsec_…` pair and restore the live `price_…` IDs in `billing.ts`.
 
-If later we add Stripe.js on the client (e.g. embedded Elements instead of redirect Checkout), we'll add `VITE_STRIPE_PUBLISHABLE_KEY` to `.env` then — not now.
-
-Approve to switch to build mode and I'll open the secrets modal.
+### What I need from you before I switch to build mode
+- The new `sk_test_…` and test `whsec_…` (you'll paste into the secure secret modals — don't send them in chat).
+- The new test-mode `price_…` IDs for Verified £99/yr and Pro Founding £59/mo.
