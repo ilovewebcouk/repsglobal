@@ -327,12 +327,12 @@ function AdminVerificationPage() {
                       )}
                     </div>
                     <div className="mt-1 flex items-center justify-between text-[10px]">
-                      <span className="text-white/45">
+                      <span className="text-white/45" title={absoluteDateTime(reviewedAt ?? r.created_at)}>
                         {isPending
-                          ? `Submitted ${relativeTime(r.created_at)} ago`
+                          ? <>Submitted <TimeAgo iso={r.created_at} className="text-white/45" /></>
                           : reviewedAt
-                            ? `${STATUS_LABEL[r.status as StatusFilter] ?? r.status} ${relativeTime(reviewedAt)} ago`
-                            : `${relativeTime(r.created_at)} ago`}
+                            ? <>{STATUS_LABEL[r.status as StatusFilter] ?? r.status} <TimeAgo iso={reviewedAt} className="text-white/45" /></>
+                            : <TimeAgo iso={r.created_at} className="text-white/45" />}
                       </span>
                       {sla && (
                         <span
