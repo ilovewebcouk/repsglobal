@@ -41,6 +41,7 @@ import {
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+import { VerificationCard } from "@/components/dashboard/verification/VerificationCard";
 
 
 function TiktokIcon() {
@@ -185,13 +186,13 @@ function equal(a: FormState, b: FormState): boolean {
   );
 }
 
-function completion(
-  p: DashboardProfile,
-  trust?: { identityApproved: boolean; insuranceActive: boolean } | null,
-): {
+function completion(p: DashboardProfile): {
   pct: number;
   checklist: { label: string; done: boolean }[];
 } {
+  // Polish-only checklist. Verification (Identity / Insurance / Qualifications)
+  // is tracked separately in the VerificationCard at the top of the page and
+  // is the sole gate for the Verified badge — this meter never affects it.
   const checklist = [
     { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
@@ -209,8 +210,6 @@ function completion(
         p.social_x
       ),
     },
-    { label: "Identity verified", done: !!trust?.identityApproved },
-    { label: "Insurance on file", done: !!trust?.insuranceActive },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
@@ -918,12 +917,7 @@ function ProfileEditorPage() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const fetchTrust = useServerFn(getTrustState);
-  const trustQ = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
-  const { pct, checklist } = completion(profile, {
-    identityApproved: trustQ.data?.ticks.identity ?? false,
-    insuranceActive: trustQ.data?.ticks.insurance ?? false,
-  });
+  const { pct, checklist } = completion(profile);
 
 
   return (
