@@ -203,7 +203,7 @@ function IdentityCard({
 }) {
   const upload = useServerFn(uploadVerificationAsset);
   const save = useServerFn(saveIdentity);
-  const startVeriff = useServerFn(createVeriffSession);
+  const startStripe = useServerFn(createStripeIdentitySession);
   const [docType, setDocType] = useState<"passport" | "driving_licence" | "national_id">("passport");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -214,8 +214,8 @@ function IdentityCard({
   const frontRef = useRef<HTMLInputElement>(null);
   const selfieRef = useRef<HTMLInputElement>(null);
 
-  const veriff = useMutation({
-    mutationFn: async () => startVeriff({ data: {} }),
+  const stripeId = useMutation({
+    mutationFn: async () => startStripe({ data: {} }),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
