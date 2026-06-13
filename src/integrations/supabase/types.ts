@@ -164,6 +164,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "client_invites_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+          {
             foreignKeyName: "client_invites_roster_id_fkey"
             columns: ["roster_id"]
             isOneToOne: false
@@ -311,6 +318,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "coach_client_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
         ]
       }
       email_send_log: {
@@ -397,6 +411,33 @@ export type Database = {
           id?: string
           token?: string
           used_at?: string | null
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          audience: Json
+          created_at: string
+          description: string | null
+          enabled: boolean
+          flag_key: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -583,6 +624,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "identity_documents_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
         ]
       }
       identity_name_changes: {
@@ -678,6 +726,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "insurance_policies_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
         ]
       }
       insurance_upload_sessions: {
@@ -718,6 +773,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_upload_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
           },
         ]
       }
@@ -827,6 +889,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pro_titles_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+          {
+            foreignKeyName: "pro_titles_source_submission_id_fkey"
+            columns: ["source_submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_qualifications_review_queue"
+            referencedColumns: ["submission_id"]
+          },
+          {
             foreignKeyName: "pro_titles_source_submission_id_fkey"
             columns: ["source_submission_id"]
             isOneToOne: false
@@ -874,6 +950,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_gyms_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
           },
         ]
       }
@@ -939,6 +1022,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_locations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
           },
         ]
       }
@@ -1251,6 +1341,13 @@ export type Database = {
             foreignKeyName: "verification_decisions_submission_id_fkey"
             columns: ["submission_id"]
             isOneToOne: false
+            referencedRelation: "v_qualifications_review_queue"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "verification_decisions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
             referencedRelation: "verification_submissions"
             referencedColumns: ["id"]
           },
@@ -1276,6 +1373,13 @@ export type Database = {
           submission_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "verification_renewal_nudges_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_qualifications_review_queue"
+            referencedColumns: ["submission_id"]
+          },
           {
             foreignKeyName: "verification_renewal_nudges_submission_id_fkey"
             columns: ["submission_id"]
@@ -1399,6 +1503,13 @@ export type Database = {
             foreignKeyName: "verification_submissions_duplicate_of_fkey"
             columns: ["duplicate_of"]
             isOneToOne: false
+            referencedRelation: "v_qualifications_review_queue"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "verification_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
             referencedRelation: "verification_submissions"
             referencedColumns: ["id"]
           },
@@ -1409,11 +1520,86 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "verification_submissions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      v_identity_review_queue: {
+        Row: {
+          display_name: string | null
+          document_id: string | null
+          full_name: string | null
+          identity_status: string | null
+          identity_verified_at: string | null
+          identity_verified_name: string | null
+          professional_id: string | null
+          submission_count: number | null
+          submitted_at: string | null
+        }
+        Relationships: []
+      }
+      v_qualifications_review_queue: {
+        Row: {
+          awarding_body: string | null
+          awarding_body_slug: string | null
+          certificate_number: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          display_name: string | null
+          duplicate_of: string | null
+          expiry_date: string | null
+          full_name: string | null
+          holder_name: string | null
+          professional_id: string | null
+          qualification: string | null
+          qualification_number: string | null
+          resubmission_count: number | null
+          reviewed_at: string | null
+          status:
+            | Database["public"]["Enums"]["verification_submission_status"]
+            | null
+          submission_id: string | null
+          submitted_at: string | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "v_qualifications_review_queue"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "verification_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_submissions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_submissions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
