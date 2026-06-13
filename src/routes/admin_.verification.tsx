@@ -817,9 +817,9 @@ function AdminVerificationPage() {
                     return url;
                   }}
                   busy={busy}
-                  onApprove={() => { setCertOpen(false); decideMutation.mutate("approved"); }}
-                  onReject={() => { setCertOpen(false); decideMutation.mutate("rejected"); }}
-                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate("changes_requested"); }}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: canApprovePro ? "pro" : "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
+                  onReject={() => { setCertOpen(false); decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap }); }}
+                  onRequestChanges={() => { setCertOpen(false); decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap }); }}
                 />
               </>
             );
