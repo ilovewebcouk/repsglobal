@@ -1,8 +1,8 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { getTrustState } from "@/lib/verification/trust.functions";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+
 
 import { toast } from "sonner";
 import {
@@ -41,6 +41,7 @@ import {
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+import { VerificationCard } from "@/components/dashboard/verification/VerificationCard";
 
 
 function TiktokIcon() {
@@ -185,13 +186,13 @@ function equal(a: FormState, b: FormState): boolean {
   );
 }
 
-function completion(
-  p: DashboardProfile,
-  trust?: { identityApproved: boolean; insuranceActive: boolean } | null,
-): {
+function completion(p: DashboardProfile): {
   pct: number;
   checklist: { label: string; done: boolean }[];
 } {
+  // Polish-only checklist. Verification (Identity / Insurance / Qualifications)
+  // is tracked separately in the VerificationCard at the top of the page and
+  // is the sole gate for the Verified badge — this meter never affects it.
   const checklist = [
     { label: "Basic information", done: !!(p.full_name && p.primary_profession && p.city) },
     { label: "About and bio", done: !!(p.bio && p.bio.length > 80) },
@@ -209,8 +210,6 @@ function completion(
         p.social_x
       ),
     },
-    { label: "Identity verified", done: !!trust?.identityApproved },
-    { label: "Insurance on file", done: !!trust?.insuranceActive },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
@@ -918,12 +917,7 @@ function ProfileEditorPage() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const fetchTrust = useServerFn(getTrustState);
-  const trustQ = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
-  const { pct, checklist } = completion(profile, {
-    identityApproved: trustQ.data?.ticks.identity ?? false,
-    insuranceActive: trustQ.data?.ticks.insurance ?? false,
-  });
+  const { pct, checklist } = completion(profile);
 
 
   return (
@@ -952,6 +946,10 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
+        {/* Verification hero — distinct from profile polish. Drives the Verified badge. */}
+        <VerificationCard />
+
+
 
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
@@ -1281,7 +1279,10 @@ function ProfileEditorPage() {
 
             {/* Completion */}
             <Card>
-              <SectionHeader title="Profile completion" />
+              <SectionHeader
+                title="Profile polish"
+                subtitle="Optional — make your profile irresistible to clients. Doesn't affect your Verified badge."
+              />
               <CompletionRing pct={pct} />
               <ul className="mt-4 space-y-2">
                 {checklist.map((c) => (
@@ -1469,10 +1470,10 @@ function CompletionRing({ pct }: { pct: number }) {
       </div>
       <div className="flex-1">
         <div className="text-[13px] font-semibold text-white">
-          {pct === 100 ? "Profile complete" : pct >= 70 ? "Almost there" : "Keep going"}
+          {pct === 100 ? "Polished" : pct >= 70 ? "Almost there" : "Keep going"}
         </div>
         <p className="text-[11px] text-white/55">
-          Complete every section to unlock priority directory placement.
+          Cosmetic — helps you convert. Verification (above) is what unlocks your badge.
         </p>
       </div>
     </div>
