@@ -402,6 +402,3 @@ export function InsuranceUploadDialog({
   );
 }
 
-// Reference to silence the unused import warning if Smartphone isn't used elsewhere
-const _smartphoneRef: unknown = Smartphone;
-void _smartphoneRef;
