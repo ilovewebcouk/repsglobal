@@ -35,6 +35,7 @@ import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist"
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
+import { TrustBlock } from "@/components/dashboard/verification/TrustBlock";
 
 function TiktokIcon() {
   return (
@@ -104,6 +105,9 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
           "Manage how your professional profile appears in the REPS directory — photo, bio, services, specialisms and qualifications.",
       },
     ],
+  }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
   }),
   pendingComponent: () => (
     <div className="flex h-screen items-center justify-center bg-reps-ink">
