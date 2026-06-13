@@ -1,4 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getShopFrontBySlug, type ServiceDTO, type ShopFrontDTO } from "@/lib/shop-front/shop-front.functions";
 import {
   ArrowRight,
   ArrowUpRight,
