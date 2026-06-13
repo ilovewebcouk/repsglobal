@@ -585,6 +585,39 @@ export type Database = {
           },
         ]
       }
+      identity_name_changes: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_full_name: string | null
+          old_full_name: string | null
+          reason: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_full_name?: string | null
+          old_full_name?: string | null
+          reason?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_full_name?: string | null
+          old_full_name?: string | null
+          reason?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       insurance_policies: {
         Row: {
           admin_note: string | null
@@ -1036,7 +1069,9 @@ export type Database = {
         Row: {
           avatar_is_ai_generated: boolean
           avatar_url: string | null
+          business_name: string | null
           created_at: string
+          display_name: string | null
           full_name: string | null
           id: string
           updated_at: string
@@ -1044,7 +1079,9 @@ export type Database = {
         Insert: {
           avatar_is_ai_generated?: boolean
           avatar_url?: string | null
+          business_name?: string | null
           created_at?: string
+          display_name?: string | null
           full_name?: string | null
           id: string
           updated_at?: string
@@ -1052,7 +1089,9 @@ export type Database = {
         Update: {
           avatar_is_ai_generated?: boolean
           avatar_url?: string | null
+          business_name?: string | null
           created_at?: string
+          display_name?: string | null
           full_name?: string | null
           id?: string
           updated_at?: string
