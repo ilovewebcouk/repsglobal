@@ -147,6 +147,23 @@ function AdminGyms() {
                   </td>
                   <td className="px-5 py-3 text-white/65">{g.chain_name ?? "—"}</td>
                   <td className="px-5 py-3">
+                    {(() => {
+                      const src = (g as { source?: string }).source ?? "curated";
+                      const cls =
+                        src === "google_places"
+                          ? "border border-sky-400/30 bg-sky-500/15 text-sky-300"
+                          : src === "user_submission"
+                            ? "border border-amber-400/30 bg-amber-500/15 text-amber-200"
+                            : "border border-reps-border bg-reps-panel-soft text-white/65";
+                      const label = src === "google_places" ? "Google" : src === "user_submission" ? "User" : "Curated";
+                      return (
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${cls}`}>
+                          {label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-5 py-3">
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                         g.status === "active"
@@ -164,6 +181,16 @@ function AdminGyms() {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-2">
+                      {(g as { source?: string }).source === "google_places" ? (
+                        <button
+                          type="button"
+                          onClick={() => promoteM.mutate(g.id)}
+                          disabled={promoteM.isPending}
+                          className="inline-flex h-8 items-center gap-1 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[11.5px] font-semibold text-reps-orange shadow-none hover:bg-reps-orange/20 disabled:opacity-50"
+                        >
+                          <Sparkles className="h-3 w-3" /> Promote
+                        </button>
+                      ) : null}
                       {g.status !== "active" ? (
                         <button
                           type="button"
