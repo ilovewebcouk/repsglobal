@@ -34,6 +34,8 @@ function AdminGyms() {
   const qc = useQueryClient();
   const fetchList = useServerFn(adminListGyms);
   const runUpdate = useServerFn(adminUpdateGym);
+  const runPromote = useServerFn(adminPromoteGym);
+  const runGeocode = useServerFn(adminGeocodeBackfill);
 
   const listQ = useQuery({
     queryKey: ["admin-gyms", filter],
@@ -50,6 +52,26 @@ function AdminGyms() {
     },
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Couldn't update gym."),
+  });
+
+  const promoteM = useMutation({
+    mutationFn: (id: string) => runPromote({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Promoted to curated.");
+      void qc.invalidateQueries({ queryKey: ["admin-gyms"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't promote gym."),
+  });
+
+  const geocodeM = useMutation({
+    mutationFn: () => runGeocode(),
+    onSuccess: (r) => {
+      toast.success(`Geocoded ${r.done}/${r.total} (${r.failed} failed).`);
+      void qc.invalidateQueries({ queryKey: ["admin-gyms"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Geocode backfill failed."),
   });
 
   const rows = listQ.data ?? [];
