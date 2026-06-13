@@ -628,8 +628,56 @@ import { initialsFromName } from "@/lib/initials";
 
 
 /* ============================================================
+   Verification status pill — links to /dashboard/verification
+   ============================================================ */
+
+function VerificationStatusPill() {
+  const fetchTrust = useServerFn(getTrustState);
+  const { data } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+  });
+  const ticks = data?.ticks;
+  const tier = tierFromCounts({
+    identity: !!ticks?.identity,
+    insurance: !!ticks?.insurance,
+    qualifications: !!ticks?.qualifications,
+  });
+  const completed = data?.completedCount ?? 0;
+  const allDone = completed === 3;
+  const profession = data?.qualifications.titles?.[0] ?? null;
+
+  return (
+    <Link
+      to="/dashboard/verification"
+      className="group flex items-center justify-between gap-4 rounded-[16px] border border-reps-border bg-reps-panel px-5 py-4 transition hover:border-reps-orange-border"
+    >
+      <div className="flex items-center gap-3">
+        <VerifiedBadge tier={tier} size="md" profession={profession} />
+        <div className="min-w-0">
+          <div className="text-[13px] font-semibold text-white">
+            {allDone ? "Your REPS credential is live" : `Verification · ${completed} of 3 complete`}
+          </div>
+          <div className="text-[12px] text-white/55">
+            {allDone
+              ? "Identity, insurance and qualifications all verified."
+              : "Verification is managed on its own page — keep going to earn every layer."}
+          </div>
+        </div>
+      </div>
+      <span className="hidden text-[12px] font-semibold text-reps-orange transition-transform group-hover:translate-x-0.5 sm:inline-flex">
+        {allDone ? "Manage" : "Continue"} →
+      </span>
+    </Link>
+  );
+}
+
+/* ============================================================
    Page
    ============================================================ */
+
+
 
 function ProfileEditorPage() {
   const tier = useTrainerTier();
