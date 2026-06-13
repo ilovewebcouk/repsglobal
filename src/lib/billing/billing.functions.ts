@@ -198,7 +198,7 @@ export const syncMySubscription = createServerFn({ method: "POST" })
       user_id: userId,
       stripe_customer_id: customerId,
       stripe_subscription_id: sub.id,
-      stripe_price_id: priceId,
+      stripe_price_id: priceLookup,
       tier: isLive && lookup ? lookup.tier : "free",
       billing_period: isLive && lookup ? lookup.period : null,
       status: sub.status,
