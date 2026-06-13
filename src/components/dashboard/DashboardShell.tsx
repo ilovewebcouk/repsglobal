@@ -292,6 +292,18 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
 
 
 
+function VerificationCountBadge() {
+  const fetchTrust = useServerFn(getTrustState);
+  const { data } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+  });
+  const completed = (data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
+  return <VerifiedCountChip completed={completed} />;
+}
+
+
 function AdminBadge() {
   return (
     <div className="mx-3 mb-3 flex items-center gap-2 rounded-[10px] bg-reps-orange-soft px-3 py-2">
