@@ -248,7 +248,7 @@ async function handleIdentityEvent(
     stripe_identity_session_id: vs.id,
   };
   if (finalStatus === "approved") {
-    proPatch.identity_status = "verified";
+    proPatch.identity_status = "approved";
     proPatch.identity_verified_at = new Date().toISOString();
     if (docName) proPatch.identity_verified_name = docName;
     if (patch.dob_on_doc) proPatch.identity_verified_dob = patch.dob_on_doc;
