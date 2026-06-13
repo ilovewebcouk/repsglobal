@@ -135,7 +135,7 @@ export const listPendingVerifications = createServerFn({ method: "GET" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden");
-    return fetchSubmissionsByStatus(["submitted", "changes_requested"]);
+    return fetchSubmissionsByStatus(["submitted", "changes_requested"] as const);
   });
 
 
