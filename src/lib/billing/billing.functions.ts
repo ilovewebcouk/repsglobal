@@ -78,7 +78,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      ui_mode: "embedded",
+      ui_mode: "embedded_page",
       customer: customerId,
       line_items: [{ price: stripePrice.id, quantity: 1 }],
       return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
