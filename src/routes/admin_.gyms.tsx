@@ -83,23 +83,6 @@ function AdminGyms() {
       title="Gyms"
       subtitle="Moderate gym submissions from professionals and curate the venue directory."
     >
-      <div className="mb-4 flex flex-wrap gap-2">
-        {(["pending_review", "active", "rejected", "all"] as StatusFilter[]).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setFilter(s)}
-            className={`h-9 rounded-full border px-4 text-[12px] font-semibold transition ${
-              filter === s
-                ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
-            }`}
-          >
-            {s === "pending_review" ? "Pending review" : s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-            {s === filter && rows.length > 0 ? ` · ${rows.length}` : ""}
-          </button>
-        ))}
-      </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
