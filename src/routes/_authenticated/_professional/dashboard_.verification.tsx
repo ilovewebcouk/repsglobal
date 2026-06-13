@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,7 +21,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
-import { createVeriffSession, syncVeriffStatus } from "@/lib/verification/veriff.functions";
+import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import {
   myInsurance,
   saveInsurance,
@@ -36,6 +36,9 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/v
       { name: "description", content: "Upload your ID, insurance and qualifications to verify your REPS profile." },
     ],
     links: [{ rel: "canonical", href: "/dashboard/verification" }],
+  }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
   }),
   component: VerificationPage,
 });
@@ -53,28 +56,41 @@ type Step = { key: string; label: string; done: boolean; pending?: boolean; requ
 
 function VerificationPage() {
   const qc = useQueryClient();
+  const router = useRouter();
+  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" });
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
-  const syncVeriff = useServerFn(syncVeriffStatus);
 
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
 
-  // Self-healing Veriff sync: while a Veriff check is pending, poll Veriff's
-  // API server-side so the row updates even if the webhook never arrives.
-  const pendingVeriff =
-    identity.data?.vendor === "veriff" && identity.data?.status === "pending";
+  // When Stripe Identity redirects back, refetch and clear the query param.
+  useEffect(() => {
+    if (search.stripe_identity === "complete") {
+      qc.invalidateQueries({ queryKey: ["my-identity"] });
+      toast.success("ID check submitted — we'll confirm shortly.");
+      router.navigate({
+        to: "/dashboard/verification",
+        search: {},
+        replace: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.stripe_identity]);
+
+  // Light poll while a Stripe Identity check is pending in case the webhook lags.
+  const pendingStripe =
+    identity.data?.vendor === "stripe" && identity.data?.status === "pending";
   useQuery({
-    queryKey: ["veriff-sync", identity.data?.id],
+    queryKey: ["identity-poll", identity.data?.id],
     queryFn: async () => {
-      const r = await syncVeriff();
-      if (r.changed) qc.invalidateQueries({ queryKey: ["my-identity"] });
-      return r;
+      await qc.invalidateQueries({ queryKey: ["my-identity"] });
+      return true;
     },
-    enabled: !!pendingVeriff,
-    refetchInterval: 15000,
+    enabled: !!pendingStripe,
+    refetchInterval: 8000,
     refetchOnWindowFocus: true,
   });
 
