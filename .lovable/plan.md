@@ -1,24 +1,56 @@
-## Switch staging.repsuk.org to Stripe Test mode
+## Stripe setup to make this sane
 
-### Steps you'll do in Stripe Dashboard
-1. Toggle Stripe Dashboard to **Test mode** (top-left).
-2. **Developers → API keys** → copy the `sk_test_…` Secret key.
-3. **Developers → Webhooks → Add endpoint**:
-   - URL: `https://staging.repsuk.org/api/public/stripe/webhook`
-   - Events: the full list we agreed (5 Identity + Checkout + Customer.subscription + Invoice + Customer + Payment_method + optional Charge/dispute).
-   - Save, then copy the **Signing secret** (`whsec_…`).
-4. In Test mode, re-create the Verified £99/yr and Pro Founding £59/mo **Products + Prices**, and copy the new `price_…` IDs.
+### Correct environment model
+- **Staging** (`staging.repsuk.org`) uses **Stripe sandbox/test** only.
+- **Live site** (`repsuk.org`, when added later) uses **Stripe live** only.
+- **No restricted key is required.** The app uses one normal Stripe secret key per environment plus one webhook signing secret per environment.
 
-### Steps I'll do in the project (build mode)
-1. Use `update_secret` to rotate:
-   - `STRIPE_SECRET_KEY` → your new `sk_test_…`
-   - `STRIPE_WEBHOOK_SECRET` → your new test-mode `whsec_…`
-2. Update `src/lib/billing.ts` to point the Verified and Pro Founding price IDs at the new **test-mode** `price_…` IDs (keeping the live IDs noted in a comment for the production swap later).
-3. Confirm `/api/public/stripe/webhook` is reachable on staging (no code change expected) and re-test the Identity flow end-to-end: start verification → upload docs → webhook flips the row to `approved`.
+### What already exists in the app
+- The webhook route is already correct: `/api/public/stripe/webhook`
+- It already handles both:
+  - **Identity events**
+  - **Subscription / checkout / invoice events**
+- The current billing price IDs live in `src/lib/billing.ts`
+- The current Stripe secret key is **integration-managed**, which is why the generic secret editor failed on it.
 
-### Production (later, separate task)
-When you publish to `repsglobal.lovable.app`, we'll swap the same two secrets back to the `sk_live_…` / live `whsec_…` pair and restore the live `price_…` IDs in `billing.ts`.
+### What we need to do next
+1. Link the project to the **Stripe (sandbox)** connection for staging, or rotate the Stripe integration so the project uses the sandbox/test Stripe account instead of live.
+2. Keep `STRIPE_WEBHOOK_SECRET` set to the **test-mode** webhook signing secret for staging.
+3. Update `src/lib/billing.ts` so the staging build points at the **test** price IDs for:
+   - Verified £99/yr
+   - Pro £59/mo Founding
+   - and, if still used in checkout, Pro annual Founding too
+4. Re-test on staging:
+   - verification session creation
+   - document upload
+   - identity webhook delivery
+   - checkout session creation
+   - subscription webhook delivery
 
-### What I need from you before I switch to build mode
-- The new `sk_test_…` and test `whsec_…` (you'll paste into the secure secret modals — don't send them in chat).
-- The new test-mode `price_…` IDs for Verified £99/yr and Pro Founding £59/mo.
+### Exact Stripe webhook events staging should listen to
+**Identity**
+- `identity.verification_session.created`
+- `identity.verification_session.processing`
+- `identity.verification_session.verified`
+- `identity.verification_session.requires_input`
+- `identity.verification_session.canceled`
+
+**Billing / subscriptions**
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+
+These are the events the current webhook code actually handles.
+
+### Technical note
+The current project has both a **Stripe (live)** and **Stripe (sandbox)** connector available. The next implementation step should be to switch this project to the **sandbox** Stripe connection for staging, then wire the test `price_...` IDs into `src/lib/billing.ts`.
+
+### What I need from you
+- Confirm you want me to switch the project over to the **Stripe (sandbox)** connection for staging.
+- Paste the **test** `price_...` IDs you want used in staging for:
+  - Verified annual
+  - Pro monthly
+  - Pro annual (if you still want that offer available in staging)
