@@ -633,21 +633,64 @@ function AdminVerificationPage() {
                         <Badge variant="neutral" className="border-amber-400/30 bg-amber-500/15 text-amber-300">Manual</Badge>
                       )}
                     </div>
-                    <div className="space-y-1.5 text-[12px] text-white/75">
-                      <div>{sub.qualification}</div>
-                      <div className="text-white/55">{sub.awarding_body}</div>
-                      <div className="pt-2">
-                        <Button
-                          size="sm"
-                          variant="subtle"
-                          onClick={() => setCertOpen(true)}
-                          className="w-full"
-                        >
-                          <FileText className="mr-1 h-3.5 w-3.5" />
-                          Review certificate ({(sub.doc_paths ?? []).length})
-                        </Button>
-                      </div>
-                    </div>
+                    {(() => {
+                      const certNo = (sub as { certificate_number?: string | null }).certificate_number ?? null;
+                      const qualNo = (sub as { qualification_number?: string | null }).qualification_number ?? null;
+                      const learnerNo = (sub as { learner_number?: string | null }).learner_number ?? null;
+                      const slug = (sub as { awarding_body_slug?: string | null }).awarding_body_slug ?? null;
+                      const ocrHolder = (sub as { ai_extraction?: { holder_name?: string | null } | null }).ai_extraction?.holder_name
+                        ?? sub.holder_name ?? null;
+                      const links = buildAwardingBodyVerifyLinks({ slug, qualNumber: qualNo, certNumber: certNo, learnerNumber: learnerNo });
+                      const profileName = prof?.full_name ?? null;
+                      const nameMismatch = !!(ocrHolder && profileName && ocrHolder.trim().toLowerCase() !== profileName.trim().toLowerCase());
+                      return (
+                        <div className="space-y-1.5 text-[12px] text-white/75">
+                          <div>{sub.qualification}</div>
+                          <div className="text-white/55">{sub.awarding_body}</div>
+                          {(certNo || qualNo) && (
+                            <div className="pt-1 space-y-0.5">
+                              {qualNo && <div><span className="text-white/45">Qual no.</span> · <span className="font-mono">{qualNo}</span></div>}
+                              {certNo && <div><span className="text-white/45">Cert no.</span> · <span className="font-mono">{certNo}</span></div>}
+                            </div>
+                          )}
+                          {ocrHolder && (
+                            <div className={`mt-2 rounded-[8px] border px-2 py-1.5 ${nameMismatch ? "border-amber-400/30 bg-amber-500/5 text-amber-100/85" : "border-emerald-400/20 bg-emerald-500/5 text-emerald-100/85"}`}>
+                              <div className="text-[10.5px] uppercase tracking-wide opacity-70">OCR holder name</div>
+                              <div className="flex items-baseline justify-between gap-2">
+                                <span className="font-semibold">{ocrHolder}</span>
+                                {profileName && <span className="text-[11px] opacity-70">profile: {profileName}</span>}
+                              </div>
+                            </div>
+                          )}
+                          {links.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-2">
+                              {links.map((l) => (
+                                <a
+                                  key={l.url}
+                                  href={l.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
+                                >
+                                  <ExternalLink className="h-3 w-3" /> {l.label}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          <div className="pt-2">
+                            <Button
+                              size="sm"
+                              variant="subtle"
+                              onClick={() => setCertOpen(true)}
+                              className="w-full"
+                            >
+                              <FileText className="mr-1 h-3.5 w-3.5" />
+                              Review certificate ({(sub.doc_paths ?? []).length})
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </PCard>
                 </div>
 
