@@ -162,6 +162,7 @@ function AdminVerificationPage() {
   const selectCase = async (id: string) => {
     setSelectedId(id);
     setNote("");
+    setOverrideReason("");
     setChecks({});
     try {
       await claim({ data: { id } });
