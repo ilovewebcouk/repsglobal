@@ -7,11 +7,11 @@ import {
   Circle,
   FileText,
   Loader2,
-  Shield,
   ShieldCheck,
   Upload,
   UserCircle,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,6 +29,7 @@ import {
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
 import { myVerificationSubmissions } from "@/lib/verification/verification.functions";
+import { myUnlockedTitles } from "@/lib/cpd/titles.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
   head: () => ({
