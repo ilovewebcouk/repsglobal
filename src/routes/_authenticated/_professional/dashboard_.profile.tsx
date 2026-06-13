@@ -1,7 +1,9 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { getTrustState } from "@/lib/verification/trust.functions";
+
 import { toast } from "sonner";
 import {
   Camera,
@@ -36,10 +38,10 @@ import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import {
-  TrustStatusStrip,
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+
 
 function TiktokIcon() {
   return (
@@ -183,7 +185,10 @@ function equal(a: FormState, b: FormState): boolean {
   );
 }
 
-function completion(p: DashboardProfile): {
+function completion(
+  p: DashboardProfile,
+  trust?: { identityApproved: boolean; insuranceActive: boolean } | null,
+): {
   pct: number;
   checklist: { label: string; done: boolean }[];
 } {
@@ -204,10 +209,13 @@ function completion(p: DashboardProfile): {
         p.social_x
       ),
     },
+    { label: "Identity verified", done: !!trust?.identityApproved },
+    { label: "Insurance on file", done: !!trust?.insuranceActive },
   ];
   const pct = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
   return { pct, checklist };
 }
+
 
 /* ============================================================
    Primitives (kept visually identical to the locked mock-up)
@@ -910,7 +918,13 @@ function ProfileEditorPage() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const { pct, checklist } = completion(profile);
+  const fetchTrust = useServerFn(getTrustState);
+  const trustQ = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
+  const { pct, checklist } = completion(profile, {
+    identityApproved: trustQ.data?.ticks.identity ?? false,
+    insuranceActive: trustQ.data?.ticks.insurance ?? false,
+  });
+
 
   return (
     <DashboardShell
@@ -938,8 +952,7 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Trust status strip — Identity, Insurance, Qualifications. Tier-blind. */}
-        <TrustStatusStrip />
+
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">

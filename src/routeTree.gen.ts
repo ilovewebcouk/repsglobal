@@ -75,6 +75,7 @@ import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
+import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
@@ -434,6 +435,11 @@ const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProSlugRoute,
 } as any)
+const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
+  id: '/u/insurance/$sessionId',
+  path: '/u/insurance/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProSlugEnquireRoute = ProSlugEnquireRouteImport.update({
   id: '/enquire',
   path: '/enquire',
@@ -668,6 +674,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -760,6 +767,7 @@ export interface FileRoutesByTo {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -857,6 +865,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -952,6 +961,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
@@ -1044,6 +1054,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/u/insurance/$sessionId'
     | '/pro/$slug'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
@@ -1140,6 +1151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard_/design-kit'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
+    | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
@@ -1232,6 +1244,7 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -1702,6 +1715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProSlugIndexRouteImport
       parentRoute: typeof ProSlugRoute
     }
+    '/u/insurance/$sessionId': {
+      id: '/u/insurance/$sessionId'
+      path: '/u/insurance/$sessionId'
+      fullPath: '/u/insurance/$sessionId'
+      preLoaderRoute: typeof UInsuranceSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pro/$slug/enquire': {
       id: '/pro/$slug/enquire'
       path: '/enquire'
@@ -2105,6 +2125,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

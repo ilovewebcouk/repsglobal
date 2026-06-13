@@ -569,6 +569,47 @@ export type Database = {
           },
         ]
       }
+      insurance_upload_sessions: {
+        Row: {
+          created_at: string
+          doc_path: string | null
+          expires_at: string
+          filename: string | null
+          id: string
+          professional_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string
+          filename?: string | null
+          id?: string
+          professional_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string
+          filename?: string | null
+          id?: string
+          professional_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_upload_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ofqual_cache: {
         Row: {
           fetched_at: string

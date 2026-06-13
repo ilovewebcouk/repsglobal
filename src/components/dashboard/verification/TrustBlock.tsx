@@ -38,10 +38,12 @@ import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions"
 import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import {
   myInsurance,
-  saveInsurance,
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { InsuranceUploadDialog } from "@/components/verification/InsuranceUploadDialog";
+
+
 
 function fileToDataUrl(f: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -565,8 +567,9 @@ export function InsuranceProfileCard({ step }: { step?: string }) {
   const fetchInsurance = useServerFn(myInsurance);
   const insuranceQ = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const insurance = insuranceQ.data as InsuranceRow;
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const onSaved = () => {
+  const onSubmitted = () => {
     qc.invalidateQueries({ queryKey: ["my-insurance"] });
     qc.invalidateQueries({ queryKey: ["my-trust-state"] });
   };
@@ -576,62 +579,51 @@ export function InsuranceProfileCard({ step }: { step?: string }) {
       id="insurance"
       step={step}
       title="Insurance"
-      subtitle="Public liability insurance — £1m minimum cover recommended. Adds the Insured tick to your profile."
+      subtitle="Public liability — required to take clients through REPs. Upload your certificate or scan it with your phone; we'll read it for you."
     >
-      <InsuranceBody insurance={insurance} onSaved={onSaved} />
+      <InsuranceBody insurance={insurance} onOpenDialog={() => setDialogOpen(true)} />
+      <InsuranceUploadDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmitted={onSubmitted}
+      />
     </ProfileCard>
   );
 }
 
 function InsuranceBody({
+
   insurance,
-  onSaved,
+  onOpenDialog,
 }: {
   insurance: InsuranceRow;
-  onSaved: () => void;
+  onOpenDialog: () => void;
 }) {
-  const upload = useServerFn(uploadVerificationAsset);
-  const save = useServerFn(saveInsurance);
-  const [provider, setProvider] = useState("");
-  const [policy, setPolicy] = useState("");
-  const [cover, setCover] = useState<string>("");
-  const [expiry, setExpiry] = useState("");
-  const [docPath, setDocPath] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const onPick = async (f: File) => {
-    try {
-      const dataUrl = await fileToDataUrl(f);
-      const { path } = await upload({ data: { bucket: "insurance-docs", file_data_url: dataUrl, filename: f.name } });
-      setDocPath(path);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
-    }
-  };
-
-  const submit = useMutation({
-    mutationFn: async () => {
-      if (!provider.trim()) throw new Error("Provider required");
-      if (!expiry) throw new Error("Expiry date required");
-      if (!docPath) throw new Error("Certificate upload required");
-      await save({
-        data: {
-          provider: provider.trim(),
-          policy_number: policy.trim() || null,
-          cover_amount_gbp: cover ? Math.round(parseFloat(cover) * 1_000_000) : null,
-          expiry_date: expiry,
-          doc_path: docPath,
-        },
-      });
-    },
-    onSuccess: () => {
-      toast.success("Insurance submitted");
-      onSaved();
-    },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
-  });
-
   if (insurance) {
+    const today = new Date().toISOString().slice(0, 10);
+    const isExpired = insurance.expiry_date < today;
+    const daysToExpiry = Math.round(
+      (new Date(insurance.expiry_date).getTime() - Date.now()) / 86_400_000,
+    );
+    const expiringSoon = !isExpired && daysToExpiry <= 30;
+
+    const badgeLabel = isExpired
+      ? "Expired"
+      : insurance.status === "active"
+        ? expiringSoon
+          ? `Expiring in ${daysToExpiry}d`
+          : "Insured"
+        : insurance.status === "rejected"
+          ? "Rejected"
+          : "In review";
+    const badgeClass = isExpired || insurance.status === "rejected"
+      ? "border-red-400/30 bg-red-500/15 text-red-300"
+      : insurance.status === "active"
+        ? expiringSoon
+          ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+          : "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+        : "border-amber-400/30 bg-amber-500/15 text-amber-300";
+
     return (
       <div>
         <div className="flex items-start justify-between gap-3">
@@ -639,22 +631,18 @@ function InsuranceBody({
             {insurance.provider} · expires {insurance.expiry_date}
             {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
           </p>
-          <Badge
-            variant="neutral"
-            className={
-              insurance.status === "active"
-                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                : insurance.status === "rejected"
-                  ? "border-red-400/30 bg-red-500/15 text-red-300"
-                  : "border-amber-400/30 bg-amber-500/15 text-amber-300"
-            }
-          >
-            {insurance.status}
-          </Badge>
+          <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
         {insurance.admin_note && (
           <div className="mt-3 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             {insurance.admin_note}
+          </div>
+        )}
+        {(isExpired || expiringSoon || insurance.status === "rejected") && (
+          <div className="mt-3">
+            <Button variant="primary" size="md" onClick={onOpenDialog}>
+              Replace certificate
+            </Button>
           </div>
         )}
       </div>
@@ -662,52 +650,20 @@ function InsuranceBody({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
+      <p className="text-[12px] text-white/65">
+        Add a current public liability certificate. We'll extract the details — you confirm before submitting.
+      </p>
       <div>
-        <label className="text-[12px] text-white/65">Provider</label>
-        <Input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. Insure4Sport" />
+        <Button variant="primary" size="md" onClick={onOpenDialog}>
+          <Upload className="size-4" />
+          Upload certificate
+        </Button>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div>
-          <label className="text-[12px] text-white/65">Policy number</label>
-          <Input value={policy} onChange={(e) => setPolicy(e.target.value)} placeholder="Optional" />
-        </div>
-        <div>
-          <label className="text-[12px] text-white/65">Cover (£m)</label>
-          <Input
-            type="number"
-            step="0.5"
-            min="0"
-            value={cover}
-            onChange={(e) => setCover(e.target.value)}
-            placeholder="1"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="text-[12px] text-white/65">Expiry date</label>
-        <Input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
-      </div>
-      <FileSlot label="Insurance certificate" icon={Upload} done={!!docPath} onClick={() => fileRef.current?.click()} />
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*,application/pdf"
-        className="hidden"
-        onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
-      />
-      <Button
-        variant="primary"
-        size="md"
-        disabled={submit.isPending}
-        onClick={() => submit.mutate()}
-        className="w-full"
-      >
-        {submit.isPending ? <Loader2 className="size-4 animate-spin" /> : "Submit insurance"}
-      </Button>
     </div>
   );
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* Back-compat: legacy `<TrustBlock />` import is deliberately not exported.  */
