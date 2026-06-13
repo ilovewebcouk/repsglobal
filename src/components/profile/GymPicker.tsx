@@ -1,15 +1,17 @@
 import * as React from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Loader2, MapPin, Plus, X } from "lucide-react";
+import { Building2, Globe, Loader2, MapPin, Plus, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
 import {
   addMyGym,
   getMyGyms,
+  importGoogleGym,
   removeMyGym,
   requestNewGym,
   searchGyms,
+  type ExternalGymOption,
   type GymOption,
   type ProGym,
 } from "@/lib/gyms.functions";
