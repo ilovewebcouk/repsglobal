@@ -1068,20 +1068,31 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* Basic information */}
+            {/* 02 Identity — single column, no half-empty rail */}
             <Card>
               <SectionHeader
-                title="Basic information"
-                subtitle="The essentials clients see at the top of your profile."
+                title="Identity"
+                subtitle="Your name and the title clients see first."
                 step="02"
               />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-4">
                 <Field label="Full name">
                   <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
                 </Field>
-                <Field label="Profession" hint="Earned from your approved qualifications — not self-picked.">
+                <Field label="Profession">
                   <EarnedTitlePicker />
                 </Field>
+              </div>
+            </Card>
+
+            {/* 03 Where you work — location + work mode together */}
+            <Card>
+              <SectionHeader
+                title="Where you work"
+                subtitle="Your base and how clients can train with you."
+                step="03"
+              />
+              <div className="flex flex-col gap-4">
                 <Field label="Primary training postcode">
                   <TextInput
                     value={postcode}
@@ -1098,7 +1109,7 @@ function ProfileEditorPage() {
                     </p>
                   ) : null}
                 </Field>
-                <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid." className="sm:col-span-2">
+                <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid.">
                   <DeliveryModePicker
                     inPerson={form.in_person_available}
                     online={form.online_available}
@@ -1108,7 +1119,18 @@ function ProfileEditorPage() {
                     }}
                   />
                 </Field>
-                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`} className="sm:col-span-2">
+              </div>
+            </Card>
+
+            {/* 04 Your pitch — tagline + bio together (both marketing copy) */}
+            <Card>
+              <SectionHeader
+                title="Your pitch"
+                subtitle="What clients read on your directory card and profile."
+                step="04"
+              />
+              <div className="flex flex-col gap-5">
+                <Field label="Tagline" hint={`${form.headline.length} / 160 · One line that appears under your name on the directory card.`}>
                   <TextInput
                     value={form.headline}
                     onChange={(v) => set("headline", v.slice(0, 160))}
@@ -1123,101 +1145,31 @@ function ProfileEditorPage() {
                     />
                   </div>
                 </Field>
-                <Field
-                  label="Contact phone"
-                  hint="Used for account recovery and booking alerts. Never shown on your public profile."
-                >
-                  <PhoneField
-                    value={form.contact_phone}
-                    onChange={(v) => set("contact_phone", v)}
-                    invalid={
-                      form.contact_phone.length > 0 &&
-                      !isValidPhoneNumber(form.contact_phone)
-                    }
+                <Field label="About" hint={`${form.bio.length} / 1200 characters · Lead with credibility — credentials, results, and who you help.`}>
+                  <TextArea
+                    rows={8}
+                    value={form.bio}
+                    onChange={(v) => set("bio", v.slice(0, 1200))}
+                    placeholder="Tell clients about your experience, approach and who you help."
                   />
-                </Field>
-                <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language." className="sm:col-span-2">
-                  <LanguagePicker
-                    values={form.languages}
-                    onChange={(v) => set("languages", v)}
-                  />
-                </Field>
-                <Field label="Social links" hint="Type just the handle — full URLs and @ symbols get cleaned up automatically." className="sm:col-span-2">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    <SocialHandleInput
-                      value={form.social_instagram}
-                      onChange={(v) => set("social_instagram", v)}
-                      icon={<Instagram className="h-3.5 w-3.5" />}
-                      prefix="instagram.com/"
-                      ariaLabel="Instagram handle"
-                    />
-                    <SocialHandleInput
-                      value={form.social_tiktok}
-                      onChange={(v) => set("social_tiktok", v)}
-                      icon={<TiktokIcon />}
-                      prefix="tiktok.com/@"
-                      ariaLabel="TikTok handle"
-                    />
-                    <SocialHandleInput
-                      value={form.social_x}
-                      onChange={(v) => set("social_x", v)}
-                      icon={<XIcon />}
-                      prefix="x.com/"
-                      ariaLabel="X / Twitter handle"
-                    />
-                    <SocialHandleInput
-                      value={form.social_youtube}
-                      onChange={(v) => set("social_youtube", v)}
-                      icon={<Youtube className="h-3.5 w-3.5" />}
-                      prefix="youtube.com/@"
-                      ariaLabel="YouTube channel"
-                    />
-                    <SocialHandleInput
-                      value={form.social_linkedin}
-                      onChange={(v) => set("social_linkedin", v)}
-                      icon={<Linkedin className="h-3.5 w-3.5" />}
-                      prefix="linkedin.com/in/"
-                      ariaLabel="LinkedIn slug"
+                  <div className="mt-2 flex justify-end">
+                    <AiCopyAssist
+                      field="bio"
+                      value={form.bio}
+                      facts={aiFacts}
+                      onApply={(v) => set("bio", v.slice(0, 1200))}
                     />
                   </div>
                 </Field>
               </div>
             </Card>
 
-            {/* Public bio */}
-            <Card>
-              <SectionHeader
-                title="Public bio"
-                subtitle="Lead with credibility — credentials, results, and who you help."
-                step="03"
-              />
-              <Field
-                label="About"
-                hint={`${form.bio.length} / 1200 characters`}
-              >
-                <TextArea
-                  rows={8}
-                  value={form.bio}
-                  onChange={(v) => set("bio", v.slice(0, 1200))}
-                  placeholder="Tell clients about your experience, approach and who you help."
-                />
-                <div className="mt-2 flex justify-end">
-                  <AiCopyAssist
-                    field="bio"
-                    value={form.bio}
-                    facts={aiFacts}
-                    onApply={(v) => set("bio", v.slice(0, 1200))}
-                  />
-                </div>
-              </Field>
-            </Card>
-
-            {/* Specialisms */}
+            {/* 05 Specialisms */}
             <Card>
               <SectionHeader
                 title="Specialisms"
                 subtitle={`What clients should hire you for — pick up to ${MAX_SPECIALISMS}.`}
-                step="04"
+                step="05"
               />
               <SpecialismPicker
                 values={form.specialisms}
@@ -1225,7 +1177,120 @@ function ProfileEditorPage() {
               />
             </Card>
 
+            {/* 06 Languages & socials — public extras */}
+            <Card>
+              <SectionHeader
+                title="Languages & socials"
+                subtitle="Extras that help the right clients find you."
+                step="06"
+              />
+              <div className="flex flex-col gap-5">
+                <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language.">
+                  <LanguagePicker
+                    values={form.languages}
+                    onChange={(v) => set("languages", v)}
+                  />
+                </Field>
+                <Field label="Social links" hint="Type just the handle — full URLs and @ symbols get cleaned up automatically.">
+                  <details
+                    className="group rounded-[12px] border border-reps-border bg-reps-ink/40 [&_summary::-webkit-details-marker]:hidden"
+                    open={
+                      !!(
+                        form.social_instagram ||
+                        form.social_tiktok ||
+                        form.social_x ||
+                        form.social_youtube ||
+                        form.social_linkedin
+                      )
+                    }
+                  >
+                    <summary className="flex cursor-pointer items-center justify-between px-3 py-2.5 text-[12px] font-semibold text-white/75 hover:text-white">
+                      <span className="flex items-center gap-2">
+                        <Plus className="h-3.5 w-3.5 transition-transform group-open:rotate-45" />
+                        {(() => {
+                          const filled = [
+                            form.social_instagram,
+                            form.social_tiktok,
+                            form.social_x,
+                            form.social_youtube,
+                            form.social_linkedin,
+                          ].filter(Boolean).length;
+                          return filled === 0
+                            ? "Add a social link"
+                            : `${filled} link${filled === 1 ? "" : "s"} added · edit`;
+                        })()}
+                      </span>
+                      <span className="text-[11px] font-medium text-white/45">Instagram · TikTok · X · YouTube · LinkedIn</span>
+                    </summary>
+                    <div className="grid grid-cols-1 gap-2 border-t border-reps-border p-3 sm:grid-cols-2">
+                      <SocialHandleInput
+                        value={form.social_instagram}
+                        onChange={(v) => set("social_instagram", v)}
+                        icon={<Instagram className="h-3.5 w-3.5" />}
+                        prefix="instagram.com/"
+                        ariaLabel="Instagram handle"
+                      />
+                      <SocialHandleInput
+                        value={form.social_tiktok}
+                        onChange={(v) => set("social_tiktok", v)}
+                        icon={<TiktokIcon />}
+                        prefix="tiktok.com/@"
+                        ariaLabel="TikTok handle"
+                      />
+                      <SocialHandleInput
+                        value={form.social_x}
+                        onChange={(v) => set("social_x", v)}
+                        icon={<XIcon />}
+                        prefix="x.com/"
+                        ariaLabel="X / Twitter handle"
+                      />
+                      <SocialHandleInput
+                        value={form.social_youtube}
+                        onChange={(v) => set("social_youtube", v)}
+                        icon={<Youtube className="h-3.5 w-3.5" />}
+                        prefix="youtube.com/@"
+                        ariaLabel="YouTube channel"
+                      />
+                      <SocialHandleInput
+                        value={form.social_linkedin}
+                        onChange={(v) => set("social_linkedin", v)}
+                        icon={<Linkedin className="h-3.5 w-3.5" />}
+                        prefix="linkedin.com/in/"
+                        ariaLabel="LinkedIn slug"
+                      />
+                    </div>
+                  </details>
+                </Field>
+              </div>
+            </Card>
+
+            {/* 07 Private contact — admin-only, visually demoted */}
+            <section className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel/40 p-5">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-[14px] font-semibold text-white/85">Private contact</h2>
+                  <p className="mt-0.5 text-[11.5px] text-white/45">
+                    Only used by REPs for account recovery and booking alerts. Never shown on your public profile.
+                  </p>
+                </div>
+                <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/55">
+                  07
+                </span>
+              </div>
+              <Field label="Contact phone">
+                <PhoneField
+                  value={form.contact_phone}
+                  onChange={(v) => set("contact_phone", v)}
+                  invalid={
+                    form.contact_phone.length > 0 &&
+                    !isValidPhoneNumber(form.contact_phone)
+                  }
+                />
+              </Field>
+            </section>
+
           </div>
+
 
 
           <aside className="flex flex-col gap-4 xl:col-span-4">
