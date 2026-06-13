@@ -159,10 +159,12 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
       { icon: AreaChart, label: "Reports", to: "/dashboard/reports" },
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
+      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
   },
+
   {
     title: "Money & Admin",
     items: [
