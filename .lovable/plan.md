@@ -94,7 +94,7 @@ Scripted seed migration: identity approved · 1 qual approved · 1 qual expiring
 0a–0e Verification (split, flag-gated)          ✅ DONE
 A  Migration + RLS for new tables               ✅ DONE (shop_fronts, services, enquiries, reviews, programmes_waitlist)
 B  searchProfessionals server fn + /find-a-professional wired (P95<300ms)
-C  Shop-front: Lite (Verified, auto-seeded) + Full editor (Pro) + live /c/$slug
+C  Shop-front: Lite (Verified, auto-seeded) + Full editor (Pro) + live /c/$slug  ✅ DONE (auto-seed trigger; getShopFrontBySlug overlays mock on /c/$slug; /dashboard/shop-front editor live)
 D  /pro/$slug real loader + Enquire CTA live
 E  Anonymous submitEnquiry + Resend + /dashboard/enquiries tab (new route file)
 F  Reviews: collect + display + post-session invite + /dashboard/reviews tab
