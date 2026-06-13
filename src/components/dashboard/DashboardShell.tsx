@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Bell,
   Briefcase,
+  Building2,
   Calendar as CalendarIcon,
   ClipboardList,
   CreditCard,
