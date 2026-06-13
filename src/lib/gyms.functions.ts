@@ -503,7 +503,13 @@ export const adminPromoteGym = createServerFn({ method: "POST" })
       _user_id: context.userId, _role: "admin",
     });
     if (!roleOk) throw new Error("Forbidden");
-    const patch: Record<string, unknown> = { source: "curated" };
+    const patch: {
+      source: "curated";
+      logo_url?: string | null;
+      tagline?: string | null;
+      chain_slug?: string | null;
+      chain_name?: string | null;
+    } = { source: "curated" };
     if (data.logo_url !== undefined) patch.logo_url = data.logo_url;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
     if (data.chain_slug !== undefined) patch.chain_slug = data.chain_slug;
