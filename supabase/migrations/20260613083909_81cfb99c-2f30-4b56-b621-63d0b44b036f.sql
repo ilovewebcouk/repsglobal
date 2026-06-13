@@ -1,0 +1,1 @@
+DELETE FROM public.identity_documents WHERE id = '74b23a59-a3d0-4a7d-bcaf-aef35acded86';
