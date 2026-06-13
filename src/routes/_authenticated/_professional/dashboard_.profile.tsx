@@ -37,11 +37,11 @@ import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist"
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
-import {
-  IdentityProfileCard,
-  InsuranceProfileCard,
-} from "@/components/dashboard/verification/TrustBlock";
-import { VerificationCard } from "@/components/dashboard/verification/VerificationCard";
+import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
+import { getTrustState } from "@/lib/verification/trust.functions";
+import { useQuery } from "@tanstack/react-query";
+
+
 
 
 function TiktokIcon() {
