@@ -181,18 +181,32 @@ function AdminVerificationPage() {
   };
 
   const decideMutation = useMutation({
-    mutationFn: async (decision: "approved" | "rejected" | "changes_requested") => {
+    mutationFn: async (args: {
+      decision: "approved" | "rejected" | "changes_requested";
+      unlocked_tier?: "verified" | "pro" | "studio" | null;
+      gates_snapshot?: Record<string, unknown> | null;
+      override_reason?: string | null;
+    }) => {
       if (!selectedId) return;
-      if (decision !== "approved" && !note.trim()) throw new Error("Note required for rejection / changes");
+      if (args.decision !== "approved" && !note.trim()) throw new Error("Note required for rejection / changes");
       setBusy(true);
       await decide({
-        data: { id: selectedId, decision, admin_note: note.trim() || null, checklist: checks },
+        data: {
+          id: selectedId,
+          decision: args.decision,
+          admin_note: note.trim() || null,
+          checklist: checks,
+          unlocked_tier: args.unlocked_tier ?? null,
+          gates_snapshot: args.gates_snapshot ?? null,
+          override_reason: args.override_reason ?? null,
+        },
       });
     },
     onSettled: () => {
       setBusy(false);
       setSelectedId(null);
       setNote("");
+      setOverrideReason("");
       setChecks({});
       qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
