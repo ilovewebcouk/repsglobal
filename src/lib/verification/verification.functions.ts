@@ -16,6 +16,8 @@ const reviewInput = z.object({
   admin_note: z.string().max(1000).optional().nullable(),
   checklist: z.record(z.string(), z.boolean()).optional(),
   unlocked_tier: z.enum(["verified", "pro", "studio"]).optional().nullable(),
+  gates_snapshot: z.record(z.string(), z.unknown()).optional().nullable(),
+  override_reason: z.string().max(500).optional().nullable(),
 });
 
 export const submitVerification = createServerFn({ method: "POST" })
