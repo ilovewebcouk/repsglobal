@@ -145,6 +145,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
     title: "Work",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
       { icon: Target, label: "Leads", to: "/dashboard/leads" },
       { icon: Users, label: "Clients", to: "/dashboard/clients" },
       { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
