@@ -77,7 +77,12 @@ export function TrustBlock() {
       qc.invalidateQueries({ queryKey: ["my-identity"] });
       qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       toast.success("ID check submitted — we'll confirm shortly.");
-      router.navigate({ to: ".", search: {}, hash: "identity", replace: true });
+      router.navigate({
+        to: "/dashboard/profile",
+        search: {},
+        hash: "identity",
+        replace: true,
+      });
       // Scroll to identity section
       setTimeout(() => {
         document.getElementById("identity")?.scrollIntoView({ behavior: "smooth", block: "start" });
