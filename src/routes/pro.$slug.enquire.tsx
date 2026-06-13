@@ -189,9 +189,22 @@ function EnquirePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceOptions]);
 
+  type EnquiryInput = {
+    slug: string;
+    service_id: string | null;
+    sender_name: string;
+    sender_email: string;
+    sender_phone: string | null;
+    goals: string[];
+    frequency: string;
+    start_by: string;
+    budget: string;
+    location: string | null;
+    message: string;
+  };
+
   const mutation = useMutation({
-    mutationFn: (vars: Parameters<typeof submitEnquiry>[0]["data"]) =>
-      submitEnquiry({ data: vars }),
+    mutationFn: (vars: EnquiryInput) => submitEnquiry({ data: vars }),
     onSuccess: () => {
       toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
       router.navigate({ to: "/pro/$slug", params: { slug } });
