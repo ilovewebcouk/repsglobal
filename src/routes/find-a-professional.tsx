@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { listPublishedProfessionals } from "@/lib/profile/public-profile.functions";
+import { searchProfessionals } from "@/lib/directory/search.functions";
 import { getProfessionLabel } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
@@ -53,7 +53,17 @@ export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
     const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
     const venue = venueRaw && VALID_VENUE_SLUGS.has(venueRaw) ? venueRaw : undefined;
-    return { venue };
+    const str = (k: string) =>
+      typeof raw[k] === "string" && (raw[k] as string).length > 0
+        ? ((raw[k] as string).slice(0, 120))
+        : undefined;
+    return {
+      venue,
+      city: str("city"),
+      profession: str("profession"),
+      specialism: str("specialism"),
+      q: str("q"),
+    };
   },
   head: () => ({
     meta: [
@@ -290,16 +300,17 @@ const testimonials = [
 
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { venue: venueFilter } = Route.useSearch();
+  const { venue: venueFilter, city, profession, specialism, q } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
-  const listLive = useServerFn(listPublishedProfessionals);
+  const search = useServerFn(searchProfessionals);
   const { data: livePros = [] } = useQuery({
-    queryKey: ["directory", "published"],
-    queryFn: () => listLive({ data: undefined }),
+    queryKey: ["directory", "search", { city, profession, specialism, q }],
+    queryFn: () => search({ data: { city, profession, specialism, q } }),
     staleTime: 60_000,
   });
+
 
   const liveAsPros: Pro[] = React.useMemo(
     () =>
