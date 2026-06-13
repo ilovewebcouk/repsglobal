@@ -524,3 +524,116 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/* -------------------------------------------------------------------------- */
+/* Revoke an already-approved qualification                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Revoke a previously-approved qualification submission. Deletes any
+ * `pro_titles` rows granted by that submission (titles came from this
+ * qualification, so they go with it), writes a `verification_decisions`
+ * audit row, and — if the pro has no remaining approved submissions —
+ * flips `professionals.verification_status` back to `unverified` and
+ * clears `primary_title_slug` if it pointed at a now-deleted title.
+ */
+export const revokeQualification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        submission_id: z.string().uuid(),
+        reason: z.string().min(8).max(1000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: sub, error: subErr } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("id, professional_id, status")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (subErr) throw new Error(subErr.message);
+    if (!sub) throw new Error("Submission not found");
+    if ((sub as { status: string }).status !== "approved") {
+      throw new Error("Only approved submissions can be revoked");
+    }
+    const proId = (sub as { professional_id: string }).professional_id;
+
+    // 1. Capture which titles came from this submission (for primary cleanup).
+    const { data: grantedTitles } = await supabaseAdmin
+      .from("pro_titles")
+      .select("title_slug, is_primary")
+      .eq("source_submission_id", data.submission_id);
+    const revokedSlugs = ((grantedTitles ?? []) as { title_slug: string; is_primary: boolean }[]).map(
+      (t) => t.title_slug,
+    );
+
+    // 2. Delete the titles granted by this submission.
+    await supabaseAdmin
+      .from("pro_titles")
+      .delete()
+      .eq("source_submission_id", data.submission_id);
+
+    // 3. Flip submission status back. Reuse 'rejected' + prefix admin_note so
+    //    revocations are filterable in the admin list ("REVOKED:" prefix).
+    await supabaseAdmin
+      .from("verification_submissions")
+      .update({
+        status: "rejected",
+        admin_note: `REVOKED: ${data.reason}`,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      } as never)
+      .eq("id", data.submission_id);
+
+    // 4. Audit row.
+    await supabaseAdmin.from("verification_decisions").insert({
+      submission_id: data.submission_id,
+      professional_id: proId,
+      reviewer_id: context.userId,
+      decision: "rejected",
+      notes: `REVOKED: ${data.reason}`,
+      checklist: {},
+    } as never);
+
+    // 5. If the pro has no remaining approved submissions, downgrade them.
+    const { count: stillApproved } = await supabaseAdmin
+      .from("verification_submissions")
+      .select("id", { count: "exact", head: true })
+      .eq("professional_id", proId)
+      .eq("status", "approved");
+
+    if (!stillApproved || stillApproved === 0) {
+      await supabaseAdmin
+        .from("professionals")
+        .update({
+          verification: "unverified",
+          verification_status: "unverified",
+          primary_title_slug: null,
+        } as never)
+        .eq("id", proId);
+    } else if (revokedSlugs.length > 0) {
+      // Still has other approvals, but the primary title may have been one of
+      // the revoked ones. If so, clear it — the pro can re-pick from what's left.
+      const { data: proRow } = await supabaseAdmin
+        .from("professionals")
+        .select("primary_title_slug")
+        .eq("id", proId)
+        .maybeSingle();
+      const currentPrimary =
+        (proRow as { primary_title_slug?: string | null } | null)?.primary_title_slug ?? null;
+      if (currentPrimary && revokedSlugs.includes(currentPrimary)) {
+        await supabaseAdmin
+          .from("professionals")
+          .update({ primary_title_slug: null } as never)
+          .eq("id", proId);
+      }
+    }
+
+    return { ok: true, revoked_titles: revokedSlugs };
+  });
+
+
