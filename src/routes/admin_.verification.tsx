@@ -237,7 +237,27 @@ function AdminVerificationPage() {
         ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+      {/* Top-level tab toggle */}
+      <div className="mt-6 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
+        {(["qualifications", "identity"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => { setTopTab(t); setSelectedId(null); }}
+            className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold capitalize transition ${
+              topTab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
+            }`}
+          >
+            {t === "qualifications" ? "Qualifications" : "Identity checks"}
+          </button>
+        ))}
+      </div>
+
+      {topTab === "identity" ? (
+        <div className="mt-4">
+          <AdminIdentityTab signUrl={signUrl} adminOverride={adminOverrideIdentity} />
+        </div>
+      ) : (
+      <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
         {/* QUEUE */}
         <PPanel className="flex flex-col">
           <div className="border-b border-reps-border p-3">
@@ -250,26 +270,26 @@ function AdminVerificationPage() {
                 className="pl-8"
               />
             </div>
-            <div className="mt-2 flex gap-1">
-              {(["all", "mine", "sla"] as const).map((f) => (
+            <div className="mt-2 grid grid-cols-4 gap-1">
+              {(["submitted", "approved", "changes_requested", "rejected"] as StatusFilter[]).map((f) => (
                 <button
                   key={f}
-                  onClick={() => setFilter(f)}
-                  className={`flex-1 rounded-[8px] px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                    filter === f ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
+                  onClick={() => { setStatusFilter(f); setSelectedId(null); }}
+                  className={`rounded-[8px] px-1.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+                    statusFilter === f ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
                   }`}
                 >
-                  {f === "sla" ? "SLA risk" : f}
+                  {STATUS_LABEL[f]}
                 </button>
               ))}
             </div>
           </div>
           <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
-            {pending.isLoading && (
-              <li className="p-6 text-center text-[12px] text-white/55">Loading queue…</li>
+            {listing.isLoading && (
+              <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
             )}
-            {!pending.isLoading && rows.length === 0 && (
-              <li className="p-6 text-center text-[12px] text-white/55">Queue clear.</li>
+            {!listing.isLoading && rows.length === 0 && (
+              <li className="p-6 text-center text-[12px] text-white/55">No {STATUS_LABEL[statusFilter].toLowerCase()} cases.</li>
             )}
             {rows.map((r) => {
               const sel = r.id === selectedId;
