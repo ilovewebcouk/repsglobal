@@ -45,6 +45,12 @@ import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getTrustState } from "@/lib/verification/trust.functions";
+import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
+
+
 
 
 /* ------------------------------------------------------------------------- */
