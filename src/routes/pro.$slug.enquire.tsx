@@ -303,7 +303,7 @@ function EnquirePage() {
                 onValueChange={setService}
                 className="grid gap-3 sm:grid-cols-2"
               >
-                {pro.services.map((s) => {
+                {serviceOptions.map((s) => {
                   const checked = service === s.id;
                   return (
                     <label
