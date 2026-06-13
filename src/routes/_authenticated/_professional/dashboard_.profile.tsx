@@ -938,8 +938,7 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Trust status strip — Identity, Insurance, Qualifications. Tier-blind. */}
-        <TrustStatusStrip />
+
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
