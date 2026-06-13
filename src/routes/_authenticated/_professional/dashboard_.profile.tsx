@@ -245,12 +245,45 @@ function SectionHeader({ title, subtitle, step }: { title: string; subtitle?: st
   );
 }
 
-function Field({ label, children, hint, className = "" }: { label: string; children: React.ReactNode; hint?: string; className?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+  error,
+  warn,
+  counter,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+  error?: string;
+  warn?: string;
+  counter?: string;
+  className?: string;
+}) {
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-[12px] font-medium text-white/70">{label}</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[12px] font-medium text-white/70">{label}</span>
+        {counter ? (
+          <span
+            className={`text-[10.5px] font-medium tabular-nums ${
+              error ? "text-red-300" : warn ? "text-amber-300" : "text-white/40"
+            }`}
+          >
+            {counter}
+          </span>
+        ) : null}
+      </div>
       {children}
-      {hint ? <span className="text-[11px] text-white/45">{hint}</span> : null}
+      {error ? (
+        <span className="text-[11px] font-medium text-red-300">{error}</span>
+      ) : warn ? (
+        <span className="text-[11px] font-medium text-amber-300">{warn}</span>
+      ) : hint ? (
+        <span className="text-[11px] text-white/45">{hint}</span>
+      ) : null}
     </div>
   );
 }
