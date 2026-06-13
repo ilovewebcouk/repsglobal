@@ -226,7 +226,8 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
 
     const { error: pErr } = await supabase
       .from("profiles")
-      .update(profilePatch)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update(profilePatch as any)
       .eq("id", userId);
     if (pErr) throw pErr;
 
