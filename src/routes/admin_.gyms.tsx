@@ -101,6 +101,35 @@ function AdminGyms() {
         ))}
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {(["pending_review", "active", "rejected", "all"] as StatusFilter[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setFilter(s)}
+              className={`h-9 rounded-full border px-4 text-[12px] font-semibold transition ${
+                filter === s
+                  ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                  : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+              }`}
+            >
+              {s === "pending_review" ? "Pending review" : s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === filter && rows.length > 0 ? ` · ${rows.length}` : ""}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => geocodeM.mutate()}
+          disabled={geocodeM.isPending}
+          className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white disabled:opacity-50"
+        >
+          {geocodeM.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
+          Geocode missing
+        </button>
+      </div>
+
       <PPanel className="p-0">
         {listQ.isPending ? (
           <div className="flex items-center justify-center p-10 text-white/55">
@@ -117,6 +146,7 @@ function AdminGyms() {
                 <th className="px-5 py-3 font-semibold">Gym</th>
                 <th className="px-5 py-3 font-semibold">Location</th>
                 <th className="px-5 py-3 font-semibold">Chain</th>
+                <th className="px-5 py-3 font-semibold">Source</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
                 <th className="px-5 py-3 font-semibold">Submitted</th>
                 <th className="px-5 py-3 font-semibold text-right">Actions</th>
