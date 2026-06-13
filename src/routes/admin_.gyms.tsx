@@ -2,13 +2,18 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, MapPin, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
-import { adminListGyms, adminUpdateGym } from "@/lib/gyms.functions";
+import {
+  adminGeocodeBackfill,
+  adminListGyms,
+  adminPromoteGym,
+  adminUpdateGym,
+} from "@/lib/gyms.functions";
 
 export const Route = createFileRoute("/admin_/gyms")({
   ssr: false,
@@ -29,6 +34,8 @@ function AdminGyms() {
   const qc = useQueryClient();
   const fetchList = useServerFn(adminListGyms);
   const runUpdate = useServerFn(adminUpdateGym);
+  const runPromote = useServerFn(adminPromoteGym);
+  const runGeocode = useServerFn(adminGeocodeBackfill);
 
   const listQ = useQuery({
     queryKey: ["admin-gyms", filter],
@@ -47,6 +54,26 @@ function AdminGyms() {
       toast.error(e instanceof Error ? e.message : "Couldn't update gym."),
   });
 
+  const promoteM = useMutation({
+    mutationFn: (id: string) => runPromote({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Promoted to curated.");
+      void qc.invalidateQueries({ queryKey: ["admin-gyms"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't promote gym."),
+  });
+
+  const geocodeM = useMutation({
+    mutationFn: () => runGeocode(),
+    onSuccess: (r) => {
+      toast.success(`Geocoded ${r.done}/${r.total} (${r.failed} failed).`);
+      void qc.invalidateQueries({ queryKey: ["admin-gyms"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Geocode backfill failed."),
+  });
+
   const rows = listQ.data ?? [];
 
   return (
@@ -56,22 +83,34 @@ function AdminGyms() {
       title="Gyms"
       subtitle="Moderate gym submissions from professionals and curate the venue directory."
     >
-      <div className="mb-4 flex flex-wrap gap-2">
-        {(["pending_review", "active", "rejected", "all"] as StatusFilter[]).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setFilter(s)}
-            className={`h-9 rounded-full border px-4 text-[12px] font-semibold transition ${
-              filter === s
-                ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
-            }`}
-          >
-            {s === "pending_review" ? "Pending review" : s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-            {s === filter && rows.length > 0 ? ` · ${rows.length}` : ""}
-          </button>
-        ))}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {(["pending_review", "active", "rejected", "all"] as StatusFilter[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setFilter(s)}
+              className={`h-9 rounded-full border px-4 text-[12px] font-semibold transition ${
+                filter === s
+                  ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+                  : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+              }`}
+            >
+              {s === "pending_review" ? "Pending review" : s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === filter && rows.length > 0 ? ` · ${rows.length}` : ""}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => geocodeM.mutate()}
+          disabled={geocodeM.isPending}
+          className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white disabled:opacity-50"
+        >
+          {geocodeM.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
+          Geocode missing
+        </button>
       </div>
 
       <PPanel className="p-0">
@@ -90,6 +129,7 @@ function AdminGyms() {
                 <th className="px-5 py-3 font-semibold">Gym</th>
                 <th className="px-5 py-3 font-semibold">Location</th>
                 <th className="px-5 py-3 font-semibold">Chain</th>
+                <th className="px-5 py-3 font-semibold">Source</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
                 <th className="px-5 py-3 font-semibold">Submitted</th>
                 <th className="px-5 py-3 font-semibold text-right">Actions</th>
@@ -106,6 +146,23 @@ function AdminGyms() {
                     {g.area ? `${g.area} · ` : ""}{g.city ?? ""}
                   </td>
                   <td className="px-5 py-3 text-white/65">{g.chain_name ?? "—"}</td>
+                  <td className="px-5 py-3">
+                    {(() => {
+                      const src = (g as { source?: string }).source ?? "curated";
+                      const cls =
+                        src === "google_places"
+                          ? "border border-sky-400/30 bg-sky-500/15 text-sky-300"
+                          : src === "user_submission"
+                            ? "border border-amber-400/30 bg-amber-500/15 text-amber-200"
+                            : "border border-reps-border bg-reps-panel-soft text-white/65";
+                      const label = src === "google_places" ? "Google" : src === "user_submission" ? "User" : "Curated";
+                      return (
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${cls}`}>
+                          {label}
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td className="px-5 py-3">
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
@@ -124,6 +181,16 @@ function AdminGyms() {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-2">
+                      {(g as { source?: string }).source === "google_places" ? (
+                        <button
+                          type="button"
+                          onClick={() => promoteM.mutate(g.id)}
+                          disabled={promoteM.isPending}
+                          className="inline-flex h-8 items-center gap-1 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[11.5px] font-semibold text-reps-orange shadow-none hover:bg-reps-orange/20 disabled:opacity-50"
+                        >
+                          <Sparkles className="h-3 w-3" /> Promote
+                        </button>
+                      ) : null}
                       {g.status !== "active" ? (
                         <button
                           type="button"

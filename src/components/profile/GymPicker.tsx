@@ -1,15 +1,17 @@
 import * as React from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Loader2, MapPin, Plus, X } from "lucide-react";
+import { Building2, Globe, Loader2, MapPin, Plus, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
 import {
   addMyGym,
   getMyGyms,
+  importGoogleGym,
   removeMyGym,
   requestNewGym,
   searchGyms,
+  type ExternalGymOption,
   type GymOption,
   type ProGym,
 } from "@/lib/gyms.functions";
@@ -155,6 +157,7 @@ export function GymPicker() {
   const runSearch = useServerFn(searchGyms);
   const runAdd = useServerFn(addMyGym);
   const runRemove = useServerFn(removeMyGym);
+  const runImport = useServerFn(importGoogleGym);
 
   const mineQ = useQuery({
     queryKey: ["my-gyms"],
@@ -173,9 +176,11 @@ export function GymPicker() {
     enabled: open,
     staleTime: 30_000,
   });
-  const results: GymOption[] = (resultsQ.data ?? []).filter(
+  const data = resultsQ.data ?? { local: [], external: [] };
+  const local: GymOption[] = data.local.filter(
     (r) => !mine.some((m) => m.gym_id === r.id),
   );
+  const external: ExternalGymOption[] = data.external;
 
   const addM = useMutation({
     mutationFn: (gym_id: string) => runAdd({ data: { gym_id } }),
@@ -188,6 +193,19 @@ export function GymPicker() {
       toast.error(e instanceof Error ? e.message : "Couldn't add gym."),
   });
 
+  const importM = useMutation({
+    mutationFn: (placeId: string) => runImport({ data: { placeId } }),
+    onSuccess: () => {
+      toast.success("Added — thanks for helping grow the directory.");
+      setOpen(false);
+      setQuery("");
+      void qc.invalidateQueries({ queryKey: ["my-gyms"] });
+      void qc.invalidateQueries({ queryKey: ["gyms-search"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't import gym."),
+  });
+
   const removeM = useMutation({
     mutationFn: (id: string) => runRemove({ data: { id } }),
     onSuccess: () => {
@@ -198,6 +216,7 @@ export function GymPicker() {
   });
 
   const full = mine.length >= 3;
+  const empty = local.length === 0 && external.length === 0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -242,54 +261,99 @@ export function GymPicker() {
           </PopoverTrigger>
           <PopoverContent
             align="start"
-            className="w-[340px] border-reps-border bg-reps-ink p-0 text-white"
+            className="w-[360px] border-reps-border bg-reps-ink p-0 text-white"
           >
             {!requesting ? (
               <Command shouldFilter={false} className="bg-transparent">
                 <CommandInput
                   value={query}
                   onValueChange={setQuery}
-                  placeholder="Search by gym name or area…"
+                  placeholder="Search any gym in the country…"
                   className="text-white placeholder:text-white/40"
                 />
-                <CommandList>
+                <CommandList className="max-h-[320px]">
                   {resultsQ.isPending ? (
                     <div className="px-3 py-4 text-center text-[12px] text-white/55">
                       <Loader2 className="mx-auto h-3.5 w-3.5 animate-spin" />
                     </div>
-                  ) : results.length === 0 ? (
+                  ) : empty ? (
                     <CommandEmpty className="py-4 text-center text-[12px] text-white/55">
-                      {query.trim() ? `No match for "${query}".` : "No gyms found."}
+                      {query.trim() ? `No match for "${query}".` : "Start typing a gym name…"}
                     </CommandEmpty>
                   ) : (
-                    <CommandGroup>
-                      {results.map((g) => (
-                        <CommandItem
-                          key={g.id}
-                          value={g.id}
-                          onSelect={() => addM.mutate(g.id)}
-                          className="cursor-pointer text-white data-[selected=true]:bg-reps-panel-soft data-[selected=true]:text-white"
-                        >
-                          <div className="flex w-full items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5 shrink-0 text-white/55" />
-                            <div className="flex min-w-0 flex-1 flex-col">
-                              <span className="truncate text-[13px] font-semibold">
-                                {g.name}
-                              </span>
-                              <span className="truncate text-[11px] text-white/55">
-                                {g.area ? `${g.area} · ` : ""}
-                                {g.city}
-                              </span>
-                            </div>
-                            {g.chain_name ? (
-                              <span className="ml-2 shrink-0 text-[10.5px] text-white/45">
-                                {g.chain_name}
-                              </span>
-                            ) : null}
-                          </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    <>
+                      {local.length > 0 ? (
+                        <CommandGroup heading="Verified gyms">
+                          {local.map((g) => (
+                            <CommandItem
+                              key={g.id}
+                              value={`local-${g.id}`}
+                              onSelect={() => addM.mutate(g.id)}
+                              disabled={addM.isPending}
+                              className="cursor-pointer text-white data-[selected=true]:bg-reps-panel-soft data-[selected=true]:text-white"
+                            >
+                              <div className="flex w-full items-center gap-2">
+                                <Building2 className="h-3.5 w-3.5 shrink-0 text-white/55" />
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                  <span className="truncate text-[13px] font-semibold">
+                                    {g.name}
+                                  </span>
+                                  <span className="truncate text-[11px] text-white/55">
+                                    {g.area ? `${g.area} · ` : ""}
+                                    {g.city}
+                                    {g.coach_count && g.coach_count > 0 ? (
+                                      <span className="ml-1 text-emerald-300/80">
+                                        · <Users className="inline h-2.5 w-2.5" /> {g.coach_count} {g.coach_count === 1 ? "trainer" : "trainers"}
+                                      </span>
+                                    ) : null}
+                                  </span>
+                                </div>
+                                {g.chain_name ? (
+                                  <span className="ml-2 shrink-0 text-[10.5px] text-white/45">
+                                    {g.chain_name}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ) : null}
+                      {external.length > 0 ? (
+                        <CommandGroup heading="Other gyms (via Google)">
+                          {external.map((g) => {
+                            const isImporting = importM.isPending && importM.variables === g.placeId;
+                            return (
+                              <CommandItem
+                                key={g.placeId}
+                                value={`ext-${g.placeId}`}
+                                onSelect={() => importM.mutate(g.placeId)}
+                                disabled={importM.isPending}
+                                className="cursor-pointer text-white data-[selected=true]:bg-reps-panel-soft data-[selected=true]:text-white"
+                              >
+                                <div className="flex w-full items-center gap-2">
+                                  {isImporting ? (
+                                    <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-white/55" />
+                                  ) : (
+                                    <Globe className="h-3.5 w-3.5 shrink-0 text-white/45" />
+                                  )}
+                                  <div className="flex min-w-0 flex-1 flex-col">
+                                    <span className="truncate text-[13px] font-semibold">
+                                      {g.name}
+                                    </span>
+                                    <span className="truncate text-[11px] text-white/55">
+                                      {g.formattedAddress}
+                                    </span>
+                                  </div>
+                                  <span className="ml-2 shrink-0 rounded-full border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-white/55">
+                                    via Google
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      ) : null}
+                    </>
                   )}
                 </CommandList>
                 <button
@@ -298,7 +362,7 @@ export function GymPicker() {
                   className="flex w-full items-center justify-center gap-1.5 border-t border-reps-border px-3 py-2.5 text-[11.5px] font-semibold text-reps-orange hover:bg-reps-panel-soft"
                 >
                   <Plus className="h-3 w-3" />
-                  Can't find it? Add a new gym
+                  Still can't find it? Add manually
                 </button>
               </Command>
             ) : (

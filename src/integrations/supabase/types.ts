@@ -403,6 +403,7 @@ export type Database = {
       gyms: {
         Row: {
           area: string | null
+          business_status: string | null
           chain_name: string | null
           chain_slug: string | null
           city: string | null
@@ -411,6 +412,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           facilities: string[]
+          google_place_id: string | null
           hero_url: string | null
           id: string
           lat: number | null
@@ -419,12 +421,14 @@ export type Database = {
           name: string
           postcode: string | null
           slug: string
+          source: string
           status: string
           tagline: string | null
           updated_at: string
         }
         Insert: {
           area?: string | null
+          business_status?: string | null
           chain_name?: string | null
           chain_slug?: string | null
           city?: string | null
@@ -433,6 +437,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           facilities?: string[]
+          google_place_id?: string | null
           hero_url?: string | null
           id?: string
           lat?: number | null
@@ -441,12 +446,14 @@ export type Database = {
           name: string
           postcode?: string | null
           slug: string
+          source?: string
           status?: string
           tagline?: string | null
           updated_at?: string
         }
         Update: {
           area?: string | null
+          business_status?: string | null
           chain_name?: string | null
           chain_slug?: string | null
           city?: string | null
@@ -455,6 +462,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           facilities?: string[]
+          google_place_id?: string | null
           hero_url?: string | null
           id?: string
           lat?: number | null
@@ -463,6 +471,7 @@ export type Database = {
           name?: string
           postcode?: string | null
           slug?: string
+          source?: string
           status?: string
           tagline?: string | null
           updated_at?: string
