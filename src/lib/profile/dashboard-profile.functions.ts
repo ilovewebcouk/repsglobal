@@ -14,9 +14,18 @@ import { MAX_LANGUAGES } from "@/lib/languages";
 /* -------------------------------------------------------------------------- */
 
 export type DashboardProfile = {
-  // identity (profiles)
+  // identity (profiles) — THREE-NAMES MODEL
+  /** Legal name — must match ID + certs. Locked after identity approval. */
   full_name: string;
+  /** Public-facing name (directory, shop-front). Defaults to full_name. */
+  display_name: string | null;
+  /** Trading / business name (invoices, shop-front header). Optional. */
+  business_name: string | null;
   avatar_url: string | null;
+  /** Mirror of professionals.identity_status — drives the legal-name lock. */
+  identity_status: "none" | "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
+  /** True when legal name is immutable from the dashboard. */
+  legal_name_locked: boolean;
   // professional fields
   headline: string | null; // "Tagline" in UI
   primary_profession: ProfessionSlug | null;
@@ -49,25 +58,36 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, display_name, business_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
         .from("professionals")
         .select(
-          "headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status",
+          "headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
         )
         .eq("id", userId)
         .maybeSingle(),
     ]);
 
     const proRow = (pro ?? {}) as Record<string, unknown>;
+    const profRow = (profile ?? {}) as Record<string, unknown>;
     const primary = proRow.primary_profession;
     const specialismsRaw = proRow.specialisms;
+    const idStatusRaw = (proRow.identity_status as string | null) ?? "none";
+    const idStatus = (
+      ["none", "pending", "approved", "rejected", "needs_more_info", "expired"].includes(idStatusRaw)
+        ? idStatusRaw
+        : "none"
+    ) as DashboardProfile["identity_status"];
 
     return {
-      full_name: profile?.full_name ?? "",
-      avatar_url: profile?.avatar_url ?? null,
+      full_name: (profRow.full_name as string | null) ?? "",
+      display_name: (profRow.display_name as string | null) ?? null,
+      business_name: (profRow.business_name as string | null) ?? null,
+      avatar_url: (profRow.avatar_url as string | null) ?? null,
+      identity_status: idStatus,
+      legal_name_locked: idStatus === "approved",
       headline: (proRow.headline as string | null) ?? null,
       primary_profession:
         typeof primary === "string" && (PROFESSION_SLUGS as string[]).includes(primary)
@@ -128,6 +148,8 @@ function normaliseSocial(raw: string | null | undefined): string | null {
 
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
+  display_name: z.string().trim().max(120).nullable().optional(),
+  business_name: z.string().trim().max(120).nullable().optional(),
   headline: z.string().trim().max(160).nullable().optional(),
   primary_profession: ProfessionSlugSchema.nullable().optional(),
   specialisms: z.array(SpecialismSlugSchema).max(MAX_SPECIALISMS).optional(),
@@ -183,15 +205,34 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       throw new Error("Pick at least one delivery mode (in person or online).");
     }
 
-    // Update profiles.full_name
+    // Read current identity_status to decide whether full_name can change.
+    const { data: proCheck } = await supabase
+      .from("professionals")
+      .select("identity_status")
+      .eq("id", userId)
+      .maybeSingle();
+    const idStatus = (proCheck as { identity_status?: string | null } | null)?.identity_status ?? null;
+    const legalLocked = idStatus === "approved";
+
+    // Build profile patch. Skip full_name when locked (DB trigger would
+    // throw, but we'd rather not even attempt the update — gives a clean UX).
+    const profilePatch: Record<string, unknown> = {
+      display_name: cleaned.display_name ?? null,
+      business_name: cleaned.business_name ?? null,
+    };
+    if (!legalLocked) {
+      profilePatch.full_name = cleaned.full_name;
+    }
+
     const { error: pErr } = await supabase
       .from("profiles")
-      .update({ full_name: cleaned.full_name })
+      .update(profilePatch)
       .eq("id", userId);
     if (pErr) throw pErr;
 
-    // Derive slug from full name (with numeric suffix on collision)
-    const base = slugify(cleaned.full_name) || "coach";
+    // Slug derivation: display_name first (public-facing), fall back to full_name.
+    const slugSource = (cleaned.display_name && cleaned.display_name.trim()) || cleaned.full_name;
+    const base = slugify(slugSource) || "coach";
     let slug = base;
     for (let i = 2; i < 50; i++) {
       const { data: clash } = await supabase
