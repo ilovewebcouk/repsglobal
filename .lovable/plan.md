@@ -1,109 +1,162 @@
+# Verification Module — 10/10 Rebuild Plan
 
-# Verification Module — 10/10 Rebuild
+## Brutal truth from the QA pass
 
-## Mental model (locked)
+Most of the plumbing exists. What's broken is **what the user sees and what happens after they upload**:
 
-- **Tier** = what you pay for. Verified (£99/yr) = verification module only. Pro (£59/mo) = verification module **+ software**. Studio later.
-- **Verification module** = the same product surface for Verified and Pro. Three sub-checks: **Identity**, **Qualifications**, **Insurance**.
-- The module is the **single source of truth** for:
-  1. Public profile **status chips** (ID-checked, Credentialed, Insured)
-  2. **Legal name on the register** (name on ID → name on profile, locked)
-  3. **Titles** a pro can pick (unlocked by approved qualifications via `pro_titles.source_submission_id`)
-  4. **Publish gate** for the public listing
+1. **Two pages do half the job each.** Qualification uploads live on `/dashboard/cpd`. Identity + Insurance live on `/dashboard/verification`. The Verification page even tells you "go to CPD to manage qualifications." That's not a module — that's a hand-off.
+2. **The Stripe Identity loop is broken at the last step.** Stripe verifies the user, the webhook updates `identity_documents`, but it never writes the verified name back to `professionals`. So the name-match gate on certs is dead, and the public profile has no source of truth.
+3. **The public profile is 100% mock.** "Verified" chip, "Insurance until 12 Dec 2026", titles — all hardcoded in `c.$slug.tsx`. None of the real data we collect is ever shown publicly. There is no reward for getting verified.
+4. **No renewal automation.** The `verification_renewal_nudges` table exists, with the right schema. Nothing reads it. Nothing sends nudges.
+5. **No admin review for Identity or Insurance.** Only certificates have an admin queue. ID + insurance can only be reviewed by hand in SQL.
+6. **Insurance cover amount is stored wrong.** `1` → `1,000,000` because the save multiplies by 1,000,000 but the read doesn't divide. Silent data corruption.
+7. **Cosmetic noise on CPD page:** "Upcoming courses", "AI learning plan", "Activity log" are hardcoded mock blocks. They make CPD look fake.
 
-Tier never changes what the module does. Pro just additionally unlocks the software workspace (leads, clients, messaging, bookings, etc.).
+---
 
-## What's actually broken today
+## What "Verification" becomes
 
-1. Sidebar leaks the full Pro nav on `/dashboard/verification` for Pro users (16 items) — should be the same minimal context for both tiers while inside the module.
-2. "Continue ID check" is a plain `<a href>` to Stripe — no in-app state, no recovery, no polling feedback. Returns to the same page with `?stripe_identity=complete` and looks identical.
-3. Name-on-ID never gets written back to `profiles.full_name` / `professionals.legal_name`. Pro can pass ID as "Joseph Smith" then rename to "Big Joe Fitness" and the register lies.
-4. Single "verified ✓" boolean instead of three independent status chips — consumers can't tell which checks passed.
-5. No renewal nudges wired (`verification_renewal_nudges` exists but unused). Insurance expires silently. ID never re-attests.
+**One module. One sidebar entry. One page. Three legs.**
 
-## Target architecture
+- **Identity** — Stripe-hosted ID check + selfie. Locks legal name on approval.
+- **Insurance** — Provider, policy number, cover, expiry, certificate upload. Admin review.
+- **Qualifications** — *Read-only mirror* of the CPD-side certs. Status + titles unlocked. "Manage" button links to CPD.
 
-### One module, one URL, two tiers
+CPD stays the place where certificates are **uploaded and managed**. Verification is the place where the user sees **their trust posture**.
 
+```text
+/dashboard/verification
+┌───────────────────────────────────────────────────────────┐
+│ Verification                                              │
+│ Your trust posture on REPs. Three checks. One page.       │
+│                                                           │
+│ [Trust meter: ID ✓  Insurance ✓  Qualifications ✓ ]       │
+│   • Verified status: ACTIVE                               │
+│   • Public title: "Personal Trainer (NCFE L3)"            │
+│   • Renews: 12 Dec 2026 (insurance) · 31 Mar 2028 (qual)  │
+│                                                           │
+│ ── Identity ─────────────────── [approved · Katie Gibbs]  │
+│   Verified by Stripe Identity on 8 Jun 2026.              │
+│   Legal name locked. [View ID details]                    │
+│                                                           │
+│ ── Insurance ────────────────── [active · expires 12 Dec] │
+│   Insure4Sport · £2m PL · Policy IS-12345                 │
+│   [Replace certificate]  [Update policy]                  │
+│                                                           │
+│ ── Qualifications ──────────── [1 approved · 0 pending]   │
+│   NCFE Level 3 Certificate in Personal Training · 2024    │
+│   Title earned: Personal Trainer                          │
+│   [Manage on Education & CPD →]                           │
+└───────────────────────────────────────────────────────────┘
 ```
-/dashboard/verification         ← Verified + Pro, identical UI
-  ├─ Identity      (Stripe Identity)
-  ├─ Qualifications (Ofqual-regulated awarding bodies → unlocks titles)
-  └─ Insurance     (upload + expiry)
-```
 
-Single vertical page with three section cards stacked (not tabs — tabs hide progress). Top of page = composite progress: "2 of 3 checks complete · Insurance expires in 14 days".
+Sidebar on this route: **only "Back to dashboard"** (locked in already).
 
-Sidebar inside the module collapses to **module-only nav** for both tiers (Overview, Identity, Qualifications, Insurance, Back to dashboard). No Pro software links while in `/dashboard/verification/*`. Pro users return to full software nav on any other route.
+---
 
-### Three independent status chips (not one badge)
+## The 6 work packages
 
-On every public profile + search card:
+### 1. Close the Stripe Identity loop (CRITICAL — unblocks everything)
 
-```
-✓ ID-checked     ✓ Credentialed     ✓ Insured
-```
+**File:** `src/routes/api/public/payments/webhook.ts` (`identity.verification_session.verified` handler).
 
-Each chip is independent. A "Fully verified" composite badge sits above when all three are green. Directory filters: `?id_checked=1&credentialed=1&insured=1`.
+On `verified`, after updating `identity_documents`, also write to `professionals`:
+- `identity_verified_name` = `verified_outputs.name.first_name + last_name`
+- `identity_verified_dob` = `verified_outputs.dob`
+- `identity_verified_at` = `now()`
+- `identity_status` = `'verified'`
+- `stripe_identity_session_id` = session id
 
-Stored on `professionals` as three booleans derived from the latest approved record in each table (computed on read, or denormalised with a trigger — TBD in build).
+On `requires_input` / `canceled`: set `identity_status` accordingly, don't clear the name.
 
-### Name-on-ID = name-on-register (locked)
+This single change fixes the dead name-match in `submitCertificate` and makes the public profile work.
 
-1. Stripe Identity webhook approves → writes `identity_documents.name_on_doc`
-2. Same webhook upserts `profiles.full_name` AND `professionals.legal_name` from the verified name
-3. Once `identity_documents.status = 'approved'`, **`legal_name` becomes read-only** in the dashboard — only re-running ID check can change it
-4. Public profile renders `legal_name` as the canonical name. `trading_name` stays freely editable and shows as the headline; legal name appears under it as "Verified as: …"
-5. Add `professionals.legal_name TEXT` (nullable, locked-after-approval enforced at the function layer)
+### 2. Rebuild the Verification page UI
 
-### Qualifications unlock titles (already partially wired)
+**File:** `src/routes/_authenticated/_professional/dashboard_.verification.tsx`.
 
-- `verification_submissions.status = 'approved'` → creates/updates a row in `pro_titles` with `source_submission_id`
-- Title chooser in the profile editor only lists titles backed by an approved, non-expired submission
-- When a submission expires or is revoked, the dependent `pro_titles` row is auto-archived and the title falls off the public profile
+Replace the 4-card grid with the layout above. Concretely:
 
-### Stripe Identity flow (proper)
+- **Trust meter header** — one card, three ticks (ID, Insurance, Qualifications), live unlock state, public title preview, next renewal date.
+- **Identity section** — collapsed by default if approved (shows "approved · Katie Gibbs", expand for details). If `pending`, show the Stripe "in review" empty-state. If `not_started`, show the "Continue ID check" CTA.
+- **Insurance section** — same collapse-when-done pattern. If active, show provider/policy/cover/expiry + "Replace certificate" / "Update policy". If missing, show the form inline.
+- **Qualifications section** — read-only list of approved certs from `verification_submissions` (full column select — fix the under-selection), plus earned titles. "Manage on Education & CPD" button.
 
-- "Start ID check" / "Continue ID check" becomes a button, not an `<a>`
-- Click → `createStripeIdentitySession` server fn → opens hosted page in a **new tab**
-- Original tab switches to **"Waiting for Stripe…"** card with: live 8s poll, Cancel button, Restart button, last-updated timestamp
-- Webhook updates `identity_documents.status` → poll detects → card flips to Approved / Needs more info / Rejected with next-step CTAs
-- `?stripe_identity=complete` return path shows an inline status block instead of silently stripping the query
+Delete the "TierUnlockCard" — its info is folded into the trust meter.
 
-### Renewals (table already exists)
+### 3. Public profile badges (the payoff)
 
-Wire `verification_renewal_nudges` for real:
+**File:** `src/routes/c.$slug.tsx`.
 
-- Insurance: cron checks `valid_until`; enqueues email at T-30 / T-14 / T-7 / T-1; auto-drops "Insured" chip the day after expiry
-- Qualifications: same nudges if `expiry_date` is set
-- ID: re-attest annually (Stripe Identity is point-in-time)
+Stop using the hardcoded `coach` object for verification data. Add a server fn `getPublicVerificationBadges(proId)` that returns:
+- `identity: { verified: boolean, verified_at }`
+- `insurance: { active: boolean, expires_at, provider }`
+- `qualifications: [{ title, awarding_body, year }]`
+- `primary_title: { slug, label }`
+- `verified_since: <earliest approval date>`
 
-Drop chip → not deletion. Submission stays, chip flips grey "Expired — renew", profile keeps the other green chips.
+Wire the shield chip, "verified since 2023" copy, and qualifications list to this fn. **This is the moment "verification" stops being decorative.**
 
-## Sub-checks summary
+(Other locked profile pages — `pro.$slug` — get the same treatment in the same PR.)
 
-| Check         | Source              | Approval writes to                     | Drives                              |
-| ------------- | ------------------- | -------------------------------------- | ----------------------------------- |
-| Identity      | Stripe Identity     | `identity_documents`, `profiles.full_name`, `professionals.legal_name` | "ID-checked" chip, legal name lock  |
-| Qualifications| Admin review        | `verification_submissions`, `pro_titles` | "Credentialed" chip, title chooser  |
-| Insurance     | Upload + admin review | `insurance_policies`                  | "Insured" chip, T-30/14/7 nudges    |
+### 4. Insurance cover-amount bug fix + admin review
 
-## Build order (5 steps, no scope creep)
+- **Fix the storage bug.** Pick one convention. Recommend: store **pounds as integer** (no multiplier). Migration to divide existing rows by 1,000,000. Update save + display.
+- **Admin review surface.** Extend `admin_.verification.tsx` (or add a tab) so admins can approve/reject `insurance_policies` rows the same way they review `verification_submissions`. Sets `status = 'active' | 'rejected'`, writes `admin_note`, `reviewed_by`, `reviewed_at`.
+- **Admin review for identity** — same pattern, but only for `vendor = manual` rows (Stripe-verified rows are auto-approved by the webhook).
 
-1. **Sidebar refactor** — `DashboardShell` switches to module-only nav whenever route matches `/dashboard/verification/*`, regardless of tier. Lock with a doc comment.
-2. **Verification page rebuild** — single vertical page, three section cards, composite progress header, identical render for Verified and Pro. Remove the `useTrainerTier()` branch.
-3. **Stripe Identity flow** — new-tab + waiting state + poll + Cancel/Restart + explicit `createStripeIdentitySession` recovery fn + inline return-status block.
-4. **Name-on-ID writeback + lock** — migration adds `professionals.legal_name`; webhook writes verified name to `profiles.full_name` and `professionals.legal_name`; dashboard locks the field once approved; public profile renders `trading_name` headline + "Verified as: legal_name" sub-line.
-5. **Three chips + renewal nudges** — derive `id_checked` / `credentialed` / `insured` on the public profile + search card; wire `verification_renewal_nudges` cron for insurance + qualification expiry; auto-drop chip the day after expiry.
+### 5. Renewal automation (the "world-class" bit)
 
-## Deferred (explicitly out of v1)
+- **Daily cron** via Lovable's published cron URL hitting a new server route `api/public/cron/verification-nudges`. Verify a shared secret header.
+- Logic: for every `insurance_policies` row with `status = 'active'` and `expiry_date` within 60 / 30 / 7 days, insert a row in `verification_renewal_nudges` (UNIQUE handles dedup) and enqueue an email via the existing `enqueue_email` function.
+- On expiry day: flip insurance `status = 'expired'`, drop Pro entitlements that depend on insurance, surface a banner on `/dashboard/verification`.
+- Same pattern for qualification `expiry_date` where present.
 
-- Auto-insurance lookup via Hiscox / Insure4Sport APIs
-- DBS / background check as a fourth pillar
-- Public suspension state on profiles
-- Studio-tier verification differences (Studio uses the same module unchanged)
+### 6. CPD page clean-up (scope minimum)
 
-## Open questions (need answers before step 2 starts)
+Hide the three mock blocks until they're real:
+- Remove "Upcoming courses" panel.
+- Remove "AI learning plan" card.
+- Remove "Activity log" sidebar.
 
-1. **Public profile name display:** trading name headline + "Verified as: legal_name" underneath (Airbnb-style), **OR** legal name only and no trading name field at all (strictest)?
-2. **Access during pending ID review:** Verified-tier user is paying £99/yr but ID isn't approved yet. Do we (a) let them see the verification module and a read-only "your profile will go live when ID is approved" preview, or (b) block everything except the module until approved?
+Keep: verification ring, EarnedTitlesPanel, certificates list with upload dialog, REPS membership card (after we wire its Insurance/DBS/First-aid rows to real data).
+
+The CPD page becomes focused: **upload certs, see titles, see what's pending**. No fake content.
+
+---
+
+## Sidebar consolidation
+
+- **VERIFIED_NAV:** Dashboard, **Verification**, Education & CPD, Public Profile, Settings. (Verification first after Dashboard — it's the activation gate.)
+- **PRO_NAV:** keep Verification in "Money & Admin"; keep Education & CPD in "Grow". The two stay distinct because they are now distinct: Verification = trust posture; CPD = lifelong learning.
+
+---
+
+## Order of execution (small PRs, each shippable)
+
+| # | PR | Risk | Unblocks |
+|---|---|---|---|
+| 1 | Webhook writeback to `professionals` | Low | Public badges, name-match |
+| 2 | Verification page rebuild (trust meter + 3 collapsed sections) | Low | UX is 10/10 |
+| 3 | Public profile reads real verification data | Medium (touches locked page — needs your nod) | Payoff for the pro |
+| 4 | Insurance cover-amount migration + admin review | Medium | Data integrity, admin ops |
+| 5 | Renewal nudges cron + email enqueue | Medium | Lifecycle automation |
+| 6 | CPD page strip the three mock panels | Low | Removes fake-app smell |
+
+---
+
+## Out of scope (deliberately)
+
+- DBS / first-aid check (mentioned on CPD as "Not yet provided"). Add as a separate phase — needs partner selection.
+- Veriff fallback. Stripe Identity covers it; the schema orphans stay as future-proofing.
+- Migrating the existing locked `/c/$slug` design — only the data plumbing changes; visual layout stays.
+
+---
+
+## Confirm before I start
+
+- **PR 3 touches `/c/$slug`**, which is on the locked-coach-shopfront list. Visual layout stays identical — only the data source for the chips, "verified since", and qualifications list changes. Confirm OK.
+- **Insurance bug fix** changes how cover is stored. I'll run a migration to convert existing rows. Any insurance rows you've added in testing will get divided by 1,000,000 — confirm OK.
+- **Cron** runs on the published URL only (preview has no scheduler). Confirm OK.
+
+Say "ship it" and I'll start with PR 1 (webhook writeback) and PR 2 (page rebuild) in parallel, since they don't touch the same files.
