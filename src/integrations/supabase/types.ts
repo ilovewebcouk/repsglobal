@@ -400,6 +400,75 @@ export type Database = {
         }
         Relationships: []
       }
+      gyms: {
+        Row: {
+          area: string | null
+          chain_name: string | null
+          chain_slug: string | null
+          city: string | null
+          claim_status: string
+          claimed_by: string | null
+          created_at: string
+          created_by: string | null
+          facilities: string[]
+          hero_url: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          logo_url: string | null
+          name: string
+          postcode: string | null
+          slug: string
+          status: string
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          chain_name?: string | null
+          chain_slug?: string | null
+          city?: string | null
+          claim_status?: string
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          facilities?: string[]
+          hero_url?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          name: string
+          postcode?: string | null
+          slug: string
+          status?: string
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          chain_name?: string | null
+          chain_slug?: string | null
+          city?: string | null
+          claim_status?: string
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          facilities?: string[]
+          hero_url?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          name?: string
+          postcode?: string | null
+          slug?: string
+          status?: string
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       identity_documents: {
         Row: {
           admin_note: string | null
@@ -720,6 +789,48 @@ export type Database = {
             columns: ["source_submission_id"]
             isOneToOne: false
             referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_gyms: {
+        Row: {
+          created_at: string
+          gym_id: string
+          id: string
+          position: number
+          professional_id: string
+          verified_by_gym: boolean
+        }
+        Insert: {
+          created_at?: string
+          gym_id: string
+          id?: string
+          position?: number
+          professional_id: string
+          verified_by_gym?: boolean
+        }
+        Update: {
+          created_at?: string
+          gym_id?: string
+          id?: string
+          position?: number
+          professional_id?: string
+          verified_by_gym?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_gyms_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_gyms_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
         ]
