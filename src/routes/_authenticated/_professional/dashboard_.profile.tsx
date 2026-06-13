@@ -36,10 +36,10 @@ import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import {
-  TrustStatusStrip,
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+
 
 function TiktokIcon() {
   return (
