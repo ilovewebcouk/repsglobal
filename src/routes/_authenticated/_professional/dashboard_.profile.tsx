@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 
 import { toast } from "sonner";
@@ -37,11 +37,12 @@ import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist"
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
-import {
-  IdentityProfileCard,
-  InsuranceProfileCard,
-} from "@/components/dashboard/verification/TrustBlock";
-import { VerificationCard } from "@/components/dashboard/verification/VerificationCard";
+import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
+import { getTrustState } from "@/lib/verification/trust.functions";
+
+
+
+
 
 
 function TiktokIcon() {
@@ -627,8 +628,56 @@ import { initialsFromName } from "@/lib/initials";
 
 
 /* ============================================================
+   Verification status pill — links to /dashboard/verification
+   ============================================================ */
+
+function VerificationStatusPill() {
+  const fetchTrust = useServerFn(getTrustState);
+  const { data } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+  });
+  const ticks = data?.ticks;
+  const tier = tierFromCounts({
+    identity: !!ticks?.identity,
+    insurance: !!ticks?.insurance,
+    qualifications: !!ticks?.qualifications,
+  });
+  const completed = data?.completedCount ?? 0;
+  const allDone = completed === 3;
+  const profession = data?.qualifications.titles?.[0] ?? null;
+
+  return (
+    <Link
+      to="/dashboard/verification"
+      className="group flex items-center justify-between gap-4 rounded-[16px] border border-reps-border bg-reps-panel px-5 py-4 transition hover:border-reps-orange-border"
+    >
+      <div className="flex items-center gap-3">
+        <VerifiedBadge tier={tier} size="md" profession={profession} />
+        <div className="min-w-0">
+          <div className="text-[13px] font-semibold text-white">
+            {allDone ? "Your REPS credential is live" : `Verification · ${completed} of 3 complete`}
+          </div>
+          <div className="text-[12px] text-white/55">
+            {allDone
+              ? "Identity, insurance and qualifications all verified."
+              : "Verification is managed on its own page — keep going to earn every layer."}
+          </div>
+        </div>
+      </div>
+      <span className="hidden text-[12px] font-semibold text-reps-orange transition-transform group-hover:translate-x-0.5 sm:inline-flex">
+        {allDone ? "Manage" : "Continue"} →
+      </span>
+    </Link>
+  );
+}
+
+/* ============================================================
    Page
    ============================================================ */
+
+
 
 function ProfileEditorPage() {
   const tier = useTrainerTier();
@@ -946,8 +995,9 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Verification hero — distinct from profile polish. Drives the Verified badge. */}
-        <VerificationCard />
+        <VerificationStatusPill />
+
+
 
 
 
@@ -1175,10 +1225,8 @@ function ProfileEditorPage() {
               />
             </Card>
 
-            {/* Verification — Identity (05) + Insurance (06). Universal to every member. */}
-            <IdentityProfileCard step="05" />
-            <InsuranceProfileCard step="06" />
           </div>
+
 
           <aside className="flex flex-col gap-4 xl:col-span-4">
             {/* Preview */}

@@ -45,6 +45,12 @@ import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getTrustState } from "@/lib/verification/trust.functions";
+import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
+
+
 
 
 /* ------------------------------------------------------------------------- */
@@ -117,11 +123,14 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
   },
 ];
+
+
 
 const PRO_NAV: NavGroup<TrainerActive>[] = [
   {
@@ -150,10 +159,12 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
       { icon: AreaChart, label: "Reports", to: "/dashboard/reports" },
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
+      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
   },
+
   {
     title: "Money & Admin",
     items: [
@@ -232,7 +243,9 @@ function NavSection({
               <Link to={item.to} className={cls} aria-label={item.label}>
                 <item.icon className="h-[18px] w-[18px] shrink-0" />
                 <span className="flex-1 text-left">{item.label}</span>
-                {item.badge ? (
+                {item.label === "Verification" && item.to === "/dashboard/verification" ? (
+                  <VerificationCountBadge />
+                ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
                   </span>
@@ -241,6 +254,7 @@ function NavSection({
             </li>
           );
         })}
+
       </ul>
     </div>
   );
@@ -276,6 +290,18 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
   );
 }
 
+
+
+function VerificationCountBadge() {
+  const fetchTrust = useServerFn(getTrustState);
+  const { data } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+  });
+  const completed = (data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
+  return <VerifiedCountChip completed={completed} />;
+}
 
 
 function AdminBadge() {
