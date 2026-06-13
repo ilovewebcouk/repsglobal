@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
@@ -8,11 +9,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { createCheckoutSession } from "@/lib/billing/billing.functions";
 
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 
+type AuthSearch = {
+  tier?: "verified" | "pro";
+  period?: "monthly" | "annual";
+  next?: "checkout";
+};
+
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): AuthSearch => {
+    const tier = search.tier === "verified" || search.tier === "pro" ? search.tier : undefined;
+    const period =
+      search.period === "monthly" || search.period === "annual" ? search.period : undefined;
+    const next = search.next === "checkout" ? "checkout" : undefined;
+    return { tier, period, next };
+  },
   head: () => ({
     meta: [
       { title: "Sign in to REPs" },
@@ -57,6 +72,8 @@ function friendlyAuthError(message: string): string {
 
 function LoginPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const startCheckout = useServerFn(createCheckoutSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -65,7 +82,7 @@ function LoginPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (value: string): string | null => {
@@ -106,6 +123,21 @@ function LoginPage() {
       });
       if (signInError) throw signInError;
       if (data.user) {
+        if (search.next === "checkout" && search.tier && search.period) {
+          try {
+            const result = await startCheckout({
+              data: { tier: search.tier, period: search.period },
+            });
+            if (result?.url) {
+              window.location.href = result.url;
+              return;
+            }
+          } catch (err) {
+            console.error(err);
+            setError(err instanceof Error ? err.message : "Could not start checkout");
+            return;
+          }
+        }
         const to = await redirectAfterAuth(data.user.id);
         navigate({ to, replace: true });
       }
