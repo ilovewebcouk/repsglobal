@@ -118,6 +118,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
 
 type FormState = {
   full_name: string;
+  display_name: string;
+  business_name: string;
   headline: string;
   primary_profession: ProfessionSlug | "";
   specialisms: SpecialismSlug[];
@@ -137,6 +139,8 @@ type FormState = {
 function toForm(p: DashboardProfile): FormState {
   return {
     full_name: p.full_name ?? "",
+    display_name: p.display_name ?? "",
+    business_name: p.business_name ?? "",
     headline: p.headline ?? "",
     primary_profession: p.primary_profession ?? "",
     specialisms: p.specialisms ?? [],
@@ -157,6 +161,8 @@ function toForm(p: DashboardProfile): FormState {
 function equal(a: FormState, b: FormState): boolean {
   return (
     a.full_name === b.full_name &&
+    a.display_name === b.display_name &&
+    a.business_name === b.business_name &&
     a.headline === b.headline &&
     a.primary_profession === b.primary_profession &&
     a.in_person_available === b.in_person_available &&
@@ -281,22 +287,31 @@ function TextInput({
   placeholder,
   prefix,
   type = "text",
+  disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   prefix?: React.ReactNode;
   type?: "text" | "email" | "tel" | "url";
+  disabled?: boolean;
 }) {
   return (
-    <div className="flex h-10 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white">
+    <div
+      className={
+        "flex h-10 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white" +
+        (disabled ? " opacity-60" : "")
+      }
+    >
       {prefix ? <span className="text-white/45">{prefix}</span> : null}
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/35 focus:outline-none"
+        disabled={disabled}
+        readOnly={disabled}
+        className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/35 focus:outline-none disabled:cursor-not-allowed"
       />
     </div>
   );
@@ -774,6 +789,8 @@ function ProfileEditorPage() {
         await saveProfile({
           data: {
             full_name: form.full_name,
+            display_name: form.display_name || null,
+            business_name: form.business_name || null,
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
             specialisms: form.specialisms,
@@ -1225,13 +1242,49 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Identity"
-                subtitle="Your name and the title clients see first."
+                subtitle="Your legal name (matches your ID + certificates), the name clients see, and your business name."
                 step="02"
               />
               <div className="flex flex-col gap-4">
                 <div data-field="full_name">
-                  <Field label="Full name" error={errors.full_name}>
-                    <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
+                  <Field
+                    label="Legal name"
+                    error={errors.full_name}
+                    hint={
+                      profile.legal_name_locked
+                        ? "Locked — matches your verified ID. Contact REPs support to change it."
+                        : "Must match your government ID and your regulated qualification certificates."
+                    }
+                  >
+                    <TextInput
+                      value={form.full_name}
+                      onChange={(v) => set("full_name", v)}
+                      disabled={profile.legal_name_locked}
+                    />
+                  </Field>
+                </div>
+                <div data-field="display_name">
+                  <Field
+                    label="Display name"
+                    hint="Shown publicly on your REPs profile and shop-front. Defaults to your legal name."
+                  >
+                    <TextInput
+                      value={form.display_name}
+                      onChange={(v) => set("display_name", v)}
+                      placeholder={form.full_name || "How clients see your name"}
+                    />
+                  </Field>
+                </div>
+                <div data-field="business_name">
+                  <Field
+                    label="Business / trading name"
+                    hint="Optional. Used on invoices and your shop-front header."
+                  >
+                    <TextInput
+                      value={form.business_name}
+                      onChange={(v) => set("business_name", v)}
+                      placeholder="e.g. Wilson Strength Co."
+                    />
                   </Field>
                 </div>
                 <Field label="Profession">
