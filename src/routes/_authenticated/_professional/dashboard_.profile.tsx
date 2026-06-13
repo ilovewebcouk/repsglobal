@@ -1276,6 +1276,14 @@ function ProfileEditorPage() {
                     }}
                   />
                 </Field>
+                {form.in_person_available ? (
+                  <Field
+                    label="Trains at (optional · max 3)"
+                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card."
+                  >
+                    <GymPicker />
+                  </Field>
+                ) : null}
               </div>
             </Card>
 
