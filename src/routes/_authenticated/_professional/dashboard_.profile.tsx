@@ -1226,75 +1226,17 @@ function ProfileEditorPage() {
                     onChange={(v) => set("languages", v)}
                   />
                 </Field>
-                <Field label="Social links" hint="Type just the handle — full URLs and @ symbols get cleaned up automatically.">
-                  <details
-                    className="group rounded-[12px] border border-reps-border bg-reps-ink/40 [&_summary::-webkit-details-marker]:hidden"
-                    open={
-                      !!(
-                        form.social_instagram ||
-                        form.social_tiktok ||
-                        form.social_x ||
-                        form.social_youtube ||
-                        form.social_linkedin
-                      )
-                    }
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between px-3 py-2.5 text-[12px] font-semibold text-white/75 hover:text-white">
-                      <span className="flex items-center gap-2">
-                        <Plus className="h-3.5 w-3.5 transition-transform group-open:rotate-45" />
-                        {(() => {
-                          const filled = [
-                            form.social_instagram,
-                            form.social_tiktok,
-                            form.social_x,
-                            form.social_youtube,
-                            form.social_linkedin,
-                          ].filter(Boolean).length;
-                          return filled === 0
-                            ? "Add a social link"
-                            : `${filled} link${filled === 1 ? "" : "s"} added · edit`;
-                        })()}
-                      </span>
-                      <span className="text-[11px] font-medium text-white/45">Instagram · TikTok · X · YouTube · LinkedIn</span>
-                    </summary>
-                    <div className="grid grid-cols-1 gap-2 border-t border-reps-border p-3 sm:grid-cols-2">
-                      <SocialHandleInput
-                        value={form.social_instagram}
-                        onChange={(v) => set("social_instagram", v)}
-                        icon={<Instagram className="h-3.5 w-3.5" />}
-                        prefix="instagram.com/"
-                        ariaLabel="Instagram handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_tiktok}
-                        onChange={(v) => set("social_tiktok", v)}
-                        icon={<TiktokIcon />}
-                        prefix="tiktok.com/@"
-                        ariaLabel="TikTok handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_x}
-                        onChange={(v) => set("social_x", v)}
-                        icon={<XIcon />}
-                        prefix="x.com/"
-                        ariaLabel="X / Twitter handle"
-                      />
-                      <SocialHandleInput
-                        value={form.social_youtube}
-                        onChange={(v) => set("social_youtube", v)}
-                        icon={<Youtube className="h-3.5 w-3.5" />}
-                        prefix="youtube.com/@"
-                        ariaLabel="YouTube channel"
-                      />
-                      <SocialHandleInput
-                        value={form.social_linkedin}
-                        onChange={(v) => set("social_linkedin", v)}
-                        icon={<Linkedin className="h-3.5 w-3.5" />}
-                        prefix="linkedin.com/in/"
-                        ariaLabel="LinkedIn slug"
-                      />
-                    </div>
-                  </details>
+                <Field label="Social links" hint="Add the platforms you use. Paste a full URL or @ handle — we clean it up automatically.">
+                  <SocialLinksPicker
+                    values={{
+                      social_instagram: form.social_instagram,
+                      social_tiktok: form.social_tiktok,
+                      social_x: form.social_x,
+                      social_youtube: form.social_youtube,
+                      social_linkedin: form.social_linkedin,
+                    }}
+                    onChange={(field, value) => set(field, value)}
+                  />
                 </Field>
               </div>
             </Card>
