@@ -23,13 +23,6 @@ export function getConnectionApiKey(env: StripeEnv): string {
     : getEnv("STRIPE_LIVE_API_KEY");
 }
 
-/** Resolve which Stripe env this server is operating against.
- *  Prefer live if its key exists (post go-live), otherwise sandbox. */
-export function resolveStripeEnv(): StripeEnv {
-  if (process.env.STRIPE_LIVE_API_KEY) return "live";
-  return "sandbox";
-}
-
 let _sandbox: Stripe | undefined;
 let _live: Stripe | undefined;
 
@@ -63,11 +56,6 @@ export function createStripeClient(env: StripeEnv): Stripe {
   if (env === "sandbox") _sandbox = client;
   else _live = client;
   return client;
-}
-
-/** Backwards-compatible accessor used across billing.functions.ts and webhook. */
-export function getStripe(): Stripe {
-  return createStripeClient(resolveStripeEnv());
 }
 
 /** Resolve a human-readable lookup key (e.g. "pro_monthly") to a Stripe Price object. */

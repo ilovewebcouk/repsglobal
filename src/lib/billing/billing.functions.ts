@@ -4,10 +4,12 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { CHECKOUT_OFFERS, getCheckoutOffer, type BillingPeriod, type PurchasableTier, checkoutOfferForPriceId } from "../billing";
+import type { StripeEnv } from "./stripe.server";
 
 const checkoutInput = z.object({
   tier: z.enum(["verified", "pro"]),
   period: z.enum(["monthly", "annual"]),
+  environment: z.enum(["sandbox", "live"]),
 }).superRefine((value, ctx) => {
   if (!getCheckoutOffer(value.tier, value.period)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This billing option is not available" });
@@ -22,13 +24,14 @@ function getOrigin(): string {
 async function getOrCreateCustomer(opts: {
   userId: string;
   email: string | null | undefined;
+  environment: StripeEnv;
 }): Promise<string> {
-  const { userId, email } = opts;
-  const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
+  const { userId, email, environment } = opts;
+  const [{ supabaseAdmin }, { createStripeClient }] = await Promise.all([
     import("@/integrations/supabase/client.server"),
     import("./stripe.server"),
   ]);
-  const stripe = getStripe();
+  const stripe = createStripeClient(environment);
 
   // 1) Existing row in subscriptions?
   const { data: existing } = await supabaseAdmin
@@ -64,13 +67,14 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const tier = data.tier as PurchasableTier;
     const period = data.period as BillingPeriod;
+    const environment = data.environment;
     const offer = getCheckoutOffer(tier, period);
     if (!offer) throw new Error("This billing option is not available");
 
-    const customerId = await getOrCreateCustomer({ userId, email });
+    const customerId = await getOrCreateCustomer({ userId, email, environment });
     const origin = getOrigin();
-    const { getStripe, resolvePriceByLookupKey } = await import("./stripe.server");
-    const stripe = getStripe();
+    const { createStripeClient, resolvePriceByLookupKey } = await import("./stripe.server");
+    const stripe = createStripeClient(environment);
 
     // offer.priceId is a human-readable lookup key (e.g. "pro_monthly").
     // Resolve to the actual Stripe price ID for this environment.
@@ -105,12 +109,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((data: unknown) => z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}))
+  .handler(async ({ data, context }) => {
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
-    const customerId = await getOrCreateCustomer({ userId, email });
-    const { getStripe } = await import("./stripe.server");
-    const stripe = getStripe();
+    const customerId = await getOrCreateCustomer({ userId, email, environment: data.environment });
+    const { createStripeClient } = await import("./stripe.server");
+    const stripe = createStripeClient(data.environment);
     const origin = getOrigin();
 
     const portal = await stripe.billingPortal.sessions.create({
@@ -166,16 +171,17 @@ export const getMySubscription = createServerFn({ method: "GET" })
  */
 export const syncMySubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((data: unknown) => z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}))
+  .handler(async ({ data, context }) => {
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
-    const [{ supabaseAdmin }, { getStripe }] = await Promise.all([
+    const [{ supabaseAdmin }, { createStripeClient }] = await Promise.all([
       import("@/integrations/supabase/client.server"),
       import("./stripe.server"),
     ]);
-    const stripe = getStripe();
+    const stripe = createStripeClient(data.environment);
 
-    const customerId = await getOrCreateCustomer({ userId, email });
+    const customerId = await getOrCreateCustomer({ userId, email, environment: data.environment });
     const subs = await stripe.subscriptions.list({
       customer: customerId,
       status: "all",
