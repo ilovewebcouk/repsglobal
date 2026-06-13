@@ -69,13 +69,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const customerId = await getOrCreateCustomer({ userId, email });
     const origin = getOrigin();
-    const { getStripe } = await import("./stripe.server");
+    const { getStripe, resolvePriceByLookupKey } = await import("./stripe.server");
     const stripe = getStripe();
+
+    // offer.priceId is a human-readable lookup key (e.g. "pro_monthly").
+    // Resolve to the actual Stripe price ID for this environment.
+    const stripePrice = await resolvePriceByLookupKey(stripe, offer.priceId);
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
-      line_items: [{ price: offer.priceId, quantity: 1 }],
+      line_items: [{ price: stripePrice.id, quantity: 1 }],
       success_url: `${origin}/dashboard/syncing?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?billing=cancelled`,
       allow_promotion_codes: true,
