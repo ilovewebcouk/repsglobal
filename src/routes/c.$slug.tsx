@@ -355,7 +355,14 @@ const NAV_ITEMS = [
 
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
-  const coach = COACHES[slug] ?? COACHES["james-wilson"];
+  const fetchShopFront = useServerFn(getShopFrontBySlug);
+  const { data: live } = useQuery({
+    queryKey: ["shop-front", slug],
+    queryFn: () => fetchShopFront({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const baseCoach = COACHES[slug] ?? COACHES["james-wilson"];
+  const coach = live ? mergeLiveIntoCoach(baseCoach, live.shopFront, live.services) : baseCoach;
   const accent = `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {
