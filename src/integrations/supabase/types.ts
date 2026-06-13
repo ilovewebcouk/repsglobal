@@ -1167,6 +1167,7 @@ export type Database = {
           notes: string | null
           professional_id: string
           reviewer_id: string
+          stripe_event_id: string | null
           submission_id: string | null
           unlocked_specialisms: string[] | null
           unlocked_tier: string | null
@@ -1180,6 +1181,7 @@ export type Database = {
           notes?: string | null
           professional_id: string
           reviewer_id: string
+          stripe_event_id?: string | null
           submission_id?: string | null
           unlocked_specialisms?: string[] | null
           unlocked_tier?: string | null
@@ -1193,6 +1195,7 @@ export type Database = {
           notes?: string | null
           professional_id?: string
           reviewer_id?: string
+          stripe_event_id?: string | null
           submission_id?: string | null
           unlocked_specialisms?: string[] | null
           unlocked_tier?: string | null
