@@ -279,7 +279,7 @@ function EnquirePage() {
       <section className="mx-auto max-w-[1320px] px-6 pb-20 lg:px-10">
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           {/* FORM */}
-          <form className="flex flex-col gap-5">
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
             {/* Steps */}
             <div className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <span className="flex size-6 items-center justify-center rounded-full bg-reps-orange text-white">1</span>
