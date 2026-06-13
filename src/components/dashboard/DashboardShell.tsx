@@ -243,7 +243,9 @@ function NavSection({
               <Link to={item.to} className={cls} aria-label={item.label}>
                 <item.icon className="h-[18px] w-[18px] shrink-0" />
                 <span className="flex-1 text-left">{item.label}</span>
-                {item.badge ? (
+                {item.label === "Verification" && item.to === "/dashboard/verification" ? (
+                  <VerificationCountBadge />
+                ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
                   </span>
@@ -252,6 +254,7 @@ function NavSection({
             </li>
           );
         })}
+
       </ul>
     </div>
   );
