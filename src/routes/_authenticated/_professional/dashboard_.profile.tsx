@@ -39,7 +39,8 @@ import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
 import { getTrustState } from "@/lib/verification/trust.functions";
-import { useQuery } from "@tanstack/react-query";
+
+
 
 
 
