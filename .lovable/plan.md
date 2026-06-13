@@ -96,7 +96,7 @@ A  Migration + RLS for new tables               ✅ DONE (shop_fronts, services,
 B  searchProfessionals server fn + /find-a-professional wired (P95<300ms)
 C  Shop-front: Lite (Verified, auto-seeded) + Full editor (Pro) + live /c/$slug  ✅ DONE (auto-seed trigger; getShopFrontBySlug overlays mock on /c/$slug; /dashboard/shop-front editor live)
 D  /pro/$slug real loader + Enquire CTA live    ✅ DONE (pro.$slug.index already loads via getPublicProfileBySlug; enquire page wired to submitEnquiry server fn + toast)
-E  Anonymous submitEnquiry + Resend + /dashboard/enquiries tab (new route file)  ◐ submitEnquiry server fn live; Resend + dashboard tab still pending
+E  Anonymous submitEnquiry + Lovable Emails + /dashboard/enquiries tab  ✅ DONE (enquiry-notification template via queue; inbox route with read/replied/archived actions; nav item in Verified + Pro)
 F  Reviews: collect + display + post-session invite + /dashboard/reviews tab
 G  Phase 2.2 — Programme Generator (Pro-only). If not shipped: "Coming this month" stub + wait-list.
 ```
