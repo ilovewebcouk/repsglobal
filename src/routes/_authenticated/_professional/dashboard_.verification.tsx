@@ -189,9 +189,10 @@ type IdentityRow = {
   name_on_doc?: string | null;
   dob_on_doc?: string | null;
   admin_note?: string | null;
-  veriff_session_url?: string | null;
-  veriff_status?: string | null;
-  veriff_reason?: string | null;
+  stripe_vs_id?: string | null;
+  stripe_vs_url?: string | null;
+  stripe_status?: string | null;
+  stripe_reason?: string | null;
 };
 
 function IdentityCard({
