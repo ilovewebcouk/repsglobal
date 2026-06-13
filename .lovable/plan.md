@@ -91,8 +91,8 @@ Scripted seed migration: identity approved · 1 qual approved · 1 qual expiring
 ## Sub-pass order (after 0)
 
 ```
-0a–0e Verification (split, flag-gated)
-A  Migration + RLS for new tables (shop_fronts, enquiries, reviews, services, programmes_waitlist)
+0a–0e Verification (split, flag-gated)          ✅ DONE
+A  Migration + RLS for new tables               ✅ DONE (shop_fronts, services, enquiries, reviews, programmes_waitlist)
 B  searchProfessionals server fn + /find-a-professional wired (P95<300ms)
 C  Shop-front: Lite (Verified, auto-seeded) + Full editor (Pro) + live /c/$slug
 D  /pro/$slug real loader + Enquire CTA live
