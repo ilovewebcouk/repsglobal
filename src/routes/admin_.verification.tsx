@@ -321,7 +321,7 @@ function AdminVerificationPage() {
           {selectedId && workspace.data && (() => {
             const w = workspace.data;
             const sub = w.submission as Record<string, unknown> & { id: string; qualification?: string; awarding_body?: string; doc_paths?: string[]; created_at: string; derived_title_slug?: string | null; regulator_verified?: boolean | null; holder_name?: string | null };
-            const id = w.identity as Record<string, unknown> & { name_on_doc?: string; dob_on_doc?: string; doc_type?: string; doc_path_front?: string; doc_path_back?: string; selfie_path?: string; doc_expiry?: string; doc_country?: string; status?: string; vendor?: string; veriff_session_id?: string; veriff_session_url?: string; veriff_status?: string; veriff_reason?: string | null } | null;
+            const id = w.identity as Record<string, unknown> & { name_on_doc?: string; dob_on_doc?: string; doc_type?: string; doc_path_front?: string; doc_path_back?: string; selfie_path?: string; doc_expiry?: string; doc_country?: string; status?: string; vendor?: string; veriff_session_id?: string; veriff_session_url?: string; veriff_status?: string; veriff_reason?: string | null; stripe_vs_id?: string; stripe_status?: string; stripe_reason?: string | null } | null;
             const ins = w.insurance as Record<string, unknown> & { provider?: string; policy_number?: string; cover_amount_gbp?: number; expiry_date?: string; doc_path?: string; status?: string } | null;
             const prof = w.profile as { full_name?: string | null } | null;
             const pro = w.professional as { id: string; city?: string | null } | null;
