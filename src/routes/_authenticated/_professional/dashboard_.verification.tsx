@@ -696,41 +696,73 @@ function InsuranceCard({
 
 /* -------------------------------------------------------------------------- */
 
-function CertCard({ certs }: { certs: ReadonlyArray<{ id: string; qualification: string; status: string }> }) {
+type CertRowLite = {
+  id: string;
+  qualification: string;
+  awarding_body?: string | null;
+  year?: number | null;
+  expiry_date?: string | null;
+  status: string;
+  regulator_verified?: boolean | null;
+};
+
+function CertCard({ certs }: { certs: ReadonlyArray<CertRowLite> }) {
+  const approved = certs.filter((c) => c.status === "approved");
+  const pending = certs.filter((c) => c.status === "submitted" || c.status === "changes_requested");
   return (
     <PPanel className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-[16px] font-bold text-white">Qualifications</h3>
           <p className="mt-1 text-[12px] text-white/55">
-            Upload your Level 2 / 3 / 4 certificates. Once verified your title is set automatically.
+            {approved.length} approved · {pending.length} pending review
           </p>
         </div>
         <Button variant="subtle" size="sm" asChild>
-          <Link to="/dashboard/cpd">Manage</Link>
+          <Link to="/dashboard/cpd">
+            Manage on Education &amp; CPD
+            <ArrowRight className="ml-1 size-3.5" />
+          </Link>
         </Button>
       </div>
       {certs.length === 0 ? (
         <div className="mt-4 rounded-[12px] border-2 border-dashed border-white/15 px-4 py-6 text-center text-[12px] text-white/55">
-          No certificates yet — head to Education & CPD to upload your first one.
+          No certificates yet — head to Education &amp; CPD to upload your first one.
         </div>
       ) : (
-        <ul className="mt-3 space-y-2">
-          {certs.slice(0, 3).map((c) => (
-            <li key={c.id} className="flex items-center justify-between rounded-[10px] bg-white/[0.03] px-3 py-2 text-[12px]">
-              <span className="truncate text-white/80">{c.qualification}</span>
-              <Badge
-                variant="neutral"
-                className={
-                  c.status === "approved"
-                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                    : c.status === "rejected"
-                      ? "border-red-400/30 bg-red-500/15 text-red-300"
-                      : "border-amber-400/30 bg-amber-500/15 text-amber-300"
-                }
-              >
-                {c.status}
-              </Badge>
+        <ul className="mt-4 space-y-2">
+          {certs.map((c) => (
+            <li
+              key={c.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] bg-white/[0.03] px-3 py-2.5 text-[12px]"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-white">{c.qualification}</div>
+                <div className="mt-0.5 text-[11px] text-white/55">
+                  {c.awarding_body ?? "—"}
+                  {c.year ? ` · ${c.year}` : ""}
+                  {c.expiry_date ? ` · expires ${c.expiry_date}` : ""}
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {c.regulator_verified && (
+                  <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+                    Ofqual
+                  </Badge>
+                )}
+                <Badge
+                  variant="neutral"
+                  className={
+                    c.status === "approved"
+                      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      : c.status === "rejected"
+                        ? "border-red-400/30 bg-red-500/15 text-red-300"
+                        : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  }
+                >
+                  {c.status}
+                </Badge>
+              </div>
             </li>
           ))}
         </ul>
@@ -738,4 +770,5 @@ function CertCard({ certs }: { certs: ReadonlyArray<{ id: string; qualification:
     </PPanel>
   );
 }
+
 
