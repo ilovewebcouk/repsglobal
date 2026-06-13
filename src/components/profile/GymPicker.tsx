@@ -268,7 +268,7 @@ export function GymPicker() {
                           key={g.id}
                           value={g.id}
                           onSelect={() => addM.mutate(g.id)}
-                          className="cursor-pointer text-white aria-selected:bg-reps-panel-soft"
+                          className="cursor-pointer text-white data-[selected=true]:bg-reps-panel-soft data-[selected=true]:text-white"
                         >
                           <div className="flex w-full items-center gap-2">
                             <Building2 className="h-3.5 w-3.5 shrink-0 text-white/55" />
