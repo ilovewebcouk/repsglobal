@@ -121,6 +121,41 @@ function mapIdentityStatus(s: string | null | undefined, eventType: string): str
   return "pending";
 }
 
+/**
+ * Normalise a human name for cross-checking: lowercase, drop common titles
+ * ("Mr", "Mrs", "Ms", "Dr", "Prof"), strip punctuation, collapse whitespace,
+ * and return as a sorted Set of word tokens.
+ */
+function nameTokens(raw: string | null | undefined): Set<string> {
+  if (!raw) return new Set();
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/[.,'’`-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const titles = new Set(["mr", "mrs", "ms", "mx", "miss", "dr", "prof", "professor", "sir", "dame"]);
+  return new Set(
+    cleaned
+      .split(" ")
+      .filter((t) => t.length > 0 && !titles.has(t)),
+  );
+}
+
+/**
+ * Subset name match. Passes if every token of one name is contained in the
+ * other (e.g. "James Wilson" ↔ "James Robert Wilson"). Both sides must have
+ * at least 2 tokens to count as a real check.
+ */
+function namesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
+  const ta = nameTokens(a);
+  const tb = nameTokens(b);
+  if (ta.size < 2 || tb.size < 2) return false;
+  const aSubset = [...ta].every((t) => tb.has(t));
+  const bSubset = [...tb].every((t) => ta.has(t));
+  return aSubset || bSubset;
+}
+
+
 async function handleIdentityEvent(
   stripe: Stripe,
   event: { type: string; data: { object: unknown } },
