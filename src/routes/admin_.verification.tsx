@@ -114,6 +114,7 @@ function AdminVerificationPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
   const [search, setSearch] = useState("");
   const [note, setNote] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [certOpen, setCertOpen] = useState(false);
