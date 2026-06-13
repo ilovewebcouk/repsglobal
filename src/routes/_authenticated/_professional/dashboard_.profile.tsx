@@ -780,6 +780,8 @@ function ProfileEditorPage() {
         await saveProfile({
           data: {
             full_name: form.full_name,
+            display_name: form.display_name || null,
+            business_name: form.business_name || null,
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
             specialisms: form.specialisms,
@@ -1231,13 +1233,49 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Identity"
-                subtitle="Your name and the title clients see first."
+                subtitle="Your legal name (matches your ID + certificates), the name clients see, and your business name."
                 step="02"
               />
               <div className="flex flex-col gap-4">
                 <div data-field="full_name">
-                  <Field label="Full name" error={errors.full_name}>
-                    <TextInput value={form.full_name} onChange={(v) => set("full_name", v)} />
+                  <Field
+                    label="Legal name"
+                    error={errors.full_name}
+                    hint={
+                      profile.legal_name_locked
+                        ? "Locked — matches your verified ID. Contact REPs support to change it."
+                        : "Must match your government ID and your regulated qualification certificates."
+                    }
+                  >
+                    <TextInput
+                      value={form.full_name}
+                      onChange={(v) => set("full_name", v)}
+                      disabled={profile.legal_name_locked}
+                    />
+                  </Field>
+                </div>
+                <div data-field="display_name">
+                  <Field
+                    label="Display name"
+                    hint="Shown publicly on your REPs profile and shop-front. Defaults to your legal name."
+                  >
+                    <TextInput
+                      value={form.display_name}
+                      onChange={(v) => set("display_name", v)}
+                      placeholder={form.full_name || "How clients see your name"}
+                    />
+                  </Field>
+                </div>
+                <div data-field="business_name">
+                  <Field
+                    label="Business / trading name"
+                    hint="Optional. Used on invoices and your shop-front header."
+                  >
+                    <TextInput
+                      value={form.business_name}
+                      onChange={(v) => set("business_name", v)}
+                      placeholder="e.g. Wilson Strength Co."
+                    />
                   </Field>
                 </div>
                 <Field label="Profession">
