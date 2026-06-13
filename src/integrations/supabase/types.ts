@@ -416,15 +416,26 @@ export type Database = {
       }
       enquiries: {
         Row: {
+          ai_band: Database["public"]["Enums"]["lead_band"] | null
+          ai_predicted_pct: number | null
+          ai_reasons: Json | null
+          ai_recommended_action: string | null
+          ai_score: number | null
+          ai_summary: string | null
+          ai_updated_at: string | null
           archived_at: string | null
           budget: string | null
+          converted_client_id: string | null
           created_at: string
+          estimated_value_pence: number | null
+          follow_up_at: string | null
           frequency: string | null
           goals: string[]
           id: string
           ip_hash: string | null
           location: string | null
           message: string
+          priority: Database["public"]["Enums"]["lead_priority"] | null
           professional_id: string
           read_at: string | null
           replied_at: string | null
@@ -434,21 +445,33 @@ export type Database = {
           sender_user_id: string | null
           service_id: string | null
           source: string
+          stage: Database["public"]["Enums"]["lead_stage"]
           start_by: string | null
           status: string
           updated_at: string
           user_agent: string | null
         }
         Insert: {
+          ai_band?: Database["public"]["Enums"]["lead_band"] | null
+          ai_predicted_pct?: number | null
+          ai_reasons?: Json | null
+          ai_recommended_action?: string | null
+          ai_score?: number | null
+          ai_summary?: string | null
+          ai_updated_at?: string | null
           archived_at?: string | null
           budget?: string | null
+          converted_client_id?: string | null
           created_at?: string
+          estimated_value_pence?: number | null
+          follow_up_at?: string | null
           frequency?: string | null
           goals?: string[]
           id?: string
           ip_hash?: string | null
           location?: string | null
           message: string
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
           professional_id: string
           read_at?: string | null
           replied_at?: string | null
@@ -458,21 +481,33 @@ export type Database = {
           sender_user_id?: string | null
           service_id?: string | null
           source?: string
+          stage?: Database["public"]["Enums"]["lead_stage"]
           start_by?: string | null
           status?: string
           updated_at?: string
           user_agent?: string | null
         }
         Update: {
+          ai_band?: Database["public"]["Enums"]["lead_band"] | null
+          ai_predicted_pct?: number | null
+          ai_reasons?: Json | null
+          ai_recommended_action?: string | null
+          ai_score?: number | null
+          ai_summary?: string | null
+          ai_updated_at?: string | null
           archived_at?: string | null
           budget?: string | null
+          converted_client_id?: string | null
           created_at?: string
+          estimated_value_pence?: number | null
+          follow_up_at?: string | null
           frequency?: string | null
           goals?: string[]
           id?: string
           ip_hash?: string | null
           location?: string | null
           message?: string
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
           professional_id?: string
           read_at?: string | null
           replied_at?: string | null
@@ -482,12 +517,20 @@ export type Database = {
           sender_user_id?: string | null
           service_id?: string | null
           source?: string
+          stage?: Database["public"]["Enums"]["lead_stage"]
           start_by?: string | null
           status?: string
           updated_at?: string
           user_agent?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "enquiries_converted_client_id_fkey"
+            columns: ["converted_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "enquiries_professional_id_fkey"
             columns: ["professional_id"]
@@ -873,6 +916,113 @@ export type Database = {
           },
           {
             foreignKeyName: "insurance_upload_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      lead_activity: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          enquiry_id: string
+          id: string
+          payload: Json
+          professional_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          enquiry_id: string
+          id?: string
+          payload?: Json
+          professional_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          enquiry_id?: string
+          id?: string
+          payload?: Json
+          professional_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activity_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activity_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activity_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      lead_proposals: {
+        Row: {
+          body: Json
+          created_at: string
+          enquiry_id: string
+          id: string
+          professional_id: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          body?: Json
+          created_at?: string
+          enquiry_id: string
+          id?: string
+          professional_id: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: Json
+          created_at?: string
+          enquiry_id?: string
+          id?: string
+          professional_id?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_proposals_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_proposals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_proposals_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "v_identity_review_queue"
@@ -2011,6 +2161,16 @@ export type Database = {
         | "payment_received"
         | "manual_resend"
         | "manual_create"
+      lead_band: "cold" | "warm" | "hot"
+      lead_priority: "low" | "medium" | "high"
+      lead_stage:
+        | "new"
+        | "contacted"
+        | "call_booked"
+        | "proposal_sent"
+        | "trial_booked"
+        | "converted"
+        | "lost"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
       sex_at_birth: "female" | "male" | "prefer_not_to_say"
@@ -2175,6 +2335,17 @@ export const Constants = {
         "payment_received",
         "manual_resend",
         "manual_create",
+      ],
+      lead_band: ["cold", "warm", "hot"],
+      lead_priority: ["low", "medium", "high"],
+      lead_stage: [
+        "new",
+        "contacted",
+        "call_booked",
+        "proposal_sent",
+        "trial_booked",
+        "converted",
+        "lost",
       ],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
       roster_status: ["prospect", "confirmed", "active", "archived"],
