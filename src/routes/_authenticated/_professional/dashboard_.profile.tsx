@@ -35,7 +35,7 @@ import {
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
-import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+// SocialHandleInput is rendered via SocialLinksPicker now.
 import { SocialLinksPicker } from "@/components/profile/SocialLinksPicker";
 import { SaveStatusPill, type SaveStatus } from "@/components/profile/SaveStatusPill";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
