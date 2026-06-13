@@ -41,9 +41,10 @@ Locked visual mock-ups are the source of truth. Data wiring only — no redesign
 - SLA badge only on Pending. Remove "Send reminder" from Approved. Per-qualification expiry rules engine.
 - **DoD**: Scott-Parker cert under Katie-Gibbs account cannot be Approved.
 
-### 0d — OCR + awarding-body verify links
-- OCR cert-holder name from uploaded file; side-by-side with typed.
-- Store cert number + awarding body + year; one-click "Verify with NCFE/YMCA/Active IQ/Focus Awards" learner-record link.
+### 0d — OCR + awarding-body verify links ✅ DONE
+- OCR cert-holder name from uploaded file (`cpd.functions.ts:extractCertificateFields`); side-by-side with profile name in admin Qualification card (emerald if match, amber if mismatch).
+- Stored cert number + qualification number + awarding body + year already persisted on `verification_submissions`; rendered on the card.
+- One-click verify buttons: Ofqual Register (when qual number matches `NNN/NNNN/X`) + awarding-body lookup page (`src/lib/verification/awarding-body-verify.ts`).
 - **DoD**: each approved cert has stored cert number + verify link rendered in admin row.
 
 ### 0e — Observability, flags, full timestamps
