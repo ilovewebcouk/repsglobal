@@ -300,16 +300,17 @@ const testimonials = [
 
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { venue: venueFilter } = Route.useSearch();
+  const { venue: venueFilter, city, profession, specialism, q } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
-  const listLive = useServerFn(listPublishedProfessionals);
+  const search = useServerFn(searchProfessionals);
   const { data: livePros = [] } = useQuery({
-    queryKey: ["directory", "published"],
-    queryFn: () => listLive({ data: undefined }),
+    queryKey: ["directory", "search", { city, profession, specialism, q }],
+    queryFn: () => search({ data: { city, profession, specialism, q } }),
     staleTime: 60_000,
   });
+
 
   const liveAsPros: Pro[] = React.useMemo(
     () =>
