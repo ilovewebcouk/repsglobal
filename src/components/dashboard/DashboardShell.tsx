@@ -5,9 +5,7 @@ import {
   AreaChart,
   ArrowRight,
   Bell,
-  BadgeCheck,
   Briefcase,
-  Building2,
   Calendar as CalendarIcon,
   ClipboardList,
   CreditCard,
@@ -28,9 +26,6 @@ import {
   UserCheck,
   UserCircle,
   Users,
-  ArrowLeft,
-  FileBadge,
-  Fingerprint,
   type LucideIcon,
 } from "lucide-react";
 
