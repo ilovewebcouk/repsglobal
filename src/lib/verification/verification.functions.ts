@@ -63,6 +63,69 @@ export const myVerificationSubmissions = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+const SUBMISSION_STATUSES = [
+  "submitted",
+  "approved",
+  "rejected",
+  "changes_requested",
+] as const;
+
+async function fetchSubmissionsByStatus(statuses: readonly string[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data, error } = await supabaseAdmin
+    .from("verification_submissions")
+    .select(
+      "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, reviewed_by, derived_title_slug, derived_specialism_slugs, regulator_verified, claimed_by, claimed_at",
+    )
+    .in("status", statuses as string[])
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const proIds = Array.from(new Set((data ?? []).map((r) => r.professional_id)));
+  let profByPro: Record<string, { full_name: string | null; trading_name: string | null; city: string | null }> = {};
+  if (proIds.length) {
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("id, trading_name, city")
+      .in("id", proIds);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", proIds);
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+    profByPro = Object.fromEntries(
+      (pros ?? []).map((p) => [
+        p.id,
+        { full_name: profileMap.get(p.id) ?? null, trading_name: p.trading_name, city: p.city },
+      ]),
+    );
+  }
+
+  return (data ?? []).map((r) => ({ ...r, professional: profByPro[r.professional_id] ?? null }));
+}
+
+/**
+ * Generic admin index of verification submissions filtered by status.
+ * Used by the admin Verification page to switch between Pending / Approved /
+ * Rejected / Changes-requested tabs.
+ */
+export const listVerifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        statuses: z.array(z.enum(SUBMISSION_STATUSES)).min(1).max(4),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    return fetchSubmissionsByStatus(data.statuses);
+  });
+
 export const listPendingVerifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -72,41 +135,9 @@ export const listPendingVerifications = createServerFn({ method: "GET" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden");
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data, error } = await supabaseAdmin
-      .from("verification_submissions")
-      .select(
-        "id, professional_id, awarding_body, qualification, year, status, admin_note, created_at, doc_paths, reviewed_at, derived_title_slug, derived_specialism_slugs, regulator_verified",
-      )
-      .in("status", ["submitted", "changes_requested"])
-      .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-
-    // Fetch professional + profile info in one go
-    const proIds = Array.from(new Set((data ?? []).map((r) => r.professional_id)));
-    let profByPro: Record<string, { full_name: string | null; trading_name: string | null; city: string | null }> = {};
-    if (proIds.length) {
-      const { data: pros } = await supabaseAdmin
-        .from("professionals")
-        .select("id, trading_name, city")
-        .in("id", proIds);
-      const { data: profiles } = await supabaseAdmin
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", proIds);
-      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
-      profByPro = Object.fromEntries(
-        (pros ?? []).map((p) => [
-          p.id,
-          { full_name: profileMap.get(p.id) ?? null, trading_name: p.trading_name, city: p.city },
-        ]),
-      );
-    }
-
-    return (data ?? []).map((r) => ({ ...r, professional: profByPro[r.professional_id] ?? null }));
+    return fetchSubmissionsByStatus(["submitted", "changes_requested"]);
   });
+
 
 export const reviewVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
