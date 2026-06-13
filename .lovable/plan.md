@@ -1,91 +1,81 @@
+# Verification QA — Phase 2.1 hardening
 
-## Goal
+Brutally honest read of the verification stack, plus the one obvious fix you just spotted (sidebar tier leak).
 
-Stripe Identity currently uses a hand-pasted `STRIPE_SECRET_KEY` and its own webhook (`/api/public/stripe/webhook` with `STRIPE_WEBHOOK_SECRET`). Payments uses the connector gateway with auto-switched sandbox/live keys (`STRIPE_SANDBOX_API_KEY` / `STRIPE_LIVE_API_KEY`) and the unified webhook at `/api/public/payments/webhook?env=...`.
+## Where you are vs. world-class
 
-This plan rewires Identity onto the same gateway pattern so:
-- Preview (`id-preview--...lovable.app`) automatically uses Stripe **test** mode for Identity.
-- Published (`staging.repsuk.org`, `repsglobal.lovable.app`) automatically uses Stripe **live** mode for Identity.
-- One webhook endpoint handles both Payments and Identity events, in both modes.
-- The legacy `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` can be deleted.
+**What's actually working:**
+- Stripe Identity is wired end-to-end. The webhook (`/api/public/payments/webhook`, lines 124-185) listens to all 5 identity events, maps `verified → approved`, pulls `verified_outputs` (name + DOB), writes them back, stamps `reviewed_at`. So "Continue ID check → In review" means: Stripe runs the check (usually 30s–5min) → webhook fires → your row flips to `approved` automatically → the dashboard polls every 8s and updates. No manual admin step needed for a clean pass.
+- The pro card already handles polling, badge states, and a "Restart ID check" path on rejection.
 
-No UI changes. Identity verification UX on `/dashboard/verification` stays identical.
+**Where it falls short of 10/10 (in priority order):**
 
----
+1. **Sidebar tier leak (your finding).** `dashboard_.verification.tsx`, `dashboard.tsx`, `dashboard_.cpd.tsx`, and `dashboard_.settings.tsx` render `<DashboardShell role="trainer">` without passing `tier`. `trainerNav(undefined)` falls through to `PRO_NAV`, so a Verified user sees the full Pro sidebar (Leads / Clients / Calendar / Programs / etc.) the moment they hit any of those pages. Should always be `VERIFIED_NAV` for Verified tier.
+2. **No name-match gate on auto-approve.** Stripe confirms the doc is real and the selfie matches the doc — it does NOT check the name on the doc matches the REPS profile name. Today a "John Smith" account could upload a real ID for "Jane Doe" and be auto-approved. This is the single biggest credibility hole.
+3. **Admin has no visibility of approved/historical verifications.** `listPendingVerifications` filters to `['submitted','changes_requested']`. Once approved, the case vanishes — no "Approved" tab, no audit trail in the UI, no way to revoke. Identity has no admin index at all (the admin verification page only shows cert submissions; identity is invisible until tied to a cert case).
+4. **No admin override for identity.** If a check gets stuck "processing", or Stripe rejects something that's actually fine, there's no manual approve/reject UI.
+5. **"In review" copy gives no ETA.** Pros see "In review" with no "usually 1–5 mins" reassurance. Feels broken when it isn't.
 
-## Changes
+Deferred (worth doing, not this pass): email on approve/reject, 24-month re-verification, passport-expiry watcher, webhook env-mismatch logging.
 
-### 1. `src/lib/verification/stripe-identity.functions.ts` — use the gateway
+## Plan — step by step
 
-Replace:
-```ts
-const key = process.env.STRIPE_SECRET_KEY;
-const { default: Stripe } = await import("stripe");
-const stripe = new Stripe(key);
-```
-with the same pattern Payments uses:
-```ts
-const { getStripe, resolveStripeEnv } = await import("@/lib/billing/stripe.server");
-const stripe = getStripe();
-const env = resolveStripeEnv(); // "sandbox" | "live"
-```
-Also persist `env` on the new `identity_documents` row (new column — see step 4) so the webhook handler can scope its lookup by environment, the same way `subscriptions.environment` is used.
+You said "step by step, get verified first". So this plan is scoped to that. Each step is independently shippable.
 
-### 2. Move Identity event handling into the unified webhook
+### Step 1 — Fix the sidebar tier leak (smallest, do first)
 
-- Lift the `handleIdentityEvent` + `mapIdentityStatus` helpers from `src/routes/api/public/stripe/webhook.ts` into `src/routes/api/public/payments/webhook.ts` (or a shared helper module under `src/lib/billing/`).
-- Add the five `identity.verification_session.*` cases to the existing `switch (event.type)` block in the payments webhook.
-- The Stripe client passed in is already env-scoped (from `createStripeClient(env)` driven by the `?env=` query param), so Identity sessions retrieved during enrichment will match the right mode automatically.
-- Scope the `identity_documents` lookup by `environment = env` so a sandbox session id can never collide with a live one.
+Pass `tier` into `<DashboardShell>` from every trainer route that's missing it. Use the existing `useTrainerTier()` hook.
 
-### 3. Delete the legacy webhook route
+Files:
+- `src/routes/_authenticated/_professional/dashboard.tsx`
+- `src/routes/_authenticated/_professional/dashboard_.verification.tsx`
+- `src/routes/_authenticated/_professional/dashboard_.cpd.tsx`
+- `src/routes/_authenticated/_professional/dashboard_.settings.tsx`
+- `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (check + fix if same issue)
 
-- Remove `src/routes/api/public/stripe/webhook.ts`.
-- Remove the empty `src/routes/api/public/stripe/` directory.
+No UI redesign, no schema change. ~5 lines per file.
 
-### 4. Database migration
+### Step 2 — Name-match gate on auto-approve
 
-Add an `environment` column to `identity_documents`:
-```sql
-alter table public.identity_documents
-  add column if not exists environment text not null default 'sandbox';
+In `handleIdentityEvent` (webhook), after pulling `verified_outputs.first_name/last_name`:
 
-create index if not exists idx_identity_documents_vs_env
-  on public.identity_documents(stripe_vs_id, environment);
-```
-Existing rows default to `'sandbox'` (they were created against test mode if `STRIPE_SECRET_KEY` was a test key; if it was live, we backfill manually after migration).
+- Load `profiles.full_name` for the pro.
+- Normalise both (lowercase, trim, strip punctuation, drop common titles "Mr/Mrs/Ms/Dr/Prof", collapse whitespace).
+- Match rule: pass if first + last on doc both appear as whole words in the profile name (or vice versa). So `"James Wilson"` ↔ `"James Robert Wilson"` ✅, `"Jane Doe"` ↔ `"John Smith"` ✗.
+- If mismatch: override `status='needs_more_info'` (NOT `approved`), set `stripe_reason='Name on ID ("<doc name>") does not match your REPS profile name ("<profile name>"). Update your profile to match your legal name, or restart the check with the correct ID.'`.
 
-### 5. Stripe Dashboard — webhook reconfiguration (manual, you do this)
+The existing pro card already renders `stripe_reason` in an amber banner and shows "Restart ID check" — no UI work needed.
 
-I'll give you the exact two URLs once the code is shipped. You'll:
-- **Test mode endpoint:** add `identity.verification_session.*` events to the existing sandbox payments webhook (`/api/public/payments/webhook?env=sandbox`). Stripe shows the existing signing secret — already stored as `PAYMENTS_SANDBOX_WEBHOOK_SECRET`, nothing to copy.
-- **Live mode endpoint:** same — add identity events to the live endpoint (`?env=live`). Uses `PAYMENTS_LIVE_WEBHOOK_SECRET`.
-- Disable / delete the old standalone Identity webhook endpoint in Stripe Dashboard.
+Files:
+- `src/routes/api/public/payments/webhook.ts` — add `nameMatches()` helper + check inside `handleIdentityEvent`.
 
-### 6. Retire legacy secrets
+### Step 3 — Admin: approved + history view + identity tab
 
-Once the new path is verified end-to-end in preview:
-- Delete `STRIPE_SECRET_KEY` from project secrets.
-- Delete `STRIPE_WEBHOOK_SECRET` from project secrets.
+Extend the existing admin verification page:
 
-These are no longer referenced anywhere in code after step 3.
+- Replace the `All / Mine / SLA risk` pills with status pills: `Pending · Approved · Rejected · Changes requested`. Default = Pending (preserves current behaviour).
+- Extend the server fn: add `listVerifications({ statuses })`; keep `listPendingVerifications` as a thin alias.
+- Workspace pane for an approved case: show reviewer, decision time, granted titles, public profile link, and a `Revoke` action (writes `verification_decisions` with `decision='revoked'`, sets pro back to `unverified`, with a required reason).
+- Add a sibling `Identity checks` view (same page, new tab): table of all `identity_documents` rows with name / status / vendor / date, search, status filter, and admin override buttons (approve / reject / mark needs-info — all writing a stamped audit row).
 
-### 7. Verify
+Files:
+- `src/lib/verification/verification.functions.ts` — add `listVerifications`, `revokeVerification`.
+- `src/lib/verification/identity.functions.ts` — add `listIdentityChecks`, `adminOverrideIdentity` (admin-gated).
+- `src/routes/admin_.verification.tsx` — add tabs, status pills, approved workspace block, identity view.
 
-- **Preview** (`id-preview--...lovable.app`): start a verification — Stripe Identity opens in test mode (no charge, simulated docs). Webhook updates `identity_documents.status` to `approved`.
-- **Staging** (`staging.repsuk.org`): start a verification — Stripe Identity opens in live mode (real ID required, ~£1.20 charge per check). Webhook flips status the same way.
+No schema changes — `identity_documents`, `verification_submissions`, `verification_decisions` already have every column needed.
 
----
+### Step 4 — Pro "in review" copy polish
 
-## What changes for you operationally
+In the identity card's pending state:
+- Add `"Usually takes 1–5 minutes — refresh or check back shortly."` line.
+- If pending >10 minutes, surface a `"Taking longer than expected? Contact support."` link.
 
-- Preview Identity = free test mode, always.
-- Staging/published Identity = real live mode, always.
-- The Payments **Test / Live dashboard toggle** doesn't apply to Identity events because Stripe shows Identity verifications in the same toggle automatically — they're on the same account.
-- One webhook endpoint to monitor instead of two.
+Files:
+- `src/routes/_authenticated/_professional/dashboard_.verification.tsx`
 
-## Out of scope
+## What to confirm before I touch code
 
-- The dashboard UI for kicking off / restarting verification (unchanged).
-- Any change to how `identity_documents` is read by the rest of the app.
-- Migrating insurance / awarding-body verification (those don't use Stripe).
+1. **Order:** Step 1 (sidebar) on its own first, then 2 → 3 → 4 in separate passes? Or batch 1+2 together since both are small and high-value?
+2. **Name-match strictness:** OK with the "subset match" rule above (so middle names don't false-positive), or do you want strict exact-match?
+3. **Revoke action:** should it also remove granted `pro_titles` and clear `primary_title_slug`, or leave titles in place and only flip `verification_status`?

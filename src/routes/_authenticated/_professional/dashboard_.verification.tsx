@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
@@ -58,6 +59,7 @@ function VerificationPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" });
+  const tier = useTrainerTier();
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
@@ -113,6 +115,7 @@ function VerificationPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Verification"
       title="Verification"
       subtitle="Upload your ID, qualification and insurance. We'll review within 24 hours."
