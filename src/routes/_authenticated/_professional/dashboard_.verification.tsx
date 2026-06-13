@@ -64,10 +64,12 @@ function VerificationPage() {
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
   const fetchCerts = useServerFn(myVerificationSubmissions);
+  const fetchTitles = useServerFn(myUnlockedTitles);
 
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
   const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
+  const titles = useQuery({ queryKey: ["my-unlocked-titles"], queryFn: () => fetchTitles() });
 
   // When Stripe Identity redirects back, refetch and clear the query param.
   useEffect(() => {
@@ -97,21 +99,35 @@ function VerificationPage() {
     refetchOnWindowFocus: true,
   });
 
-  const idDone = !!identity.data;
   const idApproved = identity.data?.status === "approved";
-  const selfieDone = !!identity.data?.selfie_path;
-  const insDone = !!insurance.data;
   const insApproved = insurance.data?.status === "active";
-  const certDone = (certs.data ?? []).length > 0;
-  const certApproved = (certs.data ?? []).some((c) => c.status === "approved");
+  const approvedCerts = (certs.data ?? []).filter((c) => c.status === "approved");
+  const certApproved = approvedCerts.length > 0;
+  const pendingCerts = (certs.data ?? []).filter(
+    (c) => c.status === "submitted" || c.status === "changes_requested",
+  ).length;
 
-  const steps: Step[] = [
-    { key: "identity", label: "Photo ID", done: idApproved, pending: idDone && !idApproved, required: true },
-    { key: "selfie", label: "Selfie", done: selfieDone, required: true },
-    { key: "cert", label: "Qualification", done: certApproved, pending: certDone && !certApproved, required: true },
-    { key: "insurance", label: "Insurance", done: insApproved, pending: insDone && !insApproved, required: false },
+  const primaryTitle =
+    titles.data?.unlocked.find((t) => t.is_primary) ?? titles.data?.unlocked[0] ?? null;
+
+  // Next renewal date across insurance + cert expiries.
+  const renewals: { label: string; date: string }[] = [];
+  if (insurance.data?.expiry_date) {
+    renewals.push({ label: "Insurance", date: insurance.data.expiry_date });
+  }
+  for (const c of approvedCerts) {
+    if (c.expiry_date) renewals.push({ label: c.qualification, date: c.expiry_date });
+  }
+  renewals.sort((a, b) => a.date.localeCompare(b.date));
+  const nextRenewal = renewals[0] ?? null;
+
+  const checks = [
+    { key: "identity", label: "Identity", done: idApproved, pending: !!identity.data && !idApproved },
+    { key: "insurance", label: "Insurance", done: insApproved, pending: !!insurance.data && !insApproved },
+    { key: "qualifications", label: "Qualifications", done: certApproved, pending: pendingCerts > 0 && !certApproved },
   ];
-  const completed = steps.filter((s) => s.done).length;
+  const completed = checks.filter((c) => c.done).length;
+  const allDone = completed === checks.length;
 
   return (
     <DashboardShell
@@ -119,51 +135,80 @@ function VerificationPage() {
       tier={tier}
       active="Verification"
       title="Verification"
-      subtitle="Upload your ID, qualification and insurance. We'll review within 24 hours."
+      subtitle="Your trust posture on REPs. Three checks. One page."
     >
-      {/* Progress strip */}
+      {/* Trust meter */}
       <section id="overview" className="scroll-mt-24">
         <PCard>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-start gap-6">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-reps-orange-soft">
-                <ShieldCheck className="h-6 w-6 text-reps-orange" />
+              <span
+                className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                  allDone ? "bg-emerald-500/15 text-emerald-300" : "bg-reps-orange-soft text-reps-orange"
+                }`}
+              >
+                <ShieldCheck className="h-7 w-7" />
               </span>
               <div>
-                <div className="font-display text-[18px] font-bold text-white">
-                  {completed === steps.length ? "Fully verified" : `${completed} of ${steps.length} complete`}
+                <div className="font-display text-[20px] font-bold text-white">
+                  {allDone ? "Fully verified" : `${completed} of ${checks.length} complete`}
                 </div>
                 <div className="text-[12px] text-white/55">
-                  {completed === steps.length
-                    ? "All checks passed. You're on the public register."
+                  {allDone
+                    ? "All checks passed. You're trusted across REPs."
                     : idApproved && certApproved
                       ? "Verified tier active. Add insurance to unlock Pro."
-                      : "Complete each step to get verified."}
+                      : "Complete each check below to get verified."}
                 </div>
               </div>
             </div>
-            <div className="ml-auto flex flex-wrap gap-2">
-              {steps.map((s) => (
-                <span
-                  key={s.key}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                    s.done
-                      ? "bg-emerald-500/15 text-emerald-300"
-                      : s.pending
-                        ? "bg-amber-500/15 text-amber-300"
-                        : "bg-white/5 text-white/55"
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {checks.map((c) => (
+                <a
+                  href={`#${c.key}`}
+                  key={c.key}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold ${
+                    c.done
+                      ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      : c.pending
+                        ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                        : "border border-white/10 bg-white/5 text-white/55"
                   }`}
                 >
-                  {s.done ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
-                  {s.label}
-                </span>
+                  {c.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+                  {c.label}
+                </a>
               ))}
             </div>
           </div>
+
+          {(primaryTitle || nextRenewal) && (
+            <div className="mt-5 grid grid-cols-1 gap-3 border-t border-reps-border pt-4 sm:grid-cols-2">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  Public title
+                </div>
+                <div className="mt-1 text-[14px] font-semibold text-white">
+                  {primaryTitle?.label ?? <span className="text-white/45">Earned once a qualification is approved</span>}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  Next renewal
+                </div>
+                <div className="mt-1 text-[14px] font-semibold text-white">
+                  {nextRenewal
+                    ? <>{nextRenewal.date} <span className="font-normal text-white/55">· {nextRenewal.label}</span></>
+                    : <span className="font-normal text-white/45">No upcoming renewals</span>}
+                </div>
+              </div>
+            </div>
+          )}
         </PCard>
       </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mt-6 space-y-6">
         <section id="identity" className="scroll-mt-24">
           <IdentityCard
             identity={identity.data}
@@ -179,11 +224,6 @@ function VerificationPage() {
         <section id="qualifications" className="scroll-mt-24">
           <CertCard certs={certs.data ?? []} />
         </section>
-        <TierUnlockCard
-          identityApproved={idApproved}
-          certApproved={certApproved}
-          insApproved={insApproved}
-        />
       </div>
     </DashboardShell>
   );
