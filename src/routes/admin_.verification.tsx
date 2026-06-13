@@ -50,7 +50,7 @@ import {
   adminOverrideIdentity,
 } from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
-import { runCrossChecks, type CheckStatus } from "@/lib/verification/cross-checks";
+import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 export const Route = createFileRoute("/admin_/verification")({
