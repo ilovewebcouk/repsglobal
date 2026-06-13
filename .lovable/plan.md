@@ -97,8 +97,8 @@ B  searchProfessionals server fn + /find-a-professional wired (P95<300ms)
 C  Shop-front: Lite (Verified, auto-seeded) + Full editor (Pro) + live /c/$slug  ✅ DONE (auto-seed trigger; getShopFrontBySlug overlays mock on /c/$slug; /dashboard/shop-front editor live)
 D  /pro/$slug real loader + Enquire CTA live    ✅ DONE (pro.$slug.index already loads via getPublicProfileBySlug; enquire page wired to submitEnquiry server fn + toast)
 E  Anonymous submitEnquiry + Lovable Emails + /dashboard/enquiries tab  ✅ DONE (enquiry-notification template via queue; inbox route with read/replied/archived actions; nav item in Verified + Pro)
-F  Reviews: collect + display + post-session invite + /dashboard/reviews tab
-G  Phase 2.2 — Programme Generator (Pro-only). If not shipped: "Coming this month" stub + wait-list.
+F  Reviews: collect + display + post-session invite + /dashboard/reviews tab  ✅ DONE (submitReview/listMyReviews/respondToReview server fns; /pro/$slug/review collection route; live reviews + reply composer overlay on dashboard reviews page)
+G  Phase 2.2 — Programme Generator (Pro-only). If not shipped: "Coming this month" stub + wait-list.  ✅ DONE (joinProgrammeWaitlist + isOnProgrammeWaitlist server fns; "Coming this month" banner with email + first-build note capture at top of /dashboard/programs)
 ```
 
 `/dashboard/enquiries` and `/dashboard/reviews` are new sidebar tabs in `DashboardShell.tsx` — empty-state + first-row demo for seed accounts.

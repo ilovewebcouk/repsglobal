@@ -1,4 +1,7 @@
+import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowUpRight,
   Flag,
@@ -13,6 +16,9 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { listMyReviews, respondToReview, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/reviews")({
   head: () => ({
@@ -108,7 +114,46 @@ function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
   );
 }
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("") || "C";
+}
+
+function formatDate(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86_400_000);
+  if (d < 1) return "today";
+  if (d === 1) return "yesterday";
+  if (d < 30) return `${d} days ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 function ReviewsPage() {
+  const qc = useQueryClient();
+  const { data: liveReviews = [] } = useQuery({
+    queryKey: ["my-reviews"],
+    queryFn: () => listMyReviews(),
+    staleTime: 30_000,
+  });
+
+  const [replyOpen, setReplyOpen] = React.useState<string | null>(null);
+  const [replyText, setReplyText] = React.useState("");
+
+  const respond = useMutation({
+    mutationFn: (vars: { id: string; response: string }) => respondToReview({ data: vars }),
+    onSuccess: () => {
+      toast.success("Reply published");
+      setReplyOpen(null);
+      setReplyText("");
+      qc.invalidateQueries({ queryKey: ["my-reviews"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't publish reply"),
+  });
+
   return (
     <DashboardShell role="trainer" tier="pro"
       active="Reviews"
@@ -121,6 +166,87 @@ function ReviewsPage() {
         </button>
       }
     >
+      {/* Live reviews from REPS — shown when real reviews exist */}
+      {liveReviews.length > 0 && (
+        <PPanel className="mb-6">
+          <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
+            <div>
+              <h3 className="text-[14px] font-semibold text-white">Live reviews from REPS clients</h3>
+              <p className="mt-0.5 text-[12px] text-white/55">
+                {liveReviews.length} review{liveReviews.length === 1 ? "" : "s"} from verified clients
+              </p>
+            </div>
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-300">
+              Live
+            </span>
+          </div>
+          <ul className="divide-y divide-reps-border/60">
+            {liveReviews.map((r) => (
+              <li key={r.id} className="px-5 py-5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-[12px] font-semibold text-reps-orange">
+                    {initials(r.client_name)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[13px] font-semibold text-white">{r.client_name}</span>
+                      <span className="text-[11px] text-white/45">· {formatDate(r.created_at)}</span>
+                    </div>
+                    <div className="mt-1.5"><Stars n={r.rating} /></div>
+                    {r.title && <p className="mt-2 text-[13px] font-semibold text-white">{r.title}</p>}
+                    <p className="mt-2 text-[13px] leading-relaxed text-white/80">{r.body}</p>
+                    {r.response && (
+                      <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft p-3">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">Your reply</div>
+                        <p className="mt-1 text-[13px] text-white/85">{r.response}</p>
+                      </div>
+                    )}
+                    {!r.response && replyOpen !== r.id && (
+                      <button
+                        type="button"
+                        onClick={() => { setReplyOpen(r.id); setReplyText(""); }}
+                        className="mt-3 flex h-8 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover"
+                      >
+                        <Reply className="h-3.5 w-3.5" /> Reply
+                      </button>
+                    )}
+                    {!r.response && replyOpen === r.id && (
+                      <div className="mt-3 space-y-2">
+                        <Textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          rows={3}
+                          maxLength={2000}
+                          placeholder="Write a thoughtful, professional reply…"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => respond.mutate({ id: r.id, response: replyText })}
+                            disabled={respond.isPending || replyText.trim().length < 1}
+                            className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover"
+                          >
+                            Publish reply
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => { setReplyOpen(null); setReplyText(""); }}
+                            className="h-8 rounded-[10px] border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </PPanel>
+      )}
+
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         {KPIS.map((k) => (

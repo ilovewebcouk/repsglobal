@@ -1,4 +1,11 @@
+import * as React from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  isOnProgrammeWaitlist,
+  joinProgrammeWaitlist,
+} from "@/lib/programmes/waitlist.functions";
 import {
   CheckCircle2,
   ChevronDown,
@@ -783,6 +790,83 @@ function ClientFeedbackCard() {
    PAGE
    ============================================================ */
 
+function ProgrammeGeneratorWaitlist() {
+  const { data, refetch } = useQuery({
+    queryKey: ["programme-waitlist"],
+    queryFn: () => isOnProgrammeWaitlist(),
+    staleTime: 60_000,
+  });
+  const [email, setEmail] = React.useState("");
+  const [note, setNote] = React.useState("");
+  const join = useMutation({
+    mutationFn: () => joinProgrammeWaitlist({ data: { email, note: note || null } }),
+    onSuccess: () => {
+      toast.success("You're on the list — we'll email you when it ships.");
+      setEmail("");
+      setNote("");
+      refetch();
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't join waitlist"),
+  });
+
+  return (
+    <section className="rounded-[22px] border border-reps-orange-border bg-gradient-to-br from-reps-orange-soft/40 to-reps-panel p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-[640px]">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+              Coming this month
+            </span>
+            <span className="text-[11.5px] text-white/55">Phase 2.2</span>
+          </div>
+          <h3 className="mt-3 font-display text-[20px] font-bold text-white">
+            AI Programme Generator
+          </h3>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-white/70">
+            Draft a 12-week strength, hybrid or hypertrophy programme in seconds, branded with your name and ready to assign. Pro-only. Join the early-access waitlist below.
+          </p>
+        </div>
+        {data?.joined ? (
+          <div className="rounded-[12px] border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-[13px] font-semibold text-emerald-300">
+            ✓ You're on the waitlist
+          </div>
+        ) : (
+          <form
+            className="flex w-full max-w-[420px] flex-col gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              join.mutate();
+            }}
+          >
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="h-10 w-full rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+            />
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={200}
+              placeholder="What would you build first? (optional)"
+              className="h-10 w-full rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+            />
+            <button
+              type="submit"
+              disabled={join.isPending || !email}
+              className="h-10 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+            >
+              {join.isPending ? "Adding…" : "Join early-access waitlist"}
+            </button>
+          </form>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ProgramsPage() {
   return (
     <DashboardShell role="trainer" tier="pro"
@@ -816,6 +900,7 @@ function ProgramsPage() {
       }
     >
       <div className="space-y-5">
+        <ProgrammeGeneratorWaitlist />
         <ProgrammeSelectorRow />
         <Tabs />
 
