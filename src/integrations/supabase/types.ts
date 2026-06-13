@@ -420,6 +420,10 @@ export type Database = {
           selfie_match_score: number | null
           selfie_path: string | null
           status: string
+          stripe_reason: string | null
+          stripe_status: string | null
+          stripe_vs_id: string | null
+          stripe_vs_url: string | null
           updated_at: string
           vendor: string
           veriff_decision: Json | null
@@ -447,6 +451,10 @@ export type Database = {
           selfie_match_score?: number | null
           selfie_path?: string | null
           status?: string
+          stripe_reason?: string | null
+          stripe_status?: string | null
+          stripe_vs_id?: string | null
+          stripe_vs_url?: string | null
           updated_at?: string
           vendor?: string
           veriff_decision?: Json | null
@@ -474,6 +482,10 @@ export type Database = {
           selfie_match_score?: number | null
           selfie_path?: string | null
           status?: string
+          stripe_reason?: string | null
+          stripe_status?: string | null
+          stripe_vs_id?: string | null
+          stripe_vs_url?: string | null
           updated_at?: string
           vendor?: string
           veriff_decision?: Json | null
