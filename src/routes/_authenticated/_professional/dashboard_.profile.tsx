@@ -1071,34 +1071,61 @@ function ProfileEditorPage() {
   }, [dirty, saveMutation.isPending]);
 
   /* ----------------------------------------------------------------
+     Scroll to first invalid field (used by Fix-N-issues pill + Cmd+S).
+     ---------------------------------------------------------------- */
+  const focusFirstError = React.useCallback(() => {
+    const firstKey = Object.keys(errors)[0];
+    if (!firstKey) return;
+    const el = document.querySelector(`[data-field="${firstKey}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
+    }
+  }, [errors]);
+
+  /* ----------------------------------------------------------------
      Derived status pill state.
      ---------------------------------------------------------------- */
   const status: SaveStatus = React.useMemo(() => {
     if (saveMutation.isPending) return { kind: "saving" };
     if (saveMutation.isError) return { kind: "error", onRetry: triggerManualSave };
+    if (dirty && hasErrors)
+      return { kind: "blocked", errorCount: Object.keys(errors).length, onFix: focusFirstError };
     if (dirty) return { kind: "editing" };
     if (lastSavedAt && Date.now() - lastSavedAt < 5 * 60_000)
       return { kind: "saved", at: lastSavedAt };
     return { kind: "idle" };
-  }, [saveMutation.isPending, saveMutation.isError, dirty, lastSavedAt, triggerManualSave]);
+  }, [
+    saveMutation.isPending,
+    saveMutation.isError,
+    dirty,
+    hasErrors,
+    errors,
+    lastSavedAt,
+    triggerManualSave,
+    focusFirstError,
+  ]);
 
   /* ----------------------------------------------------------------
-     Manual save — scroll to first error if validation blocks save.
+     Cmd/Ctrl+S — instant flush (skips debounce). Only path that toasts.
      ---------------------------------------------------------------- */
-  const handleManualSave = () => {
-    if (hasErrors) {
-      const firstKey = Object.keys(errors)[0];
-      if (firstKey) {
-        const el = document.querySelector(`[data-field="${firstKey}"]`);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
-          (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
-        }
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isSave = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s";
+      if (!isSave) return;
+      e.preventDefault();
+      if (saveMutation.isPending) return;
+      if (hasErrors) {
+        focusFirstError();
+        return;
       }
-      return;
-    }
-    triggerManualSave();
-  };
+      if (!dirty) return;
+      triggerManualSave();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [dirty, hasErrors, saveMutation.isPending, focusFirstError, triggerManualSave]);
+
 
 
   return (
