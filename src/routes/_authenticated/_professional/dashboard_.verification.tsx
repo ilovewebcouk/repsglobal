@@ -54,7 +54,7 @@ function fileToDataUrl(f: File): Promise<string> {
   });
 }
 
-type Step = { key: string; label: string; done: boolean; pending?: boolean; required?: boolean };
+
 
 function VerificationPage() {
   const qc = useQueryClient();
