@@ -192,7 +192,7 @@ function SignupPage() {
       : "Continue to secure checkout"
     : "Create account";
 
-  // After we have a session, route to Stripe Checkout or fall back to dashboard
+  // After we have a session, route to embedded checkout or fall back to dashboard
   const continueAfterAuth = async (userId: string) => {
     if (
       search.next === "checkout" &&
@@ -200,18 +200,12 @@ function SignupPage() {
       search.tier !== undefined &&
       search.period
     ) {
-      try {
-        const result = await startCheckout({
-          data: { tier: search.tier, period: search.period },
-        });
-        if (result?.url) {
-          window.location.href = result.url;
-          return;
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : "Could not start checkout");
-      }
+      navigate({
+        to: "/checkout",
+        search: { tier: search.tier, period: search.period } as never,
+        replace: true,
+      });
+      return;
     }
     const to = await redirectAfterAuth(userId);
     navigate({ to, replace: true });
