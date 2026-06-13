@@ -946,8 +946,9 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Verification hero — distinct from profile polish. Drives the Verified badge. */}
-        <VerificationCard />
+        <VerificationStatusPill />
+
+
 
 
 
