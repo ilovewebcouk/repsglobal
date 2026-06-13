@@ -589,16 +589,8 @@ export function InsuranceProfileCard({ step }: { step?: string }) {
   );
 }
 
-type InsuranceRow = {
-  id: string;
-  status: string;
-  provider: string;
-  expiry_date: string;
-  cover_amount_gbp?: number | null;
-  admin_note?: string | null;
-} | null | undefined;
-
 function InsuranceBody({
+
   insurance,
   onOpenDialog,
 }: {
