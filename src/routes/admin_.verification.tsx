@@ -381,6 +381,26 @@ function AdminVerificationPage() {
             if (!ins) missing.push("insurance");
 
             const canApprovePro = !!id && !!ins;
+            const isApproved = (sub as { status?: string }).status === "approved";
+
+            const handleRevoke = async () => {
+              const reason = window.prompt(
+                "Reason for revoking this approved qualification (required, min 8 chars). This will delete any titles granted from this certificate.",
+              );
+              if (!reason || reason.trim().length < 8) return;
+              if (!window.confirm(`Revoke "${sub.qualification}" for ${prof?.full_name || "this pro"}?`)) return;
+              setBusy(true);
+              try {
+                await revoke({ data: { submission_id: sub.id, reason: reason.trim() } });
+                setSelectedId(null);
+                qc.invalidateQueries({ queryKey: ["admin-verifications"] });
+                qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
+              } catch (e) {
+                alert(e instanceof Error ? e.message : "Revoke failed");
+              } finally {
+                setBusy(false);
+              }
+            };
 
             return (
               <>
@@ -402,9 +422,44 @@ function AdminVerificationPage() {
                         }>SLA {sla.label}</span>
                       </div>
                     </div>
-                    <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                    <div className="flex items-center gap-2">
+                      {isApproved && (
+                        <Button
+                          variant="subtle"
+                          size="sm"
+                          disabled={busy}
+                          onClick={handleRevoke}
+                          className="border-red-400/40 text-red-300 hover:border-red-300 hover:text-red-200"
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                      <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                    </div>
                   </div>
+                  {isApproved && (
+                    <div className="mt-3 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-[11.5px] text-emerald-200">
+                      Approved {(sub as { reviewed_at?: string | null }).reviewed_at
+                        ? `${relativeTime((sub as { reviewed_at: string }).reviewed_at)} ago`
+                        : ""}
+                      {titleLabel ? ` · Granted title: ${titleLabel}` : ""}
+                      {pro?.slug && (
+                        <>
+                          {" · "}
+                          <a
+                            href={`/pro/${pro.slug}`}
+                            target="_blank"
+                            rel="noopener"
+                            className="underline hover:no-underline"
+                          >
+                            View public profile
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </PCard>
+
 
                 {/* Artefacts grid */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
