@@ -11,7 +11,7 @@ import {
   ExternalLink,
   Eye,
   MapPin,
-  Save,
+  
   ShieldCheck,
   Star,
   Trash2,
@@ -66,7 +66,7 @@ import {
   getSpecialismLabel,
   type SpecialismSlug,
 } from "@/lib/specialisms";
-import { Button } from "@/components/ui/button";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
