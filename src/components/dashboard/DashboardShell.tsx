@@ -222,21 +222,13 @@ type VerificationNavItem = {
 };
 const VERIFICATION_MODULE_NAV: { title: string; items: VerificationNavItem[] }[] = [
   {
-    title: "Verification",
-    items: [
-      { icon: ShieldCheck, label: "Overview", href: "#overview" },
-      { icon: Fingerprint, label: "Identity", href: "#identity" },
-      { icon: FileBadge, label: "Qualifications", href: "#qualifications" },
-      { icon: BadgeCheck, label: "Insurance", href: "#insurance" },
-    ],
-  },
-  {
     title: "",
     items: [
       { icon: ArrowLeft, label: "Back to dashboard", to: "/dashboard" },
     ],
   },
 ];
+
 
 function VerificationModuleNav() {
   return (
