@@ -558,12 +558,14 @@ function SelectField({
   label,
   icon: Icon,
   options,
-  defaultValue,
+  value,
+  onValueChange,
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   options: string[];
-  defaultValue: string;
+  value: string;
+  onValueChange: (v: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-[12px] border border-reps-stone bg-reps-ivory px-3.5 py-2.5">
@@ -572,7 +574,7 @@ function SelectField({
       </span>
       <div className="flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 shrink-0 text-reps-muted-light" />
-        <Select defaultValue={defaultValue}>
+        <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[13px] font-normal text-reps-charcoal shadow-none focus:ring-0 focus-visible:ring-0 [&>svg]:size-3.5">
             <SelectValue />
           </SelectTrigger>
