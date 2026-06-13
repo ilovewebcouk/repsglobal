@@ -760,7 +760,7 @@ function AdminIdentityTab({
   signUrl,
   adminOverride,
 }: {
-  signUrl: ReturnType<typeof useServerFn<typeof getDocSignedUrl>>;
+  signUrl: unknown;
   adminOverride: typeof adminOverrideIdentity;
 }) {
   const qc = useQueryClient();
