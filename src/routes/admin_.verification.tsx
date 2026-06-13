@@ -192,7 +192,7 @@ function AdminVerificationPage() {
       setSelectedId(null);
       setNote("");
       setChecks({});
-      qc.invalidateQueries({ queryKey: ["admin-pending-verifications"] });
+      qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
     },
     onError: (e) => alert(e instanceof Error ? e.message : "Decision failed"),
