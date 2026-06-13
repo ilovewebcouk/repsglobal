@@ -25,14 +25,17 @@ export interface TierConfig {
   blurb: string;
 }
 
+// stripePriceId values are HUMAN-READABLE lookup keys, stable across sandbox
+// and live. The server resolves them to Stripe price IDs at checkout via
+// `stripe.prices.list({ lookup_keys })`.
 export const TIERS: Record<TierKey, TierConfig> = {
   verified: {
     key: "verified",
     label: "Verified",
     priceLabel: "£99",
     intervalLabel: "per year",
-    stripePriceId: "price_1Th5cVAP31Yc4cJjRclKEfCH",
-    stripeProductId: "prod_UgSXqMrfMGNrKW",
+    stripePriceId: "verified_annual",
+    stripeProductId: "verified",
     blurb:
       "Public verified profile, credential check, listing on the global register.",
   },
@@ -41,8 +44,8 @@ export const TIERS: Record<TierKey, TierConfig> = {
     label: "Pro",
     priceLabel: "£59",
     intervalLabel: "per month — Founding",
-    stripePriceId: "price_1Th5cVAP31Yc4cJj4VPiaXeH",
-    stripeProductId: "prod_UgSXQ2CckI9BzA",
+    stripePriceId: "pro_monthly",
+    stripeProductId: "pro_founding",
     isFounding: true,
     blurb:
       "Everything in Verified plus shop-front, bookings, payments, client records, growth and operations tooling.",
@@ -71,7 +74,7 @@ export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeri
   verified: {
     annual: {
       period: "annual",
-      priceId: TIERS.verified.stripePriceId as string,
+      priceId: "verified_annual",
       display: "£99/yr",
       trialDays: 0,
       founding: false,
@@ -80,14 +83,14 @@ export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeri
   pro: {
     monthly: {
       period: "monthly",
-      priceId: TIERS.pro.stripePriceId as string,
+      priceId: "pro_monthly",
       display: "£59/mo (Founding)",
       trialDays: 30,
       founding: true,
     },
     annual: {
       period: "annual",
-      priceId: "price_1Th8U8AP31Yc4cJjLhq9Yhvf",
+      priceId: "pro_annual",
       display: "£590/yr (Founding)",
       trialDays: 30,
       founding: true,
