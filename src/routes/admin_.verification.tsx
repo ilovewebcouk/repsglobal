@@ -439,9 +439,7 @@ function AdminVerificationPage() {
                   </div>
                   {isApproved && (
                     <div className="mt-3 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-[11.5px] text-emerald-200">
-                      Approved {(sub as { reviewed_at?: string | null }).reviewed_at
-                        ? `${relativeTime((sub as { reviewed_at: string }).reviewed_at)} ago`
-                        : ""}
+                      Approved {sub.reviewed_at ? `${relativeTime(sub.reviewed_at)} ago` : ""}
                       {titleLabel ? ` · Granted title: ${titleLabel}` : ""}
                       {pro?.slug && (
                         <>
