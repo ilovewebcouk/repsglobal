@@ -206,6 +206,76 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
 ];
 
 /* ------------------------------------------------------------------------- */
+/* Verification module nav (shared by Verified + Pro)                         */
+/* ------------------------------------------------------------------------- */
+/**
+ * LOCKED: While inside `/dashboard/verification/*` the sidebar collapses to
+ * the Verification module's own nav, regardless of tier. The module is the
+ * same product surface for Verified and Pro — do not branch on tier here.
+ * See `.lovable/plan.md` (Verification Module — 10/10 Rebuild, step 1).
+ */
+type VerificationNavItem = {
+  icon: LucideIcon;
+  label: string;
+  to?: string;
+  href?: string;
+};
+const VERIFICATION_MODULE_NAV: { title: string; items: VerificationNavItem[] }[] = [
+  {
+    title: "Verification",
+    items: [
+      { icon: ShieldCheck, label: "Overview", href: "#overview" },
+      { icon: Fingerprint, label: "Identity", href: "#identity" },
+      { icon: FileBadge, label: "Qualifications", href: "#qualifications" },
+      { icon: BadgeCheck, label: "Insurance", href: "#insurance" },
+    ],
+  },
+  {
+    title: "",
+    items: [
+      { icon: ArrowLeft, label: "Back to dashboard", to: "/dashboard" },
+    ],
+  },
+];
+
+function VerificationModuleNav() {
+  return (
+    <>
+      {VERIFICATION_MODULE_NAV.map((group, gi) => (
+        <div key={gi} className="mb-5">
+          {group.title ? (
+            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
+              {group.title}
+            </div>
+          ) : null}
+          <ul className="flex flex-col gap-1">
+            {group.items.map((item) => {
+              const base =
+                "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors text-white/70 hover:bg-reps-panel hover:text-white";
+              return (
+                <li key={item.label}>
+                  {item.to ? (
+                    <Link to={item.to} className={base}>
+                      <item.icon className="h-[18px] w-[18px] shrink-0" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                    </Link>
+                  ) : (
+                    <a href={item.href} className={base}>
+                      <item.icon className="h-[18px] w-[18px] shrink-0" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------------- */
 /* Sidebar                                                                    */
 /* ------------------------------------------------------------------------- */
 
