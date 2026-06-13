@@ -115,6 +115,7 @@ function VerificationPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Verification"
       title="Verification"
       subtitle="Upload your ID, qualification and insurance. We'll review within 24 hours."
