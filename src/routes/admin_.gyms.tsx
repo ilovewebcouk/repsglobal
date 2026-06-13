@@ -2,13 +2,18 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, MapPin, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
-import { adminListGyms, adminUpdateGym } from "@/lib/gyms.functions";
+import {
+  adminGeocodeBackfill,
+  adminListGyms,
+  adminPromoteGym,
+  adminUpdateGym,
+} from "@/lib/gyms.functions";
 
 export const Route = createFileRoute("/admin_/gyms")({
   ssr: false,
