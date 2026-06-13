@@ -71,6 +71,7 @@ import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professi
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
+import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
@@ -416,6 +417,11 @@ const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   path: '/admin/memberships',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminGymsRoute = AdminGymsRouteImport.update({
+  id: '/admin_/gyms',
+  path: '/admin/gyms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDirectoryRoute = AdminDirectoryRouteImport.update({
   id: '/admin_/directory',
   path: '/admin/directory',
@@ -645,6 +651,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
+  '/admin/gyms': typeof AdminGymsRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -740,6 +747,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
+  '/admin/gyms': typeof AdminGymsRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -837,6 +845,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
+  '/admin_/gyms': typeof AdminGymsRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/payments': typeof AdminPaymentsRoute
@@ -935,6 +944,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/admin/cpd'
     | '/admin/directory'
+    | '/admin/gyms'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
@@ -1030,6 +1040,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/admin/cpd'
     | '/admin/directory'
+    | '/admin/gyms'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
@@ -1126,6 +1137,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional'
     | '/admin_/cpd'
     | '/admin_/directory'
+    | '/admin_/gyms'
     | '/admin_/memberships'
     | '/admin_/migration'
     | '/admin_/payments'
@@ -1224,6 +1236,7 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
+  AdminGymsRoute: typeof AdminGymsRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -1700,6 +1713,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembershipsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/gyms': {
+      id: '/admin_/gyms'
+      path: '/admin/gyms'
+      fullPath: '/admin/gyms'
+      preLoaderRoute: typeof AdminGymsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/directory': {
       id: '/admin_/directory'
       path: '/admin/directory'
@@ -2115,6 +2135,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
+  AdminGymsRoute: AdminGymsRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminMigrationRoute: AdminMigrationRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,

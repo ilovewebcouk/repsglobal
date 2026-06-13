@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Bell,
   Briefcase,
+  Building2,
   Calendar as CalendarIcon,
   ClipboardList,
   CreditCard,
@@ -85,6 +86,7 @@ export type AdminActive =
   | "Verification"
   | "Memberships"
   | "Directory"
+  | "Gyms"
   | "Reviews"
   | "Payments"
   | "CPD"
@@ -194,6 +196,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
       { icon: UserCheck, label: "Memberships", to: "/admin/memberships" },
       { icon: Target, label: "Directory", to: "/admin/directory" },
+      { icon: Building2, label: "Gyms", to: "/admin/gyms" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
       { icon: CreditCard, label: "Payments", to: "/admin/payments" },
       { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },

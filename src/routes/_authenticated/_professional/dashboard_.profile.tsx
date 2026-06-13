@@ -11,7 +11,7 @@ import {
   ExternalLink,
   Eye,
   MapPin,
-  Save,
+  
   ShieldCheck,
   Star,
   Trash2,
@@ -34,6 +34,7 @@ import { LanguagePicker } from "@/components/forms/LanguagePicker";
 // SocialHandleInput is rendered via SocialLinksPicker now.
 import { SocialLinksPicker } from "@/components/profile/SocialLinksPicker";
 import { SaveStatusPill, type SaveStatus } from "@/components/profile/SaveStatusPill";
+import { GymPicker } from "@/components/profile/GymPicker";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
 import { VerifiedBadge, tierFromCounts } from "@/components/verification/VerifiedBadge";
 import { getTrustState } from "@/lib/verification/trust.functions";
@@ -65,7 +66,7 @@ import {
   getSpecialismLabel,
   type SpecialismSlug,
 } from "@/lib/specialisms";
-import { Button } from "@/components/ui/button";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -1070,34 +1071,61 @@ function ProfileEditorPage() {
   }, [dirty, saveMutation.isPending]);
 
   /* ----------------------------------------------------------------
+     Scroll to first invalid field (used by Fix-N-issues pill + Cmd+S).
+     ---------------------------------------------------------------- */
+  const focusFirstError = React.useCallback(() => {
+    const firstKey = Object.keys(errors)[0];
+    if (!firstKey) return;
+    const el = document.querySelector(`[data-field="${firstKey}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
+    }
+  }, [errors]);
+
+  /* ----------------------------------------------------------------
      Derived status pill state.
      ---------------------------------------------------------------- */
   const status: SaveStatus = React.useMemo(() => {
     if (saveMutation.isPending) return { kind: "saving" };
     if (saveMutation.isError) return { kind: "error", onRetry: triggerManualSave };
+    if (dirty && hasErrors)
+      return { kind: "blocked", errorCount: Object.keys(errors).length, onFix: focusFirstError };
     if (dirty) return { kind: "editing" };
     if (lastSavedAt && Date.now() - lastSavedAt < 5 * 60_000)
       return { kind: "saved", at: lastSavedAt };
     return { kind: "idle" };
-  }, [saveMutation.isPending, saveMutation.isError, dirty, lastSavedAt, triggerManualSave]);
+  }, [
+    saveMutation.isPending,
+    saveMutation.isError,
+    dirty,
+    hasErrors,
+    errors,
+    lastSavedAt,
+    triggerManualSave,
+    focusFirstError,
+  ]);
 
   /* ----------------------------------------------------------------
-     Manual save — scroll to first error if validation blocks save.
+     Cmd/Ctrl+S — instant flush (skips debounce). Only path that toasts.
      ---------------------------------------------------------------- */
-  const handleManualSave = () => {
-    if (hasErrors) {
-      const firstKey = Object.keys(errors)[0];
-      if (firstKey) {
-        const el = document.querySelector(`[data-field="${firstKey}"]`);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
-          (el.querySelector("input, textarea") as HTMLElement | null)?.focus();
-        }
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isSave = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s";
+      if (!isSave) return;
+      e.preventDefault();
+      if (saveMutation.isPending) return;
+      if (hasErrors) {
+        focusFirstError();
+        return;
       }
-      return;
-    }
-    triggerManualSave();
-  };
+      if (!dirty) return;
+      triggerManualSave();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [dirty, hasErrors, saveMutation.isPending, focusFirstError, triggerManualSave]);
+
 
 
   return (
@@ -1116,13 +1144,6 @@ function ProfileEditorPage() {
             </a>
           </DashboardButton>
           <SaveStatusPill status={status} />
-          <Button
-            onClick={handleManualSave}
-            disabled={(!dirty || saveMutation.isPending) && status.kind !== "error"}
-          >
-            <Save data-icon="inline-start" />
-            {saveMutation.isPending ? "Saving…" : dirty ? "Save now" : "Save changes"}
-          </Button>
         </>
       }
     >
@@ -1255,6 +1276,14 @@ function ProfileEditorPage() {
                     }}
                   />
                 </Field>
+                {form.in_person_available ? (
+                  <Field
+                    label="Trains at (optional · max 3)"
+                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card."
+                  >
+                    <GymPicker />
+                  </Field>
+                ) : null}
               </div>
             </Card>
 

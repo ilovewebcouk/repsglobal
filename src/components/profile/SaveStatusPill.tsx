@@ -1,19 +1,26 @@
 import * as React from "react";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 export type SaveStatus =
   | { kind: "idle" }
   | { kind: "editing" }
   | { kind: "saving" }
   | { kind: "saved"; at: number }
+  | { kind: "blocked"; errorCount: number; onFix: () => void }
   | { kind: "error"; onRetry: () => void; message?: string };
 
 /**
- * Compact status pill rendered next to the manual Save button. Mirrors the
- * Notion / Linear / Stripe Dashboard auto-save pattern.
+ * Pure auto-save status pill — the only save surface in the profile editor.
+ * No companion Save button. States:
+ *   idle      → hidden
+ *   editing   → "Editing…" (auto-save fires in ~1.5s)
+ *   saving    → spinner + "Saving…"
+ *   saved     → emerald "Saved · just now" → "Saved · Nm ago"
+ *   blocked   → amber "Fix N issues" button (scroll-focuses first error)
+ *   error     → red "Couldn't save — retry" button
  */
 export function SaveStatusPill({ status }: { status: SaveStatus }) {
-  // Force a re-render every 30s so "Saved · just now" can age into "Saved".
+  // Force a re-render every 30s so "Saved · just now" can age into "Saved · Nm ago".
   const [, setTick] = React.useState(0);
   React.useEffect(() => {
     if (status.kind !== "saved") return;
@@ -30,7 +37,7 @@ export function SaveStatusPill({ status }: { status: SaveStatus }) {
     return (
       <span className={`${common} border-reps-border bg-reps-panel-soft text-white/65`}>
         <span className="inline-block size-1.5 rounded-full bg-white/55" />
-        Unsaved changes
+        Editing&hellip;
       </span>
     );
   }
@@ -39,7 +46,7 @@ export function SaveStatusPill({ status }: { status: SaveStatus }) {
     return (
       <span className={`${common} border-reps-border bg-reps-panel-soft text-white/75`}>
         <Loader2 className="h-3 w-3 animate-spin" />
-        Saving…
+        Saving&hellip;
       </span>
     );
   }
@@ -55,6 +62,20 @@ export function SaveStatusPill({ status }: { status: SaveStatus }) {
     );
   }
 
+  if (status.kind === "blocked") {
+    const n = status.errorCount;
+    return (
+      <button
+        type="button"
+        onClick={status.onFix}
+        className={`${common} border-amber-400/40 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25`}
+      >
+        <AlertTriangle className="h-3 w-3" />
+        Fix {n} {n === 1 ? "issue" : "issues"}
+      </button>
+    );
+  }
+
   // error
   return (
     <button
@@ -63,7 +84,7 @@ export function SaveStatusPill({ status }: { status: SaveStatus }) {
       className={`${common} border-red-400/40 bg-red-500/15 text-red-300 hover:bg-red-500/25`}
     >
       <span className="inline-block size-1.5 rounded-full bg-red-400" />
-      Couldn&apos;t save — retry
+      Couldn&apos;t save &mdash; retry
     </button>
   );
 }
