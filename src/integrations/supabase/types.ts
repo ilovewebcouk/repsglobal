@@ -410,6 +410,7 @@ export type Database = {
           doc_path_back: string | null
           doc_path_front: string | null
           doc_type: string | null
+          environment: string
           file_sha256: string | null
           id: string
           liveness_passed: boolean | null
@@ -441,6 +442,7 @@ export type Database = {
           doc_path_back?: string | null
           doc_path_front?: string | null
           doc_type?: string | null
+          environment?: string
           file_sha256?: string | null
           id?: string
           liveness_passed?: boolean | null
@@ -472,6 +474,7 @@ export type Database = {
           doc_path_back?: string | null
           doc_path_front?: string | null
           doc_type?: string | null
+          environment?: string
           file_sha256?: string | null
           id?: string
           liveness_passed?: boolean | null

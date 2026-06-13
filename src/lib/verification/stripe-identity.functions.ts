@@ -6,6 +6,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 /**
  * Create a Stripe Identity VerificationSession for the current professional
  * and persist the hosted URL on a fresh identity_documents row.
+ *
+ * Uses the shared connector-gateway Stripe client so the mode (sandbox vs
+ * live) auto-switches between preview and published environments — same
+ * pattern as Payments. No raw STRIPE_SECRET_KEY usage.
  */
 export const createStripeIdentitySession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -17,16 +21,15 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) throw new Error("Stripe is not configured");
     const { supabase, userId } = context;
 
     const host = getRequestHost();
     const origin = host?.startsWith("localhost") ? `http://${host}` : `https://${host}`;
     const returnUrl = `${origin}${data.return_path ?? "/dashboard/verification"}?stripe_identity=complete`;
 
-    const { default: Stripe } = await import("stripe");
-    const stripe = new Stripe(key);
+    const { createStripeClient, resolveStripeEnv } = await import("@/lib/billing/stripe.server");
+    const env = resolveStripeEnv();
+    const stripe = createStripeClient(env);
 
     const session = await stripe.identity.verificationSessions.create({
       type: "document",
@@ -63,6 +66,7 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
         stripe_vs_url: session.url,
         stripe_status: session.status,
         status: "pending",
+        environment: env,
       } as never)
       .select("id")
       .single();
