@@ -148,6 +148,72 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription) {
   return userId;
 }
 
+async function handleIdentityEvent(stripe: Stripe, event: Stripe.Event): Promise<void> {
+  const vs = event.data.object as Stripe.Identity.VerificationSession;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: row, error: findErr } = await supabaseAdmin
+    .from("identity_documents")
+    .select("id, professional_id")
+    .eq("stripe_vs_id", vs.id)
+    .maybeSingle();
+  if (findErr) throw new Error(findErr.message);
+  if (!row) return; // session not tracked; ack and move on
+
+  const mappedStatus = mapIdentityStatus(vs.status, event.type);
+  const reason =
+    vs.last_error?.reason ??
+    (vs.last_error?.code ? `${vs.last_error.code}` : null);
+
+  const patch: Record<string, unknown> = {
+    stripe_status: vs.status,
+    stripe_reason: reason,
+    status: mappedStatus,
+  };
+
+  if (vs.status === "verified") {
+    try {
+      const full = await stripe.identity.verificationSessions.retrieve(vs.id, {
+        expand: ["verified_outputs"],
+      });
+      const out = full.verified_outputs;
+      if (out) {
+        const name = [out.first_name, out.last_name].filter(Boolean).join(" ").trim();
+        if (name) patch.name_on_doc = name;
+        if (out.dob) {
+          const { year, month, day } = out.dob;
+          if (year && month && day) {
+            patch.dob_on_doc = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          }
+        }
+      }
+    } catch {
+      // best-effort enrichment
+    }
+  }
+
+  if (mappedStatus === "approved" || mappedStatus === "rejected") {
+    patch.reviewed_at = new Date().toISOString();
+  }
+  if (mappedStatus === "approved") {
+    patch.admin_note = "Auto-approved by Stripe Identity";
+  }
+
+  const { error: upErr } = await supabaseAdmin
+    .from("identity_documents")
+    .update(patch as never)
+    .eq("id", row.id);
+  if (upErr) throw new Error(upErr.message);
+}
+
+function mapIdentityStatus(s: string | null | undefined, eventType: string): string {
+  if (s === "verified" || eventType === "identity.verification_session.verified") return "approved";
+  if (eventType === "identity.verification_session.canceled" || s === "canceled") return "rejected";
+  if (s === "requires_input") return "needs_more_info";
+  return "pending";
+}
+
+
 export const Route = createFileRoute("/api/public/stripe/webhook")({
   server: {
     handlers: {
