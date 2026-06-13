@@ -265,7 +265,7 @@ function IdentityBody({
   const selfieRef = useRef<HTMLInputElement>(null);
 
   const stripeId = useMutation({
-    mutationFn: async () => startStripe({ data: { return_path: "/dashboard/profile" } }),
+    mutationFn: async () => startStripe({ data: { return_path: "/dashboard/verification" } }),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
