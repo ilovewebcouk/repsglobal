@@ -1387,16 +1387,15 @@ function ProfileEditorPage() {
                   07
                 </span>
               </div>
-              <Field label="Contact phone">
-                <PhoneField
-                  value={form.contact_phone}
-                  onChange={(v) => set("contact_phone", v)}
-                  invalid={
-                    form.contact_phone.length > 0 &&
-                    !isValidPhoneNumber(form.contact_phone)
-                  }
-                />
-              </Field>
+              <div data-field="contact_phone">
+                <Field label="Contact phone" error={errors.contact_phone}>
+                  <PhoneField
+                    value={form.contact_phone}
+                    onChange={(v) => set("contact_phone", v)}
+                    invalid={!!errors.contact_phone}
+                  />
+                </Field>
+              </div>
             </section>
 
           </div>
