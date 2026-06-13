@@ -91,9 +91,7 @@ function ReviewPage() {
             </p>
             <div className="mt-6 flex flex-col items-center gap-2">
               <Button asChild className="h-11 rounded-[10px] bg-reps-orange px-6 font-semibold text-white hover:bg-reps-orange-dark">
-                <Link to="/auth" search={{ redirect: `/pro/${slug}/review` }}>
-                  Sign in to continue
-                </Link>
+                <Link to="/auth">Sign in to continue</Link>
               </Button>
               <Link to="/pro/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
                 Back to profile
