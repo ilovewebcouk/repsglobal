@@ -5,9 +5,7 @@ import {
   AreaChart,
   ArrowRight,
   Bell,
-  BadgeCheck,
   Briefcase,
-  Building2,
   Calendar as CalendarIcon,
   ClipboardList,
   CreditCard,
@@ -28,9 +26,6 @@ import {
   UserCheck,
   UserCircle,
   Users,
-  ArrowLeft,
-  FileBadge,
-  Fingerprint,
   type LucideIcon,
 } from "lucide-react";
 
@@ -121,7 +116,6 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
@@ -164,7 +158,6 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
     title: "Money & Admin",
     items: [
       { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
-      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
@@ -206,66 +199,8 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
 ];
 
 /* ------------------------------------------------------------------------- */
-/* Verification module nav (shared by Verified + Pro)                         */
+/* (Verification module nav removed — trust lives on /dashboard/profile.)     */
 /* ------------------------------------------------------------------------- */
-/**
- * LOCKED: While inside `/dashboard/verification/*` the sidebar collapses to
- * the Verification module's own nav, regardless of tier. The module is the
- * same product surface for Verified and Pro — do not branch on tier here.
- * See `.lovable/plan.md` (Verification Module — 10/10 Rebuild, step 1).
- */
-type VerificationNavItem = {
-  icon: LucideIcon;
-  label: string;
-  to?: string;
-  href?: string;
-};
-const VERIFICATION_MODULE_NAV: { title: string; items: VerificationNavItem[] }[] = [
-  {
-    title: "",
-    items: [
-      { icon: ArrowLeft, label: "Back to dashboard", to: "/dashboard" },
-    ],
-  },
-];
-
-
-function VerificationModuleNav() {
-  return (
-    <>
-      {VERIFICATION_MODULE_NAV.map((group, gi) => (
-        <div key={gi} className="mb-5">
-          {group.title ? (
-            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
-              {group.title}
-            </div>
-          ) : null}
-          <ul className="flex flex-col gap-1">
-            {group.items.map((item) => {
-              const base =
-                "flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors text-white/70 hover:bg-reps-panel hover:text-white";
-              return (
-                <li key={item.label}>
-                  {item.to ? (
-                    <Link to={item.to} className={base}>
-                      <item.icon className="h-[18px] w-[18px] shrink-0" />
-                      <span className="flex-1 text-left">{item.label}</span>
-                    </Link>
-                  ) : (
-                    <a href={item.href} className={base}>
-                      <item.icon className="h-[18px] w-[18px] shrink-0" />
-                      <span className="flex-1 text-left">{item.label}</span>
-                    </a>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </>
-  );
-}
 
 /* ------------------------------------------------------------------------- */
 /* Sidebar                                                                    */
@@ -363,12 +298,6 @@ function Sidebar({
   active: DashboardActive;
   member?: DashboardShellMember;
 }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Verification module owns the sidebar while inside /dashboard/verification/*
-  // for BOTH Verified and Pro tiers. Locked — see VERIFICATION_MODULE_NAV.
-  const inVerificationModule =
-    role === "trainer" && pathname.startsWith("/dashboard/verification");
-
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
@@ -386,12 +315,11 @@ function Sidebar({
       {role === "admin" ? <AdminBadge /> : null}
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-        {inVerificationModule ? (
-          <VerificationModuleNav />
-        ) : (
-          groups.map((g) => <NavSection key={g.title} group={g} active={active} />)
-        )}
+        {groups.map((g) => (
+          <NavSection key={g.title} group={g} active={active} />
+        ))}
       </nav>
+
 
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />

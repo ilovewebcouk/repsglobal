@@ -1,8 +1,25 @@
+/**
+ * Trust block — the canonical "verification" surface for every paying member.
+ *
+ * Lives on `/dashboard/profile`. Tier-blind: identical UI and behaviour for
+ * Verified and Pro members. Three ticks:
+ *   1. Identity      — Stripe Identity approved
+ *   2. Insurance     — active policy, not expired
+ *   3. Qualifications — ≥1 approved cert (managed on /dashboard/cpd)
+ *
+ * `getTrustState` is the single read for the status strip. The Identity and
+ * Insurance cards keep their own queries for the form state required to
+ * submit; the read used for the badge in those cards is reconciled with
+ * `getTrustState` on the parent.
+ */
+
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
+import { Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
+  ArrowRight,
   CheckCircle2,
   Circle,
   FileText,
@@ -10,13 +27,9 @@ import {
   ShieldCheck,
   Upload,
   UserCircle,
-  AlertCircle,
-  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
@@ -28,22 +41,7 @@ import {
   saveInsurance,
   uploadVerificationAsset,
 } from "@/lib/verification/insurance.functions";
-import { myVerificationSubmissions } from "@/lib/verification/verification.functions";
-import { myUnlockedTitles } from "@/lib/cpd/titles.functions";
-
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
-  head: () => ({
-    meta: [
-      { title: "Verification — REPS Professional" },
-      { name: "description", content: "Upload your ID, insurance and qualifications to verify your REPS profile." },
-    ],
-    links: [{ rel: "canonical", href: "/dashboard/verification" }],
-  }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
-  }),
-  component: VerificationPage,
-});
+import { getTrustState } from "@/lib/verification/trust.functions";
 
 function fileToDataUrl(f: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -54,44 +52,53 @@ function fileToDataUrl(f: File): Promise<string> {
   });
 }
 
+/* -------------------------------------------------------------------------- */
+/* Top-level block                                                            */
+/* -------------------------------------------------------------------------- */
 
+type StripeIdentitySearch = { stripe_identity?: string };
 
-function VerificationPage() {
+export function TrustBlock() {
   const qc = useQueryClient();
   const router = useRouter();
-  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" });
-  const tier = useTrainerTier();
+  const search = useSearch({ strict: false }) as StripeIdentitySearch;
+
+  const fetchTrust = useServerFn(getTrustState);
   const fetchIdentity = useServerFn(myIdentity);
   const fetchInsurance = useServerFn(myInsurance);
-  const fetchCerts = useServerFn(myVerificationSubmissions);
-  const fetchTitles = useServerFn(myUnlockedTitles);
 
+  const trust = useQuery({ queryKey: ["my-trust-state"], queryFn: () => fetchTrust() });
   const identity = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const insurance = useQuery({ queryKey: ["my-insurance"], queryFn: () => fetchInsurance() });
-  const certs = useQuery({ queryKey: ["my-verification-subs"], queryFn: () => fetchCerts() });
-  const titles = useQuery({ queryKey: ["my-unlocked-titles"], queryFn: () => fetchTitles() });
 
-  // When Stripe Identity redirects back, refetch and clear the query param.
+  // Handle Stripe Identity redirect back to Public Profile.
   useEffect(() => {
     if (search.stripe_identity === "complete") {
       qc.invalidateQueries({ queryKey: ["my-identity"] });
+      qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       toast.success("ID check submitted — we'll confirm shortly.");
       router.navigate({
-        to: "/dashboard/verification",
+        to: "/dashboard/profile",
         search: {},
+        hash: "identity",
         replace: true,
       });
+      // Scroll to identity section
+      setTimeout(() => {
+        document.getElementById("identity")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.stripe_identity]);
 
-  // Light poll while a Stripe Identity check is pending in case the webhook lags.
+  // Poll while Stripe Identity is pending.
   const pendingStripe =
     identity.data?.vendor === "stripe" && identity.data?.status === "pending";
   useQuery({
     queryKey: ["identity-poll", identity.data?.id],
     queryFn: async () => {
       await qc.invalidateQueries({ queryKey: ["my-identity"] });
+      await qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       return true;
     },
     enabled: !!pendingStripe,
@@ -99,136 +106,96 @@ function VerificationPage() {
     refetchOnWindowFocus: true,
   });
 
-  const idApproved = identity.data?.status === "approved";
-  const insApproved = insurance.data?.status === "active";
-  const approvedCerts = (certs.data ?? []).filter((c) => c.status === "approved");
-  const certApproved = approvedCerts.length > 0;
-  const pendingCerts = (certs.data ?? []).filter(
-    (c) => c.status === "submitted" || c.status === "changes_requested",
-  ).length;
-
-  const primaryTitle =
-    titles.data?.unlocked.find((t) => t.is_primary) ?? titles.data?.unlocked[0] ?? null;
-
-  // Next renewal date across insurance + cert expiries.
-  const renewals: { label: string; date: string }[] = [];
-  if (insurance.data?.expiry_date) {
-    renewals.push({ label: "Insurance", date: insurance.data.expiry_date });
-  }
-  for (const c of approvedCerts) {
-    if (c.expiry_date) renewals.push({ label: c.qualification, date: c.expiry_date });
-  }
-  renewals.sort((a, b) => a.date.localeCompare(b.date));
-  const nextRenewal = renewals[0] ?? null;
-
+  const t = trust.data;
   const checks = [
-    { key: "identity", label: "Identity", done: idApproved, pending: !!identity.data && !idApproved },
-    { key: "insurance", label: "Insurance", done: insApproved, pending: !!insurance.data && !insApproved },
-    { key: "qualifications", label: "Qualifications", done: certApproved, pending: pendingCerts > 0 && !certApproved },
+    { key: "identity", label: "Identity", done: !!t?.ticks.identity, pending: t?.identity.status === "pending" },
+    { key: "insurance", label: "Insurance", done: !!t?.ticks.insurance, pending: t?.insurance.status === "pending" },
+    {
+      key: "qualifications",
+      label: "Qualifications",
+      done: !!t?.ticks.qualifications,
+      pending: false,
+    },
   ];
-  const completed = checks.filter((c) => c.done).length;
-  const allDone = completed === checks.length;
+  const completed = t?.completedCount ?? 0;
+  const allDone = completed === 3;
 
   return (
-    <DashboardShell
-      role="trainer"
-      tier={tier}
-      active="Verification"
-      title="Verification"
-      subtitle="Your trust posture on REPs. Three checks. One page."
-    >
-      {/* Trust meter */}
-      <section id="overview" className="scroll-mt-24">
-        <PCard>
-          <div className="flex flex-wrap items-start gap-6">
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                  allDone ? "bg-emerald-500/15 text-emerald-300" : "bg-reps-orange-soft text-reps-orange"
-                }`}
-              >
-                <ShieldCheck className="h-7 w-7" />
-              </span>
-              <div>
-                <div className="font-display text-[20px] font-bold text-white">
-                  {allDone ? "Fully verified" : `${completed} of ${checks.length} complete`}
-                </div>
-                <div className="text-[12px] text-white/55">
-                  {allDone
-                    ? "All checks passed. You're trusted across REPs."
-                    : idApproved && certApproved
-                      ? "Verified tier active. Add insurance to unlock Pro."
-                      : "Complete each check below to get verified."}
-                </div>
+    <div className="flex flex-col gap-4">
+      {/* Status strip */}
+      <PCard>
+        <div className="flex flex-wrap items-start gap-6">
+          <div className="flex items-center gap-3">
+            <span
+              className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                allDone ? "bg-emerald-500/15 text-emerald-300" : "bg-reps-orange-soft text-reps-orange"
+              }`}
+            >
+              <ShieldCheck className="h-7 w-7" />
+            </span>
+            <div>
+              <div className="font-display text-[20px] font-bold text-white">
+                {allDone ? "Fully verified" : `${completed} of 3 complete`}
               </div>
-            </div>
-
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              {checks.map((c) => (
-                <a
-                  href={`#${c.key}`}
-                  key={c.key}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                    c.done
-                      ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                      : c.pending
-                        ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
-                        : "border border-white/10 bg-white/5 text-white/55"
-                  }`}
-                >
-                  {c.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
-                  {c.label}
-                </a>
-              ))}
+              <div className="text-[12px] text-white/55">
+                {allDone
+                  ? "All three checks passed — your profile carries every trust mark."
+                  : "Complete each check below to earn the full trust badge."}
+              </div>
             </div>
           </div>
 
-          {(primaryTitle || nextRenewal) && (
-            <div className="mt-5 grid grid-cols-1 gap-3 border-t border-reps-border pt-4 sm:grid-cols-2">
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
-                  Public title
-                </div>
-                <div className="mt-1 text-[14px] font-semibold text-white">
-                  {primaryTitle?.label ?? <span className="text-white/45">Earned once a qualification is approved</span>}
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
-                  Next renewal
-                </div>
-                <div className="mt-1 text-[14px] font-semibold text-white">
-                  {nextRenewal
-                    ? <>{nextRenewal.date} <span className="font-normal text-white/55">· {nextRenewal.label}</span></>
-                    : <span className="font-normal text-white/45">No upcoming renewals</span>}
-                </div>
-              </div>
-            </div>
-          )}
-        </PCard>
-      </section>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {checks.map((c) => (
+              <a
+                href={`#${c.key}`}
+                key={c.key}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold ${
+                  c.done
+                    ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                    : c.pending
+                      ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                      : "border border-white/10 bg-white/5 text-white/55"
+                }`}
+              >
+                {c.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+                {c.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </PCard>
 
-      <div className="mt-6 space-y-6">
-        <section id="identity" className="scroll-mt-24">
-          <IdentityCard
-            identity={identity.data}
-            onSaved={() => qc.invalidateQueries({ queryKey: ["my-identity"] })}
-          />
-        </section>
-        <section id="insurance" className="scroll-mt-24">
-          <InsuranceCard
-            insurance={insurance.data}
-            onSaved={() => qc.invalidateQueries({ queryKey: ["my-insurance"] })}
-          />
-        </section>
-        <section id="qualifications" className="scroll-mt-24">
-          <CertCard certs={certs.data ?? []} />
-        </section>
-      </div>
-    </DashboardShell>
+      <section id="identity" className="scroll-mt-24">
+        <IdentityCard
+          identity={identity.data}
+          onSaved={() => {
+            qc.invalidateQueries({ queryKey: ["my-identity"] });
+            qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+          }}
+        />
+      </section>
+      <section id="insurance" className="scroll-mt-24">
+        <InsuranceCard
+          insurance={insurance.data}
+          onSaved={() => {
+            qc.invalidateQueries({ queryKey: ["my-insurance"] });
+            qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+          }}
+        />
+      </section>
+      <section id="qualifications" className="scroll-mt-24">
+        <QualificationsSummaryCard
+          count={t?.qualifications.count ?? 0}
+          titles={t?.qualifications.titles ?? []}
+        />
+      </section>
+    </div>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Identity                                                                   */
 /* -------------------------------------------------------------------------- */
 
 type IdentityRow = {
@@ -269,7 +236,7 @@ function IdentityCard({
   const selfieRef = useRef<HTMLInputElement>(null);
 
   const stripeId = useMutation({
-    mutationFn: async () => startStripe({ data: {} }),
+    mutationFn: async () => startStripe({ data: { return_path: "/dashboard/profile" } }),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
@@ -407,7 +374,6 @@ function IdentityCard({
       </PPanel>
     );
   }
-
 
   if (!useManual) {
     return (
@@ -558,12 +524,24 @@ function FileSlot({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Insurance                                                                  */
+/* -------------------------------------------------------------------------- */
 
 function InsuranceCard({
   insurance,
   onSaved,
 }: {
-  insurance: { id: string; status: string; provider: string; expiry_date: string; cover_amount_gbp?: number | null; admin_note?: string | null } | null | undefined;
+  insurance:
+    | {
+        id: string;
+        status: string;
+        provider: string;
+        expiry_date: string;
+        cover_amount_gbp?: number | null;
+        admin_note?: string | null;
+      }
+    | null
+    | undefined;
   onSaved: () => void;
 }) {
   const upload = useServerFn(uploadVerificationAsset);
@@ -644,7 +622,7 @@ function InsuranceCard({
     <PPanel className="p-5">
       <h3 className="font-display text-[16px] font-bold text-white">Insurance</h3>
       <p className="mt-1 text-[12px] text-white/55">
-        Public liability insurance — required for the Pro tier. £1m minimum cover recommended.
+        Public liability insurance — £1m minimum cover recommended. Unlocks the Insured tick on your profile.
       </p>
       <div className="mt-4 space-y-3">
         <div>
@@ -695,27 +673,25 @@ function InsuranceCard({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Qualifications — read-only summary; manage lives on /dashboard/cpd          */
+/* -------------------------------------------------------------------------- */
 
-type CertRowLite = {
-  id: string;
-  qualification: string;
-  awarding_body?: string | null;
-  year?: number | null;
-  expiry_date?: string | null;
-  status: string;
-  regulator_verified?: boolean | null;
-};
-
-function CertCard({ certs }: { certs: ReadonlyArray<CertRowLite> }) {
-  const approved = certs.filter((c) => c.status === "approved");
-  const pending = certs.filter((c) => c.status === "submitted" || c.status === "changes_requested");
+function QualificationsSummaryCard({
+  count,
+  titles,
+}: {
+  count: number;
+  titles: string[];
+}) {
   return (
     <PPanel className="p-5">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h3 className="font-display text-[16px] font-bold text-white">Qualifications</h3>
           <p className="mt-1 text-[12px] text-white/55">
-            {approved.length} approved · {pending.length} pending review
+            {count === 0
+              ? "No qualifications approved yet — upload your first certificate to set your public title."
+              : `${count} approved · ${titles.length > 0 ? titles.join(" · ") : "Earned titles will appear here"}`}
           </p>
         </div>
         <Button variant="subtle" size="sm" asChild>
@@ -725,50 +701,6 @@ function CertCard({ certs }: { certs: ReadonlyArray<CertRowLite> }) {
           </Link>
         </Button>
       </div>
-      {certs.length === 0 ? (
-        <div className="mt-4 rounded-[12px] border-2 border-dashed border-white/15 px-4 py-6 text-center text-[12px] text-white/55">
-          No certificates yet — head to Education &amp; CPD to upload your first one.
-        </div>
-      ) : (
-        <ul className="mt-4 space-y-2">
-          {certs.map((c) => (
-            <li
-              key={c.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] bg-white/[0.03] px-3 py-2.5 text-[12px]"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-[13px] font-semibold text-white">{c.qualification}</div>
-                <div className="mt-0.5 text-[11px] text-white/55">
-                  {c.awarding_body ?? "—"}
-                  {c.year ? ` · ${c.year}` : ""}
-                  {c.expiry_date ? ` · expires ${c.expiry_date}` : ""}
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {c.regulator_verified && (
-                  <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-                    Ofqual
-                  </Badge>
-                )}
-                <Badge
-                  variant="neutral"
-                  className={
-                    c.status === "approved"
-                      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                      : c.status === "rejected"
-                        ? "border-red-400/30 bg-red-500/15 text-red-300"
-                        : "border-amber-400/30 bg-amber-500/15 text-amber-300"
-                  }
-                >
-                  {c.status}
-                </Badge>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
     </PPanel>
   );
 }
-
-

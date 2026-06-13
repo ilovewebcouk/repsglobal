@@ -35,6 +35,7 @@ import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist"
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
+import { TrustBlock } from "@/components/dashboard/verification/TrustBlock";
 
 function TiktokIcon() {
   return (
@@ -104,6 +105,9 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/p
           "Manage how your professional profile appears in the REPS directory — photo, bio, services, specialisms and qualifications.",
       },
     ],
+  }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
   }),
   pendingComponent: () => (
     <div className="flex h-screen items-center justify-center bg-reps-ink">
@@ -930,20 +934,9 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Status bar */}
-        <div className="flex flex-col items-start justify-between gap-3 rounded-[22px] border border-reps-border bg-reps-panel px-5 py-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-reps-orange-soft text-reps-orange">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <div>
-              <div className="text-[14px] font-semibold text-white">Public profile</div>
-              <div className="text-[12px] text-white/55">
-                {profile.is_published ? "Visible in REPS directory" : "Draft — not visible yet"}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Trust block — Identity, Insurance, Qualifications. Tier-blind. */}
+        <TrustBlock />
+
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
@@ -1287,23 +1280,7 @@ function ProfileEditorPage() {
               </ul>
             </Card>
 
-            {/* Verification status (read-only summary) */}
-            <Card>
-              <SectionHeader
-                title="Verification status"
-                subtitle="Trust signals shown on your public profile."
-              />
-              <div className="flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-ink px-3 py-2.5">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-reps-orange" />
-                  <span className="text-[12px] font-medium text-white/85">REPS Verified Member</span>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-reps-orange-soft px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
-                  <CheckCircle2 className="h-3 w-3" />
-                  {profile.verification_status === "verified" ? "Verified" : "Pending"}
-                </span>
-              </div>
-            </Card>
+            {/* Verification trust block lives at the top of the page now. */}
           </aside>
         </div>
       </div>
