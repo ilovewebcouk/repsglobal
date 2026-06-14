@@ -1,15 +1,12 @@
 // Stripe client — server-only. Never import from client code.
 //
-// Routes all api.stripe.com requests through Lovable's connector gateway,
-// which holds the real Stripe secret key. The env vars here
-// (STRIPE_SANDBOX_API_KEY / STRIPE_LIVE_API_KEY) are opaque gateway
-// connection identifiers, NOT real Stripe secrets — they must never be
-// passed directly to `new Stripe(...)` without the gateway proxy.
+// BYOK (bring-your-own-key): talks directly to api.stripe.com using the
+// real Stripe secret keys stored as project secrets:
+//   sandbox  → STRIPE_SECRET_KEY_TEST  (sk_test_...)
+//   live     → STRIPE_SECRET_KEY_LIVE  (sk_live_...)
 import Stripe from "stripe";
 
 export type StripeEnv = "sandbox" | "live";
-
-const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
 
 function getEnv(key: string): string {
   const value = process.env[key];
@@ -17,10 +14,10 @@ function getEnv(key: string): string {
   return value;
 }
 
-export function getConnectionApiKey(env: StripeEnv): string {
+export function getSecretKey(env: StripeEnv): string {
   return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_API_KEY")
-    : getEnv("STRIPE_LIVE_API_KEY");
+    ? getEnv("STRIPE_SECRET_KEY_TEST")
+    : getEnv("STRIPE_SECRET_KEY_LIVE");
 }
 
 let _sandbox: Stripe | undefined;
@@ -30,30 +27,11 @@ export function createStripeClient(env: StripeEnv): Stripe {
   if (env === "sandbox" && _sandbox) return _sandbox;
   if (env === "live" && _live) return _live;
 
-  const connectionApiKey = getConnectionApiKey(env);
-  const lovableApiKey = getEnv("LOVABLE_API_KEY");
-
-  const client = new Stripe(connectionApiKey, {
-    // Pinned to the version the installed Stripe SDK ships with. Do NOT
-    // bump without auditing every Stripe API request/response shape in
-    // this codebase against the new dahlia revision.
+  const client = new Stripe(getSecretKey(env), {
+    // Pinned. Do NOT bump without auditing every Stripe API request/response
+    // shape in this codebase against the new revision.
     apiVersion: "2026-05-27.dahlia",
-    httpClient: Stripe.createFetchHttpClient((input, init) => {
-      const stripeUrl = input instanceof Request ? input.url : input.toString();
-      const gatewayUrl = stripeUrl.replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
-      return fetch(gatewayUrl, {
-        ...init,
-        headers: {
-          ...Object.fromEntries(
-            new Headers(
-              init?.headers ?? (input instanceof Request ? input.headers : undefined),
-            ).entries(),
-          ),
-          "X-Connection-Api-Key": connectionApiKey,
-          "Lovable-API-Key": lovableApiKey,
-        },
-      });
-    }),
+    httpClient: Stripe.createFetchHttpClient(),
   });
 
   if (env === "sandbox") _sandbox = client;
@@ -111,8 +89,8 @@ export async function verifyWebhook(
   const body = await req.text();
   const secret =
     env === "sandbox"
-      ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET")
-      : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
+      ? getEnv("STRIPE_WEBHOOK_SECRET_TEST")
+      : getEnv("STRIPE_WEBHOOK_SECRET_LIVE");
 
   if (!signature || !body) throw new Error("Missing signature or body");
 
