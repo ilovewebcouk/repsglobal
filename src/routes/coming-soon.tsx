@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, ShieldCheck, Globe2, Hammer } from "lucide-react";
+import { Sparkles, ShieldCheck, Globe2, Hammer, BadgeCheck, Store, Workflow, Dumbbell, Brain, TrendingUp } from "lucide-react";
 
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
@@ -59,16 +59,34 @@ const PROOF = [
 
 const LAUNCHING = [
   {
+    icon: BadgeCheck,
     label: "The verified register",
-    body: "A professional profile that proves who someone is and what they're qualified to do — replacing logo-grids and self-claimed credentials.",
+    body: "Identity checked. Qualifications verified against the issuing awarding body. Insurance evidenced. A profile that finally proves what someone is qualified to do.",
   },
   {
+    icon: Store,
     label: "Pro shop-fronts",
-    body: "A client-facing page that presents services, packages and proof with clarity — and a clean route to enquire, book and pay.",
+    body: "A client-facing page that presents services, packages and proof with clarity — and a clean route to enquire, book and pay. No more linktrees and DMs.",
   },
   {
+    icon: Workflow,
     label: "Operations that run the day",
-    body: "Enquiries, bookings, forms, payments, client records and tasks in one place — replacing the spreadsheet stack.",
+    body: "Enquiries, bookings, forms, waivers, payments, client records and tasks in one place — replacing the spreadsheet-and-six-apps stack most pros are stuck with.",
+  },
+  {
+    icon: Dumbbell,
+    label: "Coaching, properly built",
+    body: "Programmes, nutrition, check-ins, progress photos and a branded client portal — purpose-built for how real coaches actually work with real clients.",
+  },
+  {
+    icon: Brain,
+    label: "REPS AI",
+    body: "Your day re-ranked by impact. Drafted replies in your tone. Risk alerts before a client ghosts. The signal — not the noise.",
+  },
+  {
+    icon: TrendingUp,
+    label: "Growth that compounds",
+    body: "Reviews, retention, reactivation, referrals and business performance — surfaced as ranked actions, not another dashboard you'll never open.",
   },
 ];
 
@@ -145,27 +163,33 @@ function ComingSoonPage() {
       {/* ----- 3. What's launching ----------------------------------- */}
       <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="max-w-[720px]">
+          <div className="max-w-[780px]">
             <SectionEyebrow>What's launching</SectionEyebrow>
             <SectionHeading className="mt-3">
-              More than a directory. The platform fitness has been waiting for.
+              Not another directory. Not another booking app. The professional platform fitness has been waiting for.
             </SectionHeading>
             <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
-              Three connected products under one professional standard — built around
-              the way fitness professionals actually work today.
+              Six connected products under one professional standard — public trust, visibility,
+              shop-front, operations, coaching and growth — built around the way fitness
+              professionals actually work today.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {LAUNCHING.map((item, idx) => (
               <article
                 key={item.label}
-                className="relative overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel p-7"
+                className="group relative overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel p-7 transition-colors hover:border-reps-orange-border"
               >
-                <div className="font-display text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-                  {String(idx + 1).padStart(2, "0")}
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                    <item.icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="font-display text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
                 </div>
-                <h3 className="mt-4 font-display text-[20px] font-semibold leading-tight text-white lg:text-[22px]">
+                <h3 className="mt-6 font-display text-[20px] font-semibold leading-tight text-white lg:text-[22px]">
                   {item.label}
                 </h3>
                 <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
