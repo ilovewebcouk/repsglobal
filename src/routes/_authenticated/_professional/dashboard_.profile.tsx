@@ -1372,7 +1372,9 @@ function ProfileEditorPage() {
                     <GymPicker />
                   </Field>
                 ) : (
-                  <Field label="Gyms & studios" hint="You're set to online-only. Enable in-person above to list gyms." />
+                  <Field label="Gyms & studios" hint="You're set to online-only. Enable in-person above to list gyms.">
+                    <p className="text-[12px] text-white/55">No gyms shown while you're online-only.</p>
+                  </Field>
                 )}
               </div>
             </Card>
