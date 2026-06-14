@@ -481,6 +481,7 @@ export type DashboardShellProps = {
   title: string;
   subtitle: string;
   actions?: React.ReactNode;
+  search?: DashboardSearch;
   member?: DashboardShellMember;
   children: React.ReactNode;
 };
@@ -495,6 +496,7 @@ export function DashboardShell({
   title,
   subtitle,
   actions,
+  search,
   member,
   children,
 }: DashboardShellProps) {
@@ -534,6 +536,7 @@ export function DashboardShell({
             actions={actions}
             mobileNav={mobileNav}
             searchPlaceholder={searchPlaceholder}
+            search={search}
           />
           <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
         </div>
