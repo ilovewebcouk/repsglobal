@@ -125,7 +125,7 @@ export const template = {
     location: "EC2A — central London",
     message:
       "Hi James — I'm hoping to build strength after a long break from the gym. I can train two evenings a week.",
-    inboxUrl: "https://repsglobal.lovable.app/dashboard/enquiries",
+    inboxUrl: "https://repsglobal.lovable.app/dashboard/leads",
   },
 } satisfies TemplateEntry;
 
