@@ -99,6 +99,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "google-site-verification", content: "p-lx33rcSWVnBeZd4OwPJ-MW6wVU6Y2rg8AOoNUbiDU" },
       // NOTE: no og:image / twitter:image at the root — root-level images concatenate into every
       // match and override per-page share previews. Leaf routes own their own og:image.
+      { property: "og:title", content: "REPS — The professional standard for fitness" },
+      { name: "twitter:title", content: "REPS — The professional standard for fitness" },
+      { name: "description", content: "REPS is a fitness platform with an exercise library and program builder, now integrating professional profiles and subscription management." },
+      { property: "og:description", content: "REPS is a fitness platform with an exercise library and program builder, now integrating professional profiles and subscription management." },
+      { name: "twitter:description", content: "REPS is a fitness platform with an exercise library and program builder, now integrating professional profiles and subscription management." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/872c3253-63bf-4b6d-b276-32bcb74a20f8/id-preview-462c7caf--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1781475766279.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/872c3253-63bf-4b6d-b276-32bcb74a20f8/id-preview-462c7caf--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1781475766279.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
