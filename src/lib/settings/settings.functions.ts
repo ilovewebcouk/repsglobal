@@ -341,3 +341,67 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Sessions                                                                    */
+/* -------------------------------------------------------------------------- */
+
+export type SessionRow = {
+  id: string;
+  created_at: string | null;
+  updated_at: string | null;
+  refreshed_at: string | null;
+  not_after: string | null;
+  user_agent: string | null;
+  ip: string | null;
+  aal: string | null;
+};
+
+export const listMySessions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SessionRow[]> => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Query auth.sessions directly via service-role SQL (admin API has no
+    // typed listUserSessions helper across SDK versions).
+    const { data, error } = await supabaseAdmin
+      .schema("auth" as never)
+      .from("sessions" as never)
+      .select("id, created_at, updated_at, refreshed_at, not_after, user_agent, ip, aal")
+      .eq("user_id", userId)
+      .order("refreshed_at", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false, nullsFirst: false });
+
+    if (error) {
+      console.warn("[listMySessions]", error);
+      return [];
+    }
+    return (data ?? []) as unknown as SessionRow[];
+  });
+
+export const revokeMySession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ session_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Confirm ownership, then delete.
+    const { data: row, error: selErr } = await supabaseAdmin
+      .schema("auth" as never)
+      .from("sessions" as never)
+      .select("id, user_id")
+      .eq("id", data.session_id)
+      .maybeSingle();
+    if (selErr) throw selErr;
+    const owned = (row as { user_id?: string } | null)?.user_id === userId;
+    if (!owned) throw new Error("Session not found.");
+
+    const { error } = await supabaseAdmin
+      .schema("auth" as never)
+      .from("sessions" as never)
+      .delete()
+      .eq("id", data.session_id);
+    if (error) throw error;
+    return { ok: true };
+  });
