@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ProLock } from "./ProLock";
+
 import {
   LEAD_STAGES,
   LEAD_STAGE_LABEL,
@@ -36,7 +36,7 @@ function bandClass(band: LeadDTO["ai_band"]) {
   return "border-reps-border bg-reps-panel-soft text-white/55";
 }
 
-export function LeadDrawer({ lead, locked }: { lead: LeadDTO; locked: boolean }) {
+export function LeadDrawer({ lead }: { lead: LeadDTO }) {
   const qc = useQueryClient();
   const [draft, setDraft] = React.useState<DraftReply | null>(null);
 
@@ -164,60 +164,58 @@ export function LeadDrawer({ lead, locked }: { lead: LeadDTO; locked: boolean })
       ) : null}
 
       {/* AI insight card */}
-      <ProLock locked={locked} feature="AI insights">
-        <div className="rounded-[16px] border border-reps-orange-border/40 bg-gradient-to-br from-reps-orange-soft/30 to-reps-panel p-4">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-              <Sparkles className="size-3.5" />
-              AI Insight
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 rounded-[8px] border-reps-border bg-reps-panel-soft text-[11px]"
-              onClick={() => scoreMutation.mutate()}
-              disabled={scoreMutation.isPending}
-            >
-              {scoreMutation.isPending ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />}
-              <span className="ml-1">{lead.ai_score === null ? "Score" : "Re-score"}</span>
-            </Button>
+      <div className="rounded-[16px] border border-reps-orange-border/40 bg-gradient-to-br from-reps-orange-soft/30 to-reps-panel p-4">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+            <Sparkles className="size-3.5" />
+            AI Insight
           </div>
-
-          {lead.ai_score === null && !scoreMutation.isPending ? (
-            <p className="text-[12.5px] text-white/55">No AI score yet. Click Score to analyse this lead.</p>
-          ) : (
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-3">
-                <div className="font-display text-[28px] font-bold leading-none text-white">{lead.ai_score ?? "—"}</div>
-                <div className="flex-1">
-                  <div className="text-[10.5px] font-semibold uppercase tracking-wider text-white/55">Intent score</div>
-                  {lead.ai_predicted_pct !== null ? (
-                    <div className="text-[11.5px] text-white/70">{lead.ai_predicted_pct}% predicted conversion</div>
-                  ) : null}
-                </div>
-              </div>
-              {lead.ai_summary ? (
-                <p className="text-[12.5px] leading-relaxed text-white/80">{lead.ai_summary}</p>
-              ) : null}
-              {lead.ai_recommended_action ? (
-                <div className="rounded-[10px] border border-reps-orange-border/30 bg-reps-orange-soft/20 px-3 py-2">
-                  <div className="text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">Next best action</div>
-                  <div className="mt-0.5 text-[12.5px] text-white/90">{lead.ai_recommended_action}</div>
-                </div>
-              ) : null}
-            </div>
-          )}
-
           <Button
-            className="mt-3 h-9 w-full rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white hover:bg-reps-orange-dark"
-            onClick={() => draftMutation.mutate()}
-            disabled={draftMutation.isPending}
+            size="sm"
+            variant="outline"
+            className="h-7 rounded-[8px] border-reps-border bg-reps-panel-soft text-[11px]"
+            onClick={() => scoreMutation.mutate()}
+            disabled={scoreMutation.isPending}
           >
-            {draftMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-            <span className="ml-1.5">Draft reply with AI</span>
+            {scoreMutation.isPending ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />}
+            <span className="ml-1">{lead.ai_score === null ? "Score" : "Re-score"}</span>
           </Button>
         </div>
-      </ProLock>
+
+        {lead.ai_score === null && !scoreMutation.isPending ? (
+          <p className="text-[12.5px] text-white/55">No AI score yet. Click Score to analyse this lead.</p>
+        ) : (
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-3">
+              <div className="font-display text-[28px] font-bold leading-none text-white">{lead.ai_score ?? "—"}</div>
+              <div className="flex-1">
+                <div className="text-[10.5px] font-semibold uppercase tracking-wider text-white/55">Intent score</div>
+                {lead.ai_predicted_pct !== null ? (
+                  <div className="text-[11.5px] text-white/70">{lead.ai_predicted_pct}% predicted conversion</div>
+                ) : null}
+              </div>
+            </div>
+            {lead.ai_summary ? (
+              <p className="text-[12.5px] leading-relaxed text-white/80">{lead.ai_summary}</p>
+            ) : null}
+            {lead.ai_recommended_action ? (
+              <div className="rounded-[10px] border border-reps-orange-border/30 bg-reps-orange-soft/20 px-3 py-2">
+                <div className="text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">Next best action</div>
+                <div className="mt-0.5 text-[12.5px] text-white/90">{lead.ai_recommended_action}</div>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        <Button
+          className="mt-3 h-9 w-full rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white hover:bg-reps-orange-dark"
+          onClick={() => draftMutation.mutate()}
+          disabled={draftMutation.isPending}
+        >
+          {draftMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+          <span className="ml-1.5">Draft reply with AI</span>
+        </Button>
+      </div>
 
       {/* Draft reply preview */}
       {draft ? (
