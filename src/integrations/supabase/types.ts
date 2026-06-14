@@ -1112,6 +1112,27 @@ export type Database = {
           },
         ]
       }
+      launch_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string
+        }
+        Relationships: []
+      }
       lead_activity: {
         Row: {
           created_at: string
