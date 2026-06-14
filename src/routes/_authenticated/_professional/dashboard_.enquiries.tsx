@@ -80,6 +80,7 @@ function formatTime(iso: string) {
 }
 
 function EnquiriesInboxPage() {
+  const blocked = useProGuard("Enquiries inbox");
   const tier = useTrainerTier();
   const qc = useQueryClient();
   const fetchEnquiries = useServerFn(listMyEnquiries);
