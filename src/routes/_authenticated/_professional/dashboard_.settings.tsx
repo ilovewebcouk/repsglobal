@@ -161,8 +161,11 @@ function SettingsPage() {
             <NotificationsTab data={data} />
           ) : tab === "billing" ? (
             <BillingTab data={data} />
+          ) : tab === "credits" ? (
+            <CreditsPanel />
           ) : tab === "security" ? (
             <SecurityTab data={data} />
+
           ) : (
             <PrivacyTab data={data} />
           )}
