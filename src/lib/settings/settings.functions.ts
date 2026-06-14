@@ -408,3 +408,192 @@ export const revokeMySession = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Activity log                                                                */
+/* -------------------------------------------------------------------------- */
+
+export type ActivityEvent = {
+  id: string;
+  at: string;
+  category: "auth" | "billing" | "credits" | "identity" | "verification" | "profile";
+  title: string;
+  detail: string | null;
+  ip: string | null;
+};
+
+const AUTH_ACTION_LABELS: Record<string, string> = {
+  login: "Signed in",
+  logout: "Signed out",
+  user_signedup: "Account created",
+  user_invited: "Invite accepted",
+  user_modified: "Account updated",
+  user_recovery_requested: "Password reset requested",
+  user_reauthenticate_requested: "Re-authentication requested",
+  user_repeated_signup: "Repeated sign-up attempt",
+  user_confirmation_requested: "Email confirmation requested",
+  token_refreshed: "Session refreshed",
+  token_revoked: "Session revoked",
+  password_recovery_requested: "Password reset requested",
+  user_updated_password: "Password changed",
+  user_changed_password: "Password changed",
+  user_changed_email: "Email changed",
+  email_changed: "Email changed",
+  factor_in_progress: "2FA setup started",
+  factor_verified: "2FA enabled",
+  factor_unenrolled: "2FA removed",
+  mfa_challenge_attempt: "2FA challenge",
+};
+
+export const listMyActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ events: ActivityEvent[] }> => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const events: ActivityEvent[] = [];
+
+    // 1) auth.audit_log_entries — sign-ins, password changes, email changes, MFA
+    try {
+      const { data: auditRows } = await supabaseAdmin
+        .schema("auth" as never)
+        .from("audit_log_entries" as never)
+        .select("id, created_at, payload, ip_address")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      const rows = (auditRows ?? []) as Array<{
+        id: string;
+        created_at: string;
+        payload: Record<string, unknown> | null;
+        ip_address: string | null;
+      }>;
+      for (const r of rows) {
+        const p = (r.payload ?? {}) as Record<string, unknown>;
+        const actorId = (p.actor_id as string | undefined) ?? null;
+        const traits = (p.traits as Record<string, unknown> | undefined) ?? {};
+        const traitUserId = (traits.user_id as string | undefined) ?? null;
+        if (actorId !== userId && traitUserId !== userId) continue;
+        const action = String(p.action ?? "");
+        // Skip very noisy token refreshes
+        if (action === "token_refreshed") continue;
+        events.push({
+          id: `auth_${r.id}`,
+          at: r.created_at,
+          category: "auth",
+          title: AUTH_ACTION_LABELS[action] ?? (action.replace(/_/g, " ") || "Account event"),
+          detail: null,
+          ip: r.ip_address,
+        });
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] audit_log_entries", e);
+    }
+
+    // 2) credit_transactions
+    try {
+      const { data: tx } = await supabaseAdmin
+        .from("credit_transactions")
+        .select("id, created_at, delta, action, balance_after, metadata")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      for (const r of tx ?? []) {
+        const delta = r.delta ?? 0;
+        const action = String(r.action ?? "");
+        const sign = delta > 0 ? "+" : "";
+        let title = `${sign}${delta} credits`;
+        let detail: string | null = null;
+        if (action === "signup_grant") detail = "Plan sign-up grant";
+        else if (action === "monthly_refill") detail = "Monthly refill";
+        else if (action === "topup") {
+          const meta = (r.metadata ?? {}) as Record<string, unknown>;
+          detail = meta.pack ? `Top-up · ${meta.pack} pack` : "Top-up purchase";
+        } else if (delta < 0) detail = `Used for ${action.replace(/_/g, " ")}`;
+        else detail = action.replace(/_/g, " ");
+        title = `${title} · balance ${r.balance_after ?? "—"}`;
+        events.push({
+          id: `cred_${r.id}`,
+          at: r.created_at as string,
+          category: "credits",
+          title,
+          detail,
+          ip: null,
+        });
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] credit_transactions", e);
+    }
+
+    // 3) subscriptions
+    try {
+      const { data: subs } = await supabaseAdmin
+        .from("subscriptions")
+        .select("id, tier, status, current_period_end, cancel_at_period_end, created_at, updated_at")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(20);
+      for (const s of subs ?? []) {
+        events.push({
+          id: `sub_${s.id}_${s.updated_at}`,
+          at: (s.updated_at ?? s.created_at) as string,
+          category: "billing",
+          title: `Subscription ${s.status ?? "updated"} · ${String(s.tier ?? "").toUpperCase()}`,
+          detail: s.cancel_at_period_end
+            ? `Cancels at period end (${s.current_period_end ? new Date(s.current_period_end as string).toLocaleDateString() : "—"})`
+            : s.current_period_end
+              ? `Renews ${new Date(s.current_period_end as string).toLocaleDateString()}`
+              : null,
+          ip: null,
+        });
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] subscriptions", e);
+    }
+
+    // 4) identity name changes
+    try {
+      const { data: names } = await supabaseAdmin
+        .from("identity_name_changes")
+        .select("id, created_at, old_full_name, new_full_name, source")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      for (const n of names ?? []) {
+        events.push({
+          id: `name_${n.id}`,
+          at: n.created_at as string,
+          category: "identity",
+          title: "Legal name changed",
+          detail: `${n.old_full_name ?? "—"} → ${n.new_full_name ?? "—"} · ${n.source ?? ""}`,
+          ip: null,
+        });
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] identity_name_changes", e);
+    }
+
+    // 5) verification submissions
+    try {
+      const { data: vs } = await supabaseAdmin
+        .from("verification_submissions")
+        .select("id, status, qualification, awarding_body, reviewed_at, created_at")
+        .eq("professional_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      for (const v of vs ?? []) {
+        const at = (v.reviewed_at ?? v.created_at) as string;
+        events.push({
+          id: `ver_${v.id}_${v.status}`,
+          at,
+          category: "verification",
+          title: `Verification ${v.status ?? "submitted"}`,
+          detail: [v.qualification, v.awarding_body].filter(Boolean).join(" · ") || null,
+          ip: null,
+        });
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] verification_submissions", e);
+    }
+
+    events.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+    return { events: events.slice(0, 100) };
+  });
