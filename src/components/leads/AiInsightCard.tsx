@@ -42,10 +42,15 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
           : "Awaiting AI score";
 
   return (
-    <div className="relative overflow-hidden rounded-[18px] border border-reps-orange-border/70 bg-gradient-to-br from-reps-orange-soft/40 via-reps-panel to-reps-panel p-5 shadow-[0_0_0_1px_rgba(255,122,0,0.08),0_20px_50px_-24px_rgba(255,122,0,0.45)]">
-      {/* Ambient orange glow */}
-      <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-56 rounded-full bg-reps-orange/25 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reps-orange/60 to-transparent" />
+    <div className="relative overflow-hidden rounded-[18px] border border-reps-orange-border/80 bg-reps-panel p-5">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-reps-orange-soft/45 via-reps-orange-soft/10 to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-reps-orange/45 to-transparent"
+      />
       <div className="relative">
       {/* Header */}
       <div className="flex items-start gap-3">
