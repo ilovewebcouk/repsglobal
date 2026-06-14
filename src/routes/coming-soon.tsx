@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, ShieldCheck, Globe2, Hammer } from "lucide-react";
+import { Sparkles, ShieldCheck, Globe2, Hammer, BadgeCheck, Store, Workflow, Dumbbell, Brain, TrendingUp } from "lucide-react";
 
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
@@ -59,16 +59,34 @@ const PROOF = [
 
 const LAUNCHING = [
   {
+    icon: BadgeCheck,
     label: "The verified register",
-    body: "A professional profile that proves who someone is and what they're qualified to do — replacing logo-grids and self-claimed credentials.",
+    body: "Identity checked. Qualifications verified against the issuing awarding body. Insurance evidenced. A profile that finally proves what someone is qualified to do.",
   },
   {
+    icon: Store,
     label: "Pro shop-fronts",
-    body: "A client-facing page that presents services, packages and proof with clarity — and a clean route to enquire, book and pay.",
+    body: "A client-facing page that presents services, packages and proof with clarity — and a clean route to enquire, book and pay. No more linktrees and DMs.",
   },
   {
+    icon: Workflow,
     label: "Operations that run the day",
-    body: "Enquiries, bookings, forms, payments, client records and tasks in one place — replacing the spreadsheet stack.",
+    body: "Enquiries, bookings, forms, waivers, payments, client records and tasks in one place — replacing the spreadsheet-and-six-apps stack most pros are stuck with.",
+  },
+  {
+    icon: Dumbbell,
+    label: "Coaching, properly built",
+    body: "Programmes, nutrition, check-ins, progress photos and a branded client portal — purpose-built for how real coaches actually work with real clients.",
+  },
+  {
+    icon: Brain,
+    label: "REPS AI",
+    body: "Your day re-ranked by impact. Drafted replies in your tone. Risk alerts before a client ghosts. The signal — not the noise.",
+  },
+  {
+    icon: TrendingUp,
+    label: "Growth that compounds",
+    body: "Reviews, retention, reactivation, referrals and business performance — surfaced as ranked actions, not another dashboard you'll never open.",
   },
 ];
 
