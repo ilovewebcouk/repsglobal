@@ -17,6 +17,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import { useProGuard } from "@/lib/dashboard/useProGuard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -79,6 +80,7 @@ function formatTime(iso: string) {
 }
 
 function EnquiriesInboxPage() {
+  const blocked = useProGuard("Enquiries inbox");
   const tier = useTrainerTier();
   const qc = useQueryClient();
   const fetchEnquiries = useServerFn(listMyEnquiries);
@@ -125,6 +127,8 @@ function EnquiriesInboxPage() {
   });
 
   const newCount = enquiries.filter((e) => e.status === "new").length;
+
+  if (blocked) return null;
 
   return (
     <DashboardShell
