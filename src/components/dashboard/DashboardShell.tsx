@@ -314,6 +314,22 @@ function VerificationCountBadge() {
   return <VerifiedCountChip completed={completed} />;
 }
 
+function EnquiriesUnreadBadge() {
+  const fetchStats = useServerFn(getEnquiryStats);
+  const { data } = useQuery({
+    queryKey: ["my-enquiry-stats"],
+    queryFn: () => fetchStats(),
+    staleTime: 30_000,
+  });
+  const unread = data?.unread ?? 0;
+  if (!unread) return null;
+  return (
+    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+      {unread > 99 ? "99+" : unread}
+    </span>
+  );
+}
+
 
 function AdminBadge() {
   return (
