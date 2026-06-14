@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+
 import {
   createLead,
   getLeadKpis,
@@ -42,8 +42,6 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/l
 });
 
 function LeadsPipelinePage() {
-  const tier = useTrainerTier();
-  const locked = tier === "verified";
   const qc = useQueryClient();
 
   const { data: leadsAll = [], isLoading } = useQuery({
