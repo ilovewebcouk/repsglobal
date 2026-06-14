@@ -1035,10 +1035,18 @@ function ActivityTab() {
                     {e.detail ? (
                       <div className="mt-0.5 text-[12px] text-white/55">{e.detail}</div>
                     ) : null}
+                    {(e.device || e.browser || e.location) ? (
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-white/45">
+                        {e.device ? <span>{e.device}{e.browser ? ` · ${e.browser}` : ""}</span> : null}
+                        {e.location ? <span>· {e.location}</span> : null}
+                        {e.ip ? <span>· IP {e.ip}</span> : null}
+                      </div>
+                    ) : e.ip ? (
+                      <div className="mt-1 text-[11.5px] text-white/45">IP {e.ip}</div>
+                    ) : null}
                   </div>
                   <div className="shrink-0 text-right text-[11.5px] text-white/45">
                     {formatActivityTime(e.at)}
-                    {e.ip ? <div>IP {e.ip}</div> : null}
                   </div>
                 </li>
               );
