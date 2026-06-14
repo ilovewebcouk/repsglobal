@@ -47,12 +47,14 @@ import {
   deleteMyAccount,
   listMySessions,
   revokeMySession,
+  listMyActivity,
   type SettingsBundle,
   type SessionRow,
+  type ActivityEvent,
 } from "@/lib/settings/settings.functions";
 
 
-type TabKey = "account" | "notifications" | "billing" | "credits" | "security" | "privacy";
+type TabKey = "account" | "notifications" | "billing" | "credits" | "security" | "activity" | "privacy";
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "account", label: "Account", icon: User },
@@ -60,6 +62,7 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "billing", label: "Billing", icon: CreditCard },
   { key: "credits", label: "AI credits", icon: Sparkles },
   { key: "security", label: "Security", icon: Lock },
+  { key: "activity", label: "Activity", icon: Activity },
   { key: "privacy", label: "Privacy & data", icon: EyeOff },
 ];
 
