@@ -1093,6 +1093,33 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          marketing_opt_in: boolean
+          new_enquiry_email: boolean
+          updated_at: string
+          user_id: string
+          weekly_enquiry_digest: boolean
+        }
+        Insert: {
+          created_at?: string
+          marketing_opt_in?: boolean
+          new_enquiry_email?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_enquiry_digest?: boolean
+        }
+        Update: {
+          created_at?: string
+          marketing_opt_in?: boolean
+          new_enquiry_email?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_enquiry_digest?: boolean
+        }
+        Relationships: []
+      }
       ofqual_cache: {
         Row: {
           fetched_at: string
@@ -1363,6 +1390,7 @@ export type Database = {
           insurance_valid_until: string | null
           is_published: boolean
           languages: string[]
+          locale: string
           online_available: boolean
           primary_profession: string | null
           primary_title_slug: string | null
@@ -1376,6 +1404,7 @@ export type Database = {
           social_youtube: string | null
           specialisms: string[]
           stripe_identity_session_id: string | null
+          timezone: string
           trading_name: string | null
           updated_at: string
           verification: Database["public"]["Enums"]["verification_status"]
@@ -1403,6 +1432,7 @@ export type Database = {
           insurance_valid_until?: string | null
           is_published?: boolean
           languages?: string[]
+          locale?: string
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null
@@ -1416,6 +1446,7 @@ export type Database = {
           social_youtube?: string | null
           specialisms?: string[]
           stripe_identity_session_id?: string | null
+          timezone?: string
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -1443,6 +1474,7 @@ export type Database = {
           insurance_valid_until?: string | null
           is_published?: boolean
           languages?: string[]
+          locale?: string
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null
@@ -1456,6 +1488,7 @@ export type Database = {
           social_youtube?: string | null
           specialisms?: string[]
           stripe_identity_session_id?: string | null
+          timezone?: string
           trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
