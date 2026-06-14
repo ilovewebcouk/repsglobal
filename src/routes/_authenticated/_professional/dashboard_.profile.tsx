@@ -1322,14 +1322,30 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* 03 Where you work — location + gyms. Delivery mode (in-person/online) lives on /dashboard/services. */}
+            {/* 03 Where you work — delivery mode + location + gyms. */}
             <Card>
               <SectionHeader
                 title="Where you work"
-                subtitle="Your base and the gyms or studios you train clients from."
+                subtitle="How you train clients, your base, and the gyms or studios you use."
                 step="03"
               />
               <div className="flex flex-col gap-4">
+                <Field
+                  label="How you work with clients"
+                  hint="Pick one or both. Shown on your directory card so clients can filter."
+                >
+                  <DeliveryModePicker
+                    inPerson={form.in_person_available}
+                    online={form.online_available}
+                    onChange={(next) =>
+                      setForm((f) => ({
+                        ...f,
+                        in_person_available: next.inPerson,
+                        online_available: next.online,
+                      }))
+                    }
+                  />
+                </Field>
                 <div data-field="postcode">
                   <Field label="Primary training postcode" error={errors.postcode}>
                     <TextInput
@@ -1351,19 +1367,12 @@ function ProfileEditorPage() {
                 {form.in_person_available ? (
                   <Field
                     label="Trains at (optional · max 3)"
-                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card. Toggle in-person on Services if you want to add gyms."
+                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card."
                   >
                     <GymPicker />
                   </Field>
                 ) : (
-                  <Field label="Gyms & studios" hint="You're set to online-only on Services. Enable in-person there to list gyms here.">
-                    <Link
-                      to="/dashboard/services"
-                      className="inline-flex h-9 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white"
-                    >
-                      Manage delivery mode →
-                    </Link>
-                  </Field>
+                  <Field label="Gyms & studios" hint="You're set to online-only. Enable in-person above to list gyms." />
                 )}
               </div>
             </Card>
