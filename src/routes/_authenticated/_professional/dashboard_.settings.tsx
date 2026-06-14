@@ -528,7 +528,8 @@ function BillingTab({ data }: { data: SettingsBundle }) {
       >
         <ManageBillingButton
           label="Open billing portal"
-          className="rounded-[10px]"
+          variant="ghost"
+          className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white"
         />
       </Row>
 
