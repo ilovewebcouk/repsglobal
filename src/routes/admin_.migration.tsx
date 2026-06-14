@@ -429,6 +429,7 @@ function AdminMigrationPage() {
                 </div>
               </div>
             </div>
+          </PPanel>
           <StripeLinkingPanel />
         </>
       )}
