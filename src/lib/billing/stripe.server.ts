@@ -34,7 +34,10 @@ export function createStripeClient(env: StripeEnv): Stripe {
   const lovableApiKey = getEnv("LOVABLE_API_KEY");
 
   const client = new Stripe(connectionApiKey, {
-    apiVersion: "2026-05-27.dahlia",
+    // Pinned to match the Lovable Stripe gateway contract — see
+    // stripe-shared-utility knowledge. Do NOT bump without auditing
+    // every Stripe API request/response shape in this codebase.
+    apiVersion: "2026-03-25.dahlia",
     httpClient: Stripe.createFetchHttpClient((input, init) => {
       const stripeUrl = input instanceof Request ? input.url : input.toString();
       const gatewayUrl = stripeUrl.replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
@@ -74,6 +77,29 @@ export function getStripeErrorMessage(error: unknown): string {
     return e.raw?.message ?? e.message ?? "Stripe request failed";
   }
   return "Stripe request failed";
+}
+
+/**
+ * Returns the absolute origin to use for Stripe success_url / cancel_url
+ * and any other outbound link in a server function. Prefers the explicit
+ * `PUBLIC_SITE_URL` secret, falls back to the inbound request Origin,
+ * then to the published REPs domain as a last resort.
+ */
+export function getCheckoutOrigin(): string {
+  const fromEnv = process.env.PUBLIC_SITE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  try {
+    // Lazy-required to avoid a hard dependency at module load.
+    const { getRequest } = require("@tanstack/react-start/server") as {
+      getRequest: () => Request | undefined;
+    };
+    const req = getRequest();
+    const origin = req?.headers.get("origin");
+    if (origin) return origin;
+  } catch {
+    /* outside a request context */
+  }
+  return "https://repsglobal.lovable.app";
 }
 
 /** HMAC-SHA256 webhook signature verification (no Stripe SDK dependency). */
