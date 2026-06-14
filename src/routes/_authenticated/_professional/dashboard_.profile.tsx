@@ -1187,15 +1187,13 @@ function ProfileEditorPage() {
                 Services & pricing
                 <ExternalLink className="h-3.5 w-3.5" />
               </Link>
-              {tier !== "verified" ? (
-                <Link
-                  to="/dashboard/shop-front"
-                  className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
-                >
-                  Shop-front extras
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
-              ) : null}
+              <Link
+                to="/dashboard/shop-front"
+                className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
+              >
+                Shop-front{tier === "verified" ? " (Lite)" : " extras"}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
             </div>
           </div>
         </div>
