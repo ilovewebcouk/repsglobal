@@ -89,8 +89,7 @@ export function WaitlistForm({ id, className }: WaitlistFormProps) {
           disabled={isPending}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `waitlist-error-${id ?? "default"}` : undefined}
-          style={{ height: 56 }}
-          className="w-full flex-1 min-w-0 rounded-[12px] border border-white/20 bg-reps-ink/70 px-4 text-[16px] text-white placeholder:text-white/45 outline-none transition-colors focus:border-reps-orange focus:bg-reps-ink/90 disabled:opacity-60 sm:text-[15px]"
+          className="h-14 w-full flex-1 min-w-0 rounded-[12px] border border-white/20 bg-reps-ink/70 px-4 text-[16px] text-white placeholder:text-white/45 outline-none transition-colors focus:border-reps-orange focus:bg-reps-ink/90 disabled:opacity-60 sm:text-[15px]"
         />
         <button
           type="submit"
