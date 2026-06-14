@@ -940,3 +940,115 @@ function DeleteAccountDialog({ email }: { email: string }) {
     </Dialog>
   );
 }
+
+/* ---------- Activity log ------------------------------------------------ */
+
+function categoryStyle(cat: ActivityEvent["category"]): { label: string; cls: string } {
+  switch (cat) {
+    case "auth":
+      return { label: "Account", cls: "border-sky-400/30 bg-sky-500/12 text-sky-200" };
+    case "billing":
+      return { label: "Billing", cls: "border-reps-orange/30 bg-reps-orange-soft text-reps-orange" };
+    case "credits":
+      return { label: "Credits", cls: "border-amber-400/30 bg-amber-500/12 text-amber-200" };
+    case "identity":
+      return { label: "Identity", cls: "border-fuchsia-400/30 bg-fuchsia-500/12 text-fuchsia-200" };
+    case "verification":
+      return { label: "Verification", cls: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300" };
+    case "profile":
+    default:
+      return { label: "Profile", cls: "border-reps-border bg-reps-panel-soft text-white/70" };
+  }
+}
+
+function formatActivityTime(iso: string): string {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function ActivityTab() {
+  const listFn = useServerFn(listMyActivity);
+  const [filter, setFilter] = React.useState<"all" | ActivityEvent["category"]>("all");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-activity"],
+    queryFn: () => listFn(),
+  });
+
+  const all = data?.events ?? [];
+  const events = filter === "all" ? all : all.filter((e) => e.category === filter);
+
+  const FILTERS: { key: typeof filter; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "auth", label: "Account" },
+    { key: "billing", label: "Billing" },
+    { key: "credits", label: "Credits" },
+    { key: "verification", label: "Verification" },
+    { key: "identity", label: "Identity" },
+  ];
+
+  return (
+    <PPanel>
+      <PanelHeader
+        title="Recent activity"
+        subtitle="A timeline of sign-ins, billing, credits and verification events on your account."
+      />
+      <div className="flex flex-wrap items-center gap-2 border-b border-reps-border/60 px-5 py-3">
+        {FILTERS.map((f) => {
+          const active = filter === f.key;
+          return (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={`h-7 rounded-full px-3 text-[11.5px] font-semibold transition-colors ${
+                active
+                  ? "bg-reps-orange text-white"
+                  : "border border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+              }`}
+            >
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="px-5 pb-2">
+        {isLoading ? (
+          <div className="flex items-center gap-2 py-6 text-[13px] text-white/55">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading activity…
+          </div>
+        ) : events.length === 0 ? (
+          <div className="py-6 text-[13px] text-white/55">No activity yet.</div>
+        ) : (
+          <ul className="divide-y divide-reps-border/60">
+            {events.map((e) => {
+              const cat = categoryStyle(e.category);
+              return (
+                <li key={e.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full border px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide ${cat.cls}`}>
+                        {cat.label}
+                      </span>
+                      <span className="text-[13px] font-semibold text-white">{e.title}</span>
+                    </div>
+                    {e.detail ? (
+                      <div className="mt-0.5 text-[12px] text-white/55">{e.detail}</div>
+                    ) : null}
+                  </div>
+                  <div className="shrink-0 text-right text-[11.5px] text-white/45">
+                    {formatActivityTime(e.at)}
+                    {e.ip ? <div>IP {e.ip}</div> : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      <div className="border-t border-reps-border/60 px-5 py-3 text-[11.5px] text-white/45">
+        Showing the most recent 100 events across sign-ins, billing, credits, identity and verification.
+      </div>
+    </PPanel>
+  );
+}
