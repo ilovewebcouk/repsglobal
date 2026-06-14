@@ -62,7 +62,7 @@ function ShopFrontEditorPage() {
 
   if (tier === "verified") {
     return (
-      <DashboardShell active="Shop-front">
+      <DashboardShell active="Shop-front" role="trainer" tier={tier} title="Shop-front" subtitle="A Pro-tier feature.">
         <div className="mx-auto max-w-3xl px-6 py-12">
           <div className="rounded-[22px] border border-reps-orange-border bg-gradient-to-br from-reps-orange-soft/60 via-reps-panel to-reps-panel p-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-reps-orange">
