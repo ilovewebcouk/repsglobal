@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Inbox, Plus, Search, Sparkles, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
