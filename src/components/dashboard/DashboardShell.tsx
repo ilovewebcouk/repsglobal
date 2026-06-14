@@ -76,6 +76,7 @@ export type TrainerActive =
   | "Community"
   | "Education & CPD"
   | "Public Profile"
+  | "Services"
   | "Shop-front"
   | "Edit Profile"
   | "Verification"
@@ -128,6 +129,7 @@ const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
+      { icon: Sparkles, label: "Services", to: "/dashboard/services" },
       { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
