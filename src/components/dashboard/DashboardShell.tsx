@@ -382,13 +382,19 @@ function Sidebar({
 /* TopBar                                                                     */
 /* ------------------------------------------------------------------------- */
 
+export type DashboardSearch = {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+};
+
 function TopBar({
-  role,
   title,
   subtitle,
   actions,
   mobileNav,
   searchPlaceholder,
+  search,
 }: {
   role: Role;
   title: string;
@@ -396,9 +402,23 @@ function TopBar({
   actions?: React.ReactNode;
   mobileNav?: React.ReactNode;
   searchPlaceholder: string;
+  search?: DashboardSearch;
 }) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (!search) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [search]);
+
   return (
-    <header className="flex items-center justify-between gap-4 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+    <header className="flex items-center justify-between gap-3 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
       <div className="flex min-w-0 items-center gap-3">
         {mobileNav}
         <div className="min-w-0">
@@ -406,17 +426,40 @@ function TopBar({
           <p className="mt-0.5 text-[13px] text-white/55">{subtitle}</p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/55 md:flex">
-          <Search className="h-4 w-4" />
-          <span className="flex-1">{searchPlaceholder}</span>
-          <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
-            ⌘K
-          </kbd>
-        </div>
-        
+      <div className="flex items-center gap-2">
+        {search ? (
+          <div className="relative hidden md:block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
+            <input
+              ref={inputRef}
+              type="search"
+              value={search.value}
+              onChange={(e) => search.onChange(e.target.value)}
+              placeholder={search.placeholder ?? searchPlaceholder}
+              className="h-10 w-[260px] rounded-[12px] border border-reps-border bg-reps-panel pl-9 pr-12 text-[12.5px] text-white placeholder:text-white/45 shadow-none transition-colors focus-visible:outline-none focus-visible:border-reps-orange/60 focus-visible:bg-reps-panel-soft"
+            />
+            <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+              ⌘K
+            </kbd>
+          </div>
+        ) : (
+          <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 md:flex">
+            <Search className="h-4 w-4" />
+            <span className="flex-1">{searchPlaceholder}</span>
+            <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
+              ⌘K
+            </kbd>
+          </div>
+        )}
+
         {actions}
-        <Button variant="outline" size="icon" aria-label="Notifications" disabled>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Notifications"
+          disabled
+          className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
+        >
           <Bell className="h-4 w-4" />
         </Button>
         <UserAccountMenu surface="dashboard" />
