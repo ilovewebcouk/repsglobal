@@ -594,6 +594,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title,
           detail,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -620,6 +623,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
               ? `Renews ${new Date(s.current_period_end as string).toLocaleDateString()}`
               : null,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -642,6 +648,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title: "Legal name changed",
           detail: `${n.old_full_name ?? "—"} → ${n.new_full_name ?? "—"} · ${n.source ?? ""}`,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -665,6 +674,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title: `Verification ${v.status ?? "submitted"}`,
           detail: [v.qualification, v.awarding_body].filter(Boolean).join(" · ") || null,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
