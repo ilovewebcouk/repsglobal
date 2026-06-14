@@ -1,5 +1,4 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   BadgeCheck,
@@ -21,7 +20,6 @@ import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
-import { createCheckoutSession } from "@/lib/billing/billing.functions";
 
 type SignupSearch = {
   tier?: "verified" | "pro";
@@ -166,7 +164,6 @@ export const Route = createFileRoute("/signup")({
 function SignupPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const startCheckout = useServerFn(createCheckoutSession);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

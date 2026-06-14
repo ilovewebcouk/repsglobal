@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { Check, Star, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { createCheckoutSession } from "@/lib/billing/billing.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +18,6 @@ export function PricingPlans() {
   const [billing, setBilling] = useState<Billing>("annual");
   const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
   const navigate = useNavigate();
-  const startCheckout = useServerFn(createCheckoutSession);
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
     const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;

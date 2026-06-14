@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { Check, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { createCheckoutSession } from "@/lib/billing/billing.functions";
-import { getStripeClient, getStripeEnvironment } from "@/lib/billing/stripe-client";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import { Button } from "@/components/ui/button";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { Badge } from "@/components/ui/badge";
@@ -54,9 +53,6 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCheckoutSession);
 
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   const tierMeta = TIERS[search.tier as "verified" | "pro"];
   const offer = getCheckoutOffer(search.tier, search.period);
   const plan = PLANS.find((p) => p.tierKey === search.tier)!;
@@ -65,35 +61,28 @@ function CheckoutPage() {
   const isFounding = Boolean(offer?.founding);
   const trialDays = offer?.trialDays ?? 0;
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await startCheckout({
-          data: {
-            tier: search.tier,
-            period: search.period,
-            environment: getStripeEnvironment(),
-          },
-        });
-        if (cancelled) return;
-        if (!result?.clientSecret) {
-          throw new Error("Checkout session did not return a client secret.");
-        }
-        setClientSecret(result.clientSecret);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Could not start checkout");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [search.tier, search.period, startCheckout]);
+  const goToStripe = useMutation({
+    mutationFn: async () => {
+      const result = await startCheckout({
+        data: {
+          tier: search.tier,
+          period: search.period,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      return result.url;
+    },
+    onSuccess: (url) => {
+      window.location.assign(url);
+    },
+  });
+
+  const isRedirecting = goToStripe.isPending || goToStripe.isSuccess;
+  const error = goToStripe.error ? (goToStripe.error as Error).message : null;
 
   return (
     <div className="min-h-screen bg-reps-ink text-white">
-      {/* Full-width dark header band */}
       <header className="border-b border-white/[0.06] bg-reps-ink">
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
           <Link to="/" className="flex items-center text-white/90 transition hover:text-white">
@@ -115,198 +104,138 @@ function CheckoutPage() {
         </div>
       </header>
 
-      {/* Full-bleed split: dark left, light right, hard vertical seam */}
-      <main className="grid min-h-[calc(100vh-60px)] lg:grid-cols-2">
-        {/* LEFT — dark summary */}
-        <aside className="bg-reps-ink lg:border-r lg:border-white/[0.08]">
-          <div className="ml-auto w-full max-w-[560px] px-6 py-10 lg:px-12 lg:py-16">
-            <div className="mb-6 flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className="border-reps-orange-border bg-reps-orange-soft text-[11px] font-medium uppercase tracking-[0.12em] text-reps-orange"
-              >
-                REPs {tierMeta.label}
-              </Badge>
-              {isFounding && (
-                <Badge
-                  variant="outline"
-                  className="border-emerald-400/30 bg-emerald-500/15 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-300"
-                >
-                  Founding
-                </Badge>
-              )}
-            </div>
+      <main className="mx-auto flex w-full max-w-[640px] flex-col px-6 py-12 lg:py-16">
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <Badge
+            variant="outline"
+            className="border-reps-orange-border bg-reps-orange-soft text-[11px] font-medium uppercase tracking-[0.12em] text-reps-orange"
+          >
+            REPs {tierMeta.label}
+          </Badge>
+          {isFounding && (
+            <Badge
+              variant="outline"
+              className="border-emerald-400/30 bg-emerald-500/15 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-300"
+            >
+              Founding
+            </Badge>
+          )}
+        </div>
 
-            <h1 className="font-display text-[28px] font-semibold leading-tight text-white lg:text-[34px]">
-              You're joining REPs {tierMeta.label}.
-            </h1>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              {tierMeta.blurb}
-            </p>
+        <h1 className="font-display text-[28px] font-semibold leading-tight text-white lg:text-[34px]">
+          You're joining REPs {tierMeta.label}.
+        </h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+          {tierMeta.blurb}
+        </p>
 
-            {/* Price block */}
-            <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.03] p-5">
-              <div className="flex items-baseline justify-between gap-4">
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    {priceView.was && (
-                      <span className="text-[15px] text-white/40 line-through">
-                        {priceView.was}
-                      </span>
-                    )}
-                    <span className="font-display text-[32px] font-semibold text-white">
-                      {priceView.price}
-                    </span>
-                    <span className="text-[14px] text-white/55">{priceView.period}</span>
-                  </div>
-                  {priceView.meta && (
-                    <p className="mt-1 text-[12.5px] text-white/45">{priceView.meta}</p>
-                  )}
-                </div>
-                {isFounding && (
-                  <div className="flex items-center gap-1 text-[11.5px] font-medium uppercase tracking-[0.1em] text-reps-orange">
-                    <Sparkles className="size-3.5" aria-hidden />
-                    Locked for life
-                  </div>
+        {/* Order summary */}
+        <div className="mt-8 rounded-[18px] border border-white/10 bg-white/[0.03] p-6">
+          <div className="flex items-baseline justify-between gap-4">
+            <div>
+              <div className="flex items-baseline gap-2">
+                {priceView.was && (
+                  <span className="text-[15px] text-white/40 line-through">{priceView.was}</span>
                 )}
+                <span className="font-display text-[32px] font-semibold text-white">
+                  {priceView.price}
+                </span>
+                <span className="text-[14px] text-white/55">{priceView.period}</span>
               </div>
-
-              {trialDays > 0 && (
-                <div className="mt-4 flex items-start gap-2.5 rounded-[12px] border border-emerald-400/25 bg-emerald-500/10 p-3">
-                  <Check className="mt-0.5 size-4 shrink-0 text-emerald-300" aria-hidden />
-                  <div className="text-[13px] leading-relaxed text-emerald-100/90">
-                    <span className="font-medium text-emerald-100">£0 today.</span> Your {trialDays}-day free trial starts now. Cancel anytime before day {trialDays} and you won't be charged.
-                  </div>
-                </div>
+              {priceView.meta && (
+                <p className="mt-1 text-[12.5px] text-white/45">{priceView.meta}</p>
               )}
             </div>
-
-            {/* What's included */}
-            <div className="mt-7">
-              <h2 className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
-                What's included
-              </h2>
-              <ul className="mt-3 flex flex-col gap-2.5">
-                {plan.features.slice(0, isPro ? 7 : 5).map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-[14px] text-white/80">
-                    <Check className="mt-0.5 size-4 shrink-0 text-reps-orange" aria-hidden />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Trust strip */}
-            <div className="mt-7 grid grid-cols-3 gap-3">
-              <TrustTile
-                icon={<ShieldCheck className="size-4" />}
-                label="Verified register"
-                sub="Credentials checked"
-              />
-              <TrustTile
-                icon={<Lock className="size-4" />}
-                label="Secure payment"
-                sub="PCI DSS Level 1"
-              />
-              <TrustTile
-                icon={<Check className="size-4" />}
-                label="Cancel anytime"
-                sub="From your dashboard"
-              />
-            </div>
-
-            {/* Testimonial */}
-            <figure className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.02] p-5">
-              <blockquote className="text-[14px] leading-relaxed text-white/80">
-                "Being on the verified register is what finally separated me from every other PT in the area. Enquiries went from 'cheapest please' to serious clients."
-              </blockquote>
-              <figcaption className="mt-3 flex items-center gap-2 text-[12.5px] text-white/50">
-                <span className="size-[22px] rounded-full bg-gradient-to-br from-reps-orange/60 to-reps-orange/20" aria-hidden />
-                James W. · Personal Trainer · London
-              </figcaption>
-            </figure>
+            {isFounding && (
+              <div className="flex items-center gap-1 text-[11.5px] font-medium uppercase tracking-[0.1em] text-reps-orange">
+                <Sparkles className="size-3.5" aria-hidden />
+                Locked for life
+              </div>
+            )}
           </div>
-        </aside>
 
-        {/* RIGHT — light payment surface */}
-        <section className="bg-[#FAFAF7] text-reps-ink">
-          <div className="mr-auto w-full max-w-[560px] px-6 py-10 lg:px-12 lg:py-16">
-            <div className="mb-6">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-reps-ink/50">
-                Payment
-              </p>
-              <h2 className="mt-1 font-display text-[22px] font-semibold leading-tight text-reps-ink lg:text-[26px]">
-                Enter your details
-              </h2>
-              <p className="mt-1.5 text-[13.5px] text-reps-ink/60">
-                Powered by Stripe. Your card details never touch REPs servers.
-              </p>
+          {trialDays > 0 && (
+            <div className="mt-5 flex items-start gap-2.5 rounded-[12px] border border-emerald-400/25 bg-emerald-500/10 p-3">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-300" aria-hidden />
+              <div className="text-[13px] leading-relaxed text-emerald-100/90">
+                <span className="font-medium text-emerald-100">£0 today.</span> Your {trialDays}-day
+                free trial starts now. Cancel anytime before day {trialDays} and you won't be charged.
+              </div>
             </div>
+          )}
 
-            {error && (
-              <div className="rounded-[18px] border border-red-200 bg-red-50 p-6 text-red-900">
-                <p className="font-display text-[18px] font-semibold">Checkout couldn't start</p>
-                <p className="mt-2 text-[14px] text-red-900/80">{error}</p>
-                <Button
-                  className="mt-5"
-                  onClick={() => {
-                    setError(null);
-                    setClientSecret(null);
-                  }}
-                >
-                  Try again
-                </Button>
-              </div>
-            )}
+          <ul className="mt-6 flex flex-col gap-2.5 border-t border-white/[0.06] pt-5">
+            {plan.features.slice(0, isPro ? 6 : 5).map((feature) => (
+              <li key={feature} className="flex items-start gap-2.5 text-[14px] text-white/80">
+                <Check className="mt-0.5 size-4 shrink-0 text-reps-orange" aria-hidden />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-            {!error && !clientSecret && (
-              <div className="flex min-h-[420px] flex-col items-center justify-center rounded-[18px] border border-reps-ink/10 bg-white p-8 text-center">
-                <Loader2 className="size-6 animate-spin text-reps-orange" aria-hidden />
-                <p className="mt-4 text-[14px] font-medium text-reps-ink/80">
-                  Preparing secure checkout
-                </p>
-                <p className="mt-1 text-[12.5px] text-reps-ink/50">
-                  Setting up your encrypted session with Stripe…
-                </p>
-              </div>
-            )}
-
-            {!error && clientSecret && (
-              <div>
-                <EmbeddedCheckoutProvider
-                  stripe={getStripeClient()}
-                  options={{ clientSecret }}
-                >
-                  <EmbeddedCheckout />
-                </EmbeddedCheckoutProvider>
-              </div>
-            )}
-
-            {/* Below-iframe trust footer */}
-            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-reps-ink/50">
-              <span className="flex items-center gap-1.5">
-                <Lock className="size-3.5" aria-hidden />
-                Secured by Stripe
-              </span>
-              <span aria-hidden className="size-1 rounded-full bg-reps-ink/25" />
-              <span>256-bit TLS</span>
-              <span aria-hidden className="size-1 rounded-full bg-reps-ink/25" />
-              <span>PCI DSS Level 1</span>
-            </div>
-
-            <p className="mt-5 text-[12px] leading-relaxed text-reps-ink/50">
-              By continuing you agree to the REPs{" "}
-              <Link to="/terms" className="text-reps-ink/80 underline-offset-2 hover:underline">
-                Terms
-              </Link>{" "}
-              and{" "}
-              <Link to="/privacy" className="text-reps-ink/80 underline-offset-2 hover:underline">
-                Privacy Policy
-              </Link>
-              .
-            </p>
+        {/* CTA */}
+        {error && (
+          <div className="mt-6 rounded-[18px] border border-red-400/30 bg-red-500/10 p-4 text-[14px] text-red-100">
+            <p className="font-medium">Checkout couldn't start</p>
+            <p className="mt-1 text-red-100/80">{error}</p>
           </div>
-        </section>
+        )}
+
+        <Button
+          type="button"
+          size="lg"
+          onClick={() => goToStripe.mutate()}
+          disabled={isRedirecting}
+          className="mt-7 h-[52px] w-full rounded-[10px] bg-reps-orange text-[15px] font-semibold text-white hover:bg-reps-orange/90"
+        >
+          {isRedirecting ? (
+            <>
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Redirecting to secure payment…
+            </>
+          ) : (
+            <>
+              Continue to secure payment
+              <ArrowRight className="size-4" aria-hidden />
+            </>
+          )}
+        </Button>
+
+        <p className="mt-4 text-center text-[12.5px] leading-relaxed text-white/45">
+          You'll be taken to Stripe to complete payment. Your card details never touch REPs servers.
+        </p>
+
+        {/* Trust strip */}
+        <div className="mt-8 grid grid-cols-3 gap-3">
+          <TrustTile
+            icon={<ShieldCheck className="size-4" />}
+            label="Verified register"
+            sub="Credentials checked"
+          />
+          <TrustTile
+            icon={<Lock className="size-4" />}
+            label="Secured by Stripe"
+            sub="PCI DSS Level 1"
+          />
+          <TrustTile
+            icon={<Check className="size-4" />}
+            label="Cancel anytime"
+            sub="From your dashboard"
+          />
+        </div>
+
+        <p className="mt-8 text-center text-[12px] leading-relaxed text-white/45">
+          By continuing you agree to the REPs{" "}
+          <Link to="/terms" className="text-white/70 underline-offset-2 hover:underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="text-white/70 underline-offset-2 hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </main>
     </div>
   );

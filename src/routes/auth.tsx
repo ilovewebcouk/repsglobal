@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { createCheckoutSession } from "@/lib/billing/billing.functions";
 
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 
@@ -73,7 +71,6 @@ function friendlyAuthError(message: string): string {
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const startCheckout = useServerFn(createCheckoutSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);

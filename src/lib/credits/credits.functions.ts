@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { CREDIT_PACKS, getCreditPack, type CreditPackKey } from "@/lib/billing";
+import { getOrCreateCustomer } from "@/lib/billing/customer.server";
 
 export type CreditWalletDTO = {
   balance: number;
@@ -56,78 +56,56 @@ const topupInput = z.object({
   environment: z.enum(["sandbox", "live"]),
 });
 
-function getOrigin(): string {
-  const req = getRequest();
-  return req?.headers.get("origin") || "https://repsglobal.lovable.app";
-}
-
 export const createCreditTopupCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => topupInput.parse(data))
-  .handler(async ({ data, context }) => {
-    const { userId, claims } = context;
-    const email = (claims.email as string | undefined) ?? null;
-    const pack = getCreditPack(data.pack as CreditPackKey);
-    if (!pack) throw new Error("Unknown credit pack");
+  .handler(async ({ data, context }): Promise<{ url: string } | { error: string }> => {
+    try {
+      const { userId, claims } = context;
+      const email = (claims.email as string | undefined) ?? null;
+      const pack = getCreditPack(data.pack as CreditPackKey);
+      if (!pack) throw new Error("Unknown credit pack");
 
-    const [{ supabaseAdmin }, { createStripeClient, resolvePriceByLookupKey }] =
-      await Promise.all([
-        import("@/integrations/supabase/client.server"),
-        import("@/lib/billing/stripe.server"),
-      ]);
-    const stripe = createStripeClient(data.environment);
+      const { createStripeClient, resolvePriceByLookupKey, getCheckoutOrigin, getStripeErrorMessage } =
+        await import("@/lib/billing/stripe.server");
+      const stripe = createStripeClient(data.environment);
+      const customerId = await getOrCreateCustomer({ userId, email, environment: data.environment });
+      const stripePrice = await resolvePriceByLookupKey(stripe, pack.priceId);
+      const origin = getCheckoutOrigin();
 
-    // Resolve or create Stripe customer (re-use subscriptions row if present)
-    const { data: existing } = await supabaseAdmin
-      .from("subscriptions")
-      .select("stripe_customer_id")
-      .eq("user_id", userId)
-      .not("stripe_customer_id", "is", null)
-      .limit(1)
-      .maybeSingle();
-    let customerId = existing?.stripe_customer_id as string | undefined;
-    if (!customerId && email) {
-      const found = await stripe.customers.list({ email, limit: 1 });
-      if (found.data.length) customerId = found.data[0].id;
+      try {
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          customer: customerId,
+          line_items: [{ price: stripePrice.id, quantity: 1 }],
+          success_url: `${origin}/dashboard/settings?topup=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${origin}/dashboard/settings?topup=canceled`,
+          payment_intent_data: {
+            description: `REPs AI Credits — ${pack.label} (${pack.credits} credits)`,
+          },
+          custom_text: {
+            submit: {
+              message: `Top up ${pack.credits.toLocaleString()} REPs AI credits. Credits never expire and stack on top of your monthly allowance.`,
+            },
+          },
+          metadata: {
+            reps_user_id: userId,
+            userId,
+            kind: "credit_topup",
+            pack: pack.key,
+            credits: String(pack.credits),
+            environment: data.environment,
+          },
+        });
+
+        if (!session.url) throw new Error("Stripe did not return a checkout URL");
+        return { url: session.url };
+      } catch (err) {
+        return { error: getStripeErrorMessage(err) };
+      }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Could not start checkout" };
     }
-    if (!customerId) {
-      const created = await stripe.customers.create({
-        email: email ?? undefined,
-        metadata: { reps_user_id: userId, userId },
-      });
-      customerId = created.id;
-    }
-
-    const stripePrice = await resolvePriceByLookupKey(stripe, pack.priceId);
-    const origin = getOrigin();
-
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      ui_mode: "embedded_page",
-      customer: customerId,
-      line_items: [{ price: stripePrice.id, quantity: 1 }],
-      return_url: `${origin}/dashboard/settings?topup=success&session_id={CHECKOUT_SESSION_ID}`,
-      payment_intent_data: {
-        description: `REPs AI Credits — ${pack.label} (${pack.credits} credits)`,
-      },
-      custom_text: {
-        submit: {
-          message: `Top up ${pack.credits.toLocaleString()} REPs AI credits. Credits never expire and stack on top of your monthly allowance.`,
-        },
-        after_submit: {
-          message: "Adding credits to your REPs wallet — this takes a few seconds.",
-        },
-      },
-      metadata: {
-        reps_user_id: userId,
-        userId,
-        kind: "credit_topup",
-        pack: pack.key,
-        credits: String(pack.credits),
-      },
-    });
-
-    return { clientSecret: session.client_secret ?? "" };
   });
 
 export const CREDIT_PACK_LIST = Object.values(CREDIT_PACKS);

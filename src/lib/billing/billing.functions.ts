@@ -1,141 +1,112 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { CHECKOUT_OFFERS, getCheckoutOffer, type BillingPeriod, type PurchasableTier, checkoutOfferForPriceId } from "../billing";
-import type { StripeEnv } from "./stripe.server";
+import {
+  CHECKOUT_OFFERS,
+  getCheckoutOffer,
+  type BillingPeriod,
+  type PurchasableTier,
+  checkoutOfferForPriceId,
+} from "../billing";
+import { getOrCreateCustomer } from "./customer.server";
 
-const checkoutInput = z.object({
-  tier: z.enum(["verified", "pro"]),
-  period: z.enum(["monthly", "annual"]),
-  environment: z.enum(["sandbox", "live"]),
-}).superRefine((value, ctx) => {
-  if (!getCheckoutOffer(value.tier, value.period)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This billing option is not available" });
-  }
-});
-
-function getOrigin(): string {
-  const req = getRequest();
-  return req?.headers.get("origin") || "https://repsglobal.lovable.app";
-}
-
-async function getOrCreateCustomer(opts: {
-  userId: string;
-  email: string | null | undefined;
-  environment: StripeEnv;
-}): Promise<string> {
-  const { userId, email, environment } = opts;
-  const [{ supabaseAdmin }, { createStripeClient }] = await Promise.all([
-    import("@/integrations/supabase/client.server"),
-    import("./stripe.server"),
-  ]);
-  const stripe = createStripeClient(environment);
-
-  // 1) Existing row in subscriptions?
-  const { data: existing } = await supabaseAdmin
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("user_id", userId)
-    .not("stripe_customer_id", "is", null)
-    .limit(1)
-    .maybeSingle();
-
-  if (existing?.stripe_customer_id) return existing.stripe_customer_id;
-
-  // 2) Customer with this email already in Stripe? (covers BD-migrated members)
-  if (email) {
-    const found = await stripe.customers.list({ email, limit: 1 });
-    if (found.data.length > 0) return found.data[0].id;
-  }
-
-  // 3) Create new
-  const created = await stripe.customers.create({
-    email: email ?? undefined,
-    metadata: { reps_user_id: userId },
+const checkoutInput = z
+  .object({
+    tier: z.enum(["verified", "pro"]),
+    period: z.enum(["monthly", "annual"]),
+    environment: z.enum(["sandbox", "live"]),
+  })
+  .superRefine((value, ctx) => {
+    if (!getCheckoutOffer(value.tier, value.period)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This billing option is not available" });
+    }
   });
-  return created.id;
-}
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => checkoutInput.parse(data))
-  .handler(async ({ data, context }) => {
-    const { userId, claims } = context;
-    const email = (claims.email as string | undefined) ?? null;
+  .handler(async ({ data, context }): Promise<{ url: string } | { error: string }> => {
+    try {
+      const { userId, claims } = context;
+      const email = (claims.email as string | undefined) ?? null;
 
-    const tier = data.tier as PurchasableTier;
-    const period = data.period as BillingPeriod;
-    const environment = data.environment;
-    const offer = getCheckoutOffer(tier, period);
-    if (!offer) throw new Error("This billing option is not available");
+      const tier = data.tier as PurchasableTier;
+      const period = data.period as BillingPeriod;
+      const environment = data.environment;
+      const offer = getCheckoutOffer(tier, period);
+      if (!offer) throw new Error("This billing option is not available");
 
-    const customerId = await getOrCreateCustomer({ userId, email, environment });
-    const origin = getOrigin();
-    const { createStripeClient, resolvePriceByLookupKey } = await import("./stripe.server");
-    const stripe = createStripeClient(environment);
+      const { createStripeClient, resolvePriceByLookupKey, getCheckoutOrigin, getStripeErrorMessage } =
+        await import("./stripe.server");
+      const stripe = createStripeClient(environment);
+      const customerId = await getOrCreateCustomer({ userId, email, environment });
+      const origin = getCheckoutOrigin();
+      const stripePrice = await resolvePriceByLookupKey(stripe, offer.priceId);
 
-    // offer.priceId is a human-readable lookup key (e.g. "pro_monthly").
-    // Resolve to the actual Stripe price ID for this environment.
-    const stripePrice = await resolvePriceByLookupKey(stripe, offer.priceId);
+      const submitMessage =
+        tier === "verified"
+          ? "You're joining the REPs Verified register — qualified, insured, and publicly listed worldwide."
+          : offer.trialDays > 0
+            ? `£0 today. Your ${offer.trialDays}-day free Pro trial starts the moment you confirm. Cancel any time from your REPs dashboard.`
+            : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
 
-    const submitMessage =
-      tier === "verified"
-        ? "You're joining the REPs Verified register — qualified, insured, and publicly listed worldwide."
-        : offer.trialDays > 0
-          ? `£0 today. Your ${offer.trialDays}-day free Pro trial starts the moment you confirm. Cancel any time from your REPs dashboard.`
-          : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
+      try {
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          customer: customerId,
+          line_items: [{ price: stripePrice.id, quantity: 1 }],
+          success_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${origin}/pricing?checkout=canceled`,
+          allow_promotion_codes: true,
+          payment_method_collection: "always",
+          custom_text: {
+            submit: { message: submitMessage },
+            terms_of_service_acceptance: {
+              message: `I agree to the [REPs Terms](${origin}/terms) and [Privacy Policy](${origin}/privacy).`,
+            },
+          },
+          consent_collection: { terms_of_service: "required" },
+          subscription_data: {
+            ...(offer.trialDays > 0 ? { trial_period_days: offer.trialDays } : {}),
+            metadata: {
+              reps_user_id: userId,
+              tier,
+              billing_period: period,
+              is_founding: String(offer.founding),
+              environment,
+            },
+          },
+          metadata: {
+            reps_user_id: userId,
+            tier,
+            billing_period: period,
+            environment,
+          },
+        });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      ui_mode: "embedded_page",
-      customer: customerId,
-      line_items: [{ price: stripePrice.id, quantity: 1 }],
-      return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-      allow_promotion_codes: true,
-      payment_method_collection: "always",
-      custom_text: {
-        submit: { message: submitMessage },
-        after_submit: {
-          message: "Setting up your verified REPs profile — this takes a few seconds.",
-        },
-        terms_of_service_acceptance: {
-          message: `I agree to the [REPs Terms](${origin}/terms) and [Privacy Policy](${origin}/privacy).`,
-        },
-      },
-      consent_collection: {
-        terms_of_service: "required",
-      },
-      subscription_data: {
-        ...(offer.trialDays > 0 ? { trial_period_days: offer.trialDays } : {}),
-        metadata: {
-          reps_user_id: userId,
-          tier,
-          billing_period: period,
-          is_founding: String(offer.founding),
-        },
-      },
-      metadata: {
-        reps_user_id: userId,
-        tier,
-        billing_period: period,
-      },
-    });
-
-    return { clientSecret: session.client_secret ?? "" };
+        if (!session.url) throw new Error("Stripe did not return a checkout URL");
+        return { url: session.url };
+      } catch (err) {
+        return { error: getStripeErrorMessage(err) };
+      }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Could not start checkout" };
+    }
   });
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}))
+  .inputValidator((data: unknown) =>
+    z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}),
+  )
   .handler(async ({ data, context }) => {
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
     const customerId = await getOrCreateCustomer({ userId, email, environment: data.environment });
-    const { createStripeClient } = await import("./stripe.server");
+    const { createStripeClient, getCheckoutOrigin } = await import("./stripe.server");
     const stripe = createStripeClient(data.environment);
-    const origin = getOrigin();
+    const origin = getCheckoutOrigin();
 
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
@@ -150,10 +121,13 @@ export const getMySubscription = createServerFn({ method: "GET" })
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Latest row wins. With per-environment uniqueness a user may have
+    // both a sandbox and a live row; in real-world production only the
+    // live row exists, and ordering by updated_at keeps that behavior.
     const { data } = await supabaseAdmin
       .from("subscriptions")
       .select(
-        "tier, billing_period, status, current_period_end, cancel_at_period_end, is_founding, stripe_price_id, stripe_subscription_id"
+        "tier, billing_period, status, current_period_end, cancel_at_period_end, is_founding, stripe_price_id, stripe_subscription_id, environment",
       )
       .eq("user_id", userId)
       .order("updated_at", { ascending: false })
@@ -185,12 +159,15 @@ export const getMySubscription = createServerFn({ method: "GET" })
   });
 
 /**
- * Recovery path when a webhook is missed: pulls the latest subscription from
- * Stripe for the current user and upserts it into our `subscriptions` table.
+ * Recovery path when a webhook is missed: pulls the latest subscription
+ * from Stripe for the current user and upserts it into our
+ * `subscriptions` table for the given environment.
  */
 export const syncMySubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}))
+  .inputValidator((data: unknown) =>
+    z.object({ environment: z.enum(["sandbox", "live"]) }).parse(data ?? {}),
+  )
   .handler(async ({ data, context }) => {
     const { userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
@@ -230,13 +207,14 @@ export const syncMySubscription = createServerFn({ method: "POST" })
       current_period_end: cpe ? new Date(cpe * 1000).toISOString() : null,
       cancel_at_period_end: sub.cancel_at_period_end ?? false,
       is_founding: lookup?.founding ?? false,
+      environment: data.environment,
       metadata: sub.metadata as unknown as object,
       updated_at: new Date().toISOString(),
     };
 
     await supabaseAdmin
       .from("subscriptions")
-      .upsert(row as never, { onConflict: "user_id" });
+      .upsert(row as never, { onConflict: "user_id,environment" });
 
     return { synced: true, tier: row.tier, status: row.status };
   });
