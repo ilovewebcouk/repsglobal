@@ -575,12 +575,12 @@ export const listMyActivity = createServerFn({ method: "GET" })
     try {
       const { data: vs } = await supabaseAdmin
         .from("verification_submissions")
-        .select("id, status, qualification, awarding_body, submitted_at, reviewed_at, created_at")
+        .select("id, status, qualification, awarding_body, reviewed_at, created_at")
         .eq("professional_id", userId)
         .order("created_at", { ascending: false })
         .limit(30);
       for (const v of vs ?? []) {
-        const at = (v.reviewed_at ?? v.submitted_at ?? v.created_at) as string;
+        const at = (v.reviewed_at ?? v.created_at) as string;
         events.push({
           id: `ver_${v.id}_${v.status}`,
           at,
