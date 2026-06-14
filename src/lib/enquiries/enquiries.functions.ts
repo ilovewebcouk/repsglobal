@@ -240,6 +240,7 @@ export type EnquiryStats = {
   reply_rate_pct: number | null;
   reply_time_avg_hours: number | null;
   total: number;
+  unread: number;
 };
 
 export const getEnquiryStats = createServerFn({ method: "GET" })
@@ -263,6 +264,7 @@ export const getEnquiryStats = createServerFn({ method: "GET" })
     const thisMonth = rows.filter((r) => r.created_at >= monthStart.toISOString());
     const last30 = rows.filter((r) => r.created_at >= since30);
     const replied30 = last30.filter((r) => r.replied_at || r.status === "replied");
+    const unread = rows.filter((r) => r.status === "new").length;
 
     const replyTimeAvg = replied30.length
       ? replied30
@@ -278,5 +280,6 @@ export const getEnquiryStats = createServerFn({ method: "GET" })
       reply_rate_pct: last30.length ? Math.round((replied30.length / last30.length) * 100) : null,
       reply_time_avg_hours: replyTimeAvg,
       total: rows.length,
+      unread,
     };
   });
