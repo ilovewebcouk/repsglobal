@@ -93,8 +93,6 @@ import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } fr
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
-import { Route as AuthenticatedProfessionalDashboardLeadsRouteImport } from './routes/_authenticated/_professional/dashboard_.leads'
-import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from './routes/_authenticated/_professional/dashboard_.enquiries'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
 import { Route as AuthenticatedProfessionalCheckoutCreditsRouteImport } from './routes/_authenticated/_professional/checkout_.credits'
@@ -104,6 +102,7 @@ import { Route as AuthenticatedProfessionalProDashboardProgramsRouteImport } fro
 import { Route as AuthenticatedProfessionalProDashboardPaymentsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.payments'
 import { Route as AuthenticatedProfessionalProDashboardNutritionRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.nutrition'
 import { Route as AuthenticatedProfessionalProDashboardMessagesRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.messages'
+import { Route as AuthenticatedProfessionalProDashboardLeadsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.leads'
 import { Route as AuthenticatedProfessionalProDashboardContentRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.content'
 import { Route as AuthenticatedProfessionalProDashboardCommunityRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.community'
 import { Route as AuthenticatedProfessionalProDashboardClientsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.clients'
@@ -543,18 +542,6 @@ const AuthenticatedProfessionalDashboardProfileRoute =
     path: '/dashboard/profile',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardLeadsRoute =
-  AuthenticatedProfessionalDashboardLeadsRouteImport.update({
-    id: '/dashboard_/leads',
-    path: '/dashboard/leads',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
-const AuthenticatedProfessionalDashboardEnquiriesRoute =
-  AuthenticatedProfessionalDashboardEnquiriesRouteImport.update({
-    id: '/dashboard_/enquiries',
-    path: '/dashboard/enquiries',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardCpdRoute =
   AuthenticatedProfessionalDashboardCpdRouteImport.update({
     id: '/dashboard_/cpd',
@@ -607,6 +594,12 @@ const AuthenticatedProfessionalProDashboardMessagesRoute =
   AuthenticatedProfessionalProDashboardMessagesRouteImport.update({
     id: '/dashboard_/messages',
     path: '/dashboard/messages',
+    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
+  } as any)
+const AuthenticatedProfessionalProDashboardLeadsRoute =
+  AuthenticatedProfessionalProDashboardLeadsRouteImport.update({
+    id: '/dashboard_/leads',
+    path: '/dashboard/leads',
     getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardContentRoute =
@@ -735,8 +728,6 @@ export interface FileRoutesByFullPath {
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
-  '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/dashboard/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -752,6 +743,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/clients': typeof AuthenticatedProfessionalProDashboardClientsRouteWithChildren
   '/dashboard/community': typeof AuthenticatedProfessionalProDashboardCommunityRoute
   '/dashboard/content': typeof AuthenticatedProfessionalProDashboardContentRoute
+  '/dashboard/leads': typeof AuthenticatedProfessionalProDashboardLeadsRoute
   '/dashboard/messages': typeof AuthenticatedProfessionalProDashboardMessagesRoute
   '/dashboard/nutrition': typeof AuthenticatedProfessionalProDashboardNutritionRoute
   '/dashboard/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
@@ -836,8 +828,6 @@ export interface FileRoutesByTo {
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
-  '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/dashboard/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -853,6 +843,7 @@ export interface FileRoutesByTo {
   '/dashboard/clients': typeof AuthenticatedProfessionalProDashboardClientsRouteWithChildren
   '/dashboard/community': typeof AuthenticatedProfessionalProDashboardCommunityRoute
   '/dashboard/content': typeof AuthenticatedProfessionalProDashboardContentRoute
+  '/dashboard/leads': typeof AuthenticatedProfessionalProDashboardLeadsRoute
   '/dashboard/messages': typeof AuthenticatedProfessionalProDashboardMessagesRoute
   '/dashboard/nutrition': typeof AuthenticatedProfessionalProDashboardNutritionRoute
   '/dashboard/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
@@ -942,8 +933,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
-  '/_authenticated/_professional/dashboard_/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/_authenticated/_professional/dashboard_/leads': typeof AuthenticatedProfessionalDashboardLeadsRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -959,6 +948,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/_pro/dashboard_/clients': typeof AuthenticatedProfessionalProDashboardClientsRouteWithChildren
   '/_authenticated/_professional/_pro/dashboard_/community': typeof AuthenticatedProfessionalProDashboardCommunityRoute
   '/_authenticated/_professional/_pro/dashboard_/content': typeof AuthenticatedProfessionalProDashboardContentRoute
+  '/_authenticated/_professional/_pro/dashboard_/leads': typeof AuthenticatedProfessionalProDashboardLeadsRoute
   '/_authenticated/_professional/_pro/dashboard_/messages': typeof AuthenticatedProfessionalProDashboardMessagesRoute
   '/_authenticated/_professional/_pro/dashboard_/nutrition': typeof AuthenticatedProfessionalProDashboardNutritionRoute
   '/_authenticated/_professional/_pro/dashboard_/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
@@ -1046,8 +1036,6 @@ export interface FileRouteTypes {
     | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
-    | '/dashboard/enquiries'
-    | '/dashboard/leads'
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
@@ -1063,6 +1051,7 @@ export interface FileRouteTypes {
     | '/dashboard/clients'
     | '/dashboard/community'
     | '/dashboard/content'
+    | '/dashboard/leads'
     | '/dashboard/messages'
     | '/dashboard/nutrition'
     | '/dashboard/payments'
@@ -1147,8 +1136,6 @@ export interface FileRouteTypes {
     | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
-    | '/dashboard/enquiries'
-    | '/dashboard/leads'
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
@@ -1164,6 +1151,7 @@ export interface FileRouteTypes {
     | '/dashboard/clients'
     | '/dashboard/community'
     | '/dashboard/content'
+    | '/dashboard/leads'
     | '/dashboard/messages'
     | '/dashboard/nutrition'
     | '/dashboard/payments'
@@ -1252,8 +1240,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/checkout_/credits'
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
-    | '/_authenticated/_professional/dashboard_/enquiries'
-    | '/_authenticated/_professional/dashboard_/leads'
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
@@ -1269,6 +1255,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/_pro/dashboard_/clients'
     | '/_authenticated/_professional/_pro/dashboard_/community'
     | '/_authenticated/_professional/_pro/dashboard_/content'
+    | '/_authenticated/_professional/_pro/dashboard_/leads'
     | '/_authenticated/_professional/_pro/dashboard_/messages'
     | '/_authenticated/_professional/_pro/dashboard_/nutrition'
     | '/_authenticated/_professional/_pro/dashboard_/payments'
@@ -1944,20 +1931,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/leads': {
-      id: '/_authenticated/_professional/dashboard_/leads'
-      path: '/dashboard/leads'
-      fullPath: '/dashboard/leads'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardLeadsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
-    '/_authenticated/_professional/dashboard_/enquiries': {
-      id: '/_authenticated/_professional/dashboard_/enquiries'
-      path: '/dashboard/enquiries'
-      fullPath: '/dashboard/enquiries'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/cpd': {
       id: '/_authenticated/_professional/dashboard_/cpd'
       path: '/dashboard/cpd'
@@ -2019,6 +1992,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/messages'
       fullPath: '/dashboard/messages'
       preLoaderRoute: typeof AuthenticatedProfessionalProDashboardMessagesRouteImport
+      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
+    }
+    '/_authenticated/_professional/_pro/dashboard_/leads': {
+      id: '/_authenticated/_professional/_pro/dashboard_/leads'
+      path: '/dashboard/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof AuthenticatedProfessionalProDashboardLeadsRouteImport
       parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/content': {
@@ -2103,6 +2083,7 @@ interface AuthenticatedProfessionalProRouteRouteChildren {
   AuthenticatedProfessionalProDashboardClientsRoute: typeof AuthenticatedProfessionalProDashboardClientsRouteWithChildren
   AuthenticatedProfessionalProDashboardCommunityRoute: typeof AuthenticatedProfessionalProDashboardCommunityRoute
   AuthenticatedProfessionalProDashboardContentRoute: typeof AuthenticatedProfessionalProDashboardContentRoute
+  AuthenticatedProfessionalProDashboardLeadsRoute: typeof AuthenticatedProfessionalProDashboardLeadsRoute
   AuthenticatedProfessionalProDashboardMessagesRoute: typeof AuthenticatedProfessionalProDashboardMessagesRoute
   AuthenticatedProfessionalProDashboardNutritionRoute: typeof AuthenticatedProfessionalProDashboardNutritionRoute
   AuthenticatedProfessionalProDashboardPaymentsRoute: typeof AuthenticatedProfessionalProDashboardPaymentsRoute
@@ -2127,6 +2108,8 @@ const AuthenticatedProfessionalProRouteRouteChildren: AuthenticatedProfessionalP
       AuthenticatedProfessionalProDashboardCommunityRoute,
     AuthenticatedProfessionalProDashboardContentRoute:
       AuthenticatedProfessionalProDashboardContentRoute,
+    AuthenticatedProfessionalProDashboardLeadsRoute:
+      AuthenticatedProfessionalProDashboardLeadsRoute,
     AuthenticatedProfessionalProDashboardMessagesRoute:
       AuthenticatedProfessionalProDashboardMessagesRoute,
     AuthenticatedProfessionalProDashboardNutritionRoute:
@@ -2166,8 +2149,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRouteWithChildren
   AuthenticatedProfessionalCheckoutCreditsRoute: typeof AuthenticatedProfessionalCheckoutCreditsRoute
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
-  AuthenticatedProfessionalDashboardEnquiriesRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  AuthenticatedProfessionalDashboardLeadsRoute: typeof AuthenticatedProfessionalDashboardLeadsRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -2184,10 +2165,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalCheckoutCreditsRoute,
     AuthenticatedProfessionalDashboardCpdRoute:
       AuthenticatedProfessionalDashboardCpdRoute,
-    AuthenticatedProfessionalDashboardEnquiriesRoute:
-      AuthenticatedProfessionalDashboardEnquiriesRoute,
-    AuthenticatedProfessionalDashboardLeadsRoute:
-      AuthenticatedProfessionalDashboardLeadsRoute,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
