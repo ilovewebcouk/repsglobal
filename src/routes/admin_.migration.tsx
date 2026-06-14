@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { requireRole } from "@/lib/route-gates";
 import {
   AlertCircle,
   CheckCircle2,
+  CreditCard,
   Database,
   Download,
   FileCheck,
   Image as ImageIcon,
+  Link2,
   PlayCircle,
   RefreshCw,
   Users,
@@ -17,6 +20,12 @@ import {
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { getBdMigrationStats, type BdMigrationStats } from "@/lib/admin/bd-migration.functions";
+import {
+  getLegacyLinkingStats,
+  linkLegacyStripeCustomers,
+  runLegacyRenewalBatch,
+  type LegacyLinkingStats,
+} from "@/lib/admin/stripe-linking.functions";
 
 export const Route = createFileRoute("/admin_/migration")({
   ssr: false,
