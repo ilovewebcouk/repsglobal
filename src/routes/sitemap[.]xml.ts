@@ -3,7 +3,7 @@ import type {} from "@tanstack/react-start";
 
 import { RESOURCE_ARTICLES } from "@/lib/resources";
 
-const BASE_URL = "https://staging.repsuk.org";
+const BASE_URL = "https://repsglobal.lovable.app";
 
 interface SitemapEntry {
   path: string;
