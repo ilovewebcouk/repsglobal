@@ -22,10 +22,14 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { getBdMigrationStats, type BdMigrationStats } from "@/lib/admin/bd-migration.functions";
 import {
   getLegacyLinkingStats,
+  linkLegacyFromStripeCsv,
   linkLegacyStripeCustomers,
+  resetLegacyLinking,
   runLegacyRenewalBatch,
   type LegacyLinkingStats,
 } from "@/lib/admin/stripe-linking.functions";
+import Papa from "papaparse";
+
 
 export const Route = createFileRoute("/admin_/migration")({
   ssr: false,
