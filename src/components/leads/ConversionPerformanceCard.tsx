@@ -30,7 +30,7 @@ export function ConversionPerformanceCard({ kpis }: { kpis: LeadKpis | undefined
         <Row label="Proposal to client" pct={cr?.proposal_to_client ?? null} />
       </ul>
 
-      <div className="mt-4 flex items-center justify-between rounded-[14px] border border-reps-orange-border/40 bg-reps-orange-soft/15 px-4 py-3">
+      <div className="mt-4 flex items-center justify-between rounded-[16px] border border-reps-orange-border/40 bg-reps-orange-soft/15 px-4 py-3">
         <div>
           <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/55">
             Average client value

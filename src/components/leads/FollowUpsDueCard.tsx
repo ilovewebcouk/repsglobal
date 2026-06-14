@@ -26,7 +26,7 @@ export function FollowUpsDueCard({
           list.map((f) => (
             <div
               key={f.id}
-              className="flex items-center gap-3 rounded-[14px] border border-reps-border/60 bg-reps-panel-soft px-3 py-2.5"
+              className="flex items-center gap-3 rounded-[16px] border border-reps-border/60 bg-reps-panel-soft px-3 py-2.5"
             >
               <div className="grid size-9 shrink-0 place-items-center rounded-full bg-reps-orange-soft text-[10.5px] font-bold text-reps-orange">
                 {initials(f.name)}
