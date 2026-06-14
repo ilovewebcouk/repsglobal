@@ -335,7 +335,7 @@ function BackfillScoresButton({ onDone }: { onDone: () => void }) {
       size="sm"
       onClick={() => m.mutate()}
       disabled={m.isPending}
-      className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none hover:text-white"
+      className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
     >
       {m.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-reps-orange" />}
       <span className="ml-1.5">{m.isPending ? "Scoring…" : "Score all"}</span>
