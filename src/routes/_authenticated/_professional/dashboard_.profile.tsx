@@ -1154,8 +1154,8 @@ function ProfileEditorPage() {
       subtitle="Manage how your professional profile appears in the REPS directory."
       actions={
         <>
-          <DashboardButton variant="ghost" disabled={!profile.is_published} asChild>
-            <a href="/find-a-professional" target="_blank" rel="noreferrer">
+          <DashboardButton variant="ghost" disabled={!profile.is_published || !profile.slug} asChild>
+            <a href={profile.slug ? `/c/${profile.slug}` : undefined} target="_blank" rel="noreferrer">
               <Eye className="h-3.5 w-3.5" />
               Preview public profile
             </a>

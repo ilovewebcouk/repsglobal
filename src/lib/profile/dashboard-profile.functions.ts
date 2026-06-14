@@ -27,6 +27,7 @@ export type DashboardProfile = {
   /** True when legal name is immutable from the dashboard. */
   legal_name_locked: boolean;
   // professional fields
+  slug: string | null;
   headline: string | null; // "Tagline" in UI
   primary_profession: ProfessionSlug | null;
   specialisms: SpecialismSlug[];
@@ -64,7 +65,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
+          "slug, headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -88,6 +89,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       avatar_url: (profRow.avatar_url as string | null) ?? null,
       identity_status: idStatus,
       legal_name_locked: idStatus === "approved",
+      slug: (proRow.slug as string | null) ?? null,
       headline: (proRow.headline as string | null) ?? null,
       primary_profession:
         typeof primary === "string" && (PROFESSION_SLUGS as string[]).includes(primary)
