@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import proJames from "@/assets/pro-james.jpg";
 import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
 import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
+import { getSpecialismLabel } from "@/lib/specialisms";
 
 /* ------------------------------------------------------------------ */
 /* Route                                                               */
@@ -159,6 +160,29 @@ function EnquirePage() {
         desc: s.description ?? "",
         price: s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
       }));
+    }
+    // Verified-tier fallback: no paid service packages, derive coaching
+    // options from the pro's specialisms (the same chips on their card).
+    const specialisms = live?.shopFront.specialisms ?? [];
+    if (specialisms.length) {
+      const opts: ServiceOption[] = specialisms.map((slug) => {
+        const label = getSpecialismLabel(slug) ?? slug;
+        return {
+          id: `spec:${slug}`,
+          serviceUuid: null,
+          label: `${label} coaching`,
+          desc: `Tailored 1-to-1 coaching focused on ${label.toLowerCase()}.`,
+          price: "Enquire",
+        };
+      });
+      opts.push({
+        id: "discovery",
+        serviceUuid: null,
+        label: "Discovery call",
+        desc: "Free 15-min call to discuss goals — no commitment.",
+        price: "Free",
+      });
+      return opts;
     }
     return fallbackPro.services.map((s) => ({
       id: `fallback:${s.id}`,

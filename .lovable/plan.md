@@ -58,3 +58,21 @@ What earns the 10th point — the buttons doing real work:
 6. **Auto-stage transitions** — booking a call moves to "Call booked"
    automatically. Sending a proposal moves to "Proposal sent". This is what
    makes a pipeline feel alive vs. a spreadsheet.
+
+---
+
+## Pass A — SHIPPED 2026-06-14
+
+End-to-end specialisms data flow live for Verified members.
+
+**New files**
+- `src/components/profile/SpecialismsPicker.tsx` — shared 16-chip picker (max 3).
+- `src/routes/_authenticated/_professional/dashboard_.services.tsx` — new `/dashboard/services` route. Manages `professionals.specialisms[]` + `in_person_available` / `online_available` via existing `updateMyDashboardProfile`. Live directory-card preview. Pro upsell card for paid service packages (verified-only).
+
+**Edited**
+- `src/components/dashboard/DashboardShell.tsx` — added `"Services"` to `TrainerActive` and a new `Sparkles` nav item in `VERIFIED_NAV` between Public Profile and Shop-front.
+- `src/routes/pro.$slug.enquire.tsx` — when a public pro has NO paid service packages (Verified tier), derive the "What kind of coaching" options from `shopFront.specialisms` (one per specialism + a free Discovery call), instead of falling back to the hard-coded James Wilson packages.
+
+**No DB changes.** No locked screen was visually modified.
+
+**Next: Pass B — Settings rebuild + migrations.**
