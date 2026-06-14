@@ -561,6 +561,31 @@ function StripeLinkingPanel() {
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button
+            onClick={() => {
+              if (window.confirm(`Delete ALL ${data?.linked ?? 0} link rows? This is destructive and only needed when switching env (e.g. sandbox → live).`))
+                resetPass.mutate();
+            }}
+            disabled={busy}
+            className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
+          >
+            {resetPass.isPending ? "Resetting…" : "Reset linking"}
+          </button>
+          <label className="flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/85 disabled:opacity-50">
+            <Download className="h-3.5 w-3.5" />
+            {csvImport.isPending ? "Importing…" : "Import Stripe CSV"}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              hidden
+              disabled={busy}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleCsvFile(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button
             onClick={() => linkPass.mutate()}
             disabled={busy}
             className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white disabled:opacity-50"
@@ -576,6 +601,7 @@ function StripeLinkingPanel() {
             <CreditCard className="h-3.5 w-3.5" />
             {renewPass.isPending ? "Renewing…" : `Renew due (${data?.due_now ?? 0})`}
           </button>
+
         </div>
       </div>
       {isLoading || !data ? (
