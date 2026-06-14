@@ -96,6 +96,8 @@ function ServicesPage() {
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
 
+  if (blocked) return null;
+
   return (
     <DashboardShell
       role="trainer"

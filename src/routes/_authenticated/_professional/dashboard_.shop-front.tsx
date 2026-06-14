@@ -148,6 +148,8 @@ function ShopFrontEditorPage() {
   const slug = sf?.slug;
   const isPro = tier === "pro" || tier === "studio";
 
+  if (blocked) return null;
+
   return (
     <DashboardShell
       role="trainer"
