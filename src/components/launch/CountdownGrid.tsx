@@ -18,7 +18,7 @@ function pad(n: number, w = 2) {
 }
 
 const LABELS: Array<{ key: keyof Parts; label: string; width: number }> = [
-  { key: "days", label: "Days", width: 3 },
+  { key: "days", label: "Days", width: 2 },
   { key: "hours", label: "Hours", width: 2 },
   { key: "minutes", label: "Minutes", width: 2 },
   { key: "seconds", label: "Seconds", width: 2 },
@@ -32,14 +32,17 @@ const LABELS: Array<{ key: keyof Parts; label: string; width: number }> = [
  * so digits don't jitter.
  */
 export function CountdownGrid() {
-  const [now, setNow] = useState<number>(() => Date.now());
+  const [now, setNow] = useState<number>(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    setNow(Date.now());
+    setReady(true);
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const parts = computeParts(LAUNCH_AT_UTC, now);
+  const parts = ready ? computeParts(LAUNCH_AT_UTC, now) : { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
   return (
     <div
