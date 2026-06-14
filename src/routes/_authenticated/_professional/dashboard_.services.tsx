@@ -169,7 +169,7 @@ function ServicesPage() {
             </div>
           </PPanel>
 
-          {/* 03 — Pro upsell */}
+          {/* 03 — Pro upsell: Shop-front */}
           {tier === "verified" ? (
             <PPanel className="p-6">
               <div className="flex items-start gap-4">
@@ -178,19 +178,29 @@ function ServicesPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-display text-[15px] font-semibold text-white">
-                    Want paid service packages?
+                    Unlock your Shop-front
                   </h3>
                   <p className="mt-1 text-[13px] text-white/60">
-                    Pro adds price tiers (1-to-1, 12-week transformation, online coaching), a
-                    "Most popular" highlight, and a full Shop-front layout. Clients can book
-                    and pay directly from your page.
+                    Pro turns your listing into a full coach page — priced service packages,
+                    "Most popular" highlight, online enquire / book / pay, and a guided client
+                    onboarding flow. Verified members appear in the directory; Pro members sell
+                    from it.
                   </p>
-                  <Link
-                    to="/pricing"
-                    className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:underline"
-                  >
-                    See Pro <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px] font-semibold">
+                    <Link
+                      to="/features/shop-front"
+                      className="inline-flex items-center gap-1.5 text-reps-orange hover:underline"
+                    >
+                      See the Shop-front <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                    <span className="text-white/30">·</span>
+                    <Link
+                      to="/pricing"
+                      className="inline-flex items-center gap-1.5 text-white/70 hover:text-white"
+                    >
+                      Compare plans
+                    </Link>
+                  </div>
                 </div>
               </div>
             </PPanel>
