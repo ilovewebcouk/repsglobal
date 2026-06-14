@@ -59,16 +59,8 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 function ShopFrontEditorPage() {
   const tier = useTrainerTier();
-  const navigate = Route.useNavigate();
 
-  // Tier gate — Verified members don't have shop-fronts. Redirect to Services
-  // with an upsell toast.
-  React.useEffect(() => {
-    if (tier === "verified") {
-      toast.info("Shop-front is a Pro feature. Manage your services and directory listing here.");
-      navigate({ to: "/dashboard/services", replace: true });
-    }
-  }, [tier, navigate]);
+  // Verified members get the Lite shop-front; Pro/Studio get the full editor.
 
   const qc = useQueryClient();
   const fetchMine = useServerFn(getMyShopFront);
