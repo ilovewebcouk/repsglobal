@@ -41,7 +41,7 @@ const EnquiryNotificationEmail = ({
   budget,
   location,
   message = "",
-  inboxUrl = "https://repsglobal.lovable.app/dashboard/enquiries",
+  inboxUrl = "https://repsglobal.lovable.app/dashboard/leads",
 }: EnquiryNotificationProps) => {
   return (
     <Html lang="en" dir="ltr">
