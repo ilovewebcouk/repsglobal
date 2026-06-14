@@ -93,9 +93,9 @@ function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-reps-ink text-white">
-      {/* Slim header */}
-      <header className="border-b border-white/[0.06] bg-reps-ink/80 backdrop-blur">
-        <div className="mx-auto flex h-[60px] max-w-[1240px] items-center justify-between px-5">
+      {/* Full-width dark header band */}
+      <header className="border-b border-white/[0.06] bg-reps-ink">
+        <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
           <Link to="/" className="flex items-center text-white/90 transition hover:text-white">
             <RepsWordmark className="h-[18px]" />
           </Link>
@@ -115,187 +115,198 @@ function CheckoutPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1240px] px-5 py-10 lg:py-14">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-14">
-          {/* LEFT — order summary / context */}
-          <aside className="order-2 lg:order-1">
-            <div className="lg:sticky lg:top-24">
-              <div className="mb-6 flex items-center gap-2">
+      {/* Full-bleed split: dark left, light right, hard vertical seam */}
+      <main className="grid min-h-[calc(100vh-60px)] lg:grid-cols-2">
+        {/* LEFT — dark summary */}
+        <aside className="bg-reps-ink lg:border-r lg:border-white/[0.08]">
+          <div className="ml-auto w-full max-w-[560px] px-6 py-10 lg:px-12 lg:py-16">
+            <div className="mb-6 flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className="border-reps-orange-border bg-reps-orange-soft text-[11px] font-medium uppercase tracking-[0.12em] text-reps-orange"
+              >
+                REPs {tierMeta.label}
+              </Badge>
+              {isFounding && (
                 <Badge
                   variant="outline"
-                  className="border-reps-orange-border bg-reps-orange-soft text-[11px] font-medium uppercase tracking-[0.12em] text-reps-orange"
+                  className="border-emerald-400/30 bg-emerald-500/15 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-300"
                 >
-                  REPs {tierMeta.label}
+                  Founding
                 </Badge>
-                {isFounding && (
-                  <Badge
-                    variant="outline"
-                    className="border-emerald-400/30 bg-emerald-500/15 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-300"
-                  >
-                    Founding
-                  </Badge>
-                )}
-              </div>
+              )}
+            </div>
 
-              <h1 className="font-display text-[28px] font-semibold leading-tight text-white lg:text-[34px]">
-                You're joining REPs {tierMeta.label}.
-              </h1>
-              <p className="mt-3 max-w-[440px] text-[15px] leading-relaxed text-white/65">
-                {tierMeta.blurb}
-              </p>
+            <h1 className="font-display text-[28px] font-semibold leading-tight text-white lg:text-[34px]">
+              You're joining REPs {tierMeta.label}.
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              {tierMeta.blurb}
+            </p>
 
-              {/* Price block */}
-              <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.03] p-5">
-                <div className="flex items-baseline justify-between gap-4">
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      {priceView.was && (
-                        <span className="text-[15px] text-white/40 line-through">
-                          {priceView.was}
-                        </span>
-                      )}
-                      <span className="font-display text-[32px] font-semibold text-white">
-                        {priceView.price}
+            {/* Price block */}
+            <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.03] p-5">
+              <div className="flex items-baseline justify-between gap-4">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    {priceView.was && (
+                      <span className="text-[15px] text-white/40 line-through">
+                        {priceView.was}
                       </span>
-                      <span className="text-[14px] text-white/55">{priceView.period}</span>
-                    </div>
-                    {priceView.meta && (
-                      <p className="mt-1 text-[12.5px] text-white/45">{priceView.meta}</p>
                     )}
+                    <span className="font-display text-[32px] font-semibold text-white">
+                      {priceView.price}
+                    </span>
+                    <span className="text-[14px] text-white/55">{priceView.period}</span>
                   </div>
-                  {isFounding && (
-                    <div className="flex items-center gap-1 text-[11.5px] font-medium uppercase tracking-[0.1em] text-reps-orange">
-                      <Sparkles className="size-3.5" aria-hidden />
-                      Locked for life
-                    </div>
+                  {priceView.meta && (
+                    <p className="mt-1 text-[12.5px] text-white/45">{priceView.meta}</p>
                   )}
                 </div>
-
-                {trialDays > 0 && (
-                  <div className="mt-4 flex items-start gap-2.5 rounded-[12px] border border-emerald-400/25 bg-emerald-500/10 p-3">
-                    <Check className="mt-0.5 size-4 shrink-0 text-emerald-300" aria-hidden />
-                    <div className="text-[13px] leading-relaxed text-emerald-100/90">
-                      <span className="font-medium text-emerald-100">£0 today.</span> Your {trialDays}-day free trial starts now. Cancel anytime before day {trialDays} and you won't be charged.
-                    </div>
+                {isFounding && (
+                  <div className="flex items-center gap-1 text-[11.5px] font-medium uppercase tracking-[0.1em] text-reps-orange">
+                    <Sparkles className="size-3.5" aria-hidden />
+                    Locked for life
                   </div>
                 )}
               </div>
 
-              {/* What's included */}
-              <div className="mt-7">
-                <h2 className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
-                  What's included
-                </h2>
-                <ul className="mt-3 space-y-2.5">
-                  {plan.features.slice(0, isPro ? 7 : 5).map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-[14px] text-white/80">
-                      <Check className="mt-0.5 size-4 shrink-0 text-reps-orange" aria-hidden />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Trust strip */}
-              <div className="mt-7 grid grid-cols-3 gap-3">
-                <TrustTile
-                  icon={<ShieldCheck className="size-4" />}
-                  label="Verified register"
-                  sub="Credentials checked"
-                />
-                <TrustTile
-                  icon={<Lock className="size-4" />}
-                  label="Secure payment"
-                  sub="PCI DSS Level 1"
-                />
-                <TrustTile
-                  icon={<Check className="size-4" />}
-                  label="Cancel anytime"
-                  sub="From your dashboard"
-                />
-              </div>
-
-              {/* Testimonial */}
-              <figure className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.02] p-5">
-                <blockquote className="text-[14px] leading-relaxed text-white/80">
-                  "Being on the verified register is what finally separated me from every other PT in the area. Enquiries went from 'cheapest please' to serious clients."
-                </blockquote>
-                <figcaption className="mt-3 flex items-center gap-2 text-[12.5px] text-white/50">
-                  <span className="size-[22px] rounded-full bg-gradient-to-br from-reps-orange/60 to-reps-orange/20" aria-hidden />
-                  James W. · Personal Trainer · London
-                </figcaption>
-              </figure>
-            </div>
-          </aside>
-
-          {/* RIGHT — Stripe embedded checkout */}
-          <section className="order-1 lg:order-2">
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.02] p-1.5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.6)]">
-              {error && (
-                <div className="rounded-[18px] border border-red-400/40 bg-red-500/10 p-8 text-red-100">
-                  <p className="font-display text-[18px] font-semibold">Checkout couldn't start</p>
-                  <p className="mt-2 text-[14px] text-red-100/80">{error}</p>
-                  <Button
-                    className="mt-5"
-                    onClick={() => {
-                      setError(null);
-                      setClientSecret(null);
-                    }}
-                  >
-                    Try again
-                  </Button>
-                </div>
-              )}
-
-              {!error && !clientSecret && (
-                <div className="flex min-h-[520px] flex-col items-center justify-center rounded-[18px] bg-white/[0.02] p-8 text-center">
-                  <Loader2 className="size-6 animate-spin text-reps-orange" aria-hidden />
-                  <p className="mt-4 text-[14px] font-medium text-white/80">
-                    Preparing secure checkout
-                  </p>
-                  <p className="mt-1 text-[12.5px] text-white/45">
-                    Setting up your encrypted session with Stripe…
-                  </p>
-                </div>
-              )}
-
-              {!error && clientSecret && (
-                <div className="overflow-hidden rounded-[18px] bg-white">
-                  <EmbeddedCheckoutProvider
-                    stripe={getStripeClient()}
-                    options={{ clientSecret }}
-                  >
-                    <EmbeddedCheckout />
-                  </EmbeddedCheckoutProvider>
+              {trialDays > 0 && (
+                <div className="mt-4 flex items-start gap-2.5 rounded-[12px] border border-emerald-400/25 bg-emerald-500/10 p-3">
+                  <Check className="mt-0.5 size-4 shrink-0 text-emerald-300" aria-hidden />
+                  <div className="text-[13px] leading-relaxed text-emerald-100/90">
+                    <span className="font-medium text-emerald-100">£0 today.</span> Your {trialDays}-day free trial starts now. Cancel anytime before day {trialDays} and you won't be charged.
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* What's included */}
+            <div className="mt-7">
+              <h2 className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/45">
+                What's included
+              </h2>
+              <ul className="mt-3 flex flex-col gap-2.5">
+                {plan.features.slice(0, isPro ? 7 : 5).map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5 text-[14px] text-white/80">
+                    <Check className="mt-0.5 size-4 shrink-0 text-reps-orange" aria-hidden />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Trust strip */}
+            <div className="mt-7 grid grid-cols-3 gap-3">
+              <TrustTile
+                icon={<ShieldCheck className="size-4" />}
+                label="Verified register"
+                sub="Credentials checked"
+              />
+              <TrustTile
+                icon={<Lock className="size-4" />}
+                label="Secure payment"
+                sub="PCI DSS Level 1"
+              />
+              <TrustTile
+                icon={<Check className="size-4" />}
+                label="Cancel anytime"
+                sub="From your dashboard"
+              />
+            </div>
+
+            {/* Testimonial */}
+            <figure className="mt-7 rounded-[18px] border border-white/10 bg-white/[0.02] p-5">
+              <blockquote className="text-[14px] leading-relaxed text-white/80">
+                "Being on the verified register is what finally separated me from every other PT in the area. Enquiries went from 'cheapest please' to serious clients."
+              </blockquote>
+              <figcaption className="mt-3 flex items-center gap-2 text-[12.5px] text-white/50">
+                <span className="size-[22px] rounded-full bg-gradient-to-br from-reps-orange/60 to-reps-orange/20" aria-hidden />
+                James W. · Personal Trainer · London
+              </figcaption>
+            </figure>
+          </div>
+        </aside>
+
+        {/* RIGHT — light payment surface */}
+        <section className="bg-[#FAFAF7] text-reps-ink">
+          <div className="mr-auto w-full max-w-[560px] px-6 py-10 lg:px-12 lg:py-16">
+            <div className="mb-6">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-reps-ink/50">
+                Payment
+              </p>
+              <h2 className="mt-1 font-display text-[22px] font-semibold leading-tight text-reps-ink lg:text-[26px]">
+                Enter your details
+              </h2>
+              <p className="mt-1.5 text-[13.5px] text-reps-ink/60">
+                Powered by Stripe. Your card details never touch REPs servers.
+              </p>
+            </div>
+
+            {error && (
+              <div className="rounded-[18px] border border-red-200 bg-red-50 p-6 text-red-900">
+                <p className="font-display text-[18px] font-semibold">Checkout couldn't start</p>
+                <p className="mt-2 text-[14px] text-red-900/80">{error}</p>
+                <Button
+                  className="mt-5"
+                  onClick={() => {
+                    setError(null);
+                    setClientSecret(null);
+                  }}
+                >
+                  Try again
+                </Button>
+              </div>
+            )}
+
+            {!error && !clientSecret && (
+              <div className="flex min-h-[420px] flex-col items-center justify-center rounded-[18px] border border-reps-ink/10 bg-white p-8 text-center">
+                <Loader2 className="size-6 animate-spin text-reps-orange" aria-hidden />
+                <p className="mt-4 text-[14px] font-medium text-reps-ink/80">
+                  Preparing secure checkout
+                </p>
+                <p className="mt-1 text-[12.5px] text-reps-ink/50">
+                  Setting up your encrypted session with Stripe…
+                </p>
+              </div>
+            )}
+
+            {!error && clientSecret && (
+              <div>
+                <EmbeddedCheckoutProvider
+                  stripe={getStripeClient()}
+                  options={{ clientSecret }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              </div>
+            )}
 
             {/* Below-iframe trust footer */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] text-white/40">
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-reps-ink/50">
               <span className="flex items-center gap-1.5">
                 <Lock className="size-3.5" aria-hidden />
-                Payments secured by Stripe
+                Secured by Stripe
               </span>
-              <span aria-hidden className="size-1 rounded-full bg-white/20" />
+              <span aria-hidden className="size-1 rounded-full bg-reps-ink/25" />
               <span>256-bit TLS</span>
-              <span aria-hidden className="size-1 rounded-full bg-white/20" />
+              <span aria-hidden className="size-1 rounded-full bg-reps-ink/25" />
               <span>PCI DSS Level 1</span>
             </div>
 
-            <p className="mt-6 text-center text-[12px] leading-relaxed text-white/40">
+            <p className="mt-5 text-[12px] leading-relaxed text-reps-ink/50">
               By continuing you agree to the REPs{" "}
-              <Link to="/terms" className="text-white/60 underline-offset-2 hover:underline">
+              <Link to="/terms" className="text-reps-ink/80 underline-offset-2 hover:underline">
                 Terms
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="text-white/60 underline-offset-2 hover:underline">
+              <Link to="/privacy" className="text-reps-ink/80 underline-offset-2 hover:underline">
                 Privacy Policy
               </Link>
               .
             </p>
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
     </div>
   );

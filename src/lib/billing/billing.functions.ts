@@ -80,6 +80,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     // Resolve to the actual Stripe price ID for this environment.
     const stripePrice = await resolvePriceByLookupKey(stripe, offer.priceId);
 
+    const submitMessage =
+      tier === "verified"
+        ? "You're joining the REPs Verified register — qualified, insured, and publicly listed worldwide."
+        : offer.trialDays > 0
+          ? `£0 today. Your ${offer.trialDays}-day free Pro trial starts the moment you confirm. Cancel any time from your REPs dashboard.`
+          : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       ui_mode: "embedded_page",
@@ -88,6 +95,18 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
       allow_promotion_codes: true,
       payment_method_collection: "always",
+      custom_text: {
+        submit: { message: submitMessage },
+        after_submit: {
+          message: "Setting up your verified REPs profile — this takes a few seconds.",
+        },
+        terms_of_service_acceptance: {
+          message: `I agree to the [REPs Terms](${origin}/terms) and [Privacy Policy](${origin}/privacy).`,
+        },
+      },
+      consent_collection: {
+        terms_of_service: "required",
+      },
       subscription_data: {
         ...(offer.trialDays > 0 ? { trial_period_days: offer.trialDays } : {}),
         metadata: {

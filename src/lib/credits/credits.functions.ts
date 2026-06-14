@@ -110,6 +110,14 @@ export const createCreditTopupCheckout = createServerFn({ method: "POST" })
       payment_intent_data: {
         description: `REPs AI Credits — ${pack.label} (${pack.credits} credits)`,
       },
+      custom_text: {
+        submit: {
+          message: `Top up ${pack.credits.toLocaleString()} REPs AI credits. Credits never expire and stack on top of your monthly allowance.`,
+        },
+        after_submit: {
+          message: "Adding credits to your REPs wallet — this takes a few seconds.",
+        },
+      },
       metadata: {
         reps_user_id: userId,
         userId,
