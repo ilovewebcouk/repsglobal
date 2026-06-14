@@ -420,6 +420,9 @@ export type ActivityEvent = {
   title: string;
   detail: string | null;
   ip: string | null;
+  location: string | null;
+  device: string | null;
+  browser: string | null;
 };
 
 const AUTH_ACTION_LABELS: Record<string, string> = {
@@ -445,12 +448,78 @@ const AUTH_ACTION_LABELS: Record<string, string> = {
   mfa_challenge_attempt: "2FA challenge",
 };
 
+function parseUaServer(ua: string | null | undefined): { device: string | null; browser: string | null } {
+  if (!ua) return { device: null, browser: null };
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  let os = "";
+  if (/Windows NT/i.test(ua)) os = "Windows";
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = "macOS";
+  else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/Linux/i.test(ua)) os = "Linux";
+  let browser = "";
+  if (/Edg\//i.test(ua)) browser = "Edge";
+  else if (/OPR\/|Opera/i.test(ua)) browser = "Opera";
+  else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = "Chrome";
+  else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = "Safari";
+  else if (/Firefox\//i.test(ua)) browser = "Firefox";
+  const device = isMobile ? `${os || "Mobile"} phone` : `${os || "Desktop"} computer`;
+  return { device, browser: browser || null };
+}
+
+async function geolocateIps(ips: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const unique = Array.from(new Set(ips.filter((i) => i && i !== "127.0.0.1" && !i.startsWith("10.") && !i.startsWith("192.168."))));
+  if (unique.length === 0) return map;
+  try {
+    // ip-api.com free batch endpoint — no key required, up to 100 IPs per call.
+    const res = await fetch("http://ip-api.com/batch?fields=status,country,regionName,city,query", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(unique.slice(0, 100).map((q) => ({ query: q }))),
+    });
+    if (!res.ok) return map;
+    const data = (await res.json()) as Array<{
+      status?: string;
+      country?: string;
+      regionName?: string;
+      city?: string;
+      query?: string;
+    }>;
+    for (const row of data) {
+      if (row.status !== "success" || !row.query) continue;
+      const loc = [row.city, row.regionName, row.country].filter(Boolean).join(", ");
+      if (loc) map.set(row.query, loc);
+    }
+  } catch (e) {
+    console.warn("[listMyActivity] geo lookup failed", e);
+  }
+  return map;
+}
+
 export const listMyActivity = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ events: ActivityEvent[] }> => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const events: ActivityEvent[] = [];
+
+    // Pull recent sessions to enrich with user-agent by IP.
+    const uaByIp = new Map<string, string>();
+    try {
+      const { data: ses } = await supabaseAdmin
+        .schema("auth" as never)
+        .from("sessions" as never)
+        .select("ip, user_agent, refreshed_at, created_at")
+        .eq("user_id", userId)
+        .order("refreshed_at", { ascending: false, nullsFirst: false })
+        .limit(50);
+      for (const s of (ses ?? []) as Array<{ ip: string | null; user_agent: string | null }>) {
+        if (s.ip && s.user_agent && !uaByIp.has(s.ip)) uaByIp.set(s.ip, s.user_agent);
+      }
+    } catch (e) {
+      console.warn("[listMyActivity] sessions enrich", e);
+    }
 
     // 1) auth.audit_log_entries — sign-ins, password changes, email changes, MFA
     try {
@@ -459,7 +528,7 @@ export const listMyActivity = createServerFn({ method: "GET" })
         .from("audit_log_entries" as never)
         .select("id, created_at, payload, ip_address")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       const rows = (auditRows ?? []) as Array<{
         id: string;
         created_at: string;
@@ -475,18 +544,26 @@ export const listMyActivity = createServerFn({ method: "GET" })
         const action = String(p.action ?? "");
         // Skip very noisy token refreshes
         if (action === "token_refreshed") continue;
+        const ip = r.ip_address || null;
+        const ua = ip ? uaByIp.get(ip) ?? null : null;
+        const parsed = parseUaServer(ua);
         events.push({
           id: `auth_${r.id}`,
           at: r.created_at,
           category: "auth",
           title: AUTH_ACTION_LABELS[action] ?? (action.replace(/_/g, " ") || "Account event"),
           detail: null,
-          ip: r.ip_address,
+          ip,
+          location: null,
+          device: parsed.device,
+          browser: parsed.browser,
         });
       }
     } catch (e) {
       console.warn("[listMyActivity] audit_log_entries", e);
     }
+
+
 
     // 2) credit_transactions
     try {
@@ -517,6 +594,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title,
           detail,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -543,6 +623,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
               ? `Renews ${new Date(s.current_period_end as string).toLocaleDateString()}`
               : null,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -565,6 +648,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title: "Legal name changed",
           detail: `${n.old_full_name ?? "—"} → ${n.new_full_name ?? "—"} · ${n.source ?? ""}`,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -588,6 +674,9 @@ export const listMyActivity = createServerFn({ method: "GET" })
           title: `Verification ${v.status ?? "submitted"}`,
           detail: [v.qualification, v.awarding_body].filter(Boolean).join(" · ") || null,
           ip: null,
+          location: null,
+          device: null,
+          browser: null,
         });
       }
     } catch (e) {
@@ -595,5 +684,16 @@ export const listMyActivity = createServerFn({ method: "GET" })
     }
 
     events.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-    return { events: events.slice(0, 100) };
+    const top = events.slice(0, 100);
+
+    // Geolocate the IPs we actually surface.
+    const ipsToLookup = top.map((e) => e.ip).filter((v): v is string => !!v);
+    if (ipsToLookup.length > 0) {
+      const geo = await geolocateIps(ipsToLookup);
+      for (const e of top) {
+        if (e.ip && geo.has(e.ip)) e.location = geo.get(e.ip) ?? null;
+      }
+    }
+
+    return { events: top };
   });
