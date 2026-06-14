@@ -34,20 +34,16 @@ export const logAdminAction = createServerFn({ method: "POST" })
       throw new Error("Forbidden: admin role required");
     }
 
-    const { data: logId, error } = await (supabase.rpc as CallableFunction)(
-      "log_admin_action",
-      {
-        _actor_id: userId,
-        _action: data.action,
-        _target_table: data.targetTable,
-        _target_id: data.targetId,
-        _before_state: data.beforeState,
-        _after_state: data.afterState,
-        _reason: data.reason,
-        _ip: undefined,
-        _user_agent: undefined,
-      } as Record<string, unknown>,
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: logId, error } = await (supabase as any).rpc("log_admin_action", {
+      _actor_id: userId,
+      _action: data.action,
+      _target_table: data.targetTable,
+      _target_id: data.targetId,
+      _before_state: data.beforeState,
+      _after_state: data.afterState,
+      _reason: data.reason,
+    });
 
     if (error) {
       throw new Error(`Audit log failed: ${error.message}`);
