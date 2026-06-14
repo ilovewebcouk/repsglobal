@@ -33,6 +33,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as ComingSoonRouteImport } from './routes/coming-soon'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
@@ -233,6 +234,11 @@ const ComparisonMethodologyRoute = ComparisonMethodologyRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComingSoonRoute = ComingSoonRouteImport.update({
+  id: '/coming-soon',
+  path: '/coming-soon',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -678,6 +684,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/coming-soon': typeof ComingSoonRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -782,6 +789,7 @@ export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/coming-soon': typeof ComingSoonRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -887,6 +895,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/coming-soon': typeof ComingSoonRoute
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -995,6 +1004,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/coming-soon'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1099,6 +1109,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/coming-soon'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1203,6 +1214,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
+    | '/coming-soon'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1311,6 +1323,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  ComingSoonRoute: typeof ComingSoonRoute
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ContactRoute: typeof ContactRoute
@@ -1549,6 +1562,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coming-soon': {
+      id: '/coming-soon'
+      path: '/coming-soon'
+      fullPath: '/coming-soon'
+      preLoaderRoute: typeof ComingSoonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -2283,6 +2303,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  ComingSoonRoute: ComingSoonRoute,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ContactRoute: ContactRoute,
