@@ -1,76 +1,81 @@
-# Legacy Member Import — Staging Plan
+## Goal
 
-Stage all 391 active members from the old `repsuk.org` CSV into a new `bd_member_seed` table, validate their profile photos with the existing Gemini gatekeeper, and stop. No `auth.users` rows, no claim flow, no emails — those come later when we're ready to launch.
+Get the legacy → Stripe linker matching **~363 of 390** seed emails on Live (vs the 124 it got in Sandbox), then leave the renewal cron unchanged.
 
-## 1. Schema
+## Root cause (confirmed by QA)
 
-New enum `bd_member_photo_status`: `pending | ok | rejected | missing | fetch_error`.
-New enum `bd_member_claim_status`: `staged | invited | claimed | skipped`.
+- The sandbox-only result (124 / 390) is correct for that environment — Sandbox Stripe is a separate customer database. The real run must happen on **Live**.
+- On Live, `customers.list({ email })` is exact-match and would still miss ~20 customers whose Stripe email is stored mixed-case (e.g. `Aprilcoll93@hotmail.com` vs seed `aprilcoll93@hotmail.com`).
+- 27 seed emails have no Stripe customer at all (legitimately un-linkable).
 
-New table `public.bd_member_seed` (admin-only RLS, service_role full access):
+## Changes
 
-- Identity: `bd_member_id` (PK from CSV), `email` (unique, lower+trim), `first_name`, `last_name`, `phone_raw`
-- Location: `address1`, `address2`, `city`, `zip_code`, `country_ln`, `lat`, `lon`, `service_areas`
-- Profile content: `about_me`, `quote`, `credentials`, `services_text`, `experience`, `years_active`
-- Web/social: `website`, `instagram`, `linkedin`, `youtube`, `tiktok`, `twitter`
-- Photo: `profile_photo_src` (legacy filename), `profile_photo_status`, `profile_photo_reject_category`, `profile_photo_reject_reason`, `profile_photo_storage_path`
-- Commerce: `legacy_plan` (`founding` | `standard`), `legacy_billing_period` (`yearly` | `onetime`), `legacy_signup_at`, `legacy_last_login_at`
-- Status: `claim_status` (default `staged`), `claimed_user_id`, `notes`
-- `created_at`, `updated_at` (+ trigger)
+### 1. Switch lookup to `customers.search` (case-insensitive + metadata fallback)
 
-`bd_migration` rows created in parallel: `target_tier='verified'`, `target_billing_period='annual'`, `status='pending'`.
+In `src/lib/admin/stripe-linking.functions.ts`, replace:
 
-## 2. Field mapping (locked)
+```ts
+const list = await stripe.customers.list({ email: row.email, limit: 1 });
+const customer = list.data[0];
+```
 
-| CSV column | Destination (on claim) | Notes |
-|---|---|---|
-| `first_name` + `last_name` | `profiles.full_name` | concat |
-| `email` | `auth.users.email` | lower+trim, dedupe |
-| `about_me` | `professionals.bio` | strip HTML |
-| `quote` | `professionals.headline` | |
-| `phone_number` | `professionals.contact_phone` | raw now, E.164 later |
-| `city` | `professionals.city` | |
-| `country_ln` | `professionals.country` | default `UK` if blank |
-| `website` | `professionals.website` | |
-| `instagram/linkedin/youtube/tiktok/twitter` | `social_*` | strip to handle |
-| validated `profile_photo` | `profiles.avatar_url` + `face_box` | |
-| `lat` + `lon` | `professional_locations` | seed on claim if sane |
-| `primary_profession` | `professionals.primary_profession` | force `personal-trainer` |
-| `specialisms` | `professionals.specialisms` | empty `{}`, prompt on claim |
-| `credentials`, `services`, `experience`, `year` | kept in `bd_member_seed` only | claim wizard offers them back as textareas |
-| `facebook`, `blog` | dropped | no REPs equivalent |
-| `password`, `verified`, `is_subscription_active`, `seo_*`, `form_security_token`, `bd_security`, `cc_type`, `payment_method_id`, `ref_code`, `google_*`, `gmap`, `geo_state`, cover/logo | dropped | |
+with a helper that uses Stripe Search:
 
-## 3. Importer (one-off server fn, admin-gated)
+```ts
+async function findCustomer(stripe, email) {
+  // Search is case-insensitive on email field
+  const q = `email:"${email}" OR metadata['email']:"${email}"`;
+  const res = await stripe.customers.search({ query: q, limit: 2 });
+  if (res.data.length) {
+    // Prefer non-deleted, most recent
+    return res.data.sort((a,b) => (b.created||0) - (a.created||0))[0];
+  }
+  // Fallback to list (handles accounts without search indexed yet)
+  const list = await stripe.customers.list({ email, limit: 1 });
+  return list.data[0] ?? null;
+}
+```
 
-`importBdMembersCsv` — reads the uploaded CSV path, BOM-aware, lower+trim emails, dedupe by email keeping the highest `bd_member_id`, parses `YYYYMMDDHHMMSS` → `timestamptz`, maps `subscription_name` → `legacy_plan`/`legacy_billing_period`, upserts `bd_member_seed` + `bd_migration`. Idempotent on re-run.
+### 2. Add a "Reset linking" admin action
 
-## 4. Photo fetch + validate (separate server fn)
+Add `resetLegacyLinking` server fn (admin-gated) that `TRUNCATE`s `legacy_stripe_link`. Surface as a destructive button in the admin panel with a confirm dialog. Required so we can re-run cleanly after switching Sandbox → Live without leaving stale `no_customer` rows.
 
-`processBdMemberPhotos` — for each `bd_member_seed` row with `profile_photo_status='pending'`:
+### 3. Add CSV-import fallback path
 
-1. Fetch `https://repsuk.org/pictures/profile/{filename}` (8 concurrent, per-request timeout, retries on transient errors).
-2. 404 → `missing`; network error → `fetch_error`.
-3. Run the **existing** Gemini gatekeeper from `src/lib/profile/avatar-ai.functions.ts` (no prompt changes). Same reject categories: `logo | illustration | group | full_body | face_obscured | low_quality | not_a_person | other`.
-4. `ok` → upload to `avatars` bucket at `bd-migration/{bd_member_id}/profile.{ext}`, record path.
-5. `rejected` → store category + model reason, never upload.
+New server fn `linkLegacyFromStripeCsv` that accepts a parsed array of `{email, customer_id}` from a Stripe Customers CSV export and writes link rows directly — bypassing the API entirely. Useful belt-and-braces and avoids any API rate-limit risk on a 390-row Live run.
 
-Resumable by status.
+Admin UI: a small "Upload Stripe CSV" file input next to the existing Link/Renew buttons. Parses client-side (papaparse), posts the minimal `{email, customer_id, created}` array to the server fn. The server fn still calls Stripe to fetch the active subscription per linked customer (so `legacy_kind`, `current_period_end`, `current_price_id` stay accurate).
 
-## 5. Admin summary
+### 4. Run sequence (operator playbook in the panel)
 
-`/admin/bd-migration` — counts by `claim_status`, `profile_photo_status`, top reject reasons, CSV export of rejects so we can hand-review before launch.
+The panel will display these steps in order:
 
-## 6. Stop
+1. Toggle environment to **Live**.
+2. Click **Reset linking** (wipes the sandbox results).
+3. Click **Run link pass** (uses new Search-based lookup).
+4. Verify stats: target ≈ 363 linked, ≈ 27 no_customer, 0 errors.
+5. Spot-check 5 rows manually in the new `legacy_stripe_link` listing.
+6. *Renewal pass is unchanged* — runs daily at 03:00 UTC via existing cron.
 
-No claim email, no claim page, no `auth.users` creation, no welcome email, no Stripe touch. Launch-day email + claim flow is a later phase.
+### 5. No changes to
 
-## Out of scope (this phase)
+- `runLegacyRenewalBatch` (renewal logic is fine).
+- The pg_cron schedule.
+- The Stripe webhook handler.
+- The `legacy_stripe_link` schema.
 
-Claim wizard, launch email send, parsing the `services` blob into `services` table rows, phone E.164 normalisation, country-scoped UI surfacing for non-UK members, cover/logo binaries.
+## Files touched
 
-## Technical notes
+```
+src/lib/admin/stripe-linking.functions.ts    edit  (Search + reset + CSV fns)
+src/routes/admin_.migration.tsx               edit  (Reset button, CSV upload, ordered steps)
+```
 
-- Table grants: `service_role` ALL; `authenticated` SELECT only via admin policy (`has_role(auth.uid(),'admin')`); no `anon` access.
-- Importer + photo fn live under `src/lib/admin/bd-migration.functions.ts`, both gated by `requireSupabaseAuth` + admin role check; `supabaseAdmin` loaded inside handlers.
-- CSV ingestion: accept upload via existing admin uploader OR read from a path the admin uploads to a private bucket; confirm preferred ingestion path before build.
+No DB migration. No new dependencies (papaparse is already in the project; if not, add it).
+
+## Acceptance
+
+- Live run, current code: only 124 linked (sandbox baseline).
+- Live run, with fix: **~363 linked, ~27 no_customer, 0 errors.**
+- Reset button empties the table; re-running is idempotent.
+- CSV-import path produces the same row count as the API path when given the Live CSV.

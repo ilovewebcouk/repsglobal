@@ -22,10 +22,14 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { getBdMigrationStats, type BdMigrationStats } from "@/lib/admin/bd-migration.functions";
 import {
   getLegacyLinkingStats,
+  linkLegacyFromStripeCsv,
   linkLegacyStripeCustomers,
+  resetLegacyLinking,
   runLegacyRenewalBatch,
   type LegacyLinkingStats,
 } from "@/lib/admin/stripe-linking.functions";
+import Papa from "papaparse";
+
 
 export const Route = createFileRoute("/admin_/migration")({
   ssr: false,
@@ -442,6 +446,8 @@ function StripeLinkingPanel() {
   const fetchStats = useServerFn(getLegacyLinkingStats);
   const linkFn = useServerFn(linkLegacyStripeCustomers);
   const renewFn = useServerFn(runLegacyRenewalBatch);
+  const resetFn = useServerFn(resetLegacyLinking);
+  const csvFn = useServerFn(linkLegacyFromStripeCsv);
   const [env, setEnv] = useState<"sandbox" | "live">("live");
   const [log, setLog] = useState<string | null>(null);
 
@@ -472,7 +478,58 @@ function StripeLinkingPanel() {
     onError: (e) => setLog(`Renewal pass failed: ${(e as Error).message}`),
   });
 
-  const busy = linkPass.isPending || renewPass.isPending || isFetching;
+  const resetPass = useMutation({
+    mutationFn: () => resetFn(),
+    onSuccess: (res) => {
+      setLog(`Reset: deleted ${res.deleted} link rows. Safe to re-run link pass.`);
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+    },
+    onError: (e) => setLog(`Reset failed: ${(e as Error).message}`),
+  });
+
+  const csvImport = useMutation({
+    mutationFn: (rows: { email: string; customer_id: string }[]) =>
+      csvFn({ data: { environment: env, rows } }),
+    onSuccess: (res) => {
+      setLog(
+        `CSV import (${env}): csv rows ${res.csv_rows}, matched seed ${res.matched_seed}, recurring ${res.linked_recurring}, one-time ${res.linked_onetime}, no-seed-match ${res.no_seed_match}, already-linked ${res.already_linked}, errors ${res.errors}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+    },
+    onError: (e) => setLog(`CSV import failed: ${(e as Error).message}`),
+  });
+
+  function handleCsvFile(file: File) {
+    setLog(`Parsing ${file.name}…`);
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        const rows: { email: string; customer_id: string }[] = [];
+        for (const r of result.data) {
+          const customer_id = (r["id"] || r["Customer ID"] || r["customer_id"] || "").trim();
+          const email = (r["Email"] || r["email"] || r["email (metadata)"] || "").trim();
+          if (customer_id.startsWith("cus_") && email.includes("@")) {
+            rows.push({ email, customer_id });
+          }
+        }
+        if (!rows.length) {
+          setLog("CSV parsed but no valid rows (expected columns: id, Email).");
+          return;
+        }
+        csvImport.mutate(rows);
+      },
+      error: (err) => setLog(`CSV parse failed: ${err.message}`),
+    });
+  }
+
+  const busy =
+    linkPass.isPending ||
+    renewPass.isPending ||
+    resetPass.isPending ||
+    csvImport.isPending ||
+    isFetching;
+
 
   return (
     <PPanel className="mt-6">
@@ -504,6 +561,31 @@ function StripeLinkingPanel() {
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button
+            onClick={() => {
+              if (window.confirm(`Delete ALL ${data?.linked ?? 0} link rows? This is destructive and only needed when switching env (e.g. sandbox → live).`))
+                resetPass.mutate();
+            }}
+            disabled={busy}
+            className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
+          >
+            {resetPass.isPending ? "Resetting…" : "Reset linking"}
+          </button>
+          <label className="flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/85 disabled:opacity-50">
+            <Download className="h-3.5 w-3.5" />
+            {csvImport.isPending ? "Importing…" : "Import Stripe CSV"}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              hidden
+              disabled={busy}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleCsvFile(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button
             onClick={() => linkPass.mutate()}
             disabled={busy}
             className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white disabled:opacity-50"
@@ -519,6 +601,7 @@ function StripeLinkingPanel() {
             <CreditCard className="h-3.5 w-3.5" />
             {renewPass.isPending ? "Renewing…" : `Renew due (${data?.due_now ?? 0})`}
           </button>
+
         </div>
       </div>
       {isLoading || !data ? (
