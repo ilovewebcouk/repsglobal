@@ -10,6 +10,7 @@ import {
   Archive,
   Clock,
   Search,
+  ShieldAlert,
   X,
   Loader2,
 } from "lucide-react";
