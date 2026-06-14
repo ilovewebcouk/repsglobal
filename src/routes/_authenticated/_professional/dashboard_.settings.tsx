@@ -482,7 +482,7 @@ function BillingTab({ data }: { data: SettingsBundle }) {
     <PPanel>
       <PanelHeader title="Billing" subtitle="Your REPs membership, card and invoices." />
 
-      <Row label="Current plan">
+      <Row label="Membership plan">
         <div className="flex flex-col items-start justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-4 py-3 sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2 text-[14px] font-semibold text-white">
