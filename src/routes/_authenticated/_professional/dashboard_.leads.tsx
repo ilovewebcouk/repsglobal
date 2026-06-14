@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, Plus, Search, Target } from "lucide-react";
+import { Inbox, Plus, Search, Sparkles, Target, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
+  backfillLeadScores,
   createLead,
   getLeadKpis,
   listLeads,
@@ -98,6 +99,7 @@ function LeadsPipelinePage() {
                 className="h-9 w-[220px] rounded-[10px] border-reps-border bg-reps-panel-soft pl-8 text-[12.5px]"
               />
             </div>
+            <BackfillScoresButton onDone={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
             <NewLeadDialog onCreated={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
           </div>
         </div>
