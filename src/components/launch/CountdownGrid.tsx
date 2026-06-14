@@ -18,7 +18,7 @@ function pad(n: number, w = 2) {
 }
 
 const LABELS: Array<{ key: keyof Parts; label: string; width: number }> = [
-  { key: "days", label: "Days", width: 3 },
+  { key: "days", label: "Days", width: 2 },
   { key: "hours", label: "Hours", width: 2 },
   { key: "minutes", label: "Minutes", width: 2 },
   { key: "seconds", label: "Seconds", width: 2 },
