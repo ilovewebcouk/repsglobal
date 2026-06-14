@@ -70,6 +70,15 @@ export const submitEnquiry = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
 
+    // Best-effort AI scoring so the lead lands in the trainer's pipeline pre-qualified.
+    try {
+      const { scoreLeadById } = await import("@/lib/leads/score.server");
+      await scoreLeadById(row.id, pro.id);
+    } catch (e) {
+      console.error("[submitEnquiry] auto-score failed:", e);
+    }
+
+
     // Notify the pro by email (best-effort — never block the submission).
     try {
       const { data: prof } = await supabaseAdmin

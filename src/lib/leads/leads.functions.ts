@@ -222,6 +222,15 @@ export const createLead = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw error;
+
+    // Best-effort AI score so the AI Insight card is never blank on a new lead.
+    try {
+      const { scoreLeadById } = await import("./score.server");
+      await scoreLeadById(row.id, userId);
+    } catch (e) {
+      console.error("[createLead] auto-score failed:", e);
+    }
+
     return { id: row.id };
   });
 
