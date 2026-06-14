@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 
 import { createCreditTopupCheckout } from "@/lib/credits/credits.functions";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
@@ -53,7 +53,6 @@ function CreditsCheckoutPage() {
     goToStripe.mutate();
   }, [goToStripe]);
 
-  const isRedirecting = goToStripe.isPending || goToStripe.isSuccess;
   const error = goToStripe.error ? (goToStripe.error as Error).message : null;
 
   return (
