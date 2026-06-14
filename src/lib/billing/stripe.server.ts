@@ -59,24 +59,32 @@ export function getStripeErrorMessage(error: unknown): string {
 
 /**
  * Returns the absolute origin to use for Stripe success_url / cancel_url
- * and any other outbound link in a server function. Prefers the explicit
- * `PUBLIC_SITE_URL` secret, falls back to the inbound request Origin,
- * then to the published REPs domain as a last resort.
+ * and any other outbound link in a server function. Order of precedence:
+ *   1. Inbound request Origin / Referer (keeps return URLs on the caller's host)
+ *   2. PUBLIC_SITE_URL secret
+ *   3. Published REPs domain as last resort
  */
 export function getCheckoutOrigin(): string {
-  const fromEnv = process.env.PUBLIC_SITE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
   try {
-    // Lazy-required to avoid a hard dependency at module load.
     const { getRequest } = require("@tanstack/react-start/server") as {
       getRequest: () => Request | undefined;
     };
     const req = getRequest();
     const origin = req?.headers.get("origin");
-    if (origin) return origin;
+    if (origin) return origin.replace(/\/$/, "");
+    const referer = req?.headers.get("referer");
+    if (referer) {
+      try {
+        return new URL(referer).origin;
+      } catch {
+        /* malformed referer */
+      }
+    }
   } catch {
     /* outside a request context */
   }
+  const fromEnv = process.env.PUBLIC_SITE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
   return "https://repsglobal.lovable.app";
 }
 
