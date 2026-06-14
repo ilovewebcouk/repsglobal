@@ -169,7 +169,8 @@ function SettingsPage() {
             <CreditsPanel />
           ) : tab === "security" ? (
             <SecurityTab data={data} />
-
+          ) : tab === "activity" ? (
+            <ActivityTab />
           ) : (
             <PrivacyTab data={data} />
           )}
