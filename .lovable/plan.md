@@ -1,76 +1,67 @@
-# Pass A — Enquiries & Leads (Pro vs Verified)
+# Fix the double-header / double-search on /dashboard/leads (and roll the pattern out)
 
-Scope is strictly enquiries + leads. Calendar, bookings, messages, and reviews are explicitly out of scope and wait for their dedicated mock-up passes.
+## Brutal honest read
 
-## Tier model (locked for this pass)
+You're right — it's a mess and it's not just Leads. Three things stacked on top of each other:
 
-- **Verified (£99/yr)** — trust layer only.
-  - Profile is discoverable + verified badge.
-  - Enquiry form on `/pro/$slug` sends an **email** to the pro.
-  - Email comes from `notify.repsuk.org`, with the lead's email set as **Reply-To** so the pro replies from their inbox straight back to the lead. REPs is just the forwarder.
-  - No dashboard inbox. No pipeline. No "Leads" or "Enquiries" sidebar entry.
-- **Pro (£59/mo Founding)** — full operating system.
-  - Same enquiry form on `/pro/$slug`, but submissions land **straight into the Leads pipeline** as `stage = new`. No intermediate "needs triage" inbox.
-  - One surface: `/dashboard/leads`. The standalone `/dashboard/enquiries` route is removed.
-  - Pro still gets a notification email (lighter, "new lead from {name} — open in REPs" CTA), but the source of truth is the pipeline.
+1. **TopBar (`DashboardShell`)** renders `title = "Leads"` + a fake non-functional ⌘K Search pill on the right.
+2. **Page toolbar** renders another `Search…` input + Import / New lead / Score all buttons.
+3. **Lead pipeline panel** renders a third `Search leads…` input next to its own "Lead pipeline" heading.
 
-## What changes
+That gives you: 2 titles ("Leads" and "Lead pipeline"), 3 search boxes (one of which does nothing), and an awkward floating button row that the Profile editor never had — because Profile puts its actions into the shell's `actions` slot.
 
-### 1. Submission flow (`/pro/$slug` enquiry form)
+There's also a stale runtime error referencing the old (pre-move) leads file path; harmless after a dev restart but I'll confirm.
 
-Server function reads the pro's tier:
-- Verified → insert minimal record (for analytics/audit), send forwarder email to pro (Reply-To = lead), done.
-- Pro → insert full `enquiries` row, immediately create matching `leads` row at `stage = new`, send pro a "new lead" notification email.
+## What I'll change
 
-Lead form, validation, and `/pro/$slug/enquire` UI do not change visually.
+### 1. DashboardShell — make the TopBar do real work
+- Add optional props to `DashboardShell` / `TopBar`:
+  - `search?: { value: string; onChange: (v: string) => void; placeholder?: string }` — turns the dead ⌘K pill into a real `<Input>` wired to the page.
+  - Keep existing `actions?: ReactNode` (already there, just under-used).
+- Wire `⌘K` to focus the input. No new search bar created elsewhere.
 
-### 2. Routes & sidebar
+### 2. /dashboard/leads — collapse to one header
+- Set shell `title="Leads pipeline"` and `subtitle="Track enquiries, prioritise follow-ups and convert leads into clients."` (kill the duplicate body H2).
+- Pass `search` (replaces local `search` state) + `actions={<><ImportLeads/><NewLead/><ScoreAll/></>}` to the shell.
+- Delete the entire body toolbar block (lines 138–171).
+- Delete the third `Search leads…` input inside the Lead pipeline panel. Panel header becomes just the count strip ("2 active leads · sorted by priority and follow-up").
+- Filtering uses the single shell search value (drop `innerSearch`).
 
-- Delete `src/routes/_authenticated/_professional/dashboard_.enquiries.tsx`.
-- Delete enquiries-only components (`EnquiryDetailPane`, `EnquiryList`, `EnquiryStatStrip`, `UpgradeNudge`) — fold any reusable bits into leads.
-- Sidebar: remove "Enquiries" item for everyone. "Leads" item shows for Pro only (tier-aware, already wired via subscription).
-- Verified pros who hit `/dashboard/leads` directly → redirect to `/dashboard` with a small upsell card ("Leads pipeline is a Pro feature").
+### 3. Button hover audit
+Pass over every interactive button on the leads page + shell TopBar:
+- Primary (`New lead`, `Draft reply`, `Book call`): `bg-reps-orange` → `hover:bg-reps-orange-dark` + `transition-colors`. Currently inconsistent.
+- Outline (`Import leads`, `Score all`, `Send message`, `Create proposal`, `Convert to client`, `Refresh`): standardise on `hover:bg-reps-panel-soft hover:text-white` + visible 1px border lift, remove the conflicting shadcn default `hover:bg-accent` leaking through `className` order.
+- Top-bar icon buttons (Bell, avatar): add proper `hover:bg-reps-panel-soft` instead of the current invisible state.
+- Verify every hover via the live preview before claiming done.
 
-### 3. Leads page polish (the 10/10 bit)
+### 4. Roll the pattern to the other offenders (same pass)
+Same "fold body toolbar into TopBar" fix applied to the other dashboard pages doing the duplicate-bar thing:
+- `/dashboard/clients`
+- `/dashboard/calendar`
+- `/dashboard/bookings`
+- `/dashboard/messages`
+- `/dashboard/reviews`
+- `/dashboard/reports`
+- `/dashboard/content`
+- `/dashboard/community`
+- `/dashboard/programs`, `/dashboard/nutrition`, `/dashboard/check-ins`
 
-`/dashboard/leads` keeps the structure we just shipped. Two fixes:
-- **Double-H1 bug** — page H1 becomes "Leads" only. Section labels ("Your pipeline", "Selected lead") demote to `h2` with the existing eyebrow styling. Same fix applied to the (about-to-be-deleted) enquiries route on the way out, in case any shared component is reused.
-- **New-lead surfacing** — `stage = new` leads from the last 24h get a subtle "New" pill + a count in the stage chip, so a pro logging in sees fresh leads without having to hunt.
+For each: if it has a body-level title + search/action row, move them into the shell `title`/`subtitle`/`search`/`actions` props and remove the body block. Pages that are pure mock-ups with no real search (e.g. Calendar) just get their action buttons moved up.
 
-### 4. Email templates
+### 5. Out of scope (parked)
+- No new functionality. No backend changes.
+- Calendar / Bookings / Messages / Reviews logic still parked for their dedicated mockup passes — this turn is purely chrome consolidation + hover polish.
+- /dashboard/profile is already correct (it's the reference) — no changes there.
 
-Two app-email templates via the scaffolded transactional pipeline:
-- `enquiry-forward-verified` — to the pro, Reply-To = lead's email, body contains the full enquiry. This IS the workflow for Verified.
-- `lead-notification-pro` — to the pro, short, single CTA "Open lead in REPs" deep-linking to `/dashboard/leads?lead={id}`. The pipeline is the workflow.
+## Quality bar — is it 10/10 after this?
 
-Both use the existing brand template shell. No marketing copy.
+For the **leads page specifically**: yes. One title. One search. One row of actions in the top bar. Panel becomes pure content. Hover states consistent. That's world-class dashboard chrome.
 
-### 5. Copy / pricing alignment (enquiries + leads only)
+For the **product as a whole**: still not 10/10 until Calendar / Bookings / Messages / Reviews get their real mockup passes — but you've already scoped those as separate passes, so that's fine. This pass closes the chrome-consistency gap so every dashboard page reads as the same product.
 
-- `/pricing`, `/for-professionals`, `/features/visibility`, `/features/shop-front`, `/features/operations`, `/features/growth`, comparison matrices: audit any line that promises Verified pros a "leads inbox", "pipeline", "dashboard for enquiries", etc. Rewrite to "enquiries forwarded straight to your inbox" for Verified, "full leads pipeline" for Pro.
-- No visual redesign of those locked pages — copy-only edits inside existing components.
+## Files touched
+- `src/components/dashboard/DashboardShell.tsx` (add `search` prop, wire ⌘K, hover polish on top-bar buttons)
+- `src/routes/_authenticated/_professional/_pro/dashboard_.leads.tsx` (delete toolbar + inner search + panel heading, pass to shell, hover audit)
+- The ~10 other `dashboard_.*.tsx` route files that currently duplicate the bar (same shape of edit)
 
-## Out of scope (parked, do not touch)
-
-- `/dashboard/calendar`, `/dashboard/bookings`, `/dashboard/messages`, `/dashboard/reviews`
-- Verified vs unverified review distinction
-- Folding leads into a unified Messages inbox (that's Phase 2.1 once the messages mock-up lands)
-- Stripe/billing changes
-- Any other locked marketing page redesign
-
-## Technical notes
-
-- New table work: none. `enquiries` and `leads` (`lead_activity`, `lead_proposals`) already exist.
-- Server fn: extend the existing enquiry-submit `createServerFn` to branch on tier; add a tier check by reading `subscriptions` + `professionals.tier`.
-- Forwarder email Reply-To header: set in the React Email `template` send call via the `replyTo` field on the send route payload.
-- Memory update: write `mem://phase/2.0-verified-scope` to reflect the locked split (Verified = trust + email forward only; Pro = full pipeline + everything else).
-
-## Definition of done for Pass A
-
-- Submitting an enquiry on a Verified pro's profile lands in their email with working Reply-To, and creates no pipeline row beyond the audit record.
-- Submitting on a Pro's profile creates a `new` lead visible on `/dashboard/leads` within seconds, plus a notification email.
-- `/dashboard/enquiries` no longer exists. Sidebar no longer shows "Enquiries". Verified pros don't see "Leads".
-- No page has two H1s.
-- Marketing/pricing/comparison copy no longer promises Verified pros a leads inbox.
-
-After this ships, the next pass picks up `/dashboard/messages` from your mock-up and folds Pro lead conversations into it.
+Approve and I'll ship it.
