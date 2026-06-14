@@ -119,3 +119,35 @@ export function checkoutOfferForPriceId(priceId: string) {
   }
   return null;
 }
+
+/* ------------------------------------------------------------------ */
+/* AI credit top-up packs (one-time purchases)                         */
+/* ------------------------------------------------------------------ */
+
+export type CreditPackKey = "small" | "medium" | "large";
+
+export interface CreditPack {
+  key: CreditPackKey;
+  priceId: string; // Stripe lookup_key
+  credits: number;
+  amountGbp: number;
+  label: string;
+  badge?: string;
+}
+
+export const CREDIT_PACKS: Record<CreditPackKey, CreditPack> = {
+  small:  { key: "small",  priceId: "credits_small",  credits: 200,   amountGbp: 10, label: "Small" },
+  medium: { key: "medium", priceId: "credits_medium", credits: 600,   amountGbp: 25, label: "Medium", badge: "Best value" },
+  large:  { key: "large",  priceId: "credits_large",  credits: 1500,  amountGbp: 50, label: "Large" },
+};
+
+export function getCreditPack(key: CreditPackKey): CreditPack {
+  return CREDIT_PACKS[key];
+}
+
+export function creditPackForPriceId(priceId: string): CreditPack | null {
+  for (const p of Object.values(CREDIT_PACKS)) {
+    if (p.priceId === priceId) return p;
+  }
+  return null;
+}
