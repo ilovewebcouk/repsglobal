@@ -127,8 +127,6 @@ function EnquiriesInboxPage() {
 
   const newCount = enquiries.filter((e) => e.status === "new").length;
 
-  if (blocked) return null;
-
   return (
     <DashboardShell
       role="trainer"
