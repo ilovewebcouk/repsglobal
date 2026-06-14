@@ -28,7 +28,7 @@ import {
   
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
+import { isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 // SocialHandleInput is rendered via SocialLinksPicker now.
