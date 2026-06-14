@@ -59,53 +59,6 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 function ShopFrontEditorPage() {
   const tier = useTrainerTier();
-
-  if (tier === "verified") {
-    return (
-      <DashboardShell active="Shop-front" role="trainer" tier={tier} title="Shop-front" subtitle="A Pro-tier feature.">
-        <div className="mx-auto max-w-3xl px-6 py-12">
-          <div className="rounded-[22px] border border-reps-orange-border bg-gradient-to-br from-reps-orange-soft/60 via-reps-panel to-reps-panel p-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-reps-orange">
-              Pro feature
-            </div>
-            <h1 className="mt-4 font-display text-[28px] font-semibold text-white lg:text-[34px]">
-              Shop-front is a Pro feature
-            </h1>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/70">
-              Verified gives you a directory card and a public profile so clients can find you.
-              <br />
-              Pro adds your own <strong className="font-semibold text-white">Shop-front</strong> — paid service packages,
-              a "Most popular" highlight, transformations and reviews, and clients can book and pay
-              directly from your page.
-            </p>
-            <ul className="mt-6 grid gap-2.5 text-[14px] text-white/80">
-              <li className="flex items-start gap-2"><span className="mt-1 text-reps-orange">✓</span> 3-tier service ladder (1-to-1, Hybrid, Online)</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-reps-orange">✓</span> Direct booking + payment from your page</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-reps-orange">✓</span> Transformation proof cards + reviews wall</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-reps-orange">✓</span> Your own short URL: <code className="rounded bg-reps-panel-soft px-1.5 py-0.5 text-[12px]">/c/your-name</code></li>
-            </ul>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
-                to="/pricing"
-                className="inline-flex h-11 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none transition hover:bg-reps-orange-hover"
-              >
-                Upgrade to Pro — £59/mo
-              </Link>
-              <Link
-                to="/c/james-wilson"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[14px] font-semibold text-white/85 transition hover:bg-reps-panel hover:text-white"
-              >
-                See a live example <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </DashboardShell>
-    );
-  }
-
   const qc = useQueryClient();
   const fetchMine = useServerFn(getMyShopFront);
   const upsertSf = useServerFn(upsertMyShopFront);

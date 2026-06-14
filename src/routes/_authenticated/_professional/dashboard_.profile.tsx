@@ -1319,23 +1319,15 @@ function ProfileEditorPage() {
                     ) : null}
                   </Field>
                 </div>
-                <Field label="How you work with clients" hint="Managed in Services — keeps directory chips and enquire-form options in sync.">
-                  <Link
-                    to="/dashboard/services"
-                    className="inline-flex items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white/85 transition hover:bg-reps-panel hover:text-white"
-                  >
-                    <span>
-                      {form.in_person_available && form.online_available
-                        ? "In-person + Online"
-                        : form.in_person_available
-                          ? "In-person"
-                          : form.online_available
-                            ? "Online"
-                            : "Not set"}
-                    </span>
-                    <span className="text-white/45">·</span>
-                    <span className="text-reps-orange">Edit in Services</span>
-                  </Link>
+                <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid.">
+                  <DeliveryModePicker
+                    inPerson={form.in_person_available}
+                    online={form.online_available}
+                    onChange={(next) => {
+                      set("in_person_available", next.inPerson);
+                      set("online_available", next.online);
+                    }}
+                  />
                 </Field>
                 {form.in_person_available ? (
                   <Field
