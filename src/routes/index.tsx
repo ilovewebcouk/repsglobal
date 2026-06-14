@@ -141,6 +141,10 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
+              width={1920}
+              height={1080}
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover object-[88%_30%] lg:object-[78%_30%]"
             />
             <div
