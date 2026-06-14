@@ -1293,11 +1293,11 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* 03 Where you work — location + work mode together */}
+            {/* 03 Where you work — location + gyms. Delivery mode (in-person/online) lives on /dashboard/services. */}
             <Card>
               <SectionHeader
                 title="Where you work"
-                subtitle="Your base and how clients can train with you."
+                subtitle="Your base and the gyms or studios you train clients from."
                 step="03"
               />
               <div className="flex flex-col gap-4">
@@ -1319,26 +1319,26 @@ function ProfileEditorPage() {
                     ) : null}
                   </Field>
                 </div>
-                <Field label="How you work with clients" hint="Pick at least one. Both selected = Hybrid.">
-                  <DeliveryModePicker
-                    inPerson={form.in_person_available}
-                    online={form.online_available}
-                    onChange={(next) => {
-                      set("in_person_available", next.inPerson);
-                      set("online_available", next.online);
-                    }}
-                  />
-                </Field>
                 {form.in_person_available ? (
                   <Field
                     label="Trains at (optional · max 3)"
-                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card."
+                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card. Toggle in-person on Services if you want to add gyms."
                   >
                     <GymPicker />
                   </Field>
-                ) : null}
+                ) : (
+                  <Field label="Gyms & studios" hint="You're set to online-only on Services. Enable in-person there to list gyms here.">
+                    <Link
+                      to="/dashboard/services"
+                      className="inline-flex h-9 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white"
+                    >
+                      Manage delivery mode →
+                    </Link>
+                  </Field>
+                )}
               </div>
             </Card>
+
 
             {/* 04 Your pitch — tagline + bio together (both marketing copy) */}
             <Card>
