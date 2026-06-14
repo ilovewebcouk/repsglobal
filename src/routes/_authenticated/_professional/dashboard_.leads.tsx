@@ -238,3 +238,27 @@ function NewLeadDialog({ onCreated }: { onCreated: () => void }) {
     </Dialog>
   );
 }
+
+function BackfillScoresButton({ onDone }: { onDone: () => void }) {
+  const m = useMutation({
+    mutationFn: () => backfillLeadScores(),
+    onSuccess: (r) => {
+      if (r.scored > 0) toast.success(`Scored ${r.scored} lead${r.scored === 1 ? "" : "s"}`);
+      else toast.info("No unscored leads to backfill");
+      onDone();
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't score leads"),
+  });
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => m.mutate()}
+      disabled={m.isPending}
+      className="h-9 rounded-[10px] border-reps-border bg-reps-panel-soft text-[12.5px] font-medium text-white/85 hover:text-white"
+    >
+      {m.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-reps-orange" />}
+      <span className="ml-1.5">{m.isPending ? "Scoring…" : "Score all"}</span>
+    </Button>
+  );
+}
