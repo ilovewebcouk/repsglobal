@@ -401,6 +401,19 @@ function EnquiriesInboxPage() {
                       Unarchive
                     </Button>
                   )}
+                  {selected.status !== "spam" && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        updateMut.mutate({ id: selected.id, status: "spam" })
+                      }
+                      disabled={updateMut.isPending}
+                      className="h-9 gap-1.5 rounded-[10px] border-reps-red/30 bg-reps-panel text-[12.5px] font-semibold text-reps-red hover:bg-reps-red/10"
+                    >
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      Mark as spam
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
