@@ -78,14 +78,14 @@ function LeadsPipelinePage() {
   const selected: LeadDTO | null = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <DashboardShell role="trainer" tier={tier} active="Leads" title="Leads" subtitle="Your full pipeline">
+    <DashboardShell role="trainer" active="Leads" title="Leads" subtitle="Your full pipeline">
       <div className="flex flex-col gap-5">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-[26px] font-bold text-white">Leads pipeline</h1>
             <p className="mt-1 text-[13.5px] text-white/55">
-              Every enquiry — scored, ranked and ready to act on. {locked ? <span className="text-reps-orange">Upgrade to Pro to unlock AI scoring, drafts and forecasts.</span> : null}
+              Every enquiry — scored, ranked and ready to act on.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -103,7 +103,7 @@ function LeadsPipelinePage() {
         </div>
 
         {/* KPI strip */}
-        <KpiStrip kpis={kpis} locked={locked} />
+        <KpiStrip kpis={kpis} />
 
         {/* Pipeline + drawer */}
         {isLoading ? (
@@ -136,7 +136,7 @@ function LeadsPipelinePage() {
             <PCard className="lg:sticky lg:top-4 self-start max-h-[calc(100vh-120px)] overflow-y-auto">
               {selected ? (
                 <div className="p-4">
-                  <LeadDrawer lead={selected} locked={locked} />
+                  <LeadDrawer lead={selected} />
                 </div>
               ) : (
                 <div className="flex h-full items-center justify-center px-6 py-14 text-[13px] text-white/55">
@@ -151,7 +151,7 @@ function LeadsPipelinePage() {
         )}
 
         {/* Bottom row */}
-        <BottomCards kpis={kpis} locked={locked} />
+        <BottomCards kpis={kpis} />
       </div>
     </DashboardShell>
   );
