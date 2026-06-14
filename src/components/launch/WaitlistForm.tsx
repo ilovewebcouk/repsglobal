@@ -69,13 +69,13 @@ export function WaitlistForm({ id, className }: WaitlistFormProps) {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="flex w-full flex-col gap-2 sm:flex-row sm:gap-2"
+        className="flex w-full flex-col gap-2.5 sm:flex-row sm:gap-2"
       >
-        <label htmlFor="waitlist-email" className="sr-only">
+        <label htmlFor={`waitlist-email-${id ?? "default"}`} className="sr-only">
           Email address
         </label>
         <input
-          id="waitlist-email"
+          id={`waitlist-email-${id ?? "default"}`}
           type="email"
           inputMode="email"
           autoComplete="email"
@@ -88,24 +88,28 @@ export function WaitlistForm({ id, className }: WaitlistFormProps) {
           }}
           disabled={isPending}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? "waitlist-error" : undefined}
-          className="h-12 flex-1 rounded-[12px] border border-white/15 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/40 outline-none transition-colors focus:border-reps-orange focus:bg-white/[0.06] disabled:opacity-60"
+          aria-describedby={error ? `waitlist-error-${id ?? "default"}` : undefined}
+          className="h-14 w-full flex-1 min-w-0 rounded-[12px] border border-white/20 bg-reps-ink/70 px-4 text-[16px] text-white placeholder:text-white/45 outline-none transition-colors focus:border-reps-orange focus:bg-reps-ink/90 disabled:opacity-60 sm:text-[15px]"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-70"
+          className="inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[15px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-70 sm:w-auto"
         >
           {isPending ? "Saving…" : "Notify me"}
           {!isPending ? <ArrowRight className="h-4 w-4" aria-hidden /> : null}
         </button>
       </form>
       {error ? (
-        <p id="waitlist-error" role="alert" className="mt-2 text-[13px] text-reps-orange">
+        <p
+          id={`waitlist-error-${id ?? "default"}`}
+          role="alert"
+          className="mt-2 text-[13px] text-reps-orange"
+        >
           {error}
         </p>
       ) : (
-        <p className="mt-2.5 text-[12px] text-white/45">
+        <p className="mt-3 text-[12px] text-white/55">
           No spam. One email when we go live.
         </p>
       )}
