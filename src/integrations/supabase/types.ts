@@ -327,6 +327,69 @@ export type Database = {
           },
         ]
       }
+      credit_transactions: {
+        Row: {
+          action: string
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          metadata: Json
+          related_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          balance_after: number
+          created_at?: string
+          delta: number
+          id?: string
+          metadata?: Json
+          related_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          id?: string
+          metadata?: Json
+          related_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credit_wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          last_refilled_at: string | null
+          monthly_refill: number
+          refill_ceiling: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          last_refilled_at?: string | null
+          monthly_refill?: number
+          refill_ceiling?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          last_refilled_at?: string | null
+          monthly_refill?: number
+          refill_ceiling?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -2072,6 +2135,14 @@ export type Database = {
     }
     Functions: {
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
+      credit_tier_policy: {
+        Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
+        Returns: {
+          ceiling: number
+          monthly_refill: number
+          signup_grant: number
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -2108,6 +2179,17 @@ export type Database = {
           qualification: string
         }[]
       }
+      grant_credits: {
+        Args: {
+          _action: string
+          _amount: number
+          _metadata?: Json
+          _related_id?: string
+          _respect_ceiling?: boolean
+          _user_id: string
+        }
+        Returns: number
+      }
       has_active_tier: {
         Args: {
           _tiers: Database["public"]["Enums"]["subscription_tier"][]
@@ -2142,6 +2224,17 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      run_monthly_credit_refills: { Args: never; Returns: number }
+      spend_credits: {
+        Args: {
+          _action: string
+          _cost: number
+          _metadata?: Json
+          _related_id?: string
+          _user_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

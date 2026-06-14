@@ -1,159 +1,121 @@
+## Phase 2.0.2 — The "10/10" pass
 
-# Phase 2 Leads — the 10/10 roadmap
-
-Goal: replace the current weak `/dashboard/enquiries` page with a unified, AI-powered Leads pipeline that is genuinely best-in-class in the fitness platform space. Verified sees the full UI with Pro-only features locked. Pro unlocks everything. Ships in three phases — each one is shippable on its own.
-
-```text
-2.0  Unified pipeline + full AI layer + Verified lock           8.5/10
-2.1  Two-way email/SMS + Cal.com scheduling + push notifs        9.5/10
-2.2  ElevenLabs voice replies + AI Lead Coach + voice agent      10/10
-```
-
-Naming: route is `/dashboard/leads`, sidebar item is "Leads". Old `/dashboard/enquiries` becomes a redirect so deep links keep working.
+Three workstreams, shipped in order. Nothing else moves until each one is signed off.
 
 ---
 
-## Phase 2.0 — Unified Pipeline + AI Layer (ship first)
+### A. AI Credits Wallet (foundation — must ship first)
 
-### UI (single page, mirrors the mock you showed)
-- One H1 ("Leads pipeline") + sub-text. No duplicate hero. Global search. "Import leads" + "+ New lead" CTAs.
-- **KPI strip** (6 tiles): Active leads · Hot leads (score ≥80) · Reply-time avg · Conversion % (30d) · Est. pipeline value · Predicted revenue (30d). Pro = real numbers. Verified = blurred + "Upgrade to unlock" overlay.
-- **12-col body grid:**
-  - 8-col pipeline: stage filter pills (New / Contacted / Call booked / Proposal sent / Trial booked / Converted / Lost), source filter pills, sortable table (Lead / Goal / Source / Stage / AI score / Est. value / Follow-up / Actions). Bulk select.
-  - 4-col sticky right rail: selected lead detail + **AI insight card** (intent score 0-100, AI summary, recommended next action, "Draft reply" button, predicted conversion %).
-- **Bottom row** (3 cards): Follow-ups due (next 48h) · Lead sources (30d donut) · Conversion funnel (30d).
-- Verified lock pattern: full layout renders, Pro-only blocks wrapped in `<ProLock>` with single upgrade CTA → `/pricing`.
+Every AI action across the platform draws from a per-pro credit balance. Without this, scoring leads, generating bios, AI portraits, taglines and (later) SMS will eat margin.
 
-### AI layer (all server-side, Lovable AI Gateway, `google/gemini-3-flash-preview`)
-Server functions in `src/lib/leads-ai.functions.ts`:
-- `scoreLead(leadId)` → `{ score, band, summary, recommendedAction, predictedConversionPct, reasons[] }`
-- `draftLeadReply(leadId, tone?)` → `{ subject, body }` tuned to the pro's voice
-- `suggestNextActions(leadId)` → up to 3 ranked actions
-- `forecastRevenue(proId)` → 30-day projected revenue
-- `detectAtRisk(proId)` → stalled leads + re-engagement copy
-- Cron: hourly refresh of scores/forecasts for active leads (pg_cron → `/api/public/hooks/leads-refresh`).
+**Allowances on tier activation (one-time grant + monthly refill)**
 
-### Schema (one migration)
-Extend `enquiries`:
-- `stage` (enum: new/contacted/call_booked/proposal_sent/trial_booked/converted/lost, default 'new')
-- `priority` (low/medium/high)
-- `estimated_value_pence` (int)
-- `follow_up_at` (timestamptz)
-- `converted_client_id` (uuid → clients)
-- `ai_score` (int 0-100), `ai_band` (cold/warm/hot), `ai_summary` (text), `ai_recommended_action` (text), `ai_predicted_pct` (int), `ai_updated_at` (timestamptz)
+| Tier | Sign-up grant | Monthly refill | Purpose of grant |
+|---|---|---|---|
+| Verified £99/yr | 150 credits | 30 / month | AI portrait (40) + bio (10) + tagline (5) + profile polish, leaves headroom |
+| Pro £59/mo | 400 credits | 200 / month | Profile setup + ~200 lead scores/drafts/month |
+| Studio £149/mo | 1,500 credits | 800 / month | Multi-trainer setup + heavy lead volume |
 
-New tables:
-- `lead_activity` (id, enquiry_id, pro_id, type, payload jsonb, created_at) — per-touch log
-- `lead_proposals` (id, enquiry_id, pro_id, status, body jsonb, sent_at) — Pro-only, future-friendly
+**Credit cost table (single source of truth in `src/lib/credits.ts`)**
 
-All with GRANTs, RLS scoped to `auth.uid()` + service_role, `service_role` for cron writes.
+| Action | Credits |
+|---|---|
+| Lead score (Gemini Flash) | 1 |
+| AI reply draft (mailto, lead drawer) | 2 |
+| AI bio (long-form) | 8 |
+| AI tagline | 3 |
+| AI portrait generation (one image) | 40 |
+| Backfill batch (per lead) | 1 |
+| Future: SMS / voice | reserved (not enabled in 2.1) |
 
-### Files (Phase 2.0)
-- New route `_authenticated/_professional/dashboard.leads.tsx` + `~10` components under `src/components/leads/` (KPIStrip, PipelineTable, LeadDrawer, AIInsightCard, FollowUpsCard, SourcesCard, FunnelCard, ProLock, NewLeadDialog, ImportLeadsDialog).
-- `src/lib/leads.functions.ts` (CRUD, stage moves, bulk ops) + `src/lib/leads-ai.functions.ts` (AI calls).
-- Sidebar rename Enquiries → Leads. `dashboard.enquiries.tsx` becomes redirect.
-- Out of scope this phase: any external comms, scheduling, voice. Replies still open mailto.
+**Behaviour**
+- Refill on the 1st of every month (or anniversary of subscription start). No rollover beyond a 2-month ceiling (prevents hoarding then a 6-month dry spell).
+- When balance < cost of next action → action button switches to **"Top up to use"** with a sheet showing top-up packs.
+- Hard stop, never silent overage.
 
----
+**Top-up packs (Stripe one-time prices, charged to saved card)**
 
-## Phase 2.1 — Real Comms + Scheduling + Push (+~1 week)
-
-### Two-way messaging inside REPs
-- **Resend** (already used for project email): threaded inbox per lead, open/click tracking, inbound replies via Resend inbound parsing → webhook `/api/public/webhooks/resend-inbound`.
-- **Twilio** (new standard connector): SMS + WhatsApp Business. Outbound from `sendLeadSms()` server fn; inbound via `/api/public/webhooks/twilio-inbound`.
-- Unified thread view in the lead drawer: email + SMS + WhatsApp + AI drafts, ordered by time. "Send" picker chooses channel.
-
-### Scheduling
-- **Cal.com embed** (open source, no per-seat fee): each pro connects their Cal.com account in `/dashboard/integrations`. "Book a call" button in the lead drawer drops a scheduling link or opens the embed inline.
-- Calendar sync (Google/Apple) handled by Cal.com — no extra work on our side.
-
-### Auto follow-up sequences
-- Visual sequence builder (3-step default: Day 0 email · Day 2 SMS · Day 5 WhatsApp), AI-written, trainer-approved before activation, auto-stop on reply or stage change.
-
-### Push notifications (PWA)
-- Service worker + web-push. Triggered on new lead, hot-lead alert (score ≥85), inbound reply.
-
-### Schema (2.1 migration)
-- `lead_messages` (id, enquiry_id, pro_id, channel, direction, subject, body, status, opens_at, clicks_at, created_at)
-- `lead_sequences` + `lead_sequence_steps` + `lead_sequence_runs`
-- `pro_integrations` (pro_id, provider, config jsonb) — Cal.com tokens etc.
-- `push_subscriptions` (user_id, endpoint, keys, created_at)
-
-### Connectors needed (you approve at link time)
-- Twilio · Resend (already in project) · Cal.com (via OAuth — no connector needed, per-pro tokens stored in `pro_integrations`).
-
----
-
-## Phase 2.2 — Voice + AI Lead Coach + Voice Agent Callback (+~1 week)
-
-### ElevenLabs voice replies
-- "Send as voice note" button on every AI-drafted reply. Pro records 60s of their voice once (cloned via ElevenLabs Voice Library), then every voice reply sounds like them. Sent as MP3 via WhatsApp/SMS/email.
-- Inbound voice notes (WhatsApp/Instagram) auto-transcribed via ElevenLabs Scribe and shown inline in the thread.
-
-### AI Lead Coach (daily proactive brief)
-- Cron 08:00 local time per pro → generates "Today's brief": hot leads cooling, stalled leads, reply-time benchmark vs top 10%, revenue forecast, 3 ranked actions for the day. Delivered as in-app card + email + push.
-
-### AI voice agent callback (opt-in per lead)
-- When a lead scores ≥85 and submits an enquiry, pro can click "Call this lead now" → ElevenLabs Conversational AI agent (pro's cloned voice) places an outbound call via Twilio Voice, qualifies the lead with a scripted-but-natural flow ("Hi, this is [Pro] — got your enquiry, can I ask a couple of quick questions?"), and books a discovery call into the pro's Cal.com calendar. Full call transcript + recording stored on the lead.
-- Trainer disclosure on hero CTA + first AI line ("Hi, this is an AI assistant for [Pro]…") to stay compliant. Per-lead opt-in toggle on the New Lead form ("OK with AI callback?"). Pro can disable entirely in settings.
-
-### Benchmarking
-- Anonymised "you vs top 10% of REPs pros" tiles: reply time, conversion %, avg lead value, follow-up consistency. Drives behaviour change.
-
-### Schema (2.2 migration)
-- `lead_voice_calls` (id, enquiry_id, pro_id, twilio_call_sid, elevenlabs_conversation_id, duration_s, status, transcript, recording_url, outcome, created_at)
-- `pro_voice_profiles` (pro_id, elevenlabs_voice_id, status, sample_url, created_at)
-- `pro_ai_settings` (pro_id, voice_agent_enabled, voice_agent_disclosure, daily_brief_enabled, …)
-
-### Connectors needed
-- ElevenLabs (standard connector, syncs `ELEVENLABS_API_KEY`).
-- Twilio Voice (same Twilio connection as 2.1 — Voice product enabled in Twilio console).
-
----
-
-## Tier matrix (final)
-
-| Capability | Verified £99/yr | Pro £59/mo |
+| Pack | Price | Credits |
 |---|---|---|
-| Pipeline table + filters | ✅ (read + manual move) | ✅ |
-| AI score + summary on each lead | locked preview (1 visible, rest blurred) | ✅ |
-| AI draft reply | locked | ✅ |
-| Two-way email/SMS/WhatsApp | locked | ✅ |
-| Cal.com scheduling | locked | ✅ |
-| Auto follow-up sequences | locked | ✅ |
-| Voice replies (ElevenLabs) | locked | ✅ |
-| AI voice agent callback | locked | ✅ |
-| Daily AI Lead Coach brief | locked | ✅ |
-| KPI strip + forecasts + benchmarks | blurred | ✅ |
-| Bulk actions / CSV import | locked | ✅ |
+| Small | £10 | 200 |
+| Medium | £25 | 600 (best value badge) |
+| Large | £50 | 1,500 |
 
-Studio stays waitlist (multi-coach roll-up of all of the above) — no new work this roadmap.
+**New surfaces**
+- `/dashboard/settings/usage` — Wallet page: current balance, this-month usage chart, top-up buttons, transaction history.
+- Header chip on every dashboard page: `⚡ 412 credits` → click opens the wallet sheet.
+- In-flow gate: any AI button shows a small `· 2` credit cost next to it.
 
 ---
 
-## Out of scope (queued for Phase 2.3)
-- Instagram DM + Facebook Messenger ingestion (needs Meta app review — 4-6 wks lead time)
-- Multi-language voice agents
-- Studio multi-coach pipeline roll-up
-- Native iOS/Android apps (PWA push covers 90% of the value)
+### B. Drop Cal.com — Native calendar is canonical
+
+- Remove every mention of Cal.com from copy, docs, marketing pages, comparison tables.
+- The calendar mock-up you just attached **is** the booking system. It becomes the locked source of truth for `/dashboard/calendar`.
+- Pro & Studio booking links = `/c/{slug}/book` (native, driven by the pro's own availability rules — already partly modelled in `professional_locations` and the `Availability` widget in the mock).
+- Verified tier: no booking link. Their public profile has the existing "Enquire" CTA only. Optional future enhancement (not in this phase): a single text field "External booking URL" that renders a secondary CTA — gated behind a feature flag, not built now.
+- Memory update: lock the calendar mock-up as `mem://design/locked-calendar` after this phase ships so it can never be redesigned without an explicit request.
+
+This work is small: it's a copy-and-feature-flag pass, not a code rebuild. Native `/c/{slug}/book` is **out of scope for 2.0.2** — it goes in 2.1.
 
 ---
 
-## Technical notes (collapsible detail)
+### C. Leads page — Full rebuild from a new mock
 
-- All AI calls server-side via Lovable AI Gateway. `LOVABLE_API_KEY` never touches client.
-- All voice/SMS/email calls via `createServerFn` in `src/lib/*.functions.ts` (TanStack pattern).
-- Webhooks live under `/api/public/webhooks/*` with signature verification (Twilio HMAC, Resend HMAC, ElevenLabs token).
-- Cron via `pg_cron` + `pg_net` calling `/api/public/hooks/*` with `apikey` header (Supabase anon key).
-- Migrations include GRANTs on every new public-schema table — `service_role` always, `authenticated` scoped via RLS to the owning pro.
-- ProLock component reads `useSubscription()` tier and overlays Pro-only blocks — no business logic on the client.
+Current `/dashboard/leads` is a 7. To get to 10 it needs a new mock, not a polish pass. Process:
+
+1. **Generate 3 design directions** for the Leads page using `design--create_directions` (uses the attached Calendar mock as the dark-dashboard visual reference so it sits in the same family). Each direction commits to:
+   - A KPI strip (4 tiles, real sparklines)
+   - Stage chip bar with counts (`All 38 · New 12 · Qualified 9 · Booked 4 · Converted 8 · Lost 5`)
+   - Main work area — table OR kanban OR hybrid (this is the variable)
+   - **AI Insight rail** — hero card per selected lead with: circular score ring (0–100), intent band chip, predicted £ value, 3 tappable "Next action" chips (Reply with AI · Book call · Send programme), confidence bar, "Why this score" expandable
+   - Bottom row — 3 real charts (Recharts): conversion funnel, source mix donut, 30-day trend sparkline
+
+2. **Ask you to pick one direction** via `questions--ask_questions` (type: prototype).
+
+3. **Build the chosen direction** pixel-close, wired to live data:
+   - All AI actions debit credits via the wallet from (A).
+   - Lead score, reply draft, recommended action all run through `score.server.ts` and a new `draftReply.server.ts`.
+   - **Email reply uses `mailto:`** (opens user's mail client, costs 2 credits for the draft generation only — no send infrastructure).
+   - "Score all" backfill respects the wallet.
+
+4. **Lock the result** as `mem://design/locked-leads` so it joins the source-of-truth list.
 
 ---
 
-## Confirmation needed before build
-You've already picked **full 10/10 roadmap** and **AI voice agent callback**. On approval I'll:
-1. Start Phase 2.0 immediately (migration → server fns → UI → wire AI).
-2. Pause for your sign-off on Phase 2.0 before moving to 2.1.
-3. Link Twilio + ElevenLabs connectors at the start of 2.1 and 2.2 respectively (one click each).
+### Technical notes (for the engineer, skip if non-technical)
 
-This is the plan that takes REPs from "another fitness directory" to "the only fitness platform where leads call themselves back."
+- New table `public.credit_wallets` (user_id PK, balance int, monthly_refill int, refill_grant_at timestamp, last_refilled_at timestamp).
+- New table `public.credit_transactions` (id, user_id, delta int signed, action text, related_id uuid nullable, created_at). Append-only audit trail.
+- RPC `public.spend_credits(_user_id uuid, _cost int, _action text, _related_id uuid)` returns boolean — atomic check-and-debit, used by every server fn that calls AI.
+- RPC `public.grant_credits(_user_id uuid, _amount int, _reason text)` — used by Stripe webhook on top-up purchase and by monthly refill cron.
+- Refill cron: pg_cron daily job that checks every active subscription and tops up if `last_refilled_at < (now - 1 month)`.
+- Top-up: 3 new Stripe one-time products (`credits_small`, `credits_medium`, `credits_large`), Embedded Checkout from `/dashboard/settings/usage`, webhook handler in `/api/public/webhooks/stripe` already exists — extend it to call `grant_credits` on `checkout.session.completed` with the right metadata.
+- All existing AI server fns (`scoreLeadById`, `backfillLeadScores`, future bio/tagline/image gens) wrapped to call `spend_credits` first; throw `INSUFFICIENT_CREDITS` if false, surfaced to UI as the top-up sheet.
+- No Twilio, no Resend, no Cal.com dependencies added in this phase.
+
+---
+
+### Order of operations
+
+1. Migration: wallets + transactions + RPCs + grant on tier activation trigger.
+2. Stripe top-up products + webhook handler extension.
+3. `/dashboard/settings/usage` page + header credit chip.
+4. Wire `spend_credits` into existing `scoreLeadById` / `backfillLeadScores`.
+5. Drop Cal.com (copy sweep + memory update).
+6. Design directions → you pick → build new Leads page.
+7. Lock both new mocks into memory.
+
+**Stop and wait for your sign-off after each numbered step.** No continuous push this time — each one needs your eyes.
+
+---
+
+### What this explicitly does NOT include (Phase 2.1+ work)
+
+- Native `/c/{slug}/book` booking flow (next phase).
+- Twilio SMS / WhatsApp.
+- Resend-powered email send (only `mailto:` for now).
+- Voice / ElevenLabs.
+- AI bio / tagline / portrait generation surfaces (the wallet is ready for them, but the UI to trigger them is a later phase).
+
+That's the path to 10/10. Approve and I'll start with the migration.
