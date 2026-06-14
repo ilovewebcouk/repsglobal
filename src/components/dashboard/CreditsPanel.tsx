@@ -1,13 +1,15 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useNavigate } from "@tanstack/react-router";
-import { Sparkles, ArrowDown, ArrowUp } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Sparkles, ArrowDown, ArrowUp, Loader2 } from "lucide-react";
 
 import { PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { CREDIT_PACKS, type CreditPackKey } from "@/lib/billing";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import {
+  createCreditTopupCheckout,
   getMyWallet,
   listMyCreditTransactions,
   type CreditTransactionDTO,
@@ -40,6 +42,7 @@ function formatDate(iso: string) {
 export function CreditsPanel() {
   const fetchWallet = useServerFn(getMyWallet);
   const fetchTx = useServerFn(listMyCreditTransactions);
+  const startCheckout = useServerFn(createCreditTopupCheckout);
 
   const { data: wallet, isLoading: wLoading } = useQuery({
     queryKey: ["credits", "wallet"],
@@ -52,13 +55,31 @@ export function CreditsPanel() {
     staleTime: 30_000,
   });
   const tx: CreditTransactionDTO[] = (txData ?? []) as CreditTransactionDTO[];
+  const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
+
+  const topupCheckout = useMutation({
+    mutationFn: async (pack: CreditPackKey) => {
+      const result = await startCheckout({
+        data: { pack, environment: getStripeEnvironment() },
+      });
+      if ("error" in result) throw new Error(result.error);
+      return result.url;
+    },
+    onMutate: () => {
+      setCheckoutError(null);
+    },
+    onSuccess: (url) => {
+      window.location.assign(url);
+    },
+    onError: (error) => {
+      setCheckoutError(error instanceof Error ? error.message : "Checkout couldn't start");
+    },
+  });
 
   const balance = wallet?.balance ?? 0;
   const refill = wallet?.monthly_refill ?? 0;
   const ceiling = wallet?.refill_ceiling ?? 0;
   const pct = ceiling > 0 ? Math.min(100, Math.round((balance / ceiling) * 100)) : 0;
-
-  const navigate = useNavigate();
 
   return (
     <PPanel>
@@ -144,18 +165,26 @@ export function CreditsPanel() {
               <Button
                 size="sm"
                 className="mt-4 w-full"
-                onClick={() =>
-                  navigate({
-                    to: "/checkout/credits",
-                    search: { pack: p.key as CreditPackKey },
-                  } as never)
-                }
+                disabled={topupCheckout.isPending}
+                onClick={() => topupCheckout.mutate(p.key as CreditPackKey)}
               >
-                Buy {p.label.toLowerCase()}
+                {topupCheckout.isPending && topupCheckout.variables === p.key ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                    Redirecting…
+                  </>
+                ) : (
+                  <>Buy {p.label.toLowerCase()}</>
+                )}
               </Button>
             </div>
           ))}
         </div>
+        {checkoutError ? (
+          <div className="mt-3 rounded-[12px] border border-red-400/25 bg-red-500/10 px-3 py-2 text-[12px] text-red-100/85">
+            {checkoutError}
+          </div>
+        ) : null}
       </div>
 
 
