@@ -89,6 +89,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       avatar_url: (profRow.avatar_url as string | null) ?? null,
       identity_status: idStatus,
       legal_name_locked: idStatus === "approved",
+      slug: (proRow.slug as string | null) ?? null,
       headline: (proRow.headline as string | null) ?? null,
       primary_profession:
         typeof primary === "string" && (PROFESSION_SLUGS as string[]).includes(primary)
