@@ -82,30 +82,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "REPS — Find. Trust. Train. Transform." },
+      // Sitewide fallback only — per-route head() overrides title/description/og:* on every
+      // shareable page. Title here is intentionally distinct from the homepage's title so the
+      // two don't duplicate.
+      { title: "REPS — The professional standard for fitness" },
       {
         name: "description",
         content:
-          "REPS connects you with verified fitness professionals you can trust — and powers the businesses behind them.",
+          "REPS is the professional standard for fitness — a verified register of trainers, coaches and instructors, and the platform that powers their businesses.",
       },
       { property: "og:site_name", content: "REPS" },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "REPS — Find. Trust. Train. Transform." },
-      {
-        property: "og:description",
-        content:
-          "Find verified personal trainers, Pilates instructors, nutritionists and coaches you can trust.",
-      },
       { name: "robots", content: "noindex, nofollow" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "REPS — Find. Trust. Train. Transform." },
-      {
-        name: "twitter:description",
-        content:
-          "Find verified personal trainers, Pilates instructors, nutritionists and coaches you can trust.",
-      },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7540707a-1c31-41ef-a604-3ae2a3001cc0/id-preview-2f2ca10b--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1780220683283.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7540707a-1c31-41ef-a604-3ae2a3001cc0/id-preview-2f2ca10b--53bfbf09-bff5-41a5-a363-d717a797570f.lovable.app-1780220683283.png" },
+      // NOTE: no og:image / twitter:image at the root — root-level images concatenate into every
+      // match and override per-page share previews. Leaf routes own their own og:image.
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -114,6 +105,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "REPS",
+          alternateName: "Register of Exercise Professionals",
+          url: "https://repsglobal.lovable.app",
+          logo: "https://repsglobal.lovable.app/favicon.ico",
+          sameAs: ["https://repsuk.org", "https://www.repsuk.org"],
+        }),
       },
     ],
   }),
