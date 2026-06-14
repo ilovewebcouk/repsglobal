@@ -78,6 +78,7 @@ export type TrainerActive =
   | "Public Profile"
   | "Services"
   | "Shop-front"
+  | "Enquiries"
   | "Edit Profile"
   | "Verification"
   | "Payments"
