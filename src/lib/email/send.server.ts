@@ -21,6 +21,7 @@ interface ServerSendParams {
   recipientEmail: string;
   idempotencyKey?: string;
   templateData?: Record<string, unknown>;
+  replyTo?: string;
 }
 
 /**
@@ -30,7 +31,7 @@ interface ServerSendParams {
  * render, enqueue, send_log).
  */
 export async function sendTransactionalEmailServer(params: ServerSendParams) {
-  const { templateName, recipientEmail, idempotencyKey, templateData = {} } = params;
+  const { templateName, recipientEmail, idempotencyKey, templateData = {}, replyTo } = params;
   const template = TEMPLATES[templateName];
   if (!template) throw new Error(`Template '${templateName}' not found`);
 
@@ -114,6 +115,7 @@ export async function sendTransactionalEmailServer(params: ServerSendParams) {
       label: templateName,
       idempotency_key: key,
       unsubscribe_token: unsubscribeToken,
+      ...(replyTo ? { reply_to: replyTo } : {}),
       queued_at: new Date().toISOString(),
     },
   });

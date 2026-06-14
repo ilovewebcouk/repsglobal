@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Inbox, Plus, Search, Sparkles, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,12 +39,7 @@ import { LeadSourcesCard } from "@/components/leads/LeadSourcesCard";
 import { ConversionPerformanceCard } from "@/components/leads/ConversionPerformanceCard";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/leads")({
-  beforeLoad: ({ context }) => {
-    // Verified pros get the focused inbox at /dashboard/enquiries.
-    const tier = (context as { trainerTier?: string }).trainerTier;
-    if (tier === "verified") throw redirect({ to: "/dashboard/enquiries" });
-  },
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/leads")({
   head: () => ({
     meta: [
       { title: "Leads pipeline — REPS Professional" },
@@ -137,51 +132,44 @@ function LeadsPipelinePage() {
   const clearSelection = () => setSelectedIds(new Set());
 
   return (
-    <DashboardShell role="trainer" tier={tier} active="Leads" title="Leads" subtitle="Your full pipeline">
+    <DashboardShell role="trainer" tier={tier} active="Leads" title="Leads" subtitle="Track enquiries, prioritise follow-ups and convert leads into clients.">
       <div className="flex flex-col gap-5">
-        {/* Header */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
-          <div className="min-w-0">
-            <h1 className="font-display text-[28px] font-bold text-white">Leads pipeline</h1>
-            <p className="mt-1 text-[13.5px] text-white/55">
-              Track enquiries, prioritise follow-ups and convert leads into clients.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
-              <Input
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-10 w-[260px] rounded-[12px] border-reps-border bg-reps-panel pl-9 text-[12.5px] shadow-none"
-              />
-              <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
-                ⌘K
-              </kbd>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toast.info("CSV import is coming in Phase 2.3")}
-              className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-panel-soft"
-            >
-              <Upload className="size-3.5" /> <span className="ml-1.5">Import leads</span>
-            </Button>
-            <NewLeadDialog
-              onCreated={() => {
-                qc.invalidateQueries({ queryKey: ["leads"] });
-                qc.invalidateQueries({ queryKey: ["lead-kpis"] });
-              }}
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="relative mr-auto">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 w-[260px] rounded-[12px] border-reps-border bg-reps-panel pl-9 text-[12.5px] shadow-none"
             />
-            <BackfillScoresButton
-              onDone={() => {
-                qc.invalidateQueries({ queryKey: ["leads"] });
-                qc.invalidateQueries({ queryKey: ["lead-kpis"] });
-              }}
-            />
+            <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+              ⌘K
+            </kbd>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toast.info("CSV import is coming in Phase 2.3")}
+            className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-panel-soft"
+          >
+            <Upload className="size-3.5" /> <span className="ml-1.5">Import leads</span>
+          </Button>
+          <NewLeadDialog
+            onCreated={() => {
+              qc.invalidateQueries({ queryKey: ["leads"] });
+              qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+            }}
+          />
+          <BackfillScoresButton
+            onDone={() => {
+              qc.invalidateQueries({ queryKey: ["leads"] });
+              qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+            }}
+          />
         </div>
+
 
         {/* KPI strip */}
         <KpiStrip kpis={kpis} />

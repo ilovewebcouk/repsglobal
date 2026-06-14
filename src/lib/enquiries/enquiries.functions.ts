@@ -88,6 +88,19 @@ export const submitEnquiry = createServerFn({ method: "POST" })
         .maybeSingle();
       const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(pro.id);
       const recipient = authUser?.user?.email ?? null;
+
+      // Tier branch: Verified gets a "forwarder" email (Reply-To = lead), so
+      // they can reply straight from their inbox back to the lead — REPs is
+      // just the relay. Pro/Studio gets the same template pointing at their
+      // Leads pipeline as the workflow.
+      const { data: isPro } = await supabaseAdmin.rpc("has_active_tier", {
+        _user_id: pro.id,
+        _tiers: ["pro", "studio"],
+      });
+      const inboxUrl = isPro
+        ? "https://repsglobal.lovable.app/dashboard/leads"
+        : `https://repsglobal.lovable.app/pro/${data.slug}`;
+
       if (recipient) {
         const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
         const fullName = prof?.full_name ?? "";
@@ -96,6 +109,7 @@ export const submitEnquiry = createServerFn({ method: "POST" })
           templateName: "enquiry-notification",
           recipientEmail: recipient,
           idempotencyKey: `enquiry-${row.id}`,
+          replyTo: data.sender_email,
           templateData: {
             proFirstName: firstName,
             senderName: data.sender_name,
@@ -108,13 +122,14 @@ export const submitEnquiry = createServerFn({ method: "POST" })
             budget: data.budget || null,
             location: data.location || null,
             message: data.message,
-            inboxUrl: "https://repsglobal.lovable.app/dashboard/enquiries",
+            inboxUrl,
           },
         });
       }
     } catch (e) {
       console.error("[submitEnquiry] notification email failed:", e);
     }
+
 
     return { id: row.id };
   });
