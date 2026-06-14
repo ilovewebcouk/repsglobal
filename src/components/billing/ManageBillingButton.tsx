@@ -19,7 +19,7 @@ type Props = React.ComponentProps<typeof Button> & {
 export function ManageBillingButton({
   label = "Manage billing",
   loadingLabel = "Opening portal…",
-  variant = "outline",
+  variant = "ghost",
   size,
   className,
   ...rest
@@ -48,7 +48,10 @@ export function ManageBillingButton({
       type="button"
       variant={variant}
       size={size}
-      className={className}
+      className={
+        className ??
+        "inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white"
+      }
       disabled={loading}
       onClick={handleClick}
       {...rest}
