@@ -646,7 +646,6 @@ function PrivacyTab({ data }: { data: SettingsBundle }) {
   const qc = useQueryClient();
   const pauseFn = useServerFn(updateMyListingPaused);
   const exportFn = useServerFn(exportMyData);
-  const deleteFn = useServerFn(deleteMyAccount);
 
   const [paused, setPaused] = React.useState(!data.privacy.is_published);
   const [exporting, setExporting] = React.useState(false);
