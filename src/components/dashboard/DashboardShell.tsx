@@ -50,6 +50,7 @@ import { initialsFromName } from "@/lib/initials";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { getEnquiryStats } from "@/lib/enquiries/enquiries.functions";
 import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
 
 
@@ -253,6 +254,8 @@ function NavSection({
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.label === "Verification" && item.to === "/dashboard/verification" ? (
                   <VerificationCountBadge />
+                ) : item.label === "Enquiries" && item.to === "/dashboard/enquiries" ? (
+                  <EnquiriesUnreadBadge />
                 ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
@@ -309,6 +312,22 @@ function VerificationCountBadge() {
   });
   const completed = (data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
   return <VerifiedCountChip completed={completed} />;
+}
+
+function EnquiriesUnreadBadge() {
+  const fetchStats = useServerFn(getEnquiryStats);
+  const { data } = useQuery({
+    queryKey: ["my-enquiry-stats"],
+    queryFn: () => fetchStats(),
+    staleTime: 30_000,
+  });
+  const unread = data?.unread ?? 0;
+  if (!unread) return null;
+  return (
+    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+      {unread > 99 ? "99+" : unread}
+    </span>
+  );
 }
 
 
