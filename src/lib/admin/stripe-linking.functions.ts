@@ -396,3 +396,172 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
       .eq("bd_member_id", bd_member_id);
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin: reset the link table so we can re-run cleanly (e.g. after switching env).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const resetLegacyLinking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ deleted: number }> => {
+    await ensureAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("legacy_stripe_link")
+      .select("*", { count: "exact", head: true });
+    const { error } = await supabaseAdmin
+      .from("legacy_stripe_link")
+      .delete()
+      .gt("bd_member_id", -1);
+    if (error) throw new Error(error.message);
+    return { deleted: count ?? 0 };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV-import fallback: link directly from a Stripe Customers CSV export.
+// Bypasses the Stripe API for the lookup step. Still calls Stripe to fetch
+// each linked customer's active subscription so legacy_kind / access_expires_at
+// are accurate.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CsvRowSchema = z.object({
+  email: z.string().min(3),
+  customer_id: z.string().min(3),
+});
+const CsvInputSchema = z.object({
+  environment: z.enum(["sandbox", "live"]).default("live"),
+  rows: z.array(CsvRowSchema).min(1).max(5000),
+});
+
+export type LegacyCsvLinkResult = {
+  csv_rows: number;
+  matched_seed: number;
+  linked_recurring: number;
+  linked_onetime: number;
+  no_seed_match: number;
+  already_linked: number;
+  errors: number;
+  sample_errors: string[];
+};
+
+export const linkLegacyFromStripeCsv = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => CsvInputSchema.parse(input))
+  .handler(async ({ data, context }): Promise<LegacyCsvLinkResult> => {
+    await ensureAdmin(context);
+    const env = data.environment as StripeEnv;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { createStripeClient } = await import("@/lib/billing/stripe.server");
+    const stripe = createStripeClient(env);
+
+    // Build email -> customer_id map from CSV (lowercased).
+    const csvMap = new Map<string, string>();
+    for (const r of data.rows) {
+      const key = r.email.trim().toLowerCase();
+      if (key && r.customer_id && !csvMap.has(key)) csvMap.set(key, r.customer_id);
+    }
+
+    // Pull seed + existing links.
+    const [{ data: seed }, { data: existing }] = await Promise.all([
+      supabaseAdmin.from("bd_member_seed").select("bd_member_id,email,legacy_signup_at"),
+      supabaseAdmin.from("legacy_stripe_link").select("bd_member_id"),
+    ]);
+    const have = new Set((existing ?? []).map((r) => (r as { bd_member_id: number }).bd_member_id));
+
+    const res: LegacyCsvLinkResult = {
+      csv_rows: data.rows.length,
+      matched_seed: 0,
+      linked_recurring: 0,
+      linked_onetime: 0,
+      no_seed_match: 0,
+      already_linked: 0,
+      errors: 0,
+      sample_errors: [],
+    };
+
+    const now = Date.now();
+    const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+    const seedRows = (seed ?? []) as {
+      bd_member_id: number;
+      email: string;
+      legacy_signup_at: string | null;
+    }[];
+
+    for (const row of seedRows) {
+      const key = row.email.trim().toLowerCase();
+      const customerId = csvMap.get(key);
+      if (!customerId) {
+        res.no_seed_match += 1;
+        continue;
+      }
+      res.matched_seed += 1;
+      if (have.has(row.bd_member_id)) {
+        res.already_linked += 1;
+        continue;
+      }
+      try {
+        const subs = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 5,
+        });
+        const activeSub = subs.data.find((s: { status: string }) =>
+          ["active", "trialing", "past_due"].includes(s.status),
+        );
+
+        if (activeSub) {
+          const item = activeSub.items.data[0] as
+            | { current_period_end?: number; price: { id: string } }
+            | undefined;
+          const cpeSec = item?.current_period_end ?? null;
+          const cpe = cpeSec ? new Date(cpeSec * 1000).toISOString() : null;
+          const priceId = item?.price.id ?? null;
+
+          await supabaseAdmin.from("legacy_stripe_link").insert({
+            bd_member_id: row.bd_member_id,
+            email: row.email,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: activeSub.id,
+            current_price_id: priceId,
+            access_expires_at: cpe,
+            legacy_kind: "recurring",
+            link_status: "linked",
+            migration_status: "pending",
+            notes: "Linked via Stripe CSV import.",
+          } as never);
+          res.linked_recurring += 1;
+        } else {
+          const signupMs = row.legacy_signup_at ? new Date(row.legacy_signup_at).getTime() : null;
+          let expiresMs: number;
+          if (signupMs) {
+            const naturalExpiry = signupMs + ONE_YEAR_MS;
+            expiresMs = naturalExpiry > now ? naturalExpiry : now + THIRTY_DAYS_MS;
+          } else {
+            expiresMs = now + THIRTY_DAYS_MS;
+          }
+          await supabaseAdmin.from("legacy_stripe_link").insert({
+            bd_member_id: row.bd_member_id,
+            email: row.email,
+            stripe_customer_id: customerId,
+            access_expires_at: new Date(expiresMs).toISOString(),
+            legacy_kind: "onetime",
+            link_status: "linked",
+            migration_status: "pending",
+            notes: "Linked via Stripe CSV import.",
+          } as never);
+          res.linked_onetime += 1;
+        }
+      } catch (e) {
+        res.errors += 1;
+        if (res.sample_errors.length < 5) {
+          res.sample_errors.push(`${row.email}: ${(e as Error).message}`);
+        }
+      }
+    }
+
+    return res;
+  });
+
