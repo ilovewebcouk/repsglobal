@@ -733,20 +733,16 @@ function PrivacyTab({ data }: { data: SettingsBundle }) {
               reviews, verifications and account. This cannot be undone.
             </div>
           </div>
-          <DeleteAccountDialog email={data.account.email ?? ""} deleteFn={deleteFn} />
+          <DeleteAccountDialog email={data.account.email ?? ""} />
         </div>
       </PPanel>
     </>
   );
 }
 
-function DeleteAccountDialog({
-  email,
-  deleteFn,
-}: {
-  email: string;
-  deleteFn: ReturnType<typeof useServerFn<typeof deleteMyAccount>>;
-}) {
+function DeleteAccountDialog({ email }: { email: string }) {
+  const deleteFn = useServerFn(deleteMyAccount);
+
   const [open, setOpen] = React.useState(false);
   const [confirmEmail, setConfirmEmail] = React.useState("");
   const [confirmPhrase, setConfirmPhrase] = React.useState("");
