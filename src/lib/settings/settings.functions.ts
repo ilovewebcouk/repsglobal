@@ -684,5 +684,16 @@ export const listMyActivity = createServerFn({ method: "GET" })
     }
 
     events.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-    return { events: events.slice(0, 100) };
+    const top = events.slice(0, 100);
+
+    // Geolocate the IPs we actually surface.
+    const ipsToLookup = top.map((e) => e.ip).filter((v): v is string => !!v);
+    if (ipsToLookup.length > 0) {
+      const geo = await geolocateIps(ipsToLookup);
+      for (const e of top) {
+        if (e.ip && geo.has(e.ip)) e.location = geo.get(e.ip) ?? null;
+      }
+    }
+
+    return { events: top };
   });
