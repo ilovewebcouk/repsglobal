@@ -34,17 +34,20 @@ export const logAdminAction = createServerFn({ method: "POST" })
       throw new Error("Forbidden: admin role required");
     }
 
-    const { data: logId, error } = await supabase.rpc("log_admin_action", {
+    const rpcParams: Record<string, unknown> = {
       _actor_id: userId,
       _action: data.action,
-      _target_table: data.targetTable ?? null,
-      _target_id: data.targetId ?? null,
-      _before_state: data.beforeState ?? null,
-      _after_state: data.afterState ?? null,
-      _reason: data.reason ?? null,
-      _ip: null,
-      _user_agent: null,
-    });
+    };
+    if (data.targetTable) rpcParams._target_table = data.targetTable;
+    if (data.targetId) rpcParams._target_id = data.targetId;
+    if (data.beforeState) rpcParams._before_state = data.beforeState as unknown;
+    if (data.afterState) rpcParams._after_state = data.afterState as unknown;
+    if (data.reason) rpcParams._reason = data.reason;
+
+    const { data: logId, error } = await supabase.rpc(
+      "log_admin_action",
+      rpcParams as Parameters<typeof supabase.rpc>[1],
+    );
 
     if (error) {
       throw new Error(`Audit log failed: ${error.message}`);
