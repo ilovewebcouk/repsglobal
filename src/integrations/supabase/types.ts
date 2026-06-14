@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      bd_member_seed: {
+        Row: {
+          about_me: string | null
+          address1: string | null
+          address2: string | null
+          bd_member_id: number
+          city: string | null
+          claim_status: Database["public"]["Enums"]["bd_member_claim_status"]
+          claimed_user_id: string | null
+          country_ln: string | null
+          created_at: string
+          credentials: string | null
+          email: string
+          experience: string | null
+          first_name: string | null
+          instagram: string | null
+          last_name: string | null
+          lat: number | null
+          legacy_billing_period: string | null
+          legacy_last_login_at: string | null
+          legacy_plan: string | null
+          legacy_signup_at: string | null
+          linkedin: string | null
+          lon: number | null
+          notes: string | null
+          phone_raw: string | null
+          profile_photo_reject_category: string | null
+          profile_photo_reject_reason: string | null
+          profile_photo_src: string | null
+          profile_photo_status: Database["public"]["Enums"]["bd_member_photo_status"]
+          profile_photo_storage_path: string | null
+          quote: string | null
+          service_areas: string | null
+          services_text: string | null
+          tiktok: string | null
+          twitter: string | null
+          updated_at: string
+          website: string | null
+          years_active: string | null
+          youtube: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          about_me?: string | null
+          address1?: string | null
+          address2?: string | null
+          bd_member_id: number
+          city?: string | null
+          claim_status?: Database["public"]["Enums"]["bd_member_claim_status"]
+          claimed_user_id?: string | null
+          country_ln?: string | null
+          created_at?: string
+          credentials?: string | null
+          email: string
+          experience?: string | null
+          first_name?: string | null
+          instagram?: string | null
+          last_name?: string | null
+          lat?: number | null
+          legacy_billing_period?: string | null
+          legacy_last_login_at?: string | null
+          legacy_plan?: string | null
+          legacy_signup_at?: string | null
+          linkedin?: string | null
+          lon?: number | null
+          notes?: string | null
+          phone_raw?: string | null
+          profile_photo_reject_category?: string | null
+          profile_photo_reject_reason?: string | null
+          profile_photo_src?: string | null
+          profile_photo_status?: Database["public"]["Enums"]["bd_member_photo_status"]
+          profile_photo_storage_path?: string | null
+          quote?: string | null
+          service_areas?: string | null
+          services_text?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string
+          website?: string | null
+          years_active?: string | null
+          youtube?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          about_me?: string | null
+          address1?: string | null
+          address2?: string | null
+          bd_member_id?: number
+          city?: string | null
+          claim_status?: Database["public"]["Enums"]["bd_member_claim_status"]
+          claimed_user_id?: string | null
+          country_ln?: string | null
+          created_at?: string
+          credentials?: string | null
+          email?: string
+          experience?: string | null
+          first_name?: string | null
+          instagram?: string | null
+          last_name?: string | null
+          lat?: number | null
+          legacy_billing_period?: string | null
+          legacy_last_login_at?: string | null
+          legacy_plan?: string | null
+          legacy_signup_at?: string | null
+          linkedin?: string | null
+          lon?: number | null
+          notes?: string | null
+          phone_raw?: string | null
+          profile_photo_reject_category?: string | null
+          profile_photo_reject_reason?: string | null
+          profile_photo_src?: string | null
+          profile_photo_status?: Database["public"]["Enums"]["bd_member_photo_status"]
+          profile_photo_storage_path?: string | null
+          quote?: string | null
+          service_areas?: string | null
+          services_text?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string
+          website?: string | null
+          years_active?: string | null
+          youtube?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       bd_migration: {
         Row: {
           bd_member_id: string
@@ -2284,6 +2410,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "professional" | "client"
+      bd_member_claim_status: "staged" | "invited" | "claimed" | "skipped"
+      bd_member_photo_status:
+        | "pending"
+        | "ok"
+        | "rejected"
+        | "missing"
+        | "fetch_error"
       bd_migration_status:
         | "pending"
         | "account_created"
@@ -2457,6 +2590,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "professional", "client"],
+      bd_member_claim_status: ["staged", "invited", "claimed", "skipped"],
+      bd_member_photo_status: [
+        "pending",
+        "ok",
+        "rejected",
+        "missing",
+        "fetch_error",
+      ],
       bd_migration_status: [
         "pending",
         "account_created",
