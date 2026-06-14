@@ -479,7 +479,7 @@ export const listMyActivity = createServerFn({ method: "GET" })
           id: `auth_${r.id}`,
           at: r.created_at,
           category: "auth",
-          title: AUTH_ACTION_LABELS[action] ?? action.replace(/_/g, " ") || "Account event",
+          title: AUTH_ACTION_LABELS[action] ?? (action.replace(/_/g, " ") || "Account event"),
           detail: null,
           ip: r.ip_address,
         });
