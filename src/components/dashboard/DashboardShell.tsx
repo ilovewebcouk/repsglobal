@@ -63,7 +63,6 @@ import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
 export type TrainerActive =
   | "Dashboard"
   | "Leads"
-  | "Enquiries"
   | "Clients"
   | "Calendar"
   | "Bookings"
