@@ -175,10 +175,10 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
         );
 
         if (activeSub) {
-          const cpe = activeSub.current_period_end
-            ? new Date(activeSub.current_period_end * 1000).toISOString()
-            : null;
-          const priceId = activeSub.items.data[0]?.price.id ?? null;
+          const item = activeSub.items.data[0] as { current_period_end?: number; price: { id: string } } | undefined;
+          const cpeSec = item?.current_period_end ?? null;
+          const cpe = cpeSec ? new Date(cpeSec * 1000).toISOString() : null;
+          const priceId = item?.price.id ?? null;
 
           await supabaseAdmin.from("legacy_stripe_link").insert({
             bd_member_id: row.bd_member_id,
