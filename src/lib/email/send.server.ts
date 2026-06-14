@@ -115,6 +115,7 @@ export async function sendTransactionalEmailServer(params: ServerSendParams) {
       label: templateName,
       idempotency_key: key,
       unsubscribe_token: unsubscribeToken,
+      ...(replyTo ? { reply_to: replyTo } : {}),
       queued_at: new Date().toISOString(),
     },
   });
