@@ -217,3 +217,51 @@ export const updateEnquiryStatus = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/* ------------------------- Verified inbox stats ------------------------- */
+
+export type EnquiryStats = {
+  this_month_count: number;
+  reply_rate_pct: number | null;
+  reply_time_avg_hours: number | null;
+  total: number;
+};
+
+export const getEnquiryStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<EnquiryStats> => {
+    const userId = context.userId;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const since30 = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
+    const { data, error } = await supabaseAdmin
+      .from("enquiries")
+      .select("id, created_at, replied_at, status")
+      .eq("professional_id", userId)
+      .neq("status", "spam");
+    if (error) throw error;
+    const rows = data ?? [];
+
+    const thisMonth = rows.filter((r) => r.created_at >= monthStart.toISOString());
+    const last30 = rows.filter((r) => r.created_at >= since30);
+    const replied30 = last30.filter((r) => r.replied_at || r.status === "replied");
+
+    const replyTimeAvg = replied30.length
+      ? replied30
+          .filter((r) => r.replied_at)
+          .reduce(
+            (acc, r) => acc + (new Date(r.replied_at!).getTime() - new Date(r.created_at).getTime()) / 3_600_000,
+            0,
+          ) / Math.max(1, replied30.filter((r) => r.replied_at).length)
+      : null;
+
+    return {
+      this_month_count: thisMonth.length,
+      reply_rate_pct: last30.length ? Math.round((replied30.length / last30.length) * 100) : null,
+      reply_time_avg_hours: replyTimeAvg,
+      total: rows.length,
+    };
+  });
