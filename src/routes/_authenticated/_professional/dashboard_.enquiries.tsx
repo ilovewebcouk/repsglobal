@@ -17,6 +17,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import { useProGuard } from "@/lib/dashboard/useProGuard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
