@@ -245,8 +245,6 @@ function AccountTab({ data }: { data: SettingsBundle }) {
   const save = useServerFn(updateMyAccount);
 
   const [fullName, setFullName] = React.useState(data.account.full_name ?? "");
-  const [displayName, setDisplayName] = React.useState(data.account.display_name ?? "");
-  const [businessName, setBusinessName] = React.useState(data.account.business_name ?? "");
   const [phone, setPhone] = React.useState(data.account.contact_phone ?? "");
   const [timezone, setTimezone] = React.useState(data.account.timezone);
   const [locale, setLocale] = React.useState(data.account.locale);
@@ -259,8 +257,6 @@ function AccountTab({ data }: { data: SettingsBundle }) {
       save({
         data: {
           full_name: fullName.trim(),
-          display_name: displayName.trim() || null,
-          business_name: businessName.trim() || null,
           contact_phone: phone || null,
           timezone,
           locale,
@@ -273,6 +269,7 @@ function AccountTab({ data }: { data: SettingsBundle }) {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const handleEmailChange = async () => {
     const trimmed = newEmail.trim();
@@ -307,28 +304,13 @@ function AccountTab({ data }: { data: SettingsBundle }) {
         />
       </Row>
 
-      <Row label="Display name" hint="What clients see on your profile and directory card.">
-        <TextInput
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder={data.account.full_name ?? "Jane Smith"}
-        />
-      </Row>
-
-      <Row label="Trading name" hint="Used on invoices. Optional.">
-        <TextInput
-          value={businessName}
-          onChange={(e) => setBusinessName(e.target.value)}
-          placeholder="e.g. Smith Strength Co."
-        />
-      </Row>
-
       <Row label="Phone" hint="Internal only. Never shown publicly.">
         <PhoneField
           value={phone}
           onChange={(v) => setPhone(v)}
         />
       </Row>
+
 
       <Row label="Timezone">
         <select

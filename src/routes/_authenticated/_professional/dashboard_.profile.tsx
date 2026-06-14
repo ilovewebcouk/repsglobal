@@ -28,7 +28,7 @@ import {
   
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
+import { isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { AiCopyAssist, type AiCopyFacts } from "@/components/forms/AiCopyAssist";
 import { LanguagePicker } from "@/components/forms/LanguagePicker";
 // SocialHandleInput is rendered via SocialLinksPicker now.
@@ -1440,29 +1440,8 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* 07 Private contact — admin-only, visually demoted */}
-            <section className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel/40 p-5">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-[14px] font-semibold text-white/85">Private contact</h2>
-                  <p className="mt-0.5 text-[11.5px] text-white/45">
-                    Only used by REPs for account recovery and booking alerts. Never shown on your public profile.
-                  </p>
-                </div>
-                <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/55">
-                  07
-                </span>
-              </div>
-              <div data-field="contact_phone">
-                <Field label="Contact phone" error={errors.contact_phone}>
-                  <PhoneField
-                    value={form.contact_phone}
-                    onChange={(v) => set("contact_phone", v)}
-                    invalid={!!errors.contact_phone}
-                  />
-                </Field>
-              </div>
-            </section>
+
+
 
           </div>
 
