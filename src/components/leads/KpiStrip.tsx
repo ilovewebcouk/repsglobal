@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ArrowUpRight, ArrowDownRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { LeadKpis } from "@/lib/leads/leads.functions";
 
 function fmtPence(p: number | null | undefined) {
