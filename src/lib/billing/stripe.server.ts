@@ -89,8 +89,8 @@ export async function verifyWebhook(
   const body = await req.text();
   const secret =
     env === "sandbox"
-      ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET")
-      : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
+      ? getEnv("STRIPE_WEBHOOK_SECRET_TEST")
+      : getEnv("STRIPE_WEBHOOK_SECRET_LIVE");
 
   if (!signature || !body) throw new Error("Missing signature or body");
 
