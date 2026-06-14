@@ -42,8 +42,12 @@ import {
   updateMyListingPaused,
   exportMyData,
   deleteMyAccount,
+  listMySessions,
+  revokeMySession,
   type SettingsBundle,
+  type SessionRow,
 } from "@/lib/settings/settings.functions";
+
 
 type TabKey = "account" | "notifications" | "billing" | "security" | "privacy";
 
