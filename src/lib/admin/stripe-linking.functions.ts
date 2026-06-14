@@ -24,6 +24,31 @@ import type { StripeEnv } from "@/lib/billing/stripe.server";
 
 const EnvSchema = z.object({ environment: z.enum(["sandbox", "live"]).default("live") });
 
+// Case-insensitive lookup. Stripe Search is case-insensitive on email and
+// supports metadata['email'] fallback. Falls back to customers.list (exact
+// case match) for accounts where Search isn't indexed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findStripeCustomerByEmail(stripe: any, email: string): Promise<any | null> {
+  const safe = email.replace(/"/g, '\\"');
+  try {
+    const res = await stripe.customers.search({
+      query: `email:"${safe}" OR metadata["email"]:"${safe}"`,
+      limit: 3,
+    });
+    const live = (res.data ?? []).filter((c: { deleted?: boolean }) => !c.deleted);
+    if (live.length) {
+      // Prefer most recently created.
+      live.sort((a: { created?: number }, b: { created?: number }) => (b.created ?? 0) - (a.created ?? 0));
+      return live[0];
+    }
+  } catch {
+    // Search may rate-limit or be unavailable; fall through to list.
+  }
+  const list = await stripe.customers.list({ email, limit: 1 });
+  return list.data[0] ?? null;
+}
+
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureAdmin(context: any) {
   const { data } = await context.supabase.rpc("has_role", {
