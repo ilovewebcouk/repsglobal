@@ -1,0 +1,1 @@
+GRANT INSERT, UPDATE, DELETE ON public.bd_member_seed TO sandbox_exec;
