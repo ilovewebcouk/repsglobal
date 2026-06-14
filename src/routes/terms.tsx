@@ -8,7 +8,9 @@ export const Route = createFileRoute("/terms")({
       { name: "description", content: "The terms that govern your use of the REPS platform, marketplace and professional services." },
       { property: "og:title", content: "Terms of service — REPS" },
       { property: "og:description", content: "Read the REPS platform terms of service." },
+      { property: "og:url", content: "https://repsglobal.lovable.app/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/terms" }],
   }),
   component: () => (
     <LegalShell
