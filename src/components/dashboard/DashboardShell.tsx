@@ -76,6 +76,8 @@ export type TrainerActive =
   | "Community"
   | "Education & CPD"
   | "Public Profile"
+  | "Listing"
+  | "Trust"
   | "Services"
   | "Shop-front"
   | "Edit Profile"
