@@ -315,7 +315,22 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           switch (event.type) {
             case "checkout.session.completed": {
               const session = event.data.object as Stripe.Checkout.Session;
-              if (session.mode === "subscription" && session.subscription) {
+              const meta = (session.metadata ?? {}) as Record<string, string>;
+              if (meta.kind === "credit_topup") {
+                const topupUserId = meta.reps_user_id || meta.userId;
+                const credits = Number(meta.credits);
+                if (topupUserId && credits > 0) {
+                  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                  const { error } = await supabaseAdmin.rpc("grant_credit_topup", {
+                    _user_id: topupUserId,
+                    _credits: credits,
+                    _stripe_session_id: session.id,
+                    _pack: meta.pack ?? null,
+                  } as never);
+                  if (error) throw error;
+                  userId = topupUserId;
+                }
+              } else if (session.mode === "subscription" && session.subscription) {
                 const subId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe);
