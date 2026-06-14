@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://staging.repsuk.org/sitemap.xml
+Sitemap: https://repsglobal.lovable.app/sitemap.xml

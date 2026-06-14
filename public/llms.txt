@@ -1,0 +1,51 @@
+# REPS
+
+> REPS is the professional standard for fitness — a verified register of personal trainers, coaches, nutritionists and instructors, plus the platform that powers their businesses (shop-front, operations, coaching, growth).
+
+REPS combines two things in one product: a public-facing trust layer (verified qualifications, identity, insurance) and a complete operating platform for fitness professionals (client-facing shop-front, enquiries, bookings, payments, programming, check-ins, growth analytics).
+
+## Pages
+
+- [Home](/): What REPs is and who it's for.
+- [About](/about): The team, mission and history behind REPs.
+- [How it works](/how-it-works): The end-to-end client and professional journey.
+- [Find a professional](/find-a-professional): Search the public register of verified trainers, coaches and instructors.
+- [For professionals](/for-professionals): The platform pitch for fitness professionals.
+- [Pricing](/pricing): Verified, Pro and Studio tiers.
+- [Standards](/standards): The standards every REPs-registered professional meets.
+- [CPD](/cpd): Continuing professional development for registered pros.
+- [Specialisms](/specialisms): The professions REPs registers (PT, group ex, strength, online, nutritionist, yoga, Pilates).
+- [Business tools](/business-tools): The Pro / Studio business platform overview.
+- [Resources](/resources): Long-form articles for fitness professionals and clients.
+
+## Features
+
+- [Visibility](/features/visibility): Verified profile + discovery surface for getting found.
+- [Shop-front](/features/shop-front): Client-facing page for services, packages, enquiries and payment.
+- [Operations](/features/operations): Enquiries, bookings, forms, waivers, payments and client records.
+- [Coaching](/features/coaching): Programmes, nutrition, check-ins and the client portal.
+- [Growth](/features/growth): Conversion, retention, reviews and business performance.
+- [AI](/features/ai): REPs AI — ranked actions, drafted replies and risk alerts.
+
+## Compare
+
+- [Compare](/compare): How REPs compares to other tools.
+- [REPs vs MyPTHub](/compare/reps-vs-mypthub)
+- [REPs vs PT Distinction](/compare/reps-vs-pt-distinction)
+- [REPs vs Trainerize](/compare/reps-vs-trainerize)
+- [Comparison methodology](/comparison-methodology): How comparisons are sourced and dated.
+
+## Help
+
+- [Help centre](/help): Support articles and how-to guides.
+- [Contact](/contact): How to reach the REPs team.
+- [Reviews](/reviews): Real reviews from REPs clients and professionals.
+
+## Optional
+
+- [Press](/press)
+- [Careers](/careers)
+- [Complaints](/complaints)
+- [Terms of service](/terms)
+- [Privacy policy](/privacy)
+- [Cookie policy](/cookies)
