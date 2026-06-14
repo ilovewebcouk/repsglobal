@@ -30,6 +30,7 @@ import {
 import { PipelineTable } from "@/components/leads/PipelineTable";
 import { LeadDrawer } from "@/components/leads/LeadDrawer";
 import { KpiStrip, BottomCards } from "@/components/leads/Kpis";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/leads")({
   head: () => ({
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/l
 
 function LeadsPipelinePage() {
   const qc = useQueryClient();
+  const tier = useTrainerTier();
 
   const { data: leadsAll = [], isLoading } = useQuery({
     queryKey: ["leads"],
@@ -79,7 +81,7 @@ function LeadsPipelinePage() {
   const selected: LeadDTO | null = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <DashboardShell role="trainer" active="Leads" title="Leads" subtitle="Your full pipeline">
+    <DashboardShell role="trainer" tier={tier} active="Leads" title="Leads" subtitle="Your full pipeline">
       <div className="flex flex-col gap-5">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-3">

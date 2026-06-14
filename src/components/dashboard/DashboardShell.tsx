@@ -446,7 +446,10 @@ export type DashboardShellProps = {
 
 export function DashboardShell({
   role,
-  tier = "pro",
+  // Least-privilege default. Trainer pages MUST pass `tier` explicitly
+  // (usually from `useTrainerTier()`). If they don't, we render the
+  // Verified nav set rather than silently leaking Pro/Studio links.
+  tier = "verified",
   active,
   title,
   subtitle,
