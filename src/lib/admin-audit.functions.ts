@@ -34,19 +34,19 @@ export const logAdminAction = createServerFn({ method: "POST" })
       throw new Error("Forbidden: admin role required");
     }
 
-    const rpcParams: Record<string, unknown> = {
-      _actor_id: userId,
-      _action: data.action,
-    };
-    if (data.targetTable) rpcParams._target_table = data.targetTable;
-    if (data.targetId) rpcParams._target_id = data.targetId;
-    if (data.beforeState) rpcParams._before_state = data.beforeState as unknown;
-    if (data.afterState) rpcParams._after_state = data.afterState as unknown;
-    if (data.reason) rpcParams._reason = data.reason;
-
-    const { data: logId, error } = await supabase.rpc(
+    const { data: logId, error } = await (supabase.rpc as CallableFunction)(
       "log_admin_action",
-      rpcParams as Parameters<typeof supabase.rpc>[1],
+      {
+        _actor_id: userId,
+        _action: data.action,
+        _target_table: data.targetTable,
+        _target_id: data.targetId,
+        _before_state: data.beforeState,
+        _after_state: data.afterState,
+        _reason: data.reason,
+        _ip: undefined,
+        _user_agent: undefined,
+      } as Record<string, unknown>,
     );
 
     if (error) {
