@@ -115,7 +115,7 @@ function EnquiriesInboxPage() {
 
   const updateMut = useMutation({
     mutationFn: (args: { id: string; status: EnquiryDTO["status"] }) =>
-      doUpdateStatus(args),
+      doUpdateStatus({ data: args }),
     onSuccess: () => {
       toast.success("Status updated");
       qc.invalidateQueries({ queryKey: ["my-enquiries"] });
