@@ -1167,10 +1167,38 @@ function ProfileEditorPage() {
       <div className="flex flex-col gap-4">
         <VerificationStatusPill />
 
-
-
-
-
+        {/* Page-sections callout — Services + Shop-front editors live here for
+            now and will fold into anchored sections of this page in Pass 2. */}
+        <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="font-display text-[14px] font-semibold text-white">
+                More of your public page
+              </h2>
+              <p className="mt-0.5 text-[12.5px] text-white/55">
+                These edit other parts of what appears on your REPs profile. They'll fold into this page soon.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/dashboard/services"
+                className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
+              >
+                Services & pricing
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+              {tier !== "verified" ? (
+                <Link
+                  to="/dashboard/shop-front"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
+                >
+                  Shop-front extras
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
