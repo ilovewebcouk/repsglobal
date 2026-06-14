@@ -610,19 +610,8 @@ function SecurityTab({ data: _data }: { data: SettingsBundle }) {
         </div>
       </PPanel>
 
-      <PPanel className="mt-6">
-        <PanelHeader title="Sessions" subtitle="Sign out of REPs on every device, including this one." />
-        <div className="px-5 py-4">
-          <button
-            type="button"
-            onClick={signOutEverywhere}
-            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white hover:bg-reps-panel"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out everywhere
-          </button>
-        </div>
-      </PPanel>
+      <SessionsPanel signOutEverywhere={signOutEverywhere} />
+
     </>
   );
 }
