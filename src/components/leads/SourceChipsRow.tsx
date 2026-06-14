@@ -25,6 +25,8 @@ export function SourceChipsRow({
   value: string;
   onChange: (v: string) => void;
 }) {
+  // Hide entire row when there's at most one source — the filter is dead UI.
+  if (sources.length <= 1) return null;
   const items = ["all", ...sources];
   return (
     <div className="flex flex-wrap items-center gap-2">
