@@ -1,10 +1,12 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Plus, ArrowDown, ArrowUp } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Sparkles, ArrowDown, ArrowUp } from "lucide-react";
 
 import { PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
+import { CREDIT_PACKS, type CreditPackKey } from "@/lib/billing";
 import {
   getMyWallet,
   listMyCreditTransactions,
@@ -56,6 +58,8 @@ export function CreditsPanel() {
   const ceiling = wallet?.refill_ceiling ?? 0;
   const pct = ceiling > 0 ? Math.min(100, Math.round((balance / ceiling) * 100)) : 0;
 
+  const navigate = useNavigate();
+
   return (
     <PPanel>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-reps-border px-5 py-4">
@@ -68,13 +72,10 @@ export function CreditsPanel() {
             Powers AI scoring, drafts, bios, taglines and portraits. Top up any time from your saved card.
           </p>
         </div>
-        <Button size="sm" variant="outline" disabled>
-          <Plus className="h-3.5 w-3.5" /> Top up · coming soon
-        </Button>
       </div>
 
-      {/* Balance card */}
-      <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-[1fr_1fr_1fr]">
+      {/* Balance + Refill */}
+      <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
         <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
             Current balance
@@ -92,7 +93,7 @@ export function CreditsPanel() {
                 />
               </div>
               <div className="mt-1.5 text-[11px] text-white/45">
-                {balance.toLocaleString()} / {ceiling.toLocaleString()} ceiling
+                {balance.toLocaleString()} / {ceiling.toLocaleString()} refill ceiling (top-ups stack on top)
               </div>
             </div>
           ) : null}
@@ -112,25 +113,51 @@ export function CreditsPanel() {
             </div>
           ) : null}
         </div>
+      </div>
 
-        <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            Top-up packs
-          </div>
-          <ul className="mt-2 space-y-1.5 text-[12.5px] text-white/75">
-            <li className="flex items-center justify-between">
-              <span>Small</span><span className="text-white/55">£10 · 200 credits</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>Medium <span className="ml-1 rounded-full bg-reps-orange-soft px-1.5 py-0.5 text-[10px] font-semibold text-reps-orange">Best value</span></span>
-              <span className="text-white/55">£25 · 600 credits</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>Large</span><span className="text-white/55">£50 · 1,500 credits</span>
-            </li>
-          </ul>
+      {/* Top-up packs */}
+      <div className="border-t border-reps-border px-5 py-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h4 className="text-[13px] font-semibold text-white">Buy more credits</h4>
+          <span className="text-[11px] text-white/45">Charged to your saved card</span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {(Object.values(CREDIT_PACKS)).map((p) => (
+            <div
+              key={p.key}
+              className="flex flex-col rounded-[16px] border border-reps-border bg-reps-panel-soft p-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-[13px] font-semibold text-white">{p.label}</div>
+                {p.badge ? (
+                  <span className="rounded-full bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold text-reps-orange">
+                    {p.badge}
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-2 font-display text-[24px] font-bold text-white">
+                £{p.amountGbp}
+              </div>
+              <div className="text-[12px] text-white/55">
+                {p.credits.toLocaleString()} credits
+              </div>
+              <Button
+                size="sm"
+                className="mt-4 w-full"
+                onClick={() =>
+                  navigate({
+                    to: "/checkout/credits",
+                    search: { pack: p.key as CreditPackKey },
+                  } as never)
+                }
+              >
+                Buy {p.label.toLowerCase()}
+              </Button>
+            </div>
+          ))}
         </div>
       </div>
+
 
       {/* Recent transactions */}
       <div className="border-t border-reps-border px-5 py-4">

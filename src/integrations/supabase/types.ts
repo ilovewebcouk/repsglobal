@@ -2179,6 +2179,15 @@ export type Database = {
           qualification: string
         }[]
       }
+      grant_credit_topup: {
+        Args: {
+          _credits: number
+          _pack?: string
+          _stripe_session_id: string
+          _user_id: string
+        }
+        Returns: number
+      }
       grant_credits: {
         Args: {
           _action: string
