@@ -148,8 +148,7 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
       };
       res.processed += 1;
       try {
-        const list = await stripe.customers.list({ email: row.email, limit: 1 });
-        const customer = list.data[0];
+        const customer = await findStripeCustomerByEmail(stripe, row.email);
 
         if (!customer) {
           await supabaseAdmin.from("legacy_stripe_link").insert({
@@ -163,6 +162,7 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
           res.no_customer += 1;
           continue;
         }
+
 
         // Look for an active recurring sub.
         const subs = await stripe.subscriptions.list({
