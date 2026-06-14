@@ -1,33 +1,72 @@
-# Verified tier — finish line plan (status)
+# Plan: Reset Verified tier to badge + credentials + directory + email enquiries
 
-Nav: **Public profile · Services · Verification · Education & CPD · Settings**. Shop-front gated to Pro+ only.
+Verified (£99/yr) becomes deliberately minimal. Pro and Studio are untouched and keep every feature already built.
 
-## Pass 1 — Cleanup ✅ SHIPPED
-- Removed Shop-front from `VERIFIED_NAV` in `DashboardShell.tsx`.
-- Tier gate on `dashboard_.shop-front.tsx`: Verified members redirected to `/dashboard/services` with toast.
-- Removed delivery-mode (in-person/online) toggle from `dashboard_.profile.tsx` — Services owns it. Gyms section stays, with helper link to Services when online-only.
-- Services upsell card rewritten to "Unlock your Shop-front" with link to `/features/shop-front` + `/pricing`.
+## What Verified is
 
-## Pass 2 — Settings rebuild ✅ SHIPPED
-New `src/routes/_authenticated/_professional/dashboard_.settings.tsx` with 5 URL-driven tabs (`?tab=`):
-- **Account** — legal name (locked if identity approved), display name, trading name, phone, timezone, locale, email change via Supabase confirmation
-- **Notifications** — new enquiry email, weekly digest, marketing opt-in (renewal + verification expiry locked as required)
-- **Billing** — current plan, founding badge, renewal date, Stripe Customer Portal button, change-plan link
-- **Security** — change password (with current-password re-auth), sign out everywhere
-- **Privacy & data** — pause listing toggle, JSON data export, immediate hard-delete account (email + DELETE phrase confirmation)
+- Verified badge on their listing
+- Credentials shown (verification status + qualifications)
+- Appears in the public directory (search, city pages, profession pages) as a **card only**
+- New enquiries are **emailed** to them — no in-app inbox, no reviews, no shop-front, no services editor, no `/c/$slug` page
 
-Server fns in `src/lib/settings/settings.functions.ts`:
-`getMySettings`, `updateMyAccount`, `updateMyNotificationPrefs`, `updateMyListingPaused`, `exportMyData`, `deleteMyAccount`.
+## 1. Sidebar — Verified-only nav
 
-## Pass 3 — Migration ✅ SHIPPED
-- `professionals.timezone` (default `Europe/London`), `professionals.locale` (default `en-GB`)
-- `notification_preferences` table (user_id PK → auth.users, 3 boolean toggles, RLS scoped to `auth.uid()`, updated_at trigger)
+`src/components/dashboard/DashboardShell.tsx` → `VERIFIED_NAV` becomes:
 
-## Pass 4 — QA on locked sections (visual = no changes)
-- Public profile: delivery toggles removed ✅
-- Services: upsell copy updated ✅, specialism cap enforced by DB trigger
-- Verification: no changes (already wired)
-- Education & CPD: no changes (no mock copy found requiring "Coming soon" labels in this pass)
+- Dashboard
+- Public Profile
+- Verification
+- Education & CPD
+- Settings
 
-## Out of scope (Phase 2.1+)
-Dashboard home overhaul, listing-health score, reviews-for-Verified, enquiries inbox, onboarding wizard, 2FA, mobile-first rebuild.
+Remove: Enquiries (already gone from Pro? — keep for Pro/Studio, remove from Verified group).
+
+## 2. Block the URLs for Verified
+
+Add a tiny tier guard. When a Verified user hits any of:
+
+- `/dashboard/enquiries`
+- `/dashboard/shop-front`
+- `/dashboard/services`
+- `/dashboard/reviews` (if/when it lands)
+
+…redirect to `/dashboard` and fire a sonner toast: *"That's a Pro feature — upgrade to unlock."*
+
+Implementation: a small `useEffect` guard in each of those four route components that calls `useTier()` (or the existing helper) → `navigate({ to: "/dashboard" })` + `toast(...)`. No new middleware, no route-tree changes. Pro/Studio code paths unchanged.
+
+## 3. `/dashboard/profile` — hide upsell callouts for Verified
+
+In `src/routes/_authenticated/_professional/dashboard_.profile.tsx`, the "More of your public page" callout card (the one we added with Services + Shop-front buttons) is gated on `tier !== "verified"`. Verified sees the editor without that callout. Everything else in the editor stays the same — they edit bio, photo, headline, credentials, contact, social — that's what powers the directory card.
+
+## 4. Public coach page `/c/$slug` — Verified does NOT get one
+
+`src/routes/c.$slug.tsx` loader: if the pro's tier is `verified`, throw `notFound()` so the route 404s. They only exist as a directory card; the card's "Enquire" CTA goes to `/pro/$slug/enquire` (already email-routed). Pro/Studio shop-fronts are unchanged.
+
+Also update any link from search results / city pages that currently points to `/c/$slug` for Verified pros → point those to `/pro/$slug/enquire` (or just the card with an "Enquire" button, no profile click-through).
+
+## 5. Enquiries → email
+
+The `/pro/$slug/enquire` server fn already creates a row + (presumably) sends an email. Confirm the email send is wired; if it's only DB-side, add a transactional email to the pro's account email on submit. No in-app inbox for Verified.
+
+## 6. Out of scope / explicitly NOT doing this pass
+
+- Removing Pro features (shop-front, services editor, reviews, inbox) — they stay for Pro/Studio.
+- Refactoring route files or deleting the four blocked routes — they keep working for Pro/Studio.
+- Touching `/c/$slug` design — only the loader-level 404 for Verified.
+- Marketing pages — `/pricing`, `/for-professionals`, comparison pages already reflect tier ladder; copy audit deferred.
+
+## Technical notes
+
+- Tier check uses the existing `useTier()` / loader-side tier from the auth context — no new server fn.
+- Toast uses sonner.
+- All changes are presentation/guard logic only — no schema changes, no Stripe changes, no migrations.
+
+## Files touched
+
+- `src/components/dashboard/DashboardShell.tsx` (remove Enquiries from VERIFIED_NAV)
+- `src/routes/_authenticated/_professional/dashboard_.enquiries.tsx` (Verified guard + redirect)
+- `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` (Verified guard + redirect)
+- `src/routes/_authenticated/_professional/dashboard_.services.tsx` (Verified guard + redirect)
+- `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (hide upsell callout for Verified — may already be done)
+- `src/routes/c.$slug.tsx` (404 if pro.tier === verified)
+- Wherever search/city/profession cards link to `/c/$slug` — branch on tier
