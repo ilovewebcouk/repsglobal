@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import proJames from "@/assets/pro-james.jpg";
 import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
 import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
+import { getSpecialismLabel } from "@/lib/specialisms";
 
 /* ------------------------------------------------------------------ */
 /* Route                                                               */
