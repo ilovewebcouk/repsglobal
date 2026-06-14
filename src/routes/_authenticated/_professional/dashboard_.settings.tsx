@@ -15,9 +15,11 @@ import {
   Mail,
   Save,
   ShieldCheck,
+  Sparkles,
   Trash2,
   User,
 } from "lucide-react";
+import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
