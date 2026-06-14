@@ -359,12 +359,11 @@ export type SessionRow = {
 
 export const listMySessions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<SessionRow[]> => {
-    const { userId } = context;
+  .handler(async ({ context }): Promise<{ sessions: SessionRow[]; current_session_id: string | null }> => {
+    const { userId, claims } = context;
+    const currentSessionId = (claims["session_id"] as string | undefined) ?? null;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Query auth.sessions directly via service-role SQL (admin API has no
-    // typed listUserSessions helper across SDK versions).
     const { data, error } = await supabaseAdmin
       .schema("auth" as never)
       .from("sessions" as never)
@@ -375,10 +374,14 @@ export const listMySessions = createServerFn({ method: "GET" })
 
     if (error) {
       console.warn("[listMySessions]", error);
-      return [];
+      return { sessions: [], current_session_id: currentSessionId };
     }
-    return (data ?? []) as unknown as SessionRow[];
+    return {
+      sessions: (data ?? []) as unknown as SessionRow[],
+      current_session_id: currentSessionId,
+    };
   });
+
 
 export const revokeMySession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
