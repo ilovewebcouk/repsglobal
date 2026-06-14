@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, Plus, Search, Sparkles, Upload, Loader2 } from "lucide-react";
+import { Inbox, Plus, Sparkles, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
