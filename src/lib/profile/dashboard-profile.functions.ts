@@ -27,6 +27,7 @@ export type DashboardProfile = {
   /** True when legal name is immutable from the dashboard. */
   legal_name_locked: boolean;
   // professional fields
+  slug: string | null;
   headline: string | null; // "Tagline" in UI
   primary_profession: ProfessionSlug | null;
   specialisms: SpecialismSlug[];
