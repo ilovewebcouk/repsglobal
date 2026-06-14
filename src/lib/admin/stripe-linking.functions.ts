@@ -24,7 +24,8 @@ import type { StripeEnv } from "@/lib/billing/stripe.server";
 
 const EnvSchema = z.object({ environment: z.enum(["sandbox", "live"]).default("live") });
 
-async function ensureAdmin(context: { supabase: { rpc: (fn: string, args: object) => Promise<{ data: boolean | null }> }; userId: string }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function ensureAdmin(context: any) {
   const { data } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
