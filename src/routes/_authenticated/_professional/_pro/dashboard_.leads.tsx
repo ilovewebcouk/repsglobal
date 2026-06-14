@@ -39,7 +39,7 @@ import { LeadSourcesCard } from "@/components/leads/LeadSourcesCard";
 import { ConversionPerformanceCard } from "@/components/leads/ConversionPerformanceCard";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/leads")({
+export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/leads")({
   beforeLoad: ({ context }) => {
     // Verified pros get the focused inbox at /dashboard/enquiries.
     const tier = (context as { trainerTier?: string }).trainerTier;
