@@ -15,9 +15,11 @@ import {
   Mail,
   Save,
   ShieldCheck,
+  Sparkles,
   Trash2,
   User,
 } from "lucide-react";
+import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -49,12 +51,13 @@ import {
 } from "@/lib/settings/settings.functions";
 
 
-type TabKey = "account" | "notifications" | "billing" | "security" | "privacy";
+type TabKey = "account" | "notifications" | "billing" | "credits" | "security" | "privacy";
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "account", label: "Account", icon: User },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "billing", label: "Billing", icon: CreditCard },
+  { key: "credits", label: "AI credits", icon: Sparkles },
   { key: "security", label: "Security", icon: Lock },
   { key: "privacy", label: "Privacy & data", icon: EyeOff },
 ];
@@ -158,8 +161,11 @@ function SettingsPage() {
             <NotificationsTab data={data} />
           ) : tab === "billing" ? (
             <BillingTab data={data} />
+          ) : tab === "credits" ? (
+            <CreditsPanel />
           ) : tab === "security" ? (
             <SecurityTab data={data} />
+
           ) : (
             <PrivacyTab data={data} />
           )}
