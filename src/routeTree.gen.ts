@@ -33,7 +33,6 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ComparisonMethodologyRouteImport } from './routes/comparison-methodology'
 import { Route as CompareRouteImport } from './routes/compare'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
@@ -233,11 +232,6 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -384,9 +378,9 @@ const CompareRepsVsMypthubRoute = CompareRepsVsMypthubRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
-  id: '/return',
-  path: '/return',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
@@ -664,7 +658,6 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -766,7 +759,6 @@ export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -869,7 +861,6 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/comparison-methodology': typeof ComparisonMethodologyRoute
   '/contact': typeof ContactRoute
@@ -975,7 +966,6 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
-    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1077,7 +1067,6 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
-    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1179,7 +1168,6 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/admin'
     | '/auth'
-    | '/checkout'
     | '/compare'
     | '/comparison-methodology'
     | '/contact'
@@ -1285,7 +1273,6 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ComparisonMethodologyRoute: typeof ComparisonMethodologyRoute
   ContactRoute: typeof ContactRoute
@@ -1322,6 +1309,7 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   CSlugRoute: typeof CSlugRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
   CompareRepsVsTrainerizeRoute: typeof CompareRepsVsTrainerizeRoute
@@ -1521,13 +1509,6 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1735,10 +1716,10 @@ declare module '@tanstack/react-router' {
     }
     '/checkout/return': {
       id: '/checkout/return'
-      path: '/return'
+      path: '/checkout/return'
       fullPath: '/checkout/return'
       preLoaderRoute: typeof CheckoutReturnRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/c/$slug': {
       id: '/c/$slug'
@@ -2216,18 +2197,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface CheckoutRouteChildren {
-  CheckoutReturnRoute: typeof CheckoutReturnRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutReturnRoute: CheckoutReturnRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2250,7 +2219,6 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ComparisonMethodologyRoute: ComparisonMethodologyRoute,
   ContactRoute: ContactRoute,
@@ -2287,6 +2255,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   CSlugRoute: CSlugRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
   CompareRepsVsTrainerizeRoute: CompareRepsVsTrainerizeRoute,
