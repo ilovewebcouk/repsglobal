@@ -616,6 +616,137 @@ function SecurityTab({ data: _data }: { data: SettingsBundle }) {
   );
 }
 
+/* ---------- Sessions ---------------------------------------------------- */
+
+function parseUserAgent(ua: string | null): { device: string; browser: string } {
+  if (!ua) return { device: "Unknown device", browser: "" };
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  let os = "";
+  if (/Windows NT/i.test(ua)) os = "Windows";
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = "macOS";
+  else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/Linux/i.test(ua)) os = "Linux";
+  let browser = "";
+  if (/Edg\//i.test(ua)) browser = "Edge";
+  else if (/OPR\/|Opera/i.test(ua)) browser = "Opera";
+  else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = "Chrome";
+  else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = "Safari";
+  else if (/Firefox\//i.test(ua)) browser = "Firefox";
+  const device = isMobile ? `${os || "Mobile"} phone` : `${os || "Desktop"} computer`;
+  return { device, browser };
+}
+
+function formatLastActive(iso: string | null): string {
+  if (!iso) return "—";
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  if (diff < 60_000) return "Just now";
+  const m = Math.floor(diff / 60_000);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr${h === 1 ? "" : "s"} ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d} day${d === 1 ? "" : "s"} ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
+function SessionsPanel({ signOutEverywhere }: { signOutEverywhere: () => Promise<void> }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listMySessions);
+  const revokeFn = useServerFn(revokeMySession);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-sessions"],
+    queryFn: () => listFn(),
+  });
+
+  const revokeMut = useMutation({
+    mutationFn: (sessionId: string) => revokeFn({ data: { session_id: sessionId } }),
+    onSuccess: () => {
+      toast.success("Session signed out.");
+      qc.invalidateQueries({ queryKey: ["my-sessions"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const sessions: SessionRow[] = data?.sessions ?? [];
+  const currentId = data?.current_session_id ?? null;
+
+  return (
+    <PPanel className="mt-6">
+      <PanelHeader
+        title="Active sessions"
+        subtitle="Devices currently signed in to your REPs account."
+      />
+      <div className="px-5 pb-2">
+        {isLoading ? (
+          <div className="flex items-center gap-2 py-4 text-[13px] text-white/55">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading sessions…
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="py-4 text-[13px] text-white/55">No active sessions found.</div>
+        ) : (
+          <ul className="divide-y divide-reps-border/60">
+            {sessions.map((s) => {
+              const ua = parseUserAgent(s.user_agent);
+              const isCurrent = currentId && s.id === currentId;
+              const lastActive = s.refreshed_at ?? s.updated_at ?? s.created_at;
+              return (
+                <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-white">
+                      {ua.device}
+                      {ua.browser ? (
+                        <span className="font-normal text-white/55">· {ua.browser}</span>
+                      ) : null}
+                      {isCurrent ? (
+                        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-emerald-300">
+                          This device
+                        </span>
+                      ) : null}
+                      {s.aal === "aal2" ? (
+                        <span className="rounded-full border border-reps-border bg-reps-panel-soft px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/70">
+                          2FA
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-0.5 text-[12px] text-white/55">
+                      {s.ip ? <>IP {s.ip} · </> : null}
+                      Last active {formatLastActive(lastActive)}
+                      {s.created_at ? <> · Signed in {new Date(s.created_at).toLocaleDateString()}</> : null}
+                    </div>
+                  </div>
+                  {!isCurrent ? (
+                    <button
+                      type="button"
+                      onClick={() => revokeMut.mutate(s.id)}
+                      disabled={revokeMut.isPending}
+                      className="flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:text-white disabled:opacity-60"
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Sign out
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      <div className="flex items-center justify-end gap-3 px-5 py-4">
+        <button
+          type="button"
+          onClick={signOutEverywhere}
+          className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white hover:bg-reps-panel"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out everywhere
+        </button>
+      </div>
+    </PPanel>
+  );
+}
+
 /* ---------- Privacy & data ---------------------------------------------- */
 
 function PrivacyTab({ data }: { data: SettingsBundle }) {
