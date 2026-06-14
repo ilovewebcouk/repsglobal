@@ -272,9 +272,19 @@ export type LeadKpis = {
   conversion_pct_30d: number | null;
   pipeline_value_pence: number;
   predicted_revenue_30d_pence: number | null;
+  potential_monthly_revenue_pence: number;
   source_counts: { source: string; count: number }[];
   follow_ups_due_48h: number;
+  follow_ups_due_list: { id: string; name: string; when: string }[];
   funnel: { stage: LeadStage; count: number }[];
+  stage_counts: Record<LeadStage, number>;
+  weekly_deltas: Record<LeadStage, number>;
+  conversion_rates: {
+    lead_to_call: number | null;
+    call_to_proposal: number | null;
+    proposal_to_client: number | null;
+    average_client_value_pence: number | null;
+  };
 };
 
 export const getLeadKpis = createServerFn({ method: "GET" })
@@ -283,13 +293,15 @@ export const getLeadKpis = createServerFn({ method: "GET" })
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since30 = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const since14 = new Date(Date.now() - 14 * 86_400_000).toISOString();
     const in48 = new Date(Date.now() + 48 * 3600_000).toISOString();
     const nowIso = new Date().toISOString();
 
     const { data, error } = await supabaseAdmin
       .from("enquiries")
       .select(
-        "id, stage, source, estimated_value_pence, ai_score, ai_predicted_pct, follow_up_at, created_at, replied_at",
+        "id, sender_name, stage, source, estimated_value_pence, ai_score, ai_predicted_pct, follow_up_at, created_at, replied_at",
       )
       .eq("professional_id", userId)
       .neq("status", "spam");
@@ -299,32 +311,22 @@ export const getLeadKpis = createServerFn({ method: "GET" })
     const active = rows.filter((r) => r.stage !== "converted" && r.stage !== "lost");
     const hot = rows.filter((r) => (r.ai_score ?? 0) >= 80 && r.stage !== "converted" && r.stage !== "lost");
 
-    // Avg reply time (hrs) of leads replied within last 30 days
-    const recentReplied = rows.filter(
-      (r) => r.replied_at && r.replied_at >= since30 && r.created_at,
-    );
+    const recentReplied = rows.filter((r) => r.replied_at && r.replied_at >= since30 && r.created_at);
     const replyTimeAvg = recentReplied.length
       ? recentReplied.reduce(
-          (acc, r) =>
-            acc + (new Date(r.replied_at!).getTime() - new Date(r.created_at!).getTime()) / 3_600_000,
+          (acc, r) => acc + (new Date(r.replied_at!).getTime() - new Date(r.created_at!).getTime()) / 3_600_000,
           0,
         ) / recentReplied.length
       : null;
 
-    // Conversion % over last 30 days
     const since30Rows = rows.filter((r) => r.created_at >= since30);
     const conversion = since30Rows.length
       ? (since30Rows.filter((r) => r.stage === "converted").length / since30Rows.length) * 100
       : null;
 
-    const pipelineValue = active.reduce(
-      (a, r) => a + (r.estimated_value_pence ?? 0),
-      0,
-    );
+    const pipelineValue = active.reduce((a, r) => a + (r.estimated_value_pence ?? 0), 0);
     const predictedRevenue = active.reduce(
-      (a, r) =>
-        a +
-        ((r.estimated_value_pence ?? 0) * ((r.ai_predicted_pct ?? 0) / 100)),
+      (a, r) => a + ((r.estimated_value_pence ?? 0) * ((r.ai_predicted_pct ?? 0) / 100)),
       0,
     );
 
@@ -343,18 +345,51 @@ export const getLeadKpis = createServerFn({ method: "GET" })
         r.follow_up_at <= in48 &&
         r.stage !== "converted" &&
         r.stage !== "lost",
-    ).length;
+    );
+    const followUpsList = followUpsDue
+      .sort((a, b) => (a.follow_up_at! < b.follow_up_at! ? -1 : 1))
+      .slice(0, 5)
+      .map((r) => {
+        const d = new Date(r.follow_up_at!);
+        const today = new Date();
+        const same = d.toDateString() === today.toDateString();
+        const tomorrow = new Date(today.getTime() + 86_400_000);
+        const isTom = d.toDateString() === tomorrow.toDateString();
+        return {
+          id: r.id,
+          name: r.sender_name,
+          when: same ? "Today" : isTom ? "Tomorrow" : d.toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+        };
+      });
 
-    const funnelMap = new Map<LeadStage, number>();
-    for (const s of LEAD_STAGES) funnelMap.set(s, 0);
+    const stageCounts = Object.fromEntries(LEAD_STAGES.map((s) => [s, 0])) as Record<LeadStage, number>;
+    const stageThisWeek = Object.fromEntries(LEAD_STAGES.map((s) => [s, 0])) as Record<LeadStage, number>;
+    const stagePrevWeek = Object.fromEntries(LEAD_STAGES.map((s) => [s, 0])) as Record<LeadStage, number>;
     for (const r of rows) {
       const st = (r.stage ?? "new") as LeadStage;
-      funnelMap.set(st, (funnelMap.get(st) ?? 0) + 1);
+      stageCounts[st]++;
+      if (r.created_at >= since7) stageThisWeek[st]++;
+      else if (r.created_at >= since14) stagePrevWeek[st]++;
     }
-    const funnel = LEAD_STAGES.map((stage) => ({
-      stage,
-      count: funnelMap.get(stage) ?? 0,
-    }));
+    const weeklyDeltas = Object.fromEntries(
+      LEAD_STAGES.map((s) => {
+        const cur = stageThisWeek[s];
+        const prev = stagePrevWeek[s];
+        if (prev === 0) return [s, cur > 0 ? 100 : 0];
+        return [s, Math.round(((cur - prev) / prev) * 100)];
+      }),
+    ) as Record<LeadStage, number>;
+
+    const funnel = LEAD_STAGES.map((stage) => ({ stage, count: stageCounts[stage] }));
+
+    const totalLeads = rows.length || 1;
+    const callPlus = stageCounts.call_booked + stageCounts.proposal_sent + stageCounts.trial_booked + stageCounts.converted;
+    const propPlus = stageCounts.proposal_sent + stageCounts.trial_booked + stageCounts.converted;
+    const convertedCount = stageCounts.converted;
+    const convertedRows = rows.filter((r) => r.stage === "converted" && (r.estimated_value_pence ?? 0) > 0);
+    const avgClientValue = convertedRows.length
+      ? Math.round(convertedRows.reduce((a, r) => a + (r.estimated_value_pence ?? 0), 0) / convertedRows.length)
+      : null;
 
     return {
       active_leads: active.length,
@@ -363,9 +398,19 @@ export const getLeadKpis = createServerFn({ method: "GET" })
       conversion_pct_30d: conversion,
       pipeline_value_pence: Math.round(pipelineValue),
       predicted_revenue_30d_pence: predictedRevenue ? Math.round(predictedRevenue) : null,
+      potential_monthly_revenue_pence: Math.round(pipelineValue),
       source_counts: sourceCounts,
-      follow_ups_due_48h: followUpsDue,
+      follow_ups_due_48h: followUpsDue.length,
+      follow_ups_due_list: followUpsList,
       funnel,
+      stage_counts: stageCounts,
+      weekly_deltas: weeklyDeltas,
+      conversion_rates: {
+        lead_to_call: totalLeads ? Math.round((callPlus / totalLeads) * 100) : null,
+        call_to_proposal: callPlus ? Math.round((propPlus / callPlus) * 100) : null,
+        proposal_to_client: propPlus ? Math.round((convertedCount / propPlus) * 100) : null,
+        average_client_value_pence: avgClientValue,
+      },
     };
   });
 
