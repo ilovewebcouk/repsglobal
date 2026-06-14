@@ -14,22 +14,22 @@ import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 export const Route = createFileRoute("/coming-soon")({
   head: () => ({
     meta: [
-      { title: "REPS — Launching 19 June 2026" },
+      { title: "REPS — Launching 26 June 2026" },
       {
         name: "description",
         content:
-          "The professional platform for the modern fitness industry. Launching Friday 19 June 2026. Join the waitlist.",
+          "The professional platform for the modern fitness industry. Launching Friday 26 June 2026. Join the waitlist.",
       },
-      { property: "og:title", content: "REPS — Launching 19 June 2026" },
+      { property: "og:title", content: "REPS — Launching 26 June 2026" },
       {
         property: "og:description",
-        content: "The professional platform for the modern fitness industry. Launching Friday 19 June 2026.",
+        content: "The professional platform for the modern fitness industry. Launching Friday 26 June 2026.",
       },
       { property: "og:image", content: heroAsset.url },
       { property: "og:url", content: "/coming-soon" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "REPS — Launching 19 June 2026" },
+      { name: "twitter:title", content: "REPS — Launching 26 June 2026" },
       { name: "twitter:image", content: heroAsset.url },
       // Coming-soon page IS indexable (root is noindex by default — this overrides for this page only).
       { name: "robots", content: "index, follow" },
@@ -106,7 +106,7 @@ function ComingSoonPage() {
         <div className="relative mx-auto flex max-w-[1320px] flex-col items-start px-6 pt-24 pb-20 lg:px-10 lg:pt-28 lg:pb-24">
           <div className="w-full max-w-[680px]">
             <MarketingHeroEyebrow icon={Sparkles}>
-              Launching 19 June 2026
+              Launching 26 June 2026
             </MarketingHeroEyebrow>
 
             <h1
@@ -211,7 +211,7 @@ function ComingSoonPage() {
             />
             <div className="relative mx-auto max-w-[640px]">
               <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-                Friday 19 June 2026 · 00:00 BST
+                Friday 26 June 2026 · 00:00 BST
               </span>
               <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
                 Be the first to know.
