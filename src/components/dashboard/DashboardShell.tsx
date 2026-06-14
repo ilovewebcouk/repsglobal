@@ -253,6 +253,8 @@ function NavSection({
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.label === "Verification" && item.to === "/dashboard/verification" ? (
                   <VerificationCountBadge />
+                ) : item.label === "Enquiries" && item.to === "/dashboard/enquiries" ? (
+                  <EnquiriesUnreadBadge />
                 ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
