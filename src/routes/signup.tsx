@@ -189,20 +189,18 @@ function SignupPage() {
       : "Continue to secure checkout"
     : "Create account";
 
-  // After we have a session, route to embedded checkout or fall back to dashboard
+  // After we have a session, mint a Stripe Hosted Checkout session and redirect
+  // straight to Stripe (no intermediate REPs review page).
   const continueAfterAuth = async (userId: string) => {
-    if (
-      search.next === "checkout" &&
-      search.tier &&
-      search.tier !== undefined &&
-      search.period
-    ) {
-      navigate({
-        to: "/checkout",
-        search: { tier: search.tier, period: search.period } as never,
-        replace: true,
-      });
-      return;
+    if (search.next === "checkout" && search.tier && search.period) {
+      const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
+      try {
+        await startCheckoutRedirect(search.tier, search.period);
+        return; // browser is navigating to Stripe
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not start checkout");
+        return;
+      }
     }
     const to = await redirectAfterAuth(userId);
     navigate({ to, replace: true });

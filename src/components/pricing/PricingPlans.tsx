@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { startCheckoutRedirect } from "@/lib/billing/startCheckout";
 import {
   PLANS,
   type Billing,
@@ -31,14 +32,12 @@ export function PricingPlans() {
         });
         return;
       }
-      navigate({
-        to: "/checkout",
-        search: { tier: tierKey, period: checkoutPeriod } as never,
-      });
+      // Signed in: skip the review page, go straight to Stripe Hosted Checkout.
+      await startCheckoutRedirect(tierKey, checkoutPeriod);
+      // Keep the spinner up while the browser navigates away.
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Checkout failed");
-    } finally {
       setCheckoutTier(null);
     }
   }

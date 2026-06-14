@@ -121,12 +121,9 @@ function LoginPage() {
       if (signInError) throw signInError;
       if (data.user) {
         if (search.next === "checkout" && search.tier && search.period) {
-          navigate({
-            to: "/checkout",
-            search: { tier: search.tier, period: search.period } as never,
-            replace: true,
-          });
-          return;
+          const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
+          await startCheckoutRedirect(search.tier, search.period);
+          return; // browser is navigating to Stripe
         }
         const to = await redirectAfterAuth(data.user.id);
         navigate({ to, replace: true });
