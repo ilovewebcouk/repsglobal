@@ -1,0 +1,1 @@
+GRANT UPDATE ON public.bd_member_seed TO sandbox_exec;
