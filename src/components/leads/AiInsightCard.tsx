@@ -140,6 +140,7 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
           <span className="ml-2">Draft reply</span>
         </Button>
       )}
+      </div>
     </div>
   );
 }
