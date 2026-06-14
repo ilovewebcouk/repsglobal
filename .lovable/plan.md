@@ -1,47 +1,132 @@
-# Plan — Working credit top-up buy buttons
+# Switch REPs to true Stripe-hosted checkout (BYOK)
 
-The grey box in the screenshot is the disabled "Top up · coming soon" button. The wallet UI is in place but there is no purchase path. This wires it end-to-end.
+## Why this plan exists
 
-## What you'll see after this ships
+Lovable's built-in payments integration **only supports embedded checkout** (`ui_mode: "embedded_page"`). The docs and internal knowledge are explicit: hosted redirect is "do not deviate". You've used it, you don't like it, and you want the real Stripe-hosted page (`checkout.stripe.com`) everywhere.
 
-In Settings → AI credits, each of the 3 packs (Small / Medium / Large) gets its own **Buy** button next to the price. Clicking opens the embedded Stripe checkout (same pattern as plan upgrades), charges the saved card, and on `checkout.session.completed` the webhook credits the wallet and writes a `topup` row to `credit_transactions`. The panel auto-refreshes and the new balance + transaction appear.
+The only way to get that is to leave the built-in path and connect your own Stripe account (BYOK). This plan does that cleanly.
 
-## Steps
+## Honest trade-offs (read before approving)
 
-**1. Stripe products (one-time, GBP)**
-Create 3 one-time products in the test environment (auto-synced to live on publish) via `payments--batch_create_product`:
-- `credits_small` — £10 → 200 credits
-- `credits_medium` — £25 → 600 credits
-- `credits_large` — £50 → 1,500 credits
+You lose:
+- Lovable's managed test/live key rotation and the in-app Payments dashboard.
+- The auto-provisioned go-live flow (claim sandbox → live keys appear automatically).
+- The connector-gateway proxy — code talks to `api.stripe.com` directly with your secret key.
 
-Tax code `txcd_10000000` (general digital goods). No `recurring_interval`. `quantity_min=1, quantity_max=1`.
+You take on:
+- Creating products + prices in your own Stripe account (test and live), or running a one-off seed script.
+- Pasting `STRIPE_SECRET_KEY` (test) and later `STRIPE_LIVE_SECRET_KEY` + webhook signing secrets as project secrets.
+- Registering the webhook endpoint in the Stripe dashboard (one URL for test, one for live), and keeping the signing secret in sync.
 
-**2. Catalog entry** (`src/lib/billing.ts`)
-Add a `CREDIT_PACKS` map: `{ small: { priceId: "credits_small", credits: 200, amountGbp: 10 }, medium: {...}, large: {...} }` plus a `creditPackForPriceId()` helper.
+You gain:
+- True `checkout.stripe.com` redirect — Stripe's polished, fully-branded full-page checkout.
+- Customer Portal as a hosted redirect (works in preview, no iframe issue).
+- One consistent pattern across tier signup, credit top-ups, and billing management.
 
-**3. New server fn** (`src/lib/credits/credits.functions.ts`)
-Add `createCreditTopupCheckout` — `requireSupabaseAuth`, input `{ pack: "small"|"medium"|"large", environment }`, mirrors `createCheckoutSession` but `mode: "payment"`, `managed_payments: { enabled: true }`, metadata `{ reps_user_id, kind: "credit_topup", pack, credits }`. Returns `{ clientSecret }`.
+## How "hosted everywhere" works
 
-**4. Webhook handler** (`src/routes/api/public/payments/webhook.ts`)
-In the `checkout.session.completed` case, branch on `metadata.kind === "credit_topup"`: read `credits` + `reps_user_id` from metadata, call a new SECURITY DEFINER RPC `grant_credit_topup(p_user_id, p_credits, p_stripe_session_id)` that:
-- inserts/updates `credit_wallets.balance += credits` (respect `refill_ceiling` only for refills, not top-ups — top-ups can exceed ceiling)
-- inserts a `credit_transactions` row `{ action: "topup", delta: +credits, balance_after, ref: session.id }`
-- idempotent via unique index on `(action, ref)` so webhook retries are safe
+1. User clicks Buy / Upgrade / Top up.
+2. Client calls a server fn (`createHostedCheckoutSession`) with `priceId` + intent metadata.
+3. Server creates a Stripe Checkout Session with `mode: payment|subscription`, **no** `ui_mode`, `success_url`, `cancel_url`, and returns `session.url`.
+4. Client does `window.location.href = session.url` (top-level, not iframe — handled below).
+5. Stripe renders its hosted page, takes payment, redirects to `success_url`.
+6. Webhook (`/api/public/payments/webhook`) verifies signature with your own webhook secret and updates `subscriptions` / `credit_transactions`.
+7. Customer Portal uses the same redirect pattern via `stripe.billingPortal.sessions.create`.
 
-Migration adds the RPC + unique index.
+### Preview iframe handling
 
-**5. Wire buttons** (`src/components/dashboard/CreditsPanel.tsx`)
-Replace the disabled header button + the static `<ul>` of packs with 3 rows, each `Small / Medium / Large` showing price + credits + a `Buy` button. Clicking opens a Stripe embedded checkout dialog (reuse the existing checkout dialog component used by plan upgrades). On success → invalidate `["credits","wallet"]` and `["credits","transactions"]`.
+The Lovable preview itself is an iframe; Stripe blocks framing. The redirect helper does:
 
-**6. Verification**
-- Open `/dashboard/settings` as `demo-verified@repsuk.org`, screenshot the new packs row with visible Buy buttons.
-- Click Buy on Medium → checkout opens → complete with test card → return to settings → confirm balance shows 600 and a "Top-up purchase +600" row in Recent activity.
+```ts
+if (window.top && window.top !== window.self) {
+  window.top.location.href = url; // break out of preview iframe
+} else {
+  window.location.href = url;
+}
+```
 
-## Files touched
-- migration: `grant_credit_topup` RPC + unique idx on `credit_transactions(action, ref)`
-- `src/lib/billing.ts` — CREDIT_PACKS catalog
-- `src/lib/credits/credits.functions.ts` — `createCreditTopupCheckout`
-- `src/routes/api/public/payments/webhook.ts` — handle `kind=credit_topup`
-- `src/components/dashboard/CreditsPanel.tsx` — 3 visible Buy buttons + checkout dialog wiring
+In the published app there is no parent iframe, so it just navigates normally.
 
-No other surfaces change. Sidebar tier fix from the previous turn stays in place.
+## Scope of changes
+
+### 1. Enable BYOK Stripe & collect secrets
+- Call `enable_stripe` (BYOK tool) — this disables the seamless integration.
+- Ask you to paste, via the secrets tool:
+  - `STRIPE_SECRET_KEY` (test, `sk_test_...`)
+  - `STRIPE_WEBHOOK_SECRET` (test, `whsec_...`)
+  - Later, for go-live: `STRIPE_LIVE_SECRET_KEY`, `STRIPE_LIVE_WEBHOOK_SECRET`
+- Add publishable keys to `.env` as `VITE_STRIPE_PUBLISHABLE_KEY` (test) and `VITE_STRIPE_LIVE_PUBLISHABLE_KEY`.
+
+### 2. Replace the Stripe server utility
+- Rewrite `src/lib/stripe.server.ts` to instantiate `new Stripe(secret)` directly (no connector gateway) and pick test vs live from an env arg.
+- Keep `getStripeErrorMessage` and add `verifyWebhookSignature` using Stripe SDK's `webhooks.constructEventAsync` (Workers-safe).
+
+### 3. Rewrite checkout server functions
+- `src/lib/billing/billing.functions.ts` → `createHostedSubscriptionCheckout({ priceId, period })`
+  - `mode: "subscription"`, no `ui_mode`, `success_url: /checkout/return?session_id={CHECKOUT_SESSION_ID}`, `cancel_url: /pricing`.
+- `src/lib/credits/credits.functions.ts` → `createHostedCreditTopupCheckout({ pack })`
+  - `mode: "payment"`, returns `session.url`, metadata `{ kind: "credit_topup", pack, userId }`.
+- Add `createBillingPortalSession()` server fn for "Manage billing".
+
+### 4. Replace the embedded `/checkout` route with a redirector
+- Delete `src/routes/checkout.tsx` embedded mounting code and `src/routes/_authenticated/_professional/checkout_.credits.tsx`.
+- Replace with thin redirector pages that call the server fn and do the iframe-safe top-level redirect (loading state only — no Stripe iframe).
+- Keep `src/routes/checkout.return.tsx` for the success page; it already reads `session_id`.
+
+### 5. Update all callers
+- `PricingPlans.tsx`, `auth.tsx`, `signup.tsx`, `CreditsPanel.tsx`, `DashboardShell.tsx` "Manage billing" → all go through the new redirect helper.
+
+### 6. Rewrite the webhook
+- `src/routes/api/public/payments/webhook.ts`
+  - Use BYOK signing secret (`STRIPE_WEBHOOK_SECRET` / `STRIPE_LIVE_WEBHOOK_SECRET`) selected by `?env=`.
+  - Keep existing handlers for `customer.subscription.*` and `checkout.session.completed` (credit top-up path → `grant_credit_topup` RPC).
+- Register the endpoint URL in Stripe dashboard (test + live):
+  - `https://staging.repsuk.org/api/public/payments/webhook?env=sandbox`
+  - `https://repsglobal.lovable.app/api/public/payments/webhook?env=live` (or your custom domain when wired)
+
+### 7. Remove embedded dependencies
+- `bun remove @stripe/stripe-js @stripe/react-stripe-js` (no longer needed; we never mount Stripe.js in the page).
+- Keep `stripe` (server SDK) — already installed.
+
+### 8. Products in your Stripe account
+- One-off seed script (`scripts/seed-stripe.ts`) creates:
+  - `verified_annual` (£99/yr), `pro_founding_monthly` (£59/mo)
+  - `credits_small` (£10), `credits_medium` (£25), `credits_large` (£50)
+- Uses `lookup_key` so `src/lib/billing.ts` IDs stay the same across test/live.
+
+## Technical details
+
+### File map
+| Action | File |
+|---|---|
+| Rewrite | `src/lib/stripe.server.ts` |
+| Rewrite | `src/lib/billing/billing.functions.ts` |
+| Rewrite | `src/lib/credits/credits.functions.ts` |
+| Rewrite | `src/routes/api/public/payments/webhook.ts` |
+| Rewrite | `src/routes/checkout.tsx` (redirector only) |
+| Rewrite | `src/routes/_authenticated/_professional/checkout_.credits.tsx` (redirector only) |
+| Edit | `src/components/pricing/PricingPlans.tsx`, `src/routes/auth.tsx`, `src/routes/signup.tsx`, `src/components/dashboard/CreditsPanel.tsx`, `src/components/dashboard/DashboardShell.tsx` |
+| New | `src/lib/billing/redirect-to-checkout.ts` (iframe-safe top-level redirect helper) |
+| New | `scripts/seed-stripe.ts` |
+| Delete | `src/lib/billing/stripe-client.ts` (no Stripe.js needed) |
+
+### Env vars
+| Name | Where | Purpose |
+|---|---|---|
+| `STRIPE_SECRET_KEY` | secrets | Test secret key |
+| `STRIPE_WEBHOOK_SECRET` | secrets | Test webhook signing |
+| `STRIPE_LIVE_SECRET_KEY` | secrets (later) | Live secret key |
+| `STRIPE_LIVE_WEBHOOK_SECRET` | secrets (later) | Live webhook signing |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | `.env` | Only for env detection in client; not used to mount Stripe.js |
+
+### Order of execution
+1. You approve this plan.
+2. I call `enable_stripe` and request the two test secrets via the secrets tool.
+3. You paste the secrets and confirm the webhook URL in Stripe (I'll give you the exact URL and the events list).
+4. I implement everything above in one pass, run the seed script, and verify a full £59/mo redirect → success → webhook → dashboard reflects active subscription.
+5. We repeat with live keys when you're ready to go live.
+
+## Out of scope (unchanged)
+- All locked marketing/feature/profile UI.
+- Pricing tiers, credit pack amounts, RLS, admin seeds.
+- Customer-facing copy except the checkout/return pages.
