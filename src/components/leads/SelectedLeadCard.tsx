@@ -1,23 +1,19 @@
 import * as React from "react";
-import { MapPin, Calendar, MessageSquare, FileText, UserCheck } from "lucide-react";
+import { MapPin, Calendar, MessageSquare, FileText, UserCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { type LeadDTO, updateLead } from "@/lib/leads/leads.functions";
 import { sourceLabel } from "./SourceChipsRow";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m} minutes ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h} hours ago`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d} days ago`;
-  return new Date(iso).toLocaleDateString();
-}
+import { timeAgo } from "@/lib/format/relative-time";
+import { cn } from "@/lib/utils";
 
 function followUpLabel(iso: string | null): string {
   if (!iso) return "—";
@@ -51,8 +47,16 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
+export function SelectedLeadCard({
+  lead,
+  variant = "panel",
+}: {
+  lead: LeadDTO;
+  /** "panel" = standalone bordered card (rail). "sheet" = embedded inside SheetContent (no outer chrome). */
+  variant?: "panel" | "sheet";
+}) {
   const qc = useQueryClient();
+  const isConverted = lead.stage === "converted";
 
   const convertMut = useMutation({
     mutationFn: () => updateLead({ data: { id: lead.id, stage: "converted" } }),
@@ -64,7 +68,13 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
   });
 
   return (
-    <div className="rounded-[18px] border border-reps-border bg-reps-panel p-5">
+    <div
+      className={cn(
+        variant === "panel"
+          ? "rounded-[18px] border border-reps-border bg-reps-panel p-5"
+          : "rounded-[18px] border border-reps-border/50 bg-reps-panel/60 p-4",
+      )}
+    >
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className="grid size-11 shrink-0 place-items-center rounded-full bg-reps-orange-soft text-[12px] font-bold text-reps-orange">
@@ -73,8 +83,15 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-display text-[17px] font-bold text-white">{lead.sender_name}</div>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full border-reps-orange-border/40 bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-semibold text-reps-orange">
-              {lead.stage === "new" ? "New lead" : "Active lead"}
+            <Badge
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10.5px] font-semibold",
+                isConverted
+                  ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                  : "border-reps-orange-border/40 bg-reps-orange-soft text-reps-orange",
+              )}
+            >
+              {isConverted ? "Converted" : lead.stage === "new" ? "New lead" : "Active lead"}
             </Badge>
             {lead.location ? (
               <span className="inline-flex items-center gap-1 text-[11.5px] text-white/55">
@@ -105,43 +122,83 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
           Lead message
         </div>
         <p className="mt-1.5 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/85">
-          "{lead.message}"
+          &ldquo;{lead.message}&rdquo;
         </p>
       </div>
 
       {/* Actions: 2x2 grid */}
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
-        <Button
-          className="h-10 rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-          onClick={() => toast.info("Calendar booking coming in Phase 2.1")}
-        >
-          <Calendar className="size-3.5" /> <span className="ml-1.5">Book call</span>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
-        >
-          <a href={`mailto:${lead.sender_email}`}>
-            <MessageSquare className="size-3.5" /> <span className="ml-1.5">Send message</span>
-          </a>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
-          onClick={() => toast.info("Proposals coming in Phase 2.1")}
-        >
-          <FileText className="size-3.5" /> <span className="ml-1.5">Create proposal</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-10 rounded-[10px] border-reps-orange-border/40 bg-reps-orange-soft/15 text-[12.5px] font-semibold text-reps-orange shadow-none transition-colors hover:border-reps-orange-border/70 hover:bg-reps-orange-soft/30 hover:text-reps-orange"
-          onClick={() => convertMut.mutate()}
-          disabled={convertMut.isPending || lead.stage === "converted"}
-        >
-          <UserCheck className="size-3.5" /> <span className="ml-1.5">Convert to client</span>
-        </Button>
-      </div>
+      <TooltipProvider>
+        <div className="mt-5 grid grid-cols-2 gap-2.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="h-10 rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+                onClick={() => toast.info("Calendar booking coming in Phase 2.1")}
+              >
+                <Calendar className="size-3.5" /> <span className="ml-1.5">Book call</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Schedule a discovery call</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                asChild
+                variant="outline"
+                className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
+              >
+                <a href={`mailto:${lead.sender_email}`}>
+                  <MessageSquare className="size-3.5" /> <span className="ml-1.5">Send message</span>
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Reply via email — in-app composer coming soon</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
+                onClick={() => toast.info("Proposals coming in Phase 2.1")}
+              >
+                <FileText className="size-3.5" /> <span className="ml-1.5">Create proposal</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Send packages and pricing</TooltipContent>
+          </Tooltip>
+
+          {isConverted ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-[10px] border-emerald-400/30 bg-emerald-500/10 text-[12.5px] font-semibold text-emerald-300 shadow-none transition-colors hover:bg-emerald-500/20 hover:text-emerald-200"
+                  onClick={() => toast.info("Client records coming in Phase 2.2")}
+                >
+                  <ExternalLink className="size-3.5" /> <span className="ml-1.5">View client</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Already a client — open their record</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-[10px] border-reps-orange-border/40 bg-reps-orange-soft/15 text-[12.5px] font-semibold text-reps-orange shadow-none transition-colors hover:border-reps-orange-border/70 hover:bg-reps-orange-soft/30 hover:text-reps-orange"
+                  onClick={() => convertMut.mutate()}
+                  disabled={convertMut.isPending}
+                >
+                  <UserCheck className="size-3.5" /> <span className="ml-1.5">Convert to client</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Mark as a paying client and move out of pipeline</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </TooltipProvider>
     </div>
   );
 }

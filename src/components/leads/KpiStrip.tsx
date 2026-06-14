@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ArrowUpRight, ArrowDownRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { LeadKpis } from "@/lib/leads/leads.functions";
 
 function fmtPence(p: number | null | undefined) {
@@ -61,18 +62,34 @@ function Tile({
 }
 
 export function KpiStrip({ kpis }: { kpis: LeadKpis | undefined }) {
-  const sc = kpis?.stage_counts;
-  const wd = kpis?.weekly_deltas;
+  if (!kpis) {
+    return (
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-[18px] border border-reps-border bg-reps-panel px-5 py-4"
+          >
+            <Skeleton className="h-3 w-20 rounded-full" />
+            <Skeleton className="mt-3 h-8 w-16 rounded-md" />
+            <Skeleton className="mt-3 h-3 w-24 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  const sc = kpis.stage_counts;
+  const wd = kpis.weekly_deltas;
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-      <Tile label="New leads"     value={sc ? String(sc.new) : "—"}           delta={wd?.new} />
-      <Tile label="Call booked"   value={sc ? String(sc.call_booked) : "—"}   delta={wd?.call_booked} />
-      <Tile label="Proposal sent" value={sc ? String(sc.proposal_sent) : "—"} delta={wd?.proposal_sent} />
-      <Tile label="Trial booked"  value={sc ? String(sc.trial_booked) : "—"}  delta={wd?.trial_booked} />
-      <Tile label="Converted"     value={sc ? String(sc.converted) : "—"}     delta={wd?.converted} />
+      <Tile label="New leads"     value={String(sc.new)}           delta={wd?.new} />
+      <Tile label="Call booked"   value={String(sc.call_booked)}   delta={wd?.call_booked} />
+      <Tile label="Proposal sent" value={String(sc.proposal_sent)} delta={wd?.proposal_sent} />
+      <Tile label="Trial booked"  value={String(sc.trial_booked)}  delta={wd?.trial_booked} />
+      <Tile label="Converted"     value={String(sc.converted)}     delta={wd?.converted} />
       <Tile
         label="Potential monthly revenue"
-        value={fmtPence(kpis?.potential_monthly_revenue_pence ?? null)}
+        value={fmtPence(kpis.potential_monthly_revenue_pence ?? null)}
         emphasised
         footer={<><Sparkles className="size-3" /> Based on pipeline value</>}
       />

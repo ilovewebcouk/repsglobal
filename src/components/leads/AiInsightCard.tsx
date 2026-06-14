@@ -32,14 +32,19 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't draft reply"),
   });
 
+  // Derive band from score directly so the label can't contradict the number.
+  // Tiers: <30 Cold · 30–54 Lukewarm · 55–74 Warm · ≥75 Hot.
+  const score = lead.ai_score;
   const subtitle =
-    lead.ai_band === "hot"
-      ? "High-intent enquiry · auto-scored"
-      : lead.ai_band === "warm"
-        ? "Warm enquiry · auto-scored"
-        : lead.ai_band === "cold"
-          ? "Cold enquiry · auto-scored"
-          : "Awaiting AI score";
+    score === null
+      ? "Awaiting AI score"
+      : score >= 75
+        ? "High-intent enquiry · auto-scored"
+        : score >= 55
+          ? "Warm enquiry · auto-scored"
+          : score >= 30
+            ? "Lukewarm enquiry · auto-scored"
+            : "Cold enquiry · auto-scored";
 
   return (
     <div className="relative overflow-hidden rounded-[18px] border border-reps-orange-border/80 bg-reps-panel p-5">
