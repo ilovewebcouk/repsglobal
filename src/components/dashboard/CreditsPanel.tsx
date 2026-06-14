@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   getMyWallet,
   listMyCreditTransactions,
+  type CreditTransactionDTO,
 } from "@/lib/credits/credits.functions";
 
 const ACTION_LABEL: Record<string, string> = {
@@ -43,11 +44,12 @@ export function CreditsPanel() {
     queryFn: () => fetchWallet(),
     staleTime: 30_000,
   });
-  const { data: tx = [], isLoading: tLoading } = useQuery({
+  const { data: txData, isLoading: tLoading } = useQuery({
     queryKey: ["credits", "transactions"],
     queryFn: () => fetchTx(),
     staleTime: 30_000,
   });
+  const tx: CreditTransactionDTO[] = (txData ?? []) as CreditTransactionDTO[];
 
   const balance = wallet?.balance ?? 0;
   const refill = wallet?.monthly_refill ?? 0;
