@@ -1534,10 +1534,19 @@ function ProfileEditorPage() {
                         {form.bio}
                       </p>
                     ) : null}
-                    <DashboardButton asChild variant="ghost" className="mt-4 w-full">
-                      <Link to="/find-a-professional">
+                    <DashboardButton
+                      asChild
+                      variant="ghost"
+                      className="mt-4 w-full"
+                      disabled={!profile.slug}
+                    >
+                      <a
+                        href={profile.slug ? `/c/${profile.slug}` : undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         View full profile <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
+                      </a>
                     </DashboardButton>
                   </div>
                 </div>
