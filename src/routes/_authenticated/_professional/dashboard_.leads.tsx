@@ -1,7 +1,7 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, Plus, Search, Sparkles, Target, Loader2 } from "lucide-react";
+import { Inbox, Plus, Search, Sparkles, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -27,16 +27,28 @@ import {
   type LeadDTO,
   type LeadStage,
 } from "@/lib/leads/leads.functions";
+import { KpiStrip } from "@/components/leads/KpiStrip";
+import { StageChipsBar } from "@/components/leads/StageChipsBar";
+import { SourceChipsRow } from "@/components/leads/SourceChipsRow";
 import { PipelineTable } from "@/components/leads/PipelineTable";
-import { LeadDrawer } from "@/components/leads/LeadDrawer";
-import { KpiStrip, BottomCards } from "@/components/leads/Kpis";
+import { BulkActionBar } from "@/components/leads/BulkActionBar";
+import { SelectedLeadCard } from "@/components/leads/SelectedLeadCard";
+import { AiInsightCard } from "@/components/leads/AiInsightCard";
+import { FollowUpsDueCard } from "@/components/leads/FollowUpsDueCard";
+import { LeadSourcesCard } from "@/components/leads/LeadSourcesCard";
+import { ConversionPerformanceCard } from "@/components/leads/ConversionPerformanceCard";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/leads")({
+  beforeLoad: ({ context }) => {
+    // Verified pros get the focused inbox at /dashboard/enquiries.
+    const tier = (context as { trainerTier?: string }).trainerTier;
+    if (tier === "verified") throw redirect({ to: "/dashboard/enquiries" });
+  },
   head: () => ({
     meta: [
       { title: "Leads pipeline — REPS Professional" },
-      { name: "description", content: "Manage every lead from first enquiry to converted client — with AI scoring, recommended actions and revenue forecasts." },
+      { name: "description", content: "Track enquiries, prioritise follow-ups and convert leads into clients." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -59,57 +71,122 @@ function LeadsPipelinePage() {
   });
 
   const [search, setSearch] = React.useState("");
+  const [innerSearch, setInnerSearch] = React.useState("");
   const [stageFilter, setStageFilter] = React.useState<LeadStage | "all">("all");
   const [sourceFilter, setSourceFilter] = React.useState<string>("all");
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
-  const leads = React.useMemo(() => {
-    if (!search.trim()) return leadsAll;
-    const q = search.toLowerCase();
-    return leadsAll.filter(
-      (l) =>
-        l.sender_name.toLowerCase().includes(q) ||
-        l.sender_email.toLowerCase().includes(q) ||
-        l.message.toLowerCase().includes(q),
-    );
-  }, [leadsAll, search]);
+  const sources = React.useMemo(() => {
+    const s = new Set<string>();
+    for (const l of leadsAll) s.add(l.source);
+    return Array.from(s).sort();
+  }, [leadsAll]);
+
+  const filtered = React.useMemo(() => {
+    const q = (search + " " + innerSearch).trim().toLowerCase();
+    let out = leadsAll;
+    if (q)
+      out = out.filter(
+        (l) =>
+          l.sender_name.toLowerCase().includes(q) ||
+          l.sender_email.toLowerCase().includes(q) ||
+          l.message.toLowerCase().includes(q),
+      );
+    if (stageFilter !== "all") out = out.filter((l) => l.stage === stageFilter);
+    if (sourceFilter !== "all") out = out.filter((l) => l.source === sourceFilter);
+
+    // Smart sort: priority × follow-up urgency × score, descending
+    return [...out].sort((a, b) => {
+      const score = (l: LeadDTO) => {
+        let s = l.ai_score ?? 0;
+        if (l.follow_up_at) {
+          const due = new Date(l.follow_up_at).getTime();
+          const hrs = (due - Date.now()) / 3_600_000;
+          if (hrs < 24 && hrs > -24) s += 50;
+        }
+        if (l.stage === "new") s += 10;
+        return s;
+      };
+      return score(b) - score(a);
+    });
+  }, [leadsAll, search, innerSearch, stageFilter, sourceFilter]);
 
   React.useEffect(() => {
-    if (!selectedId && leads.length) setSelectedId(leads[0].id);
-  }, [leads, selectedId]);
+    if (!selectedId && filtered.length) setSelectedId(filtered[0].id);
+    if (selectedId && !filtered.find((l) => l.id === selectedId) && filtered.length) {
+      setSelectedId(filtered[0].id);
+    }
+  }, [filtered, selectedId]);
 
-  const selected: LeadDTO | null = leads.find((l) => l.id === selectedId) ?? null;
+  const selected: LeadDTO | null = leadsAll.find((l) => l.id === selectedId) ?? null;
+  const activeCount = leadsAll.filter((l) => l.stage !== "converted" && l.stage !== "lost").length;
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filtered.map((l) => l.id)));
+    else setSelectedIds(new Set());
+  };
+  const clearSelection = () => setSelectedIds(new Set());
 
   return (
     <DashboardShell role="trainer" tier={tier} active="Leads" title="Leads" subtitle="Your full pipeline">
       <div className="flex flex-col gap-5">
         {/* Header */}
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-[26px] font-bold text-white">Leads pipeline</h1>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+          <div className="min-w-0">
+            <h1 className="font-display text-[28px] font-bold text-white">Leads pipeline</h1>
             <p className="mt-1 text-[13.5px] text-white/55">
-              Every enquiry — scored, ranked and ready to act on.
+              Track enquiries, prioritise follow-ups and convert leads into clients.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
               <Input
-                placeholder="Search leads…"
+                placeholder="Search..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-[220px] rounded-[10px] border-reps-border bg-reps-panel-soft pl-8 text-[12.5px]"
+                className="h-10 w-[260px] rounded-[12px] border-reps-border bg-reps-panel pl-9 text-[12.5px] shadow-none"
               />
+              <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+                ⌘K
+              </kbd>
             </div>
-            <BackfillScoresButton onDone={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
-            <NewLeadDialog onCreated={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toast.info("CSV import is coming in Phase 2.3")}
+              className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-panel-soft"
+            >
+              <Upload className="size-3.5" /> <span className="ml-1.5">Import leads</span>
+            </Button>
+            <NewLeadDialog
+              onCreated={() => {
+                qc.invalidateQueries({ queryKey: ["leads"] });
+                qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+              }}
+            />
+            <BackfillScoresButton
+              onDone={() => {
+                qc.invalidateQueries({ queryKey: ["leads"] });
+                qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+              }}
+            />
           </div>
         </div>
 
         {/* KPI strip */}
         <KpiStrip kpis={kpis} />
 
-        {/* Pipeline + drawer */}
+        {/* Pipeline + rail */}
         {isLoading ? (
           <PCard><div className="px-5 py-10 text-center text-[13px] text-white/55">Loading leads…</div></PCard>
         ) : leadsAll.length === 0 ? (
@@ -125,37 +202,74 @@ function LeadsPipelinePage() {
             </div>
           </PCard>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-            <PCard className="min-h-[560px]">
-              <PipelineTable
-                leads={leads}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                stageFilter={stageFilter}
-                onStageFilterChange={setStageFilter}
-                sourceFilter={sourceFilter}
-                onSourceFilterChange={setSourceFilter}
-              />
-            </PCard>
-            <PCard className="lg:sticky lg:top-4 self-start max-h-[calc(100vh-120px)] overflow-y-auto">
-              {selected ? (
-                <div className="p-4">
-                  <LeadDrawer lead={selected} />
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center px-6 py-14 text-[13px] text-white/55">
-                  <div className="text-center">
-                    <Target className="mx-auto size-6 text-white/40" />
-                    <p className="mt-3">Select a lead to see details</p>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+            {/* Pipeline */}
+            <div className="flex flex-col gap-3">
+              {selectedIds.size > 0 ? (
+                <BulkActionBar selectedIds={selectedIds} onClear={clearSelection} />
+              ) : null}
+              <div className="rounded-[18px] border border-reps-border bg-reps-panel">
+                {/* Panel header */}
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-reps-border/60 px-5 py-4">
+                  <div>
+                    <h2 className="font-display text-[16px] font-bold text-white">Lead pipeline</h2>
+                    <p className="mt-0.5 text-[11.5px] text-white/55">
+                      {activeCount} active leads · sorted by priority and follow-up
+                    </p>
+                  </div>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
+                    <Input
+                      placeholder="Search leads…"
+                      value={innerSearch}
+                      onChange={(e) => setInnerSearch(e.target.value)}
+                      className="h-9 w-[240px] rounded-[12px] border-reps-border bg-reps-panel-soft pl-9 text-[12px] shadow-none"
+                    />
                   </div>
                 </div>
+
+                {/* Filter chips */}
+                <div className="flex flex-col gap-3 border-b border-reps-border/60 px-5 py-4">
+                  <StageChipsBar value={stageFilter} onChange={setStageFilter} />
+                  <SourceChipsRow sources={sources} value={sourceFilter} onChange={setSourceFilter} />
+                </div>
+
+                {/* Table */}
+                <PipelineTable
+                  leads={filtered}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  selectedIds={selectedIds}
+                  onToggle={toggleOne}
+                  onToggleAll={toggleAll}
+                />
+              </div>
+            </div>
+
+            {/* Sticky right rail */}
+            <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto">
+              {selected ? (
+                <>
+                  <SelectedLeadCard lead={selected} />
+                  <AiInsightCard lead={selected} />
+                </>
+              ) : (
+                <div className="rounded-[18px] border border-reps-border bg-reps-panel px-6 py-14 text-center text-[13px] text-white/55">
+                  Select a lead to see details
+                </div>
               )}
-            </PCard>
+            </div>
           </div>
         )}
 
         {/* Bottom row */}
-        <BottomCards kpis={kpis} />
+        {leadsAll.length > 0 ? (
+          <div className="grid gap-4 lg:grid-cols-3">
+            <FollowUpsDueCard kpis={kpis} onOpen={(id) => setSelectedId(id)} />
+            <LeadSourcesCard kpis={kpis} />
+            <ConversionPerformanceCard kpis={kpis} />
+          </div>
+        ) : null}
       </div>
     </DashboardShell>
   );
@@ -194,7 +308,7 @@ function NewLeadDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-9 rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white hover:bg-reps-orange-dark">
+        <Button size="sm" className="h-10 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-orange-dark">
           <Plus className="size-3.5" /> <span className="ml-1">New lead</span>
         </Button>
       </DialogTrigger>
@@ -231,7 +345,7 @@ function NewLeadDialog({ onCreated }: { onCreated: () => void }) {
           <Button
             onClick={() => m.mutate()}
             disabled={!name.trim() || !email.trim() || m.isPending}
-            className="bg-reps-orange text-white hover:bg-reps-orange-dark"
+            className="bg-reps-orange text-white shadow-none hover:bg-reps-orange-dark"
           >
             {m.isPending ? "Adding…" : "Add lead"}
           </Button>
@@ -257,7 +371,7 @@ function BackfillScoresButton({ onDone }: { onDone: () => void }) {
       size="sm"
       onClick={() => m.mutate()}
       disabled={m.isPending}
-      className="h-9 rounded-[10px] border-reps-border bg-reps-panel-soft text-[12.5px] font-medium text-white/85 hover:text-white"
+      className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none hover:text-white"
     >
       {m.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-reps-orange" />}
       <span className="ml-1.5">{m.isPending ? "Scoring…" : "Score all"}</span>
