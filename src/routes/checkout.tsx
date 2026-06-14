@@ -57,7 +57,7 @@ function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const tierMeta = TIERS[search.tier];
+  const tierMeta = TIERS[search.tier as "verified" | "pro"];
   const offer = getCheckoutOffer(search.tier, search.period);
   const plan = PLANS.find((p) => p.tierKey === search.tier)!;
   const priceView = plan.pricing[search.period === "annual" ? "annual" : "monthly"];
