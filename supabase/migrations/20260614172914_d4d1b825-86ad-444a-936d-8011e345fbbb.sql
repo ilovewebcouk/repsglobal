@@ -1,0 +1,1 @@
+REVOKE UPDATE ON public.bd_member_seed FROM sandbox_exec;
