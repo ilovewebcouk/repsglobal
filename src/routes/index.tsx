@@ -53,6 +53,9 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:url", content: "/" },
     ],
+    links: [
+      { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
+    ],
   }),
   component: HomeV2,
 });
@@ -141,6 +144,10 @@ function HomeV2() {
             <img
               src={heroCoaching.url}
               alt=""
+              width={1920}
+              height={1080}
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover object-[88%_30%] lg:object-[78%_30%]"
             />
             <div
@@ -244,7 +251,7 @@ function HomeV2() {
                   <div className="mt-0.5">
                     <Star className="mr-1 inline h-3.5 w-3.5 fill-reps-orange text-reps-orange align-[-2px]" aria-hidden />
                     <strong className="font-semibold text-white">4.9</strong>
-                    <span className="mx-1.5 text-white/40">·</span>
+                    <span className="mx-1.5 text-white/55">·</span>
                     <strong className="font-semibold text-white">50,000+</strong> verified reviews
                   </div>
                 </div>
