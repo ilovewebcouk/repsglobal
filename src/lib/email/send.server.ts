@@ -21,6 +21,7 @@ interface ServerSendParams {
   recipientEmail: string;
   idempotencyKey?: string;
   templateData?: Record<string, unknown>;
+  replyTo?: string;
 }
 
 /**
