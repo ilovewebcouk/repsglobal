@@ -234,6 +234,35 @@ export const createLead = createServerFn({ method: "POST" })
     return { id: row.id };
   });
 
+/* -------------------- Backfill AI scores -------------------- */
+
+export const backfillLeadScores = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ scored: number; skipped: number }> => {
+    const userId = context.userId;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("enquiries")
+      .select("id")
+      .eq("professional_id", userId)
+      .is("ai_score", null)
+      .neq("status", "spam")
+      .order("created_at", { ascending: false })
+      .limit(25);
+    if (error) throw error;
+    const { scoreLeadById } = await import("./score.server");
+    let scored = 0;
+    for (const r of rows ?? []) {
+      try {
+        await scoreLeadById(r.id, userId);
+        scored++;
+      } catch {
+        // continue — one bad lead shouldn't stop the batch
+      }
+    }
+    return { scored, skipped: (rows?.length ?? 0) - scored };
+  });
+
 /* -------------------- Pipeline KPIs -------------------- */
 
 export type LeadKpis = {

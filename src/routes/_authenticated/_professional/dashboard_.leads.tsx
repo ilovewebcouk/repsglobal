@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, Plus, Search, Target } from "lucide-react";
+import { Inbox, Plus, Search, Sparkles, Target, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
+  backfillLeadScores,
   createLead,
   getLeadKpis,
   listLeads,
@@ -98,6 +99,7 @@ function LeadsPipelinePage() {
                 className="h-9 w-[220px] rounded-[10px] border-reps-border bg-reps-panel-soft pl-8 text-[12.5px]"
               />
             </div>
+            <BackfillScoresButton onDone={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
             <NewLeadDialog onCreated={() => { qc.invalidateQueries({ queryKey: ["leads"] }); qc.invalidateQueries({ queryKey: ["lead-kpis"] }); }} />
           </div>
         </div>
@@ -234,5 +236,29 @@ function NewLeadDialog({ onCreated }: { onCreated: () => void }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BackfillScoresButton({ onDone }: { onDone: () => void }) {
+  const m = useMutation({
+    mutationFn: () => backfillLeadScores(),
+    onSuccess: (r) => {
+      if (r.scored > 0) toast.success(`Scored ${r.scored} lead${r.scored === 1 ? "" : "s"}`);
+      else toast.info("No unscored leads to backfill");
+      onDone();
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't score leads"),
+  });
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => m.mutate()}
+      disabled={m.isPending}
+      className="h-9 rounded-[10px] border-reps-border bg-reps-panel-soft text-[12.5px] font-medium text-white/85 hover:text-white"
+    >
+      {m.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-reps-orange" />}
+      <span className="ml-1.5">{m.isPending ? "Scoring…" : "Score all"}</span>
+    </Button>
   );
 }
