@@ -16,6 +16,7 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/settings")({
@@ -187,6 +188,9 @@ function SettingsPage() {
               <Toggle label="Community digest" />
             </div>
           </PPanel>
+
+          <CreditsPanel />
+
 
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
