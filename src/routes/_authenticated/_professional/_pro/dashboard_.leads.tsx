@@ -40,11 +40,6 @@ import { ConversionPerformanceCard } from "@/components/leads/ConversionPerforma
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 export const Route = createFileRoute("/_authenticated/_professional/_pro/dashboard_/leads")({
-  beforeLoad: ({ context }) => {
-    // Verified pros get the focused inbox at /dashboard/enquiries.
-    const tier = (context as { trainerTier?: string }).trainerTier;
-    if (tier === "verified") throw redirect({ to: "/dashboard/enquiries" });
-  },
   head: () => ({
     meta: [
       { title: "Leads pipeline — REPS Professional" },
