@@ -245,8 +245,6 @@ function AccountTab({ data }: { data: SettingsBundle }) {
   const save = useServerFn(updateMyAccount);
 
   const [fullName, setFullName] = React.useState(data.account.full_name ?? "");
-  const [displayName, setDisplayName] = React.useState(data.account.display_name ?? "");
-  const [businessName, setBusinessName] = React.useState(data.account.business_name ?? "");
   const [phone, setPhone] = React.useState(data.account.contact_phone ?? "");
   const [timezone, setTimezone] = React.useState(data.account.timezone);
   const [locale, setLocale] = React.useState(data.account.locale);
@@ -259,8 +257,6 @@ function AccountTab({ data }: { data: SettingsBundle }) {
       save({
         data: {
           full_name: fullName.trim(),
-          display_name: displayName.trim() || null,
-          business_name: businessName.trim() || null,
           contact_phone: phone || null,
           timezone,
           locale,
@@ -273,6 +269,7 @@ function AccountTab({ data }: { data: SettingsBundle }) {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const handleEmailChange = async () => {
     const trimmed = newEmail.trim();
