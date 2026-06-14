@@ -14,22 +14,22 @@ import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 export const Route = createFileRoute("/coming-soon")({
   head: () => ({
     meta: [
-      { title: "REPS — Launching 19 June 2026" },
+      { title: "REPS — Launching 26 June 2026" },
       {
         name: "description",
         content:
-          "The professional platform for the modern fitness industry. Launching Friday 19 June 2026. Join the waitlist.",
+          "The professional platform for the modern fitness industry. Launching Friday 26 June 2026. Join the waitlist.",
       },
-      { property: "og:title", content: "REPS — Launching 19 June 2026" },
+      { property: "og:title", content: "REPS — Launching 26 June 2026" },
       {
         property: "og:description",
-        content: "The professional platform for the modern fitness industry. Launching Friday 19 June 2026.",
+        content: "The professional platform for the modern fitness industry. Launching Friday 26 June 2026.",
       },
       { property: "og:image", content: heroAsset.url },
       { property: "og:url", content: "/coming-soon" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "REPS — Launching 19 June 2026" },
+      { name: "twitter:title", content: "REPS — Launching 26 June 2026" },
       { name: "twitter:image", content: heroAsset.url },
       // Coming-soon page IS indexable (root is noindex by default — this overrides for this page only).
       { name: "robots", content: "index, follow" },
