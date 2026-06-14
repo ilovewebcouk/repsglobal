@@ -92,6 +92,7 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
+import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
@@ -536,6 +537,12 @@ const AuthenticatedProfessionalDashboardSettingsRoute =
     path: '/dashboard/settings',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardServicesRoute =
+  AuthenticatedProfessionalDashboardServicesRouteImport.update({
+    id: '/dashboard_/services',
+    path: '/dashboard/services',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardProfileRoute =
   AuthenticatedProfessionalDashboardProfileRouteImport.update({
     id: '/dashboard_/profile',
@@ -729,6 +736,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
@@ -829,6 +837,7 @@ export interface FileRoutesByTo {
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
@@ -934,6 +943,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
@@ -1037,6 +1047,7 @@ export interface FileRouteTypes {
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/profile'
+    | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/verification'
@@ -1137,6 +1148,7 @@ export interface FileRouteTypes {
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/profile'
+    | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/verification'
@@ -1241,6 +1253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/profile'
+    | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/verification'
@@ -1924,6 +1937,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSettingsRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/services': {
+      id: '/_authenticated/_professional/dashboard_/services'
+      path: '/dashboard/services'
+      fullPath: '/dashboard/services'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardServicesRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/profile': {
       id: '/_authenticated/_professional/dashboard_/profile'
       path: '/dashboard/profile'
@@ -2150,6 +2170,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalCheckoutCreditsRoute: typeof AuthenticatedProfessionalCheckoutCreditsRoute
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
+  AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
@@ -2167,6 +2188,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardCpdRoute,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
+    AuthenticatedProfessionalDashboardServicesRoute:
+      AuthenticatedProfessionalDashboardServicesRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
     AuthenticatedProfessionalDashboardShopFrontRoute:
