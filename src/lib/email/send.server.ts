@@ -31,7 +31,7 @@ interface ServerSendParams {
  * render, enqueue, send_log).
  */
 export async function sendTransactionalEmailServer(params: ServerSendParams) {
-  const { templateName, recipientEmail, idempotencyKey, templateData = {} } = params;
+  const { templateName, recipientEmail, idempotencyKey, templateData = {}, replyTo } = params;
   const template = TEMPLATES[templateName];
   if (!template) throw new Error(`Template '${templateName}' not found`);
 
