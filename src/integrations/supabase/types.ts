@@ -1219,6 +1219,62 @@ export type Database = {
           },
         ]
       }
+      legacy_stripe_link: {
+        Row: {
+          access_expires_at: string | null
+          bd_member_id: number
+          created_at: string
+          current_price_id: string | null
+          email: string
+          last_attempt_at: string | null
+          legacy_kind: string
+          link_status: string
+          migration_status: string
+          notes: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_expires_at?: string | null
+          bd_member_id: number
+          created_at?: string
+          current_price_id?: string | null
+          email: string
+          last_attempt_at?: string | null
+          legacy_kind?: string
+          link_status?: string
+          migration_status?: string
+          notes?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_expires_at?: string | null
+          bd_member_id?: number
+          created_at?: string
+          current_price_id?: string | null
+          email?: string
+          last_attempt_at?: string | null
+          legacy_kind?: string
+          link_status?: string
+          migration_status?: string
+          notes?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legacy_stripe_link_bd_member_id_fkey"
+            columns: ["bd_member_id"]
+            isOneToOne: true
+            referencedRelation: "bd_member_seed"
+            referencedColumns: ["bd_member_id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
