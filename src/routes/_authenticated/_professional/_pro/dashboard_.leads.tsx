@@ -272,7 +272,7 @@ function NewLeadDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-10 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-orange-dark">
+        <Button size="sm" className="h-10 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark">
           <Plus className="size-3.5" /> <span className="ml-1">New lead</span>
         </Button>
       </DialogTrigger>
