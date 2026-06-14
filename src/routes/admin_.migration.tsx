@@ -446,6 +446,8 @@ function StripeLinkingPanel() {
   const fetchStats = useServerFn(getLegacyLinkingStats);
   const linkFn = useServerFn(linkLegacyStripeCustomers);
   const renewFn = useServerFn(runLegacyRenewalBatch);
+  const resetFn = useServerFn(resetLegacyLinking);
+  const csvFn = useServerFn(linkLegacyFromStripeCsv);
   const [env, setEnv] = useState<"sandbox" | "live">("live");
   const [log, setLog] = useState<string | null>(null);
 
@@ -476,7 +478,58 @@ function StripeLinkingPanel() {
     onError: (e) => setLog(`Renewal pass failed: ${(e as Error).message}`),
   });
 
-  const busy = linkPass.isPending || renewPass.isPending || isFetching;
+  const resetPass = useMutation({
+    mutationFn: () => resetFn(),
+    onSuccess: (res) => {
+      setLog(`Reset: deleted ${res.deleted} link rows. Safe to re-run link pass.`);
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+    },
+    onError: (e) => setLog(`Reset failed: ${(e as Error).message}`),
+  });
+
+  const csvImport = useMutation({
+    mutationFn: (rows: { email: string; customer_id: string }[]) =>
+      csvFn({ data: { environment: env, rows } }),
+    onSuccess: (res) => {
+      setLog(
+        `CSV import (${env}): csv rows ${res.csv_rows}, matched seed ${res.matched_seed}, recurring ${res.linked_recurring}, one-time ${res.linked_onetime}, no-seed-match ${res.no_seed_match}, already-linked ${res.already_linked}, errors ${res.errors}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+    },
+    onError: (e) => setLog(`CSV import failed: ${(e as Error).message}`),
+  });
+
+  function handleCsvFile(file: File) {
+    setLog(`Parsing ${file.name}…`);
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        const rows: { email: string; customer_id: string }[] = [];
+        for (const r of result.data) {
+          const customer_id = (r["id"] || r["Customer ID"] || r["customer_id"] || "").trim();
+          const email = (r["Email"] || r["email"] || r["email (metadata)"] || "").trim();
+          if (customer_id.startsWith("cus_") && email.includes("@")) {
+            rows.push({ email, customer_id });
+          }
+        }
+        if (!rows.length) {
+          setLog("CSV parsed but no valid rows (expected columns: id, Email).");
+          return;
+        }
+        csvImport.mutate(rows);
+      },
+      error: (err) => setLog(`CSV parse failed: ${err.message}`),
+    });
+  }
+
+  const busy =
+    linkPass.isPending ||
+    renewPass.isPending ||
+    resetPass.isPending ||
+    csvImport.isPending ||
+    isFetching;
+
 
   return (
     <PPanel className="mt-6">
