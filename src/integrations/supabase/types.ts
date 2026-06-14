@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          after_state: Json | null
+          before_state: Json | null
+          created_at: string
+          id: string
+          ip: unknown
+          reason: string | null
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          reason?: string | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          reason?: string | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       bd_member_seed: {
         Row: {
           about_me: string | null
@@ -2455,6 +2497,20 @@ export type Database = {
       is_coach_of: {
         Args: { _client_id: string; _pro_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _actor_id: string
+          _after_state?: Json
+          _before_state?: Json
+          _ip?: unknown
+          _reason?: string
+          _target_id?: string
+          _target_table?: string
+          _user_agent?: string
+        }
+        Returns: string
       }
       move_to_dlq: {
         Args: {
