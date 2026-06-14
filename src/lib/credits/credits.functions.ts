@@ -14,7 +14,6 @@ export type CreditTransactionDTO = {
   action: string;
   balance_after: number;
   created_at: string;
-  metadata: Record<string, unknown> | null;
 };
 
 export const getMyWallet = createServerFn({ method: "GET" })
@@ -41,7 +40,7 @@ export const listMyCreditTransactions = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CreditTransactionDTO[]> => {
     const { data, error } = await context.supabase
       .from("credit_transactions")
-      .select("id, delta, action, balance_after, created_at, metadata")
+      .select("id, delta, action, balance_after, created_at")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(20);
