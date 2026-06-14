@@ -1,78 +1,120 @@
-# Leads pipeline — Plan A SHIPPED · Plan B queued
 
-## Plan A (UI 10/10) — ✅ shipped
+# Verified tier — finish line plan
 
-- **Sliding `LeadDetailSheet`** (non-modal shadcn Sheet, right side, 480px)
-  replaces the persistent rail. Includes Pin/Unpin toggle that morphs back
-  into the old sticky rail and persists to `localStorage` (`reps.leads.detailPinned`).
-- **Kanban view** via `@dnd-kit/core` with 5 columns, drag-to-move calls
-  `updateLead({ stage })`, optimistic toast + query invalidation. Toggled via
-  `ViewToggle` (Table / Kanban), persisted to `localStorage` (`reps.leads.view`).
-- **Low-data mode** in `dashboard_.leads.tsx`:
-  - 0 leads → existing empty state
-  - 1–4 leads → `GettingStartedCard` (collapses KPI strip + analytics)
-  - 5–9 → KPI strip + pipeline, no bottom analytics
-  - ≥10 → full page
-- **Bug fixes**
-  - `1 hour ago` plural-safe via `src/lib/format/relative-time.ts`
-  - AI insight subtitle re-derived from score (`<30 Cold · 30–54 Lukewarm ·
-    55–74 Warm · ≥75 Hot`) so it can't contradict the number
-  - `Convert to client` swaps to a green "View client" CTA when already converted
-  - `SourceChipsRow` hides itself when ≤1 source exists
-  - `KpiStrip` shows skeletons instead of "—" while loading
-- **Keyboard nav** (`useLeadsKeyboard`): J/K (or arrows) cycle selection,
-  Enter opens sheet, Esc closes. `?` opens a shortcuts cheatsheet dialog.
-- **Tooltips** on every action button explaining what it does / why disabled.
-
-### Files
-
-```
-NEW   src/components/leads/LeadDetailSheet.tsx
-NEW   src/components/leads/PipelineKanban.tsx
-NEW   src/components/leads/ViewToggle.tsx
-NEW   src/components/leads/GettingStartedCard.tsx
-NEW   src/hooks/useLeadsKeyboard.ts
-NEW   src/lib/format/relative-time.ts
-EDIT  src/components/leads/SelectedLeadCard.tsx
-EDIT  src/components/leads/AiInsightCard.tsx
-EDIT  src/components/leads/SourceChipsRow.tsx
-EDIT  src/components/leads/KpiStrip.tsx
-EDIT  src/routes/_authenticated/_professional/_pro/dashboard_.leads.tsx
-ADD   @dnd-kit/core, @dnd-kit/sortable
-```
-
-## Plan B (Leads actions wired end-to-end) — next session
-
-What earns the 10th point — the buttons doing real work:
-
-1. **Send message** — in-sheet composer that sends through the existing
-   messages system and logs to `lead_activity`.
-2. **Book call** — calendar slot picker that creates the booking and
-   auto-moves the lead to `call_booked`.
-3. **Create proposal** — minimal "send packages X/Y/Z" flow that emails the
-   lead and moves to `proposal_sent`.
-4. **Convert to client** — actually create the client record and link the
-   lead (so the new "View client" CTA goes somewhere real).
-5. **Lead activity timeline** in the sheet — every status change, message,
-   call booked, proposal sent stamped on the lead.
-6. **Auto-stage transitions** — booking a call moves to "Call booked"
-   automatically. Sending a proposal moves to "Proposal sent". This is what
-   makes a pipeline feel alive vs. a spreadsheet.
+Nav stays: **Public profile · Services · Verification · Education & CPD · Settings**. Shop-front gets removed from Verified nav (Pro+ only). Dashboard home is out of scope (build last). No locked mockup visuals change — wiring and Settings only.
 
 ---
 
-## Pass A — SHIPPED 2026-06-14
+## Pass 1 — Cleanup (no DB)
 
-End-to-end specialisms data flow live for Verified members.
+1. **Remove Shop-front from VERIFIED_NAV** in `src/components/dashboard/DashboardShell.tsx`. Add tier gate on `dashboard_.shop-front.tsx` redirecting Verified users to `/dashboard/services` with a "Shop-front is a Pro feature" toast.
+2. **Fix delivery-mode duplication**: `in_person_available` / `online_available` live on **Services** only. Remove the toggle block from `dashboard_.profile.tsx`. Profile keeps photo, headline, bio, city, gyms, social, languages.
+3. **Update Services upsell copy**: change "03 Pro upsell" to "Unlock your Shop-front — sell packages, take payments, onboard clients" linking to `/features/shop-front` + `/pricing`.
+4. Enforce `SpecialismsPicker` 3-cap (DB trigger already enforces; surface client-side error nicely).
 
-**New files**
-- `src/components/profile/SpecialismsPicker.tsx` — shared 16-chip picker (max 3).
-- `src/routes/_authenticated/_professional/dashboard_.services.tsx` — new `/dashboard/services` route. Manages `professionals.specialisms[]` + `in_person_available` / `online_available` via existing `updateMyDashboardProfile`. Live directory-card preview. Pro upsell card for paid service packages (verified-only).
+## Pass 2 — Settings rebuild (the main work)
 
-**Edited**
-- `src/components/dashboard/DashboardShell.tsx` — added `"Services"` to `TrainerActive` and a new `Sparkles` nav item in `VERIFIED_NAV` between Public Profile and Shop-front.
-- `src/routes/pro.$slug.enquire.tsx` — when a public pro has NO paid service packages (Verified tier), derive the "What kind of coaching" options from `shopFront.specialisms` (one per specialism + a free Discovery call), instead of falling back to the hard-coded James Wilson packages.
+Replace `src/routes/_authenticated/_professional/dashboard_.settings.tsx` with a real, wired 5-tab layout. Keep the existing dark-panel visual language (PCard / PPanel / Row pattern) — only the content + wiring changes.
 
-**No DB changes.** No locked screen was visually modified.
+### Tab structure (URL-driven via `?tab=`)
 
-**Next: Pass B — Settings rebuild + migrations.**
+**1. Account**
+- Full name (locked if `identity_status='approved'` — show lock notice + "Contact support")
+- Email — change flow sends Supabase confirmation to new address; old email notified
+- Phone (E.164, shared `PhoneField`)
+- Profile photo (existing avatars bucket)
+- Timezone + locale (new columns)
+- Save via `updateMyAccount` server fn
+
+**2. Notifications**
+- New enquiry email (default on)
+- Weekly enquiry digest (default off)
+- Renewal reminder 30/7 days before (default on, can't fully disable required ones — show "required" lock)
+- Verification expiry reminders (DBS, insurance, qualifications) — required, shown as locked
+- REPs product updates / marketing (default off; explicit opt-in for GDPR)
+- New `notification_preferences` table, one row per user, JSON-ish columns
+
+**3. Billing**
+- Current plan card: "Verified — £99/year · renews {date}" pulled from `subscriptions`
+- "Manage billing" → existing `ManageBillingButton` (Stripe Customer Portal: card, invoices, cancel)
+- "Change plan" → links to `/pricing`
+- Founding badge if `is_founding=true`
+- Hide payout account entirely (no payments through REPs for Verified)
+
+**4. Security**
+- Change password (Supabase `updateUser({ password })` with re-auth via current password)
+- Active sessions list: current session only (Supabase doesn't expose session list to client cheaply — show device/IP from `auth.getUser()` and "Sign out everywhere" → `supabase.auth.signOut({ scope: 'global' })`)
+- 2FA: **omitted per your call** (no toggle shown)
+- Sign out
+
+**5. Privacy & data**
+- **Pause listing** toggle → sets `professionals.is_published=false`. Shows "Your profile is hidden from search. Enquiries paused. Resume any time." Subscription stays active.
+- **Export my data** → server fn returns JSON blob of profile + enquiries + reviews + verifications, triggers download
+- **Delete account** → **immediate hard delete** (per your call). Confirmation dialog requires typing email + "DELETE". Server fn: cancels Stripe subscription, deletes auth user (cascades via FKs), signs out. No grace.
+- Legal name lock notice + "Contact support to change"
+
+### Server functions (new, all in `src/lib/settings/settings.functions.ts`)
+
+- `getMySettings` — bundles account + prefs + subscription summary
+- `updateMyAccount` — name (respects identity lock), email (triggers Supabase email change), phone, timezone, locale, avatar
+- `updateMyNotificationPrefs`
+- `updateMyPrivacy` — `is_published` pause toggle
+- `exportMyData` — returns JSON
+- `deleteMyAccount` — verifies email match, cancels Stripe sub via API, calls `supabaseAdmin.auth.admin.deleteUser(userId)` (loaded inside handler)
+- `changeMyPassword` — re-auths then `auth.updateUser`
+
+All use `requireSupabaseAuth` middleware. `attachSupabaseAuth` already wired.
+
+## Pass 3 — Migration
+
+Single migration:
+
+```text
+-- professionals: add timezone, locale
+ALTER TABLE public.professionals
+  ADD COLUMN timezone TEXT DEFAULT 'Europe/London',
+  ADD COLUMN locale TEXT DEFAULT 'en-GB';
+
+-- notification preferences
+CREATE TABLE public.notification_preferences (
+  user_id UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
+  new_enquiry_email BOOLEAN NOT NULL DEFAULT true,
+  weekly_enquiry_digest BOOLEAN NOT NULL DEFAULT false,
+  marketing_opt_in BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.notification_preferences TO authenticated;
+GRANT ALL ON public.notification_preferences TO service_role;
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own prefs" ON public.notification_preferences
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.notification_preferences
+  FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
+```
+
+Required renewal + verification-expiry reminders are system-sent (not toggleable) — no column needed.
+
+## Pass 4 — QA on locked sections (no visual change)
+
+- **Public profile** (`dashboard_.profile.tsx`) — confirm delivery toggles removed, save status pill works, gyms/socials persist
+- **Services** (`dashboard_.services.tsx`) — confirm specialisms cap, in-person/online toggles save, directory card preview updates live, upsell copy updated
+- **Verification** (`dashboard_.verification.tsx`) — confirm Stripe Identity callback, insurance upload, qualifications → CPD link, badge tier reflects DB
+- **Education & CPD** (`dashboard_.cpd.tsx`) — label any mock-only CPD log rows as "Coming soon"; confirm certificate upload + earned titles work
+
+## Out of scope (later phases)
+
+- Dashboard home overhaul, listing-health score, reviews-for-Verified, enquiries inbox, onboarding wizard, 2FA, mobile-first rebuild — captured for Pass 5/Phase 2.1.
+
+## Files touched
+
+- New: `src/lib/settings/settings.functions.ts`
+- New: `src/components/settings/*` (5 tab panels + DeleteAccountDialog + PauseListingCard)
+- Edited: `src/routes/_authenticated/_professional/dashboard_.settings.tsx` (rebuild)
+- Edited: `src/components/dashboard/DashboardShell.tsx` (remove Shop-front from VERIFIED_NAV)
+- Edited: `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` (Verified tier gate)
+- Edited: `src/routes/_authenticated/_professional/dashboard_.profile.tsx` (remove delivery toggles)
+- Edited: `src/routes/_authenticated/_professional/dashboard_.services.tsx` (upsell copy)
+- Migration: timezone/locale + notification_preferences
+
+Ship Pass 1 + Pass 3 migration together, then Pass 2 Settings, then Pass 4 QA.
