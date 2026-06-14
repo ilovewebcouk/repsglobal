@@ -163,27 +163,33 @@ function ComingSoonPage() {
       {/* ----- 3. What's launching ----------------------------------- */}
       <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="max-w-[720px]">
+          <div className="max-w-[780px]">
             <SectionEyebrow>What's launching</SectionEyebrow>
             <SectionHeading className="mt-3">
-              More than a directory. The platform fitness has been waiting for.
+              Not another directory. Not another booking app. The professional platform fitness has been waiting for.
             </SectionHeading>
             <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
-              Three connected products under one professional standard — built around
-              the way fitness professionals actually work today.
+              Six connected products under one professional standard — public trust, visibility,
+              shop-front, operations, coaching and growth — built around the way fitness
+              professionals actually work today.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {LAUNCHING.map((item, idx) => (
               <article
                 key={item.label}
-                className="relative overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel p-7"
+                className="group relative overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel p-7 transition-colors hover:border-reps-orange-border"
               >
-                <div className="font-display text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
-                  {String(idx + 1).padStart(2, "0")}
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+                    <item.icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="font-display text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
                 </div>
-                <h3 className="mt-4 font-display text-[20px] font-semibold leading-tight text-white lg:text-[22px]">
+                <h3 className="mt-6 font-display text-[20px] font-semibold leading-tight text-white lg:text-[22px]">
                   {item.label}
                 </h3>
                 <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
