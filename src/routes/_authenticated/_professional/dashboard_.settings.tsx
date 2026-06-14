@@ -304,28 +304,13 @@ function AccountTab({ data }: { data: SettingsBundle }) {
         />
       </Row>
 
-      <Row label="Display name" hint="What clients see on your profile and directory card.">
-        <TextInput
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder={data.account.full_name ?? "Jane Smith"}
-        />
-      </Row>
-
-      <Row label="Trading name" hint="Used on invoices. Optional.">
-        <TextInput
-          value={businessName}
-          onChange={(e) => setBusinessName(e.target.value)}
-          placeholder="e.g. Smith Strength Co."
-        />
-      </Row>
-
       <Row label="Phone" hint="Internal only. Never shown publicly.">
         <PhoneField
           value={phone}
           onChange={(v) => setPhone(v)}
         />
       </Row>
+
 
       <Row label="Timezone">
         <select
