@@ -112,7 +112,7 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
       {/* Actions: 2x2 grid */}
       <div className="mt-5 grid grid-cols-2 gap-2.5">
         <Button
-          className="h-10 rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+          className="h-10 rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
           onClick={() => toast.info("Calendar booking coming in Phase 2.1")}
         >
           <Calendar className="size-3.5" /> <span className="ml-1.5">Book call</span>
@@ -120,7 +120,7 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
         <Button
           asChild
           variant="outline"
-          className="h-10 rounded-[10px] border-reps-border bg-reps-panel-soft text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-panel"
+          className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
         >
           <a href={`mailto:${lead.sender_email}`}>
             <MessageSquare className="size-3.5" /> <span className="ml-1.5">Send message</span>
@@ -128,14 +128,14 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
         </Button>
         <Button
           variant="outline"
-          className="h-10 rounded-[10px] border-reps-border bg-reps-panel-soft text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-panel"
+          className="h-10 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 shadow-none transition-colors hover:bg-reps-panel-soft hover:text-white"
           onClick={() => toast.info("Proposals coming in Phase 2.1")}
         >
           <FileText className="size-3.5" /> <span className="ml-1.5">Create proposal</span>
         </Button>
         <Button
           variant="outline"
-          className="h-10 rounded-[10px] border-reps-orange-border/40 bg-reps-orange-soft/10 text-[12.5px] font-semibold text-reps-orange shadow-none hover:bg-reps-orange-soft/20"
+          className="h-10 rounded-[10px] border-reps-orange-border/40 bg-reps-orange-soft/15 text-[12.5px] font-semibold text-reps-orange shadow-none transition-colors hover:border-reps-orange-border/70 hover:bg-reps-orange-soft/30 hover:text-reps-orange"
           onClick={() => convertMut.mutate()}
           disabled={convertMut.isPending || lead.stage === "converted"}
         >
