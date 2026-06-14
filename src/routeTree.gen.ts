@@ -97,6 +97,7 @@ import { Route as AuthenticatedProfessionalDashboardLeadsRouteImport } from './r
 import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from './routes/_authenticated/_professional/dashboard_.enquiries'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
+import { Route as AuthenticatedProfessionalCheckoutCreditsRouteImport } from './routes/_authenticated/_professional/checkout_.credits'
 import { Route as AuthenticatedProfessionalProDashboardReviewsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalProDashboardReportsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reports'
 import { Route as AuthenticatedProfessionalProDashboardProgramsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.programs'
@@ -566,6 +567,12 @@ const AuthenticatedProfessionalDashboardSyncingRoute =
     path: '/syncing',
     getParentRoute: () => AuthenticatedProfessionalDashboardRoute,
   } as any)
+const AuthenticatedProfessionalCheckoutCreditsRoute =
+  AuthenticatedProfessionalCheckoutCreditsRouteImport.update({
+    id: '/checkout_/credits',
+    path: '/checkout/credits',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalProDashboardReviewsRoute =
   AuthenticatedProfessionalProDashboardReviewsRouteImport.update({
     id: '/dashboard_/reviews',
@@ -725,6 +732,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
@@ -825,6 +833,7 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug': typeof ProSlugIndexRoute
+  '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
@@ -930,6 +939,7 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
@@ -1033,6 +1043,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
+    | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
@@ -1133,6 +1144,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug'
+    | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
@@ -1237,6 +1249,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
+    | '/_authenticated/_professional/checkout_/credits'
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/enquiries'
@@ -1958,6 +1971,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSyncingRouteImport
       parentRoute: typeof AuthenticatedProfessionalDashboardRoute
     }
+    '/_authenticated/_professional/checkout_/credits': {
+      id: '/_authenticated/_professional/checkout_/credits'
+      path: '/checkout/credits'
+      fullPath: '/checkout/credits'
+      preLoaderRoute: typeof AuthenticatedProfessionalCheckoutCreditsRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/_pro/dashboard_/reviews': {
       id: '/_authenticated/_professional/_pro/dashboard_/reviews'
       path: '/dashboard/reviews'
@@ -2143,6 +2163,7 @@ const AuthenticatedProfessionalDashboardRouteWithChildren =
 interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalProRouteRoute: typeof AuthenticatedProfessionalProRouteRouteWithChildren
   AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRouteWithChildren
+  AuthenticatedProfessionalCheckoutCreditsRoute: typeof AuthenticatedProfessionalCheckoutCreditsRoute
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardEnquiriesRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   AuthenticatedProfessionalDashboardLeadsRoute: typeof AuthenticatedProfessionalDashboardLeadsRoute
@@ -2158,6 +2179,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalProRouteRouteWithChildren,
     AuthenticatedProfessionalDashboardRoute:
       AuthenticatedProfessionalDashboardRouteWithChildren,
+    AuthenticatedProfessionalCheckoutCreditsRoute:
+      AuthenticatedProfessionalCheckoutCreditsRoute,
     AuthenticatedProfessionalDashboardCpdRoute:
       AuthenticatedProfessionalDashboardCpdRoute,
     AuthenticatedProfessionalDashboardEnquiriesRoute:

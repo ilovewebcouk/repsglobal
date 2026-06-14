@@ -32,7 +32,7 @@ function CreditsCheckoutPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const startCheckout = useServerFn(createCreditTopupCheckout);
-  const pack = CREDIT_PACKS[search.pack];
+  const pack = CREDIT_PACKS[search.pack as CreditPackKey];
 
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
