@@ -80,7 +80,7 @@ function periodEndIso(sub: Stripe.Subscription): string | null {
   return cpe ? new Date(cpe * 1000).toISOString() : null;
 }
 
-async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: Stripe) {
+async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: Stripe, env: StripeEnv) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
   const userId = await resolveUserId(
@@ -108,9 +108,12 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
     is_founding: lookup?.founding ?? false,
     migrated_from_bd: sub.metadata?.migrated_from === "bd",
     metadata: sub.metadata as unknown as object,
+    environment: env,
     updated_at: new Date().toISOString(),
   };
-  await supabaseAdmin.from("subscriptions").upsert(row as never, { onConflict: "user_id" });
+  await supabaseAdmin
+    .from("subscriptions")
+    .upsert(row as never, { onConflict: "user_id,environment" });
   return userId;
 }
 
