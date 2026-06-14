@@ -1,10 +1,12 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Plus, ArrowDown, ArrowUp } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Sparkles, ArrowDown, ArrowUp } from "lucide-react";
 
 import { PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
+import { CREDIT_PACKS, type CreditPackKey } from "@/lib/billing";
 import {
   getMyWallet,
   listMyCreditTransactions,
