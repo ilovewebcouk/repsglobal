@@ -226,8 +226,8 @@ function LeadsPipelinePage() {
           </div>
         )}
 
-        {/* Bottom row */}
-        {leadsAll.length > 0 ? (
+        {/* Bottom row — only once there's enough funnel data to be useful */}
+        {leadsAll.length >= 2 ? (
           <div className="grid gap-4 lg:grid-cols-3">
             <FollowUpsDueCard kpis={kpis} onOpen={(id) => setSelectedId(id)} />
             <LeadSourcesCard kpis={kpis} />

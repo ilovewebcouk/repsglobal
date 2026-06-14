@@ -104,7 +104,7 @@ export function BulkActionBar({
         size="sm"
         variant="outline"
         onClick={() => archiveMut.mutate()}
-        className="h-8 rounded-[10px] border-reps-border bg-reps-panel text-[12px]"
+        className="h-8 rounded-[10px] border-reps-border bg-reps-panel text-[12px] text-white/85 transition-colors hover:bg-reps-panel-soft hover:text-white"
       >
         <Archive className="size-3.5" /> <span className="ml-1.5">Archive</span>
       </Button>
