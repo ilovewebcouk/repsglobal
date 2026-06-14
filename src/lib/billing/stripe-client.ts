@@ -6,7 +6,8 @@ const PK_TEST =
 const PK_LIVE =
   "pk_live_51KIBgpAP31Yc4cJjJTJicYvW2hcAFbiDXVYMOX7LirGGgve39MCOLUmmOkfvxhw4gNZq512NITcVXgaUjdKESW7a00h3DxXWpl";
 
-// Live key only on the production host(s). Everywhere else (preview, staging, localhost) uses test.
+// Live key only on the production host(s). Everywhere else (lovable preview,
+// staging.repsuk.org, *.lovableproject.com, localhost) uses test mode.
 const LIVE_HOSTS = new Set<string>(["repsuk.org", "www.repsuk.org"]);
 
 function isLiveHost(): boolean {

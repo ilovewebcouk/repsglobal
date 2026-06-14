@@ -81,6 +81,7 @@ import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$s
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
@@ -472,6 +473,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
+  id: '/checkout/credits/return',
+  path: '/checkout/credits/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardDesignKitRoute =
   AuthenticatedDashboardDesignKitRouteImport.update({
     id: '/dashboard_/design-kit',
@@ -720,6 +726,7 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -820,6 +827,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -925,6 +933,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1028,6 +1037,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/dashboard'
     | '/dashboard/design-kit'
+    | '/checkout/credits/return'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1128,6 +1138,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/dashboard'
     | '/dashboard/design-kit'
+    | '/checkout/credits/return'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1232,6 +1243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/_pro'
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
+    | '/checkout/credits/return'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1333,6 +1345,7 @@ export interface RootRouteChildren {
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -1847,6 +1860,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/credits/return': {
+      id: '/checkout/credits/return'
+      path: '/checkout/credits/return'
+      fullPath: '/checkout/credits/return'
+      preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard_/design-kit': {
       id: '/_authenticated/dashboard_/design-kit'
       path: '/dashboard/design-kit'
@@ -2279,6 +2299,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

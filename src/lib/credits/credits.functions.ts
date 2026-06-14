@@ -78,8 +78,8 @@ export const createCreditTopupCheckout = createServerFn({ method: "POST" })
           mode: "payment",
           customer: customerId,
           line_items: [{ price: stripePrice.id, quantity: 1 }],
-          success_url: `${origin}/dashboard/settings?topup=success&session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${origin}/dashboard/settings?topup=canceled`,
+          success_url: `${origin}/checkout/credits/return?status=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${origin}/checkout/credits/return?status=canceled`,
           payment_intent_data: {
             description: `REPs AI Credits — ${pack.label} (${pack.credits} credits)`,
           },
@@ -105,6 +105,53 @@ export const createCreditTopupCheckout = createServerFn({ method: "POST" })
       }
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Could not start checkout" };
+    }
+  });
+
+/**
+ * Recovery path for when the Stripe webhook is slow or missed: pulls the
+ * checkout session directly and, if it's paid and matches this user, grants
+ * the credits via the same idempotent RPC the webhook uses.
+ */
+export const reconcileCreditTopup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        session_id: z.string().min(1),
+        environment: z.enum(["sandbox", "live"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true; balance?: number } | { error: string }> => {
+    try {
+      const { createStripeClient } = await import("@/lib/billing/stripe.server");
+      const stripe = createStripeClient(data.environment);
+      const session = await stripe.checkout.sessions.retrieve(data.session_id);
+
+      const meta = (session.metadata ?? {}) as Record<string, string>;
+      if (meta.kind !== "credit_topup") return { error: "Not a credit top-up session" };
+      const sessionUserId = meta.reps_user_id || meta.userId;
+      if (!sessionUserId || sessionUserId !== context.userId) {
+        return { error: "Session does not belong to this account" };
+      }
+      if (session.payment_status !== "paid") {
+        return { error: "Payment not completed yet" };
+      }
+      const credits = Number(meta.credits);
+      if (!credits || credits <= 0) return { error: "Invalid credit amount on session" };
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: balance, error } = await supabaseAdmin.rpc("grant_credit_topup", {
+        _user_id: context.userId,
+        _credits: credits,
+        _stripe_session_id: session.id,
+        _pack: meta.pack ?? null,
+      } as never);
+      if (error) return { error: error.message };
+      return { ok: true, balance: typeof balance === "number" ? balance : undefined };
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Reconcile failed" };
     }
   });
 
