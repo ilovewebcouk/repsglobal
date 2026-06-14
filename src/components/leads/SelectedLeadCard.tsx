@@ -73,7 +73,7 @@ export function SelectedLeadCard({ lead }: { lead: LeadDTO }) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-display text-[17px] font-bold text-white">{lead.sender_name}</div>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full border-reps-orange-border/40 bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-semibold text-reps-orange hover:bg-reps-orange-soft">
+            <Badge className="rounded-full border-reps-orange-border/40 bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-semibold text-reps-orange">
               {lead.stage === "new" ? "New lead" : "Active lead"}
             </Badge>
             {lead.location ? (
