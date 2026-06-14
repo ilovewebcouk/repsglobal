@@ -53,6 +53,9 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:url", content: "/" },
     ],
+    links: [
+      { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
+    ],
   }),
   component: HomeV2,
 });
