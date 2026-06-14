@@ -1,66 +1,47 @@
-## What broke
+# Plan — Working credit top-up buy buttons
 
-1. **The Leads page is rendering the wrong sidebar tier.**
-   - `src/routes/_authenticated/_professional/dashboard_.leads.tsx:82` mounts `<DashboardShell role="trainer" ...>` **without** a `tier` prop.
-   - `src/components/dashboard/DashboardShell.tsx:447-450` defaults `tier = "pro"`.
-   - Result: a **Verified** member who lands on `/dashboard/leads` gets the **Pro nav** rendered in the sidebar.
+The grey box in the screenshot is the disabled "Top up · coming soon" button. The wallet UI is in place but there is no purchase path. This wires it end-to-end.
 
-2. **The credit wallet is not in Settings yet.**
-   - The database layer exists, but `src/routes/_authenticated/_professional/dashboard_.settings.tsx` currently has no credits / usage / top-up UI.
-   - So right now there is **no visible wallet surface** in settings.
+## What you'll see after this ships
 
-3. **Brutal truth:** this is not world-class right now.
-   - It is a **trust-breaking UI regression**: even if the route/data permissions still hold, showing Pro-only navigation to Verified members is sloppy and confusing.
-   - The wallet work is also only half-done until the Settings surface exists.
+In Settings → AI credits, each of the 3 packs (Small / Medium / Large) gets its own **Buy** button next to the price. Clicking opens the embedded Stripe checkout (same pattern as plan upgrades), charges the saved card, and on `checkout.session.completed` the webhook credits the wallet and writes a `topup` row to `credit_transactions`. The panel auto-refreshes and the new balance + transaction appear.
 
-## Plan
+## Steps
 
-### 1. Fix the tier leak at the source
-- Update `/dashboard/leads` to read the real tier via `useTrainerTier()` and pass it into `DashboardShell`.
-- Remove the dangerous fallback behavior that silently promotes trainer pages to Pro nav.
-- Make trainer-shell usage explicit so a missing `tier` cannot quietly render the wrong nav again.
+**1. Stripe products (one-time, GBP)**
+Create 3 one-time products in the test environment (auto-synced to live on publish) via `payments--batch_create_product`:
+- `credits_small` — £10 → 200 credits
+- `credits_medium` — £25 → 600 credits
+- `credits_large` — £50 → 1,500 credits
 
-### 2. Harden the shell so this cannot recur
-- Refactor `DashboardShell` so trainer pages do **not** default to `"pro"`.
-- Use a safe trainer-tier resolution pattern:
-  - either require `tier` for every trainer page,
-  - or have the shell derive it internally from route context for trainer role.
-- Audit the trainer routes and align them to one consistent pattern.
+Tax code `txcd_10000000` (general digital goods). No `recurring_interval`. `quantity_min=1, quantity_max=1`.
 
-### 3. Put the credit wallet inside Settings
-- Add an **AI Credits & Usage** section to `src/routes/_authenticated/_professional/dashboard_.settings.tsx`.
-- Include:
-  - current balance
-  - monthly refill amount
-  - recent credit transactions
-  - top-up pack CTA area
-- Keep it **inside the existing Settings page**, not as a detached page.
+**2. Catalog entry** (`src/lib/billing.ts`)
+Add a `CREDIT_PACKS` map: `{ small: { priceId: "credits_small", credits: 200, amountGbp: 10 }, medium: {...}, large: {...} }` plus a `creditPackForPriceId()` helper.
 
-### 4. Verify against the live preview before claiming fixed
-- Re-open `/dashboard/leads` as a Verified account.
-- Confirm the sidebar only shows the Verified nav set.
-- Open `/dashboard/settings` and confirm the wallet section is present.
-- Capture screenshots of both states after the fix.
+**3. New server fn** (`src/lib/credits/credits.functions.ts`)
+Add `createCreditTopupCheckout` — `requireSupabaseAuth`, input `{ pack: "small"|"medium"|"large", environment }`, mirrors `createCheckoutSession` but `mode: "payment"`, `managed_payments: { enabled: true }`, metadata `{ reps_user_id, kind: "credit_topup", pack, credits }`. Returns `{ clientSecret }`.
 
-## Technical notes
+**4. Webhook handler** (`src/routes/api/public/payments/webhook.ts`)
+In the `checkout.session.completed` case, branch on `metadata.kind === "credit_topup"`: read `credits` + `reps_user_id` from metadata, call a new SECURITY DEFINER RPC `grant_credit_topup(p_user_id, p_credits, p_stripe_session_id)` that:
+- inserts/updates `credit_wallets.balance += credits` (respect `refill_ceiling` only for refills, not top-ups — top-ups can exceed ceiling)
+- inserts a `credit_transactions` row `{ action: "topup", delta: +credits, balance_after, ref: session.id }`
+- idempotent via unique index on `(action, ref)` so webhook retries are safe
 
-- Root cause file: `src/routes/_authenticated/_professional/dashboard_.leads.tsx`
-- Bad default file: `src/components/dashboard/DashboardShell.tsx`
-- Wallet UI target: `src/routes/_authenticated/_professional/dashboard_.settings.tsx`
-- Expected Verified nav after fix:
-```text
-Dashboard
-Leads
-Public Profile
-Shop-front
-Verification
-Education & CPD
-Settings
-```
+Migration adds the RPC + unique index.
 
-## Deliverables
+**5. Wire buttons** (`src/components/dashboard/CreditsPanel.tsx`)
+Replace the disabled header button + the static `<ul>` of packs with 3 rows, each `Small / Medium / Large` showing price + credits + a `Buy` button. Clicking opens a Stripe embedded checkout dialog (reuse the existing checkout dialog component used by plan upgrades). On success → invalidate `["credits","wallet"]` and `["credits","transactions"]`.
 
-1. Verified members no longer see Pro/Studio sidebar links on `/dashboard/leads`.
-2. The shell is hardened so missing tier props do not silently render the wrong nav.
-3. The credit wallet appears inside Settings.
-4. Post-fix browser verification + screenshots.
+**6. Verification**
+- Open `/dashboard/settings` as `demo-verified@repsuk.org`, screenshot the new packs row with visible Buy buttons.
+- Click Buy on Medium → checkout opens → complete with test card → return to settings → confirm balance shows 600 and a "Top-up purchase +600" row in Recent activity.
+
+## Files touched
+- migration: `grant_credit_topup` RPC + unique idx on `credit_transactions(action, ref)`
+- `src/lib/billing.ts` — CREDIT_PACKS catalog
+- `src/lib/credits/credits.functions.ts` — `createCreditTopupCheckout`
+- `src/routes/api/public/payments/webhook.ts` — handle `kind=credit_topup`
+- `src/components/dashboard/CreditsPanel.tsx` — 3 visible Buy buttons + checkout dialog wiring
+
+No other surfaces change. Sidebar tier fix from the previous turn stays in place.
