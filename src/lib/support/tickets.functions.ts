@@ -580,3 +580,142 @@ export const createOutboundTicket = createServerFn({ method: "POST" })
 
     return { id: ticket.id, ticket_number: ticket.ticket_number };
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Search recipients (trainers, clients, recent ticket contacts) for compose
+// ─────────────────────────────────────────────────────────────────────────────
+export type RecipientHit = {
+  email: string;
+  name: string | null;
+  kind: "professional" | "client" | "contact";
+  tier?: "verified" | "pro" | "studio" | null;
+  slug?: string | null;
+};
+
+export const searchSupportRecipients = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { q: string }) =>
+    z.object({ q: z.string().trim().min(2).max(80) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<RecipientHit[]> => {
+    await assertAdmin(context);
+    const q = data.q.toLowerCase();
+    const like = `%${q.replace(/[%,]/g, "")}%`;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1) Profiles matching by full_name — covers both professionals and clients
+    const { data: nameMatches } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .ilike("full_name", like)
+      .limit(20);
+
+    const idsFromName = (nameMatches ?? []).map((r: any) => r.id);
+
+    // 2) Resolve emails from auth.users for those ids
+    const { data: usersByName } = idsFromName.length
+      ? await supabaseAdmin
+          .schema("auth" as never)
+          .from("users")
+          .select("id, email")
+          .in("id", idsFromName)
+      : { data: [] as any[] };
+
+    // 3) Direct email match from auth.users
+    const { data: usersByEmail } = await supabaseAdmin
+      .schema("auth" as never)
+      .from("users")
+      .select("id, email")
+      .ilike("email", like)
+      .limit(20);
+
+    const allUserIds = Array.from(
+      new Set([
+        ...((usersByName ?? []) as any[]).map((u) => u.id),
+        ...((usersByEmail ?? []) as any[]).map((u) => u.id),
+      ]),
+    );
+
+    // 4) Resolve names + flags
+    const [profilesRes, prosRes, clientsRes, subsRes] = allUserIds.length
+      ? await Promise.all([
+          supabaseAdmin.from("profiles").select("id, full_name").in("id", allUserIds),
+          supabaseAdmin.from("professionals").select("id, slug").in("id", allUserIds),
+          supabaseAdmin.from("clients").select("id").in("id", allUserIds),
+          supabaseAdmin
+            .from("subscriptions")
+            .select("user_id, tier, status")
+            .in("user_id", allUserIds)
+            .in("status", ["active", "trialing", "past_due"]),
+        ])
+      : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
+
+    const nameById = new Map<string, string>(
+      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name]),
+    );
+    const proById = new Map<string, string | null>(
+      ((prosRes.data ?? []) as any[]).map((r) => [r.id, r.slug]),
+    );
+    const clientIds = new Set<string>(((clientsRes.data ?? []) as any[]).map((r) => r.id));
+    const tierById = new Map<string, "verified" | "pro" | "studio">(
+      ((subsRes.data ?? []) as any[])
+        .filter((s) => ["verified", "pro", "studio"].includes(s.tier))
+        .map((s) => [s.user_id, s.tier as "verified" | "pro" | "studio"]),
+    );
+    const emailById = new Map<string, string>(
+      [
+        ...((usersByName ?? []) as any[]),
+        ...((usersByEmail ?? []) as any[]),
+      ].map((u) => [u.id, u.email]),
+    );
+
+    const accountHits: RecipientHit[] = allUserIds
+      .map((id) => {
+        const email = emailById.get(id);
+        if (!email) return null;
+        const isPro = proById.has(id);
+        const isClient = clientIds.has(id);
+        if (!isPro && !isClient) return null;
+        return {
+          email,
+          name: nameById.get(id) ?? null,
+          kind: isPro ? ("professional" as const) : ("client" as const),
+          tier: isPro ? tierById.get(id) ?? null : null,
+          slug: isPro ? proById.get(id) ?? null : null,
+        };
+      })
+      .filter(Boolean) as RecipientHit[];
+
+    // 5) Recent ticket contacts (covers people without a REPs account)
+    const ninetyDays = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: contactRows } = await context.supabase
+      .from("support_tickets")
+      .select("requester_email, requester_name, created_at")
+      .or(`requester_email.ilike.${like},requester_name.ilike.${like}`)
+      .gte("created_at", ninetyDays)
+      .order("created_at", { ascending: false })
+      .limit(40);
+
+    const seenEmails = new Set(accountHits.map((h) => h.email.toLowerCase()));
+    const contactHits: RecipientHit[] = [];
+    for (const r of (contactRows ?? []) as any[]) {
+      const email = (r.requester_email ?? "").toLowerCase();
+      if (!email || seenEmails.has(email)) continue;
+      seenEmails.add(email);
+      contactHits.push({
+        email: r.requester_email,
+        name: r.requester_name ?? null,
+        kind: "contact",
+      });
+    }
+
+    // Professionals first, then clients, then contacts
+    const ordered = [
+      ...accountHits.filter((h) => h.kind === "professional"),
+      ...accountHits.filter((h) => h.kind === "client"),
+      ...contactHits,
+    ];
+    return ordered.slice(0, 8);
+  });
+
