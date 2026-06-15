@@ -62,13 +62,15 @@ export function RecipientPicker({
   React.useEffect(() => setCursor(0), [debounced]);
 
   function pick(hit: RecipientHit) {
-    onChange({ email: hit.email, name: hit.name ?? undefined, picked: hit });
+    setPicked(hit);
+    onChange({ email: hit.email, name: hit.name ?? undefined });
     setQuery(hit.email);
     setOpen(false);
   }
 
   function clear() {
-    onChange({ email: "", name: undefined, picked: null });
+    setPicked(null);
+    onChange({ email: "", name: undefined });
     setQuery("");
     setOpen(false);
     inputRef.current?.focus();
