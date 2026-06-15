@@ -11,8 +11,10 @@ export interface TemplateEntry {
 
 import { template as clientInvite } from './client-invite'
 import { template as enquiryNotification } from './enquiry-notification'
+import { template as proposalSent } from './proposal-sent'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'client-invite': clientInvite,
   'enquiry-notification': enquiryNotification,
+  'proposal-sent': proposalSent,
 }

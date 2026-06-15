@@ -4,6 +4,82 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+const CADENCE_LABEL_FOR_EMAIL: Record<string, string> = {
+  one_off: "One-off",
+  weekly: "Weekly",
+  monthly: "Monthly",
+  package: "Package",
+};
+
+function formatPriceGBP(pence: number): string {
+  const pounds = pence / 100;
+  const hasFraction = pence % 100 !== 0;
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    minimumFractionDigits: hasFraction ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(pounds);
+}
+
+async function sendProposalEmail(opts: {
+  proposalId: string;
+  enquiryId: string;
+  professionalId: string;
+  body: { title: string; summary?: string; price_pence: number; cadence: string; sessions?: number; start_date?: string; notes?: string };
+}) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: enq }, { data: prof }, { data: authUser }] = await Promise.all([
+      supabaseAdmin
+        .from("enquiries")
+        .select("sender_email, sender_name")
+        .eq("id", opts.enquiryId)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", opts.professionalId)
+        .maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(opts.professionalId),
+    ]);
+    if (!enq?.sender_email) return;
+    const proName = prof?.full_name ?? "Your REPs Pro";
+    const clientFirstName = (enq.sender_name ?? "").split(" ")[0] || "there";
+    const proEmail = authUser?.user?.email ?? undefined;
+    const cadenceLabel = CADENCE_LABEL_FOR_EMAIL[opts.body.cadence] ?? opts.body.cadence;
+    const priceLabel =
+      opts.body.cadence === "weekly"
+        ? `${formatPriceGBP(opts.body.price_pence)} / week`
+        : opts.body.cadence === "monthly"
+          ? `${formatPriceGBP(opts.body.price_pence)} / month`
+          : opts.body.cadence === "package"
+            ? `${formatPriceGBP(opts.body.price_pence)} total`
+            : `${formatPriceGBP(opts.body.price_pence)} / session`;
+    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+    await sendTransactionalEmailServer({
+      templateName: "proposal-sent",
+      recipientEmail: enq.sender_email,
+      idempotencyKey: `proposal-${opts.proposalId}`,
+      replyTo: proEmail,
+      templateData: {
+        clientFirstName,
+        proName,
+        title: opts.body.title,
+        summary: opts.body.summary,
+        priceLabel,
+        cadenceLabel,
+        sessions: opts.body.sessions ?? null,
+        startDate: opts.body.start_date ?? null,
+        notes: opts.body.notes ?? null,
+        proEmail,
+      },
+    });
+  } catch (e) {
+    console.error("[proposals] proposal-sent email failed:", e);
+  }
+}
+
 export const PROPOSAL_STATUSES = ["draft", "sent", "accepted", "declined", "withdrawn"] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
@@ -148,6 +224,13 @@ export const createProposal = createServerFn({ method: "POST" })
         .eq("id", data.enquiryId)
         .eq("professional_id", userId)
         .in("stage", ["new", "contacted", "call_booked"]);
+      // Email the lead with the proposal
+      await sendProposalEmail({
+        proposalId: row.id,
+        enquiryId: data.enquiryId,
+        professionalId: userId,
+        body,
+      });
     }
     return { id: row.id };
   });
@@ -208,7 +291,7 @@ export const updateProposal = createServerFn({ method: "POST" })
         created_by: userId,
       });
 
-      // Stage nudges
+      // Stage nudges + email on first send
       if (data.status === "sent") {
         await supabaseAdmin
           .from("enquiries")
@@ -216,6 +299,13 @@ export const updateProposal = createServerFn({ method: "POST" })
           .eq("id", existing.enquiry_id)
           .eq("professional_id", userId)
           .in("stage", ["new", "contacted", "call_booked"]);
+        const emailBody = (patch.body ?? body) as ProposalBody;
+        await sendProposalEmail({
+          proposalId: existing.id,
+          enquiryId: existing.enquiry_id,
+          professionalId: userId,
+          body: emailBody,
+        });
       }
     }
 
