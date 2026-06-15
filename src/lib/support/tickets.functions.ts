@@ -152,44 +152,45 @@ export const listSupportNotifications = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context);
 
-    const [ticketsRes, messagesRes] = await Promise.all([
-      context.supabase
-        .from("support_tickets")
-        .select("id, ticket_number, subject, requester_name, requester_email, created_at")
-        .order("created_at", { ascending: false })
-        .limit(15),
-      context.supabase
-        .from("support_messages")
-        .select(
-          "id, ticket_id, from_name, from_email, body_text, created_at, support_tickets!inner(ticket_number, subject)",
-        )
-        .eq("direction", "inbound")
-        .order("created_at", { ascending: false })
-        .limit(15),
-    ]);
+    // Single source of truth: tickets currently flagged unread and in an
+    // actionable state. The same `is_unread` flag drives the orange dot in
+    // the queue, so opening a ticket clears it from the bell automatically.
+    const { data, error } = await context.supabase
+      .from("support_tickets")
+      .select(
+        "id, ticket_number, subject, requester_name, requester_email, last_message_at, created_at",
+      )
+      .eq("is_unread", true)
+      .in("status", ["open", "pending"])
+      .order("last_message_at", { ascending: false })
+      .limit(20);
 
-    if (ticketsRes.error) throw new Error(ticketsRes.error.message);
-    if (messagesRes.error) throw new Error(messagesRes.error.message);
+    if (error) throw new Error(error.message);
 
     return {
-      tickets: (ticketsRes.data ?? []) as Array<{
+      tickets: (data ?? []) as Array<{
         id: string;
         ticket_number: string;
         subject: string;
         requester_name: string | null;
         requester_email: string;
+        last_message_at: string | null;
         created_at: string;
-      }>,
-      messages: (messagesRes.data ?? []) as Array<{
-        id: string;
-        ticket_id: string;
-        from_name: string | null;
-        from_email: string | null;
-        body_text: string | null;
-        created_at: string;
-        support_tickets: { ticket_number: string; subject: string } | null;
       }>,
     };
+  });
+
+// Mark every currently-unread ticket as read (bell "Mark all read" action).
+export const markAllSupportRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ is_unread: false } as never)
+      .eq("is_unread", true);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 
