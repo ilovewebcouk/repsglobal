@@ -526,7 +526,10 @@ function AdminSupport() {
             </tbody>
           </table>
         </div>
+        </>
+        )}
       </PPanel>
+
 
       <TicketDrawer
         ticketId={openId}
