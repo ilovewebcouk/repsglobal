@@ -366,6 +366,27 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await handleIdentityEvent(stripe, event, env);
               break;
             }
+            case "account.updated": {
+              await handleConnectAccountUpdated(event.data.object as Stripe.Account);
+              break;
+            }
+            case "checkout.session.completed": {
+              // Connect Checkout Sessions arrive with a Stripe-Account header.
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectCheckoutCompleted(event.data.object as Stripe.Checkout.Session, acctHeader);
+              break;
+            }
+            case "charge.refunded": {
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectChargeRefunded(event.data.object as Stripe.Charge);
+              break;
+            }
+            case "charge.dispute.created":
+            case "charge.dispute.closed": {
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectDispute(event.data.object as Stripe.Dispute, event.type);
+              break;
+            }
             default:
               break;
           }
