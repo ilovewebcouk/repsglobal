@@ -6,14 +6,19 @@ import { toast } from "sonner";
 import {
   Inbox,
   MailOpen,
+  Mail,
+  Phone,
   Reply,
   Archive,
   Clock,
   Search,
   ShieldAlert,
+  Sparkles,
+  ArrowRight,
   X,
   Loader2,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
