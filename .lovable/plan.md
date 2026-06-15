@@ -1,49 +1,43 @@
-# Slice B1 + B2 (final — with two added fixes)
+# New Ticket — search by trainer name or email
 
-## B1 — Inbound auto-reply gap
-In `src/routes/api/public/mailgun/inbound.ts`, after a NEW ticket is created (not on follow-ups in an existing thread):
-- Skip if sender is in `suppressed_emails`.
-- Send the existing `contact-autoresponse` template via Mailgun, subject prefixed `[TKT-####] <original subject>`, `In-Reply-To`/`References` set to the inbound `Message-Id`.
-- Insert a `support_messages` row with `direction = outbound`, `is_auto = true`, `thread_key = <auto-reply Message-Id>`.
-- Do NOT change ticket status (stays `open` / `new`).
+Today the "To" field is a plain email input. We'll turn it into a combobox you can type into freely: type an email and it still works, but type a name and it shows matching trainers/clients you can pick — auto-filling email + name.
 
-## B2 — Queue + drawer polish (10 items already agreed)
-1. Empty-state: replace inbox-address legend with clean copy.
-2. Status pill: always render a sensible label (Resolved tickets never show raw `open`/`pending`).
-3. Radius: Status pill → `rounded-[6px]`; Priority stays the only `rounded-full`.
-4. Hide Inbox column when an inbox filter is active.
-5. SLA cell colors: rose if overdue, amber if <1h left, white/65 otherwise.
-6. Unread row: bold From-name + `bg-white/[0.015]` tint (in addition to orange dot).
-7. Footer `?` trigger → keyboard cheatsheet (`c` / `j` / `k` / `e` / `⌘+Enter`).
-8. `title=` ISO timestamp on Last activity.
-9. "Resolved today" → server-side `resolved_at >= startOfToday` filter (not client cap).
-10. Auto-reply messages render with small `Auto-reply` chip in the thread.
+## UX
 
-## NEW — folded in this turn
+- Replace the current "To (email)" input with a combobox (shadcn `Command` inside a `Popover`, same dark surface as the dialog).
+- Single field labelled **"To"**, placeholder: *"Search trainer or type email…"*.
+- Typing:
+  - Looks like an email (`/.+@.+/`) → no dropdown, accept as-is.
+  - Otherwise → after 200 ms debounce, fetch matches and show a dropdown.
+- Each result row: avatar initial · **Full name** · email in muted text · small tier chip (Verified / Pro / Studio) if a professional.
+- Picking a result fills `to` (email) **and** `name` (full name); both become read-only chips with an × to clear back to free typing.
+- Empty state when no matches: *"No match — press Enter to use 'foo' as a free email."* (only shown once the typed text looks like an email).
+- Keep ⌘+Enter to send, keep Name field below as a fallback for when the recipient isn't on REPs yet.
 
-### B2.11 — Kill the stuck orange focus ring on rows
-Each `<tr>` currently picks up the global focus-visible ring (orange 1px border) on click, and because the row is focusable it keeps focus after the pointer leaves — that's the orange box that "stays there."
-Fix in `src/routes/admin_.support.tsx` only:
-- Remove `tabIndex` / focus styling from `<tr>` (selection lives on the row checkbox and the View button — both already focusable).
-- Add `focus:outline-none focus-visible:outline-none focus-visible:ring-0` to the row, and keep hover state (`hover:bg-white/[0.02]`) as the only visual affordance.
-- Re-test: click row → open drawer → close → ring must be gone. Tab order through page still reaches checkbox + View.
+## Data — new server function
 
-### B2.12 — Post-reply auto-flow (Zendesk-style)
-In the drawer's send-reply mutation (`src/routes/admin_.support.tsx`):
-- After a successful outbound `support_messages` insert:
-  - If status is `open` or `new` → update ticket `status = pending` (waiting on customer).
-  - If the "Mark as resolved after sending" checkbox is ticked → `status = resolved` instead (existing behavior, kept).
-- Invalidate the tickets query so the row pill flips immediately.
-- Close the drawer automatically (same handler used by the status-change auto-close already shipped).
-- Toast: `"Reply sent · ticket set to Pending"` (or `Resolved`).
-- Does NOT fire for internal notes — only customer-facing replies.
+`searchSupportRecipients` in `src/lib/support/tickets.functions.ts`:
+- Admin-only (`assertAdmin`), `requireSupabaseAuth`.
+- Input: `{ q: string }` (min 2 chars).
+- Source:
+  1. `professionals` joined to `profiles` (name, slug, tier) + `auth.users.email` via `supabaseAdmin` (service role, inside handler).
+  2. `clients` joined to `profiles` + `auth.users.email`.
+  3. Recent `support_tickets.requester_email / requester_name` (distinct, last 90 days) — covers people who emailed in but aren't users.
+- Filter: case-insensitive match on full_name OR email (ilike `%q%`).
+- Return shape: `Array<{ email, name, kind: "professional" | "client" | "contact", tier?: "verified" | "pro" | "studio", slug?: string }>`, capped at 8, professionals first, then clients, then contacts.
+- No fuzzy/typo tolerance for v1 — just ilike. Good enough for ≤24k pros.
 
 ## Files touched
-- `src/routes/api/public/mailgun/inbound.ts` (B1)
-- `src/routes/admin_.support.tsx` (all B2 incl. .11 + .12)
-- No DB migration, no new server function.
 
-## Out of scope (unchanged)
-Saved views editor, customer card, SLA-with-pause, AI triage, full keyboard palette.
+- `src/lib/support/tickets.functions.ts` — add `searchSupportRecipients` (uses `supabaseAdmin` loaded inside the handler).
+- `src/components/admin/support/NewTicketDialog.tsx` — swap the `Input` for a `RecipientPicker` combobox; reuses existing `name` state for the auto-filled name.
+- (New, tiny) `src/components/admin/support/RecipientPicker.tsx` — debounced combobox component; isolated so we can reuse later in compose-on-ticket flows.
+
+## Out of scope
+
+- Multi-recipient (CC/BCC) — single recipient only, same as today.
+- Creating a profile from the picker — if no match, you still just type the email + name manually.
+- Searching by phone or company.
+- Saved recent recipients list.
 
 Say **"go"** to ship.
