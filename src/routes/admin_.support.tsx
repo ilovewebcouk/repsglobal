@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote } from "lucide-react";
+import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -35,7 +35,7 @@ import {
   addInternalNote,
   getAttachmentUrl,
 } from "@/lib/support/tickets.functions";
-import { draftSupportReply } from "@/lib/support/ai-draft.functions";
+import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
 
 export const Route = createFileRoute("/admin_/support")({
   ssr: false,
