@@ -522,8 +522,19 @@ function TicketDrawer({
                 variant="outline"
                 className="border-reps-border text-white/65 text-[11px] capitalize"
               >
-                {ticket.source}
+                {ticket.source?.replace("_", " ")}
               </Badge>
+              {ticket.inbox ? (
+                <Badge
+                  variant="outline"
+                  className={`border-transparent text-[11px] capitalize ${
+                    INBOX_META[ticket.inbox as Exclude<InboxFilter, "all">]?.chip ?? ""
+                  }`}
+                >
+                  <Inbox className="h-3 w-3 mr-1" />
+                  {INBOX_META[ticket.inbox as Exclude<InboxFilter, "all">]?.label ?? ticket.inbox}
+                </Badge>
+              ) : null}
             </div>
           ) : null}
         </SheetHeader>
