@@ -1010,6 +1010,66 @@ function TicketDrawer({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {priorTickets.length > 0 ? (
+            <div className="rounded-[12px] border border-reps-border bg-white/[0.02]">
+              <button
+                type="button"
+                onClick={() => setPriorOpen((v) => !v)}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[12px] font-semibold text-white/75 hover:text-white"
+                aria-expanded={priorOpen}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-white/45" />
+                  Previous tickets from this requester
+                  <span className="ml-1 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
+                    {priorTickets.length}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-white/45 transition-transform ${priorOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {priorOpen ? (
+                <ul className="divide-y divide-reps-border/60 border-t border-reps-border/60">
+                  {priorTickets.map((p: any) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => onOpenTicket?.(p.id)}
+                        className="flex w-full items-start justify-between gap-3 px-3 py-2 text-left hover:bg-white/[0.03]"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-mono text-white/45">
+                            {p.ticket_number}
+                          </div>
+                          <div className="truncate text-[12.5px] text-white/85">
+                            {p.subject}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <span
+                            className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
+                              p.status === "resolved" || p.status === "closed"
+                                ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                                : p.status === "pending"
+                                  ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                                  : "border border-reps-orange/30 bg-reps-orange/15 text-reps-orange"
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <div className="mt-0.5 text-[10.5px] text-white/45">
+                            {timeAgo(p.last_message_at)}
+                          </div>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
           {q.isLoading ? (
             <div className="text-white/45 text-[13px]">Loading conversation…</div>
           ) : messages.length === 0 ? (
@@ -1018,6 +1078,7 @@ function TicketDrawer({
             messages.map((m: any) => <MessageBubble key={m.id} m={m} />)
           )}
         </div>
+
 
         <div className="border-t border-reps-border bg-black/20 px-6 py-4">
           <div className="flex items-center gap-2 mb-2">
