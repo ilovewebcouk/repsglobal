@@ -53,6 +53,7 @@ export const Route = createFileRoute("/admin_/support")({
 });
 
 type StatusFilter = "open" | "pending" | "resolved" | "all";
+type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
 const PRI: Record<Priority, string> = {
@@ -60,6 +61,13 @@ const PRI: Record<Priority, string> = {
   high: "bg-reps-orange-soft text-reps-orange",
   normal: "bg-white/10 text-white/70",
   low: "bg-white/5 text-white/55",
+};
+
+const INBOX_META: Record<Exclude<InboxFilter, "all">, { label: string; email: string; chip: string }> = {
+  support: { label: "Support", email: "support@repsuk.org", chip: "bg-white/10 text-white/75" },
+  pros: { label: "Pros", email: "pros@repsuk.org", chip: "bg-reps-orange-soft text-reps-orange" },
+  partners: { label: "Partners", email: "partners@repsuk.org", chip: "bg-sky-500/15 text-sky-300" },
+  press: { label: "Press", email: "press@repsuk.org", chip: "bg-violet-500/15 text-violet-300" },
 };
 
 function timeAgo(iso?: string | null) {
