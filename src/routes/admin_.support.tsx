@@ -3,9 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import { Clock, Download, FileText, Inbox, Mail, Megaphone, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
 import { ComposeDialog } from "@/components/admin/support/ComposeDialog";
 import { DictateButton } from "@/components/admin/support/DictateButton";
+import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
+import { CampaignsTab } from "@/components/admin/support/CampaignsTab";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -38,6 +40,19 @@ import {
   getAttachmentUrl,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
+import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/admin_/support")({
   ssr: false,
@@ -97,10 +112,18 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
+  const [view, setView] = useState<"tickets" | "campaigns">("tickets");
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const bulkFn = useServerFn(bulkUpdateTickets);
+  const undoFn = useServerFn(undoBulkUpdateTickets);
+  const [bulkPending, setBulkPending] = useState(false);
   const qc = useQueryClient();
   const listFn = useServerFn(listTickets);
   const channelName = useRef(
@@ -142,6 +165,94 @@ function AdminSupport() {
   }, [allCountQuery.data]);
 
   const tickets = ticketsQuery.data ?? [];
+
+  // Clear selection when filters change (selections refer to the visible page)
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [tab, inbox, view]);
+
+  function toggleOne(id: string, ev?: React.MouseEvent) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      // Shift-click range select
+      if (ev?.shiftKey && lastClickedId) {
+        const ids = tickets.map((t: any) => t.id);
+        const a = ids.indexOf(lastClickedId);
+        const b = ids.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          const [lo, hi] = a < b ? [a, b] : [b, a];
+          const shouldSelect = !prev.has(id);
+          for (let i = lo; i <= hi; i++) {
+            if (shouldSelect) next.add(ids[i]);
+            else next.delete(ids[i]);
+          }
+          setLastClickedId(id);
+          return next;
+        }
+      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      setLastClickedId(id);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    setSelectedIds((prev) => {
+      const visibleIds = tickets.map((t: any) => t.id);
+      const allSelected = visibleIds.length > 0 && visibleIds.every((id: string) => prev.has(id));
+      if (allSelected) return new Set();
+      return new Set([...prev, ...visibleIds]);
+    });
+  }
+
+  async function runBulk(
+    action: "resolve" | "reopen" | "pending" | "delete",
+    extraPayload?: Record<string, unknown>,
+  ) {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (action !== "delete" && ids.length > 25) {
+      const ok = window.confirm(`Apply "${action}" to ${ids.length} tickets?`);
+      if (!ok) return;
+    }
+    setBulkPending(true);
+    try {
+      const res = await bulkFn({
+        data: { ids, action, payload: extraPayload as never },
+      });
+      setSelectedIds(new Set());
+      void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+      if (action === "delete") {
+        toast.success(`Deleted ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      } else {
+        const previousStates = res.previousStates;
+        toast.success(
+          `${labelFor(action)} ${res.updated} ticket${res.updated === 1 ? "" : "s"}`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await undoFn({ data: { previousStates } });
+                  void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+                  toast.success("Undone");
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Undo failed");
+                }
+              },
+            },
+            duration: 8000,
+          },
+        );
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Bulk action failed");
+    } finally {
+      setBulkPending(false);
+    }
+  }
+
 
   useEffect(() => {
     const refreshSupport = () => {
