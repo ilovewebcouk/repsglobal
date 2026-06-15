@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RecipientPicker } from "@/components/admin/support/RecipientPicker";
 import { createOutboundTicket } from "@/lib/support/tickets.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
