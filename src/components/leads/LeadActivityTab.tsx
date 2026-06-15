@@ -69,6 +69,7 @@ function ActivityRow({ item }: { item: LeadActivityDTO }) {
         </div>
       </div>
     );
+  }
   return (
     <div className="flex gap-3">
       <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-reps-panel-soft text-white/60">
