@@ -218,6 +218,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
+      { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },
