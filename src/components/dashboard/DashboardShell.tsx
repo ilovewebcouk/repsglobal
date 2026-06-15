@@ -408,6 +408,7 @@ export type DashboardSearch = {
 };
 
 function TopBar({
+  role,
   title,
   subtitle,
   actions,
@@ -423,6 +424,7 @@ function TopBar({
   searchPlaceholder: string;
   search?: DashboardSearch;
 }) {
+
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
     if (!search) return;
