@@ -526,3 +526,60 @@ export const addLeadNote = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/* -------------------- Send sign-up link to a lead -------------------- */
+
+const SendSignupLinkSchema = z.object({ enquiryId: z.string().uuid() });
+
+export const sendLeadSignupLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => SendSignupLinkSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ acceptUrl: string; expiresAt: string }> => {
+    const userId = context.userId;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: enq, error: enqErr } = await supabaseAdmin
+      .from("enquiries")
+      .select("id, professional_id, sender_user_id, sender_email, sender_name")
+      .eq("id", data.enquiryId)
+      .eq("professional_id", userId)
+      .maybeSingle();
+    if (enqErr) throw enqErr;
+    if (!enq) throw new Error("Lead not found");
+    if (enq.sender_user_id) throw new Error("Lead is already linked to a REPs account");
+    if (!enq.sender_email) throw new Error("No email on file for this lead");
+
+    const token =
+      crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+
+    const { data: invite, error: invErr } = await supabaseAdmin
+      .from("client_invites")
+      .insert({
+        professional_id: userId,
+        email: enq.sender_email,
+        full_name: enq.sender_name ?? null,
+        token_hash: token,
+        status: "pending",
+      })
+      .select("id, expires_at")
+      .single();
+    if (invErr) throw new Error(invErr.message);
+
+    await supabaseAdmin.from("lead_activity").insert({
+      enquiry_id: data.enquiryId,
+      professional_id: userId,
+      type: "invite_sent",
+      payload: {
+        email: enq.sender_email,
+        invite_id: invite.id,
+        expires_at: invite.expires_at,
+      },
+      created_by: userId,
+    });
+
+    const origin = process.env.PUBLIC_SITE_URL ?? "https://repsglobal.lovable.app";
+    return {
+      acceptUrl: `${origin}/accept-invite?token=${token}`,
+      expiresAt: invite.expires_at,
+    };
+  });
