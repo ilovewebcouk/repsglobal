@@ -43,6 +43,7 @@ export type LeadDTO = {
   message: string;
   source: string;
   stage: LeadStage;
+  status: "new" | "read" | "replied" | "archived" | "spam";
   priority: LeadPriority | null;
   estimated_value_pence: number | null;
   follow_up_at: string | null;
@@ -51,6 +52,7 @@ export type LeadDTO = {
   ai_summary: string | null;
   ai_recommended_action: string | null;
   ai_predicted_pct: number | null;
+  ai_reasons: string[];
   ai_updated_at: string | null;
   created_at: string;
   read_at: string | null;
