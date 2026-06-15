@@ -21,7 +21,6 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { DictateButton } from "@/components/admin/support/DictateButton";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
 import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
 import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
