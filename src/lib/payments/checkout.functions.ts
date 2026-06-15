@@ -59,8 +59,8 @@ export const createBookingCheckoutSession = createServerFn({ method: "POST" })
         reps_service_id: service.id,
         reps_client_user_id: data.clientUserId ?? "",
       },
-      success_url: `${origin}/c/$slug?booking=success&session={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/c/$slug?booking=canceled`,
+      success_url: `${origin}/c/${proSlug}?booking=success&session={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/c/${proSlug}?booking=canceled`,
     }, { stripeAccount: acct.stripe_account_id });
 
     await supabaseAdmin.from("bookings").insert({
