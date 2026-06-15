@@ -101,6 +101,7 @@ export type AdminActive =
   | "CPD"
   | "Migration"
   | "Support"
+  | "Campaigns"
   | "Settings";
 
 export type DashboardActive = TrainerActive | AdminActive;
