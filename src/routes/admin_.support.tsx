@@ -881,9 +881,12 @@ function TicketDrawer({
 
   const update = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: ticketId!, ...patch } }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
+      if (variables.status && variables.status !== "open") {
+        onClose();
+      }
     },
     onError: (e: any) => toast.error(e?.message ?? "Update failed"),
   });
