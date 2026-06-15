@@ -1,55 +1,52 @@
-## Slice 6 — Converted lead lands on the clients roster
+## Slice 7 — "Send sign-up link" for leads without a REPs account
 
-Right now `convert_lead_to_client` (Slice 5) creates a `clients` row and a `coach_client` link, but the existing `/dashboard/clients` page reads from `client_roster`. So a freshly converted lead disappears from leads but never shows up in the clients list. Close that gap by upserting a roster row inside the conversion RPC, and make the "View client" link from the lead sheet jump to that row.
+After Slice 6, the convert flow refuses to run when `sender_user_id IS NULL` (anonymous enquiry) and only shows a tooltip telling the Pro to "send them a sign-up link first" — but there's no button to actually do that. This slice wires the missing button on the lead detail sheet, reusing the existing `createClientInvite` server function and `client_invites` table.
 
-### Migration
-Update `public.convert_lead_to_client(_enquiry_id uuid)` to additionally upsert into `client_roster`:
+### Server (`src/lib/leads/leads.functions.ts`)
 
-```
-INSERT INTO public.client_roster (
-  professional_id, email, full_name,
-  status, client_id, auth_user_id,
-  confirmed_at, activated_at
-)
-VALUES (
-  v_uid,
-  lower(v_enquiry.sender_email),
-  v_enquiry.sender_name,
-  'active'::roster_status,
-  v_enquiry.sender_user_id,
-  v_enquiry.sender_user_id,
-  now(),
-  now()
-)
-ON CONFLICT (professional_id, lower(email))
-DO UPDATE SET
-  status        = 'active'::roster_status,
-  client_id     = EXCLUDED.client_id,
-  auth_user_id  = EXCLUDED.auth_user_id,
-  full_name     = COALESCE(client_roster.full_name, EXCLUDED.full_name),
-  activated_at  = COALESCE(client_roster.activated_at, now()),
-  archived_at   = NULL,
-  updated_at    = now()
-RETURNING id INTO v_roster_id;
-```
+Add `sendLeadSignupLink` server function (POST, `requireSupabaseAuth`):
 
-Function still returns the client uuid (so the existing TS types regen safely). No new GRANTs needed (RPC already executable; the function runs as `postgres` under `SECURITY DEFINER`, so the roster RLS tier check is bypassed — intentional, conversion is gated by the enquiry-owner check earlier in the function).
+- Input: `{ enquiryId: string }`
+- Load enquiry, assert `professional_id = auth.uid()`, assert `sender_user_id IS NULL` (no-op if already linked), assert `sender_email IS NOT NULL`.
+- Call the existing invite path inline: insert into `client_invites` with `professional_id`, `email = enquiry.sender_email`, `full_name = enquiry.sender_name`, random `token_hash`, `status = 'pending'`. (Re-implement the 6-line insert here instead of importing `createClientInvite` to avoid a server-fn-from-server-fn call and keep the activity log atomic.)
+- Insert into `lead_activity`: `type = 'invite_sent'`, payload `{ email, invite_id, expires_at }`.
+- Return `{ acceptUrl, expiresAt }` (build `acceptUrl` from `PUBLIC_SITE_URL` like `createClientInvite` does).
+- Also extend `LeadDTO` / `LeadQueryResult` with `last_invite_sent_at: string | null` derived from `client_invites` (latest pending invite where email matches `sender_email` for this pro). Use a side-query in `listLeads` keyed by `(professional_id, lower(email))` so the chip can reflect "Invite sent 2d ago" without an extra round-trip.
+
+No new migration needed (table + RLS already exist; `lead_activity` accepts free-form `type` strings already).
 
 ### UI
-- `src/components/leads/LeadDetailSheet.tsx` — the existing "Converted to client" emerald row's "View client" link currently points at `/dashboard/clients`. Keep it pointing there (the roster page is the destination) but change the label to "Open in clients" for clarity. No new route required.
-- No changes to `LeadActivityTab` (the `converted` row already renders).
-- No changes to the clients page itself — the new roster row will appear automatically because `listRoster` already powers that table.
+
+**`src/components/leads/LeadDetailSheet.tsx` (`ConvertRow`):**
+
+When `!canConvert`:
+- Replace the disabled "Convert to client" button with a two-line block:
+  - Heading: "Client needs a REPs account"
+  - If `lead.last_invite_sent_at` is null → primary button "Send sign-up link" (calls the new server fn). On success, toast "Sign-up link sent" and invalidate `["leads"]` + `["lead-activity", lead.id]`.
+  - If `lead.last_invite_sent_at` exists → muted state "Sign-up link sent {timeAgo}" + secondary ghost "Resend link" button (same mutation).
+- Keep the existing converted/canConvert branches unchanged.
+
+**`src/components/leads/LeadActivityTab.tsx`:**
+
+Add a new `invite_sent` row renderer:
+- Icon: `MailPlus` (lucide) in an orange-tinted circle to match the note row's accent.
+- Copy: "Sent sign-up link to {email}" with `{timeAgo}` underneath.
 
 ### Edge cases
-- If the lead is converted, then later the Pro archives the roster row, then re-runs conversion (only possible if someone manually un-converts — out of scope for now): the upsert flips it back to `active` and clears `archived_at`. Acceptable.
-- Existing roster row for the same email (e.g. Pro added them manually earlier): the upsert links `client_id`/`auth_user_id` and forces status to `active`. Their manual notes are preserved.
-- Anonymous enquiries (sender_user_id null) still fail with the existing friendly error before reaching the roster insert.
+
+- Anonymous enquiry with no email at all → server fn throws "No email on file"; UI shows tooltip explaining the Pro needs to capture the email manually (out of scope to add an email field here).
+- Pro spam-clicks "Resend" → server fn is idempotent enough (each call creates a fresh invite row + activity row). No throttle in this slice; we'll add a 5-min cooldown later if it becomes a problem.
+- Lead's email already belongs to an existing REPs user → the invite still sends; once they click and sign in, `accept_client_invite` links them and the next conversion attempt works. No special-case branch.
 
 ### Files
-- migration: replace `public.convert_lead_to_client` body (additive — extra upsert + roster_id local var).
-- edit `src/components/leads/LeadDetailSheet.tsx` (link label only).
+
+- edit `src/lib/leads/leads.functions.ts` (new `sendLeadSignupLink` fn + extend `LeadDTO` with `last_invite_sent_at` + extend `listLeads` query)
+- edit `src/components/leads/LeadDetailSheet.tsx` (replace disabled-button branch with send/resend UI)
+- edit `src/components/leads/LeadActivityTab.tsx` (new `invite_sent` row variant)
 
 ### Out of scope
-- Dedicated `/dashboard/clients/$clientId` detail wired to coach_client data (existing `dashboard_.clients.$slug.tsx` reads from roster slug — fine as-is).
-- Backfilling roster rows for any leads converted before this migration.
-- Surfacing "originated from lead" badge on the clients table.
+
+- Actually sending the invite email via the queue (kept consistent with `createClientInvite`, which returns the URL and lets the caller decide how to deliver it).
+- "Copy link" UI for the Pro to share the URL manually (can be added later).
+- Cooldown / throttle on resend.
+- Tracking invite *acceptance* on the lead row — when the client accepts and signs in, `sender_user_id` will be linked through a separate path (not wired in this slice).
