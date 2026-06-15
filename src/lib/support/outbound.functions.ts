@@ -175,10 +175,12 @@ async function resolveTierRecipients(
     for (const s of subs ?? []) paidUserIds.add(s.user_id);
   }
 
-  // Pull all professionals (we filter in-memory; small dataset on REPs today)
+  // Pull all professionals (we filter in-memory; small dataset on REPs today).
+  // No FK exists between professionals and profiles, so we can't embed-join —
+  // fetch full_name separately below.
   const { data: allPros, error: pErr } = await supabaseAdmin
     .from("professionals")
-    .select("id, public_email, trading_name, profiles!inner(full_name)");
+    .select("id, public_email, trading_name");
   if (pErr) throw new Error(pErr.message);
 
   let proSet: any[] = allPros ?? [];
@@ -211,6 +213,18 @@ async function resolveTierRecipients(
     proSet = proSet.filter((p: any) => !everyPaid.has(p.id));
   }
 
+  // Fetch full_name for the surviving set
+  const nameMap = new Map<string, string>();
+  if (proSet.length > 0) {
+    const { data: profs } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", proSet.map((p: any) => p.id));
+    for (const p of profs ?? []) {
+      if (p.full_name) nameMap.set(p.id, p.full_name);
+    }
+  }
+
   const needEmailIds = proSet
     .filter((p: any) => !p.public_email)
     .map((p: any) => p.id);
@@ -222,11 +236,12 @@ async function resolveTierRecipients(
       return {
         userId: p.id,
         email,
-        name: (p.profiles as any)?.full_name ?? p.trading_name ?? "",
+        name: nameMap.get(p.id) ?? p.trading_name ?? "",
       };
     })
     .filter((r) => r.email);
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Send outbound email (1-to-1 or broadcast). Logs as support ticket(s).
