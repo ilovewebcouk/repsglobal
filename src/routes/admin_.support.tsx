@@ -333,7 +333,8 @@ function AdminSupport() {
                       </button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
