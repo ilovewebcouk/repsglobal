@@ -65,12 +65,15 @@ export function NotificationsBell() {
             <p className="text-[13px] font-semibold text-white">Notifications</p>
             <p className="text-[11px] text-white/55">Support tickets and inbound emails</p>
           </div>
-          {items.length > 0 ? (
+          {visible.length > 0 ? (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-2 text-[11px] text-white/70 hover:text-white"
-              onClick={markAllRead}
+              onClick={() => {
+                void markAllRead();
+                setSnapshot([]);
+              }}
             >
               Mark all read
             </Button>
@@ -80,62 +83,51 @@ export function NotificationsBell() {
         <div className="max-h-[420px] overflow-y-auto">
           {isLoading ? (
             <div className="px-4 py-6 text-[12px] text-white/55">Loading…</div>
-          ) : items.length === 0 ? (
+          ) : visible.length === 0 ? (
             <div className="px-4 py-8 text-center text-[12px] text-white/55">
               You're all caught up.
             </div>
           ) : (
             <ul className="divide-y divide-reps-border">
-              {items.map((item) => {
-                const isUnread = new Date(item.createdAt).getTime() > lastSeen;
-                const Icon = item.kind === "ticket" ? Mail : MessageSquare;
-                return (
-                  <li key={item.key}>
-                    <Link
-                      to="/admin/support"
-                      onClick={() => setOpen(false)}
-                      className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
-                    >
-                      <div
-                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${
-                          isUnread
-                            ? "bg-reps-orange/15 text-reps-orange"
-                            : "bg-white/5 text-white/55"
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p className="truncate text-[13px] font-medium text-white">
-                            {item.title}
-                          </p>
-                          <span className="shrink-0 text-[10px] text-white/45">
-                            {timeAgo(item.createdAt)}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 truncate text-[11.5px] text-white/55">
-                          {item.preview}
+              {visible.map((item) => (
+                <li key={item.key}>
+                  <Link
+                    to="/admin/support"
+                    onClick={() => setOpen(false)}
+                    className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
+                  >
+                    <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-reps-orange/15 text-reps-orange">
+                      <Mail className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-[13px] font-medium text-white">
+                          {item.title}
                         </p>
-                        {item.ticketNumber ? (
-                          <p className="mt-0.5 text-[10px] uppercase tracking-wide text-white/40">
-                            {item.ticketNumber}
-                          </p>
-                        ) : null}
+                        <span className="shrink-0 text-[10px] text-white/45">
+                          {timeAgo(item.createdAt)}
+                        </span>
                       </div>
-                      {isUnread ? (
-                        <span
-                          aria-hidden
-                          className="mt-2 size-1.5 shrink-0 rounded-full bg-reps-orange"
-                        />
+                      <p className="mt-0.5 truncate text-[11.5px] text-white/55">
+                        {item.preview}
+                      </p>
+                      {item.ticketNumber ? (
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-white/40">
+                          {item.ticketNumber}
+                        </p>
                       ) : null}
-                    </Link>
-                  </li>
-                );
-              })}
+                    </div>
+                    <span
+                      aria-hidden
+                      className="mt-2 size-1.5 shrink-0 rounded-full bg-reps-orange"
+                    />
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </div>
+
         <Separator className="bg-reps-border" />
         <div className="px-4 py-2">
           <Link
