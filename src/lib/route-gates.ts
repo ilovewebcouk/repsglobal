@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getPrimaryRole,
   landingPathForRole,
+  userHasRole,
   type AppRole,
 } from "@/lib/auth-redirect";
 
@@ -24,10 +25,17 @@ export function requireRole(allowed: AppRole[]) {
         search: { redirect: location.href },
       });
     }
-    const role = await getPrimaryRole(data.user.id);
-    if (!role || !allowed.includes(role)) {
+    const checks = await Promise.all(
+      allowed.map(async (allowedRole) => ({
+        role: allowedRole,
+        ok: await userHasRole(data.user.id, allowedRole),
+      })),
+    );
+    const matched = checks.find((check) => check.ok)?.role ?? null;
+    if (!matched) {
+      const role = await getPrimaryRole(data.user.id);
       throw redirect({ to: landingPathForRole(role) });
     }
-    return { user: data.user, role };
+    return { user: data.user, role: matched };
   };
 }

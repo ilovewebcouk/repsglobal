@@ -370,6 +370,7 @@ function Sidebar({
   active: DashboardActive;
   member?: DashboardShellMember;
 }) {
+  const account = useAccountMenu();
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
@@ -395,6 +396,17 @@ function Sidebar({
 
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />
+        {role === "trainer" && account.isAdmin ? (
+          <Button asChild variant="outline" className="justify-between">
+            <Link to="/admin">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                Admin console
+              </span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        ) : null}
         {role === "trainer" && tier === "verified" ? (
           <Button asChild className="justify-between">
             <Link to="/pricing">
