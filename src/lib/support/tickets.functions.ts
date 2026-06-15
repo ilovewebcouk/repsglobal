@@ -35,6 +35,11 @@ export const listTickets = createServerFn({ method: "POST" })
     const nowIso = new Date().toISOString();
     if (data?.status === "snoozed") {
       q = q.not("snoozed_until", "is", null).gt("snoozed_until", nowIso);
+    } else if (data?.status === "resolved") {
+      // Server-side "Resolved today" — never silently drop older rows under the 200-row cap.
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      q = q.eq("status", "resolved").gte("resolved_at", startOfToday.toISOString());
     } else if (data?.status && data.status !== "all") {
       q = q.eq("status", data.status);
       // Active snoozed tickets are hidden from regular status tabs
