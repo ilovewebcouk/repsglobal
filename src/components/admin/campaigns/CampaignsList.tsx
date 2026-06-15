@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Megaphone, Mail, CheckCircle2, AlertCircle, MessageSquareReply } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { listCampaigns, getCampaign } from "@/lib/support/campaigns.functions";
+import { listCampaigns, getCampaign } from "@/lib/campaigns/campaigns.functions";
 // (Empty-state primitive isn't installed; render inline empty markup instead.)
 
 function timeAgo(iso?: string | null) {
@@ -28,7 +28,7 @@ const STATUS_CHIP: Record<string, string> = {
   replied: "bg-reps-orange-soft text-reps-orange",
 };
 
-export function CampaignsTab() {
+export function CampaignsList() {
   const listFn = useServerFn(listCampaigns);
   const [openId, setOpenId] = useState<string | null>(null);
   const qc = useQueryClient();
