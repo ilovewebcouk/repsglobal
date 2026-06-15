@@ -395,6 +395,7 @@ function TicketDrawer({
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
+  const rephraseFn = useServerFn(rephraseSupportReply);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
