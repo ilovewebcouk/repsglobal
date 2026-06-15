@@ -1045,18 +1045,6 @@ function TicketDrawer({
                     : "AI draft"}
               </button>
             </div>
-                disabled={
-                  aiDraft.isPending ||
-                  mode !== "reply" ||
-                  !messages.some((m: any) => m.direction === "inbound")
-                }
-                title="Draft a reply from scratch using the conversation"
-                className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
-                {aiDraft.isPending ? "Drafting…" : "AI draft"}
-              </button>
-            </div>
           </div>
           <div className="relative">
             <Textarea
