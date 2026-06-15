@@ -173,7 +173,7 @@ function AdminSupport() {
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [tab, inbox, view]);
+  }, [tab, inbox]);
 
   function toggleOne(id: string, ev?: React.MouseEvent) {
     setSelectedIds((prev) => {
