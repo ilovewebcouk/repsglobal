@@ -122,20 +122,63 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
         }
 
         // Insert inbound message
-        const { error: mErr } = await supabaseAdmin.from("support_messages").insert({
-          ticket_id: ticketId,
-          direction: "inbound",
-          from_email: senderEmail,
-          from_name: senderName,
-          body_text: bodyPlain || null,
-          body_html: bodyHtml || null,
-          mailgun_message_id: messageId || null,
-          in_reply_to: inReplyTo || null,
-          email_references: references || null,
-        });
-        if (mErr) {
+        const { data: inserted, error: mErr } = await supabaseAdmin
+          .from("support_messages")
+          .insert({
+            ticket_id: ticketId,
+            direction: "inbound",
+            from_email: senderEmail,
+            from_name: senderName,
+            body_text: bodyPlain || null,
+            body_html: bodyHtml || null,
+            mailgun_message_id: messageId || null,
+            in_reply_to: inReplyTo || null,
+            email_references: references || null,
+          })
+          .select("id")
+          .single();
+        if (mErr || !inserted) {
           console.error("[support.inbound] message insert failed", mErr);
           return new Response("DB error", { status: 500 });
+        }
+
+        // Persist any attachments. Mailgun multipart-forwarded inbound mail
+        // includes an `attachment-count` field plus numbered `attachment-N`
+        // file parts (1-indexed). Upload each to storage and record a row.
+        const attachmentCount = Number(form.get("attachment-count") || 0);
+        if (Number.isFinite(attachmentCount) && attachmentCount > 0) {
+          for (let i = 1; i <= attachmentCount; i++) {
+            const part = form.get(`attachment-${i}`);
+            if (!(part instanceof File)) continue;
+            const safeName = (part.name || `attachment-${i}`).replace(
+              /[^a-zA-Z0-9._-]+/g,
+              "_",
+            );
+            const storagePath = `${ticketId}/${inserted.id}/${i}-${safeName}`;
+            const buf = new Uint8Array(await part.arrayBuffer());
+            const { error: upErr } = await supabaseAdmin.storage
+              .from("support-attachments")
+              .upload(storagePath, buf, {
+                contentType: part.type || "application/octet-stream",
+                upsert: true,
+              });
+            if (upErr) {
+              console.error("[support.inbound] attachment upload failed", upErr);
+              continue;
+            }
+            const { error: aErr } = await supabaseAdmin
+              .from("support_attachments")
+              .insert({
+                message_id: inserted.id,
+                storage_path: storagePath,
+                filename: part.name || safeName,
+                mime_type: part.type || null,
+                size_bytes: part.size ?? null,
+              });
+            if (aErr) {
+              console.error("[support.inbound] attachment row insert failed", aErr);
+            }
+          }
         }
 
         return Response.json({ ok: true, ticket_id: ticketId });
