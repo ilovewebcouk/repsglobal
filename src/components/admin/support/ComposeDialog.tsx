@@ -58,7 +58,6 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: "verified", label: "Verified" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
-  { value: "free", label: "Free" },
 ];
 
 export function ComposeDialog({
@@ -256,7 +255,7 @@ export function ComposeDialog({
               <Button
                 onClick={() => sendMutation.mutate()}
                 disabled={sendMutation.isPending}
-                className="bg-reps-orange text-black hover:bg-reps-orange/90"
+                className="bg-reps-orange text-white hover:bg-reps-orange/90"
               >
                 {sendMutation.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -275,7 +274,7 @@ export function ComposeDialog({
                   else sendMutation.mutate();
                 }}
                 disabled={!canSend}
-                className="bg-reps-orange text-black hover:bg-reps-orange/90"
+                className="bg-reps-orange text-white hover:bg-reps-orange/90"
               >
                 <Send className="size-4" />
                 {mode === "broadcast" ? `Send to ${broadcastCount}` : "Send"}
@@ -410,7 +409,11 @@ function RecipientPicker({
           placeholder="or type any email and press Enter"
           className="bg-white/[0.04] border-reps-border text-white"
         />
-        <Button variant="outline" onClick={addManual} type="button">
+        <Button
+          onClick={addManual}
+          type="button"
+          className="bg-reps-orange text-white hover:bg-reps-orange/90"
+        >
           Add
         </Button>
       </div>
