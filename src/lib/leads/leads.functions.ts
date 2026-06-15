@@ -69,7 +69,7 @@ export const listLeads = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("enquiries")
       .select(
-        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_updated_at, created_at, read_at, replied_at",
+        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_updated_at, created_at, read_at, replied_at, sender_user_id, converted_client_id",
       )
       .eq("professional_id", userId)
       .neq("status", "spam")
