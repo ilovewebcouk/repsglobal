@@ -65,17 +65,30 @@ export const searchTrainers = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Pull all professionals + their profile name (dataset is small on REPs today).
+    // Pull all professionals (dataset is small on REPs today).
     const { data: pros, error } = await supabaseAdmin
       .from("professionals")
-      .select(
-        "id, trading_name, primary_profession, city, public_email, profiles(full_name)",
-      )
+      .select("id, trading_name, primary_profession, city, public_email")
       .limit(500);
     if (error) throw new Error(error.message);
 
-    // Resolve tier from subscriptions
     const ids = (pros ?? []).map((p: any) => p.id);
+
+    // Fetch profile names separately — there's no FK between professionals
+    // and profiles, so PostgREST can't embed-join them. Building this map by
+    // hand is the only way to get full_name reliably.
+    const nameMap = new Map<string, string>();
+    if (ids.length > 0) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+      for (const p of profs ?? []) {
+        if (p.full_name) nameMap.set(p.id, p.full_name);
+      }
+    }
+
+    // Resolve tier from subscriptions
     const tierMap = new Map<string, Tier>();
     if (ids.length > 0) {
       const { data: subs } = await supabaseAdmin
@@ -96,8 +109,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     let rows = (pros ?? [])
       .map((p: any) => ({
         id: p.id,
-        full_name:
-          (p.profiles as any)?.full_name ?? p.trading_name ?? "Unnamed",
+        full_name: nameMap.get(p.id) ?? p.trading_name ?? "Unnamed",
         trading_name: p.trading_name,
         email: (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase(),
         tier: tierMap.get(p.id) ?? ("free" as Tier),
@@ -119,6 +131,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     const filtered = data.tier ? rows.filter((r) => r.tier === data.tier) : rows;
     return filtered.slice(0, 20);
   });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Broadcast preview — how many trainers match the selected tier(s)?
