@@ -392,10 +392,12 @@ function LeadsPipelinePage() {
 
       {/* Keyboard shortcuts cheatsheet */}
       <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent className="border-reps-border bg-reps-ink text-white sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle>Keyboard shortcuts</DialogTitle>
-            <DialogDescription>Move through leads without lifting your hands.</DialogDescription>
+            <DialogTitle className="text-white">Keyboard shortcuts</DialogTitle>
+            <DialogDescription className="text-white/65">
+              Move through leads without lifting your hands.
+            </DialogDescription>
           </DialogHeader>
           <ul className="flex flex-col gap-2.5 text-[13px]">
             <Shortcut keys={["J", "↓"]} action="Next lead" />
@@ -413,12 +415,12 @@ function LeadsPipelinePage() {
 function Shortcut({ keys, action }: { keys: string[]; action: string }) {
   return (
     <li className="flex items-center justify-between gap-3">
-      <span className="text-white/70">{action}</span>
+      <span className="text-white/80">{action}</span>
       <span className="flex items-center gap-1.5">
         {keys.map((k) => (
           <kbd
             key={k}
-            className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 text-[11px] font-semibold text-white/85"
+            className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 text-[11px] font-semibold text-white/90"
           >
             {k}
           </kbd>

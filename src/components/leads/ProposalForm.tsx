@@ -64,7 +64,7 @@ export function ProposalForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="12-week transformation"
-            className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+            className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35"
           />
         </div>
         <div>
@@ -74,7 +74,7 @@ export function ProposalForm({
             onChange={(e) => setSummary(e.target.value)}
             placeholder="What's included…"
             rows={2}
-            className="resize-none rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+            className="resize-none rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35"
           />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
@@ -88,18 +88,20 @@ export function ProposalForm({
               value={priceGbp}
               onChange={(e) => setPriceGbp(e.target.value)}
               placeholder="0.00"
-              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35"
             />
           </div>
           <div>
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-white/55">Cadence</label>
             <Select value={cadence} onValueChange={(v) => setCadence(v as ProposalCadence)}>
-              <SelectTrigger className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]">
+              <SelectTrigger className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-reps-border bg-reps-ink text-white">
                 {PROPOSAL_CADENCES.map((c) => (
-                  <SelectItem key={c} value={c}>{PROPOSAL_CADENCE_LABEL[c]}</SelectItem>
+                  <SelectItem key={c} value={c} className="text-white focus:bg-reps-panel-soft focus:text-white">
+                    {PROPOSAL_CADENCE_LABEL[c]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -114,7 +116,7 @@ export function ProposalForm({
               value={sessions}
               onChange={(e) => setSessions(e.target.value)}
               placeholder="12"
-              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35"
             />
           </div>
           <div>
@@ -123,7 +125,7 @@ export function ProposalForm({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+              className="h-9 rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35 [color-scheme:dark]"
             />
           </div>
         </div>
@@ -134,7 +136,7 @@ export function ProposalForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Only you can see this"
             rows={2}
-            className="resize-none rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px]"
+            className="resize-none rounded-[10px] border-reps-border bg-reps-ink/60 text-[13px] text-white placeholder:text-white/35"
           />
         </div>
       </div>
