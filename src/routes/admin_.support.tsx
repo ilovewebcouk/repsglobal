@@ -567,9 +567,8 @@ function AdminSupport() {
                     key={t.id}
                     data-selected={isSelected || undefined}
                     data-cursor={isCursor || undefined}
-                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30 data-[cursor]:ring-1 data-[cursor]:ring-inset data-[cursor]:ring-reps-orange/40"
+                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30 data-[cursor]:bg-white/[0.03] focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                     onClick={() => setOpenId(t.id)}
-                    onMouseEnter={() => setCursorId(t.id)}
                   >
                     <td
                       className="w-9 px-3 py-3"
