@@ -495,8 +495,6 @@ function AdminSupport() {
             </tbody>
           </table>
         </div>
-        </>
-        )}
       </PPanel>
 
 
@@ -509,14 +507,6 @@ function AdminSupport() {
         }}
       />
 
-      <ComposeDialog
-        open={composeOpen}
-        onOpenChange={setComposeOpen}
-        onSent={() => {
-          ticketsQuery.refetch();
-          allCountQuery.refetch();
-        }}
-      />
 
       <BulkActionBar
         count={selectedIds.size}
