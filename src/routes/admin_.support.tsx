@@ -1036,11 +1036,7 @@ function TicketDrawer({
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
             <div className="ml-auto flex items-center gap-1.5">
-              <DictateButton
-                onAppend={(text) =>
-                  setDraft((prev) => (prev.endsWith(" ") || prev === "" ? prev + text : prev + " " + text))
-                }
-              />
+
 
               <button
                 type="button"
