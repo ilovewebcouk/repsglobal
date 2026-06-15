@@ -19,25 +19,30 @@ export type RecipientValue = {
 };
 
 export function RecipientPicker({
-  value,
+  email,
   onChange,
   autoFocus,
 }: {
-  value: RecipientValue;
-  onChange: (v: RecipientValue) => void;
+  email: string;
+  /** Called with email + (optional) display name when the user picks or types. */
+  onChange: (next: { email: string; name?: string }) => void;
   autoFocus?: boolean;
 }) {
-  const [query, setQuery] = React.useState(value.email);
+  const [query, setQuery] = React.useState(email);
   const [debounced, setDebounced] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
+  const [picked, setPicked] = React.useState<RecipientHit | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const searchFn = useServerFn(searchSupportRecipients);
 
-  // Keep input in sync if parent resets (e.g. on send)
+  // Parent reset (e.g. dialog closes / send succeeds) → clear local state.
   React.useEffect(() => {
-    if (!value.picked) setQuery(value.email);
-  }, [value.email, value.picked]);
+    if (email === "") {
+      setPicked(null);
+      setQuery("");
+    }
+  }, [email]);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebounced(query.trim()), 200);
@@ -45,7 +50,7 @@ export function RecipientPicker({
   }, [query]);
 
   const looksLikeEmail = EMAIL_RE.test(query.trim());
-  const enabled = debounced.length >= 2 && !looksLikeEmail && !value.picked;
+  const enabled = debounced.length >= 2 && !looksLikeEmail && !picked;
 
   const { data: hits = [], isFetching } = useQuery({
     queryKey: ["support", "recipient-search", debounced],
