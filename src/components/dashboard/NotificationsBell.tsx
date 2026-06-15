@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Mail, MessageSquare } from "lucide-react";
+import { Bell, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
@@ -18,24 +18,22 @@ function timeAgo(iso: string) {
 }
 
 export function NotificationsBell() {
-  const { items: allItems, unread, lastSeen, markAllRead, isLoading } = useSupportUnread();
+  // `items` is already only the unread tickets (server-filtered by is_unread).
+  // We snapshot it on open so the list doesn't reshuffle while the user reads it.
+  const { items, unread, markAllRead, isLoading } = useSupportUnread();
   const [open, setOpen] = React.useState(false);
-  const [snapshotSeen, setSnapshotSeen] = React.useState<number | null>(null);
-  const effectiveSeen = open && snapshotSeen !== null ? snapshotSeen : lastSeen;
-  const items = React.useMemo(
-    () => allItems.filter((i) => new Date(i.createdAt).getTime() > effectiveSeen),
-    [allItems, effectiveSeen],
-  );
+  const [snapshot, setSnapshot] = React.useState<typeof items | null>(null);
+  const visible = open && snapshot ? snapshot : items;
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
-      setSnapshotSeen(lastSeen);
-      if (unread > 0) markAllRead();
+      setSnapshot(items);
     } else {
-      setSnapshotSeen(null);
+      setSnapshot(null);
     }
     setOpen(next);
   };
+
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
