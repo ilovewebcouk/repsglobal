@@ -541,9 +541,49 @@ function TicketDrawer({
   );
 }
 
+function formatBytes(n?: number | null) {
+  if (!n || n <= 0) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function AttachmentChip({ att }: { att: any }) {
+  const getUrl = useServerFn(getAttachmentUrl);
+  const [busy, setBusy] = useState(false);
+  const open = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await getUrl({ data: { attachmentId: att.id } });
+      if (res?.url) window.open(res.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open attachment");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={open}
+      disabled={busy}
+      className="inline-flex max-w-full items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[12px] text-white/80 hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+      title={att.filename}
+    >
+      <Paperclip className="h-3 w-3 text-white/55 shrink-0" />
+      <span className="truncate max-w-[220px]">{att.filename}</span>
+      {att.size_bytes ? (
+        <span className="text-white/40">· {formatBytes(att.size_bytes)}</span>
+      ) : null}
+    </button>
+  );
+}
+
 function MessageBubble({ m }: { m: any }) {
   const isOut = m.direction === "outbound";
   const isNote = m.direction === "internal_note";
+  const attachments: any[] = Array.isArray(m.support_attachments) ? m.support_attachments : [];
   return (
     <div
       className={`rounded-[14px] border px-4 py-3 ${
@@ -580,6 +620,13 @@ function MessageBubble({ m }: { m: any }) {
       <div className="text-[13.5px] text-white/85 leading-relaxed whitespace-pre-wrap">
         {m.body_text || (m.body_html ? "(HTML message)" : "")}
       </div>
+      {attachments.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {attachments.map((att) => (
+            <AttachmentChip key={att.id} att={att} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
