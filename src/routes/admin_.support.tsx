@@ -96,6 +96,7 @@ function slaLabel(due?: string | null, status?: string) {
 
 function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
+  const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const qc = useQueryClient();
   const listFn = useServerFn(listTickets);
@@ -104,8 +105,8 @@ function AdminSupport() {
   );
 
   const ticketsQuery = useQuery({
-    queryKey: ["admin", "support", "tickets", tab],
-    queryFn: () => listFn({ data: { status: tab } }),
+    queryKey: ["admin", "support", "tickets", tab, inbox],
+    queryFn: () => listFn({ data: { status: tab, inbox } }),
   });
 
   const allCountQuery = useQuery({
