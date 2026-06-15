@@ -207,9 +207,19 @@ function AdminSupport() {
                 ))}
               </TabsList>
             </Tabs>
-            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
-              <Inbox className="h-3 w-3" />
-              support@ · pros@ · partners@ · press@
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
+                <Inbox className="h-3 w-3" />
+                support@ · pros@ · partners@ · press@
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setComposeOpen(true)}
+                className="bg-reps-orange text-black hover:bg-reps-orange/90 h-8"
+              >
+                <PencilLine className="size-3.5" />
+                Compose
+              </Button>
             </div>
           </div>
 
