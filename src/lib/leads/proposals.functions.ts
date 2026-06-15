@@ -291,7 +291,7 @@ export const updateProposal = createServerFn({ method: "POST" })
         created_by: userId,
       });
 
-      // Stage nudges
+      // Stage nudges + email on first send
       if (data.status === "sent") {
         await supabaseAdmin
           .from("enquiries")
@@ -299,6 +299,13 @@ export const updateProposal = createServerFn({ method: "POST" })
           .eq("id", existing.enquiry_id)
           .eq("professional_id", userId)
           .in("stage", ["new", "contacted", "call_booked"]);
+        const emailBody = (patch.body ?? body) as ProposalBody;
+        await sendProposalEmail({
+          proposalId: existing.id,
+          enquiryId: existing.enquiry_id,
+          professionalId: userId,
+          body: emailBody,
+        });
       }
     }
 
