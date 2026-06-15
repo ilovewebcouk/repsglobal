@@ -679,6 +679,7 @@ function AdminSupport() {
       <TicketDrawer
         ticketId={openId}
         onClose={() => setOpenId(null)}
+        onOpenTicket={(id) => setOpenId(id)}
         onChanged={() => {
           ticketsQuery.refetch();
           allCountQuery.refetch();
