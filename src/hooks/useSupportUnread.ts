@@ -36,6 +36,9 @@ function writeLastSeen(ts: number) {
 export function useSupportUnread(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
   const listFn = useServerFn(listSupportNotifications);
+  const channelName = React.useRef(
+    `admin-support-notifications-${Math.random().toString(36).slice(2)}`,
+  );
 
   const query = useQuery({
     queryKey: ["admin", "support", "notifications"],
@@ -62,7 +65,7 @@ export function useSupportUnread(options: { enabled?: boolean } = {}) {
   React.useEffect(() => {
     if (!enabled) return;
     const channel = supabase
-      .channel("admin-support-notifications")
+      .channel(channelName.current)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "support_tickets" },
