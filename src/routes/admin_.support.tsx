@@ -651,22 +651,34 @@ function AdminSupport() {
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-[12px] capitalize text-white/70">{t.status}</span>
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="inline-flex items-center gap-1 text-[12px] text-white/65">
-                        <Clock className="h-3.5 w-3.5" />
-                        {slaLabel(t.sla_due_at, t.status)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-[12px] text-white/55">
-                      {timeAgo(t.last_message_at)}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <button className="text-[12px] font-semibold text-reps-orange hover:underline">
-                        Open
-                      </button>
-                    </td>
+                       <span
+                         className={`inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize ${
+                           t.status === "resolved" || t.status === "closed"
+                             ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                             : t.status === "pending"
+                             ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                             : t.status === "snoozed"
+                             ? "border border-white/15 bg-white/10 text-white/70"
+                             : "border border-reps-orange/30 bg-reps-orange/15 text-reps-orange"
+                         }`}
+                       >
+                         {t.status}
+                       </span>
+                     </td>
+                     <td className="px-3 py-3">
+                       <span className="inline-flex items-center gap-1 text-[12px] text-white/65">
+                         <Clock className="h-3.5 w-3.5" />
+                         {slaLabel(t.sla_due_at, t.status)}
+                       </span>
+                     </td>
+                     <td className="px-3 py-3 text-[12px] text-white/55">
+                       {timeAgo(t.last_message_at)}
+                     </td>
+                     <td className="px-5 py-3 text-right">
+                       <button className="text-[12px] font-semibold text-reps-orange hover:underline">
+                         View
+                       </button>
+                     </td>
                   </tr>
                   );
                 })
