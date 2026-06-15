@@ -226,7 +226,13 @@ export const replyToTicket = createServerFn({ method: "POST" })
       ? `${(profile.full_name as string).split(" ")[0]} at REPS`
       : "REPS Support";
 
-    // Render template
+    // Render template (server-only imports inside handler so the email
+    // template registry never lands in the client bundle).
+    const [{ default: React }, { render }, { TEMPLATES }] = await Promise.all([
+      import("react"),
+      import("@react-email/components"),
+      import("@/lib/email-templates/registry"),
+    ]);
     const tpl = TEMPLATES["support-reply"];
     const templateData = {
       ticketNumber: ticket.ticket_number,
