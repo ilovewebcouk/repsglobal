@@ -100,6 +100,7 @@ import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from 
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
 import { Route as AuthenticatedProfessionalCheckoutCreditsRouteImport } from './routes/_authenticated/_professional/checkout_.credits'
+import { Route as ApiPublicEmailInboundMailgunRouteImport } from './routes/api/public/email/inbound/mailgun'
 import { Route as AuthenticatedProfessionalProDashboardReviewsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalProDashboardReportsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reports'
 import { Route as AuthenticatedProfessionalProDashboardProgramsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.programs'
@@ -587,6 +588,12 @@ const AuthenticatedProfessionalCheckoutCreditsRoute =
     path: '/checkout/credits',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const ApiPublicEmailInboundMailgunRoute =
+  ApiPublicEmailInboundMailgunRouteImport.update({
+    id: '/api/public/email/inbound/mailgun',
+    path: '/api/public/email/inbound/mailgun',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedProfessionalProDashboardReviewsRoute =
   AuthenticatedProfessionalProDashboardReviewsRouteImport.update({
     id: '/dashboard_/reviews',
@@ -781,6 +788,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/dashboard/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
+  '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -885,6 +893,7 @@ export interface FileRoutesByTo {
   '/dashboard/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/dashboard/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
+  '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
 export interface FileRoutesById {
@@ -994,6 +1003,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/_pro/dashboard_/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/_authenticated/_professional/_pro/dashboard_/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
   '/_authenticated/_professional/_pro/dashboard_/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
+  '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/_authenticated/_professional/_pro/dashboard_/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
 export interface FileRouteTypes {
@@ -1101,6 +1111,7 @@ export interface FileRouteTypes {
     | '/dashboard/programs'
     | '/dashboard/reports'
     | '/dashboard/reviews'
+    | '/api/public/email/inbound/mailgun'
     | '/dashboard/clients/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1205,6 +1216,7 @@ export interface FileRouteTypes {
     | '/dashboard/programs'
     | '/dashboard/reports'
     | '/dashboard/reviews'
+    | '/api/public/email/inbound/mailgun'
     | '/dashboard/clients/$slug'
   id:
     | '__root__'
@@ -1313,6 +1325,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/_pro/dashboard_/programs'
     | '/_authenticated/_professional/_pro/dashboard_/reports'
     | '/_authenticated/_professional/_pro/dashboard_/reviews'
+    | '/api/public/email/inbound/mailgun'
     | '/_authenticated/_professional/_pro/dashboard_/clients/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -1392,6 +1405,7 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  ApiPublicEmailInboundMailgunRoute: typeof ApiPublicEmailInboundMailgunRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2033,6 +2047,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalCheckoutCreditsRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/api/public/email/inbound/mailgun': {
+      id: '/api/public/email/inbound/mailgun'
+      path: '/api/public/email/inbound/mailgun'
+      fullPath: '/api/public/email/inbound/mailgun'
+      preLoaderRoute: typeof ApiPublicEmailInboundMailgunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_professional/_pro/dashboard_/reviews': {
       id: '/_authenticated/_professional/_pro/dashboard_/reviews'
       path: '/dashboard/reviews'
@@ -2372,6 +2393,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ApiPublicEmailInboundMailgunRoute: ApiPublicEmailInboundMailgunRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
