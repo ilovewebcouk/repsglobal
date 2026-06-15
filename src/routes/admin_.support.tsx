@@ -419,9 +419,13 @@ function AdminSupport() {
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
           label="Needs you"
-          value={counts.unread}
-          detail={`${counts.urgent} urgent · ${counts.open} open`}
-          warn={counts.unread > 0 || counts.urgent > 0}
+          value={counts.open}
+          detail={
+            counts.open === 0
+              ? "Inbox zero"
+              : `${counts.urgent} urgent · ${counts.unread} unread`
+          }
+          warn={counts.urgent > 0 || counts.unread > 0}
         />
         <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
         <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
