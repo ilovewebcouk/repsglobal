@@ -306,7 +306,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     const {
       sendViaMailgun,
       buildMessageId,
-    } = await import("./mailgun-send.server");
+    } = await import("@/lib/support/mailgun-send.server");
 
     // Resolve recipients
     let recipients: Array<{ email: string; name: string | null }> = [];
