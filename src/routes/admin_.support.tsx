@@ -202,13 +202,23 @@ function AdminSupport() {
 
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
-    const openRows = rows.filter((r: any) => r.status === "open");
+    const nowMs = Date.now();
+    const isActiveSnoozed = (r: any) =>
+      r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
+    const openRows = rows.filter(
+      (r: any) => r.status === "open" && !isActiveSnoozed(r),
+    );
+    const pendingRows = rows.filter(
+      (r: any) => r.status === "pending" && !isActiveSnoozed(r),
+    );
     return {
       open: openRows.length,
-      pending: rows.filter((r: any) => r.status === "pending").length,
+      pending: pendingRows.length,
+      snoozed: rows.filter(isActiveSnoozed).length,
       resolved: rows.filter((r: any) => r.status === "resolved").length,
       all: rows.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
+      unread: openRows.filter((r: any) => r.is_unread).length,
       resolvedToday: rows.filter(
         (r: any) =>
           r.resolved_at &&
@@ -229,7 +239,58 @@ function AdminSupport() {
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [tab, inbox]);
+  }, [tab, inbox, debouncedSearch]);
+
+  // Keyboard shortcuts: /, c, j, k, Enter, e, Esc
+  const [cursorId, setCursorId] = useState<string | null>(null);
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      const t = e.target as HTMLElement;
+      const inField =
+        t &&
+        (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (e.key === "Escape") {
+        if (openId) return; // Sheet handles its own Esc
+        setSelectedIds(new Set());
+        setCursorId(null);
+        return;
+      }
+      if (inField) {
+        if (e.key === "Escape" && t === searchRef.current) {
+          (t as HTMLInputElement).blur();
+        }
+        return;
+      }
+      if (openId) return; // drawer open — let it handle its own keys
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault();
+        setComposeOpen(true);
+        return;
+      }
+      const ids = tickets.map((x: any) => x.id);
+      if (ids.length === 0) return;
+      const idx = cursorId ? ids.indexOf(cursorId) : -1;
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setCursorId(ids[Math.min(idx + 1, ids.length - 1)] ?? ids[0]);
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setCursorId(ids[Math.max(idx - 1, 0)] ?? ids[0]);
+      } else if (e.key === "Enter" && cursorId) {
+        e.preventDefault();
+        setOpenId(cursorId);
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [tickets, cursorId, openId]);
+
+
 
   function toggleOne(id: string, ev?: React.MouseEvent) {
     setSelectedIds((prev) => {
