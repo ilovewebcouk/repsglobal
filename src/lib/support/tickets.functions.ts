@@ -51,13 +51,39 @@ export const getTicket = createServerFn({ method: "POST" })
     const { data: messages, error: mErr } = await context.supabase
       .from("support_messages")
       .select(
-        "id, direction, from_email, from_name, author_user_id, body_text, body_html, created_at, mailgun_message_id, in_reply_to",
+        "id, direction, from_email, from_name, author_user_id, body_text, body_html, created_at, mailgun_message_id, in_reply_to, support_attachments(id, filename, mime_type, size_bytes, storage_path)",
       )
       .eq("ticket_id", data.id)
       .order("created_at", { ascending: true });
     if (mErr) throw new Error(mErr.message);
 
     return { ticket, messages: messages ?? [] };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Signed URL for a single attachment (admin-only, short TTL).
+// ─────────────────────────────────────────────────────────────────────────────
+export const getAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { attachmentId: string }) =>
+    z.object({ attachmentId: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: att, error } = await context.supabase
+      .from("support_attachments")
+      .select("storage_path, filename, mime_type")
+      .eq("id", data.attachmentId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!att) throw new Error("Attachment not found");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error: sErr } = await supabaseAdmin.storage
+      .from("support-attachments")
+      .createSignedUrl(att.storage_path, 300, { download: att.filename });
+    if (sErr || !signed) throw new Error(sErr?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl, filename: att.filename, mimeType: att.mime_type };
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
