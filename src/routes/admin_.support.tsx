@@ -117,7 +117,6 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
-  const [view, setView] = useState<"tickets" | "campaigns">("tickets");
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
