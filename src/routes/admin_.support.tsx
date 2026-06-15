@@ -17,7 +17,7 @@ import {
   Send,
   Sparkles,
   StickyNote,
-  Wand2,
+  
   X,
   Zap,
 } from "lucide-react";
@@ -71,7 +71,7 @@ import {
   snoozeTicket,
   unsnoozeTicket,
 } from "@/lib/support/tickets.functions";
-import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
+import { draftSupportReply } from "@/lib/support/ai-draft.functions";
 import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -799,7 +799,6 @@ function TicketDrawer({
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
-  const rephraseFn = useServerFn(rephraseSupportReply);
   const markReadFn = useServerFn(markTicketRead);
   const snoozeFn = useServerFn(snoozeTicket);
   const unsnoozeFn = useServerFn(unsnoozeTicket);
@@ -867,30 +866,17 @@ function TicketDrawer({
   const aiDraft = useMutation({
     mutationFn: async () => {
       if (!ticketId) throw new Error("No ticket");
-      return draftFn({ data: { ticketId } });
+      const brief = draft.trim();
+      return draftFn({ data: { ticketId, brief: brief || undefined } });
     },
     onSuccess: (res) => {
       if (res?.text) {
-        setDraft((current) => (current.trim() ? `${current.trim()}\n\n${res.text}` : res.text));
-        toast.success("AI draft ready — review before sending");
+        // Replace the brief with the polished draft
+        setDraft(res.text);
+        toast.success("Draft ready — review before sending");
       }
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
-  });
-
-  const aiRephrase = useMutation({
-    mutationFn: async () => {
-      const text = draft.trim();
-      if (!text) throw new Error("Type something to rephrase first");
-      return rephraseFn({ data: { draft: text, ticketId: ticketId ?? undefined } });
-    },
-    onSuccess: (res) => {
-      if (res?.text) {
-        setDraft(res.text);
-        toast.success("Rephrased — review before sending");
-      }
-    },
-    onError: (e: any) => toast.error(e?.message ?? "Could not rephrase"),
   });
 
   const update = useMutation({
@@ -1036,18 +1022,6 @@ function TicketDrawer({
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
             <div className="ml-auto flex items-center gap-1.5">
-
-
-              <button
-                type="button"
-                onClick={() => aiRephrase.mutate()}
-                disabled={aiRephrase.isPending || mode !== "reply" || !draft.trim()}
-                title="Rewrite what you've typed in REPS support tone"
-                className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Wand2 className="h-3.5 w-3.5 text-reps-orange" />
-                {aiRephrase.isPending ? "Rephrasing…" : "Rephrase"}
-              </button>
               <button
                 type="button"
                 onClick={() => aiDraft.mutate()}
@@ -1056,11 +1030,19 @@ function TicketDrawer({
                   mode !== "reply" ||
                   !messages.some((m: any) => m.direction === "inbound")
                 }
-                title="Draft a reply from scratch using the conversation"
+                title={
+                  draft.trim()
+                    ? "Use your notes as a brief — AI writes the polished reply"
+                    : "Draft a reply from the conversation"
+                }
                 className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
-                {aiDraft.isPending ? "Drafting…" : "AI draft"}
+                {aiDraft.isPending
+                  ? "Drafting…"
+                  : draft.trim()
+                    ? "Draft from notes"
+                    : "AI draft"}
               </button>
             </div>
           </div>
