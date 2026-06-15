@@ -55,6 +55,8 @@ export type LeadDTO = {
   created_at: string;
   read_at: string | null;
   replied_at: string | null;
+  sender_user_id: string | null;
+  converted_client_id: string | null;
 };
 
 /* -------------------- List leads -------------------- */
@@ -67,7 +69,7 @@ export const listLeads = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("enquiries")
       .select(
-        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_updated_at, created_at, read_at, replied_at",
+        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_updated_at, created_at, read_at, replied_at, sender_user_id, converted_client_id",
       )
       .eq("professional_id", userId)
       .neq("status", "spam")
@@ -115,7 +117,25 @@ export const listLeads = createServerFn({ method: "GET" })
       created_at: r.created_at,
       read_at: r.read_at,
       replied_at: r.replied_at,
+      sender_user_id: r.sender_user_id ?? null,
+      converted_client_id: r.converted_client_id ?? null,
     }));
+  });
+
+/* -------------------- Convert lead to client -------------------- */
+
+const ConvertLeadSchema = z.object({ enquiryId: z.string().uuid() });
+
+export const convertLeadToClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ConvertLeadSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ clientId: string }> => {
+    const { supabase } = context;
+    const { data: clientId, error } = await supabase.rpc("convert_lead_to_client", {
+      _enquiry_id: data.enquiryId,
+    });
+    if (error) throw new Error(error.message);
+    return { clientId: clientId as unknown as string };
   });
 
 /* -------------------- Update lead fields -------------------- */
