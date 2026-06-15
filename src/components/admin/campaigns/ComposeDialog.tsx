@@ -27,7 +27,7 @@ import {
   searchTrainers,
   previewBroadcastCount,
   sendAdminOutbound,
-} from "@/lib/support/outbound.functions";
+} from "@/lib/campaigns/outbound.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio";

@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Menu,
+  Megaphone,
   MessagesSquare,
   Search,
   Settings,
@@ -101,6 +102,7 @@ export type AdminActive =
   | "CPD"
   | "Migration"
   | "Support"
+  | "Campaigns"
   | "Settings";
 
 export type DashboardActive = TrainerActive | AdminActive;
@@ -217,6 +219,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
+      { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },

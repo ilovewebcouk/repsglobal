@@ -3,11 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, Megaphone, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
-import { ComposeDialog } from "@/components/admin/support/ComposeDialog";
+import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
 import { DictateButton } from "@/components/admin/support/DictateButton";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
-import { CampaignsTab } from "@/components/admin/support/CampaignsTab";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -119,11 +117,10 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
-  const [view, setView] = useState<"tickets" | "campaigns">("tickets");
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  const [composeOpen, setComposeOpen] = useState(false);
+  // compose dialog moved to /admin/campaigns
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -176,7 +173,7 @@ function AdminSupport() {
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [tab, inbox, view]);
+  }, [tab, inbox]);
 
   function toggleOne(id: string, ev?: React.MouseEvent) {
     setSelectedIds((prev) => {
@@ -304,36 +301,8 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
-        <div className="flex items-center gap-1 border-b border-reps-border px-3 pt-3">
-          <button
-            type="button"
-            onClick={() => setView("tickets")}
-            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              view === "tickets"
-                ? "bg-white/10 text-white"
-                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <Mail className="size-3.5" /> Tickets
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("campaigns")}
-            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              view === "campaigns"
-                ? "bg-white/10 text-white"
-                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <Megaphone className="size-3.5" /> Campaigns
-          </button>
-        </div>
-
-        {view === "campaigns" ? (
-          <CampaignsTab />
-        ) : (
-        <>
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+
 
           <div className="flex items-center justify-between gap-3">
             <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
@@ -356,21 +325,8 @@ function AdminSupport() {
                 ))}
               </TabsList>
             </Tabs>
-            <div className="flex items-center gap-2">
-              <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
-                <Inbox className="h-3 w-3" />
-                support@ · pros@ · partners@ · press@
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setComposeOpen(true)}
-                className="bg-reps-orange text-black hover:bg-reps-orange/90 h-8"
-              >
-                <PencilLine className="size-3.5" />
-                Compose
-              </Button>
-            </div>
           </div>
+
 
           <div className="flex flex-wrap items-center gap-1.5">
             {(
@@ -526,8 +482,6 @@ function AdminSupport() {
             </tbody>
           </table>
         </div>
-        </>
-        )}
       </PPanel>
 
 
@@ -540,14 +494,6 @@ function AdminSupport() {
         }}
       />
 
-      <ComposeDialog
-        open={composeOpen}
-        onOpenChange={setComposeOpen}
-        onSent={() => {
-          ticketsQuery.refetch();
-          allCountQuery.refetch();
-        }}
-      />
 
       <BulkActionBar
         count={selectedIds.size}
