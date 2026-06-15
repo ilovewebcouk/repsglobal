@@ -214,7 +214,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
     title: "Platform",
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-      { icon: LifeBuoy, label: "Support", to: "/admin/support", badge: "5" },
+      { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },
