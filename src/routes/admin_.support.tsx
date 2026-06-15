@@ -851,8 +851,15 @@ function TicketDrawer({
     onSuccess: () => {
       const wasReply = mode === "reply";
       setDraft("");
+      const wasClose = closeAfter;
       setCloseAfter(false);
-      toast.success(wasReply ? "Reply sent" : "Note added");
+      toast.success(
+        wasReply
+          ? wasClose
+            ? "Reply sent · ticket set to Resolved"
+            : "Reply sent · ticket set to Pending"
+          : "Note added",
+      );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
       if (wasReply) onClose();
