@@ -14,8 +14,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SelectedLeadCard } from "./SelectedLeadCard";
 import { AiInsightCard } from "./AiInsightCard";
+import { LeadActivityTab } from "./LeadActivityTab";
 import { sourceLabel } from "./SourceChipsRow";
 import { LEAD_STAGE_LABEL, type LeadDTO } from "@/lib/leads/leads.functions";
 
