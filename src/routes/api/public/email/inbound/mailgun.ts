@@ -83,6 +83,28 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
         let ticketId = extractTicketIdFromMessageId(inReplyTo);
         if (!ticketId) ticketId = extractTicketIdFromMessageId(references);
 
+        // 1b) Campaign reply? If In-Reply-To/References matches an
+        // outbound_campaign_recipients row, create (or reuse) a single ticket
+        // tagged `campaign:<id>` and mark the recipient as replied.
+        let campaignTags: string[] | null = null;
+        let campaignRecipientId: string | null = null;
+        if (!ticketId) {
+          const refsToTry = [inReplyTo, references].filter(Boolean);
+          if (refsToTry.length > 0) {
+            const { data: recip } = await supabaseAdmin
+              .from("outbound_campaign_recipients")
+              .select("id, campaign_id, reply_ticket_id")
+              .in("mailgun_message_id", refsToTry)
+              .limit(1)
+              .maybeSingle();
+            if (recip) {
+              campaignRecipientId = recip.id;
+              campaignTags = ["campaign-reply", `campaign:${recip.campaign_id}`];
+              if (recip.reply_ticket_id) ticketId = recip.reply_ticket_id;
+            }
+          }
+        }
+
         // 2) Fallback: same sender with an open/pending ticket in last 7 days
         if (!ticketId) {
           const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -117,6 +139,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
               source: "email",
               status: "open",
               inbox,
+              tags: campaignTags ?? [],
               sla_due_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
               thread_key: messageId || null,
             })
@@ -128,6 +151,19 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           }
           ticketId = created.id;
         }
+
+        // Mark the campaign recipient as replied + link the ticket back
+        if (campaignRecipientId && ticketId) {
+          await supabaseAdmin
+            .from("outbound_campaign_recipients")
+            .update({
+              status: "replied",
+              replied_at: new Date().toISOString(),
+              reply_ticket_id: ticketId,
+            })
+            .eq("id", campaignRecipientId);
+        }
+
 
         // Insert inbound message
         const { data: inserted, error: mErr } = await supabaseAdmin

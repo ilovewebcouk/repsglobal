@@ -239,8 +239,11 @@ export function ComposeDialog({
 
         <div className="mt-2 flex items-center justify-between gap-3 border-t border-reps-border pt-3">
           <div className="text-[12px] text-white/45">
-            Logged as {mode === "broadcast" ? "individual tickets" : "a ticket"} in the {inbox} inbox.
+            {mode === "broadcast"
+              ? `Logged as one campaign in ${inbox}. Replies become real tickets — no per-recipient noise.`
+              : `Logged as a ticket in the ${inbox} inbox.`}
           </div>
+
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"

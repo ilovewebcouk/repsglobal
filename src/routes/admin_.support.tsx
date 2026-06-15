@@ -3,9 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import { Clock, Download, FileText, Inbox, Mail, Megaphone, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
 import { ComposeDialog } from "@/components/admin/support/ComposeDialog";
 import { DictateButton } from "@/components/admin/support/DictateButton";
+import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
+import { CampaignsTab } from "@/components/admin/support/CampaignsTab";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -38,6 +40,19 @@ import {
   getAttachmentUrl,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
+import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/admin_/support")({
   ssr: false,
@@ -84,6 +99,13 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
+function labelFor(action: "resolve" | "reopen" | "pending"): string {
+  if (action === "resolve") return "Resolved";
+  if (action === "reopen") return "Reopened";
+  return "Marked pending";
+}
+
+
 function slaLabel(due?: string | null, status?: string) {
   if (status === "resolved" || status === "closed") return "Resolved";
   if (!due) return "—";
@@ -97,10 +119,18 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
+  const [view, setView] = useState<"tickets" | "campaigns">("tickets");
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const bulkFn = useServerFn(bulkUpdateTickets);
+  const undoFn = useServerFn(undoBulkUpdateTickets);
+  const [bulkPending, setBulkPending] = useState(false);
   const qc = useQueryClient();
   const listFn = useServerFn(listTickets);
   const channelName = useRef(
@@ -142,6 +172,94 @@ function AdminSupport() {
   }, [allCountQuery.data]);
 
   const tickets = ticketsQuery.data ?? [];
+
+  // Clear selection when filters change (selections refer to the visible page)
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [tab, inbox, view]);
+
+  function toggleOne(id: string, ev?: React.MouseEvent) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      // Shift-click range select
+      if (ev?.shiftKey && lastClickedId) {
+        const ids = tickets.map((t: any) => t.id);
+        const a = ids.indexOf(lastClickedId);
+        const b = ids.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          const [lo, hi] = a < b ? [a, b] : [b, a];
+          const shouldSelect = !prev.has(id);
+          for (let i = lo; i <= hi; i++) {
+            if (shouldSelect) next.add(ids[i]);
+            else next.delete(ids[i]);
+          }
+          setLastClickedId(id);
+          return next;
+        }
+      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      setLastClickedId(id);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    setSelectedIds((prev) => {
+      const visibleIds = tickets.map((t: any) => t.id);
+      const allSelected = visibleIds.length > 0 && visibleIds.every((id: string) => prev.has(id));
+      if (allSelected) return new Set();
+      return new Set([...prev, ...visibleIds]);
+    });
+  }
+
+  async function runBulk(
+    action: "resolve" | "reopen" | "pending" | "delete",
+    extraPayload?: Record<string, unknown>,
+  ) {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (action !== "delete" && ids.length > 25) {
+      const ok = window.confirm(`Apply "${action}" to ${ids.length} tickets?`);
+      if (!ok) return;
+    }
+    setBulkPending(true);
+    try {
+      const res = await bulkFn({
+        data: { ids, action, payload: extraPayload as never },
+      });
+      setSelectedIds(new Set());
+      void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+      if (action === "delete") {
+        toast.success(`Deleted ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      } else {
+        const previousStates = res.previousStates;
+        toast.success(
+          `${labelFor(action)} ${res.updated} ticket${res.updated === 1 ? "" : "s"}`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await undoFn({ data: { previousStates } });
+                  void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+                  toast.success("Undone");
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Undo failed");
+                }
+              },
+            },
+            duration: 8000,
+          },
+        );
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Bulk action failed");
+    } finally {
+      setBulkPending(false);
+    }
+  }
+
 
   useEffect(() => {
     const refreshSupport = () => {
@@ -186,7 +304,37 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
+        <div className="flex items-center gap-1 border-b border-reps-border px-3 pt-3">
+          <button
+            type="button"
+            onClick={() => setView("tickets")}
+            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              view === "tickets"
+                ? "bg-white/10 text-white"
+                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+            }`}
+          >
+            <Mail className="size-3.5" /> Tickets
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("campaigns")}
+            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              view === "campaigns"
+                ? "bg-white/10 text-white"
+                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+            }`}
+          >
+            <Megaphone className="size-3.5" /> Campaigns
+          </button>
+        </div>
+
+        {view === "campaigns" ? (
+          <CampaignsTab />
+        ) : (
+        <>
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+
           <div className="flex items-center justify-between gap-3">
             <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
               <TabsList className="bg-transparent p-0 h-auto gap-1">
@@ -261,6 +409,16 @@ function AdminSupport() {
           <table className="w-full min-w-[860px] text-[13px]">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
+                <th className="w-9 px-3 py-3">
+                  <Checkbox
+                    aria-label="Select all on page"
+                    checked={
+                      tickets.length > 0 &&
+                      tickets.every((t: any) => selectedIds.has(t.id))
+                    }
+                    onCheckedChange={() => toggleAllVisible()}
+                  />
+                </th>
                 <th className="px-5 py-3 font-semibold">Ticket</th>
                 <th className="px-3 py-3 font-semibold">Inbox</th>
                 <th className="px-3 py-3 font-semibold">From</th>
@@ -274,13 +432,14 @@ function AdminSupport() {
             <tbody>
               {ticketsQuery.isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-8 text-center text-white/45 text-[12px]">
+                  <td colSpan={9} className="px-5 py-8 text-center text-white/45 text-[12px]">
                     Loading tickets…
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-white/55">
+                  <td colSpan={9} className="px-5 py-10 text-center text-white/55">
+
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
                       No {tab === "all" ? "" : tab} tickets
@@ -294,12 +453,26 @@ function AdminSupport() {
                 tickets.map((t: any) => {
                   const ib = (t.inbox ?? "support") as Exclude<InboxFilter, "all">;
                   const meta = INBOX_META[ib] ?? INBOX_META.support;
+                  const isSelected = selectedIds.has(t.id);
                   return (
                   <tr
                     key={t.id}
-                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer"
+                    data-selected={isSelected || undefined}
+                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30"
                     onClick={() => setOpenId(t.id)}
                   >
+                    <td
+                      className="w-9 px-3 py-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleOne(t.id, e);
+                      }}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        aria-label={`Select ticket ${t.ticket_number}`}
+                      />
+                    </td>
                     <td className="px-5 py-3">
                       <div className="text-[11px] font-mono text-white/50">
                         {t.ticket_number}
@@ -308,6 +481,7 @@ function AdminSupport() {
                         {t.subject}
                       </div>
                     </td>
+
                     <td className="px-3 py-3">
                       <span
                         className={`inline-flex h-6 items-center rounded-[6px] px-2 text-[11px] font-semibold ${meta.chip}`}
@@ -352,7 +526,10 @@ function AdminSupport() {
             </tbody>
           </table>
         </div>
+        </>
+        )}
       </PPanel>
+
 
       <TicketDrawer
         ticketId={openId}
@@ -371,7 +548,63 @@ function AdminSupport() {
           allCountQuery.refetch();
         }}
       />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        isPending={bulkPending}
+        onClear={() => setSelectedIds(new Set())}
+        onResolve={() => runBulk("resolve")}
+        onReopen={() => runBulk("reopen")}
+        onPending={() => runBulk("pending")}
+        onDelete={() => {
+          setDeleteConfirm("");
+          setDeleteOpen(true);
+        }}
+      />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="bg-reps-bg border-reps-border text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete {selectedIds.size} ticket{selectedIds.size === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/65">
+              This permanently removes the tickets, messages, and attachments. This cannot
+              be undone. Type{" "}
+              <span className="font-mono font-semibold text-white">
+                {selectedIds.size}
+              </span>{" "}
+              below to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            autoFocus
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder={`Type ${selectedIds.size}`}
+            className="bg-white/[0.04] border-reps-border text-white"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/[0.04] border-reps-border text-white hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                bulkPending || Number(deleteConfirm) !== selectedIds.size
+              }
+              onClick={async () => {
+                await runBulk("delete", { confirmCount: selectedIds.size });
+                setDeleteOpen(false);
+              }}
+              className="bg-rose-500 text-white hover:bg-rose-500/90"
+            >
+              Delete {selectedIds.size}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
+
   );
 }
 

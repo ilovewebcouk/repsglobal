@@ -1386,6 +1386,111 @@ export type Database = {
         }
         Relationships: []
       }
+      outbound_campaign_recipients: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          mailgun_message_id: string | null
+          name: string | null
+          replied_at: string | null
+          reply_ticket_id: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          mailgun_message_id?: string | null
+          name?: string | null
+          replied_at?: string | null
+          reply_ticket_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          mailgun_message_id?: string | null
+          name?: string | null
+          replied_at?: string | null
+          reply_ticket_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outbound_campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outbound_campaign_recipients_reply_ticket_id_fkey"
+            columns: ["reply_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outbound_campaigns: {
+        Row: {
+          attachments: Json
+          body_html: string | null
+          body_text: string
+          created_at: string
+          created_by: string | null
+          failed_count: number
+          id: string
+          inbox: string
+          sent_at: string | null
+          sent_count: number
+          subject: string
+          tiers: string[]
+          total_recipients: number
+        }
+        Insert: {
+          attachments?: Json
+          body_html?: string | null
+          body_text: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          id?: string
+          inbox: string
+          sent_at?: string | null
+          sent_count?: number
+          subject: string
+          tiers?: string[]
+          total_recipients?: number
+        }
+        Update: {
+          attachments?: Json
+          body_html?: string | null
+          body_text?: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          id?: string
+          inbox?: string
+          sent_at?: string | null
+          sent_count?: number
+          subject?: string
+          tiers?: string[]
+          total_recipients?: number
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           created_at: string
@@ -2718,6 +2823,13 @@ export type Database = {
         | "failed"
         | "skipped"
       billing_period: "monthly" | "annual"
+      campaign_recipient_status:
+        | "queued"
+        | "sent"
+        | "failed"
+        | "bounced"
+        | "complained"
+        | "replied"
       coach_client_status: "active" | "paused" | "ended"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
       invite_trigger_reason:
@@ -2904,6 +3016,14 @@ export const Constants = {
         "skipped",
       ],
       billing_period: ["monthly", "annual"],
+      campaign_recipient_status: [
+        "queued",
+        "sent",
+        "failed",
+        "bounced",
+        "complained",
+        "replied",
+      ],
       coach_client_status: ["active", "paused", "ended"],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       invite_trigger_reason: [

@@ -330,22 +330,117 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }
 
     const inboxMeta = INBOX_META[data.inbox];
-    const campaignId =
-      data.mode === "broadcast"
-        ? `bc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
-        : null;
-
     const html = bodyToHtml(data.body);
 
+    // ── BROADCAST branch ────────────────────────────────────────────────────
+    // Broadcasts become a single `outbound_campaigns` row + one recipient
+    // row per address. We do NOT create a ticket per recipient — that floods
+    // the queue. When a recipient replies, the inbound webhook creates a
+    // single ticket tagged `campaign:<id>` for that conversation only.
+    if (data.mode === "broadcast") {
+      const { data: campaign, error: cErr } = await supabaseAdmin
+        .from("outbound_campaigns")
+        .insert({
+          inbox: data.inbox,
+          subject: data.subject,
+          body_text: data.body,
+          body_html: html,
+          created_by: context.userId,
+          total_recipients: recipients.length,
+          tiers: data.tiers ?? [],
+          attachments: (data.attachments ?? []).map((a) => ({
+            filename: a.filename,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+          })),
+        })
+        .select("id")
+        .single();
+      if (cErr || !campaign) {
+        throw new Error(cErr?.message ?? "campaign insert failed");
+      }
+
+      // Bulk-insert recipient rows up-front (queued).
+      const recipientRows = recipients.map((r) => ({
+        campaign_id: campaign.id,
+        email: r.email,
+        name: r.name,
+        status: "queued" as const,
+      }));
+      if (recipientRows.length > 0) {
+        const { error: rErr } = await supabaseAdmin
+          .from("outbound_campaign_recipients")
+          .insert(recipientRows);
+        if (rErr) throw new Error(`recipient insert failed: ${rErr.message}`);
+      }
+
+      let sent = 0;
+      const failures: Array<{ email: string; error: string }> = [];
+
+      for (const r of recipients) {
+        const messageId = buildMessageId(`campaign-${campaign.id}`);
+        try {
+          await sendViaMailgun({
+            from: `${inboxMeta.name} <${inboxMeta.email}>`,
+            to: r.name ? `${r.name} <${r.email}>` : r.email,
+            subject: data.subject,
+            text: data.body,
+            html,
+            messageId,
+            replyTo: inboxMeta.email,
+            attachments: attachmentPayloads.map((a) => ({
+              filename: a.filename,
+              contentType: a.contentType,
+              data: a.data,
+            })),
+          });
+          await supabaseAdmin
+            .from("outbound_campaign_recipients")
+            .update({
+              status: "sent",
+              mailgun_message_id: messageId,
+              sent_at: new Date().toISOString(),
+            })
+            .eq("campaign_id", campaign.id)
+            .eq("email", r.email);
+          sent += 1;
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          failures.push({ email: r.email, error: errorMsg });
+          await supabaseAdmin
+            .from("outbound_campaign_recipients")
+            .update({ status: "failed", error_message: errorMsg })
+            .eq("campaign_id", campaign.id)
+            .eq("email", r.email);
+        }
+      }
+
+      await supabaseAdmin
+        .from("outbound_campaigns")
+        .update({
+          sent_count: sent,
+          failed_count: failures.length,
+          sent_at: new Date().toISOString(),
+        })
+        .eq("id", campaign.id);
+
+      return {
+        sent,
+        failed: failures.length,
+        total: recipients.length,
+        campaignId: campaign.id,
+        failures: failures.slice(0, 10),
+      };
+    }
+
+    // ── DIRECT (1-to-1) branch ─────────────────────────────────────────────
+    // Direct sends still create one ticket per recipient — that's the point
+    // of a 1-to-1 conversation. Same behaviour as before.
     let sent = 0;
     const failures: Array<{ email: string; error: string }> = [];
 
     for (const r of recipients) {
       try {
-        // Create one ticket per recipient (so replies thread cleanly)
-        const tags: string[] = ["outbound"];
-        if (campaignId) tags.push("broadcast", campaignId);
-
         const { data: ticket, error: tErr } = await supabaseAdmin
           .from("support_tickets")
           .insert({
@@ -356,7 +451,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             source: "admin",
             inbox: data.inbox,
             status: "pending",
-            tags,
+            tags: ["outbound"],
             sla_due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           })
           .select("id")
@@ -396,7 +491,6 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
           .single();
         if (mErr || !msg) throw new Error(mErr?.message ?? "message insert failed");
 
-        // Link attachment rows (so they show in the ticket drawer)
         if (attachmentPayloads.length > 0) {
           const attRows = attachmentPayloads.map((a) => ({
             message_id: msg.id,
@@ -426,10 +520,11 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       sent,
       failed: failures.length,
       total: recipients.length,
-      campaignId,
+      campaignId: null,
       failures: failures.slice(0, 10),
     };
   });
+
 
 function bodyToHtml(text: string): string {
   const escape = (s: string) =>
