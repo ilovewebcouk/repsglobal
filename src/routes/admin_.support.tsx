@@ -361,6 +361,15 @@ function AdminSupport() {
           allCountQuery.refetch();
         }}
       />
+
+      <ComposeDialog
+        open={composeOpen}
+        onOpenChange={setComposeOpen}
+        onSent={() => {
+          ticketsQuery.refetch();
+          allCountQuery.refetch();
+        }}
+      />
     </DashboardShell>
   );
 }
