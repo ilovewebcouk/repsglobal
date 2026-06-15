@@ -428,9 +428,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               break;
             }
             case "checkout.session.completed": {
-              // Connect Checkout Sessions arrive with a Stripe-Account header.
-              const acctHeader = request.headers.get("stripe-account");
-              if (acctHeader) await handleConnectCheckoutCompleted(event.data.object as Stripe.Checkout.Session, acctHeader);
+              // Unreachable — merged into the case above. Kept removed.
               break;
             }
             case "charge.refunded": {
