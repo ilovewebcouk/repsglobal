@@ -262,6 +262,103 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          amount_pence: number
+          client_email: string
+          client_name: string | null
+          client_user_id: string | null
+          created_at: string
+          currency: string
+          dispute_status: string | null
+          environment: string
+          id: string
+          metadata: Json
+          paid_at: string | null
+          professional_id: string
+          refunded_amount_pence: number
+          refunded_at: string | null
+          service_id: string | null
+          service_title: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          stripe_account_id: string
+          stripe_charge_id: string | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_pence: number
+          client_email: string
+          client_name?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          currency?: string
+          dispute_status?: string | null
+          environment?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          professional_id: string
+          refunded_amount_pence?: number
+          refunded_at?: string | null
+          service_id?: string | null
+          service_title?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          stripe_account_id: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_pence?: number
+          client_email?: string
+          client_name?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          currency?: string
+          dispute_status?: string | null
+          environment?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          professional_id?: string
+          refunded_amount_pence?: number
+          refunded_at?: string | null
+          service_id?: string | null
+          service_title?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          stripe_account_id?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_invites: {
         Row: {
           accepted_at: string | null
@@ -490,6 +587,72 @@ export type Database = {
             foreignKeyName: "coach_client_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      connected_accounts: {
+        Row: {
+          charges_enabled: boolean
+          connected_at: string
+          country: string | null
+          created_at: string
+          default_currency: string | null
+          details_submitted: boolean
+          disconnected_at: string | null
+          environment: string
+          last_synced_at: string | null
+          payouts_enabled: boolean
+          professional_id: string
+          requirements_due: Json
+          stripe_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          connected_at?: string
+          country?: string | null
+          created_at?: string
+          default_currency?: string | null
+          details_submitted?: boolean
+          disconnected_at?: string | null
+          environment?: string
+          last_synced_at?: string | null
+          payouts_enabled?: boolean
+          professional_id: string
+          requirements_due?: Json
+          stripe_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          connected_at?: string
+          country?: string | null
+          created_at?: string
+          default_currency?: string | null
+          details_submitted?: boolean
+          disconnected_at?: string | null
+          environment?: string
+          last_synced_at?: string | null
+          payouts_enabled?: boolean
+          professional_id?: string
+          requirements_due?: Json
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connected_accounts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connected_accounts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
             referencedRelation: "v_identity_review_queue"
             referencedColumns: ["professional_id"]
           },
@@ -2835,6 +2998,14 @@ export type Database = {
         | "failed"
         | "skipped"
       billing_period: "monthly" | "annual"
+      booking_status:
+        | "pending"
+        | "paid"
+        | "refunded"
+        | "partially_refunded"
+        | "failed"
+        | "canceled"
+        | "disputed"
       campaign_recipient_status:
         | "queued"
         | "sent"
@@ -3028,6 +3199,15 @@ export const Constants = {
         "skipped",
       ],
       billing_period: ["monthly", "annual"],
+      booking_status: [
+        "pending",
+        "paid",
+        "refunded",
+        "partially_refunded",
+        "failed",
+        "canceled",
+        "disputed",
+      ],
       campaign_recipient_status: [
         "queued",
         "sent",

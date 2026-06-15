@@ -269,6 +269,57 @@ async function handleIdentityEvent(
 }
 
 
+async function handleConnectAccountUpdated(acct: Stripe.Account): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const requirements = (acct.requirements?.currently_due ?? []).concat(acct.requirements?.past_due ?? []);
+  await supabaseAdmin.from("connected_accounts").update({
+    charges_enabled: !!acct.charges_enabled,
+    payouts_enabled: !!acct.payouts_enabled,
+    details_submitted: !!acct.details_submitted,
+    requirements_due: requirements as never,
+    country: acct.country ?? null,
+    default_currency: acct.default_currency ?? null,
+    last_synced_at: new Date().toISOString(),
+  } as never).eq("stripe_account_id", acct.id);
+}
+
+async function handleConnectCheckoutCompleted(session: Stripe.Checkout.Session, stripeAccountId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const meta = (session.metadata ?? {}) as Record<string, string>;
+  if (meta.kind !== "booking") return;
+  const piId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
+  await supabaseAdmin.from("bookings").update({
+    status: session.payment_status === "paid" ? "paid" : "pending",
+    stripe_payment_intent_id: piId,
+    paid_at: session.payment_status === "paid" ? new Date().toISOString() : null,
+  } as never).eq("stripe_checkout_session_id", session.id).eq("stripe_account_id", stripeAccountId);
+}
+
+async function handleConnectChargeRefunded(charge: Stripe.Charge): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const piId = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!piId) return;
+  const refunded = charge.amount_refunded ?? 0;
+  const isFull = refunded >= (charge.amount ?? 0);
+  await supabaseAdmin.from("bookings").update({
+    status: isFull ? "refunded" : "partially_refunded",
+    refunded_amount_pence: refunded,
+    refunded_at: new Date().toISOString(),
+    stripe_charge_id: charge.id,
+  } as never).eq("stripe_payment_intent_id", piId);
+}
+
+async function handleConnectDispute(dispute: Stripe.Dispute, eventType: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const piId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
+  if (!piId) return;
+  const closed = eventType === "charge.dispute.closed";
+  await supabaseAdmin.from("bookings").update({
+    status: closed && dispute.status === "won" ? "paid" : "disputed",
+    dispute_status: dispute.status,
+  } as never).eq("stripe_payment_intent_id", piId);
+}
+
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
     handlers: {
@@ -364,6 +415,27 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "identity.verification_session.verified":
             case "identity.verification_session.canceled": {
               await handleIdentityEvent(stripe, event, env);
+              break;
+            }
+            case "account.updated": {
+              await handleConnectAccountUpdated(event.data.object as Stripe.Account);
+              break;
+            }
+            case "checkout.session.completed": {
+              // Connect Checkout Sessions arrive with a Stripe-Account header.
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectCheckoutCompleted(event.data.object as Stripe.Checkout.Session, acctHeader);
+              break;
+            }
+            case "charge.refunded": {
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectChargeRefunded(event.data.object as Stripe.Charge);
+              break;
+            }
+            case "charge.dispute.created":
+            case "charge.dispute.closed": {
+              const acctHeader = request.headers.get("stripe-account");
+              if (acctHeader) await handleConnectDispute(event.data.object as Stripe.Dispute, event.type);
               break;
             }
             default:

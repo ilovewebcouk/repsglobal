@@ -19,7 +19,9 @@ import {
   Sparkles,
   Trash2,
   User,
+  Wallet,
 } from "lucide-react";
+import { PaymentsSettingsTab } from "@/components/dashboard/PaymentsSettingsTab";
 import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -54,12 +56,13 @@ import {
 } from "@/lib/settings/settings.functions";
 
 
-type TabKey = "account" | "notifications" | "billing" | "credits" | "security" | "activity" | "privacy";
+type TabKey = "account" | "notifications" | "billing" | "payments" | "credits" | "security" | "activity" | "privacy";
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "account", label: "Account", icon: User },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "billing", label: "Billing", icon: CreditCard },
+  { key: "payments", label: "Payments", icon: Wallet },
   { key: "credits", label: "AI credits", icon: Sparkles },
   { key: "security", label: "Security", icon: Lock },
   { key: "activity", label: "Activity", icon: Activity },
@@ -165,6 +168,8 @@ function SettingsPage() {
             <NotificationsTab data={data} />
           ) : tab === "billing" ? (
             <BillingTab data={data} />
+          ) : tab === "payments" ? (
+            <PaymentsSettingsTab />
           ) : tab === "credits" ? (
             <CreditsPanel />
           ) : tab === "security" ? (
