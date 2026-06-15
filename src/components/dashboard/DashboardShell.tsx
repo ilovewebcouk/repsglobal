@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Menu,
+  Megaphone,
   MessagesSquare,
   Search,
   Settings,
