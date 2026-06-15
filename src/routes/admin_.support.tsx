@@ -235,17 +235,8 @@ function AdminSupport() {
     };
   }, [allCountQuery.data]);
 
-  const tickets = useMemo(() => {
-    const rows = ticketsQuery.data ?? [];
-    if (tab === "resolved") {
-      const today = new Date().toDateString();
-      return rows.filter(
-        (r: any) =>
-          r.resolved_at && new Date(r.resolved_at).toDateString() === today,
-      );
-    }
-    return rows;
-  }, [ticketsQuery.data, tab]);
+  // Server already scopes "resolved" tab to today via resolved_at filter.
+  const tickets = ticketsQuery.data ?? [];
 
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
@@ -860,8 +851,15 @@ function TicketDrawer({
     onSuccess: () => {
       const wasReply = mode === "reply";
       setDraft("");
+      const wasClose = closeAfter;
       setCloseAfter(false);
-      toast.success(wasReply ? "Reply sent" : "Note added");
+      toast.success(
+        wasReply
+          ? wasClose
+            ? "Reply sent · ticket set to Resolved"
+            : "Reply sent · ticket set to Pending"
+          : "Note added",
+      );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
       if (wasReply) onClose();
