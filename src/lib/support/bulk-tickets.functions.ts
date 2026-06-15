@@ -114,13 +114,10 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       _actor_id: context.userId,
       _action: `bulk_tickets.${data.action}`,
       _target_table: "support_tickets",
-      _target_id: null,
       _before_state: { tickets: previousStates },
       _after_state: { ids: data.ids, payload: data.payload ?? null },
-      _reason: null,
-      _ip: null,
-      _user_agent: null,
     });
+
 
     return { updated, previousStates };
   });
@@ -181,13 +178,9 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
       _actor_id: context.userId,
       _action: "bulk_tickets.undo",
       _target_table: "support_tickets",
-      _target_id: null,
-      _before_state: null,
       _after_state: { restored_count: restored },
-      _reason: null,
-      _ip: null,
-      _user_agent: null,
     });
+
 
     return { restored };
   });
