@@ -229,6 +229,76 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           }
         }
 
+        // 4) Auto-acknowledge brand-new tickets so the sender knows we got it.
+        //    Only fires for newly-created tickets (not follow-ups), and skips
+        //    addresses on the suppression list. Failure is non-fatal — the
+        //    ticket is already saved.
+        if (createdNewTicket && newTicketNumber) {
+          try {
+            const { data: suppressed } = await supabaseAdmin
+              .from("suppressed_emails")
+              .select("email")
+              .eq("email", senderEmail)
+              .maybeSingle();
+
+            if (!suppressed) {
+              const [
+                { default: React },
+                { render },
+                { TEMPLATES },
+                { sendViaMailgun, buildMessageId, SUPPORT_FROM_EMAIL, SUPPORT_FROM_NAME },
+              ] = await Promise.all([
+                import("react"),
+                import("@react-email/components"),
+                import("@/lib/email-templates/registry"),
+                import("@/lib/support/mailgun-send.server"),
+              ]);
+
+              const tpl = TEMPLATES["contact-autoresponse"];
+              const firstName = (senderName ?? senderEmail.split("@")[0] ?? "there")
+                .split(" ")[0];
+              const summarySnippet = (bodyPlain || subject).slice(0, 600);
+              const templateData = {
+                firstName,
+                ticketNumber: newTicketNumber,
+                summary: summarySnippet,
+              };
+              const element = React.createElement(tpl.component, templateData as any);
+              const html = await render(element);
+              const text = await render(element, { plainText: true });
+              const baseSubj =
+                typeof tpl.subject === "function" ? tpl.subject(templateData) : tpl.subject;
+              const subj = `[TKT-${newTicketNumber}] ${baseSubj}`;
+
+              const autoMessageId = buildMessageId(ticketId, "auto");
+              await sendViaMailgun({
+                from: `${SUPPORT_FROM_NAME} <${SUPPORT_FROM_EMAIL}>`,
+                to: senderName ? `${senderName} <${senderEmail}>` : senderEmail,
+                subject: subj,
+                text,
+                html,
+                messageId: autoMessageId,
+                inReplyTo: messageId || null,
+                references: messageId || null,
+                replyTo: SUPPORT_FROM_EMAIL,
+              });
+
+              await supabaseAdmin.from("support_messages").insert({
+                ticket_id: ticketId,
+                direction: "outbound",
+                from_email: SUPPORT_FROM_EMAIL,
+                from_name: SUPPORT_FROM_NAME,
+                body_text: text,
+                body_html: html,
+                mailgun_message_id: autoMessageId,
+                is_auto: true,
+              });
+            }
+          } catch (err) {
+            console.error("[support.inbound] auto-reply failed", err);
+          }
+        }
+
         return Response.json({ ok: true, ticket_id: ticketId });
       },
     },
