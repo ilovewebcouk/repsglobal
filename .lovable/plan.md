@@ -1,43 +1,42 @@
-## Slice 4 — Proposals (Pro)
+## Slice 5 — Convert lead to client (Pro)
 
-Add a third "Proposals" tab to `LeadDetailSheet` letting Pros draft, send, accept, decline, or withdraw structured proposals against a lead. Backed by the existing `lead_proposals` table (no schema changes). Status transitions also log into `lead_activity` so they appear in the Activity tab.
+Close the lead → client loop. From an open lead, a Pro can convert the enquiry into an active client relationship in one click. Stage moves to `won`, `enquiries.converted_client_id` is set, a `coach_client` link is created, and the action is logged into `lead_activity` so it shows in the Activity tab.
 
-### Data shape (`body` jsonb)
-```
-{
-  title: string,
-  summary?: string,
-  price_pence: number,
-  cadence: "one_off" | "weekly" | "monthly" | "package",
-  sessions?: number,
-  start_date?: ISO date (yyyy-mm-dd),
-  notes?: string
-}
-```
-Statuses: `draft | sent | accepted | declined | withdrawn`.
+### Requirement / constraint
+`public.clients.id` is FK to `auth.users(id)`. A lead can only be converted when the enquirer is a signed-in REPs user (`enquiries.sender_user_id IS NOT NULL`). Anonymous enquiries get a disabled button with the tooltip "Client needs a REPs account — send them a sign-up link first." (No invite flow yet — out of scope.)
 
-### Server (`src/lib/leads/proposals.functions.ts`)
-- `listProposals({ enquiryId })` → returns rows ordered by `created_at desc`
-- `createProposal({ enquiryId, body, status: "draft" | "sent" })` → insert; if `sent`, set `sent_at = now()` and log `lead_activity` `proposal_sent`
-- `updateProposal({ id, body?, status? })` → patch; on status change to `sent` set `sent_at`; on `accepted | declined | withdrawn` log `lead_activity` `proposal_<status>`
-- All gated by `requireSupabaseAuth` + `professional_id = userId` ownership check (verify via `enquiries.professional_id` on create, `lead_proposals.professional_id` on update)
+`clients` RLS does not allow a Pro to insert a row for someone else, so conversion runs through a `SECURITY DEFINER` RPC.
+
+### Migration
+New function `public.convert_lead_to_client(_enquiry_id uuid)` returns `uuid` (client id), `SECURITY DEFINER`, `set search_path = public`:
+1. Load enquiry; raise if not found.
+2. Assert `enquiry.professional_id = auth.uid()` (else raise `insufficient_privilege`).
+3. Assert `sender_user_id IS NOT NULL` (else raise with friendly message).
+4. `INSERT INTO clients (id) VALUES (sender_user_id) ON CONFLICT (id) DO NOTHING`.
+5. `INSERT INTO coach_client (professional_id, client_id) VALUES (...) ON CONFLICT DO UPDATE SET status='active', ended_at=NULL`.
+6. `UPDATE enquiries SET converted_client_id = sender_user_id, stage='won', updated_at=now() WHERE id = _enquiry_id`.
+7. `INSERT INTO lead_activity (enquiry_id, type, payload, created_by) VALUES (_enquiry_id, 'converted', jsonb_build_object('client_id', sender_user_id), auth.uid())`.
+8. Return the client id.
+
+Grant `EXECUTE` to `authenticated`.
+
+### Server (`src/lib/leads/leads.functions.ts`)
+- `convertLeadToClient({ enquiryId })` — `POST`, `requireSupabaseAuth`, validates with Zod, calls `supabase.rpc('convert_lead_to_client', { _enquiry_id })`, returns `{ clientId }`. Throws on RPC error with the Postgres message surfaced to the toast.
 
 ### UI
-- New `src/components/leads/LeadProposalsTab.tsx`
-  - Top: "New proposal" button → opens inline form (shadcn `Input`/`Textarea`/`Select`/`RadioGroup`) for the body fields
-  - List: stacked cards showing title, formatted price, cadence + sessions, status badge (color by status: draft=neutral, sent=blue, accepted=emerald, declined/withdrawn=muted), `timeAgo(created_at)`
-  - Per-card actions depending on status: draft → Send / Edit / Delete-as-withdrawn; sent → Mark accepted / Mark declined / Withdraw; terminal → read-only
-- Update `LeadDetailSheet.tsx` tabs: `grid-cols-3` with Details / Activity / Proposals
-- Reuse `Tabs` already added in Slice 3
-- Price input in £, persisted as pence
+- `src/components/leads/LeadDetailSheet.tsx`: above the tabs, in the existing header action row, add a primary "Convert to client" button.
+  - Hidden when `lead.stage === 'won'` or `lead.converted_client_id` is set; instead show a small emerald badge "Converted" linking to `/dashboard/clients/$clientId` (route may not exist yet — link still works once added; for now route to `/dashboard/clients`).
+  - Disabled with tooltip when `sender_user_id` is null.
+  - On click → `useMutation` calls `convertLeadToClient`, invalidates `['leads']`, `['lead', enquiryId]`, `['lead-activity', enquiryId]`; toast "Converted to client".
+- `LeadActivityTab.tsx`: add `converted` activity row (UserCheck icon, "Converted lead to client").
 
 ### Out of scope
-- Public proposal share link / client acceptance flow (will arrive with bookings/payments)
-- Email delivery of proposal (manual "I've sent this externally" for now)
-- Auto-converting accepted proposal into a client (Slice 5)
+- Inviting anonymous enquirers (no `auth.users` row yet).
+- Programmes, billing, or first session scheduling for the new client.
+- Dedicated `/dashboard/clients/$clientId` detail page.
 
 ### Files
-- create `src/lib/leads/proposals.functions.ts`
-- create `src/components/leads/LeadProposalsTab.tsx`
-- create `src/components/leads/ProposalForm.tsx` (inline form, kept separate for readability)
-- edit `src/components/leads/LeadDetailSheet.tsx` (add 3rd tab)
+- new migration: `convert_lead_to_client` RPC + GRANT.
+- edit `src/lib/leads/leads.functions.ts` — add `convertLeadToClient` server fn + schema.
+- edit `src/components/leads/LeadDetailSheet.tsx` — header button / converted badge.
+- edit `src/components/leads/LeadActivityTab.tsx` — render `converted` activity row.
