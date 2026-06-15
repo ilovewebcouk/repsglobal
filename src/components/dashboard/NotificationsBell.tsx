@@ -1,25 +1,10 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Bell, Mail, MessageSquare } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { listSupportNotifications } from "@/lib/support/tickets.functions";
-
-const STORAGE_KEY = "reps.support.lastSeenAt";
-
-type NotificationItem = {
-  key: string;
-  kind: "ticket" | "message";
-  ticketId: string;
-  ticketNumber: string;
-  title: string;
-  preview: string;
-  createdAt: string;
-};
+import { useSupportUnread } from "@/hooks/useSupportUnread";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -32,92 +17,9 @@ function timeAgo(iso: string) {
   return `${days}d ago`;
 }
 
-function readLastSeen(): number {
-  if (typeof window === "undefined") return 0;
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  return v ? Number(v) || 0 : 0;
-}
-
-function writeLastSeen(ts: number) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, String(ts));
-}
-
 export function NotificationsBell() {
-  const listFn = useServerFn(listSupportNotifications);
-  const query = useQuery({
-    queryKey: ["admin", "support", "notifications"],
-    queryFn: () => listFn(),
-    refetchOnWindowFocus: true,
-    staleTime: 30_000,
-  });
-
+  const { items, unread, lastSeen, markAllRead, isLoading } = useSupportUnread();
   const [open, setOpen] = React.useState(false);
-  const [lastSeen, setLastSeen] = React.useState<number>(() => readLastSeen());
-
-  // Realtime: refetch on new ticket / new inbound message.
-  React.useEffect(() => {
-    const channel = supabase
-      .channel("admin-support-notifications")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "support_tickets" },
-        () => query.refetch(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "support_messages", filter: "direction=eq.inbound" },
-        () => query.refetch(),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const items: NotificationItem[] = React.useMemo(() => {
-    const data = query.data;
-    if (!data) return [];
-    const fromTickets: NotificationItem[] = data.tickets.map((t) => ({
-      key: `t:${t.id}`,
-      kind: "ticket",
-      ticketId: t.id,
-      ticketNumber: t.ticket_number,
-      title: t.subject || "New support ticket",
-      preview: t.requester_name
-        ? `${t.requester_name} · ${t.requester_email}`
-        : t.requester_email,
-      createdAt: t.created_at,
-    }));
-    const fromMessages: NotificationItem[] = data.messages.map((m) => ({
-      key: `m:${m.id}`,
-      kind: "message",
-      ticketId: m.ticket_id,
-      ticketNumber: m.support_tickets?.ticket_number ?? "",
-      title: `Reply on ${m.support_tickets?.ticket_number ?? "ticket"}`,
-      preview:
-        (m.body_text ?? "").slice(0, 120).trim() ||
-        m.from_email ||
-        m.from_name ||
-        "New inbound message",
-      createdAt: m.created_at,
-    }));
-    return [...fromTickets, ...fromMessages]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 12);
-  }, [query.data]);
-
-  const unread = React.useMemo(
-    () => items.filter((i) => new Date(i.createdAt).getTime() > lastSeen).length,
-    [items, lastSeen],
-  );
-
-  const markAllRead = React.useCallback(() => {
-    const ts = Date.now();
-    setLastSeen(ts);
-    writeLastSeen(ts);
-  }, []);
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -167,7 +69,7 @@ export function NotificationsBell() {
         </div>
         <Separator className="bg-reps-border" />
         <div className="max-h-[420px] overflow-y-auto">
-          {query.isLoading ? (
+          {isLoading ? (
             <div className="px-4 py-6 text-[12px] text-white/55">Loading…</div>
           ) : items.length === 0 ? (
             <div className="px-4 py-8 text-center text-[12px] text-white/55">
