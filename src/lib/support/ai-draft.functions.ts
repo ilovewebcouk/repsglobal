@@ -99,3 +99,80 @@ Draft the next reply to the customer.`;
     if (!text) throw new Error("AI returned an empty draft");
     return { text };
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rephrase the admin's own draft in REPS support tone (no thread required).
+// ─────────────────────────────────────────────────────────────────────────────
+const REPHRASE_PROMPT = `You are an editor for REPs Support. Rewrite the agent's draft reply so it reads as a polished REPs Support message:
+- Professional, warm, plain English. UK spelling.
+- Keep the agent's meaning and any specific facts, numbers, names or commitments — do not invent new ones.
+- Tighten wording. Remove filler. Fix grammar and punctuation.
+- Keep it roughly the same length unless the original is rambling.
+- Sign off as "Best, REPS Support" only if the draft has no sign-off already.
+- Output the rewritten reply body only — no preamble, no commentary, no quotes around it.`;
+
+export const rephraseSupportReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { draft: string; ticketId?: string }) =>
+    z
+      .object({
+        draft: z.string().min(1).max(20000),
+        ticketId: z.string().uuid().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+
+    let contextBlock = "";
+    if (data.ticketId) {
+      const { data: ticket } = await context.supabase
+        .from("support_tickets")
+        .select("subject")
+        .eq("id", data.ticketId)
+        .maybeSingle();
+      if (ticket?.subject) {
+        contextBlock = `Ticket subject: ${ticket.subject}\n\n`;
+      }
+    }
+
+    const userPrompt = `${contextBlock}Agent draft:
+"""
+${data.draft}
+"""
+
+Rewrite the draft.`;
+
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("AI is not configured");
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: REPHRASE_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.3,
+      }),
+    });
+
+    if (res.status === 429) throw new Error("AI rate limit hit. Try again shortly.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Top up to continue.");
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      throw new Error(`AI request failed (${res.status}): ${t.slice(0, 200)}`);
+    }
+
+    const json = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const text = json.choices?.[0]?.message?.content?.trim() ?? "";
+    if (!text) throw new Error("AI returned an empty rewrite");
+    return { text };
+  });
