@@ -224,6 +224,13 @@ export const createProposal = createServerFn({ method: "POST" })
         .eq("id", data.enquiryId)
         .eq("professional_id", userId)
         .in("stage", ["new", "contacted", "call_booked"]);
+      // Email the lead with the proposal
+      await sendProposalEmail({
+        proposalId: row.id,
+        enquiryId: data.enquiryId,
+        professionalId: userId,
+        body,
+      });
     }
     return { id: row.id };
   });
