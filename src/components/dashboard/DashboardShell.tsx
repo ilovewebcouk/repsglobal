@@ -46,6 +46,8 @@ import {
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+import { useSupportUnread } from "@/hooks/useSupportUnread";
+
 
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
@@ -214,7 +216,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
     title: "Platform",
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-      { icon: LifeBuoy, label: "Support", to: "/admin/support", badge: "5" },
+      { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },
@@ -258,11 +260,14 @@ function NavSection({
                   <VerificationCountBadge />
                 ) : item.label === "Enquiries" && item.to === "/dashboard/enquiries" ? (
                   <EnquiriesUnreadBadge />
+                ) : item.label === "Support" && item.to === "/admin/support" ? (
+                  <SupportUnreadBadge />
                 ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
                   </span>
                 ) : null}
+
               </Link>
             </li>
           );
@@ -331,6 +336,18 @@ function EnquiriesUnreadBadge() {
     </span>
   );
 }
+
+function SupportUnreadBadge() {
+  const { unread } = useSupportUnread();
+  if (!unread) return null;
+  return (
+    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+      {unread > 99 ? "99+" : unread}
+    </span>
+  );
+}
+
+
 
 
 function AdminBadge() {
