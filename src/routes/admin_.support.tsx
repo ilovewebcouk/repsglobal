@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Mail, MessageSquare, Send, StickyNote, X } from "lucide-react";
+import { Clock, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -27,7 +27,9 @@ import {
   replyToTicket,
   updateTicket,
   addInternalNote,
+  getAttachmentUrl,
 } from "@/lib/support/tickets.functions";
+import { draftSupportReply } from "@/lib/support/ai-draft.functions";
 
 export const Route = createFileRoute("/admin_/support")({
   ssr: false,
@@ -323,6 +325,7 @@ function TicketDrawer({
   const replyFn = useServerFn(replyToTicket);
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
+  const draftFn = useServerFn(draftSupportReply);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
@@ -352,6 +355,20 @@ function TicketDrawer({
     onError: (e: any) => toast.error(e?.message ?? "Failed to send"),
   });
 
+  const aiDraft = useMutation({
+    mutationFn: async () => {
+      if (!ticketId) throw new Error("No ticket");
+      return draftFn({ data: { ticketId } });
+    },
+    onSuccess: (res) => {
+      if (res?.text) {
+        setDraft((current) => (current.trim() ? `${current.trim()}\n\n${res.text}` : res.text));
+        toast.success("AI draft ready — review before sending");
+      }
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
+  });
+
   const update = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: ticketId!, ...patch } }),
     onSuccess: () => {
@@ -371,28 +388,19 @@ function TicketDrawer({
         className="w-full sm:max-w-[640px] border-l border-reps-border bg-reps-panel/95 text-white p-0 flex flex-col"
       >
         <SheetHeader className="px-6 py-4 border-b border-reps-border">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] font-mono text-white/45">
-                {ticket?.ticket_number ?? "…"}
-              </div>
-              <SheetTitle className="text-white text-[16px] font-semibold line-clamp-2 mt-0.5">
-                {ticket?.subject ?? "Loading…"}
-              </SheetTitle>
-              {ticket ? (
-                <div className="mt-1 text-[12px] text-white/55">
-                  {ticket.requester_name ? `${ticket.requester_name} · ` : ""}
-                  {ticket.requester_email}
-                </div>
-              ) : null}
+          <div>
+            <div className="text-[11px] font-mono text-white/45">
+              {ticket?.ticket_number ?? "…"}
             </div>
-            <button
-              onClick={onClose}
-              className="text-white/55 hover:text-white"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <SheetTitle className="text-white text-[16px] font-semibold line-clamp-2 mt-0.5">
+              {ticket?.subject ?? "Loading…"}
+            </SheetTitle>
+            {ticket ? (
+              <div className="mt-1 text-[12px] text-white/55">
+                {ticket.requester_name ? `${ticket.requester_name} · ` : ""}
+                {ticket.requester_email}
+              </div>
+            ) : null}
           </div>
 
           {ticket ? (
@@ -467,6 +475,21 @@ function TicketDrawer({
             >
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
+            <div className="ml-auto">
+              <button
+                type="button"
+                onClick={() => aiDraft.mutate()}
+                disabled={
+                  aiDraft.isPending ||
+                  mode !== "reply" ||
+                  !messages.some((m: any) => m.direction === "inbound")
+                }
+                className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
+                {aiDraft.isPending ? "Drafting…" : "AI draft"}
+              </button>
+            </div>
           </div>
           <Textarea
             value={draft}
@@ -518,9 +541,49 @@ function TicketDrawer({
   );
 }
 
+function formatBytes(n?: number | null) {
+  if (!n || n <= 0) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function AttachmentChip({ att }: { att: any }) {
+  const getUrl = useServerFn(getAttachmentUrl);
+  const [busy, setBusy] = useState(false);
+  const open = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await getUrl({ data: { attachmentId: att.id } });
+      if (res?.url) window.open(res.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open attachment");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={open}
+      disabled={busy}
+      className="inline-flex max-w-full items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[12px] text-white/80 hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+      title={att.filename}
+    >
+      <Paperclip className="h-3 w-3 text-white/55 shrink-0" />
+      <span className="truncate max-w-[220px]">{att.filename}</span>
+      {att.size_bytes ? (
+        <span className="text-white/40">· {formatBytes(att.size_bytes)}</span>
+      ) : null}
+    </button>
+  );
+}
+
 function MessageBubble({ m }: { m: any }) {
   const isOut = m.direction === "outbound";
   const isNote = m.direction === "internal_note";
+  const attachments: any[] = Array.isArray(m.support_attachments) ? m.support_attachments : [];
   return (
     <div
       className={`rounded-[14px] border px-4 py-3 ${
@@ -557,6 +620,13 @@ function MessageBubble({ m }: { m: any }) {
       <div className="text-[13.5px] text-white/85 leading-relaxed whitespace-pre-wrap">
         {m.body_text || (m.body_html ? "(HTML message)" : "")}
       </div>
+      {attachments.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {attachments.map((att) => (
+            <AttachmentChip key={att.id} att={att} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
