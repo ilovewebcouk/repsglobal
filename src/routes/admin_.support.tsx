@@ -572,12 +572,17 @@ function AdminSupport() {
                   const ib = (t.inbox ?? "support") as Exclude<InboxFilter, "all">;
                   const meta = INBOX_META[ib] ?? INBOX_META.support;
                   const isSelected = selectedIds.has(t.id);
+                  const isCursor = cursorId === t.id;
+                  const isUnread = !!t.is_unread;
+                  const snoozeMsg = snoozedLabel(t.snoozed_until);
                   return (
                   <tr
                     key={t.id}
                     data-selected={isSelected || undefined}
-                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30"
+                    data-cursor={isCursor || undefined}
+                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30 data-[cursor]:ring-1 data-[cursor]:ring-inset data-[cursor]:ring-reps-orange/40"
                     onClick={() => setOpenId(t.id)}
+                    onMouseEnter={() => setCursorId(t.id)}
                   >
                     <td
                       className="w-9 px-3 py-3"
@@ -595,9 +600,27 @@ function AdminSupport() {
                       <div className="text-[11px] font-mono text-white/50">
                         {t.ticket_number}
                       </div>
-                      <div className="text-[13px] font-semibold text-white line-clamp-1">
-                        {t.subject}
+                      <div className="flex items-center gap-2">
+                        {isUnread ? (
+                          <span
+                            aria-label="Unread"
+                            title="Unread — new customer message"
+                            className="inline-block size-1.5 rounded-full bg-reps-orange shrink-0"
+                          />
+                        ) : null}
+                        <div
+                          className={`text-[13px] line-clamp-1 ${
+                            isUnread ? "font-bold text-white" : "font-semibold text-white/90"
+                          }`}
+                        >
+                          {t.subject}
+                        </div>
                       </div>
+                      {snoozeMsg ? (
+                        <div className="mt-0.5 text-[11px] text-sky-300/80 inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {snoozeMsg}
+                        </div>
+                      ) : null}
                     </td>
 
                     <td className="px-3 py-3">
@@ -607,9 +630,16 @@ function AdminSupport() {
                         {meta.label}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-white/70">
-                      <div className="text-[12.5px]">{t.requester_name ?? "—"}</div>
-                      <div className="text-[11px] text-white/45">{t.requester_email}</div>
+                    <td className="px-3 py-3 text-white/70 max-w-[200px]">
+                      <div className="text-[12.5px] truncate" title={t.requester_name ?? undefined}>
+                        {t.requester_name ?? "—"}
+                      </div>
+                      <div
+                        className="text-[11px] text-white/45 truncate"
+                        title={t.requester_email}
+                      >
+                        {t.requester_email}
+                      </div>
                     </td>
                     <td className="px-3 py-3">
                       <span
