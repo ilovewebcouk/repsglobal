@@ -1,42 +1,55 @@
-## Slice 5 — Convert lead to client (Pro)
+## Slice 6 — Converted lead lands on the clients roster
 
-Close the lead → client loop. From an open lead, a Pro can convert the enquiry into an active client relationship in one click. Stage moves to `won`, `enquiries.converted_client_id` is set, a `coach_client` link is created, and the action is logged into `lead_activity` so it shows in the Activity tab.
-
-### Requirement / constraint
-`public.clients.id` is FK to `auth.users(id)`. A lead can only be converted when the enquirer is a signed-in REPs user (`enquiries.sender_user_id IS NOT NULL`). Anonymous enquiries get a disabled button with the tooltip "Client needs a REPs account — send them a sign-up link first." (No invite flow yet — out of scope.)
-
-`clients` RLS does not allow a Pro to insert a row for someone else, so conversion runs through a `SECURITY DEFINER` RPC.
+Right now `convert_lead_to_client` (Slice 5) creates a `clients` row and a `coach_client` link, but the existing `/dashboard/clients` page reads from `client_roster`. So a freshly converted lead disappears from leads but never shows up in the clients list. Close that gap by upserting a roster row inside the conversion RPC, and make the "View client" link from the lead sheet jump to that row.
 
 ### Migration
-New function `public.convert_lead_to_client(_enquiry_id uuid)` returns `uuid` (client id), `SECURITY DEFINER`, `set search_path = public`:
-1. Load enquiry; raise if not found.
-2. Assert `enquiry.professional_id = auth.uid()` (else raise `insufficient_privilege`).
-3. Assert `sender_user_id IS NOT NULL` (else raise with friendly message).
-4. `INSERT INTO clients (id) VALUES (sender_user_id) ON CONFLICT (id) DO NOTHING`.
-5. `INSERT INTO coach_client (professional_id, client_id) VALUES (...) ON CONFLICT DO UPDATE SET status='active', ended_at=NULL`.
-6. `UPDATE enquiries SET converted_client_id = sender_user_id, stage='won', updated_at=now() WHERE id = _enquiry_id`.
-7. `INSERT INTO lead_activity (enquiry_id, type, payload, created_by) VALUES (_enquiry_id, 'converted', jsonb_build_object('client_id', sender_user_id), auth.uid())`.
-8. Return the client id.
+Update `public.convert_lead_to_client(_enquiry_id uuid)` to additionally upsert into `client_roster`:
 
-Grant `EXECUTE` to `authenticated`.
+```
+INSERT INTO public.client_roster (
+  professional_id, email, full_name,
+  status, client_id, auth_user_id,
+  confirmed_at, activated_at
+)
+VALUES (
+  v_uid,
+  lower(v_enquiry.sender_email),
+  v_enquiry.sender_name,
+  'active'::roster_status,
+  v_enquiry.sender_user_id,
+  v_enquiry.sender_user_id,
+  now(),
+  now()
+)
+ON CONFLICT (professional_id, lower(email))
+DO UPDATE SET
+  status        = 'active'::roster_status,
+  client_id     = EXCLUDED.client_id,
+  auth_user_id  = EXCLUDED.auth_user_id,
+  full_name     = COALESCE(client_roster.full_name, EXCLUDED.full_name),
+  activated_at  = COALESCE(client_roster.activated_at, now()),
+  archived_at   = NULL,
+  updated_at    = now()
+RETURNING id INTO v_roster_id;
+```
 
-### Server (`src/lib/leads/leads.functions.ts`)
-- `convertLeadToClient({ enquiryId })` — `POST`, `requireSupabaseAuth`, validates with Zod, calls `supabase.rpc('convert_lead_to_client', { _enquiry_id })`, returns `{ clientId }`. Throws on RPC error with the Postgres message surfaced to the toast.
+Function still returns the client uuid (so the existing TS types regen safely). No new GRANTs needed (RPC already executable; the function runs as `postgres` under `SECURITY DEFINER`, so the roster RLS tier check is bypassed — intentional, conversion is gated by the enquiry-owner check earlier in the function).
 
 ### UI
-- `src/components/leads/LeadDetailSheet.tsx`: above the tabs, in the existing header action row, add a primary "Convert to client" button.
-  - Hidden when `lead.stage === 'won'` or `lead.converted_client_id` is set; instead show a small emerald badge "Converted" linking to `/dashboard/clients/$clientId` (route may not exist yet — link still works once added; for now route to `/dashboard/clients`).
-  - Disabled with tooltip when `sender_user_id` is null.
-  - On click → `useMutation` calls `convertLeadToClient`, invalidates `['leads']`, `['lead', enquiryId]`, `['lead-activity', enquiryId]`; toast "Converted to client".
-- `LeadActivityTab.tsx`: add `converted` activity row (UserCheck icon, "Converted lead to client").
+- `src/components/leads/LeadDetailSheet.tsx` — the existing "Converted to client" emerald row's "View client" link currently points at `/dashboard/clients`. Keep it pointing there (the roster page is the destination) but change the label to "Open in clients" for clarity. No new route required.
+- No changes to `LeadActivityTab` (the `converted` row already renders).
+- No changes to the clients page itself — the new roster row will appear automatically because `listRoster` already powers that table.
 
-### Out of scope
-- Inviting anonymous enquirers (no `auth.users` row yet).
-- Programmes, billing, or first session scheduling for the new client.
-- Dedicated `/dashboard/clients/$clientId` detail page.
+### Edge cases
+- If the lead is converted, then later the Pro archives the roster row, then re-runs conversion (only possible if someone manually un-converts — out of scope for now): the upsert flips it back to `active` and clears `archived_at`. Acceptable.
+- Existing roster row for the same email (e.g. Pro added them manually earlier): the upsert links `client_id`/`auth_user_id` and forces status to `active`. Their manual notes are preserved.
+- Anonymous enquiries (sender_user_id null) still fail with the existing friendly error before reaching the roster insert.
 
 ### Files
-- new migration: `convert_lead_to_client` RPC + GRANT.
-- edit `src/lib/leads/leads.functions.ts` — add `convertLeadToClient` server fn + schema.
-- edit `src/components/leads/LeadDetailSheet.tsx` — header button / converted badge.
-- edit `src/components/leads/LeadActivityTab.tsx` — render `converted` activity row.
+- migration: replace `public.convert_lead_to_client` body (additive — extra upsert + roster_id local var).
+- edit `src/components/leads/LeadDetailSheet.tsx` (link label only).
+
+### Out of scope
+- Dedicated `/dashboard/clients/$clientId` detail wired to coach_client data (existing `dashboard_.clients.$slug.tsx` reads from roster slug — fine as-is).
+- Backfilling roster rows for any leads converted before this migration.
+- Surfacing "originated from lead" badge on the clients table.
