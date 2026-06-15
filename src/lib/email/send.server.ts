@@ -4,9 +4,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
 // Must match the constants in src/routes/lovable/email/transactional/send.ts.
-const SITE_NAME = "repsglobal";
-const SENDER_DOMAIN = "notify.dogboss.io";
-const FROM_DOMAIN = "notify.dogboss.io";
+const SITE_NAME = "REPS";
+const SENDER_DOMAIN = "notify.repsuk.org";
+const FROM_DOMAIN = "notify.repsuk.org";
+
 
 function generateToken(): string {
   const bytes = new Uint8Array(32);
