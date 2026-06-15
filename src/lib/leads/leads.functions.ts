@@ -444,3 +444,37 @@ export const listLeadActivity = createServerFn({ method: "POST" })
       created_at: r.created_at,
     }));
   });
+
+/* -------------------- Add note -------------------- */
+
+const AddLeadNoteSchema = z.object({
+  enquiryId: z.string().uuid(),
+  body: z.string().trim().min(1).max(2000),
+});
+
+export const addLeadNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AddLeadNoteSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const userId = context.userId;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Verify ownership
+    const { data: enq, error: enqErr } = await supabaseAdmin
+      .from("enquiries")
+      .select("id")
+      .eq("id", data.enquiryId)
+      .eq("professional_id", userId)
+      .maybeSingle();
+    if (enqErr) throw enqErr;
+    if (!enq) throw new Error("Lead not found");
+
+    const { error } = await supabaseAdmin.from("lead_activity").insert({
+      enquiry_id: data.enquiryId,
+      professional_id: userId,
+      type: "note",
+      payload: { body: data.body },
+      created_by: userId,
+    });
+    if (error) throw error;
+    return { ok: true };
+  });
