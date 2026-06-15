@@ -57,7 +57,7 @@ export const getTicket = createServerFn({ method: "POST" })
     const { data: messages, error: mErr } = await context.supabase
       .from("support_messages")
       .select(
-        "id, direction, from_email, from_name, author_user_id, body_text, body_html, created_at, mailgun_message_id, in_reply_to, support_attachments(id, filename, mime_type, size_bytes, storage_path)",
+        "id, direction, from_email, from_name, author_user_id, body_text, body_html, created_at, mailgun_message_id, in_reply_to, is_auto, support_attachments(id, filename, mime_type, size_bytes, storage_path)",
       )
       .eq("ticket_id", data.id)
       .order("created_at", { ascending: true });
