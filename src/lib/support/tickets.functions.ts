@@ -64,6 +64,57 @@ export const getTicket = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Recent activity feed for the admin notifications bell.
+// Returns the latest tickets + latest inbound messages.
+// ─────────────────────────────────────────────────────────────────────────────
+export const listSupportNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+
+    const [ticketsRes, messagesRes] = await Promise.all([
+      context.supabase
+        .from("support_tickets")
+        .select("id, ticket_number, subject, requester_name, requester_email, created_at")
+        .order("created_at", { ascending: false })
+        .limit(15),
+      context.supabase
+        .from("support_messages")
+        .select(
+          "id, ticket_id, from_name, from_email, body_text, created_at, support_tickets!inner(ticket_number, subject)",
+        )
+        .eq("direction", "inbound")
+        .order("created_at", { ascending: false })
+        .limit(15),
+    ]);
+
+    if (ticketsRes.error) throw new Error(ticketsRes.error.message);
+    if (messagesRes.error) throw new Error(messagesRes.error.message);
+
+    return {
+      tickets: (ticketsRes.data ?? []) as Array<{
+        id: string;
+        ticket_number: string;
+        subject: string;
+        requester_name: string | null;
+        requester_email: string;
+        created_at: string;
+      }>,
+      messages: (messagesRes.data ?? []) as Array<{
+        id: string;
+        ticket_id: string;
+        from_name: string | null;
+        from_email: string | null;
+        body_text: string | null;
+        created_at: string;
+        support_tickets: { ticket_number: string; subject: string } | null;
+      }>,
+    };
+  });
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Update ticket (status, priority, assignee, tags)
 // ─────────────────────────────────────────────────────────────────────────────
 export const updateTicket = createServerFn({ method: "POST" })
