@@ -407,27 +407,28 @@ function AdminSupport() {
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
-          label="Open"
-          value={counts.open}
-          detail={`${counts.urgent} urgent`}
-          warn={counts.urgent > 0}
+          label="Needs you"
+          value={counts.unread}
+          detail={`${counts.urgent} urgent · ${counts.open} open`}
+          warn={counts.unread > 0 || counts.urgent > 0}
         />
         <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
+        <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
         <Kpi label="Resolved today" value={counts.resolvedToday} detail="Across all agents" />
-        <Kpi label="Total tickets" value={counts.all} detail="All time" />
       </div>
 
       <PPanel className="mt-6 p-0">
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
 
-
-          <div className="flex items-center justify-between gap-3">
-            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
-              <TabsList className="bg-transparent p-0 h-auto gap-1">
+          {/* Row 1: tabs + search + new ticket */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)} className="min-w-0">
+              <TabsList className="bg-transparent p-0 h-auto gap-1 flex-wrap">
                 {(
                   [
                     ["open", "Open", counts.open],
                     ["pending", "Pending", counts.pending],
+                    ["snoozed", "Snoozed", counts.snoozed],
                     ["resolved", "Resolved", counts.resolved],
                     ["all", "All", counts.all],
                   ] as const
@@ -442,10 +443,39 @@ function AdminSupport() {
                 ))}
               </TabsList>
             </Tabs>
+
+            <div className="relative ml-auto flex-1 min-w-[180px] max-w-[320px]">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
+              <Input
+                ref={searchRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search tickets, subject, email…   (/)"
+                className="h-8 pl-8 pr-7 bg-white/[0.04] border-reps-border text-white text-[12.5px] placeholder:text-white/35"
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/45 hover:text-white"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
+
+            <Button
+              onClick={() => setComposeOpen(true)}
+              size="sm"
+              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> New ticket
+            </Button>
           </div>
 
-
-          <div className="flex flex-wrap items-center gap-1.5">
+          {/* Row 2: inbox filter — pills on >=640, select on mobile */}
+          <div className="hidden sm:flex flex-wrap items-center gap-1.5">
             {(
               [
                 ["all", "All inboxes"],
@@ -476,7 +506,22 @@ function AdminSupport() {
               );
             })}
           </div>
+          <div className="sm:hidden">
+            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
+              <SelectTrigger className="h-8 bg-white/[0.04] border-reps-border text-white text-[12.5px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
+                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
+                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
+                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
+                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-[13px]">
