@@ -277,7 +277,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
 
     const { data: ticket, error: tErr } = await context.supabase
       .from("support_tickets")
-      .select("id, ticket_number, subject, requester_email, requester_name, thread_key")
+      .select("id, ticket_number, subject, requester_email, requester_name, thread_key, status")
       .eq("id", data.ticketId)
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
@@ -382,6 +382,13 @@ export const replyToTicket = createServerFn({ method: "POST" })
       await context.supabase
         .from("support_tickets")
         .update({ status: "resolved", resolved_at: new Date().toISOString() })
+        .eq("id", ticket.id);
+    } else if (ticket.status !== "pending" && ticket.status !== "resolved" && ticket.status !== "closed") {
+      // Zendesk-style: a customer-facing reply flips the ticket to pending
+      // (waiting on customer) so it falls out of "Needs you" automatically.
+      await context.supabase
+        .from("support_tickets")
+        .update({ status: "pending" })
         .eq("id", ticket.id);
     }
 
