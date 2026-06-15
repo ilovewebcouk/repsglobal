@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DictateButton } from "@/components/ui/DictateButton";
 import {
   Select,
   SelectContent,
@@ -172,13 +173,21 @@ export function NewTicketDialog({
             <label className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">
               Message
             </label>
-            <Textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={7}
-              placeholder="Write your message…"
-              className="mt-1 bg-white/[0.04] border-reps-border text-white text-[14px] resize-none"
-            />
+            <div className="relative mt-1">
+              <Textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={7}
+                placeholder="Write your message…"
+                className="bg-white/[0.04] border-reps-border text-white text-[14px] resize-none pr-12"
+              />
+              <DictateButton
+                className="absolute bottom-2 right-2"
+                onTranscript={(t) =>
+                  setBody((b) => (b.trim() ? `${b.trimEnd()} ${t}` : t))
+                }
+              />
+            </div>
           </div>
         </div>
 
