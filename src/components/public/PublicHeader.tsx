@@ -60,6 +60,7 @@ import {
 } from "./nav-config";
 import { FEATURE_GROUPS } from "@/components/features/feature-config";
 import { initialsFromName } from "@/lib/initials";
+import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 
 
 type Variant = "transparent" | "solid";
