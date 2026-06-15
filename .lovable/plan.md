@@ -1,42 +1,33 @@
 ## Goal
-Turn the currently-disabled bell in the dashboard header into a live notification button that surfaces new support tickets and new inbound emails as they arrive.
+Make inbound support emails appear in the support queue and update the sidebar/bell unread counts without you manually configuring Mailgun.
 
-## Scope
-- Admin role only (the support queue is admin-only). The bell stays disabled for trainer/client roles for now — happy to extend later if you want.
-- "Notification" = a new `support_tickets` row OR a new `support_messages` row with `direction = 'inbound'` (i.e. a customer reply to an existing thread).
+## What I found
+- Mailgun is already connected to the project.
+- The Mailgun domain `repsuk.org` is active.
+- A Mailgun route already exists for `support@repsuk.org`.
+- The likely break is the route action: it is currently using Mailgun storage notification style (`store(...notify=...)`), while the app endpoint is written for direct inbound email forwarding fields. That means Mailgun can hit the app but the app may not receive the actual sender/subject/body in the shape it expects.
 
-## Behaviour
-1. Bell shows an unread count badge (orange dot + number, capped at "9+").
-2. Clicking the bell opens a popover listing the last ~10 notifications, newest first:
-   - New ticket → subject + requester + "Just now / 5m ago"
-   - New inbound message → "Reply on TKT-1234" + snippet
-   - Each row links to `/admin/support?ticket=<id>` and closes the popover.
-3. "Mark all as read" action + auto-mark-as-read when the popover opens.
-4. Unread state persists per admin in `localStorage` as a `lastSeenAt` timestamp (no schema changes needed — keeps this lightweight).
-5. Updates arrive live via Supabase Realtime — no polling, no page refresh.
+## Plan
+1. **Make the inbound webhook handle Mailgun properly**
+   - Update the existing inbound endpoint so it accepts both Mailgun formats:
+     - direct forwarded inbound email payloads
+     - stored-message notification payloads
+   - If Mailgun sends a stored-message URL, the app will fetch the full message through the linked Mailgun connector and then create/update the support ticket.
 
-## Technical details
-- Enable Realtime in a migration:
-  ```sql
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.support_tickets;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.support_messages;
-  ```
-- New hook `src/hooks/useSupportNotifications.ts`:
-  - On mount, fetch last 20 tickets + last 20 inbound messages (server fn, admin-gated via `has_role`), merge, sort by `created_at` desc.
-  - Subscribe to `postgres_changes` INSERT events on both tables inside `useEffect`; on event, prepend to the in-memory list and bump unread count. Clean up channel on unmount.
-  - Track `lastSeenAt` in `localStorage` (`reps.support.lastSeenAt`); unread = items with `created_at > lastSeenAt`.
-- New component `src/components/dashboard/NotificationsBell.tsx`:
-  - shadcn `Popover` + `Button` (replaces the disabled button in `DashboardShell.tsx` ~line 475).
-  - Badge: small orange pill on top-right of the bell when `unread > 0`.
-  - Empty state: "You're all caught up."
-- `DashboardShell.tsx`: render `<NotificationsBell />` when `role === "admin"`; keep the disabled bell for other roles (unchanged visuals).
-- Server fn `getRecentSupportActivity` in `src/lib/support-notifications.functions.ts`:
-  - `.middleware([requireSupabaseAuth])`, verify `has_role(userId, 'admin')`, then read tickets + inbound messages via the user-scoped supabase client (RLS already restricts to admins).
+2. **Repair the Mailgun route automatically through the connector**
+   - Use the connected Mailgun account to update the existing `support@repsuk.org` route so future inbound messages are sent in the cleanest format for the app.
+   - No manual Mailgun dashboard work from you.
 
-## Out of scope
-- Sound / browser push notifications.
-- Per-admin server-side read state (localStorage is enough for one admin; we can promote to a DB column later if multiple admins need shared state).
-- Notifications for outbound replies, status changes, or non-support events.
+3. **Preserve ticket threading**
+   - Keep matching replies via `In-Reply-To` / `References` headers.
+   - Keep fallback matching to the latest open ticket from the same sender.
+   - New emails still create new support tickets.
 
-## Verification
-- Open `/admin/support` in one tab and trigger a new inbound email via Mailgun → bell badge increments live, popover lists the new item, clicking jumps to the ticket and clears the badge.
+4. **Make failures visible**
+   - Add safer logging for rejected/unsupported Mailgun payloads so we can tell whether Mailgun delivered the webhook, the signature failed, or the message failed to save.
+   - Avoid exposing sensitive email body content in logs.
+
+5. **Verify end-to-end**
+   - Check the route configuration after updating it.
+   - Confirm the endpoint can accept Mailgun’s payload shape.
+   - Once you send a test email to `support@repsuk.org`, it should appear in the support queue and increment the bell/sidebar unread count automatically.
