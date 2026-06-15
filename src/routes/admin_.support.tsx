@@ -686,6 +686,17 @@ function AdminSupport() {
         }}
       />
 
+      <NewTicketDialog
+        open={composeOpen}
+        onOpenChange={setComposeOpen}
+        onCreated={(ticketId) => {
+          ticketsQuery.refetch();
+          allCountQuery.refetch();
+          setOpenId(ticketId);
+        }}
+      />
+
+
 
       <BulkActionBar
         count={selectedIds.size}
