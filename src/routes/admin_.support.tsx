@@ -301,36 +301,8 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
-        <div className="flex items-center gap-1 border-b border-reps-border px-3 pt-3">
-          <button
-            type="button"
-            onClick={() => setView("tickets")}
-            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              view === "tickets"
-                ? "bg-white/10 text-white"
-                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <Mail className="size-3.5" /> Tickets
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("campaigns")}
-            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              view === "campaigns"
-                ? "bg-white/10 text-white"
-                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <Megaphone className="size-3.5" /> Campaigns
-          </button>
-        </div>
-
-        {view === "campaigns" ? (
-          <CampaignsTab />
-        ) : (
-        <>
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+
 
           <div className="flex items-center justify-between gap-3">
             <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
