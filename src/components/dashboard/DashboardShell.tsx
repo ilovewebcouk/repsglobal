@@ -258,11 +258,14 @@ function NavSection({
                   <VerificationCountBadge />
                 ) : item.label === "Enquiries" && item.to === "/dashboard/enquiries" ? (
                   <EnquiriesUnreadBadge />
+                ) : item.label === "Support" && item.to === "/admin/support" ? (
+                  <SupportUnreadBadge />
                 ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
                   </span>
                 ) : null}
+
               </Link>
             </li>
           );
