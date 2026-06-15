@@ -9,7 +9,7 @@ export const createBookingCheckoutSession = createServerFn({ method: "POST" })
 
     const { data: service, error: svcErr } = await supabaseAdmin
       .from("services")
-      .select("id, professional_id, title, price_pence, is_published")
+      .select("id, professional_id, title, price_pence, is_published, professionals!inner(slug)")
       .eq("id", data.serviceId)
       .maybeSingle();
     if (svcErr) throw new Error(svcErr.message);
@@ -17,6 +17,7 @@ export const createBookingCheckoutSession = createServerFn({ method: "POST" })
     if (!service.price_pence || service.price_pence <= 0) {
       throw new Error("This service does not have a price set. Use enquire instead.");
     }
+    const proSlug = (service as any).professionals?.slug ?? "";
 
     const { data: acct } = await supabaseAdmin
       .from("connected_accounts")
