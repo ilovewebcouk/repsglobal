@@ -1,9 +1,6 @@
-import * as React from "react";
-import { render } from "@react-email/components";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { TEMPLATES } from "@/lib/email-templates/registry";
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
@@ -229,7 +226,13 @@ export const replyToTicket = createServerFn({ method: "POST" })
       ? `${(profile.full_name as string).split(" ")[0]} at REPS`
       : "REPS Support";
 
-    // Render template
+    // Render template (server-only imports inside handler so the email
+    // template registry never lands in the client bundle).
+    const [{ default: React }, { render }, { TEMPLATES }] = await Promise.all([
+      import("react"),
+      import("@react-email/components"),
+      import("@/lib/email-templates/registry"),
+    ]);
     const tpl = TEMPLATES["support-reply"];
     const templateData = {
       ticketNumber: ticket.ticket_number,
