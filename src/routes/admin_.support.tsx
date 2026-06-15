@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import { ComposeDialog } from "@/components/admin/support/ComposeDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -98,6 +99,7 @@ function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [composeOpen, setComposeOpen] = useState(false);
   const qc = useQueryClient();
   const listFn = useServerFn(listTickets);
   const channelName = useRef(
@@ -205,9 +207,19 @@ function AdminSupport() {
                 ))}
               </TabsList>
             </Tabs>
-            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
-              <Inbox className="h-3 w-3" />
-              support@ · pros@ · partners@ · press@
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
+                <Inbox className="h-3 w-3" />
+                support@ · pros@ · partners@ · press@
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setComposeOpen(true)}
+                className="bg-reps-orange text-black hover:bg-reps-orange/90 h-8"
+              >
+                <PencilLine className="size-3.5" />
+                Compose
+              </Button>
             </div>
           </div>
 
@@ -345,6 +357,15 @@ function AdminSupport() {
         ticketId={openId}
         onClose={() => setOpenId(null)}
         onChanged={() => {
+          ticketsQuery.refetch();
+          allCountQuery.refetch();
+        }}
+      />
+
+      <ComposeDialog
+        open={composeOpen}
+        onOpenChange={setComposeOpen}
+        onSent={() => {
           ticketsQuery.refetch();
           allCountQuery.refetch();
         }}
