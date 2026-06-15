@@ -427,10 +427,6 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await handleConnectAccountUpdated(event.data.object as Stripe.Account);
               break;
             }
-            case "checkout.session.completed": {
-              // Unreachable — merged into the case above. Kept removed.
-              break;
-            }
             case "charge.refunded": {
               const acctHeader = request.headers.get("stripe-account");
               if (acctHeader) await handleConnectChargeRefunded(event.data.object as Stripe.Charge);
