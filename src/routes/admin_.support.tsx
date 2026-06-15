@@ -70,6 +70,7 @@ import {
   markTicketRead,
   snoozeTicket,
   unsnoozeTicket,
+  listRequesterTickets,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply } from "@/lib/support/ai-draft.functions";
 import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
