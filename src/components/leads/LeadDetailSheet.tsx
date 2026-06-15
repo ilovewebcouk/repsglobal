@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Pin, PinOff, UserCheck, CheckCircle2 } from "lucide-react";
+import { X, Pin, PinOff, UserCheck, CheckCircle2, MailPlus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -24,7 +24,13 @@ import { AiInsightCard } from "./AiInsightCard";
 import { LeadActivityTab } from "./LeadActivityTab";
 import { LeadProposalsTab } from "./LeadProposalsTab";
 import { sourceLabel } from "./SourceChipsRow";
-import { LEAD_STAGE_LABEL, convertLeadToClient, type LeadDTO } from "@/lib/leads/leads.functions";
+import {
+  LEAD_STAGE_LABEL,
+  convertLeadToClient,
+  sendLeadSignupLink,
+  type LeadDTO,
+} from "@/lib/leads/leads.functions";
+import { timeAgo } from "@/lib/format/relative-time";
 
 /**
  * Sliding right-side detail panel. Non-modal so the table behind stays interactive.
