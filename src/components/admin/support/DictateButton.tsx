@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { useScribe } from "@elevenlabs/react";
+import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { useServerFn } from "@tanstack/react-start";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ export function DictateButton({ onAppend, disabled, className }: Props) {
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: CommitStrategy.VAD,
     onCommittedTranscript: (data: any) => {
       const text = (data?.text ?? "").trim();
       if (text) appendRef.current(text + " ");
