@@ -716,14 +716,27 @@ function AttachmentChip({ att }: { att: any }) {
       <Dialog open={!!url} onOpenChange={(o) => !o && setUrl(null)}>
         <DialogContent className="max-w-3xl bg-reps-panel border-reps-border text-white p-0 overflow-hidden">
           <DialogHeader className="px-5 py-4 border-b border-reps-border">
-            <DialogTitle className="text-white text-[15px] font-semibold flex items-center gap-2">
-              {isImage ? (
-                <FileText className="h-4 w-4 text-reps-orange" />
-              ) : (
-                <Paperclip className="h-4 w-4 text-reps-orange" />
-              )}
-              <span className="truncate">{att.filename}</span>
-            </DialogTitle>
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="text-white text-[15px] font-semibold flex items-center gap-2 min-w-0">
+                {isImage ? (
+                  <FileText className="h-4 w-4 text-reps-orange shrink-0" />
+                ) : (
+                  <Paperclip className="h-4 w-4 text-reps-orange shrink-0" />
+                )}
+                <span className="truncate">{att.filename}</span>
+              </DialogTitle>
+              {url ? (
+                <a
+                  href={url}
+                  download={att.filename}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-[8px] bg-reps-orange px-3 py-1.5 text-[12.5px] font-semibold text-white hover:bg-reps-orange/90"
+                >
+                  <Download className="h-3.5 w-3.5" /> Download
+                </a>
+              ) : null}
+            </div>
           </DialogHeader>
           <div className="p-5 flex items-center justify-center bg-black/40 min-h-[200px]">
             {url && isImage ? (
