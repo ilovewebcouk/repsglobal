@@ -571,7 +571,17 @@ function TicketDrawer({
             >
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => aiRephrase.mutate()}
+                disabled={aiRephrase.isPending || mode !== "reply" || !draft.trim()}
+                title="Rewrite what you've typed in REPS support tone"
+                className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Wand2 className="h-3.5 w-3.5 text-reps-orange" />
+                {aiRephrase.isPending ? "Rephrasing…" : "Rephrase"}
+              </button>
               <button
                 type="button"
                 onClick={() => aiDraft.mutate()}
@@ -580,6 +590,7 @@ function TicketDrawer({
                   mode !== "reply" ||
                   !messages.some((m: any) => m.direction === "inbound")
                 }
+                title="Draft a reply from scratch using the conversation"
                 className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
