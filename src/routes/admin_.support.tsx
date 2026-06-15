@@ -761,6 +761,8 @@ function MessageBubble({ m }: { m: any }) {
         <div className="inline-flex items-center gap-1.5 font-medium">
           {isNote ? (
             <StickyNote className="h-3 w-3 text-amber-300" />
+          ) : isAuto ? (
+            <Zap className="h-3 w-3 text-sky-300" />
           ) : isOut ? (
             <Send className="h-3 w-3 text-reps-orange" />
           ) : (
@@ -769,11 +771,18 @@ function MessageBubble({ m }: { m: any }) {
           <span className="text-white/75">
             {isNote
               ? "Internal note"
-              : isOut
-                ? `${m.from_name ?? "REPS Support"}`
-                : `${m.from_name ?? m.from_email ?? "Customer"}`}
+              : isAuto
+                ? "Auto-reply"
+                : isOut
+                  ? `${m.from_name ?? "REPS Support"}`
+                  : `${m.from_name ?? m.from_email ?? "Customer"}`}
           </span>
-          {!isNote && m.from_email ? (
+          {isAuto ? (
+            <Badge className="ml-1 h-4 rounded-[6px] border-sky-400/30 bg-sky-500/15 px-1.5 text-[10px] font-semibold text-sky-200">
+              AUTO
+            </Badge>
+          ) : null}
+          {!isNote && !isAuto && m.from_email ? (
             <span className="text-white/40">· {m.from_email}</span>
           ) : null}
         </div>
