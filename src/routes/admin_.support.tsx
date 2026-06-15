@@ -234,7 +234,17 @@ function AdminSupport() {
     };
   }, [allCountQuery.data]);
 
-  const tickets = ticketsQuery.data ?? [];
+  const tickets = useMemo(() => {
+    const rows = ticketsQuery.data ?? [];
+    if (tab === "resolved") {
+      const today = new Date().toDateString();
+      return rows.filter(
+        (r: any) =>
+          r.resolved_at && new Date(r.resolved_at).toDateString() === today,
+      );
+    }
+    return rows;
+  }, [ticketsQuery.data, tab]);
 
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
