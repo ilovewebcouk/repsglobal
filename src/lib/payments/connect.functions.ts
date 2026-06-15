@@ -74,13 +74,18 @@ export const getConnectStatus = createServerFn({ method: "GET" })
 
 export const startStripeConnect = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ url: string }> => {
+  .inputValidator((input: { environment: "sandbox" | "live" }) => {
+    if (input?.environment !== "sandbox" && input?.environment !== "live") {
+      throw new Error("Invalid environment");
+    }
+    return input;
+  })
+  .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await assertProOrStudio(supabaseAdmin, context.userId);
 
     const { createStripeClient, getCheckoutOrigin } = await import("@/lib/billing/stripe.server");
-    const { getStripeEnvironment } = await import("@/lib/billing/stripe-client");
-    const env = getStripeEnvironment();
+    const env = data.environment;
     const stripe = createStripeClient(env);
 
     // Reuse existing account if present
