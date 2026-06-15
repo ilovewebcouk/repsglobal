@@ -788,10 +788,12 @@ function TicketDrawer({
   ticketId,
   onClose,
   onChanged,
+  onOpenTicket,
 }: {
   ticketId: string | null;
   onClose: () => void;
   onChanged: () => void;
+  onOpenTicket?: (id: string) => void;
 }) {
   const qc = useQueryClient();
   const getFn = useServerFn(getTicket);
@@ -799,6 +801,7 @@ function TicketDrawer({
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
+  const priorFn = useServerFn(listRequesterTickets);
   const markReadFn = useServerFn(markTicketRead);
   const snoozeFn = useServerFn(snoozeTicket);
   const unsnoozeFn = useServerFn(unsnoozeTicket);
