@@ -18,8 +18,9 @@ export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      status?: "open" | "pending" | "resolved" | "closed" | "all";
+      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "all";
       inbox?: "support" | "pros" | "partners" | "press" | "all";
+      q?: string;
     }) => d ?? {},
   )
   .handler(async ({ data, context }) => {
@@ -27,12 +28,26 @@ export const listTickets = createServerFn({ method: "POST" })
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags",
+        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by",
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
-    if (data?.status && data.status !== "all") q = q.eq("status", data.status);
+    const nowIso = new Date().toISOString();
+    if (data?.status === "snoozed") {
+      q = q.not("snoozed_until", "is", null).gt("snoozed_until", nowIso);
+    } else if (data?.status && data.status !== "all") {
+      q = q.eq("status", data.status);
+      // Active snoozed tickets are hidden from regular status tabs
+      q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+    }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
+    if (data?.q && data.q.trim().length > 0) {
+      const term = data.q.trim().replace(/[%,]/g, "");
+      const like = `%${term}%`;
+      q = q.or(
+        `ticket_number.ilike.${like},subject.ilike.${like},requester_email.ilike.${like},requester_name.ilike.${like}`,
+      );
+    }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return rows ?? [];
