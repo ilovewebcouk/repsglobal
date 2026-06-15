@@ -14,6 +14,7 @@ import { template as contactAutoresponse } from './contact-autoresponse'
 import { template as enquiryNotification } from './enquiry-notification'
 import { template as proposalSent } from './proposal-sent'
 import { template as supportReply } from './support-reply'
+import { template as supportOutbound } from './support-outbound'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'client-invite': clientInvite,
@@ -21,5 +22,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'enquiry-notification': enquiryNotification,
   'proposal-sent': proposalSent,
   'support-reply': supportReply,
+  'support-outbound': supportOutbound,
 }
 
