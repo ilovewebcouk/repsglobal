@@ -183,37 +183,73 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-reps-border p-3">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
-            <TabsList className="bg-transparent p-0 h-auto gap-1">
-              {(
-                [
-                  ["open", "Open", counts.open],
-                  ["pending", "Pending", counts.pending],
-                  ["resolved", "Resolved", counts.resolved],
-                  ["all", "All", counts.all],
-                ] as const
-              ).map(([v, label, count]) => (
-                <TabsTrigger
+        <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
+              <TabsList className="bg-transparent p-0 h-auto gap-1">
+                {(
+                  [
+                    ["open", "Open", counts.open],
+                    ["pending", "Pending", counts.pending],
+                    ["resolved", "Resolved", counts.resolved],
+                    ["all", "All", counts.all],
+                  ] as const
+                ).map(([v, label, count]) => (
+                  <TabsTrigger
+                    key={v}
+                    value={v}
+                    className="rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
+                  >
+                    {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-white/45">
+              <Inbox className="h-3 w-3" />
+              support@ · pros@ · partners@ · press@
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {(
+              [
+                ["all", "All inboxes"],
+                ["support", "Support"],
+                ["pros", "Pros"],
+                ["partners", "Partners"],
+                ["press", "Press"],
+              ] as const
+            ).map(([v, label]) => {
+              const active = inbox === v;
+              const c = counts.byInbox[v] ?? 0;
+              return (
+                <button
                   key={v}
-                  value={v}
-                  className="rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
+                  type="button"
+                  onClick={() => setInbox(v)}
+                  className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
+                    active
+                      ? "bg-white/10 text-white"
+                      : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+                  }`}
                 >
-                  {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <div className="text-[11px] text-white/45">
-            Inbound: <span className="text-white/70">support@repsuk.org</span>
+                  {label}
+                  <span className={`text-[10.5px] ${active ? "text-white/75" : "text-white/35"}`}>
+                    {c}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-[13px]">
+          <table className="w-full min-w-[860px] text-[13px]">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
                 <th className="px-5 py-3 font-semibold">Ticket</th>
+                <th className="px-3 py-3 font-semibold">Inbox</th>
                 <th className="px-3 py-3 font-semibold">From</th>
                 <th className="px-3 py-3 font-semibold">Priority</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
