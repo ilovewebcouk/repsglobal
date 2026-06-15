@@ -897,6 +897,20 @@ function TicketDrawer({
   const ticket = q.data?.ticket;
   const messages = q.data?.messages ?? [];
 
+  const priorQuery = useQuery({
+    queryKey: ["admin", "support", "prior", ticket?.requester_email, ticketId],
+    queryFn: () =>
+      priorFn({
+        data: {
+          email: ticket!.requester_email,
+          excludeId: ticketId!,
+        },
+      }),
+    enabled: !!ticket?.requester_email && !!ticketId,
+  });
+  const priorTickets = priorQuery.data ?? [];
+  const [priorOpen, setPriorOpen] = useState(false);
+
   return (
     <Sheet open={!!ticketId} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
