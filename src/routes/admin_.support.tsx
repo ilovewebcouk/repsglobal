@@ -557,32 +557,85 @@ function formatBytes(n?: number | null) {
 function AttachmentChip({ att }: { att: any }) {
   const getUrl = useServerFn(getAttachmentUrl);
   const [busy, setBusy] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
+
+  const isImage = (att.mime_type ?? "").startsWith("image/");
+  const isPdf = (att.mime_type ?? "").includes("pdf");
+
   const open = async () => {
     if (busy) return;
     setBusy(true);
     try {
       const res = await getUrl({ data: { attachmentId: att.id } });
-      if (res?.url) window.open(res.url, "_blank", "noopener,noreferrer");
+      if (res?.url) setUrl(res.url);
     } catch (e: any) {
       toast.error(e?.message ?? "Could not open attachment");
     } finally {
       setBusy(false);
     }
   };
+
   return (
-    <button
-      type="button"
-      onClick={open}
-      disabled={busy}
-      className="inline-flex max-w-full items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[12px] text-white/80 hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
-      title={att.filename}
-    >
-      <Paperclip className="h-3 w-3 text-white/55 shrink-0" />
-      <span className="truncate max-w-[220px]">{att.filename}</span>
-      {att.size_bytes ? (
-        <span className="text-white/40">· {formatBytes(att.size_bytes)}</span>
-      ) : null}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={open}
+        disabled={busy}
+        className="inline-flex max-w-full items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[12px] text-white/80 hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+        title={att.filename}
+      >
+        <Paperclip className="h-3 w-3 text-white/55 shrink-0" />
+        <span className="truncate max-w-[220px]">{att.filename}</span>
+        {att.size_bytes ? (
+          <span className="text-white/40">· {formatBytes(att.size_bytes)}</span>
+        ) : null}
+      </button>
+
+      <Dialog open={!!url} onOpenChange={(o) => !o && setUrl(null)}>
+        <DialogContent className="max-w-3xl bg-reps-panel border-reps-border text-white p-0 overflow-hidden">
+          <DialogHeader className="px-5 py-4 border-b border-reps-border">
+            <DialogTitle className="text-white text-[15px] font-semibold flex items-center gap-2">
+              {isImage ? (
+                <FileText className="h-4 w-4 text-reps-orange" />
+              ) : (
+                <Paperclip className="h-4 w-4 text-reps-orange" />
+              )}
+              <span className="truncate">{att.filename}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-5 flex items-center justify-center bg-black/40 min-h-[200px]">
+            {url && isImage ? (
+              <img
+                src={url}
+                alt={att.filename}
+                className="max-h-[70vh] max-w-full object-contain rounded-[10px]"
+              />
+            ) : url && isPdf ? (
+              <iframe
+                src={url}
+                title={att.filename}
+                className="w-full h-[70vh] rounded-[10px] border border-white/10"
+              />
+            ) : url ? (
+              <div className="text-center">
+                <FileText className="mx-auto mb-3 h-10 w-10 text-white/30" />
+                <div className="text-[13px] text-white/70 mb-4">
+                  This file type can’t be previewed.
+                </div>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-[8px] bg-reps-orange px-3 py-1.5 text-[13px] font-semibold text-white hover:bg-reps-orange/90"
+                >
+                  <Download className="h-3.5 w-3.5" /> Download
+                </a>
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
