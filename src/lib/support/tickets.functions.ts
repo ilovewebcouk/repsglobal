@@ -383,7 +383,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
         .from("support_tickets")
         .update({ status: "resolved", resolved_at: new Date().toISOString() })
         .eq("id", ticket.id);
-    } else if (ticket.status === "open" || ticket.status === "new") {
+    } else if (ticket.status !== "pending" && ticket.status !== "resolved" && ticket.status !== "closed") {
       // Zendesk-style: a customer-facing reply flips the ticket to pending
       // (waiting on customer) so it falls out of "Needs you" automatically.
       await context.supabase
