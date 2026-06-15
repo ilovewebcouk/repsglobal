@@ -55,6 +55,8 @@ export type LeadDTO = {
   created_at: string;
   read_at: string | null;
   replied_at: string | null;
+  sender_user_id: string | null;
+  converted_client_id: string | null;
 };
 
 /* -------------------- List leads -------------------- */
