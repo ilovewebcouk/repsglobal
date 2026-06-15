@@ -6,14 +6,19 @@ import { toast } from "sonner";
 import {
   Inbox,
   MailOpen,
+  Mail,
+  Phone,
   Reply,
   Archive,
   Clock,
   Search,
   ShieldAlert,
+  Sparkles,
+  ArrowRight,
   X,
   Loader2,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -173,6 +178,31 @@ function EnquiriesInboxPage() {
           />
         </div>
 
+        {/* Upgrade nudge — replies stay in the user's own email on Verified.
+            Pro unlocks AI drafts, follow-ups and pipeline in-app. */}
+        <div className="flex flex-col items-start gap-3 rounded-[16px] border border-reps-orange-border bg-reps-orange-soft/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/20">
+              <Sparkles className="h-4 w-4 text-reps-orange" />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-white">
+                Reply faster with AI drafts, follow-ups and a pipeline
+              </p>
+              <p className="mt-0.5 text-[12px] text-white/65">
+                Verified sends enquiries to your inbox so you reply from your own email.
+                Pro adds AI-drafted replies, lead scoring and a full pipeline inside REPS.
+              </p>
+            </div>
+          </div>
+          <Button asChild className="h-9 shrink-0 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover">
+            <Link to="/pricing">
+              Upgrade to Pro
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+
         {/* Enquiry list */}
         <PPanel>
           {isLoading ? (
@@ -324,7 +354,16 @@ function EnquiriesInboxPage() {
 
                 {/* Details grid */}
                 <div className="mb-5 grid grid-cols-2 gap-3">
-                  <DetailItem label="Phone" value={selected.sender_phone} />
+                  <DetailItem
+                    label="Email"
+                    value={selected.sender_email}
+                    href={`mailto:${selected.sender_email}?subject=${encodeURIComponent(`Re: your enquiry via REPS${selected.service_title ? ` — ${selected.service_title}` : ""}`)}`}
+                  />
+                  <DetailItem
+                    label="Phone"
+                    value={selected.sender_phone}
+                    href={selected.sender_phone ? `tel:${selected.sender_phone.replace(/\s+/g, "")}` : null}
+                  />
                   <DetailItem label="Location" value={selected.location} />
                   <DetailItem label="Frequency" value={selected.frequency} />
                   <DetailItem label="Start by" value={selected.start_by} />
@@ -363,13 +402,42 @@ function EnquiriesInboxPage() {
               {/* Actions */}
               <div className="border-t border-reps-border/60 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
+                  <Button
+                    asChild
+                    onClick={() => {
+                      if (selected.status !== "replied") {
+                        updateMut.mutate({ id: selected.id, status: "replied" });
+                      }
+                    }}
+                    className="h-9 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover"
+                  >
+                    <a
+                      href={`mailto:${selected.sender_email}?subject=${encodeURIComponent(`Re: your enquiry via REPS${selected.service_title ? ` — ${selected.service_title}` : ""}`)}&body=${encodeURIComponent(`Hi ${selected.sender_name.split(" ")[0]},\n\nThanks for reaching out via REPS.\n\n`)}`}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Reply by email
+                    </a>
+                  </Button>
+                  {selected.sender_phone && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-9 gap-1.5 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 hover:bg-reps-panel-soft hover:text-white"
+                    >
+                      <a href={`tel:${selected.sender_phone.replace(/\s+/g, "")}`}>
+                        <Phone className="h-3.5 w-3.5" />
+                        Call
+                      </a>
+                    </Button>
+                  )}
                   {selected.status !== "replied" && (
                     <Button
+                      variant="outline"
                       onClick={() =>
                         updateMut.mutate({ id: selected.id, status: "replied" })
                       }
                       disabled={updateMut.isPending}
-                      className="h-9 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover"
+                      className="h-9 gap-1.5 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 hover:bg-reps-panel-soft hover:text-white"
                     >
                       <Reply className="h-3.5 w-3.5" />
                       Mark replied
@@ -450,14 +518,31 @@ function StatTile({
   );
 }
 
-function DetailItem({ label, value }: { label: string; value: string | null }) {
+function DetailItem({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: string | null;
+  href?: string | null;
+}) {
   if (!value) return null;
   return (
     <div className="rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 py-2.5">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
         {label}
       </div>
-      <div className="mt-0.5 text-[12.5px] font-medium text-white/85">{value}</div>
+      {href ? (
+        <a
+          href={href}
+          className="mt-0.5 block truncate text-[12.5px] font-medium text-reps-orange hover:underline"
+        >
+          {value}
+        </a>
+      ) : (
+        <div className="mt-0.5 text-[12.5px] font-medium text-white/85">{value}</div>
+      )}
     </div>
   );
 }
