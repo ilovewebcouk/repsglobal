@@ -65,26 +65,18 @@ export const searchTrainers = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    let q = supabaseAdmin
+    // Pull all professionals + their profile name (dataset is small on REPs today).
+    const { data: pros, error } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, trading_name, primary_profession, city, public_email, profiles!inner(full_name)",
+        "id, trading_name, primary_profession, city, public_email, profiles(full_name)",
       )
-      .limit(25);
-
-    if (data.q && data.q.trim().length > 0) {
-      const term = `%${data.q.trim()}%`;
-      q = q.or(
-        `trading_name.ilike.${term},city.ilike.${term},public_email.ilike.${term}`,
-      );
-    }
-
-    const { data: pros, error } = await q;
+      .limit(500);
     if (error) throw new Error(error.message);
 
     // Resolve tier from subscriptions
     const ids = (pros ?? []).map((p: any) => p.id);
-    let tierMap = new Map<string, Tier>();
+    const tierMap = new Map<string, Tier>();
     if (ids.length > 0) {
       const { data: subs } = await supabaseAdmin
         .from("subscriptions")
@@ -101,7 +93,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
       missingEmail.map((p: any) => p.id),
     );
 
-    const rows = (pros ?? [])
+    let rows = (pros ?? [])
       .map((p: any) => ({
         id: p.id,
         full_name:
@@ -114,7 +106,16 @@ export const searchTrainers = createServerFn({ method: "POST" })
       }))
       .filter((r: any) => r.email);
 
-    // Optional tier filter
+    // Free-text filter across name / trading_name / email / city
+    if (data.q && data.q.trim().length > 0) {
+      const needle = data.q.trim().toLowerCase();
+      rows = rows.filter((r) =>
+        [r.full_name, r.trading_name, r.email, r.city]
+          .filter(Boolean)
+          .some((v: string) => v.toLowerCase().includes(needle)),
+      );
+    }
+
     const filtered = data.tier ? rows.filter((r) => r.tier === data.tier) : rows;
     return filtered.slice(0, 20);
   });

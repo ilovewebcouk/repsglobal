@@ -671,11 +671,13 @@ function TicketDrawer({
       return noteFn({ data: { ticketId, body: draft } });
     },
     onSuccess: () => {
+      const wasReply = mode === "reply";
       setDraft("");
       setCloseAfter(false);
-      toast.success(mode === "reply" ? "Reply sent" : "Note added");
+      toast.success(wasReply ? "Reply sent" : "Note added");
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
+      if (wasReply) onClose();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to send"),
   });
