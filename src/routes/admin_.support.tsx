@@ -439,6 +439,21 @@ function TicketDrawer({
     onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
   });
 
+  const aiRephrase = useMutation({
+    mutationFn: async () => {
+      const text = draft.trim();
+      if (!text) throw new Error("Type something to rephrase first");
+      return rephraseFn({ data: { draft: text, ticketId: ticketId ?? undefined } });
+    },
+    onSuccess: (res) => {
+      if (res?.text) {
+        setDraft(res.text);
+        toast.success("Rephrased — review before sending");
+      }
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not rephrase"),
+  });
+
   const update = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: ticketId!, ...patch } }),
     onSuccess: () => {
