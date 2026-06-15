@@ -176,7 +176,11 @@ export const updateProposal = createServerFn({ method: "POST" })
     if (exErr) throw exErr;
     if (!existing) throw new Error("Proposal not found");
 
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      body?: ProposalBody;
+      status?: ProposalStatus;
+      sent_at?: string;
+    } = {};
     if (data.body) patch.body = normaliseBody(data.body);
     if (data.status) {
       patch.status = data.status;
