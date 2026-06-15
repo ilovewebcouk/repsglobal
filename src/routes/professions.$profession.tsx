@@ -374,6 +374,17 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
+  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
+  const { data: livePros = [] } = useQuery({
+    queryKey: ["directory-featured-profession", meta.slug],
+    queryFn: () => searchProfessionals({ data: { profession: meta.slug, limit: 4 } }),
+    staleTime: 60_000,
+  });
+  const featured: FeaturedPro[] = livePros.length
+    ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
+    : FEATURED.slice(0, 4);
+
+
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
       <PublicHeader variant="solid" />
