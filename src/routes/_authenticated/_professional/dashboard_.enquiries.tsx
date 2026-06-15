@@ -402,13 +402,42 @@ function EnquiriesInboxPage() {
               {/* Actions */}
               <div className="border-t border-reps-border/60 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
+                  <Button
+                    asChild
+                    onClick={() => {
+                      if (selected.status !== "replied") {
+                        updateMut.mutate({ id: selected.id, status: "replied" });
+                      }
+                    }}
+                    className="h-9 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover"
+                  >
+                    <a
+                      href={`mailto:${selected.sender_email}?subject=${encodeURIComponent(`Re: your enquiry via REPS${selected.service_title ? ` — ${selected.service_title}` : ""}`)}&body=${encodeURIComponent(`Hi ${selected.sender_name.split(" ")[0]},\n\nThanks for reaching out via REPS.\n\n`)}`}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Reply by email
+                    </a>
+                  </Button>
+                  {selected.sender_phone && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-9 gap-1.5 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 hover:bg-reps-panel-soft hover:text-white"
+                    >
+                      <a href={`tel:${selected.sender_phone.replace(/\s+/g, "")}`}>
+                        <Phone className="h-3.5 w-3.5" />
+                        Call
+                      </a>
+                    </Button>
+                  )}
                   {selected.status !== "replied" && (
                     <Button
+                      variant="outline"
                       onClick={() =>
                         updateMut.mutate({ id: selected.id, status: "replied" })
                       }
                       disabled={updateMut.isPending}
-                      className="h-9 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover"
+                      className="h-9 gap-1.5 rounded-[10px] border-reps-border bg-reps-panel text-[12.5px] font-semibold text-white/85 hover:bg-reps-panel-soft hover:text-white"
                     >
                       <Reply className="h-3.5 w-3.5" />
                       Mark replied
