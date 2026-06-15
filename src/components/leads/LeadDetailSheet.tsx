@@ -1,5 +1,16 @@
 import * as React from "react";
-import { X, Pin, PinOff, UserCheck, CheckCircle2, MailPlus } from "lucide-react";
+import {
+  X,
+  Pin,
+  PinOff,
+  UserCheck,
+  CheckCircle2,
+  MailPlus,
+  MoreHorizontal,
+  CheckCheck,
+  Archive,
+  ShieldAlert,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -19,6 +30,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { SelectedLeadCard } from "./SelectedLeadCard";
 import { AiInsightCard } from "./AiInsightCard";
 import { LeadActivityTab } from "./LeadActivityTab";
@@ -30,7 +48,10 @@ import {
   sendLeadSignupLink,
   type LeadDTO,
 } from "@/lib/leads/leads.functions";
+import { updateEnquiryStatus } from "@/lib/enquiries/enquiries.functions";
 import { timeAgo } from "@/lib/format/relative-time";
+
+type TabValue = "details" | "activity" | "proposals";
 
 /**
  * Sliding right-side detail panel. Non-modal so the table behind stays interactive.
@@ -49,6 +70,14 @@ export function LeadDetailSheet({
   pinned: boolean;
   onTogglePin: () => void;
 }) {
+  const [tab, setTab] = React.useState<TabValue>("details");
+
+  // Reset to Details whenever a new lead is selected.
+  const leadId = lead?.id ?? null;
+  React.useEffect(() => {
+    setTab("details");
+  }, [leadId]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
       <SheetContent
@@ -66,6 +95,7 @@ export function LeadDetailSheet({
             </SheetDescription>
           </SheetHeader>
           <div className="flex shrink-0 items-center gap-1">
+            {lead ? <StatusMenu lead={lead} onClose={() => onOpenChange(false)} /> : null}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -99,7 +129,7 @@ export function LeadDetailSheet({
         {lead ? (
           <div className="flex flex-col gap-4 p-5">
             <ConvertRow lead={lead} />
-            <Tabs defaultValue="details" className="flex flex-col gap-4">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)} className="flex flex-col gap-4">
 
             <TabsList className="grid w-full grid-cols-3 rounded-[10px] bg-reps-panel-soft/60 p-1">
               <TabsTrigger value="details" className="rounded-[8px] text-[12px]">Details</TabsTrigger>
@@ -107,7 +137,11 @@ export function LeadDetailSheet({
               <TabsTrigger value="proposals" className="rounded-[8px] text-[12px]">Proposals</TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="m-0 flex flex-col gap-4">
-              <SelectedLeadCard lead={lead} variant="sheet" />
+              <SelectedLeadCard
+                lead={lead}
+                variant="sheet"
+                onOpenProposals={() => setTab("proposals")}
+              />
               <AiInsightCard lead={lead} />
             </TabsContent>
             <TabsContent value="activity" className="m-0">
@@ -125,6 +159,75 @@ export function LeadDetailSheet({
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+/* ---------------------------- Status menu ---------------------------- */
+
+function StatusMenu({ lead, onClose }: { lead: LeadDTO; onClose: () => void }) {
+  const setStatus = useServerFn(updateEnquiryStatus);
+  const qc = useQueryClient();
+  const mut = useMutation({
+    mutationFn: (status: LeadDTO["status"]) => setStatus({ data: { id: lead.id, status } }),
+    onSuccess: (_d, status) => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+      qc.invalidateQueries({ queryKey: ["lead-activity", lead.id] });
+      if (status === "spam" || status === "archived") {
+        onClose();
+        toast.success(status === "spam" ? "Marked as spam" : "Archived");
+      } else if (status === "replied") {
+        toast.success("Marked as replied");
+      } else {
+        toast.success("Updated");
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update"),
+  });
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label="More actions"
+          className="size-8 rounded-[8px] p-0 text-white/55 hover:bg-reps-panel-soft hover:text-white"
+        >
+          <MoreHorizontal className="size-3.5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-48 border-reps-border bg-reps-ink text-white"
+      >
+        <DropdownMenuItem
+          className="text-[12.5px] text-white focus:bg-reps-panel-soft focus:text-white"
+          onClick={() => mut.mutate("replied")}
+          disabled={mut.isPending || lead.status === "replied"}
+        >
+          <CheckCheck className="mr-2 size-3.5" />
+          Mark as replied
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-[12.5px] text-white focus:bg-reps-panel-soft focus:text-white"
+          onClick={() => mut.mutate("archived")}
+          disabled={mut.isPending}
+        >
+          <Archive className="mr-2 size-3.5" />
+          Archive
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-reps-border" />
+        <DropdownMenuItem
+          className="text-[12.5px] text-red-300 focus:bg-red-500/10 focus:text-red-200"
+          onClick={() => mut.mutate("spam")}
+          disabled={mut.isPending}
+        >
+          <ShieldAlert className="mr-2 size-3.5" />
+          Mark as spam
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

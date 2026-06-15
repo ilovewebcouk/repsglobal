@@ -9,12 +9,21 @@ import {
 } from "@/components/ui/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { type LeadDTO } from "@/lib/leads/leads.functions";
 import { scoreLead, draftLeadReply, type DraftReply } from "@/lib/leads/leads-ai.functions";
+
+type Tone = "warm" | "direct" | "concise";
 
 export function AiInsightCard({ lead }: { lead: LeadDTO }) {
   const qc = useQueryClient();
   const [draft, setDraft] = React.useState<DraftReply | null>(null);
+  const [tone, setTone] = React.useState<Tone>("warm");
+
+  // Reset draft when switching leads.
+  React.useEffect(() => {
+    setDraft(null);
+  }, [lead.id]);
 
   const scoreMut = useMutation({
     mutationFn: () => scoreLead({ data: { enquiryId: lead.id } }),
@@ -27,7 +36,7 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
   });
 
   const draftMut = useMutation({
-    mutationFn: () => draftLeadReply({ data: { enquiryId: lead.id } }),
+    mutationFn: () => draftLeadReply({ data: { enquiryId: lead.id, tone } }),
     onSuccess: (d) => setDraft(d),
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't draft reply"),
   });
@@ -120,11 +129,34 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
         ) : null}
       </p>
 
+      {/* AI reasons (why this score) */}
+      {lead.ai_reasons.length > 0 ? (
+        <ul className="mt-3 space-y-1">
+          {lead.ai_reasons.map((r, i) => (
+            <li key={i} className="flex gap-2 text-[12px] leading-relaxed text-white/70">
+              <span className="mt-1.5 inline-block size-1 shrink-0 rounded-full bg-reps-orange/80" />
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       {/* Draft reply preview */}
       {draft ? (
         <div className="mt-4 rounded-[12px] border border-reps-border bg-reps-ink/60 p-3">
-          <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/45">
-            AI draft
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/45">
+              AI draft · {tone}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setDraft(null)}
+              className="h-6 rounded-[6px] px-2 text-[11px] text-white/55 hover:bg-reps-panel-soft hover:text-white"
+            >
+              Re-draft
+            </Button>
           </div>
           <div className="mt-1 text-[12px] font-semibold text-white">{draft.subject}</div>
           <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-white/80">{draft.body}</p>
@@ -134,21 +166,40 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
             className="mt-3 h-9 w-full rounded-[10px] bg-reps-orange text-[12.5px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
           >
             <a
-              href={`mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}
+              href={`mailto:${encodeURIComponent(lead.sender_email ?? "")}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}
             >
               Open in email
             </a>
           </Button>
         </div>
       ) : (
-        <Button
-          className="mt-4 h-11 w-full rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-          onClick={() => draftMut.mutate()}
-          disabled={draftMut.isPending}
-        >
-          {draftMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-          <span className="ml-2">Draft reply</span>
-        </Button>
+        <div className="mt-4 flex flex-col gap-2">
+          <div className="flex items-center gap-1 rounded-[10px] border border-reps-border bg-reps-ink/40 p-1">
+            {(["warm", "direct", "concise"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTone(t)}
+                className={cn(
+                  "flex-1 rounded-[8px] px-2 py-1.5 text-[11.5px] font-medium capitalize transition-colors",
+                  tone === t
+                    ? "bg-reps-orange text-white"
+                    : "text-white/65 hover:bg-reps-panel-soft hover:text-white",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <Button
+            className="h-11 w-full rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+            onClick={() => draftMut.mutate()}
+            disabled={draftMut.isPending}
+          >
+            {draftMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+            <span className="ml-2">Draft reply</span>
+          </Button>
+        </div>
       )}
       </div>
     </div>

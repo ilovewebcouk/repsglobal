@@ -43,6 +43,7 @@ export type LeadDTO = {
   message: string;
   source: string;
   stage: LeadStage;
+  status: "new" | "read" | "replied" | "archived" | "spam";
   priority: LeadPriority | null;
   estimated_value_pence: number | null;
   follow_up_at: string | null;
@@ -51,6 +52,7 @@ export type LeadDTO = {
   ai_summary: string | null;
   ai_recommended_action: string | null;
   ai_predicted_pct: number | null;
+  ai_reasons: string[];
   ai_updated_at: string | null;
   created_at: string;
   read_at: string | null;
@@ -70,7 +72,7 @@ export const listLeads = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("enquiries")
       .select(
-        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_updated_at, created_at, read_at, replied_at, sender_user_id, converted_client_id",
+        "id, sender_name, sender_email, sender_phone, service_id, goals, frequency, start_by, budget, location, message, source, stage, status, priority, estimated_value_pence, follow_up_at, ai_score, ai_band, ai_summary, ai_recommended_action, ai_predicted_pct, ai_reasons, ai_updated_at, created_at, read_at, replied_at, sender_user_id, converted_client_id",
       )
       .eq("professional_id", userId)
       .neq("status", "spam")
@@ -129,6 +131,7 @@ export const listLeads = createServerFn({ method: "GET" })
       message: r.message,
       source: r.source ?? "profile_enquire",
       stage: (r.stage ?? "new") as LeadStage,
+      status: (r.status ?? "new") as LeadDTO["status"],
       priority: (r.priority ?? null) as LeadPriority | null,
       estimated_value_pence: r.estimated_value_pence,
       follow_up_at: r.follow_up_at,
@@ -137,6 +140,7 @@ export const listLeads = createServerFn({ method: "GET" })
       ai_summary: r.ai_summary,
       ai_recommended_action: r.ai_recommended_action,
       ai_predicted_pct: r.ai_predicted_pct,
+      ai_reasons: Array.isArray(r.ai_reasons) ? (r.ai_reasons as string[]) : [],
       ai_updated_at: r.ai_updated_at,
       created_at: r.created_at,
       read_at: r.read_at,

@@ -1,52 +1,87 @@
-## Slice 7 — "Send sign-up link" for leads without a REPs account
+# Phase 2.0.x — Leads, Enquiries & Directory QA pass
 
-After Slice 6, the convert flow refuses to run when `sender_user_id IS NULL` (anonymous enquiry) and only shows a tooltip telling the Pro to "send them a sign-up link first" — but there's no button to actually do that. This slice wires the missing button on the lead detail sheet, reusing the existing `createClientInvite` server function and `client_invites` table.
+A sub-agent audited the full pipeline. Headline: **most of the plumbing already exists** (AI draft reply, lead scoring, proposals CRUD, mark-replied/archive/spam server fn, follow-up date update, live directory search). The problems are bad wiring, invisible text, duplicate/stub buttons, dropped fields, and static mock data on the directory pages. None of the locked screens need redesigning — this is pure data/UX-depth work.
 
-### Server (`src/lib/leads/leads.functions.ts`)
+## Out of scope (deferred)
+- **Calendar / Book a call** — no calendar provider wired yet (Phase 2.1).
+- **Stripe Connect / paid proposal accept** — needs Connect onboarding (Phase 2.2).
+- **Proposals → Programs link** — captured as a P2 follow-up; doesn't block this slice.
+- **In-app messenger** — replacing mailto with an in-app composer comes later.
 
-Add `sendLeadSignupLink` server function (POST, `requireSupabaseAuth`):
+---
 
-- Input: `{ enquiryId: string }`
-- Load enquiry, assert `professional_id = auth.uid()`, assert `sender_user_id IS NULL` (no-op if already linked), assert `sender_email IS NOT NULL`.
-- Call the existing invite path inline: insert into `client_invites` with `professional_id`, `email = enquiry.sender_email`, `full_name = enquiry.sender_name`, random `token_hash`, `status = 'pending'`. (Re-implement the 6-line insert here instead of importing `createClientInvite` to avoid a server-fn-from-server-fn call and keep the activity log atomic.)
-- Insert into `lead_activity`: `type = 'invite_sent'`, payload `{ email, invite_id, expires_at }`.
-- Return `{ acceptUrl, expiresAt }` (build `acceptUrl` from `PUBLIC_SITE_URL` like `createClientInvite` does).
-- Also extend `LeadDTO` / `LeadQueryResult` with `last_invite_sent_at: string | null` derived from `client_invites` (latest pending invite where email matches `sender_email` for this pro). Use a side-query in `listLeads` keyed by `(professional_id, lower(email))` so the chip can reflect "Invite sent 2d ago" without an extra round-trip.
+## P0 — Bugs and broken actions
 
-No new migration needed (table + RLS already exist; `lead_activity` accepts free-form `type` strings already).
+### 1. Invisible-text bugs (light text on light dialog background)
+- Keyboard shortcuts modal at `dashboard_.leads.tsx:395` and the proposal form inputs both render against the default light `bg-background` while every label / `<kbd>` / input uses `text-white/70`.
+- **Fix:** explicitly set `bg-reps-ink text-white` on `DialogContent` at these call sites (and audit `LeadProposalsTab` / `ProposalForm` inputs for the same pattern). No change to the shared `dialog.tsx` primitive.
 
-### UI
+### 2. Two "Convert to client" buttons, one is broken
+- `SelectedLeadCard.tsx:61,191` bottom button only sets `stage = "converted"` — it skips `convert_lead_to_client` RPC and never creates the client row.
+- **Fix:** delete the bottom `Convert to client` button. The authoritative `ConvertRow` is already at the top of `LeadDetailSheet`.
 
-**`src/components/leads/LeadDetailSheet.tsx` (`ConvertRow`):**
+### 3. "Three-dots" in pipeline table is a no-op
+- `PipelineTable.tsx:214` `MoreHorizontal` just re-opens the sheet.
+- **Fix:** turn it into a real DropdownMenu with: Mark replied · Archive · Mark spam · Set follow-up.
 
-When `!canConvert`:
-- Replace the disabled "Convert to client" button with a two-line block:
-  - Heading: "Client needs a REPs account"
-  - If `lead.last_invite_sent_at` is null → primary button "Send sign-up link" (calls the new server fn). On success, toast "Sign-up link sent" and invalidate `["leads"]` + `["lead-activity", lead.id]`.
-  - If `lead.last_invite_sent_at` exists → muted state "Sign-up link sent {timeAgo}" + secondary ghost "Resend link" button (same mutation).
-- Keep the existing converted/canConvert branches unchanged.
+### 4. Stub buttons that mislead with toasts
+- `SelectedLeadCard.tsx:137` "Book call" → toast only. Replace with a `mailto:` pre-filled with a "let's pick a time" template (interim until calendar lands).
+- `SelectedLeadCard.tsx:163` "Create proposal" → toast only, despite the Proposals tab being fully wired. Switch it to activate the Proposals tab in the open sheet.
 
-**`src/components/leads/LeadActivityTab.tsx`:**
+### 5. Mark replied / Archive / Mark spam — orphaned
+- `updateEnquiryStatus` exists at `enquiries.functions.ts:162` and `listLeads` already filters `status != spam`, but no UI calls it.
+- **Fix:** expose the three actions via a header dropdown on `LeadDetailSheet` AND the new table-row context menu (item 3 above).
 
-Add a new `invite_sent` row renderer:
-- Icon: `MailPlus` (lucide) in an orange-tinted circle to match the note row's accent.
-- Copy: "Sent sign-up link to {email}" with `{timeAgo}` underneath.
+### 6. Public directory shows no real pros
+Root causes from the audit:
+- **`/in/$location`** (`in.$location.tsx:401`) renders a hardcoded `FEATURED` array. Replace with `useQuery(searchProfessionals({ city: loc.name, limit: 4 }))`.
+- **`professionals.is_published`** — confirm the column default and ensure the verification-approval flow flips it to `true`. Without this, even verified pros never surface in `/find-a-professional`.
 
-### Edge cases
+---
 
-- Anonymous enquiry with no email at all → server fn throws "No email on file"; UI shows tooltip explaining the Pro needs to capture the email manually (out of scope to add an email field here).
-- Pro spam-clicks "Resend" → server fn is idempotent enough (each call creates a fresh invite row + activity row). No throttle in this slice; we'll add a 5-min cooldown later if it becomes a problem.
-- Lead's email already belongs to an existing REPs user → the invite still sends; once they click and sign in, `accept_client_invite` links them and the next conversion attempt works. No special-case branch.
+## P1 — Add the depth the user called out
 
-### Files
+### 7. Show contact details + dropped enquiry fields in the detail sheet
+`SelectedLeadCard` currently hides `sender_email`, `sender_phone`, `start_by`, and `budget`. The enquiry form captures all of these.
+- Add four clickable rows under "Source":
+  - Email → `mailto:` link
+  - Phone → `tel:` link (only when present)
+  - Start by → plain text ("This week", etc.)
+  - Budget → plain text ("Under £50 / session")
 
-- edit `src/lib/leads/leads.functions.ts` (new `sendLeadSignupLink` fn + extend `LeadDTO` with `last_invite_sent_at` + extend `listLeads` query)
-- edit `src/components/leads/LeadDetailSheet.tsx` (replace disabled-button branch with send/resend UI)
-- edit `src/components/leads/LeadActivityTab.tsx` (new `invite_sent` row variant)
+### 8. Follow-up date setter
+`updateLead` already accepts `follow_up_at`. Add an inline date input (shadcn Popover + Calendar) on the detail card that calls it and invalidates the `leads` query. This makes the "Follow-up due" column actually settable.
 
-### Out of scope
+### 9. AI Draft reply — close the loop
+- Add tone selector (warm / direct / concise) above the existing Draft reply button (server fn already accepts `tone`).
+- Surface `ai_reasons[]` as bullets below the AI summary so the score is explainable.
+- Both changes touch `AiInsightCard.tsx` and `listLeads` (add `ai_reasons` to `LeadDTO`).
 
-- Actually sending the invite email via the queue (kept consistent with `createClientInvite`, which returns the URL and lets the caller decide how to deliver it).
-- "Copy link" UI for the Pro to share the URL manually (can be added later).
-- Cooldown / throttle on resend.
-- Tracking invite *acceptance* on the lead row — when the client accepts and signs in, `sender_user_id` will be linked through a separate path (not wired in this slice).
+### 10. Proposal email to the client
+`proposals.functions.ts:136` flips status to `sent` but never emails the lead. Add a transactional send to `lead.sender_email` (reuse the pattern from `enquiries.functions.ts:96`), Reply-To set to the pro's email. Stays out of Stripe scope — purely informational.
+
+### 11. Directory search depth
+- `search.functions.ts:71` — search only matches `headline`/`slug`. Extend to `profiles.full_name` so "James Wilson" actually finds James.
+- `search.functions.ts:57` — city filter only matches `professionals.city`. Also OR-match `professional_locations.town` for pros with a structured location row.
+
+---
+
+## P2 — Polish (same turn if cheap)
+
+- `/professions/$profession` featured grid → wire to `searchProfessionals({ profession, limit: 6 })`.
+- `trial_booked` stage pill gets its own amber token instead of sharing `new`'s orange.
+- Rename "Send message" → "Reply by email" with a `Mail` icon while the in-app composer is still pending.
+
+---
+
+## Technical notes
+- All AI continues via Lovable AI Gateway with `google/gemini-3-flash-preview`. No new model swaps.
+- No schema migrations required for items 1–11 except optionally adding `ai_reasons` to the `LeadDTO` projection (the column already exists on `enquiries`).
+- Server fns touched: `listLeads` (project `ai_reasons`), `proposals.functions.ts` (email on send), `search.functions.ts` (q + city extension). Everything else is UI wiring.
+- Locked routes untouched: enquire form (`/pro/$slug/enquire`), homepage, shop-front, marketing pillars. Locked enquiry form remains the source of truth for fields surfaced in the lead sheet.
+
+## Suggested build order
+1. Items 1–5 in one slice (UI bug fixes + dedupe actions + Mark replied/Archive/Spam).
+2. Items 7–9 in a second slice (contact rows, follow-up picker, AI tone + reasons).
+3. Items 6 + 11 + P2 directory item in a third slice (directory wiring + `is_published` audit).
+4. Item 10 last (proposal email — small, isolated).

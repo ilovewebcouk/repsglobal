@@ -1,8 +1,19 @@
 import * as React from "react";
-import { Mail, Phone, MoreHorizontal } from "lucide-react";
+import { Mail, Phone, MoreHorizontal, CheckCheck, Archive, ShieldAlert } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { LEAD_STAGE_LABEL, type LeadDTO, type LeadStage } from "@/lib/leads/leads.functions";
+import { updateEnquiryStatus } from "@/lib/enquiries/enquiries.functions";
 import { sourceLabel } from "./SourceChipsRow";
 
 function fmtMoney(p: number | null) {
@@ -44,7 +55,7 @@ function stagePillClasses(stage: LeadStage): string {
     case "proposal_sent":
       return "border-violet-400/30 bg-violet-500/15 text-violet-300";
     case "trial_booked":
-      return "border-reps-orange-border/40 bg-reps-orange-soft text-reps-orange";
+      return "border-amber-400/30 bg-amber-500/15 text-amber-300";
     case "converted":
       return "border-emerald-400/30 bg-emerald-500/15 text-emerald-300";
     case "lost":
@@ -65,6 +76,62 @@ function priorityPillClasses(p: LeadDTO["priority"], score: number | null): stri
 function effectivePriority(p: LeadDTO["priority"], score: number | null): string {
   const eff = p ?? (score === null ? "low" : score >= 80 ? "high" : score >= 40 ? "medium" : "low");
   return eff.charAt(0).toUpperCase() + eff.slice(1);
+}
+
+function RowActions({ lead }: { lead: LeadDTO }) {
+  const setStatus = useServerFn(updateEnquiryStatus);
+  const qc = useQueryClient();
+  const mut = useMutation({
+    mutationFn: (status: LeadDTO["status"]) => setStatus({ data: { id: lead.id, status } }),
+    onSuccess: (_d, status) => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+      if (status === "replied") toast.success("Marked as replied");
+      else if (status === "archived") toast.success("Archived");
+      else if (status === "spam") toast.success("Marked as spam");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update"),
+  });
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="grid size-7 place-items-center rounded-[8px] border border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+          aria-label="More"
+        >
+          <MoreHorizontal className="size-3.5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44 border-reps-border bg-reps-ink text-white">
+        <DropdownMenuItem
+          className="text-[12.5px] text-white focus:bg-reps-panel-soft focus:text-white"
+          onClick={() => mut.mutate("replied")}
+          disabled={mut.isPending || lead.status === "replied"}
+        >
+          <CheckCheck className="mr-2 size-3.5" />
+          Mark as replied
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-[12.5px] text-white focus:bg-reps-panel-soft focus:text-white"
+          onClick={() => mut.mutate("archived")}
+          disabled={mut.isPending}
+        >
+          <Archive className="mr-2 size-3.5" />
+          Archive
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-reps-border" />
+        <DropdownMenuItem
+          className="text-[12.5px] text-red-300 focus:bg-red-500/10 focus:text-red-200"
+          onClick={() => mut.mutate("spam")}
+          disabled={mut.isPending}
+        >
+          <ShieldAlert className="mr-2 size-3.5" />
+          Mark as spam
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 export function PipelineTable({
@@ -211,14 +278,7 @@ export function PipelineTable({
                       <Phone className="size-3.5" />
                     </span>
                   )}
-                  <button
-                    type="button"
-                    className="grid size-7 place-items-center rounded-[8px] border border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
-                    aria-label="More"
-                    onClick={() => onSelect(l.id)}
-                  >
-                    <MoreHorizontal className="size-3.5" />
-                  </button>
+                  <RowActions lead={l} />
                 </div>
               </div>
             );
