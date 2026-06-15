@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { StickyNote, ArrowRightLeft, Activity, UserCheck } from "lucide-react";
+import { StickyNote, ArrowRightLeft, Activity, UserCheck, MailPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
