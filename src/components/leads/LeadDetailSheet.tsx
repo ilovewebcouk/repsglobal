@@ -110,7 +110,8 @@ export function LeadDetailSheet({
             <TabsContent value="proposals" className="m-0">
               <LeadProposalsTab enquiryId={lead.id} />
             </TabsContent>
-          </Tabs>
+            </Tabs>
+          </div>
         ) : (
           <div className="px-6 py-14 text-center text-[13px] text-white/55">
             Select a lead from the pipeline to see details.
