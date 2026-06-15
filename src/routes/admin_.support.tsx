@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, PencilLine, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
 import { ComposeDialog } from "@/components/admin/support/ComposeDialog";
+import { DictateButton } from "@/components/admin/support/DictateButton";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -593,6 +594,12 @@ function TicketDrawer({
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
             <div className="ml-auto flex items-center gap-1.5">
+              <DictateButton
+                onAppend={(text) =>
+                  setDraft((prev) => (prev.endsWith(" ") || prev === "" ? prev + text : prev + " " + text))
+                }
+              />
+
               <button
                 type="button"
                 onClick={() => aiRephrase.mutate()}
