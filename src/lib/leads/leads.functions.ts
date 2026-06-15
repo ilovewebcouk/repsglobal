@@ -117,7 +117,25 @@ export const listLeads = createServerFn({ method: "GET" })
       created_at: r.created_at,
       read_at: r.read_at,
       replied_at: r.replied_at,
+      sender_user_id: r.sender_user_id ?? null,
+      converted_client_id: r.converted_client_id ?? null,
     }));
+  });
+
+/* -------------------- Convert lead to client -------------------- */
+
+const ConvertLeadSchema = z.object({ enquiryId: z.string().uuid() });
+
+export const convertLeadToClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ConvertLeadSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ clientId: string }> => {
+    const { supabase } = context;
+    const { data: clientId, error } = await supabase.rpc("convert_lead_to_client", {
+      _enquiry_id: data.enquiryId,
+    });
+    if (error) throw new Error(error.message);
+    return { clientId: clientId as unknown as string };
   });
 
 /* -------------------- Update lead fields -------------------- */
