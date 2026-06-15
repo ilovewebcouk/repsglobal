@@ -105,27 +105,39 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           }
         }
 
-        // 2) Fallback: same sender with an open/pending ticket in last 7 days
-        if (!ticketId) {
-          const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-          const { data: existing } = await supabaseAdmin
-            .from("support_tickets")
-            .select("id")
-            .eq("requester_email", senderEmail)
-            .in("status", ["open", "pending"])
-            .gte("last_message_at", since)
-            .order("last_message_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (existing) ticketId = existing.id;
-        }
-
         // Derive inbox from the recipient mailbox (support@ / pros@ / partners@ / press@)
         const localPart = recipient.split("@")[0] ?? "support";
         const inbox =
           localPart === "pros" || localPart === "partners" || localPart === "press"
             ? localPart
             : "support";
+
+        // 2) Fallback: same sender + same inbox + same normalised subject with
+        // an open/pending ticket in the last 7 days. Without the subject+inbox
+        // checks, an unrelated new email gets silently merged into a stale
+        // ticket. Message-Id threading (step 1) already handles real replies.
+        const normaliseSubject = (s: string) =>
+          s
+            .replace(/^(\s*(re|fwd?|aw|sv|tr)\s*:\s*)+/gi, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toLowerCase();
+        if (!ticketId) {
+          const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          const { data: existing } = await supabaseAdmin
+            .from("support_tickets")
+            .select("id, subject")
+            .eq("requester_email", senderEmail)
+            .eq("inbox", inbox)
+            .in("status", ["open", "pending"])
+            .gte("last_message_at", since)
+            .order("last_message_at", { ascending: false })
+            .limit(5);
+          const target = (existing ?? []).find(
+            (t) => normaliseSubject(t.subject ?? "") === normaliseSubject(subject),
+          );
+          if (target) ticketId = target.id;
+        }
 
         // 3) Otherwise create a new ticket
         let createdNewTicket = false;
