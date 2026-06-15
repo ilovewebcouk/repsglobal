@@ -1,9 +1,6 @@
-import * as React from "react";
-import { render } from "@react-email/components";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { TEMPLATES } from "@/lib/email-templates/registry";
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
