@@ -1,66 +1,55 @@
-# Slice A — Support queue overhaul
+# Slice A — Status model, inbound threading, queue UX
 
-Goal: a triage surface that beats Zendesk for our scale — fast, keyboard-driven, zero-ambiguity status, and admins can start a brand-new ticket (outbound email) without bouncing to Campaigns.
+Honest answer to your first question: **no, the "pull previous tickets from the same requester into the open ticket" piece was never done.** The drawer only loads `support_messages` for the current ticket (see `tickets.functions.ts:72-81`). I'm folding it into Slice A because it's the same file.
 
-## 1. Status model + signal upgrades (DB)
+Go-ahead means I ship everything below in one slice.
 
-Single migration:
+---
 
-- `support_tickets.is_unread boolean not null default false` — flips `true` on inbound insert, `false` when an admin opens the ticket.
-- `support_tickets.snoozed_until timestamptz` — when set and in the future, ticket is hidden from Open and appears in a new "Snoozed" tab; auto-wakes when reached.
-- `support_tickets.last_opened_at timestamptz` and `last_opened_by uuid` — drives "you last viewed 3h ago" + multi-admin awareness.
-- Extend `tg_support_message_after_insert`: on inbound, set `is_unread=true` and clear `snoozed_until` (a customer reply unsnoozes).
-- Index: `idx_support_tickets_unread (is_unread) where is_unread = true`.
+## 1. Database (single migration)
 
-Status semantics stay on the existing enum (`open / pending / resolved / closed`) — we already use them correctly. The unread flag is the "needs me right now" signal we were missing.
+`support_tickets` additions:
+- `status` enum extended: `new`, `open`, `awaiting_us`, `waiting_customer`, `snoozed`, `resolved`, `closed`. Backfill `open` → `awaiting_us` where last message was inbound, `waiting_customer` where last was outbound and not resolved.
+- `snoozed_until timestamptz` (already exists — verify).
+- `last_inbound_at timestamptz`, `last_outbound_at timestamptz`.
+- `is_unread boolean` already exists — keep; flip to true on inbound.
 
-## 2. New server functions (`tickets.functions.ts`)
+Trigger updates:
+- `tg_support_message_after_insert`: on inbound → `status = 'awaiting_us'`, `is_unread = true`, `last_inbound_at = now()`. On outbound → `status = 'waiting_customer'` (unless resolved/closed), `last_outbound_at = now()`.
 
-- `markTicketRead({ id })` — sets `is_unread=false`, `last_opened_at=now()`, `last_opened_by=userId`.
-- `snoozeTicket({ id, until })` — validates future timestamp, sets `snoozed_until`. `unsnoozeTicket({ id })` clears it.
-- `searchTickets({ q, status, inbox })` — extends list with case-insensitive match on `ticket_number`, `subject`, `requester_email`, `requester_name` (debounced from UI).
-- `createOutboundTicket({ to, name?, subject, body, priority?, inbox? })` — creates a ticket with `source='admin'`, sends the first email via Mailgun (re-uses `sendViaMailgun` + a new `outbound-first-touch` template), stores the outbound `support_messages` row, sets `thread_key` to the message-id so the customer's reply lands back on the same ticket. Status starts `pending` (waiting on customer).
+Cron (existing pg_cron or a 5-min server fn): when `snoozed_until <= now()`, move `snoozed` → `awaiting_us`.
 
-## 3. Queue UI (`admin_.support.tsx`)
+## 2. Inbound webhook
 
-- **Header row** gets a single primary `+ New ticket` button (orange) — visible at every breakpoint, including mobile. Opens `NewTicketDialog`.
-- **Search input** (`/` focus shortcut) lives in the header row.
-- **Tabs**: Open · Pending · Snoozed · Resolved · All (snoozed added).
-- **Unread row**: leading orange dot + slightly bolder subject; row click marks read.
-- **From column**: single-line truncate w/ tooltip on overflow (kills the wrap).
-- **Keyboard shortcuts**: `j` / `k` move highlight, `Enter` opens, `e` resolves highlighted, `s` snoozes, `/` focuses search, `c` opens New ticket, `Esc` clears selection / closes drawer.
-- Mobile: the inbox filter row collapses behind a single "Inbox: All ▾" select under 640px so the tab strip + New ticket button fit on one line.
+`/api/public/mailgun/inbound` — verify Mailgun signature, parse, match by `In-Reply-To` → `thread_key` → fallback to `requester_email + subject`. Insert `support_messages` row (direction=inbound). Trigger handles status flip. Already partially there; finish signature verify + thread matching.
+
+## 3. Queue UI
+
+- Replace "Open / Pending / Resolved / All" + "All inboxes / Support / Pros / Partners / Press" two-row chrome with a **single pill row** of saved views: `Needs you` (awaiting_us + unread) · `Waiting on customer` · `Snoozed` · `Resolved today` · `All`. Inbox filter becomes a compact `<Select>` to the right.
+- Unread dot (orange) on rows where `is_unread = true`.
+- Status pill colour map per row (already shipped in last turn — keep).
+- **Mobile fixes**: Compose button moves into the page header row (next to the title/search), off the tab strip. Below `sm:` the table becomes a stacked card list (subject + from + status pill + time). Above `sm:` keep the table.
+- Remove the cryptic `support@ · pros@ · partners@ · press@` legend strip.
+- "From" column: single-line truncate with `title=` tooltip; email shown smaller under name.
+- Desktop dead-space: cap table panel at `max-w-[1400px]` and let `Subject` flex-grow so columns breathe instead of leaving 400px gap.
 
 ## 4. Ticket drawer
 
-- **Snooze button** in header (popover: 1h / 4h / tomorrow 9am / Mon 9am / custom).
-- **Reply & Resolve** as a split button — `Send reply` (primary) + a dropdown `Send & resolve` that fires the existing `closeAfter` path. Removes the easy-to-miss checkbox.
-- **⌘/Ctrl + Enter** sends the active draft.
-- **`e`** while drawer is open marks resolved.
-- Reading a ticket calls `markTicketRead` on open.
-- "Last opened by {name} {timeAgo}" line under requester when another admin viewed it within 24h (forward-compat for multi-admin).
+- **Requester history** (the missing piece): new server fn `listRequesterTickets({ email, excludeId })` → drawer shows a collapsible "Previous tickets from this requester (N)" section above the message thread, each row links/opens that ticket. Powered by `requester_email` index.
+- Reply & Resolve: "Mark as resolved after sending" checkbox already there — wire it so submit sets `status = resolved` in the same mutation.
+- Keyboard: `⌘/Ctrl + Enter` sends, `e` resolves, `s` opens snooze popover. (Snooze popover already exists.)
 
-## 5. New ticket dialog (`NewTicketDialog.tsx`)
+## 5. Out of scope (stays in B/C)
 
-Lightweight: To (email + optional name), Inbox (support/pros/partners/press), Subject, Body, Priority. On submit calls `createOutboundTicket` and opens the new ticket in the drawer. This replaces the Campaigns redirect for "I just need to email one person".
+Saved-view persistence per-user, customer profile card, SLA-with-pause, AI triage, full keyboard palette.
+
+---
 
 ## Files touched
 
-- `supabase/migrations/<new>.sql` — status/unread/snooze columns, trigger extension, index.
-- `src/lib/support/tickets.functions.ts` — add 4 server fns above.
-- `src/lib/email-templates/registry.ts` (+ new template) — `outbound-first-touch`.
-- `src/routes/admin_.support.tsx` — header, search, tabs, unread, keyboard, mobile fixes.
-- `src/components/admin/support/NewTicketDialog.tsx` — new.
-- `src/components/admin/support/SnoozePopover.tsx` — new.
+- `supabase/migrations/<new>.sql` — status enum + columns + trigger.
+- `src/routes/api/public/mailgun/inbound.ts` — signature verify + thread match.
+- `src/lib/support/tickets.functions.ts` — extend `getTicket` to return prior tickets, new `listRequesterTickets`, update reply mutation to accept `resolve: true`.
+- `src/routes/admin_.support.tsx` — single pill row, mobile card list, header Compose, drawer prior-tickets block, keyboard shortcuts.
 
-## Out of scope (Slice B/C)
-
-Saved views, customer card sidebar, SLA-with-pause, AI triage (auto-priority/auto-tagging), multi-assignee, canned responses, attachments on outbound, scheduled send.
-
-## Order of execution
-
-1. Migration (requires your approval).
-2. Server functions + template.
-3. UI: header/search/tabs, drawer snooze + split-button, keyboard, New ticket dialog, mobile fixes.
-
-Proceed?
+Say **go** and I ship it.
