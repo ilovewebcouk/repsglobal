@@ -743,15 +743,18 @@ function AttachmentChip({ att }: { att: any }) {
 function MessageBubble({ m }: { m: any }) {
   const isOut = m.direction === "outbound";
   const isNote = m.direction === "internal_note";
+  const isAuto = !!m.is_auto;
   const attachments: any[] = Array.isArray(m.support_attachments) ? m.support_attachments : [];
   return (
     <div
       className={`rounded-[14px] border px-4 py-3 ${
         isNote
           ? "border-amber-500/20 bg-amber-500/[0.06]"
-          : isOut
-            ? "border-reps-orange/25 bg-reps-orange-soft/30"
-            : "border-reps-border bg-white/[0.03]"
+          : isAuto
+            ? "border-sky-500/25 bg-sky-500/[0.06]"
+            : isOut
+              ? "border-reps-orange/25 bg-reps-orange-soft/30"
+              : "border-reps-border bg-white/[0.03]"
       }`}
     >
       <div className="flex items-center justify-between text-[11px] text-white/55">
