@@ -93,8 +93,8 @@ export function RecipientPicker({
   }
 
   // Picked chip view
-  if (value.picked) {
-    const h = value.picked;
+  if (picked) {
+    const h = picked;
     return (
       <div className="mt-1 flex items-center gap-2 rounded-[12px] border border-reps-border bg-white/[0.04] px-3 py-2">
         <span className="flex size-7 items-center justify-center rounded-full bg-reps-orange-soft text-[12px] font-semibold text-reps-orange">
