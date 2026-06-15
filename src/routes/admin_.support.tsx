@@ -304,7 +304,37 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
+        <div className="flex items-center gap-1 border-b border-reps-border px-3 pt-3">
+          <button
+            type="button"
+            onClick={() => setView("tickets")}
+            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              view === "tickets"
+                ? "bg-white/10 text-white"
+                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+            }`}
+          >
+            <Mail className="size-3.5" /> Tickets
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("campaigns")}
+            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              view === "campaigns"
+                ? "bg-white/10 text-white"
+                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+            }`}
+          >
+            <Megaphone className="size-3.5" /> Campaigns
+          </button>
+        </div>
+
+        {view === "campaigns" ? (
+          <CampaignsTab />
+        ) : (
+        <>
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+
           <div className="flex items-center justify-between gap-3">
             <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
               <TabsList className="bg-transparent p-0 h-auto gap-1">
@@ -379,6 +409,16 @@ function AdminSupport() {
           <table className="w-full min-w-[860px] text-[13px]">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
+                <th className="w-9 px-3 py-3">
+                  <Checkbox
+                    aria-label="Select all on page"
+                    checked={
+                      tickets.length > 0 &&
+                      tickets.every((t: any) => selectedIds.has(t.id))
+                    }
+                    onCheckedChange={() => toggleAllVisible()}
+                  />
+                </th>
                 <th className="px-5 py-3 font-semibold">Ticket</th>
                 <th className="px-3 py-3 font-semibold">Inbox</th>
                 <th className="px-3 py-3 font-semibold">From</th>
@@ -392,13 +432,14 @@ function AdminSupport() {
             <tbody>
               {ticketsQuery.isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-8 text-center text-white/45 text-[12px]">
+                  <td colSpan={9} className="px-5 py-8 text-center text-white/45 text-[12px]">
                     Loading tickets…
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-white/55">
+                  <td colSpan={9} className="px-5 py-10 text-center text-white/55">
+
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
                       No {tab === "all" ? "" : tab} tickets
@@ -412,12 +453,26 @@ function AdminSupport() {
                 tickets.map((t: any) => {
                   const ib = (t.inbox ?? "support") as Exclude<InboxFilter, "all">;
                   const meta = INBOX_META[ib] ?? INBOX_META.support;
+                  const isSelected = selectedIds.has(t.id);
                   return (
                   <tr
                     key={t.id}
-                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer"
+                    data-selected={isSelected || undefined}
+                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30"
                     onClick={() => setOpenId(t.id)}
                   >
+                    <td
+                      className="w-9 px-3 py-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleOne(t.id, e);
+                      }}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        aria-label={`Select ticket ${t.ticket_number}`}
+                      />
+                    </td>
                     <td className="px-5 py-3">
                       <div className="text-[11px] font-mono text-white/50">
                         {t.ticket_number}
@@ -426,6 +481,7 @@ function AdminSupport() {
                         {t.subject}
                       </div>
                     </td>
+
                     <td className="px-3 py-3">
                       <span
                         className={`inline-flex h-6 items-center rounded-[6px] px-2 text-[11px] font-semibold ${meta.chip}`}
