@@ -273,13 +273,17 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
               {user && (
-                <Link
-                  to="/find-a-professional"
-                  aria-label="Saved professionals"
-                  className="hidden h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
-                >
-                  <Heart className="h-4 w-4" aria-hidden />
-                </Link>
+                isAdmin ? (
+                  <NotificationsBell />
+                ) : (
+                  <Link
+                    to="/find-a-professional"
+                    aria-label="Saved professionals"
+                    className="hidden h-10 w-10 items-center justify-center rounded-[10px] border border-white/20 text-white/85 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink xl:inline-flex"
+                  >
+                    <Heart className="h-4 w-4" aria-hidden />
+                  </Link>
+                )
               )}
 
 
