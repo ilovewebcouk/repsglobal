@@ -120,7 +120,7 @@ function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  const [composeOpen, setComposeOpen] = useState(false);
+  // compose dialog moved to /admin/campaigns
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
