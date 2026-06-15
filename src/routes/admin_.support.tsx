@@ -1052,46 +1052,89 @@ function TicketDrawer({
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key === "Enter" &&
+                draft.trim() &&
+                !send.isPending
+              ) {
+                e.preventDefault();
+                send.mutate();
+              }
+            }}
             placeholder={
               mode === "reply"
-                ? "Type your reply… (sent as support@repsuk.org)"
+                ? "Type your reply… (⌘+Enter to send · sent as support@repsuk.org)"
                 : "Add an internal note — not sent to the customer."
             }
             rows={5}
             className="bg-white/[0.04] border-reps-border text-white text-[14px] resize-none"
           />
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="text-[11px] text-white/40">
+              {mode === "reply" ? "⌘+Enter to send · E to resolve" : "Internal — never emailed"}
+            </div>
             {mode === "reply" ? (
-              <label className="inline-flex items-center gap-2 text-[12px] text-white/55">
-                <input
-                  type="checkbox"
-                  checked={closeAfter}
-                  onChange={(e) => setCloseAfter(e.target.checked)}
-                  className="rounded border-white/20 bg-transparent"
-                />
-                Mark as resolved after sending
-              </label>
+              <div className="inline-flex rounded-[10px] overflow-hidden shadow-sm">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setCloseAfter(false);
+                    send.mutate();
+                  }}
+                  disabled={!draft.trim() || send.isPending}
+                  className="rounded-r-none bg-reps-orange hover:bg-reps-orange/90 text-white"
+                >
+                  {send.isPending && !closeAfter ? (
+                    "Sending…"
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send reply
+                    </>
+                  )}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      disabled={!draft.trim() || send.isPending}
+                      className="rounded-l-none border-l border-white/15 bg-reps-orange hover:bg-reps-orange/90 text-white px-2"
+                      aria-label="More send options"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-reps-panel border-reps-border text-white">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setCloseAfter(true);
+                        // Defer so state lands before mutate reads it
+                        setTimeout(() => send.mutate(), 0);
+                      }}
+                      className="text-[13px] focus:bg-white/5"
+                    >
+                      <Send className="h-3.5 w-3.5 mr-2" /> Send & resolve
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
-              <div />
+              <Button
+                size="sm"
+                onClick={() => send.mutate()}
+                disabled={!draft.trim() || send.isPending}
+                className="bg-amber-500/30 hover:bg-amber-500/40 text-amber-100"
+              >
+                {send.isPending ? (
+                  "Saving…"
+                ) : (
+                  <>
+                    <StickyNote className="h-3.5 w-3.5 mr-1.5" /> Save note
+                  </>
+                )}
+              </Button>
             )}
-            <Button
-              size="sm"
-              onClick={() => send.mutate()}
-              disabled={!draft.trim() || send.isPending}
-              className="bg-reps-orange hover:bg-reps-orange/90 text-white"
-            >
-              {send.isPending ? (
-                "Sending…"
-              ) : mode === "reply" ? (
-                <>
-                  <Send className="h-3.5 w-3.5 mr-1.5" /> Send reply
-                </>
-              ) : (
-                <>
-                  <StickyNote className="h-3.5 w-3.5 mr-1.5" /> Save note
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </SheetContent>
