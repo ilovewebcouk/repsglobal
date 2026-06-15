@@ -418,39 +418,60 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
-        <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+        <div className="flex flex-col gap-3 border-b border-reps-border p-3 sm:flex-row sm:flex-wrap sm:items-center">
+          {/* Saved views — single pill row */}
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as StatusFilter)}
+            className="min-w-0 -mx-1 overflow-x-auto sm:mx-0 sm:overflow-visible"
+          >
+            <TabsList className="bg-transparent p-0 h-auto gap-1 flex-nowrap sm:flex-wrap">
+              {(
+                [
+                  ["open", "Needs you", counts.open],
+                  ["pending", "Waiting on customer", counts.pending],
+                  ["snoozed", "Snoozed", counts.snoozed],
+                  ["resolved", "Resolved today", counts.resolvedToday],
+                  ["all", "All", counts.all],
+                ] as const
+              ).map(([v, label, count]) => (
+                <TabsTrigger
+                  key={v}
+                  value={v}
+                  className="shrink-0 rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
+                >
+                  {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
-          {/* Row 1: tabs + search + new ticket */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)} className="min-w-0">
-              <TabsList className="bg-transparent p-0 h-auto gap-1 flex-wrap">
-                {(
-                  [
-                    ["open", "Open", counts.open],
-                    ["pending", "Pending", counts.pending],
-                    ["snoozed", "Snoozed", counts.snoozed],
-                    ["resolved", "Resolved", counts.resolved],
-                    ["all", "All", counts.all],
-                  ] as const
-                ).map(([v, label, count]) => (
-                  <TabsTrigger
-                    key={v}
-                    value={v}
-                    className="rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
-                  >
-                    {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            {/* Inbox filter — compact select (replaces second pill row) */}
+            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
+              <SelectTrigger
+                className="h-8 w-[160px] bg-white/[0.04] border-reps-border text-white text-[12.5px]"
+                aria-label="Inbox"
+              >
+                <Inbox className="h-3.5 w-3.5 mr-1.5 text-white/50" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
+                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
+                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
+                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
+                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="relative ml-auto flex-1 min-w-[180px] max-w-[320px]">
+            <div className="relative flex-1 min-w-[160px] max-w-[320px]">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
               <Input
                 ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search tickets, subject, email…   (/)"
+                placeholder="Search tickets…   (/)"
                 className="h-8 pl-8 pr-7 bg-white/[0.04] border-reps-border text-white text-[12.5px] placeholder:text-white/35"
               />
               {search ? (
@@ -468,59 +489,14 @@ function AdminSupport() {
             <Button
               onClick={() => setComposeOpen(true)}
               size="sm"
-              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold"
+              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold shrink-0"
             >
               <Plus className="h-3.5 w-3.5 mr-1" /> New ticket
             </Button>
           </div>
-
-          {/* Row 2: inbox filter — pills on >=640, select on mobile */}
-          <div className="hidden sm:flex flex-wrap items-center gap-1.5">
-            {(
-              [
-                ["all", "All inboxes"],
-                ["support", "Support"],
-                ["pros", "Pros"],
-                ["partners", "Partners"],
-                ["press", "Press"],
-              ] as const
-            ).map(([v, label]) => {
-              const active = inbox === v;
-              const c = counts.byInbox[v] ?? 0;
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setInbox(v)}
-                  className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
-                    active
-                      ? "bg-white/10 text-white"
-                      : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-                  }`}
-                >
-                  {label}
-                  <span className={`text-[10.5px] ${active ? "text-white/75" : "text-white/35"}`}>
-                    {c}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="sm:hidden">
-            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
-              <SelectTrigger className="h-8 bg-white/[0.04] border-reps-border text-white text-[12.5px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
-                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
-                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
-                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
-                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
+
+
 
 
         <div className="overflow-x-auto">
