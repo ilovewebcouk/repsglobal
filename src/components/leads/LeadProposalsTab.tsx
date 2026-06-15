@@ -63,7 +63,7 @@ export function LeadProposalsTab({ enquiryId }: { enquiryId: string }) {
   }
 
   const createMut = useMutation({
-    mutationFn: (vars: { values: Parameters<typeof create>[0]["data"]["body"]; status: "draft" | "sent" }) =>
+    mutationFn: (vars: { values: ProposalBody; status: "draft" | "sent" }) =>
       create({ data: { enquiryId, body: vars.values, status: vars.status } }),
     onSuccess: (_d, vars) => {
       setEditing(null);
@@ -74,7 +74,8 @@ export function LeadProposalsTab({ enquiryId }: { enquiryId: string }) {
   });
 
   const updateMut = useMutation({
-    mutationFn: (vars: Parameters<typeof update>[0]["data"]) => update({ data: vars }),
+    mutationFn: (vars: { id: string; body?: ProposalBody; status?: ProposalStatus }) =>
+      update({ data: vars }),
     onSuccess: (_d, vars) => {
       setEditing(null);
       invalidateAll();
