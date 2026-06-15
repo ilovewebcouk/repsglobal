@@ -58,9 +58,11 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
     if (input.references) fd.append("h:References", input.references);
     if (input.replyTo) fd.append("h:Reply-To", input.replyTo);
     for (const att of input.attachments!) {
+      const ab = new ArrayBuffer(att.data.byteLength);
+      new Uint8Array(ab).set(att.data);
       fd.append(
         "attachment",
-        new Blob([att.data], { type: att.contentType }),
+        new Blob([ab], { type: att.contentType }),
         att.filename,
       );
     }
