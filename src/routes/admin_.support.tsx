@@ -1,11 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import {
+  ChevronDown,
+  Clock,
+  Download,
+  FileText,
+  Inbox,
+  Mail,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  Search,
+  Send,
+  Sparkles,
+  StickyNote,
+  Wand2,
+  X,
+  Zap,
+} from "lucide-react";
 import { DictateButton } from "@/components/admin/support/DictateButton";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
+import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
+import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -26,6 +45,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +67,9 @@ import {
   updateTicket,
   addInternalNote,
   getAttachmentUrl,
+  markTicketRead,
+  snoozeTicket,
+  unsnoozeTicket,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
 import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
@@ -67,7 +101,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "resolved" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "all";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -97,6 +131,18 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
+function snoozedLabel(iso?: string | null) {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return null;
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return `Wakes in ${mins}m`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `Wakes in ${hrs}h`;
+  const days = Math.round(hrs / 24);
+  return `Wakes in ${days}d`;
+}
+
 function labelFor(action: "resolve" | "reopen" | "pending"): string {
   if (action === "resolve") return "Resolved";
   if (action === "reopen") return "Reopened";
@@ -120,7 +166,10 @@ function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  // compose dialog moved to /admin/campaigns
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -134,15 +183,22 @@ function AdminSupport() {
     `admin-support-queue-${Math.random().toString(36).slice(2)}`,
   );
 
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 220);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const ticketsQuery = useQuery({
-    queryKey: ["admin", "support", "tickets", tab, inbox],
-    queryFn: () => listFn({ data: { status: tab, inbox } }),
+    queryKey: ["admin", "support", "tickets", tab, inbox, debouncedSearch],
+    queryFn: () => listFn({ data: { status: tab, inbox, q: debouncedSearch || undefined } }),
   });
 
   const allCountQuery = useQuery({
     queryKey: ["admin", "support", "counts"],
     queryFn: () => listFn({ data: { status: "all" } }),
   });
+
 
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
