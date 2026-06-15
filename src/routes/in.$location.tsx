@@ -293,6 +293,16 @@ function LocationLanding() {
   const loc = getLocation(location);
   const relatedCities = Object.values(LOCATIONS).filter((c) => c.slug !== loc.slug);
 
+  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
+  const { data: livePros = [] } = useQuery({
+    queryKey: ["directory-featured", loc.slug],
+    queryFn: () => searchProfessionals({ data: { city: loc.name, limit: 4 } }),
+    staleTime: 60_000,
+  });
+  const featured: FeaturedPro[] = livePros.length
+    ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
+    : FEATURED.slice(0, 4);
+
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
       <PublicHeader variant="solid" />
@@ -430,7 +440,7 @@ function LocationLanding() {
           </Link>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURED.slice(0, 4).map((p) => (
+          {featured.map((p) => (
             <FeaturedProCard key={p.name} pro={p} />
           ))}
         </div>
