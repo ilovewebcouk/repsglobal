@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Clock, Mail, MessageSquare, Send, StickyNote, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -80,7 +81,11 @@ function slaLabel(due?: string | null, status?: string) {
 function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
   const [openId, setOpenId] = useState<string | null>(null);
+  const qc = useQueryClient();
   const listFn = useServerFn(listTickets);
+  const channelName = useRef(
+    `admin-support-queue-${Math.random().toString(36).slice(2)}`,
+  );
 
   const ticketsQuery = useQuery({
     queryKey: ["admin", "support", "tickets", tab],
@@ -110,6 +115,29 @@ function AdminSupport() {
   }, [allCountQuery.data]);
 
   const tickets = ticketsQuery.data ?? [];
+
+  useEffect(() => {
+    const refreshSupport = () => {
+      void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+    };
+    const channel = supabase
+      .channel(channelName.current)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "support_tickets" },
+        refreshSupport,
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "support_messages" },
+        refreshSupport,
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
 
   return (
     <DashboardShell

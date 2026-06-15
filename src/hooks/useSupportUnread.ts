@@ -124,7 +124,12 @@ export function useSupportUnread(options: { enabled?: boolean } = {}) {
   }, [query.data]);
 
   const unread = React.useMemo(
-    () => items.filter((i) => new Date(i.createdAt).getTime() > lastSeen).length,
+    () =>
+      new Set(
+        items
+          .filter((i) => new Date(i.createdAt).getTime() > lastSeen)
+          .map((i) => i.ticketId),
+      ).size,
     [items, lastSeen],
   );
 
