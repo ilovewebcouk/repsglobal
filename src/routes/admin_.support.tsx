@@ -17,7 +17,7 @@ import {
   Send,
   Sparkles,
   StickyNote,
-  Wand2,
+  
   X,
   Zap,
 } from "lucide-react";
