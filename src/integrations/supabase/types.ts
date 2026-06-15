@@ -2105,6 +2105,7 @@ export type Database = {
           from_name: string | null
           id: string
           in_reply_to: string | null
+          is_auto: boolean
           mailgun_message_id: string | null
           ticket_id: string
         }
@@ -2119,6 +2120,7 @@ export type Database = {
           from_name?: string | null
           id?: string
           in_reply_to?: string | null
+          is_auto?: boolean
           mailgun_message_id?: string | null
           ticket_id: string
         }
@@ -2133,6 +2135,7 @@ export type Database = {
           from_name?: string | null
           id?: string
           in_reply_to?: string | null
+          is_auto?: boolean
           mailgun_message_id?: string | null
           ticket_id?: string
         }
@@ -2152,6 +2155,7 @@ export type Database = {
           created_at: string
           first_response_at: string | null
           id: string
+          inbox: string
           last_message_at: string
           priority: Database["public"]["Enums"]["support_priority"]
           requester_email: string
@@ -2172,6 +2176,7 @@ export type Database = {
           created_at?: string
           first_response_at?: string | null
           id?: string
+          inbox?: string
           last_message_at?: string
           priority?: Database["public"]["Enums"]["support_priority"]
           requester_email: string
@@ -2192,6 +2197,7 @@ export type Database = {
           created_at?: string
           first_response_at?: string | null
           id?: string
+          inbox?: string
           last_message_at?: string
           priority?: Database["public"]["Enums"]["support_priority"]
           requester_email?: string
@@ -2745,7 +2751,7 @@ export type Database = {
       subscription_tier: "free" | "pro" | "verified" | "studio"
       support_msg_direction: "inbound" | "outbound" | "internal_note"
       support_priority: "urgent" | "high" | "normal" | "low"
-      support_source: "email" | "web" | "admin" | "api"
+      support_source: "email" | "web" | "admin" | "api" | "contact_form"
       support_status: "open" | "pending" | "resolved" | "closed"
       verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
@@ -2934,7 +2940,7 @@ export const Constants = {
       subscription_tier: ["free", "pro", "verified", "studio"],
       support_msg_direction: ["inbound", "outbound", "internal_note"],
       support_priority: ["urgent", "high", "normal", "low"],
-      support_source: ["email", "web", "admin", "api"],
+      support_source: ["email", "web", "admin", "api", "contact_form"],
       support_status: ["open", "pending", "resolved", "closed"],
       verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
