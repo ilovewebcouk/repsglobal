@@ -373,15 +373,20 @@ function TicketDrawer({
         className="w-full sm:max-w-[640px] border-l border-reps-border bg-reps-panel/95 text-white p-0 flex flex-col"
       >
         <SheetHeader className="px-6 py-4 border-b border-reps-border">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] font-mono text-white/45">
-                {ticket?.ticket_number ?? "…"}
+          <div>
+            <div className="text-[11px] font-mono text-white/45">
+              {ticket?.ticket_number ?? "…"}
+            </div>
+            <SheetTitle className="text-white text-[16px] font-semibold line-clamp-2 mt-0.5">
+              {ticket?.subject ?? "Loading…"}
+            </SheetTitle>
+            {ticket ? (
+              <div className="mt-1 text-[12px] text-white/55">
+                {ticket.requester_name ? `${ticket.requester_name} · ` : ""}
+                {ticket.requester_email}
               </div>
-              <SheetTitle className="text-white text-[16px] font-semibold line-clamp-2 mt-0.5">
-                {ticket?.subject ?? "Loading…"}
-              </SheetTitle>
-              {ticket ? (
+            ) : null}
+          </div>
                 <div className="mt-1 text-[12px] text-white/55">
                   {ticket.requester_name ? `${ticket.requester_name} · ` : ""}
                   {ticket.requester_email}
