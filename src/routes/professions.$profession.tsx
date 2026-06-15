@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   BadgeCheck,
   ChevronRight,
@@ -25,6 +26,37 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
+import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+
+const PROFESSION_ROLE_LABEL: Record<string, string> = {
+  "personal-trainer": "Personal Trainer",
+  "pilates-instructor": "Pilates Instructor",
+  "strength-coach": "Strength Coach",
+  "nutritionist": "Nutritionist",
+  "online-coach": "Online Coach",
+  "yoga-teacher": "Yoga Teacher",
+  "group-exercise-instructor": "Group Exercise Instructor",
+};
+
+function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
+  const mode: FeaturedPro["mode"] =
+    r.in_person_available && r.online_available
+      ? "In-person & Online"
+      : r.online_available
+        ? "Online"
+        : "In-person";
+  const role = r.primary_profession ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  return {
+    name: r.full_name ?? "REPs Professional",
+    role,
+    city: r.location?.town ?? r.city ?? "",
+    rating: 5.0,
+    reviews: 0,
+    mode,
+    tags: (r.specialisms ?? []).slice(0, 2),
+    image: r.avatar_url ?? fallbackImg,
+  };
+}
 
 /* ------------------------------------------------------------------ */
 /* Profession catalogue (Phase 1 static)                               */
