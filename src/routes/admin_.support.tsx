@@ -261,24 +261,27 @@ function AdminSupport() {
             <tbody>
               {ticketsQuery.isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-white/45 text-[12px]">
+                  <td colSpan={8} className="px-5 py-8 text-center text-white/45 text-[12px]">
                     Loading tickets…
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-white/55">
+                  <td colSpan={8} className="px-5 py-10 text-center text-white/55">
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
                       No {tab === "all" ? "" : tab} tickets
                     </div>
                     <div className="mt-1 text-[12px] text-white/45">
-                      New emails to support@repsuk.org will land here.
+                      New emails to support@ / pros@ / partners@ / press@ will land here.
                     </div>
                   </td>
                 </tr>
               ) : (
-                tickets.map((t: any) => (
+                tickets.map((t: any) => {
+                  const ib = (t.inbox ?? "support") as Exclude<InboxFilter, "all">;
+                  const meta = INBOX_META[ib] ?? INBOX_META.support;
+                  return (
                   <tr
                     key={t.id}
                     className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer"
@@ -291,6 +294,13 @@ function AdminSupport() {
                       <div className="text-[13px] font-semibold text-white line-clamp-1">
                         {t.subject}
                       </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`inline-flex h-6 items-center rounded-[6px] px-2 text-[11px] font-semibold ${meta.chip}`}
+                      >
+                        {meta.label}
+                      </span>
                     </td>
                     <td className="px-3 py-3 text-white/70">
                       <div className="text-[12.5px]">{t.requester_name ?? "—"}</div>
