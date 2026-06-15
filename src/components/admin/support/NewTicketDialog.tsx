@@ -99,15 +99,16 @@ export function NewTicketDialog({
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-2">
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">
-                To (email)
+                To
               </label>
-              <Input
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                placeholder="name@example.com"
-                type="email"
+              <RecipientPicker
                 autoFocus
-                className="mt-1 bg-white/[0.04] border-reps-border text-white"
+                value={{ email: to, name, picked: undefined as any }}
+                onChange={(v) => {
+                  setTo(v.email);
+                  if (v.picked) setName(v.picked.name ?? "");
+                  else if (v.name !== undefined) setName(v.name ?? name);
+                }}
               />
             </div>
             <div>
