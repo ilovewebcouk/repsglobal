@@ -99,6 +99,13 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
+function labelFor(action: "resolve" | "reopen" | "pending"): string {
+  if (action === "resolve") return "Resolved";
+  if (action === "reopen") return "Reopened";
+  return "Marked pending";
+}
+
+
 function slaLabel(due?: string | null, status?: string) {
   if (status === "resolved" || status === "closed") return "Resolved";
   if (!due) return "—";
