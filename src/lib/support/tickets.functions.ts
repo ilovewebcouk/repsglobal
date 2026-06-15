@@ -108,6 +108,37 @@ export const getAttachmentUrl = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Previous tickets from the same requester (for drawer context panel)
+// ─────────────────────────────────────────────────────────────────────────────
+export const listRequesterTickets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { email: string; excludeId?: string }) =>
+    z
+      .object({
+        email: z.string().email().max(320),
+        excludeId: z.string().uuid().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    let q = context.supabase
+      .from("support_tickets")
+      .select(
+        "id, ticket_number, subject, status, priority, created_at, resolved_at, last_message_at",
+      )
+      .eq("requester_email", data.email.toLowerCase())
+      .order("last_message_at", { ascending: false })
+      .limit(10);
+    if (data.excludeId) q = q.neq("id", data.excludeId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Recent activity feed for the admin notifications bell.
 // Returns the latest tickets + latest inbound messages.
 // ─────────────────────────────────────────────────────────────────────────────

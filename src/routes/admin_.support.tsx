@@ -70,6 +70,7 @@ import {
   markTicketRead,
   snoozeTicket,
   unsnoozeTicket,
+  listRequesterTickets,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply } from "@/lib/support/ai-draft.functions";
 import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
@@ -234,7 +235,17 @@ function AdminSupport() {
     };
   }, [allCountQuery.data]);
 
-  const tickets = ticketsQuery.data ?? [];
+  const tickets = useMemo(() => {
+    const rows = ticketsQuery.data ?? [];
+    if (tab === "resolved") {
+      const today = new Date().toDateString();
+      return rows.filter(
+        (r: any) =>
+          r.resolved_at && new Date(r.resolved_at).toDateString() === today,
+      );
+    }
+    return rows;
+  }, [ticketsQuery.data, tab]);
 
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
@@ -418,39 +429,60 @@ function AdminSupport() {
       </div>
 
       <PPanel className="mt-6 p-0">
-        <div className="flex flex-col gap-3 border-b border-reps-border p-3">
+        <div className="flex flex-col gap-3 border-b border-reps-border p-3 sm:flex-row sm:flex-wrap sm:items-center">
+          {/* Saved views — single pill row */}
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as StatusFilter)}
+            className="min-w-0 -mx-1 overflow-x-auto sm:mx-0 sm:overflow-visible"
+          >
+            <TabsList className="bg-transparent p-0 h-auto gap-1 flex-nowrap sm:flex-wrap">
+              {(
+                [
+                  ["open", "Needs you", counts.open],
+                  ["pending", "Waiting on customer", counts.pending],
+                  ["snoozed", "Snoozed", counts.snoozed],
+                  ["resolved", "Resolved today", counts.resolvedToday],
+                  ["all", "All", counts.all],
+                ] as const
+              ).map(([v, label, count]) => (
+                <TabsTrigger
+                  key={v}
+                  value={v}
+                  className="shrink-0 rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
+                >
+                  {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
-          {/* Row 1: tabs + search + new ticket */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)} className="min-w-0">
-              <TabsList className="bg-transparent p-0 h-auto gap-1 flex-wrap">
-                {(
-                  [
-                    ["open", "Open", counts.open],
-                    ["pending", "Pending", counts.pending],
-                    ["snoozed", "Snoozed", counts.snoozed],
-                    ["resolved", "Resolved", counts.resolved],
-                    ["all", "All", counts.all],
-                  ] as const
-                ).map(([v, label, count]) => (
-                  <TabsTrigger
-                    key={v}
-                    value={v}
-                    className="rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-white/65 data-[state=active]:bg-reps-orange-soft data-[state=active]:text-reps-orange data-[state=active]:shadow-none"
-                  >
-                    {label} <span className="ml-1 text-[11px] opacity-70">{count}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            {/* Inbox filter — compact select (replaces second pill row) */}
+            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
+              <SelectTrigger
+                className="h-8 w-[160px] bg-white/[0.04] border-reps-border text-white text-[12.5px]"
+                aria-label="Inbox"
+              >
+                <Inbox className="h-3.5 w-3.5 mr-1.5 text-white/50" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
+                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
+                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
+                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
+                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="relative ml-auto flex-1 min-w-[180px] max-w-[320px]">
+            <div className="relative flex-1 min-w-[160px] max-w-[320px]">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
               <Input
                 ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search tickets, subject, email…   (/)"
+                placeholder="Search tickets…   (/)"
                 className="h-8 pl-8 pr-7 bg-white/[0.04] border-reps-border text-white text-[12.5px] placeholder:text-white/35"
               />
               {search ? (
@@ -468,59 +500,14 @@ function AdminSupport() {
             <Button
               onClick={() => setComposeOpen(true)}
               size="sm"
-              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold"
+              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold shrink-0"
             >
               <Plus className="h-3.5 w-3.5 mr-1" /> New ticket
             </Button>
           </div>
-
-          {/* Row 2: inbox filter — pills on >=640, select on mobile */}
-          <div className="hidden sm:flex flex-wrap items-center gap-1.5">
-            {(
-              [
-                ["all", "All inboxes"],
-                ["support", "Support"],
-                ["pros", "Pros"],
-                ["partners", "Partners"],
-                ["press", "Press"],
-              ] as const
-            ).map(([v, label]) => {
-              const active = inbox === v;
-              const c = counts.byInbox[v] ?? 0;
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setInbox(v)}
-                  className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
-                    active
-                      ? "bg-white/10 text-white"
-                      : "text-white/55 hover:text-white hover:bg-white/[0.04]"
-                  }`}
-                >
-                  {label}
-                  <span className={`text-[10.5px] ${active ? "text-white/75" : "text-white/35"}`}>
-                    {c}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="sm:hidden">
-            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
-              <SelectTrigger className="h-8 bg-white/[0.04] border-reps-border text-white text-[12.5px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
-                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
-                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
-                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
-                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
+
+
 
 
         <div className="overflow-x-auto">
@@ -692,6 +679,7 @@ function AdminSupport() {
       <TicketDrawer
         ticketId={openId}
         onClose={() => setOpenId(null)}
+        onOpenTicket={(id) => setOpenId(id)}
         onChanged={() => {
           ticketsQuery.refetch();
           allCountQuery.refetch();
@@ -800,10 +788,12 @@ function TicketDrawer({
   ticketId,
   onClose,
   onChanged,
+  onOpenTicket,
 }: {
   ticketId: string | null;
   onClose: () => void;
   onChanged: () => void;
+  onOpenTicket?: (id: string) => void;
 }) {
   const qc = useQueryClient();
   const getFn = useServerFn(getTicket);
@@ -811,6 +801,7 @@ function TicketDrawer({
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
+  const priorFn = useServerFn(listRequesterTickets);
   const markReadFn = useServerFn(markTicketRead);
   const snoozeFn = useServerFn(snoozeTicket);
   const unsnoozeFn = useServerFn(unsnoozeTicket);
@@ -905,6 +896,20 @@ function TicketDrawer({
 
   const ticket = q.data?.ticket;
   const messages = q.data?.messages ?? [];
+
+  const priorQuery = useQuery({
+    queryKey: ["admin", "support", "prior", ticket?.requester_email, ticketId],
+    queryFn: () =>
+      priorFn({
+        data: {
+          email: ticket!.requester_email,
+          excludeId: ticketId!,
+        },
+      }),
+    enabled: !!ticket?.requester_email && !!ticketId,
+  });
+  const priorTickets = priorQuery.data ?? [];
+  const [priorOpen, setPriorOpen] = useState(false);
 
   return (
     <Sheet open={!!ticketId} onOpenChange={(o) => !o && onClose()}>
@@ -1005,6 +1010,66 @@ function TicketDrawer({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {priorTickets.length > 0 ? (
+            <div className="rounded-[12px] border border-reps-border bg-white/[0.02]">
+              <button
+                type="button"
+                onClick={() => setPriorOpen((v) => !v)}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[12px] font-semibold text-white/75 hover:text-white"
+                aria-expanded={priorOpen}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-white/45" />
+                  Previous tickets from this requester
+                  <span className="ml-1 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
+                    {priorTickets.length}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-white/45 transition-transform ${priorOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {priorOpen ? (
+                <ul className="divide-y divide-reps-border/60 border-t border-reps-border/60">
+                  {priorTickets.map((p: any) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => onOpenTicket?.(p.id)}
+                        className="flex w-full items-start justify-between gap-3 px-3 py-2 text-left hover:bg-white/[0.03]"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-mono text-white/45">
+                            {p.ticket_number}
+                          </div>
+                          <div className="truncate text-[12.5px] text-white/85">
+                            {p.subject}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <span
+                            className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
+                              p.status === "resolved" || p.status === "closed"
+                                ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                                : p.status === "pending"
+                                  ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
+                                  : "border border-reps-orange/30 bg-reps-orange/15 text-reps-orange"
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <div className="mt-0.5 text-[10.5px] text-white/45">
+                            {timeAgo(p.last_message_at)}
+                          </div>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
           {q.isLoading ? (
             <div className="text-white/45 text-[13px]">Loading conversation…</div>
           ) : messages.length === 0 ? (
@@ -1013,6 +1078,7 @@ function TicketDrawer({
             messages.map((m: any) => <MessageBubble key={m.id} m={m} />)
           )}
         </div>
+
 
         <div className="border-t border-reps-border bg-black/20 px-6 py-4">
           <div className="flex items-center gap-2 mb-2">
