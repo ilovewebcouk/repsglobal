@@ -325,6 +325,7 @@ function TicketDrawer({
   const replyFn = useServerFn(replyToTicket);
   const updateFn = useServerFn(updateTicket);
   const noteFn = useServerFn(addInternalNote);
+  const draftFn = useServerFn(draftSupportReply);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
@@ -352,6 +353,20 @@ function TicketDrawer({
       onChanged();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to send"),
+  });
+
+  const aiDraft = useMutation({
+    mutationFn: async () => {
+      if (!ticketId) throw new Error("No ticket");
+      return draftFn({ data: { ticketId } });
+    },
+    onSuccess: (res) => {
+      if (res?.text) {
+        setDraft((current) => (current.trim() ? `${current.trim()}\n\n${res.text}` : res.text));
+        toast.success("AI draft ready — review before sending");
+      }
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
   });
 
   const update = useMutation({
