@@ -759,6 +759,7 @@ function AttachmentChip({ att }: { att: any }) {
                 </div>
                 <a
                   href={url}
+                  download={att.filename}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-[8px] bg-reps-orange px-3 py-1.5 text-[13px] font-semibold text-white hover:bg-reps-orange/90"
