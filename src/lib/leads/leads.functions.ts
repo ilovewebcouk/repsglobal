@@ -91,6 +91,29 @@ export const listLeads = createServerFn({ method: "GET" })
       for (const s of svcs ?? []) titleMap.set(s.id, s.title);
     }
 
+    // Latest pending invite per email for this pro (so the UI can show
+    // "Sign-up link sent {timeAgo}" without a second round-trip).
+    const emails = Array.from(
+      new Set(
+        rows
+          .filter((r) => !r.sender_user_id && r.sender_email)
+          .map((r) => r.sender_email.toLowerCase()),
+      ),
+    );
+    const inviteMap = new Map<string, string>();
+    if (emails.length) {
+      const { data: invites } = await supabaseAdmin
+        .from("client_invites")
+        .select("email, created_at")
+        .eq("professional_id", userId)
+        .in("email", emails)
+        .order("created_at", { ascending: false });
+      for (const inv of invites ?? []) {
+        const key = (inv.email ?? "").toLowerCase();
+        if (key && !inviteMap.has(key)) inviteMap.set(key, inv.created_at);
+      }
+    }
+
     return rows.map((r) => ({
       id: r.id,
       sender_name: r.sender_name,
@@ -120,6 +143,10 @@ export const listLeads = createServerFn({ method: "GET" })
       replied_at: r.replied_at,
       sender_user_id: r.sender_user_id ?? null,
       converted_client_id: r.converted_client_id ?? null,
+      last_invite_sent_at:
+        !r.sender_user_id && r.sender_email
+          ? (inviteMap.get(r.sender_email.toLowerCase()) ?? null)
+          : null,
     }));
   });
 
