@@ -354,7 +354,16 @@ function EnquiriesInboxPage() {
 
                 {/* Details grid */}
                 <div className="mb-5 grid grid-cols-2 gap-3">
-                  <DetailItem label="Phone" value={selected.sender_phone} />
+                  <DetailItem
+                    label="Email"
+                    value={selected.sender_email}
+                    href={`mailto:${selected.sender_email}?subject=${encodeURIComponent(`Re: your enquiry via REPS${selected.service_title ? ` — ${selected.service_title}` : ""}`)}`}
+                  />
+                  <DetailItem
+                    label="Phone"
+                    value={selected.sender_phone}
+                    href={selected.sender_phone ? `tel:${selected.sender_phone.replace(/\s+/g, "")}` : null}
+                  />
                   <DetailItem label="Location" value={selected.location} />
                   <DetailItem label="Frequency" value={selected.frequency} />
                   <DetailItem label="Start by" value={selected.start_by} />
