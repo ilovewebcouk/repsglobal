@@ -116,18 +116,25 @@ function AdminSupport() {
 
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
+    const openRows = rows.filter((r: any) => r.status === "open");
     return {
-      open: rows.filter((r: any) => r.status === "open").length,
+      open: openRows.length,
       pending: rows.filter((r: any) => r.status === "pending").length,
       resolved: rows.filter((r: any) => r.status === "resolved").length,
       all: rows.length,
-      urgent: rows.filter((r: any) => r.status === "open" && r.priority === "urgent")
-        .length,
+      urgent: openRows.filter((r: any) => r.priority === "urgent").length,
       resolvedToday: rows.filter(
         (r: any) =>
           r.resolved_at &&
           new Date(r.resolved_at).toDateString() === new Date().toDateString(),
       ).length,
+      byInbox: {
+        all: openRows.length,
+        support: openRows.filter((r: any) => (r.inbox ?? "support") === "support").length,
+        pros: openRows.filter((r: any) => r.inbox === "pros").length,
+        partners: openRows.filter((r: any) => r.inbox === "partners").length,
+        press: openRows.filter((r: any) => r.inbox === "press").length,
+      } as Record<InboxFilter, number>,
     };
   }, [allCountQuery.data]);
 
