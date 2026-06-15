@@ -480,14 +480,31 @@ function StatTile({
   );
 }
 
-function DetailItem({ label, value }: { label: string; value: string | null }) {
+function DetailItem({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: string | null;
+  href?: string | null;
+}) {
   if (!value) return null;
   return (
     <div className="rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 py-2.5">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
         {label}
       </div>
-      <div className="mt-0.5 text-[12.5px] font-medium text-white/85">{value}</div>
+      {href ? (
+        <a
+          href={href}
+          className="mt-0.5 block truncate text-[12.5px] font-medium text-reps-orange hover:underline"
+        >
+          {value}
+        </a>
+      ) : (
+        <div className="mt-0.5 text-[12.5px] font-medium text-white/85">{value}</div>
+      )}
     </div>
   );
 }
