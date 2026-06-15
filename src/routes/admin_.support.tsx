@@ -818,6 +818,25 @@ function TicketDrawer({
       });
   }, [ticketId, markReadFn, onChanged]);
 
+  // 'E' to resolve when the drawer is focused and not typing
+  useEffect(() => {
+    if (!ticketId) return;
+    function handler(e: KeyboardEvent) {
+      const t = e.target as HTMLElement;
+      const inField =
+        t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (inField) return;
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        update.mutate({ status: "resolved" });
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId]);
+
+
 
   const q = useQuery({
     queryKey: ["admin", "support", "ticket", ticketId],
