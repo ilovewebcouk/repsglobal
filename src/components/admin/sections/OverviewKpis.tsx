@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Users, UserCheck, UserPlus, Wallet } from "lucide-react";
+import { TrendingUp, Users, UserCheck, UserPlus, Wallet } from "lucide-react";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 
@@ -43,7 +43,6 @@ function KpiTile({
   sub: string;
   trend?: "up" | "down";
 }) {
-  const DeltaIcon = trend === "up" ? import("lucide-react").then(m => m.TrendingUp) : import("lucide-react").then(m => m.TrendingDown);
   const color = trend === "up" ? "text-reps-green" : "text-reps-red";
   return (
     <AdminCard>
@@ -71,7 +70,7 @@ function KpiTile({
   );
 }
 
-import { TrendingUp } from "lucide-react";
+
 
 export function OverviewKpis() {
   return (
