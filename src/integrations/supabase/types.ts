@@ -2261,13 +2261,17 @@ export type Database = {
           first_response_at: string | null
           id: string
           inbox: string
+          is_unread: boolean
           last_message_at: string
+          last_opened_at: string | null
+          last_opened_by: string | null
           priority: Database["public"]["Enums"]["support_priority"]
           requester_email: string
           requester_name: string | null
           requester_user_id: string | null
           resolved_at: string | null
           sla_due_at: string | null
+          snoozed_until: string | null
           source: Database["public"]["Enums"]["support_source"]
           status: Database["public"]["Enums"]["support_status"]
           subject: string
@@ -2282,13 +2286,17 @@ export type Database = {
           first_response_at?: string | null
           id?: string
           inbox?: string
+          is_unread?: boolean
           last_message_at?: string
+          last_opened_at?: string | null
+          last_opened_by?: string | null
           priority?: Database["public"]["Enums"]["support_priority"]
           requester_email: string
           requester_name?: string | null
           requester_user_id?: string | null
           resolved_at?: string | null
           sla_due_at?: string | null
+          snoozed_until?: string | null
           source?: Database["public"]["Enums"]["support_source"]
           status?: Database["public"]["Enums"]["support_status"]
           subject: string
@@ -2303,13 +2311,17 @@ export type Database = {
           first_response_at?: string | null
           id?: string
           inbox?: string
+          is_unread?: boolean
           last_message_at?: string
+          last_opened_at?: string | null
+          last_opened_by?: string | null
           priority?: Database["public"]["Enums"]["support_priority"]
           requester_email?: string
           requester_name?: string | null
           requester_user_id?: string | null
           resolved_at?: string | null
           sla_due_at?: string | null
+          snoozed_until?: string | null
           source?: Database["public"]["Enums"]["support_source"]
           status?: Database["public"]["Enums"]["support_status"]
           subject?: string
