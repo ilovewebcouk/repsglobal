@@ -6,7 +6,7 @@
 // (src/lib/email/send.server.ts) — it handles suppression, retries, and unsubscribe.
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/mailgun";
-const MAILGUN_DOMAIN = "notify.repsuk.org";
+const MAILGUN_DOMAIN = "repsuk.org";
 
 export interface MailgunSendInput {
   from: string;
