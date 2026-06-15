@@ -18,12 +18,23 @@ function timeAgo(iso: string) {
 }
 
 export function NotificationsBell() {
-  const { items, unread, lastSeen, markAllRead, isLoading } = useSupportUnread();
+  const { items: allItems, unread, lastSeen, markAllRead, isLoading } = useSupportUnread();
   const [open, setOpen] = React.useState(false);
+  const [snapshotSeen, setSnapshotSeen] = React.useState<number | null>(null);
+  const effectiveSeen = open && snapshotSeen !== null ? snapshotSeen : lastSeen;
+  const items = React.useMemo(
+    () => allItems.filter((i) => new Date(i.createdAt).getTime() > effectiveSeen),
+    [allItems, effectiveSeen],
+  );
 
   const handleOpenChange = (next: boolean) => {
+    if (next) {
+      setSnapshotSeen(lastSeen);
+      if (unread > 0) markAllRead();
+    } else {
+      setSnapshotSeen(null);
+    }
     setOpen(next);
-    if (next && unread > 0) markAllRead();
   };
 
   return (
