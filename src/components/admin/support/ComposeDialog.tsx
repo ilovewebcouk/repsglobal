@@ -143,7 +143,7 @@ export function ComposeDialog({
         if (!sendMutation.isPending) onOpenChange(v);
       }}
     >
-      <DialogContent className="max-w-3xl bg-reps-bg border-reps-border text-white">
+      <DialogContent className="max-w-3xl bg-reps-panel border-reps-border text-white shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-white">Compose outbound email</DialogTitle>
         </DialogHeader>
