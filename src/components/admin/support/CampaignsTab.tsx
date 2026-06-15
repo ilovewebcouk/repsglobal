@@ -5,7 +5,7 @@ import { Megaphone, Mail, CheckCircle2, AlertCircle, MessageSquareReply } from "
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { listCampaigns, getCampaign } from "@/lib/support/campaigns.functions";
-import { Empty } from "@/components/ui/empty";
+// (Empty-state primitive isn't installed; render inline empty markup instead.)
 
 function timeAgo(iso?: string | null) {
   if (!iso) return "—";
@@ -64,19 +64,16 @@ export function CampaignsTab() {
               </tr>
             ) : campaigns.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-5 py-12">
-                  <Empty
-                    className="border-0 bg-transparent"
-                  >
-                    <Megaphone className="mx-auto mb-2 size-6 text-white/35" />
-                    <div className="text-[13px] font-medium text-white/80">No broadcasts yet</div>
-                    <div className="mt-1 text-[12px] text-white/45">
-                      Use Compose → Broadcast to email trainers by tier. Each broadcast is a
-                      single campaign — replies become real tickets.
-                    </div>
-                  </Empty>
+                <td colSpan={7} className="px-5 py-12 text-center">
+                  <Megaphone className="mx-auto mb-2 size-6 text-white/35" />
+                  <div className="text-[13px] font-medium text-white/80">No broadcasts yet</div>
+                  <div className="mx-auto mt-1 max-w-md text-[12px] text-white/45">
+                    Use Compose → Broadcast to email trainers by tier. Each broadcast is a
+                    single campaign — replies become real tickets.
+                  </div>
                 </td>
               </tr>
+
             ) : (
               campaigns.map((c: any) => (
                 <tr
