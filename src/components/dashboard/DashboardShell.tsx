@@ -335,6 +335,18 @@ function EnquiriesUnreadBadge() {
   );
 }
 
+function SupportUnreadBadge() {
+  const { unread } = useSupportUnread();
+  if (!unread) return null;
+  return (
+    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+      {unread > 99 ? "99+" : unread}
+    </span>
+  );
+}
+
+
+
 
 function AdminBadge() {
   return (
