@@ -2055,6 +2055,160 @@ export type Database = {
         }
         Relationships: []
       }
+      support_attachments: {
+        Row: {
+          created_at: string
+          filename: string
+          id: string
+          message_id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          filename: string
+          id?: string
+          message_id: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          filename?: string
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "support_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_messages: {
+        Row: {
+          author_user_id: string | null
+          body_html: string | null
+          body_text: string | null
+          created_at: string
+          direction: Database["public"]["Enums"]["support_msg_direction"]
+          email_references: string | null
+          from_email: string | null
+          from_name: string | null
+          id: string
+          in_reply_to: string | null
+          mailgun_message_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          author_user_id?: string | null
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          direction: Database["public"]["Enums"]["support_msg_direction"]
+          email_references?: string | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          mailgun_message_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          author_user_id?: string | null
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["support_msg_direction"]
+          email_references?: string | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          mailgun_message_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          first_response_at: string | null
+          id: string
+          last_message_at: string
+          priority: Database["public"]["Enums"]["support_priority"]
+          requester_email: string
+          requester_name: string | null
+          requester_user_id: string | null
+          resolved_at: string | null
+          sla_due_at: string | null
+          source: Database["public"]["Enums"]["support_source"]
+          status: Database["public"]["Enums"]["support_status"]
+          subject: string
+          tags: string[]
+          thread_key: string | null
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          first_response_at?: string | null
+          id?: string
+          last_message_at?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          requester_email: string
+          requester_name?: string | null
+          requester_user_id?: string | null
+          resolved_at?: string | null
+          sla_due_at?: string | null
+          source?: Database["public"]["Enums"]["support_source"]
+          status?: Database["public"]["Enums"]["support_status"]
+          subject: string
+          tags?: string[]
+          thread_key?: string | null
+          ticket_number?: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          first_response_at?: string | null
+          id?: string
+          last_message_at?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          requester_email?: string
+          requester_name?: string | null
+          requester_user_id?: string | null
+          resolved_at?: string | null
+          sla_due_at?: string | null
+          source?: Database["public"]["Enums"]["support_source"]
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          tags?: string[]
+          thread_key?: string | null
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -2589,6 +2743,10 @@ export type Database = {
         | "incomplete_expired"
         | "paused"
       subscription_tier: "free" | "pro" | "verified" | "studio"
+      support_msg_direction: "inbound" | "outbound" | "internal_note"
+      support_priority: "urgent" | "high" | "normal" | "low"
+      support_source: "email" | "web" | "admin" | "api"
+      support_status: "open" | "pending" | "resolved" | "closed"
       verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
       verification_submission_status:
@@ -2774,6 +2932,10 @@ export const Constants = {
         "paused",
       ],
       subscription_tier: ["free", "pro", "verified", "studio"],
+      support_msg_direction: ["inbound", "outbound", "internal_note"],
+      support_priority: ["urgent", "high", "normal", "low"],
+      support_source: ["email", "web", "admin", "api"],
+      support_status: ["open", "pending", "resolved", "closed"],
       verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
       verification_submission_status: [
