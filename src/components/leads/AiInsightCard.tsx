@@ -9,12 +9,21 @@ import {
 } from "@/components/ui/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { type LeadDTO } from "@/lib/leads/leads.functions";
 import { scoreLead, draftLeadReply, type DraftReply } from "@/lib/leads/leads-ai.functions";
+
+type Tone = "warm" | "direct" | "concise";
 
 export function AiInsightCard({ lead }: { lead: LeadDTO }) {
   const qc = useQueryClient();
   const [draft, setDraft] = React.useState<DraftReply | null>(null);
+  const [tone, setTone] = React.useState<Tone>("warm");
+
+  // Reset draft when switching leads.
+  React.useEffect(() => {
+    setDraft(null);
+  }, [lead.id]);
 
   const scoreMut = useMutation({
     mutationFn: () => scoreLead({ data: { enquiryId: lead.id } }),
@@ -27,7 +36,7 @@ export function AiInsightCard({ lead }: { lead: LeadDTO }) {
   });
 
   const draftMut = useMutation({
-    mutationFn: () => draftLeadReply({ data: { enquiryId: lead.id } }),
+    mutationFn: () => draftLeadReply({ data: { enquiryId: lead.id, tone } }),
     onSuccess: (d) => setDraft(d),
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't draft reply"),
   });
