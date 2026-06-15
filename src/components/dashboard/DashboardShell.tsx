@@ -474,15 +474,20 @@ function TopBar({
         )}
 
         {actions}
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Notifications"
-          disabled
-          className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
-        >
-          <Bell className="h-4 w-4" />
-        </Button>
+        {role === "admin" ? (
+          <NotificationsBell />
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Notifications"
+            disabled
+            className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
+          >
+            <Bell className="h-4 w-4" />
+          </Button>
+        )}
+
         <UserAccountMenu surface="dashboard" />
       </div>
     </header>
