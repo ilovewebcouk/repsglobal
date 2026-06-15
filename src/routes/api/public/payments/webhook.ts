@@ -369,6 +369,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           switch (event.type) {
             case "checkout.session.completed": {
               const session = event.data.object as Stripe.Checkout.Session;
+              const acctHeader = request.headers.get("stripe-account");
+              // Connect Checkout Sessions arrive with a Stripe-Account header — route to connected-account handler.
+              if (acctHeader) {
+                await handleConnectCheckoutCompleted(session, acctHeader);
+                break;
+              }
               const meta = (session.metadata ?? {}) as Record<string, string>;
               if (meta.kind === "credit_topup") {
                 const topupUserId = meta.reps_user_id || meta.userId;
@@ -419,12 +425,6 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             }
             case "account.updated": {
               await handleConnectAccountUpdated(event.data.object as Stripe.Account);
-              break;
-            }
-            case "checkout.session.completed": {
-              // Connect Checkout Sessions arrive with a Stripe-Account header.
-              const acctHeader = request.headers.get("stripe-account");
-              if (acctHeader) await handleConnectCheckoutCompleted(event.data.object as Stripe.Checkout.Session, acctHeader);
               break;
             }
             case "charge.refunded": {
