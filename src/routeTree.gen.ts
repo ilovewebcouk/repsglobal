@@ -89,6 +89,7 @@ import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/public/support/contact-form'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
@@ -522,6 +523,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSupportContactFormRoute =
+  ApiPublicSupportContactFormRouteImport.update({
+    id: '/api/public/support/contact-form',
+    path: '/api/public/support/contact-form',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -771,6 +778,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -876,6 +884,7 @@ export interface FileRoutesByTo {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -986,6 +995,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -1094,6 +1104,7 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/payments/webhook'
+    | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1199,6 +1210,7 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/payments/webhook'
+    | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1308,6 +1320,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/payments/webhook'
+    | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1402,6 +1415,7 @@ export interface RootRouteChildren {
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicSupportContactFormRoute: typeof ApiPublicSupportContactFormRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1970,6 +1984,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/support/contact-form': {
+      id: '/api/public/support/contact-form'
+      path: '/api/public/support/contact-form'
+      fullPath: '/api/public/support/contact-form'
+      preLoaderRoute: typeof ApiPublicSupportContactFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -2390,6 +2411,7 @@ const rootRouteChildren: RootRouteChildren = {
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicSupportContactFormRoute: ApiPublicSupportContactFormRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

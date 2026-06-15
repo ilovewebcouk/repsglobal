@@ -98,6 +98,13 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           if (existing) ticketId = existing.id;
         }
 
+        // Derive inbox from the recipient mailbox (support@ / pros@ / partners@ / press@)
+        const localPart = recipient.split("@")[0] ?? "support";
+        const inbox =
+          localPart === "pros" || localPart === "partners" || localPart === "press"
+            ? localPart
+            : "support";
+
         // 3) Otherwise create a new ticket
         if (!ticketId) {
           const { data: created, error: cErr } = await supabaseAdmin
@@ -109,6 +116,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
               priority: "normal",
               source: "email",
               status: "open",
+              inbox,
               sla_due_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
               thread_key: messageId || null,
             })

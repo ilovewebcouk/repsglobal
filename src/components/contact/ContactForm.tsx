@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, Loader2 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -67,8 +67,20 @@ export function ContactForm() {
   const [audience, setAudience] = useState<Audience>("pro");
   const [reason, setReason] = useState<string>("");
   const [tier, setTier] = useState<string>("");
+  const [profession, setProfession] = useState<string>("");
+  const [orgType, setOrgType] = useState<string>("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
+  const [org, setOrg] = useState("");
+  const [website, setWebsite] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [company, setCompany] = useState(""); // honeypot
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const reasons = useMemo(() => reasonsFor(audience), [audience]);
   const eta =
@@ -81,9 +93,42 @@ export function ContactForm() {
     setTier("");
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitted(true);
+    if (submitting) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/public/support/contact-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          audience,
+          company,
+          fullName,
+          email,
+          message,
+          reason: reason || undefined,
+          profession: audience === "pro" ? profession || undefined : undefined,
+          mobile: audience === "pro" ? mobile || undefined : undefined,
+          tier: audience === "pro" ? tier || undefined : undefined,
+          profileUrl: audience === "pro" ? profileUrl || undefined : undefined,
+          org: audience === "partner" ? org || undefined : undefined,
+          orgType: audience === "partner" ? orgType || undefined : undefined,
+          website: audience === "partner" ? website || undefined : undefined,
+          phone: audience === "partner" ? phone || undefined : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || "Could not send your message. Please try again.");
+      }
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err?.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -112,10 +157,11 @@ export function ContactForm() {
       {submitted ? (
         <Alert className="mt-8 border-emerald-400/30 bg-emerald-500/15 text-emerald-100">
           <CheckCircle2 className="size-4 text-emerald-300" />
-          <AlertTitle className="text-emerald-100">Message sent</AlertTitle>
+          <AlertTitle className="text-emerald-100">Message received</AlertTitle>
           <AlertDescription className="text-emerald-100/80">
-            We'll reply to <span className="font-semibold">{email || "your email"}</span>{" "}
-            shortly — usually within {eta.toLowerCase()}.
+            We've emailed a confirmation to{" "}
+            <span className="font-semibold">{email || "your email"}</span>. A
+            real human will reply within 24 hours.
           </AlertDescription>
         </Alert>
       ) : (
@@ -126,6 +172,8 @@ export function ContactForm() {
               <Input
                 id="name"
                 required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder={audience === "partner" ? "Alex Morgan" : "Jane Carter"}
                 className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
               />
@@ -147,7 +195,7 @@ export function ContactForm() {
             <>
               <div className="grid gap-5 md:grid-cols-2">
                 <FieldShell label="Profession" htmlFor="profession">
-                  <Select>
+                  <Select value={profession} onValueChange={setProfession}>
                     <SelectTrigger
                       id="profession"
                       className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white focus:ring-reps-orange/60"
@@ -167,6 +215,8 @@ export function ContactForm() {
                   <Input
                     id="mobile"
                     type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
                     placeholder="+44…"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
@@ -217,6 +267,8 @@ export function ContactForm() {
                     <Input
                       id="profile-url"
                       type="url"
+                      value={profileUrl}
+                      onChange={(e) => setProfileUrl(e.target.value)}
                       placeholder="repsglobal.com/c/your-handle"
                       className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                     />
@@ -233,12 +285,14 @@ export function ContactForm() {
                   <Input
                     id="org"
                     required
+                    value={org}
+                    onChange={(e) => setOrg(e.target.value)}
                     placeholder="Your awarding body, provider or outlet"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
                 </FieldShell>
                 <FieldShell label="Organisation type" htmlFor="org-type">
-                  <Select>
+                  <Select value={orgType} onValueChange={setOrgType}>
                     <SelectTrigger
                       id="org-type"
                       className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white focus:ring-reps-orange/60"
@@ -261,6 +315,8 @@ export function ContactForm() {
                   <Input
                     id="website"
                     type="url"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
                     placeholder="https://"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
@@ -269,6 +325,8 @@ export function ContactForm() {
                   <Input
                     id="phone"
                     type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="+44…"
                     className="h-11 rounded-[12px] border-reps-border bg-reps-ink text-[14px] text-white placeholder:text-white/35 focus-visible:ring-reps-orange/60"
                   />
@@ -295,6 +353,8 @@ export function ContactForm() {
               id="message"
               required
               rows={5}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder={
                 audience === "partner"
                   ? "A few lines on what you're working on — courses, learner volumes, timelines, anything useful."
@@ -310,9 +370,17 @@ export function ContactForm() {
             name="company"
             tabIndex={-1}
             autoComplete="off"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
             className="hidden"
             aria-hidden
           />
+
+          {error ? (
+            <Alert className="border-rose-400/30 bg-rose-500/15 text-rose-100">
+              <AlertDescription className="text-rose-100/90">{error}</AlertDescription>
+            </Alert>
+          ) : null}
 
           <div className="mt-2 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
             <span className="inline-flex items-center gap-2 self-start rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[12px] text-white/65">
@@ -321,12 +389,21 @@ export function ContactForm() {
             </span>
             <button
               type="submit"
+              disabled={submitting}
               className={cn(
-                "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover",
+                "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60 disabled:cursor-not-allowed",
               )}
             >
-              {audience === "partner" ? "Send to partnerships" : "Send message"}{" "}
-              <ArrowRight className="size-4" />
+              {submitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Sending…
+                </>
+              ) : (
+                <>
+                  {audience === "partner" ? "Send to partnerships" : "Send message"}{" "}
+                  <ArrowRight className="size-4" />
+                </>
+              )}
             </button>
           </div>
         </form>
