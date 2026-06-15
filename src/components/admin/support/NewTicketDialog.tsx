@@ -103,11 +103,10 @@ export function NewTicketDialog({
               </label>
               <RecipientPicker
                 autoFocus
-                value={{ email: to, name, picked: undefined as any }}
+                email={to}
                 onChange={(v) => {
                   setTo(v.email);
-                  if (v.picked) setName(v.picked.name ?? "");
-                  else if (v.name !== undefined) setName(v.name ?? name);
+                  if (v.name !== undefined) setName(v.name ?? "");
                 }}
               />
             </div>
