@@ -46,6 +46,8 @@ import {
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+import { useSupportUnread } from "@/hooks/useSupportUnread";
+
 
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
