@@ -45,6 +45,8 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
+import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
 import { useServerFn } from "@tanstack/react-start";
