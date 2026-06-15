@@ -91,7 +91,10 @@ export function LeadDetailSheet({
         </div>
 
         {lead ? (
-          <Tabs defaultValue="details" className="flex flex-col gap-4 p-5">
+          <div className="flex flex-col gap-4 p-5">
+            <ConvertRow lead={lead} />
+            <Tabs defaultValue="details" className="flex flex-col gap-4">
+
             <TabsList className="grid w-full grid-cols-3 rounded-[10px] bg-reps-panel-soft/60 p-1">
               <TabsTrigger value="details" className="rounded-[8px] text-[12px]">Details</TabsTrigger>
               <TabsTrigger value="activity" className="rounded-[8px] text-[12px]">Activity</TabsTrigger>
