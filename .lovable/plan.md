@@ -1,81 +1,66 @@
-# Plan: Campaigns → standalone admin section (then Slice A)
+# Slice A — Support queue overhaul
 
-Agreed — Support and Campaigns are two different jobs. Support is reactive (1:1 inbound triage, SLA, resolve). Campaigns is proactive (1:many outbound, segmentation, scheduling, analytics). Conflating them caps both. Splitting now also gives us the shell to grow Campaigns into a mini-Mailchimp (templates, AI drafting, scheduling, A/B, automations) without bloating the support queue.
+Goal: a triage surface that beats Zendesk for our scale — fast, keyboard-driven, zero-ambiguity status, and admins can start a brand-new ticket (outbound email) without bouncing to Campaigns.
 
-This plan ships in two parts. **Part 1 = the split** (no feature regressions, pure restructure). **Part 2 = Slice A** as previously agreed (status model, unread, Reply&Resolve, mobile compose fix, kill inbox legend, truncate From).
+## 1. Status model + signal upgrades (DB)
 
----
+Single migration:
 
-## Part 1 — Split Campaigns into its own admin route
+- `support_tickets.is_unread boolean not null default false` — flips `true` on inbound insert, `false` when an admin opens the ticket.
+- `support_tickets.snoozed_until timestamptz` — when set and in the future, ticket is hidden from Open and appears in a new "Snoozed" tab; auto-wakes when reached.
+- `support_tickets.last_opened_at timestamptz` and `last_opened_by uuid` — drives "you last viewed 3h ago" + multi-admin awareness.
+- Extend `tg_support_message_after_insert`: on inbound, set `is_unread=true` and clear `snoozed_until` (a customer reply unsnoozes).
+- Index: `idx_support_tickets_unread (is_unread) where is_unread = true`.
 
-### New route
-- `src/routes/admin_.campaigns.tsx` — new top-level admin page.
-- Sidebar: add **Campaigns** nav item under Admin, icon `Megaphone` (or `Send`), positioned directly under **Support**.
-- Keep `/admin/support` focused on the ticket queue only.
+Status semantics stay on the existing enum (`open / pending / resolved / closed`) — we already use them correctly. The unread flag is the "needs me right now" signal we were missing.
 
-### What moves out of Support
-From `src/routes/admin_.support.tsx`, lift out:
-- The **Compose** dialog entry-point + button (currently top-right of the support queue).
-- The **broadcast tier picker** (Verified / Pro / Studio / Free) + recipient count preview.
-- The **direct-recipient search** (Katie Gibbs flow).
-- Anything that calls `previewBroadcastCount`, `resolveTierRecipients`, `searchTrainers`, or the `sendOutboundCampaign` server fn.
+## 2. New server functions (`tickets.functions.ts`)
 
-Files involved:
-- `src/components/admin/support/ComposeDialog.tsx` → move to `src/components/admin/campaigns/ComposeDialog.tsx` (rename references; keep the orange Add button fix in place).
-- `src/lib/support/outbound.functions.ts` → move to `src/lib/campaigns/campaigns.functions.ts`. Keep the broadcast-count FK fix shipped last turn. Update all importers.
-- DB tables `outbound_campaigns` + `outbound_campaign_recipients` stay as-is (no migration needed) — they're already the right shape for a campaigns module.
+- `markTicketRead({ id })` — sets `is_unread=false`, `last_opened_at=now()`, `last_opened_by=userId`.
+- `snoozeTicket({ id, until })` — validates future timestamp, sets `snoozed_until`. `unsnoozeTicket({ id })` clears it.
+- `searchTickets({ q, status, inbox })` — extends list with case-insensitive match on `ticket_number`, `subject`, `requester_email`, `requester_name` (debounced from UI).
+- `createOutboundTicket({ to, name?, subject, body, priority?, inbox? })` — creates a ticket with `source='admin'`, sends the first email via Mailgun (re-uses `sendViaMailgun` + a new `outbound-first-touch` template), stores the outbound `support_messages` row, sets `thread_key` to the message-id so the customer's reply lands back on the same ticket. Status starts `pending` (waiting on customer).
 
-### What stays in Support
-- Ticket list, filters, ticket panel, reply composer, internal notes, dictation, AI rephrase/draft, mark resolved.
-- Inbox tab row (support@ / pros@ / partners@ / press@) — this is genuinely about routing inbound, not outbound.
+## 3. Queue UI (`admin_.support.tsx`)
 
-### New Campaigns page shape (v1 — just the rehome, no new features yet)
-Single page with three sections:
-1. **New campaign** — the Compose button (was in Support header) → opens existing ComposeDialog.
-2. **Recent campaigns** — table of `outbound_campaigns` (subject, audience, recipients, sent_at, open/click placeholders for later).
-3. **Empty state** — when no campaigns exist, big "Send your first campaign" CTA.
+- **Header row** gets a single primary `+ New ticket` button (orange) — visible at every breakpoint, including mobile. Opens `NewTicketDialog`.
+- **Search input** (`/` focus shortcut) lives in the header row.
+- **Tabs**: Open · Pending · Snoozed · Resolved · All (snoozed added).
+- **Unread row**: leading orange dot + slightly bolder subject; row click marks read.
+- **From column**: single-line truncate w/ tooltip on overflow (kills the wrap).
+- **Keyboard shortcuts**: `j` / `k` move highlight, `Enter` opens, `e` resolves highlighted, `s` snoozes, `/` focuses search, `c` opens New ticket, `Esc` clears selection / closes drawer.
+- Mobile: the inbox filter row collapses behind a single "Inbox: All ▾" select under 640px so the tab strip + New ticket button fit on one line.
 
-No analytics, no templates, no AI drafting yet — that's the roadmap below. v1 must look intentional but not over-built.
+## 4. Ticket drawer
 
-### Roadmap (NOT in this slice — for memory only)
-Once the shell is in place, future slices can add:
-- **Templates** library (welcome, renewal nudge, re-engagement, tier upsell).
-- **AI compose** — generate subject + body from a brief, using Lovable AI Gateway.
-- **Scheduling** — `scheduled_at` column on `outbound_campaigns` + pg_cron runner that posts to a `/api/public/hooks/send-scheduled-campaigns` route.
-- **Segments** — saved audience filters (e.g. "Verified, last login >30d").
-- **Analytics** — Mailgun webhook → open/click events → per-campaign stats.
-- **Automations** — trigger-based (e.g. "7 days after Verified renewal lapses").
+- **Snooze button** in header (popover: 1h / 4h / tomorrow 9am / Mon 9am / custom).
+- **Reply & Resolve** as a split button — `Send reply` (primary) + a dropdown `Send & resolve` that fires the existing `closeAfter` path. Removes the easy-to-miss checkbox.
+- **⌘/Ctrl + Enter** sends the active draft.
+- **`e`** while drawer is open marks resolved.
+- Reading a ticket calls `markTicketRead` on open.
+- "Last opened by {name} {timeAgo}" line under requester when another admin viewed it within 24h (forward-compat for multi-admin).
 
-Saved to memory under `mem://features/campaigns-roadmap` so future sessions don't re-litigate scope.
+## 5. New ticket dialog (`NewTicketDialog.tsx`)
 
----
+Lightweight: To (email + optional name), Inbox (support/pros/partners/press), Subject, Body, Priority. On submit calls `createOutboundTicket` and opens the new ticket in the drawer. This replaces the Campaigns redirect for "I just need to email one person".
 
-## Part 2 — Slice A (unchanged from prior agreement)
+## Files touched
 
-After the split lands:
-1. **Status model migration**: add `new` / `awaiting_us` / `waiting_customer` / `snoozed` to `support_status` enum; add `snoozed_until`, `last_inbound_at`, `unread_by_admin` to `support_tickets`.
-2. **Inbound webhook**: Mailgun route flips status to `awaiting_us`, sets `unread_by_admin=true`, stamps `last_inbound_at`.
-3. **Queue UI**: unread dot, status tabs (Needs me / Waiting on customer / Snoozed / Resolved / All), **Reply & Resolve** button replaces the checkbox.
-4. **Folded-in UX fixes** (since we're already in the file):
-   - Mobile (360): move Compose into the page header row, not the tab strip.
-   - Kill the `support@ · pros@ · partners@ · press@` legend chrome — the inbox tab row already filters by inbox.
-   - Single-line truncate the "From" email column.
+- `supabase/migrations/<new>.sql` — status/unread/snooze columns, trigger extension, index.
+- `src/lib/support/tickets.functions.ts` — add 4 server fns above.
+- `src/lib/email-templates/registry.ts` (+ new template) — `outbound-first-touch`.
+- `src/routes/admin_.support.tsx` — header, search, tabs, unread, keyboard, mobile fixes.
+- `src/components/admin/support/NewTicketDialog.tsx` — new.
+- `src/components/admin/support/SnoozePopover.tsx` — new.
 
----
+## Out of scope (Slice B/C)
 
-## Technical notes
+Saved views, customer card sidebar, SLA-with-pause, AI triage (auto-priority/auto-tagging), multi-assignee, canned responses, attachments on outbound, scheduled send.
 
-- **No DB migration in Part 1** — pure code reshuffle. `outbound_campaigns` / `outbound_campaign_recipients` already exist.
-- **No broken imports**: when I move `outbound.functions.ts` → `campaigns.functions.ts`, I'll grep every importer and update in the same edit batch.
-- **Sidebar**: add to whatever component renders the admin nav (likely `src/components/admin/AdminSidebar.tsx` or similar — I'll confirm on read).
-- **Route convention**: TanStack flat-dot, `admin_.campaigns.tsx` (pathless segment, admin layout still wraps it).
-- **Memory updates**: write `mem://features/campaigns-roadmap` (the v2+ scope) and update the index to point Support memories at the ticket-only scope.
+## Order of execution
 
----
+1. Migration (requires your approval).
+2. Server functions + template.
+3. UI: header/search/tabs, drawer snooze + split-button, keyboard, New ticket dialog, mobile fixes.
 
-## Confirmation needed
-
-1. Ship **Part 1 (split) and Part 2 (Slice A) together** in one go? Or land Part 1 first, verify nothing broke, then Part 2?
-2. Sidebar label: **"Campaigns"** (my recommendation, future-proof for templates/automations) or **"Broadcast"** (matches current language but narrower)?
-
-Once you confirm 1 + 2, switching to build mode runs the whole thing.
+Proceed?

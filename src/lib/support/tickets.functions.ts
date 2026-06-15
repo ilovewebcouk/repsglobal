@@ -18,8 +18,9 @@ export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      status?: "open" | "pending" | "resolved" | "closed" | "all";
+      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "all";
       inbox?: "support" | "pros" | "partners" | "press" | "all";
+      q?: string;
     }) => d ?? {},
   )
   .handler(async ({ data, context }) => {
@@ -27,12 +28,26 @@ export const listTickets = createServerFn({ method: "POST" })
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags",
+        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by",
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
-    if (data?.status && data.status !== "all") q = q.eq("status", data.status);
+    const nowIso = new Date().toISOString();
+    if (data?.status === "snoozed") {
+      q = q.not("snoozed_until", "is", null).gt("snoozed_until", nowIso);
+    } else if (data?.status && data.status !== "all") {
+      q = q.eq("status", data.status);
+      // Active snoozed tickets are hidden from regular status tabs
+      q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+    }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
+    if (data?.q && data.q.trim().length > 0) {
+      const term = data.q.trim().replace(/[%,]/g, "");
+      const like = `%${term}%`;
+      q = q.or(
+        `ticket_number.ilike.${like},subject.ilike.${like},requester_email.ilike.${like},requester_name.ilike.${like}`,
+      );
+    }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return rows ?? [];
@@ -343,50 +358,182 @@ export const replyToTicket = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Manually create a ticket from admin (e.g. logging a call)
+// Mark ticket as read (admin opened it)
 // ─────────────────────────────────────────────────────────────────────────────
-export const createTicket = createServerFn({ method: "POST" })
+export const markTicketRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    subject: string;
-    requesterEmail: string;
-    requesterName?: string;
-    body: string;
-    priority?: "urgent" | "high" | "normal" | "low";
-  }) =>
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({
+        is_unread: false,
+        last_opened_at: new Date().toISOString(),
+        last_opened_by: context.userId,
+      } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Snooze / unsnooze
+// ─────────────────────────────────────────────────────────────────────────────
+export const snoozeTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; until: string }) =>
     z
-      .object({
-        subject: z.string().min(1).max(200),
-        requesterEmail: z.string().email(),
-        requesterName: z.string().max(120).optional(),
-        body: z.string().min(1).max(20000),
-        priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
-      })
+      .object({ id: z.string().uuid(), until: z.string().datetime() })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: ticket, error } = await context.supabase
+    if (new Date(data.until).getTime() <= Date.now()) {
+      throw new Error("Snooze time must be in the future");
+    }
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ snoozed_until: data.until } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const unsnoozeTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ snoozed_until: null } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Open a brand-new outbound ticket — admin reaches out first.
+// Creates the ticket, sends the first email via Mailgun, stores the outbound
+// message, and sets thread_key so the customer's reply lands back here.
+// ─────────────────────────────────────────────────────────────────────────────
+export const createOutboundTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: {
+      to: string;
+      name?: string;
+      subject: string;
+      body: string;
+      priority?: "urgent" | "high" | "normal" | "low";
+      inbox?: "support" | "pros" | "partners" | "press";
+    }) =>
+      z
+        .object({
+          to: z.string().email(),
+          name: z.string().max(120).optional(),
+          subject: z.string().min(1).max(200),
+          body: z.string().min(1).max(20000),
+          priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
+          inbox: z.enum(["support", "pros", "partners", "press"]).optional(),
+        })
+        .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+
+    // 1) Create the ticket (status=pending — we're now waiting on the customer).
+    const { data: ticket, error: tErr } = await context.supabase
       .from("support_tickets")
       .insert({
         subject: data.subject,
-        requester_email: data.requesterEmail.toLowerCase(),
-        requester_name: data.requesterName ?? null,
+        requester_email: data.to.toLowerCase(),
+        requester_name: data.name ?? null,
         priority: data.priority ?? "normal",
         source: "admin",
-        sla_due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      })
-      .select("id")
+        inbox: data.inbox ?? "support",
+        status: "pending",
+        sla_due_at: null,
+      } as never)
+      .select("id, ticket_number")
       .single();
-    if (error) throw new Error(error.message);
+    if (tErr) throw new Error(tErr.message);
 
-    const { error: mErr } = await context.supabase.from("support_messages").insert({
+    // 2) Render the outbound template.
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const agentName = profile?.full_name
+      ? `${(profile.full_name as string).split(" ")[0]} at REPS`
+      : "REPS Support";
+
+    const [{ default: React }, { render }, { TEMPLATES }] = await Promise.all([
+      import("react"),
+      import("@react-email/components"),
+      import("@/lib/email-templates/registry"),
+    ]);
+    const tpl = TEMPLATES["support-outbound"];
+    const templateData = {
+      ticketNumber: ticket.ticket_number,
+      agentName,
+      bodyText: data.body,
+      subject: data.subject,
+    };
+    const element = React.createElement(tpl.component, templateData as any);
+    const html = await render(element);
+    const text = await render(element, { plainText: true });
+    const subject =
+      typeof tpl.subject === "function" ? tpl.subject(templateData) : tpl.subject;
+
+    // 3) Send via Mailgun.
+    const {
+      sendViaMailgun,
+      buildMessageId,
+      SUPPORT_FROM_EMAIL,
+      SUPPORT_FROM_NAME,
+    } = await import("./mailgun-send.server");
+    const messageId = buildMessageId(ticket.id);
+
+    try {
+      await sendViaMailgun({
+        from: `${SUPPORT_FROM_NAME} <${SUPPORT_FROM_EMAIL}>`,
+        to: data.name ? `${data.name} <${data.to}>` : data.to,
+        subject,
+        text,
+        html,
+        messageId,
+        inReplyTo: null,
+        references: null,
+        replyTo: SUPPORT_FROM_EMAIL,
+      });
+    } catch (err) {
+      // Clean up — don't leave an orphan ticket if the send failed.
+      await context.supabase.from("support_tickets").delete().eq("id", ticket.id);
+      throw new Error(
+        `Could not send email: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
+    // 4) Store outbound message + set thread_key for inbound matching.
+    const { error: insErr } = await context.supabase.from("support_messages").insert({
       ticket_id: ticket.id,
-      direction: "internal_note",
+      direction: "outbound",
+      from_email: SUPPORT_FROM_EMAIL,
+      from_name: SUPPORT_FROM_NAME,
       author_user_id: context.userId,
       body_text: data.body,
-    });
-    if (mErr) throw new Error(mErr.message);
+      body_html: html,
+      mailgun_message_id: messageId,
+    } as never);
+    if (insErr) throw new Error(insErr.message);
 
-    return { id: ticket.id };
+    await context.supabase
+      .from("support_tickets")
+      .update({ thread_key: messageId } as never)
+      .eq("id", ticket.id);
+
+    return { id: ticket.id, ticket_number: ticket.ticket_number };
   });

@@ -1,11 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Clock, Download, FileText, Inbox, Mail, MessageSquare, Paperclip, Send, Sparkles, StickyNote, Wand2, Zap } from "lucide-react";
+import {
+  ChevronDown,
+  Clock,
+  Download,
+  FileText,
+  Inbox,
+  Mail,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  Search,
+  Send,
+  Sparkles,
+  StickyNote,
+  Wand2,
+  X,
+  Zap,
+} from "lucide-react";
 import { DictateButton } from "@/components/admin/support/DictateButton";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
+import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
+import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -26,6 +45,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +67,9 @@ import {
   updateTicket,
   addInternalNote,
   getAttachmentUrl,
+  markTicketRead,
+  snoozeTicket,
+  unsnoozeTicket,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply, rephraseSupportReply } from "@/lib/support/ai-draft.functions";
 import { bulkUpdateTickets, undoBulkUpdateTickets } from "@/lib/support/bulk-tickets.functions";
@@ -67,7 +101,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "resolved" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "all";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -97,6 +131,18 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
+function snoozedLabel(iso?: string | null) {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return null;
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return `Wakes in ${mins}m`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `Wakes in ${hrs}h`;
+  const days = Math.round(hrs / 24);
+  return `Wakes in ${days}d`;
+}
+
 function labelFor(action: "resolve" | "reopen" | "pending"): string {
   if (action === "resolve") return "Resolved";
   if (action === "reopen") return "Reopened";
@@ -120,7 +166,10 @@ function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("open");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  // compose dialog moved to /admin/campaigns
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -134,9 +183,15 @@ function AdminSupport() {
     `admin-support-queue-${Math.random().toString(36).slice(2)}`,
   );
 
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 220);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const ticketsQuery = useQuery({
-    queryKey: ["admin", "support", "tickets", tab, inbox],
-    queryFn: () => listFn({ data: { status: tab, inbox } }),
+    queryKey: ["admin", "support", "tickets", tab, inbox, debouncedSearch],
+    queryFn: () => listFn({ data: { status: tab, inbox, q: debouncedSearch || undefined } }),
   });
 
   const allCountQuery = useQuery({
@@ -144,15 +199,26 @@ function AdminSupport() {
     queryFn: () => listFn({ data: { status: "all" } }),
   });
 
+
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
-    const openRows = rows.filter((r: any) => r.status === "open");
+    const nowMs = Date.now();
+    const isActiveSnoozed = (r: any) =>
+      r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
+    const openRows = rows.filter(
+      (r: any) => r.status === "open" && !isActiveSnoozed(r),
+    );
+    const pendingRows = rows.filter(
+      (r: any) => r.status === "pending" && !isActiveSnoozed(r),
+    );
     return {
       open: openRows.length,
-      pending: rows.filter((r: any) => r.status === "pending").length,
+      pending: pendingRows.length,
+      snoozed: rows.filter(isActiveSnoozed).length,
       resolved: rows.filter((r: any) => r.status === "resolved").length,
       all: rows.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
+      unread: openRows.filter((r: any) => r.is_unread).length,
       resolvedToday: rows.filter(
         (r: any) =>
           r.resolved_at &&
@@ -173,7 +239,58 @@ function AdminSupport() {
   // Clear selection when filters change (selections refer to the visible page)
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [tab, inbox]);
+  }, [tab, inbox, debouncedSearch]);
+
+  // Keyboard shortcuts: /, c, j, k, Enter, e, Esc
+  const [cursorId, setCursorId] = useState<string | null>(null);
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      const t = e.target as HTMLElement;
+      const inField =
+        t &&
+        (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (e.key === "Escape") {
+        if (openId) return; // Sheet handles its own Esc
+        setSelectedIds(new Set());
+        setCursorId(null);
+        return;
+      }
+      if (inField) {
+        if (e.key === "Escape" && t === searchRef.current) {
+          (t as HTMLInputElement).blur();
+        }
+        return;
+      }
+      if (openId) return; // drawer open — let it handle its own keys
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault();
+        setComposeOpen(true);
+        return;
+      }
+      const ids = tickets.map((x: any) => x.id);
+      if (ids.length === 0) return;
+      const idx = cursorId ? ids.indexOf(cursorId) : -1;
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setCursorId(ids[Math.min(idx + 1, ids.length - 1)] ?? ids[0]);
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setCursorId(ids[Math.max(idx - 1, 0)] ?? ids[0]);
+      } else if (e.key === "Enter" && cursorId) {
+        e.preventDefault();
+        setOpenId(cursorId);
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [tickets, cursorId, openId]);
+
+
 
   function toggleOne(id: string, ev?: React.MouseEvent) {
     setSelectedIds((prev) => {
@@ -290,27 +407,28 @@ function AdminSupport() {
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
-          label="Open"
-          value={counts.open}
-          detail={`${counts.urgent} urgent`}
-          warn={counts.urgent > 0}
+          label="Needs you"
+          value={counts.unread}
+          detail={`${counts.urgent} urgent · ${counts.open} open`}
+          warn={counts.unread > 0 || counts.urgent > 0}
         />
         <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
+        <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
         <Kpi label="Resolved today" value={counts.resolvedToday} detail="Across all agents" />
-        <Kpi label="Total tickets" value={counts.all} detail="All time" />
       </div>
 
       <PPanel className="mt-6 p-0">
         <div className="flex flex-col gap-3 border-b border-reps-border p-3">
 
-
-          <div className="flex items-center justify-between gap-3">
-            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)}>
-              <TabsList className="bg-transparent p-0 h-auto gap-1">
+          {/* Row 1: tabs + search + new ticket */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as StatusFilter)} className="min-w-0">
+              <TabsList className="bg-transparent p-0 h-auto gap-1 flex-wrap">
                 {(
                   [
                     ["open", "Open", counts.open],
                     ["pending", "Pending", counts.pending],
+                    ["snoozed", "Snoozed", counts.snoozed],
                     ["resolved", "Resolved", counts.resolved],
                     ["all", "All", counts.all],
                   ] as const
@@ -325,10 +443,39 @@ function AdminSupport() {
                 ))}
               </TabsList>
             </Tabs>
+
+            <div className="relative ml-auto flex-1 min-w-[180px] max-w-[320px]">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
+              <Input
+                ref={searchRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search tickets, subject, email…   (/)"
+                className="h-8 pl-8 pr-7 bg-white/[0.04] border-reps-border text-white text-[12.5px] placeholder:text-white/35"
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/45 hover:text-white"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
+
+            <Button
+              onClick={() => setComposeOpen(true)}
+              size="sm"
+              className="h-8 bg-reps-orange hover:bg-reps-orange/90 text-white text-[12px] font-semibold"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> New ticket
+            </Button>
           </div>
 
-
-          <div className="flex flex-wrap items-center gap-1.5">
+          {/* Row 2: inbox filter — pills on >=640, select on mobile */}
+          <div className="hidden sm:flex flex-wrap items-center gap-1.5">
             {(
               [
                 ["all", "All inboxes"],
@@ -359,7 +506,22 @@ function AdminSupport() {
               );
             })}
           </div>
+          <div className="sm:hidden">
+            <Select value={inbox} onValueChange={(v) => setInbox(v as InboxFilter)}>
+              <SelectTrigger className="h-8 bg-white/[0.04] border-reps-border text-white text-[12.5px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All inboxes ({counts.byInbox.all})</SelectItem>
+                <SelectItem value="support">Support ({counts.byInbox.support})</SelectItem>
+                <SelectItem value="pros">Pros ({counts.byInbox.pros})</SelectItem>
+                <SelectItem value="partners">Partners ({counts.byInbox.partners})</SelectItem>
+                <SelectItem value="press">Press ({counts.byInbox.press})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-[13px]">
@@ -410,12 +572,17 @@ function AdminSupport() {
                   const ib = (t.inbox ?? "support") as Exclude<InboxFilter, "all">;
                   const meta = INBOX_META[ib] ?? INBOX_META.support;
                   const isSelected = selectedIds.has(t.id);
+                  const isCursor = cursorId === t.id;
+                  const isUnread = !!t.is_unread;
+                  const snoozeMsg = snoozedLabel(t.snoozed_until);
                   return (
                   <tr
                     key={t.id}
                     data-selected={isSelected || undefined}
-                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30"
+                    data-cursor={isCursor || undefined}
+                    className="border-t border-reps-border/60 text-white/85 hover:bg-white/[0.02] cursor-pointer data-[selected]:bg-reps-orange-soft/30 data-[cursor]:ring-1 data-[cursor]:ring-inset data-[cursor]:ring-reps-orange/40"
                     onClick={() => setOpenId(t.id)}
+                    onMouseEnter={() => setCursorId(t.id)}
                   >
                     <td
                       className="w-9 px-3 py-3"
@@ -433,9 +600,27 @@ function AdminSupport() {
                       <div className="text-[11px] font-mono text-white/50">
                         {t.ticket_number}
                       </div>
-                      <div className="text-[13px] font-semibold text-white line-clamp-1">
-                        {t.subject}
+                      <div className="flex items-center gap-2">
+                        {isUnread ? (
+                          <span
+                            aria-label="Unread"
+                            title="Unread — new customer message"
+                            className="inline-block size-1.5 rounded-full bg-reps-orange shrink-0"
+                          />
+                        ) : null}
+                        <div
+                          className={`text-[13px] line-clamp-1 ${
+                            isUnread ? "font-bold text-white" : "font-semibold text-white/90"
+                          }`}
+                        >
+                          {t.subject}
+                        </div>
                       </div>
+                      {snoozeMsg ? (
+                        <div className="mt-0.5 text-[11px] text-sky-300/80 inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {snoozeMsg}
+                        </div>
+                      ) : null}
                     </td>
 
                     <td className="px-3 py-3">
@@ -445,9 +630,16 @@ function AdminSupport() {
                         {meta.label}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-white/70">
-                      <div className="text-[12.5px]">{t.requester_name ?? "—"}</div>
-                      <div className="text-[11px] text-white/45">{t.requester_email}</div>
+                    <td className="px-3 py-3 text-white/70 max-w-[200px]">
+                      <div className="text-[12.5px] truncate" title={t.requester_name ?? undefined}>
+                        {t.requester_name ?? "—"}
+                      </div>
+                      <div
+                        className="text-[11px] text-white/45 truncate"
+                        title={t.requester_email}
+                      >
+                        {t.requester_email}
+                      </div>
                     </td>
                     <td className="px-3 py-3">
                       <span
@@ -493,6 +685,17 @@ function AdminSupport() {
           allCountQuery.refetch();
         }}
       />
+
+      <NewTicketDialog
+        open={composeOpen}
+        onOpenChange={setComposeOpen}
+        onCreated={(ticketId) => {
+          ticketsQuery.refetch();
+          allCountQuery.refetch();
+          setOpenId(ticketId);
+        }}
+      />
+
 
 
       <BulkActionBar
@@ -597,10 +800,43 @@ function TicketDrawer({
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
   const rephraseFn = useServerFn(rephraseSupportReply);
+  const markReadFn = useServerFn(markTicketRead);
+  const snoozeFn = useServerFn(snoozeTicket);
+  const unsnoozeFn = useServerFn(unsnoozeTicket);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
   const [closeAfter, setCloseAfter] = useState(false);
+
+  // Mark ticket as read when drawer opens
+  useEffect(() => {
+    if (!ticketId) return;
+    markReadFn({ data: { id: ticketId } })
+      .then(() => onChanged())
+      .catch(() => {
+        /* non-blocking */
+      });
+  }, [ticketId, markReadFn, onChanged]);
+
+  // 'E' to resolve when the drawer is focused and not typing
+  useEffect(() => {
+    if (!ticketId) return;
+    function handler(e: KeyboardEvent) {
+      const t = e.target as HTMLElement;
+      const inField =
+        t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (inField) return;
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        update.mutate({ status: "resolved" });
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId]);
+
+
 
   const q = useQuery({
     queryKey: ["admin", "support", "ticket", ticketId],
@@ -738,6 +974,31 @@ function TicketDrawer({
                   {INBOX_META[ticket.inbox as Exclude<InboxFilter, "all">]?.label ?? ticket.inbox}
                 </Badge>
               ) : null}
+              <SnoozePopover
+                snoozedUntil={ticket.snoozed_until}
+                onSnooze={async (until) => {
+                  if (!ticketId) return;
+                  try {
+                    await snoozeFn({ data: { id: ticketId, until } });
+                    toast.success("Snoozed");
+                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
+                    onChanged();
+                  } catch (e: any) {
+                    toast.error(e?.message ?? "Could not snooze");
+                  }
+                }}
+                onUnsnooze={async () => {
+                  if (!ticketId) return;
+                  try {
+                    await unsnoozeFn({ data: { id: ticketId } });
+                    toast.success("Woken up");
+                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
+                    onChanged();
+                  } catch (e: any) {
+                    toast.error(e?.message ?? "Could not wake");
+                  }
+                }}
+              />
             </div>
           ) : null}
         </SheetHeader>
@@ -810,46 +1071,89 @@ function TicketDrawer({
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key === "Enter" &&
+                draft.trim() &&
+                !send.isPending
+              ) {
+                e.preventDefault();
+                send.mutate();
+              }
+            }}
             placeholder={
               mode === "reply"
-                ? "Type your reply… (sent as support@repsuk.org)"
+                ? "Type your reply… (⌘+Enter to send · sent as support@repsuk.org)"
                 : "Add an internal note — not sent to the customer."
             }
             rows={5}
             className="bg-white/[0.04] border-reps-border text-white text-[14px] resize-none"
           />
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="text-[11px] text-white/40">
+              {mode === "reply" ? "⌘+Enter to send · E to resolve" : "Internal — never emailed"}
+            </div>
             {mode === "reply" ? (
-              <label className="inline-flex items-center gap-2 text-[12px] text-white/55">
-                <input
-                  type="checkbox"
-                  checked={closeAfter}
-                  onChange={(e) => setCloseAfter(e.target.checked)}
-                  className="rounded border-white/20 bg-transparent"
-                />
-                Mark as resolved after sending
-              </label>
+              <div className="inline-flex rounded-[10px] overflow-hidden shadow-sm">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setCloseAfter(false);
+                    send.mutate();
+                  }}
+                  disabled={!draft.trim() || send.isPending}
+                  className="rounded-r-none bg-reps-orange hover:bg-reps-orange/90 text-white"
+                >
+                  {send.isPending && !closeAfter ? (
+                    "Sending…"
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send reply
+                    </>
+                  )}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      disabled={!draft.trim() || send.isPending}
+                      className="rounded-l-none border-l border-white/15 bg-reps-orange hover:bg-reps-orange/90 text-white px-2"
+                      aria-label="More send options"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-reps-panel border-reps-border text-white">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setCloseAfter(true);
+                        // Defer so state lands before mutate reads it
+                        setTimeout(() => send.mutate(), 0);
+                      }}
+                      className="text-[13px] focus:bg-white/5"
+                    >
+                      <Send className="h-3.5 w-3.5 mr-2" /> Send & resolve
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
-              <div />
+              <Button
+                size="sm"
+                onClick={() => send.mutate()}
+                disabled={!draft.trim() || send.isPending}
+                className="bg-amber-500/30 hover:bg-amber-500/40 text-amber-100"
+              >
+                {send.isPending ? (
+                  "Saving…"
+                ) : (
+                  <>
+                    <StickyNote className="h-3.5 w-3.5 mr-1.5" /> Save note
+                  </>
+                )}
+              </Button>
             )}
-            <Button
-              size="sm"
-              onClick={() => send.mutate()}
-              disabled={!draft.trim() || send.isPending}
-              className="bg-reps-orange hover:bg-reps-orange/90 text-white"
-            >
-              {send.isPending ? (
-                "Sending…"
-              ) : mode === "reply" ? (
-                <>
-                  <Send className="h-3.5 w-3.5 mr-1.5" /> Send reply
-                </>
-              ) : (
-                <>
-                  <StickyNote className="h-3.5 w-3.5 mr-1.5" /> Save note
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </SheetContent>
