@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RecipientPicker } from "@/components/admin/support/RecipientPicker";
 import { createOutboundTicket } from "@/lib/support/tickets.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
@@ -98,15 +99,15 @@ export function NewTicketDialog({
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-2">
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">
-                To (email)
+                To
               </label>
-              <Input
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                placeholder="name@example.com"
-                type="email"
+              <RecipientPicker
                 autoFocus
-                className="mt-1 bg-white/[0.04] border-reps-border text-white"
+                email={to}
+                onChange={(v) => {
+                  setTo(v.email);
+                  if (v.name !== undefined) setName(v.name ?? "");
+                }}
               />
             </div>
             <div>
