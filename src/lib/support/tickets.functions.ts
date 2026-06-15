@@ -277,7 +277,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
 
     const { data: ticket, error: tErr } = await context.supabase
       .from("support_tickets")
-      .select("id, ticket_number, subject, requester_email, requester_name, thread_key")
+      .select("id, ticket_number, subject, requester_email, requester_name, thread_key, status")
       .eq("id", data.ticketId)
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
