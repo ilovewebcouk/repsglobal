@@ -21,7 +21,6 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { DictateButton } from "@/components/admin/support/DictateButton";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
 import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
 import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
@@ -32,6 +31,7 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DictateButton } from "@/components/ui/DictateButton";
 import {
   Dialog,
   DialogContent,
@@ -1036,11 +1036,7 @@ function TicketDrawer({
               <StickyNote className="h-3.5 w-3.5" /> Internal note
             </button>
             <div className="ml-auto flex items-center gap-1.5">
-              <DictateButton
-                onAppend={(text) =>
-                  setDraft((prev) => (prev.endsWith(" ") || prev === "" ? prev + text : prev + " " + text))
-                }
-              />
+
 
               <button
                 type="button"
@@ -1068,28 +1064,36 @@ function TicketDrawer({
               </button>
             </div>
           </div>
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key === "Enter" &&
-                draft.trim() &&
-                !send.isPending
-              ) {
-                e.preventDefault();
-                send.mutate();
+          <div className="relative">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (
+                  (e.metaKey || e.ctrlKey) &&
+                  e.key === "Enter" &&
+                  draft.trim() &&
+                  !send.isPending
+                ) {
+                  e.preventDefault();
+                  send.mutate();
+                }
+              }}
+              placeholder={
+                mode === "reply"
+                  ? "Type your reply… (⌘+Enter to send · sent as support@repsuk.org)"
+                  : "Add an internal note — not sent to the customer."
               }
-            }}
-            placeholder={
-              mode === "reply"
-                ? "Type your reply… (⌘+Enter to send · sent as support@repsuk.org)"
-                : "Add an internal note — not sent to the customer."
-            }
-            rows={5}
-            className="bg-white/[0.04] border-reps-border text-white text-[14px] resize-none"
-          />
+              rows={5}
+              className="bg-white/[0.04] border-reps-border text-white text-[14px] resize-none pr-12"
+            />
+            <DictateButton
+              className="absolute bottom-2 right-2"
+              onTranscript={(t) =>
+                setDraft((b) => (b.trim() ? `${b.trimEnd()} ${t}` : t))
+              }
+            />
+          </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="text-[11px] text-white/40">
               {mode === "reply" ? "⌘+Enter to send · E to resolve" : "Internal — never emailed"}

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DictateButton } from "@/components/ui/DictateButton";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -220,13 +221,21 @@ export function ComposeDialog({
             </Field>
 
             <Field label="Message">
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Write your message…"
-                rows={9}
-                className="bg-white/[0.04] border-reps-border text-white resize-y"
-              />
+              <div className="relative">
+                <Textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Write your message…"
+                  rows={9}
+                  className="bg-white/[0.04] border-reps-border text-white resize-y pr-12"
+                />
+                <DictateButton
+                  className="absolute bottom-2 right-2"
+                  onTranscript={(t) =>
+                    setBody((b) => (b.trim() ? `${b.trimEnd()} ${t}` : t))
+                  }
+                />
+              </div>
             </Field>
 
             <AttachmentPicker
