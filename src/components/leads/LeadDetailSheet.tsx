@@ -152,7 +152,7 @@ function ConvertRow({ lead }: { lead: LeadDTO }) {
             to="/dashboard/clients"
             className="text-[12px] font-medium text-emerald-300 underline-offset-2 hover:underline"
           >
-            View client
+            Open in clients
           </Link>
         ) : null}
       </div>
