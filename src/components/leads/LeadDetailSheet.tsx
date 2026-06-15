@@ -87,9 +87,10 @@ export function LeadDetailSheet({
 
         {lead ? (
           <Tabs defaultValue="details" className="flex flex-col gap-4 p-5">
-            <TabsList className="grid w-full grid-cols-2 rounded-[10px] bg-reps-panel-soft/60 p-1">
+            <TabsList className="grid w-full grid-cols-3 rounded-[10px] bg-reps-panel-soft/60 p-1">
               <TabsTrigger value="details" className="rounded-[8px] text-[12px]">Details</TabsTrigger>
               <TabsTrigger value="activity" className="rounded-[8px] text-[12px]">Activity</TabsTrigger>
+              <TabsTrigger value="proposals" className="rounded-[8px] text-[12px]">Proposals</TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="m-0 flex flex-col gap-4">
               <SelectedLeadCard lead={lead} variant="sheet" />
@@ -97,6 +98,9 @@ export function LeadDetailSheet({
             </TabsContent>
             <TabsContent value="activity" className="m-0">
               <LeadActivityTab enquiryId={lead.id} />
+            </TabsContent>
+            <TabsContent value="proposals" className="m-0">
+              <LeadProposalsTab enquiryId={lead.id} />
             </TabsContent>
           </Tabs>
         ) : (
