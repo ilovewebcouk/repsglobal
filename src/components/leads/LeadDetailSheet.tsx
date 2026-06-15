@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Pin, PinOff, UserCheck, CheckCircle2 } from "lucide-react";
+import { X, Pin, PinOff, UserCheck, CheckCircle2, MailPlus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -24,7 +24,13 @@ import { AiInsightCard } from "./AiInsightCard";
 import { LeadActivityTab } from "./LeadActivityTab";
 import { LeadProposalsTab } from "./LeadProposalsTab";
 import { sourceLabel } from "./SourceChipsRow";
-import { LEAD_STAGE_LABEL, convertLeadToClient, type LeadDTO } from "@/lib/leads/leads.functions";
+import {
+  LEAD_STAGE_LABEL,
+  convertLeadToClient,
+  sendLeadSignupLink,
+  type LeadDTO,
+} from "@/lib/leads/leads.functions";
+import { timeAgo } from "@/lib/format/relative-time";
 
 /**
  * Sliding right-side detail panel. Non-modal so the table behind stays interactive.
@@ -174,16 +180,63 @@ function ConvertRow({ lead }: { lead: LeadDTO }) {
 
   if (canConvert) return button;
 
+  return <SendSignupLinkRow lead={lead} />;
+}
+
+function SendSignupLinkRow({ lead }: { lead: LeadDTO }) {
+  const send = useServerFn(sendLeadSignupLink);
+  const qc = useQueryClient();
+  const sentAt = lead.last_invite_sent_at;
+  const hasEmail = !!lead.sender_email;
+
+  const mut = useMutation({
+    mutationFn: () => send({ data: { enquiryId: lead.id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["lead-activity", lead.id] });
+      toast.success(sentAt ? "Sign-up link resent" : "Sign-up link sent");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not send link"),
+  });
+
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="block w-full">{button}</span>
-        </TooltipTrigger>
-        <TooltipContent>
-          Client needs a REPs account — send them a sign-up link first.
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className="flex flex-col gap-2 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 px-3 py-2.5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[12.5px] font-medium text-white">Client needs a REPs account</p>
+          <p className="mt-0.5 text-[11.5px] text-white/55">
+            {sentAt
+              ? `Sign-up link sent ${timeAgo(sentAt)}`
+              : "Send a sign-up link so they can be converted."}
+          </p>
+        </div>
+        {sentAt ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={!hasEmail || mut.isPending}
+            onClick={() => mut.mutate()}
+            className="h-8 shrink-0 rounded-[8px] px-2.5 text-[12px] text-white/70 hover:bg-reps-panel-soft hover:text-white"
+          >
+            {mut.isPending ? "Sending…" : "Resend link"}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            size="sm"
+            disabled={!hasEmail || mut.isPending}
+            onClick={() => mut.mutate()}
+            className="h-8 shrink-0 rounded-[8px] bg-reps-orange px-3 text-[12px] font-medium text-white hover:bg-reps-orange/90"
+          >
+            <MailPlus className="size-3.5" data-icon />
+            {mut.isPending ? "Sending…" : "Send sign-up link"}
+          </Button>
+        )}
+      </div>
+      {!hasEmail ? (
+        <p className="text-[11px] text-white/45">No email on file — capture an email first.</p>
+      ) : null}
+    </div>
   );
 }

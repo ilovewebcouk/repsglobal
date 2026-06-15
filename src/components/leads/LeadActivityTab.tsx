@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { StickyNote, ArrowRightLeft, Activity, UserCheck } from "lucide-react";
+import { StickyNote, ArrowRightLeft, Activity, UserCheck, MailPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,6 +64,22 @@ function ActivityRow({ item }: { item: LeadActivityDTO }) {
         <div className="min-w-0 flex-1 pt-1">
           <p className="text-[13px] text-white/80">
             Converted lead to <span className="font-medium text-white">client</span>
+          </p>
+          <p className="mt-0.5 text-[11px] text-white/45">{timeAgo(item.created_at)}</p>
+        </div>
+      </div>
+    );
+  }
+  if (item.type === "invite_sent") {
+    const email = String(payload.email ?? "");
+    return (
+      <div className="flex gap-3">
+        <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+          <MailPlus className="size-3.5" />
+        </div>
+        <div className="min-w-0 flex-1 pt-1">
+          <p className="truncate text-[13px] text-white/80">
+            Sent sign-up link{email ? <> to <span className="font-medium text-white">{email}</span></> : null}
           </p>
           <p className="mt-0.5 text-[11px] text-white/45">{timeAgo(item.created_at)}</p>
         </div>
