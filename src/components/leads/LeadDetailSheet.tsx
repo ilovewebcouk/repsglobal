@@ -121,3 +121,69 @@ export function LeadDetailSheet({
     </Sheet>
   );
 }
+
+function ConvertRow({ lead }: { lead: LeadDTO }) {
+  const convert = useServerFn(convertLeadToClient);
+  const qc = useQueryClient();
+  const alreadyConverted = lead.stage === "converted" || !!lead.converted_client_id;
+  const canConvert = !!lead.sender_user_id;
+
+  const mut = useMutation({
+    mutationFn: () => convert({ data: { enquiryId: lead.id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["lead-activity", lead.id] });
+      qc.invalidateQueries({ queryKey: ["lead-kpis"] });
+      toast.success("Converted to client");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not convert lead"),
+  });
+
+  if (alreadyConverted) {
+    const clientId = lead.converted_client_id;
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-[12px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-2">
+        <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-300">
+          <CheckCircle2 className="size-3.5" />
+          Converted to client
+        </span>
+        {clientId ? (
+          <Link
+            to="/dashboard/clients"
+            className="text-[12px] font-medium text-emerald-300 underline-offset-2 hover:underline"
+          >
+            View client
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
+
+  const button = (
+    <Button
+      type="button"
+      size="sm"
+      disabled={!canConvert || mut.isPending}
+      onClick={() => mut.mutate()}
+      className="h-9 w-full rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-medium text-white hover:bg-reps-orange/90"
+    >
+      <UserCheck className="size-3.5" data-icon />
+      {mut.isPending ? "Converting…" : "Convert to client"}
+    </Button>
+  );
+
+  if (canConvert) return button;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="block w-full">{button}</span>
+        </TooltipTrigger>
+        <TooltipContent>
+          Client needs a REPs account — send them a sign-up link first.
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
