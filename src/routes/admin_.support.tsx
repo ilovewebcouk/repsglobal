@@ -548,7 +548,63 @@ function AdminSupport() {
           allCountQuery.refetch();
         }}
       />
+
+      <BulkActionBar
+        count={selectedIds.size}
+        isPending={bulkPending}
+        onClear={() => setSelectedIds(new Set())}
+        onResolve={() => runBulk("resolve")}
+        onReopen={() => runBulk("reopen")}
+        onPending={() => runBulk("pending")}
+        onDelete={() => {
+          setDeleteConfirm("");
+          setDeleteOpen(true);
+        }}
+      />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="bg-reps-bg border-reps-border text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete {selectedIds.size} ticket{selectedIds.size === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/65">
+              This permanently removes the tickets, messages, and attachments. This cannot
+              be undone. Type{" "}
+              <span className="font-mono font-semibold text-white">
+                {selectedIds.size}
+              </span>{" "}
+              below to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            autoFocus
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder={`Type ${selectedIds.size}`}
+            className="bg-white/[0.04] border-reps-border text-white"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/[0.04] border-reps-border text-white hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                bulkPending || Number(deleteConfirm) !== selectedIds.size
+              }
+              onClick={async () => {
+                await runBulk("delete", { confirmCount: selectedIds.size });
+                setDeleteOpen(false);
+              }}
+              className="bg-rose-500 text-white hover:bg-rose-500/90"
+            >
+              Delete {selectedIds.size}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
+
   );
 }
 
