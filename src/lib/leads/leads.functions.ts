@@ -57,6 +57,7 @@ export type LeadDTO = {
   replied_at: string | null;
   sender_user_id: string | null;
   converted_client_id: string | null;
+  last_invite_sent_at: string | null;
 };
 
 /* -------------------- List leads -------------------- */
