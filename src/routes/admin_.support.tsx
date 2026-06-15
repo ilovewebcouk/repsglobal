@@ -800,10 +800,24 @@ function TicketDrawer({
   const noteFn = useServerFn(addInternalNote);
   const draftFn = useServerFn(draftSupportReply);
   const rephraseFn = useServerFn(rephraseSupportReply);
+  const markReadFn = useServerFn(markTicketRead);
+  const snoozeFn = useServerFn(snoozeTicket);
+  const unsnoozeFn = useServerFn(unsnoozeTicket);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
   const [closeAfter, setCloseAfter] = useState(false);
+
+  // Mark ticket as read when drawer opens
+  useEffect(() => {
+    if (!ticketId) return;
+    markReadFn({ data: { id: ticketId } })
+      .then(() => onChanged())
+      .catch(() => {
+        /* non-blocking */
+      });
+  }, [ticketId, markReadFn, onChanged]);
+
 
   const q = useQuery({
     queryKey: ["admin", "support", "ticket", ticketId],
