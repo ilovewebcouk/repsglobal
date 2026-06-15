@@ -12,6 +12,7 @@ import {
   type ConnectAccountStatus,
 } from "@/lib/payments/connect.functions";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 
 export function PaymentsSettingsTab() {
   const tier = useTrainerTier();
@@ -38,7 +39,7 @@ export function PaymentsSettingsTab() {
   }, [refresh, queryClient]);
 
   const startMutation = useMutation({
-    mutationFn: () => startConnect(),
+    mutationFn: () => startConnect({ data: { environment: getStripeEnvironment() } }),
     onSuccess: (res: { url: string }) => {
       if (res.url) window.location.assign(res.url);
     },
