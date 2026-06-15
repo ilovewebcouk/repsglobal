@@ -387,20 +387,6 @@ function TicketDrawer({
               </div>
             ) : null}
           </div>
-                <div className="mt-1 text-[12px] text-white/55">
-                  {ticket.requester_name ? `${ticket.requester_name} · ` : ""}
-                  {ticket.requester_email}
-                </div>
-              ) : null}
-            </div>
-            <button
-              onClick={onClose}
-              className="text-white/55 hover:text-white"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
 
           {ticket ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
