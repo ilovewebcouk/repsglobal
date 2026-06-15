@@ -1,55 +1,49 @@
-# Slice A — Status model, inbound threading, queue UX
+# Slice B1 + B2 (final — with two added fixes)
 
-Honest answer to your first question: **no, the "pull previous tickets from the same requester into the open ticket" piece was never done.** The drawer only loads `support_messages` for the current ticket (see `tickets.functions.ts:72-81`). I'm folding it into Slice A because it's the same file.
+## B1 — Inbound auto-reply gap
+In `src/routes/api/public/mailgun/inbound.ts`, after a NEW ticket is created (not on follow-ups in an existing thread):
+- Skip if sender is in `suppressed_emails`.
+- Send the existing `contact-autoresponse` template via Mailgun, subject prefixed `[TKT-####] <original subject>`, `In-Reply-To`/`References` set to the inbound `Message-Id`.
+- Insert a `support_messages` row with `direction = outbound`, `is_auto = true`, `thread_key = <auto-reply Message-Id>`.
+- Do NOT change ticket status (stays `open` / `new`).
 
-Go-ahead means I ship everything below in one slice.
+## B2 — Queue + drawer polish (10 items already agreed)
+1. Empty-state: replace inbox-address legend with clean copy.
+2. Status pill: always render a sensible label (Resolved tickets never show raw `open`/`pending`).
+3. Radius: Status pill → `rounded-[6px]`; Priority stays the only `rounded-full`.
+4. Hide Inbox column when an inbox filter is active.
+5. SLA cell colors: rose if overdue, amber if <1h left, white/65 otherwise.
+6. Unread row: bold From-name + `bg-white/[0.015]` tint (in addition to orange dot).
+7. Footer `?` trigger → keyboard cheatsheet (`c` / `j` / `k` / `e` / `⌘+Enter`).
+8. `title=` ISO timestamp on Last activity.
+9. "Resolved today" → server-side `resolved_at >= startOfToday` filter (not client cap).
+10. Auto-reply messages render with small `Auto-reply` chip in the thread.
 
----
+## NEW — folded in this turn
 
-## 1. Database (single migration)
+### B2.11 — Kill the stuck orange focus ring on rows
+Each `<tr>` currently picks up the global focus-visible ring (orange 1px border) on click, and because the row is focusable it keeps focus after the pointer leaves — that's the orange box that "stays there."
+Fix in `src/routes/admin_.support.tsx` only:
+- Remove `tabIndex` / focus styling from `<tr>` (selection lives on the row checkbox and the View button — both already focusable).
+- Add `focus:outline-none focus-visible:outline-none focus-visible:ring-0` to the row, and keep hover state (`hover:bg-white/[0.02]`) as the only visual affordance.
+- Re-test: click row → open drawer → close → ring must be gone. Tab order through page still reaches checkbox + View.
 
-`support_tickets` additions:
-- `status` enum extended: `new`, `open`, `awaiting_us`, `waiting_customer`, `snoozed`, `resolved`, `closed`. Backfill `open` → `awaiting_us` where last message was inbound, `waiting_customer` where last was outbound and not resolved.
-- `snoozed_until timestamptz` (already exists — verify).
-- `last_inbound_at timestamptz`, `last_outbound_at timestamptz`.
-- `is_unread boolean` already exists — keep; flip to true on inbound.
-
-Trigger updates:
-- `tg_support_message_after_insert`: on inbound → `status = 'awaiting_us'`, `is_unread = true`, `last_inbound_at = now()`. On outbound → `status = 'waiting_customer'` (unless resolved/closed), `last_outbound_at = now()`.
-
-Cron (existing pg_cron or a 5-min server fn): when `snoozed_until <= now()`, move `snoozed` → `awaiting_us`.
-
-## 2. Inbound webhook
-
-`/api/public/mailgun/inbound` — verify Mailgun signature, parse, match by `In-Reply-To` → `thread_key` → fallback to `requester_email + subject`. Insert `support_messages` row (direction=inbound). Trigger handles status flip. Already partially there; finish signature verify + thread matching.
-
-## 3. Queue UI
-
-- Replace "Open / Pending / Resolved / All" + "All inboxes / Support / Pros / Partners / Press" two-row chrome with a **single pill row** of saved views: `Needs you` (awaiting_us + unread) · `Waiting on customer` · `Snoozed` · `Resolved today` · `All`. Inbox filter becomes a compact `<Select>` to the right.
-- Unread dot (orange) on rows where `is_unread = true`.
-- Status pill colour map per row (already shipped in last turn — keep).
-- **Mobile fixes**: Compose button moves into the page header row (next to the title/search), off the tab strip. Below `sm:` the table becomes a stacked card list (subject + from + status pill + time). Above `sm:` keep the table.
-- Remove the cryptic `support@ · pros@ · partners@ · press@` legend strip.
-- "From" column: single-line truncate with `title=` tooltip; email shown smaller under name.
-- Desktop dead-space: cap table panel at `max-w-[1400px]` and let `Subject` flex-grow so columns breathe instead of leaving 400px gap.
-
-## 4. Ticket drawer
-
-- **Requester history** (the missing piece): new server fn `listRequesterTickets({ email, excludeId })` → drawer shows a collapsible "Previous tickets from this requester (N)" section above the message thread, each row links/opens that ticket. Powered by `requester_email` index.
-- Reply & Resolve: "Mark as resolved after sending" checkbox already there — wire it so submit sets `status = resolved` in the same mutation.
-- Keyboard: `⌘/Ctrl + Enter` sends, `e` resolves, `s` opens snooze popover. (Snooze popover already exists.)
-
-## 5. Out of scope (stays in B/C)
-
-Saved-view persistence per-user, customer profile card, SLA-with-pause, AI triage, full keyboard palette.
-
----
+### B2.12 — Post-reply auto-flow (Zendesk-style)
+In the drawer's send-reply mutation (`src/routes/admin_.support.tsx`):
+- After a successful outbound `support_messages` insert:
+  - If status is `open` or `new` → update ticket `status = pending` (waiting on customer).
+  - If the "Mark as resolved after sending" checkbox is ticked → `status = resolved` instead (existing behavior, kept).
+- Invalidate the tickets query so the row pill flips immediately.
+- Close the drawer automatically (same handler used by the status-change auto-close already shipped).
+- Toast: `"Reply sent · ticket set to Pending"` (or `Resolved`).
+- Does NOT fire for internal notes — only customer-facing replies.
 
 ## Files touched
+- `src/routes/api/public/mailgun/inbound.ts` (B1)
+- `src/routes/admin_.support.tsx` (all B2 incl. .11 + .12)
+- No DB migration, no new server function.
 
-- `supabase/migrations/<new>.sql` — status enum + columns + trigger.
-- `src/routes/api/public/mailgun/inbound.ts` — signature verify + thread match.
-- `src/lib/support/tickets.functions.ts` — extend `getTicket` to return prior tickets, new `listRequesterTickets`, update reply mutation to accept `resolve: true`.
-- `src/routes/admin_.support.tsx` — single pill row, mobile card list, header Compose, drawer prior-tickets block, keyboard shortcuts.
+## Out of scope (unchanged)
+Saved views editor, customer card, SLA-with-pause, AI triage, full keyboard palette.
 
-Say **go** and I ship it.
+Say **"go"** to ship.
