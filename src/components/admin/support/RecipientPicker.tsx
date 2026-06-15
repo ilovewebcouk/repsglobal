@@ -132,7 +132,7 @@ export function RecipientPicker({
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
-          onChange({ email: e.target.value, name: value.name, picked: null });
+          onChange({ email: e.target.value });
         }}
         onKeyDown={onKeyDown}
         placeholder="Search trainer or type email…"
