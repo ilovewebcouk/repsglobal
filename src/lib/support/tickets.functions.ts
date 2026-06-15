@@ -16,17 +16,23 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { status?: "open" | "pending" | "resolved" | "closed" | "all" }) => d ?? {})
+  .inputValidator(
+    (d: {
+      status?: "open" | "pending" | "resolved" | "closed" | "all";
+      inbox?: "support" | "pros" | "partners" | "press" | "all";
+    }) => d ?? {},
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, source, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags",
+        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags",
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
     if (data?.status && data.status !== "all") q = q.eq("status", data.status);
+    if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return rows ?? [];
