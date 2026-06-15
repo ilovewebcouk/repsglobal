@@ -45,6 +45,8 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
+import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+
 import { useAccountMenu } from "@/hooks/use-account-menu";
 import { initialsFromName } from "@/lib/initials";
 import { useServerFn } from "@tanstack/react-start";
@@ -408,6 +410,7 @@ export type DashboardSearch = {
 };
 
 function TopBar({
+  role,
   title,
   subtitle,
   actions,
@@ -423,6 +426,7 @@ function TopBar({
   searchPlaceholder: string;
   search?: DashboardSearch;
 }) {
+
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
     if (!search) return;
@@ -472,15 +476,20 @@ function TopBar({
         )}
 
         {actions}
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Notifications"
-          disabled
-          className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
-        >
-          <Bell className="h-4 w-4" />
-        </Button>
+        {role === "admin" ? (
+          <NotificationsBell />
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Notifications"
+            disabled
+            className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
+          >
+            <Bell className="h-4 w-4" />
+          </Button>
+        )}
+
         <UserAccountMenu surface="dashboard" />
       </div>
     </header>
