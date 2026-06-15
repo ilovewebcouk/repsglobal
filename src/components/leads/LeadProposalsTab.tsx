@@ -13,6 +13,7 @@ import {
   updateProposal,
   PROPOSAL_CADENCE_LABEL,
   PROPOSAL_STATUS_LABEL,
+  type ProposalBody,
   type ProposalDTO,
   type ProposalStatus,
 } from "@/lib/leads/proposals.functions";
