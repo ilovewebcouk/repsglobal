@@ -498,10 +498,15 @@ function DirectoryPage() {
                 </label>
               </div>
 
+              {/* Did-you-mean: free-text q with no structured filter */}
+              {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
+
               {/* Viewer origin chip — drives real distance + nearest sort */}
               <div className="mt-3 flex items-center justify-end">
                 <ViewerOriginControl />
               </div>
+
+
 
               {/* Active filter chips */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
