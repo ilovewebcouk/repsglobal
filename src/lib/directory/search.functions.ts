@@ -124,16 +124,17 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let total: number;
 
     // Unified ranking: pull all matching candidates (cap 1000), enrich with
-    // tier / verification / avatar / coords, sort in-memory, then page-slice.
+    // tier / verification / coords, sort in-memory, then page-slice.
     //
     // Default sort (no origin):
-    //   verified -> hasAvatar -> paid tier -> quality -> recency
+    //   verified -> quality -> paid tier -> recency
     // Nearest sort (origin set):
-    //   distance (1-mile bucket) -> verified -> hasAvatar -> paid tier ->
-    //   quality -> raw distance -> recency
+    //   distance (1-mile bucket) -> verified -> quality -> paid tier ->
+    //   raw distance -> recency
     //
-    // Avatar-bumps-no-avatar applies only within the same verification tier —
-    // an unverified pro with an image NEVER outranks a verified pro without one.
+    // Avatar presence is NOT a discrete tier here — it's already weighted
+    // inside `quality_score` (+15 if avatar set, see compute_pro_quality_score).
+    // Paid tier is a tie-break only, never a primary signal.
     {
       const { data: allRows, error, count } = await qb
         .order("updated_at", { ascending: false })
@@ -143,12 +144,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
       const fetches: Array<Promise<unknown>> = [
-        Promise.resolve(
-          supabaseAdmin
-            .from("profiles")
-            .select("id, avatar_url")
-            .in("id", allIds),
-        ),
         Promise.resolve(
           supabaseAdmin
             .from("subscriptions")
@@ -170,16 +165,11 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         );
       }
       const results = await Promise.all(fetches);
-      const profilesForRank = results[0] as { data: Array<{ id: string; avatar_url: string | null }> | null };
-      const subsForRank = results[1] as { data: Array<{ user_id: string; tier: string | null }> | null };
+      const subsForRank = results[0] as { data: Array<{ user_id: string; tier: string | null }> | null };
       const locsForRank = nearestMode
-        ? (results[2] as { data: Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null })
+        ? (results[1] as { data: Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null })
         : { data: null };
 
-      const avatarById = new Map<string, boolean>();
-      for (const p of profilesForRank.data ?? []) {
-        avatarById.set(p.id, Boolean(p.avatar_url && p.avatar_url.trim()));
-      }
       const tierRank = (t: string | null | undefined) =>
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
       const paidTierById = new Map<string, number>();
@@ -195,6 +185,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         }
       }
 
+
       const origin = nearestMode
         ? { lat: data.viewer_lat!, lng: data.viewer_lng! }
         : null;
@@ -204,10 +195,9 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
         // 1-mile distance buckets — keeps "distance always wins" while
-        // letting verified/image break true ties at the same locale.
+        // letting verified / quality break true ties at the same locale.
         const bucket = origin ? (c ? Math.floor(d) : 9999) : 0;
         const verifiedRank = row.verification === "verified" ? 1 : 0;
-        const hasAvatar = avatarById.get(row.id) ? 1 : 0;
         const paidRank = paidTierById.get(row.id) ?? 0;
         const quality = row.quality_score ?? 0;
         return {
@@ -215,7 +205,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
           d,
           bucket,
           verifiedRank,
-          hasAvatar,
           paidRank,
           quality,
           updatedAt: row.updated_at ?? "",
@@ -225,9 +214,8 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       decoratedAll.sort((a, b) => {
         if (origin && a.bucket !== b.bucket) return a.bucket - b.bucket;
         if (a.verifiedRank !== b.verifiedRank) return b.verifiedRank - a.verifiedRank;
-        if (a.hasAvatar !== b.hasAvatar) return b.hasAvatar - a.hasAvatar;
-        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         if (a.quality !== b.quality) return b.quality - a.quality;
+        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         if (origin && a.d !== b.d) return a.d - b.d;
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });

@@ -35,10 +35,15 @@ function read(): ViewerOrigin | null {
  * only fires for OTHER tabs, so we broadcast via a custom event on window.
  */
 export function useViewerOrigin() {
-  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(null);
+  // Lazy initializer reads localStorage synchronously on first render so the
+  // very first query/route render already knows the origin (no useEffect race,
+  // no silent "nearest sort but no origin" first paint). SSR-guarded inside read().
+  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(() => read());
 
   React.useEffect(() => {
-    setOriginState(read());
+    // Re-sync in case another tab / consumer changed it between SSR and hydration.
+    const current = read();
+    setOriginState((prev) => (JSON.stringify(prev) === JSON.stringify(current) ? prev : current));
     const onChange = () => setOriginState(read());
     window.addEventListener(EVT, onChange);
     window.addEventListener("storage", (e) => {

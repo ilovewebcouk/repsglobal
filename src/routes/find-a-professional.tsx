@@ -480,6 +480,21 @@ function DirectoryPage() {
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
 
+            {/* Nearest-without-origin nudge: don't silently fall back to quality
+                sort under a "Nearest" label — tell the user what's actually
+                happening and give them a one-click path to fix it. */}
+            {sort === "nearest" && !origin && !isPending ? (
+              <div className="mt-2 flex items-start gap-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
+                <MapPin className="mt-[1px] h-4 w-4 shrink-0 text-reps-orange" />
+                <span>
+                  <span className="font-medium">Set your location</span>{" "}
+                  <span className="text-reps-muted-light">
+                    to sort by distance. Showing top-rated professionals until you do.
+                  </span>
+                </span>
+              </div>
+            ) : null}
+
             {/* Auto-widen rescue banner */}
             {autoWidenResult ? (
               <div className="mt-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
