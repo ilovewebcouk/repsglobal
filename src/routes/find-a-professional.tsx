@@ -745,9 +745,11 @@ function formatFromPrice(pence: number | null) {
 function ProCard({
   pro,
   isClosest = false,
+  highlighted = false,
 }: {
   pro: Pro & { _miles?: number | null };
   isClosest?: boolean;
+  highlighted?: boolean;
 }) {
   const photoSize = pro.featured ? 144 : 120;
   const mobilePhotoSize = pro.featured ? 96 : 88;
@@ -767,7 +769,9 @@ function ProCard({
       className={`group relative overflow-hidden rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
           ? "border-reps-orange/40 bg-gradient-to-br from-reps-warm-white via-white to-reps-warm-white shadow-[0_18px_50px_-28px_rgba(234,88,12,0.35)] ring-1 ring-reps-orange/20"
-          : "border-reps-stone"
+          : highlighted
+            ? "border-reps-orange/60 shadow-[0_24px_60px_-30px_rgba(234,88,12,0.45)] ring-2 ring-reps-orange/40"
+            : "border-reps-stone"
       }`}
     >
       {pro.featured && (
