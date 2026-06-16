@@ -17,6 +17,7 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  ArrowUpDown,
   ChevronDown,
   Crosshair,
   Filter,
