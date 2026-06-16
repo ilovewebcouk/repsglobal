@@ -32,8 +32,9 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VENUES } from "@/components/marketing/VenueWordmarks";
+import { Monogram } from "@/components/directory/Monogram";
+import { VerificationPill } from "@/components/directory/VerificationPill";
 
-import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
