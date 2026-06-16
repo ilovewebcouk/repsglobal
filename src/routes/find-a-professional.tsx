@@ -486,17 +486,32 @@ function DirectoryPage() {
             ) : (
               <div className="space-y-3 pt-2 sm:pt-3">
                 {visiblePros.slice(0, 4).map((p, i) => (
-                  <ProCard
+                  <div
                     key={p.slug ?? p.name}
-                    pro={p}
-                    isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
-                  />
+                    onMouseEnter={p.slug ? () => setHoveredSlug(p.slug!) : undefined}
+                    onMouseLeave={p.slug ? () => setHoveredSlug(null) : undefined}
+                  >
+                    <ProCard
+                      pro={p}
+                      isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
+                      highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
+                    />
+                  </div>
                 ))}
 
                 {visiblePros.length > 4 && <EditorialBreak />}
 
                 {visiblePros.slice(4).map((p) => (
-                  <ProCard key={p.slug ?? p.name} pro={p} />
+                  <div
+                    key={p.slug ?? p.name}
+                    onMouseEnter={p.slug ? () => setHoveredSlug(p.slug!) : undefined}
+                    onMouseLeave={p.slug ? () => setHoveredSlug(null) : undefined}
+                  >
+                    <ProCard
+                      pro={p}
+                      highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
+                    />
+                  </div>
                 ))}
               </div>
             )}
