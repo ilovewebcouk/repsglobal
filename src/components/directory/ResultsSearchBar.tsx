@@ -288,132 +288,125 @@ function WhatChip({
   }, [ranked]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <div
+      className={cn(
+        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+        label
+          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+          : "border-reps-stone hover:border-reps-orange/40",
+      )}
+    >
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
+          >
+            <Search className="h-3.5 w-3.5 text-reps-orange" />
+            <span className="max-w-[180px] truncate">
+              {label ?? "What are you looking for?"}
+            </span>
+            {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
+          <Command shouldFilter={false}>
+            <CommandInput
+              value={query}
+              onValueChange={setQuery}
+              placeholder="Try 'PT', 'fat loss', 'bad back', 'yoga'…"
+            />
+            <CommandList>
+              {query.trim() === "" ? (
+                <CommandGroup heading="Popular">
+                  {popular.map((entry) => (
+                    <CommandItem
+                      key={entry.slug}
+                      value={entry.slug}
+                      onSelect={() => {
+                        onPick(entry);
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                    >
+                      {entry.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ) : (
+                <>
+                  <CommandEmpty>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onFreeText(query.trim());
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                      className="w-full px-3 py-2 text-left text-[13px] text-reps-charcoal hover:bg-reps-warm-white"
+                    >
+                      Search for <span className="font-semibold">"{query.trim()}"</span>
+                    </button>
+                  </CommandEmpty>
+                  {(
+                    ["Professions", "Goals & specialisms", "Training mode"] as const
+                  ).map((group) =>
+                    grouped[group].length > 0 ? (
+                      <CommandGroup key={group} heading={group}>
+                        {grouped[group].map((entry) => (
+                          <CommandItem
+                            key={entry.slug}
+                            value={entry.slug}
+                            onSelect={() => {
+                              onPick(entry);
+                              setOpen(false);
+                              setQuery("");
+                            }}
+                          >
+                            <span>{entry.label}</span>
+                            {entry.matchedSynonym ? (
+                              <span className="ml-auto text-[11px] text-reps-muted-light">
+                                matched "{entry.matchedSynonym}"
+                              </span>
+                            ) : null}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ) : null,
+                  )}
+                  {ranked.length > 0 ? <CommandSeparator /> : null}
+                  <CommandGroup>
+                    <CommandItem
+                      value={`__free:${query}`}
+                      onSelect={() => {
+                        onFreeText(query.trim());
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                    >
+                      Search for <span className="font-semibold">"{query.trim()}"</span>
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {label ? (
         <button
           type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium transition-colors",
-            label
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal hover:border-reps-orange/60"
-              : "border-reps-stone text-reps-charcoal hover:border-reps-orange/40",
-          )}
+          aria-label="Clear what"
+          onClick={onClear}
+          className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
         >
-          <Search className="h-3.5 w-3.5 text-reps-orange" />
-          <span className="max-w-[180px] truncate">
-            {label ?? "What are you looking for?"}
-          </span>
-          {label ? (
-            <span
-              role="button"
-              tabIndex={0}
-              aria-label="Clear what"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onClear();
-                }
-              }}
-              className="inline-flex size-4 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
-            >
-              <X className="size-3" />
-            </span>
-          ) : (
-            <ChevronDown className="size-3.5 text-reps-muted-light" />
-          )}
+          <X className="size-3" />
         </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
-        <Command shouldFilter={false}>
-          <CommandInput
-            value={query}
-            onValueChange={setQuery}
-            placeholder="Try 'PT', 'fat loss', 'bad back', 'yoga'…"
-          />
-          <CommandList>
-            {query.trim() === "" ? (
-              <CommandGroup heading="Popular">
-                {popular.map((entry) => (
-                  <CommandItem
-                    key={entry.slug}
-                    value={entry.slug}
-                    onSelect={() => {
-                      onPick(entry);
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                  >
-                    {entry.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            ) : (
-              <>
-                <CommandEmpty>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onFreeText(query.trim());
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                    className="w-full px-3 py-2 text-left text-[13px] text-reps-charcoal hover:bg-reps-warm-white"
-                  >
-                    Search for <span className="font-semibold">"{query.trim()}"</span>
-                  </button>
-                </CommandEmpty>
-                {(
-                  ["Professions", "Goals & specialisms", "Training mode"] as const
-                ).map((group) =>
-                  grouped[group].length > 0 ? (
-                    <CommandGroup key={group} heading={group}>
-                      {grouped[group].map((entry) => (
-                        <CommandItem
-                          key={entry.slug}
-                          value={entry.slug}
-                          onSelect={() => {
-                            onPick(entry);
-                            setOpen(false);
-                            setQuery("");
-                          }}
-                        >
-                          <span>{entry.label}</span>
-                          {entry.matchedSynonym ? (
-                            <span className="ml-auto text-[11px] text-reps-muted-light">
-                              matched "{entry.matchedSynonym}"
-                            </span>
-                          ) : null}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  ) : null,
-                )}
-                {ranked.length > 0 ? <CommandSeparator /> : null}
-                <CommandGroup>
-                  <CommandItem
-                    value={`__free:${query}`}
-                    onSelect={() => {
-                      onFreeText(query.trim());
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                  >
-                    Search for <span className="font-semibold">"{query.trim()}"</span>
-                  </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      ) : null}
+    </div>
   );
 }
+
 
 /* =========================================================== WhereChip */
 
@@ -524,44 +517,26 @@ function WhereChip({
   };
 
   return (
+    <div
+      className={cn(
+        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+        label
+          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+          : "border-reps-stone hover:border-reps-orange/40",
+      )}
+    >
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium transition-colors",
-            label
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal hover:border-reps-orange/60"
-              : "border-reps-stone text-reps-charcoal hover:border-reps-orange/40",
-          )}
+          className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
         >
           <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
           <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
-          {label ? (
-            <span
-              role="button"
-              tabIndex={0}
-              aria-label="Clear location"
-              onClick={(e) => {
-                e.stopPropagation();
-                clearAll();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  clearAll();
-                }
-              }}
-              className="inline-flex size-4 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
-            >
-              <X className="size-3" />
-            </span>
-          ) : (
-            <ChevronDown className="size-3.5 text-reps-muted-light" />
-          )}
+          {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
         </button>
       </PopoverTrigger>
+
       <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-3">
         <div className="flex flex-col gap-3">
           <Button
@@ -647,8 +622,20 @@ function WhereChip({
         </div>
       </PopoverContent>
     </Popover>
+      {label ? (
+        <button
+          type="button"
+          aria-label="Clear location"
+          onClick={clearAll}
+          className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
+        >
+          <X className="size-3" />
+        </button>
+      ) : null}
+    </div>
   );
 }
+
 
 /* ========================================================== ModeToggle */
 
