@@ -56,6 +56,48 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_impersonation_sessions: {
+        Row: {
+          admin_id: string
+          created_at: string
+          ended_at: string | null
+          ended_reason: string | null
+          ends_at: string
+          id: string
+          ip: unknown
+          professional_id: string
+          session_token: string
+          started_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          ended_at?: string | null
+          ended_reason?: string | null
+          ends_at: string
+          id?: string
+          ip?: unknown
+          professional_id: string
+          session_token: string
+          started_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          ended_at?: string | null
+          ended_reason?: string | null
+          ends_at?: string
+          id?: string
+          ip?: unknown
+          professional_id?: string
+          session_token?: string
+          started_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       bd_member_seed: {
         Row: {
           about_me: string | null
