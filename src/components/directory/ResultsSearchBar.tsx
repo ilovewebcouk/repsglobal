@@ -872,6 +872,7 @@ function MobileFiltersSheet({
             onClick={() =>
               onChange({
                 mode: "any",
+                verified: false,
                 min_rating: 0,
                 radius_mi: 0,
                 venue: undefined,
@@ -916,6 +917,22 @@ function FiltersBody({
           />
         </FilterBlock>
       ) : null}
+
+      <FilterBlock label="Verified only">
+        <label className="flex cursor-pointer items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[13px] text-reps-charcoal">
+            <ShieldCheck className="size-4 text-emerald-500" />
+            Verified only
+          </span>
+          <Switch
+            checked={state.verified}
+            onCheckedChange={(v) => onChange({ verified: v })}
+          />
+        </label>
+        <p className="text-[11px] leading-snug text-reps-muted-light">
+          Only show REPs Verified professionals
+        </p>
+      </FilterBlock>
 
       <FilterBlock label="Minimum rating">
         <RadioGroup
@@ -1053,6 +1070,13 @@ function ActiveChipsRow({
       clear: { mode: "any" },
     });
   }
+  if (state.verified) {
+    chips.push({
+      key: "verified",
+      label: "Verified only",
+      clear: { verified: false },
+    });
+  }
   if (state.min_rating > 0) {
     chips.push({
       key: "rating",
@@ -1103,6 +1127,7 @@ function ActiveChipsRow({
             specialism: undefined,
             q: undefined,
             mode: "any",
+            verified: false,
             min_rating: 0,
             radius_mi: 0,
             venue: undefined,
