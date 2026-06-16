@@ -205,10 +205,9 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
         // 1-mile distance buckets — keeps "distance always wins" while
-        // letting verified/image break true ties at the same locale.
+        // letting verified / quality break true ties at the same locale.
         const bucket = origin ? (c ? Math.floor(d) : 9999) : 0;
         const verifiedRank = row.verification === "verified" ? 1 : 0;
-        const hasAvatar = avatarById.get(row.id) ? 1 : 0;
         const paidRank = paidTierById.get(row.id) ?? 0;
         const quality = row.quality_score ?? 0;
         return {
@@ -216,7 +215,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
           d,
           bucket,
           verifiedRank,
-          hasAvatar,
           paidRank,
           quality,
           updatedAt: row.updated_at ?? "",
@@ -226,9 +224,8 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       decoratedAll.sort((a, b) => {
         if (origin && a.bucket !== b.bucket) return a.bucket - b.bucket;
         if (a.verifiedRank !== b.verifiedRank) return b.verifiedRank - a.verifiedRank;
-        if (a.hasAvatar !== b.hasAvatar) return b.hasAvatar - a.hasAvatar;
-        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         if (a.quality !== b.quality) return b.quality - a.quality;
+        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         if (origin && a.d !== b.d) return a.d - b.d;
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });
