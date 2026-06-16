@@ -184,12 +184,8 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         }
       }
 
-      // Debug log to verify the ranking inputs in the dev server logs.
-      if (nearestMode) {
-        console.log(
-          `[searchProfessionals] nearestMode origin=${data.viewer_lat},${data.viewer_lng} allIds=${allIds.length} coords=${coordById.size}`,
-        );
-      }
+
+
 
 
       const origin = nearestMode
