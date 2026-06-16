@@ -476,7 +476,7 @@ function DirectoryPage() {
                       ? "Independent REPS-verified — not affiliated with the gym shown"
                       : total === 0
                         ? "No results yet"
-                        : `Showing ${rangeStart}–${rangeEnd} · all REPS Verified`}
+                        : `Showing ${rangeStart}–${rangeEnd}`}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -1193,12 +1193,25 @@ function PagerBtn({
 
 function compactPagerRange(current: number, total: number): Array<number | "…"> {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const out: Array<number | "…"> = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  if (start > 2) out.push("…");
-  for (let i = start; i <= end; i++) out.push(i);
-  if (end < total - 1) out.push("…");
-  out.push(total);
+  const out: Array<number | "…"> = [];
+  const window = 1; // pages either side of current
+  const head = current <= 4;
+  const tail = current >= total - 3;
+
+  if (head) {
+    for (let i = 1; i <= 5; i++) out.push(i);
+    out.push("…");
+    out.push(total);
+    return out;
+  }
+  if (tail) {
+    out.push(1);
+    out.push("…");
+    for (let i = total - 4; i <= total; i++) out.push(i);
+    return out;
+  }
+  out.push(1, "…");
+  for (let i = current - window; i <= current + window; i++) out.push(i);
+  out.push("…", total);
   return out;
 }
