@@ -283,7 +283,7 @@ function ProProfilePage() {
 
       {/* ============ HERO (with breadcrumb) ============ */}
       <section className="bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 pt-6 pb-2.5 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pt-5 pb-2 lg:px-10">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] tracking-wide text-reps-muted">
             <Link to="/" className="hover:text-reps-charcoal transition-colors">Home</Link>
             <ChevronRight className="h-2.5 w-2.5 opacity-35" />
@@ -292,7 +292,7 @@ function ProProfilePage() {
             <span className="text-reps-charcoal">{pro.name}</span>
           </nav>
         </div>
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-5 lg:px-10">
+        <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
             <div className="relative overflow-hidden rounded-[24px] bg-reps-stone">
