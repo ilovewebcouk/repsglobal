@@ -111,11 +111,9 @@ type Patch = Partial<ResultsBarState> & { page?: number };
 export function ResultsSearchBar({
   state,
   total,
-  countLabel,
 }: {
   state: ResultsBarState;
   total: number;
-  countLabel: string;
 }) {
   const navigate = useNavigate();
   const { origin } = useViewerOrigin();
