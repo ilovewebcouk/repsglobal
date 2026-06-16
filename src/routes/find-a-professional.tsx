@@ -86,6 +86,8 @@ export const Route = createFileRoute("/find-a-professional")({
       typeof raw.view === "string" && VALID_VIEWS.has(raw.view as ResultsBarView)
         ? (raw.view as ResultsBarView)
         : ("list" as ResultsBarView);
+    const verified =
+      raw.verified === true || raw.verified === "1" || raw.verified === "true";
     return {
       venue,
       city: str("city"),
@@ -95,6 +97,7 @@ export const Route = createFileRoute("/find-a-professional")({
       page,
       sort: sortRaw,
       mode: modeRaw,
+      verified,
       min_rating,
       radius_mi,
       view: viewRaw,
