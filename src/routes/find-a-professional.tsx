@@ -411,10 +411,10 @@ function DirectoryPage() {
   }, [decorated, sort, origin]);
 
   const setSort = (next: "recommended" | "nearest" | "rating") =>
-    navigate({ search: (prev) => ({ ...prev, sort: next, page: 1 }) });
+    navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: next, page: 1 }) });
 
   const goToPage = (n: number) =>
-    navigate({ search: (prev) => ({ ...prev, page: n }) });
+    navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
