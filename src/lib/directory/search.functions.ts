@@ -146,12 +146,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       const fetches: Array<Promise<unknown>> = [
         Promise.resolve(
           supabaseAdmin
-            .from("profiles")
-            .select("id, avatar_url")
-            .in("id", allIds),
-        ),
-        Promise.resolve(
-          supabaseAdmin
             .from("subscriptions")
             .select("user_id, tier, status")
             .in("user_id", allIds)
@@ -171,16 +165,11 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         );
       }
       const results = await Promise.all(fetches);
-      const profilesForRank = results[0] as { data: Array<{ id: string; avatar_url: string | null }> | null };
-      const subsForRank = results[1] as { data: Array<{ user_id: string; tier: string | null }> | null };
+      const subsForRank = results[0] as { data: Array<{ user_id: string; tier: string | null }> | null };
       const locsForRank = nearestMode
-        ? (results[2] as { data: Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null })
+        ? (results[1] as { data: Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null })
         : { data: null };
 
-      const avatarById = new Map<string, boolean>();
-      for (const p of profilesForRank.data ?? []) {
-        avatarById.set(p.id, Boolean(p.avatar_url && p.avatar_url.trim()));
-      }
       const tierRank = (t: string | null | undefined) =>
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
       const paidTierById = new Map<string, number>();
@@ -195,6 +184,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
           coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
         }
       }
+
 
       const origin = nearestMode
         ? { lat: data.viewer_lat!, lng: data.viewer_lng! }
