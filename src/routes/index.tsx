@@ -29,6 +29,8 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { HomeHeroSearch } from "@/components/home/HeroSearch";
+
 
 import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainersAsset from "@/assets/cta-band.jpg.asset.json";
@@ -532,61 +534,6 @@ function HomeV2() {
   );
 }
 
-function HomeHeroSearch() {
-  const navigate = useNavigate();
-  const [q, setQ] = React.useState("");
-  const [city, setCity] = React.useState("");
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const search: { q?: string; city?: string; page: number; sort: "recommended" } = {
-          page: 1,
-          sort: "recommended",
-        };
-        const qt = q.trim();
-        const ct = city.trim();
-        if (qt) search.q = qt;
-        if (ct) search.city = ct;
-        navigate({ to: "/find-a-professional", search });
-      }}
-      className="animate-rise-in mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
-      style={{ animationDelay: "320ms" }}
-    >
-      <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
-        <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
-        <input
-          type="text"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search coaches, goals, specialisms"
-          aria-label="What do you want to train?"
-          className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-        />
-      </label>
-      <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
-      <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[168px] lg:w-[200px]">
-        <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="London"
-          aria-label="Where?"
-          className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-        />
-      </label>
-      <button
-        type="submit"
-        className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.6)] transition-all hover:bg-reps-orange-dark hover:shadow-[0_14px_38px_-10px_rgba(255,122,0,0.7)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-      >
-        <Search className="h-4 w-4" aria-hidden />
-        Find your coach
-      </button>
-    </form>
-  );
-}
-
 const FALLBACK_AVATARS: { src: string; alt: string }[] = [
   { src: proJames, alt: "" },
   { src: proSophie, alt: "" },
@@ -597,15 +544,6 @@ const FALLBACK_AVATARS: { src: string; alt: string }[] = [
 function HomeHeroAvatars() {
   const { data } = useSuspenseQuery(heroAvatarsQueryOptions);
   const pool: HeroAvatar[] = data ?? [];
-  const [offset, setOffset] = React.useState(0);
-
-  React.useEffect(() => {
-    if (pool.length <= 4) return;
-    const id = window.setInterval(() => {
-      setOffset((o) => (o + 1) % pool.length);
-    }, 4000);
-    return () => window.clearInterval(id);
-  }, [pool.length]);
 
   if (pool.length < 4) {
     return (
@@ -619,15 +557,16 @@ function HomeHeroAvatars() {
     );
   }
 
-  const visible = Array.from({ length: 4 }, (_, i) => pool[(offset + i) % pool.length]);
+  // Server already shuffles per request; just take the first four.
+  const visible = pool.slice(0, 4);
   return (
     <div className="flex items-center -space-x-3">
-      {visible.map((p, i) => (
+      {visible.map((p) => (
         <Link
-          key={`${p.id}-${i}`}
+          key={p.id}
           to="/pro/$slug"
           params={{ slug: p.slug }}
-          className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black transition-opacity duration-700"
+          className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black"
           title={p.full_name}
         >
           <img src={p.avatar_url} alt={p.full_name} className="h-full w-full object-cover" />
@@ -636,3 +575,4 @@ function HomeHeroAvatars() {
     </div>
   );
 }
+
