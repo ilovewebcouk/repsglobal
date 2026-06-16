@@ -235,7 +235,7 @@ export function ResultsSearchBar({
               onChange={(v) => patch({ view: v })}
             />
             <SortSelect
-              value={state.sort}
+              value={state.sort === "nearest" && !origin ? "recommended" : state.sort}
               originAvailable={Boolean(origin)}
               onChange={(s) => patch({ sort: s })}
             />
