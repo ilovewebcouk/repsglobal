@@ -521,7 +521,7 @@ function DirectoryPage() {
                   >
                     <ProCard
                       pro={p}
-                      isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
+                      isClosest={i === 0 && page === 1 && sort === "nearest" && Boolean(origin) && p._miles != null}
                       highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
                     />
                   </div>
