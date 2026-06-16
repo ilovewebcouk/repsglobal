@@ -104,6 +104,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       data.sort_by_nearest === true &&
       typeof data.viewer_lat === "number" &&
       typeof data.viewer_lng === "number";
+    console.log("[searchProfessionals] data=", JSON.stringify(data), "nearestMode=", nearestMode);
 
     let qb = supabaseAdmin
       .from("professionals")
