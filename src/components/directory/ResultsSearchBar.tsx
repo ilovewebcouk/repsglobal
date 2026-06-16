@@ -111,11 +111,9 @@ type Patch = Partial<ResultsBarState> & { page?: number };
 export function ResultsSearchBar({
   state,
   total,
-  countLabel,
 }: {
   state: ResultsBarState;
   total: number;
-  countLabel: string;
 }) {
   const navigate = useNavigate();
   const { origin } = useViewerOrigin();
@@ -230,11 +228,8 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Right side: count + view toggle (desktop) + sort */}
+          {/* Right side: view toggle (desktop) + sort */}
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-[12.5px] text-reps-muted-light md:inline">
-              {countLabel}
-            </span>
             <ViewToggle
               value={state.view}
               onChange={(v) => patch({ view: v })}
