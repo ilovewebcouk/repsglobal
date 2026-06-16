@@ -126,11 +126,11 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
 
     if (validPros.length === 0 && !origin) return;
 
-    // When an origin is set, only pin the nearest ~30 pros within a sensible
-    // window so the bounds don't blow up to the whole world. Without origin,
-    // we pin everything in the current page (already capped by pagination).
-    const PIN_LIMIT = origin ? 30 : validPros.length;
-    const NEAR_RADIUS_MI = 150;
+    // When an origin is set, only pin the nearest ~12 pros within a tight
+    // window so the bounds stay local. Without origin, we pin everything
+    // in the current page (already capped by pagination).
+    const PIN_LIMIT = origin ? 12 : validPros.length;
+    const NEAR_RADIUS_MI = 60;
     const toMiles = (a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) => {
       const R = 3958.7613;
       const toRad = (d: number) => (d * Math.PI) / 180;
@@ -180,14 +180,19 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
       // viewing the whole world). Hold a steady regional default.
       map.setCenter({ lat: 54.5, lng: -2.5 });
       map.setZoom(5);
-    } else if (pinList.length > 1 || (pinList.length === 1 && origin)) {
-      map.fitBounds(bounds, 56);
-    } else if (pinList.length === 1) {
-      map.setCenter({ lat: pinList[0].coords!.latitude, lng: pinList[0].coords!.longitude });
-      map.setZoom(13);
-    } else {
+    } else if (pinList.length === 0) {
+      // Origin set but nothing nearby — center on origin at city zoom.
       map.setCenter({ lat: origin.latitude, lng: origin.longitude });
-      map.setZoom(12);
+      map.setZoom(11);
+    } else {
+      map.fitBounds(bounds, 64);
+      // Clamp maxZoom after fit so a single nearby pin doesn't snap to street level.
+      const listenerLib = lib as unknown as { event: { addListenerOnce: (m: unknown, e: string, cb: () => void) => void } };
+      listenerLib.event.addListenerOnce(map, "idle", () => {
+        const z = (map as unknown as { getZoom: () => number; setZoom: (n: number) => void }).getZoom();
+        if (z > 13) (map as unknown as { setZoom: (n: number) => void }).setZoom(13);
+        if (z < 8) (map as unknown as { setZoom: (n: number) => void }).setZoom(10);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validPros, origin, status]);

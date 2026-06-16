@@ -356,12 +356,9 @@ function DirectoryPage() {
   const visiblePros = React.useMemo(() => {
     const arr = [...baseList];
     if (sort === "nearest" && origin) {
-      arr.sort((a, b) => {
-        if (a._miles == null && b._miles == null) return 0;
-        if (a._miles == null) return 1;
-        if (b._miles == null) return -1;
-        return a._miles - b._miles;
-      });
+      // Server already returned quality-weighted nearest order — preserve it.
+      // Only re-sort by raw distance if there's no origin (no-op anyway).
+      // Intentionally do nothing here.
     } else if (sort === "rating") {
       arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
     } else if (sort === "most_reviewed") {
@@ -626,7 +623,13 @@ function DirectoryPage() {
 
             {/* Map column (lg+ only when view !== 'list') — viewport-locked, list scrolls beside it */}
             {showMapAside ? (
-              <aside className="hidden lg:block lg:w-[460px] lg:shrink-0 lg:py-0">
+              <aside
+                className={
+                  hideListAtLg
+                    ? "hidden lg:block lg:flex-1 lg:min-w-0 lg:py-0"
+                    : "hidden lg:block lg:w-[460px] lg:shrink-0 lg:py-0"
+                }
+              >
                 <div className="h-full pb-3">
                   <ResultsMap
                     pros={mapPros}

@@ -124,9 +124,10 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let total: number;
 
     if (nearestMode) {
-      // Pull ALL matching pros (cap 1000), join coords, sort by distance,
-      // paginate. This makes "Nearest" truly nearest, not "nearest within
-      // whatever quality-ranked page happened to load".
+      // Quality-weighted nearest: pull all matching pros (cap 1000), join coords
+      // + verification tier, bucket by distance, then rank inside each bucket so
+      // Verified + high-quality profiles surface ahead of empty shells at
+      // roughly the same distance. Result: "nearest AND best", not raw haversine.
       const { data: allRows, error, count } = await qb
         .order("updated_at", { ascending: false })
         .range(0, 999);
@@ -134,27 +135,71 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       total = count ?? (allRows?.length ?? 0);
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
-      const { data: locs } = await supabaseAdmin
-        .from("professional_locations")
-        .select("professional_id, latitude, longitude")
-        .in("professional_id", allIds)
-        .eq("is_primary", true)
-        .eq("is_public", true);
+      const [locsRes, subsForRank] = await Promise.all([
+        supabaseAdmin
+          .from("professional_locations")
+          .select("professional_id, latitude, longitude")
+          .in("professional_id", allIds)
+          .eq("is_primary", true)
+          .eq("is_public", true),
+        supabaseAdmin
+          .from("subscriptions")
+          .select("user_id, tier, status")
+          .in("user_id", allIds)
+          .in("status", ["active", "trialing", "past_due"]),
+      ]);
 
       const coordById = new Map<string, { lat: number; lng: number }>();
-      for (const l of locs ?? []) {
+      for (const l of locsRes.data ?? []) {
         if (l.latitude != null && l.longitude != null) {
           coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
         }
       }
+      const tierRank = (t: string | null | undefined) =>
+        t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
+      const paidTierById = new Map<string, number>();
+      for (const s of subsForRank.data ?? []) {
+        const r = tierRank(s.tier as string | null);
+        const prev = paidTierById.get(s.user_id) ?? 0;
+        if (r > prev) paidTierById.set(s.user_id, r);
+      }
+
+      // Distance buckets in miles. Pros inside the same bucket are ranked by
+      // verified/paid tier, quality_score, then recency. "Verified beats
+      // unverified" is enforced WITHIN bucket only — a distant verified pro
+      // never leapfrogs a much-closer one.
+      const bucketFor = (mi: number) => {
+        if (mi <= 5) return 0;
+        if (mi <= 15) return 1;
+        if (mi <= 30) return 2;
+        if (mi <= 60) return 3;
+        if (mi <= 150) return 4;
+        return 5;
+      };
 
       const origin = { lat: data.viewer_lat!, lng: data.viewer_lng! };
       const decoratedAll = (allRows ?? []).map((r) => {
-        const c = coordById.get((r as { id: string }).id);
+        const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
+        const c = coordById.get(row.id);
         const d = c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
-        return { row: r, d };
+        const bucket = bucketFor(d);
+        const paidRank = paidTierById.get(row.id) ?? 0;
+        const verifiedRank = row.verification === "verified" ? 1 : 0;
+        // Composite within-bucket score: paid tier dominates, then verified
+        // badge, then profile quality, then rating fallback via updated_at recency.
+        const quality = (row.quality_score ?? 0);
+        return { row: r, d, bucket, paidRank, verifiedRank, quality, updatedAt: row.updated_at ?? "" };
       });
-      decoratedAll.sort((a, b) => a.d - b.d);
+
+      decoratedAll.sort((a, b) => {
+        if (a.bucket !== b.bucket) return a.bucket - b.bucket;
+        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
+        if (a.verifiedRank !== b.verifiedRank) return b.verifiedRank - a.verifiedRank;
+        if (a.quality !== b.quality) return b.quality - a.quality;
+        if (a.d !== b.d) return a.d - b.d;
+        return a.updatedAt < b.updatedAt ? 1 : -1;
+      });
+
       rows = decoratedAll.slice(offset, offset + pageSize).map((x) => x.row);
     } else {
       // Server-side ranking: profile quality, tiebreak by recency.
