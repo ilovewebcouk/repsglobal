@@ -91,6 +91,7 @@ import { cn } from "@/lib/utils";
 
 export type ResultsBarSort = "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
 export type ResultsBarMode = "any" | "in_person" | "online";
+export type ResultsBarView = "list" | "split" | "map";
 
 export type ResultsBarState = {
   profession?: string;
@@ -102,6 +103,7 @@ export type ResultsBarState = {
   min_rating: number; // 0 = any
   radius_mi: number; // 0 = any
   sort: ResultsBarSort;
+  view: ResultsBarView;
 };
 
 type Patch = Partial<ResultsBarState> & { page?: number };
@@ -123,15 +125,18 @@ export function ResultsSearchBar({
       navigate({
         to: "/find-a-professional",
         search: (prev: Record<string, unknown>) => {
-          const next = { ...prev, ...p, page: 1 } as Record<string, unknown>;
+          // View changes shouldn't reset pagination; everything else should.
+          const isViewOnly = Object.keys(p).length === 1 && "view" in p;
+          const next = { ...prev, ...p } as Record<string, unknown>;
+          if (!isViewOnly) next.page = 1;
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
             if (v == null || v === "" || v === "any" || v === 0) delete next[k];
           }
-          // Preserve sort even when it's "nearest" if user has just set it — but
-          // omit when it's the default to keep URLs short.
+          // Defaults that should not appear in the URL.
           if (next.sort === "nearest") delete next.sort;
+          if (next.view === "list") delete next.view;
           return next;
         },
       });
@@ -225,11 +230,15 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Right side: count + sort */}
+          {/* Right side: count + view toggle (desktop) + sort */}
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-[12.5px] text-reps-muted-light md:inline">
               {countLabel}
             </span>
+            <ViewToggle
+              value={state.view}
+              onChange={(v) => patch({ view: v })}
+            />
             <SortSelect
               value={state.sort}
               originAvailable={Boolean(origin)}
@@ -678,6 +687,64 @@ function ModeToggle({
     </ToggleGroup>
   );
 }
+
+/* ============================================================ ViewToggle */
+
+function ViewToggle({
+  value,
+  onChange,
+}: {
+  value: ResultsBarView;
+  onChange: (v: ResultsBarView) => void;
+}) {
+  // Mobile: List ↔ Map. Desktop (lg): List · Split · Map.
+  // Split is the rich power-user view; mobile collapses to a binary.
+  return (
+    <div className="hidden items-center gap-0.5 rounded-full border border-reps-stone bg-reps-warm-white p-0.5 md:inline-flex">
+      <button
+        type="button"
+        aria-pressed={value === "list"}
+        onClick={() => onChange("list")}
+        className={cn(
+          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+          value === "list"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        List
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "split"}
+        onClick={() => onChange("split")}
+        className={cn(
+          "hidden h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors lg:inline-flex lg:items-center",
+          value === "split"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        Split
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "map"}
+        onClick={() => onChange("map")}
+        className={cn(
+          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+          value === "map"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        Map
+      </button>
+    </div>
+  );
+}
+
+
 
 /* ========================================================== SortSelect */
 

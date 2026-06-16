@@ -9,7 +9,10 @@ import { searchTaxonomy } from "@/lib/search/taxonomy";
 
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
-import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
+import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarView, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
+import { ResultsMap } from "@/components/directory/ResultsMap";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Map as MapIcon } from "lucide-react";
 import {
   Bookmark,
   ChevronLeft,
@@ -49,6 +52,7 @@ const VALID_VENUE_SLUGS = new Set([
 
 const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating", "most_reviewed", "newest"]);
 const VALID_MODES = new Set<ResultsBarMode>(["any", "in_person", "online"]);
+const VALID_VIEWS = new Set<ResultsBarView>(["list", "split", "map"]);
 
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
@@ -78,6 +82,10 @@ export const Route = createFileRoute("/find-a-professional")({
       Number.isFinite(radiusRaw) && radiusRaw >= 0 && radiusRaw <= 200
         ? Math.floor(radiusRaw)
         : 0;
+    const viewRaw =
+      typeof raw.view === "string" && VALID_VIEWS.has(raw.view as ResultsBarView)
+        ? (raw.view as ResultsBarView)
+        : ("list" as ResultsBarView);
     return {
       venue,
       city: str("city"),
@@ -89,6 +97,7 @@ export const Route = createFileRoute("/find-a-professional")({
       mode: modeRaw,
       min_rating,
       radius_mi,
+      view: viewRaw,
     };
   },
   head: () => ({
@@ -201,6 +210,7 @@ function DirectoryPage() {
     mode,
     min_rating,
     radius_mi,
+    view,
   } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
@@ -385,6 +395,7 @@ function DirectoryPage() {
     min_rating,
     radius_mi,
     sort,
+    view,
   };
 
   const countLabel = activeVenue
@@ -392,6 +403,27 @@ function DirectoryPage() {
     : visibleTotal === 0
       ? "No results"
       : `${visibleTotal.toLocaleString()} professional${visibleTotal === 1 ? "" : "s"}${city ? ` · ${city}` : ""}`;
+
+  // Map: hover state + visible coords for pins
+  const [hoveredSlug, setHoveredSlug] = React.useState<string | null>(null);
+  const [mobileMapOpen, setMobileMapOpen] = React.useState(false);
+  const mapPros = React.useMemo(
+    () =>
+      visiblePros
+        .filter((p) => Boolean(p.slug) && Boolean(p.coords))
+        .map((p) => ({
+          slug: p.slug!,
+          name: p.name,
+          from_price_pence: p.from_price_pence,
+          coords: p.coords,
+        })),
+    [visiblePros],
+  );
+
+  // Layout: "list" = single column (current). "split"/"map" = wider canvas
+  // with a sticky map column on the right (lg+ only — falls back to list below lg).
+  const showMapAside = view !== "list";
+  const hideListAtLg = view === "map";
 
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -402,8 +434,17 @@ function DirectoryPage() {
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1100px] px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-14 lg:pt-5">
-          <div ref={resultsRef}>
+        <div
+          className={`mx-auto px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-14 lg:pt-5 ${
+            showMapAside ? "max-w-[1480px]" : "max-w-[1100px]"
+          }`}
+        >
+          <div
+            className={`${
+              showMapAside ? "lg:grid lg:gap-6 lg:grid-cols-[minmax(0,1fr)_460px]" : ""
+            }`}
+          >
+            <div ref={resultsRef} className={hideListAtLg ? "lg:hidden" : ""}>
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
 
@@ -445,17 +486,32 @@ function DirectoryPage() {
             ) : (
               <div className="space-y-3 pt-2 sm:pt-3">
                 {visiblePros.slice(0, 4).map((p, i) => (
-                  <ProCard
+                  <div
                     key={p.slug ?? p.name}
-                    pro={p}
-                    isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
-                  />
+                    onMouseEnter={p.slug ? () => setHoveredSlug(p.slug!) : undefined}
+                    onMouseLeave={p.slug ? () => setHoveredSlug(null) : undefined}
+                  >
+                    <ProCard
+                      pro={p}
+                      isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
+                      highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
+                    />
+                  </div>
                 ))}
 
                 {visiblePros.length > 4 && <EditorialBreak />}
 
                 {visiblePros.slice(4).map((p) => (
-                  <ProCard key={p.slug ?? p.name} pro={p} />
+                  <div
+                    key={p.slug ?? p.name}
+                    onMouseEnter={p.slug ? () => setHoveredSlug(p.slug!) : undefined}
+                    onMouseLeave={p.slug ? () => setHoveredSlug(null) : undefined}
+                  >
+                    <ProCard
+                      pro={p}
+                      highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -535,9 +591,47 @@ function DirectoryPage() {
                 </Link>
               </div>
             </div>
+            </div>
+
+            {/* Sticky map column (lg+ only when view !== 'list') */}
+            {showMapAside ? (
+              <aside className="hidden lg:block">
+                <div className="sticky top-[148px] h-[calc(100vh-180px)]">
+                  <ResultsMap
+                    pros={mapPros}
+                    origin={origin}
+                    hoveredSlug={hoveredSlug}
+                    onHover={setHoveredSlug}
+                    className="h-full"
+                  />
+                </div>
+              </aside>
+            ) : null}
           </div>
         </div>
       </section>
+
+      {/* Mobile: floating "Show map" button + full-screen sheet */}
+      <button
+        type="button"
+        onClick={() => setMobileMapOpen(true)}
+        className="fixed bottom-5 left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-reps-charcoal px-5 py-3 text-[13px] font-semibold text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)] lg:hidden"
+        aria-label="Show map of professionals"
+      >
+        <MapIcon className="h-4 w-4" />
+        Map · {mapPros.length}
+      </button>
+      <Sheet open={mobileMapOpen} onOpenChange={setMobileMapOpen}>
+        <SheetContent side="bottom" className="h-[90vh] p-0">
+          <SheetTitle className="sr-only">Map of professionals</SheetTitle>
+          <ResultsMap
+            pros={mapPros}
+            origin={origin}
+            hoveredSlug={null}
+            className="h-full rounded-none border-0"
+          />
+        </SheetContent>
+      </Sheet>
 
 
 
@@ -651,9 +745,11 @@ function formatFromPrice(pence: number | null) {
 function ProCard({
   pro,
   isClosest = false,
+  highlighted = false,
 }: {
   pro: Pro & { _miles?: number | null };
   isClosest?: boolean;
+  highlighted?: boolean;
 }) {
   const photoSize = pro.featured ? 144 : 120;
   const mobilePhotoSize = pro.featured ? 96 : 88;
@@ -673,7 +769,9 @@ function ProCard({
       className={`group relative overflow-hidden rounded-[18px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-30px_rgba(15,15,15,0.22)] sm:p-5 ${
         pro.featured
           ? "border-reps-orange/40 bg-gradient-to-br from-reps-warm-white via-white to-reps-warm-white shadow-[0_18px_50px_-28px_rgba(234,88,12,0.35)] ring-1 ring-reps-orange/20"
-          : "border-reps-stone"
+          : highlighted
+            ? "border-reps-orange/60 shadow-[0_24px_60px_-30px_rgba(234,88,12,0.45)] ring-2 ring-reps-orange/40"
+            : "border-reps-stone"
       }`}
     >
       {pro.featured && (
