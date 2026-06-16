@@ -216,9 +216,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });
 
-      if (origin) {
-        console.log("[searchProfessionals] top5 sorted=", decoratedAll.slice(0, 5).map((x) => ({ id: (x.row as {id:string}).id, d: x.d })));
-      }
 
       rows = decoratedAll.slice(offset, offset + pageSize).map((x) => x.row);
     }
