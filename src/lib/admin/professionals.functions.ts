@@ -154,12 +154,11 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return { rows: [] as AdminProRow[], total: count ?? 0, page: data.page, pageSize: data.pageSize };
     }
 
-    const [profilesRes, subsRes, reviewsRes, ccRes, authRes] = await Promise.all([
+    const [profilesRes, subsRes, reviewsRes, ccRes] = await Promise.all([
       supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', ids),
       supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at').in('user_id', ids),
       supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', ids).eq('status', 'published'),
       supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', ids).eq('status', 'active'),
-      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
     ]);
 
     const profileMap = new Map((profilesRes.data ?? []).map(p => [p.id, p]));
