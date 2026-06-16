@@ -35,21 +35,23 @@ function read(): ViewerOrigin | null {
  * only fires for OTHER tabs, so we broadcast via a custom event on window.
  */
 export function useViewerOrigin() {
-  // Lazy initializer reads localStorage synchronously on first render so the
-  // very first query/route render already knows the origin (no useEffect race,
-  // no silent "nearest sort but no origin" first paint). SSR-guarded inside read().
-  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(() => read());
+  // Initial render returns null on both server and client to avoid hydration
+  // mismatches. localStorage is read after mount; consumers refetch when
+  // `origin` changes from null → value.
+  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(null);
 
   React.useEffect(() => {
-    // Re-sync in case another tab / consumer changed it between SSR and hydration.
-    const current = read();
-    setOriginState((prev) => (JSON.stringify(prev) === JSON.stringify(current) ? prev : current));
+    setOriginState(read());
     const onChange = () => setOriginState(read());
-    window.addEventListener(EVT, onChange);
-    window.addEventListener("storage", (e) => {
+    const onStorage = (e: StorageEvent) => {
       if (e.key === KEY) onChange();
-    });
-    return () => window.removeEventListener(EVT, onChange);
+    };
+    window.addEventListener(EVT, onChange);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(EVT, onChange);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const setOrigin = React.useCallback((v: ViewerOrigin | null) => {
