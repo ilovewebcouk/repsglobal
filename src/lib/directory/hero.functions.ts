@@ -37,13 +37,14 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
       const prof = profMap.get(p.id);
       const avatar = prof?.avatar_url ?? null;
       const name = prof?.full_name ?? null;
-      if (!avatar || !name) continue;
+      const slug = p.slug ?? null;
+      if (!avatar || !name || !slug) continue;
       result.push({
         id: p.id,
-        slug: p.slug,
+        slug,
         full_name: name,
         avatar_url: avatar,
-        city: p.city,
+        city: p.city ?? null,
       });
       if (result.length >= 12) break;
     }
