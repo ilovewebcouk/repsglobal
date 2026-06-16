@@ -91,6 +91,7 @@ import { cn } from "@/lib/utils";
 
 export type ResultsBarSort = "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
 export type ResultsBarMode = "any" | "in_person" | "online";
+export type ResultsBarView = "list" | "split" | "map";
 
 export type ResultsBarState = {
   profession?: string;
@@ -102,6 +103,7 @@ export type ResultsBarState = {
   min_rating: number; // 0 = any
   radius_mi: number; // 0 = any
   sort: ResultsBarSort;
+  view: ResultsBarView;
 };
 
 type Patch = Partial<ResultsBarState> & { page?: number };
@@ -123,15 +125,18 @@ export function ResultsSearchBar({
       navigate({
         to: "/find-a-professional",
         search: (prev: Record<string, unknown>) => {
-          const next = { ...prev, ...p, page: 1 } as Record<string, unknown>;
+          // View changes shouldn't reset pagination; everything else should.
+          const isViewOnly = Object.keys(p).length === 1 && "view" in p;
+          const next = { ...prev, ...p } as Record<string, unknown>;
+          if (!isViewOnly) next.page = 1;
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
             if (v == null || v === "" || v === "any" || v === 0) delete next[k];
           }
-          // Preserve sort even when it's "nearest" if user has just set it — but
-          // omit when it's the default to keep URLs short.
+          // Defaults that should not appear in the URL.
           if (next.sort === "nearest") delete next.sort;
+          if (next.view === "list") delete next.view;
           return next;
         },
       });
@@ -225,11 +230,15 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Right side: count + sort */}
+          {/* Right side: count + view toggle (desktop) + sort */}
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-[12.5px] text-reps-muted-light md:inline">
               {countLabel}
             </span>
+            <ViewToggle
+              value={state.view}
+              onChange={(v) => patch({ view: v })}
+            />
             <SortSelect
               value={state.sort}
               originAvailable={Boolean(origin)}
