@@ -67,7 +67,7 @@ export const Route = createFileRoute("/find-a-professional")({
     const sortRaw =
       typeof raw.sort === "string" && VALID_SORTS.has(raw.sort as ResultsBarSort)
         ? (raw.sort as ResultsBarSort)
-        : ("nearest" as ResultsBarSort);
+        : ("recommended" as ResultsBarSort);
     const modeRaw =
       typeof raw.mode === "string" && VALID_MODES.has(raw.mode as ResultsBarMode)
         ? (raw.mode as ResultsBarMode)

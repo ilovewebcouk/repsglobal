@@ -735,9 +735,7 @@ function SortSelect({
       </SelectTrigger>
       <SelectContent className="rounded-[12px]">
         <SelectGroup>
-          <SelectItem value="nearest" disabled={!originAvailable}>
-            {originAvailable ? "Nearest" : "Nearest (set location)"}
-          </SelectItem>
+          {originAvailable && <SelectItem value="nearest">Nearest</SelectItem>}
           <SelectItem value="recommended">Recommended</SelectItem>
           <SelectItem value="rating">Highest rated</SelectItem>
           <SelectItem value="most_reviewed">Most reviewed</SelectItem>
