@@ -92,15 +92,23 @@ const steps = [
   { icon: Target, t: "Transform", body: "Train with a coach who actually knows what they're doing." },
 ];
 
-const specialisms = [
-  { icon: Dumbbell, label: "Personal Trainer" },
-  { icon: Activity, label: "Pilates" },
-  { icon: Apple, label: "Nutritionist" },
-  { icon: Target, label: "Strength Coach" },
-  { icon: Heart, label: "Pre & Postnatal" },
-  { icon: Stethoscope, label: "Rehab Specialist" },
-  { icon: Users, label: "Sports Coach" },
-  { icon: Laptop, label: "Online Coaching" },
+type SpecialismSearch = {
+  page: 1;
+  sort: "nearest";
+  profession?: string;
+  specialism?: string;
+  mode?: "online";
+};
+
+const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSearch }[] = [
+  { icon: Dumbbell, label: "Personal Trainer", search: { page: 1, sort: "nearest", profession: "personal-trainer" } },
+  { icon: Activity, label: "Pilates", search: { page: 1, sort: "nearest", profession: "pilates-instructor" } },
+  { icon: Apple, label: "Nutritionist", search: { page: 1, sort: "nearest", profession: "nutritionist" } },
+  { icon: Target, label: "Strength Coach", search: { page: 1, sort: "nearest", profession: "strength-coach" } },
+  { icon: Heart, label: "Pre & Postnatal", search: { page: 1, sort: "nearest", specialism: "pre-post-natal" } },
+  { icon: Stethoscope, label: "Rehab Specialist", search: { page: 1, sort: "nearest", specialism: "rehab-injury" } },
+  { icon: Users, label: "Sports Coach", search: { page: 1, sort: "nearest", specialism: "sports-performance" } },
+  { icon: Laptop, label: "Online Coaching", search: { page: 1, sort: "nearest", mode: "online" } },
 ];
 
 const featuredPros = [
@@ -331,16 +339,17 @@ function HomeV2() {
 
             <div className="grid grid-cols-4 gap-4 lg:grid-cols-8">
               {specialisms.map((sp) => (
-                <button
+                <Link
                   key={sp.label}
-                  type="button"
-                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5"
+                  to="/find-a-professional"
+                  search={sp.search}
+                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ivory"
                 >
                   <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white text-reps-charcoal transition-all group-hover:border-reps-orange/40 group-hover:text-reps-orange">
                     <sp.icon className="h-7 w-7" strokeWidth={1.6} />
                   </span>
                   <span className="text-[13px] font-medium text-reps-charcoal">{sp.label}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>

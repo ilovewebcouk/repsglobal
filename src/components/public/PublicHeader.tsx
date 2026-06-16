@@ -5,11 +5,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  MapPin,
   ShieldCheck,
   Heart,
-  
-  Crosshair,
   User,
   LogOut,
   CalendarCheck,
@@ -30,7 +27,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import {
   Tooltip,
   TooltipContent,
@@ -66,7 +63,6 @@ import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 type Variant = "transparent" | "solid";
 
 const SCROLL_THRESHOLD = 96;
-const LOCATION_KEY = "reps.location";
 
 /* ---------------- hooks ---------------- */
 
@@ -111,26 +107,8 @@ function useActive() {
   };
 }
 
-function useLocationPin() {
-  const [city, setCity] = useState<string>("London");
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(LOCATION_KEY);
-      if (saved) setCity(saved);
-    } catch {
-      /* noop */
-    }
-  }, []);
-  const update = (next: string) => {
-    setCity(next);
-    try {
-      window.localStorage.setItem(LOCATION_KEY, next);
-    } catch {
-      /* noop */
-    }
-  };
-  return { city, setCity: update };
-}
+
+
 
 
 
@@ -169,13 +147,10 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   const [mobileOpen, setMobileOpen] = useState(false);
   
   
-  const { city, setCity } = useLocationPin();
   const { user, isAdmin, signOut } = useSessionUser();
 
   
 
-  // Two-row expanded layout only on home, at rest, on desktop.
-  const expanded = active.isHome && !isSolid;
 
   const wrapperClass = cn(
     "z-50 transition-colors duration-200",
@@ -196,14 +171,8 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 <RepsWordmark className="h-[22px] text-white" />
               </Link>
 
-
-
-              <LocationPin
-                city={city}
-                onChange={setCity}
-                className={cn("hidden lg:inline-flex", expanded && "lg:hidden")}
-              />
             </div>
+
 
             <NavigationMenu.Root
               delayDuration={120}
@@ -329,7 +298,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   </SheetDescription>
                   <MobileDrawer
                     active={active}
-                    city={city}
                     user={user}
                     isAdmin={isAdmin}
                     onSignOut={signOut}
@@ -350,80 +318,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
 
 
-/* ---------------- location pin ---------------- */
-
-function LocationPin({
-  city,
-  onChange,
-  className,
-}: {
-  city: string;
-  onChange: (next: string) => void;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "h-9 items-center gap-1.5 rounded-[999px] border border-white/15 bg-white/[0.04] px-3 text-[13px] font-medium text-white/85 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ink",
-            className,
-          )}
-        >
-          <MapPin className="h-3.5 w-3.5 text-reps-orange" aria-hidden />
-          {city}
-          <ChevronDown className="h-3 w-3 opacity-70" aria-hidden />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[260px] rounded-[16px] border border-reps-stone bg-white p-2 text-reps-charcoal"
-      >
-        <button
-          type="button"
-          onClick={() => {
-            onChange("Near me");
-            setOpen(false);
-          }}
-          className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-[13px] font-medium text-reps-charcoal transition-colors hover:bg-reps-warm-white hover:text-reps-orange"
-        >
-          <Crosshair className="h-4 w-4 text-reps-orange" aria-hidden />
-          Detect location
-        </button>
-        <div className="my-2 h-px bg-reps-stone" />
-        <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-reps-muted-light">
-          Popular cities
-        </p>
-        <ul className="flex flex-col">
-          {TOP_LOCATIONS.map((l) => (
-            <li key={l.slug}>
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(l.label);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-[8px] px-3 py-1.5 text-[13px] transition-colors hover:bg-reps-warm-white hover:text-reps-orange",
-                  city === l.label
-                    ? "font-semibold text-reps-orange"
-                    : "text-reps-charcoal",
-                )}
-              >
-                {l.label}
-                {city === l.label && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-reps-orange" />
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 /* ---------------- mega menus ---------------- */
 
@@ -892,14 +786,12 @@ const mobileSubLinkClass =
 
 function MobileDrawer({
   active,
-  city,
   user,
   isAdmin,
   onSignOut,
   onNavigate,
 }: {
   active: ActiveState;
-  city: string;
   user: SessionUser | null;
   isAdmin: boolean;
   onSignOut: () => void;

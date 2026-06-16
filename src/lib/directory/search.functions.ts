@@ -24,7 +24,16 @@ export type SearchProfessionalsResult = {
 };
 
 const COLS =
-  "id, slug, headline, bio, primary_profession, specialisms, city, country, hourly_rate_pence, verification, identity_status, in_person_available, online_available, bd_seed_thin, quality_score, updated_at";
+  "id, slug, headline, bio, primary_profession, specialisms, city, country, hourly_rate_pence, verification, identity_status, in_person_available, online_available, bd_seed_thin, quality_score, created_at, updated_at";
+
+export type ProGymPill = {
+  /** Stable id for React keys. */
+  id: string;
+  /** Display name — chain name preferred, falls back to gym name. */
+  name: string;
+  /** Branch/area label, e.g. "Barbican". May be null on chains w/o area. */
+  branch: string | null;
+};
 
 export type SearchProfessionalRow = {
   id: string;
@@ -42,9 +51,17 @@ export type SearchProfessionalRow = {
   online_available: boolean | null;
   bd_seed_thin: boolean | null;
   quality_score: number | null;
+  created_at: string | null;
   full_name: string | null;
   avatar_url: string | null;
   tier: "studio" | "pro" | "verified" | "free";
+  /** Lowest published service price in pence — null when no priced service. */
+  from_price_pence: number | null;
+  /** Aggregated published-review stats. */
+  review_count: number;
+  rating_avg: number | null;
+  /** Up to 3 gym pills, ordered by position ASC. Empty when online-only. */
+  gyms: ProGymPill[];
   location: {
     postcode_outward: string | null;
     town: string | null;
@@ -88,7 +105,10 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (error) throw error;
     const total = count ?? 0;
     const list = (rows ?? []) as Array<
-      Omit<SearchProfessionalRow, "full_name" | "avatar_url" | "tier" | "location"> & {
+      Omit<
+        SearchProfessionalRow,
+        "full_name" | "avatar_url" | "tier" | "location" | "from_price_pence" | "review_count" | "rating_avg" | "gyms"
+      > & {
         specialisms: string[] | null;
       }
     >;
@@ -96,7 +116,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
 
     if (!ids.length) return { rows: [], total, page, pageSize };
 
-    const [profilesRes, locsRes, subsRes] = await Promise.all([
+    const [profilesRes, locsRes, subsRes, servicesRes, reviewsRes, proGymsRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
       supabaseAdmin
         .from("professional_locations")
@@ -109,6 +129,21 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         .select("user_id, tier, status")
         .in("user_id", ids)
         .in("status", ["active", "trialing", "past_due"]),
+      supabaseAdmin
+        .from("services")
+        .select("professional_id, price_pence, is_published")
+        .in("professional_id", ids)
+        .eq("is_published", true),
+      supabaseAdmin
+        .from("reviews")
+        .select("professional_id, rating, status")
+        .in("professional_id", ids)
+        .eq("status", "published"),
+      supabaseAdmin
+        .from("professional_gyms")
+        .select("id, professional_id, position, gym:gyms ( id, name, chain_name, area )")
+        .in("professional_id", ids)
+        .order("position", { ascending: true }),
     ]);
 
     const profileById = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
@@ -122,15 +157,52 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       if (!prev || rank(t) > rank(prev)) tierById.set(s.user_id, t);
     }
 
+    // Aggregate min price.
+    const priceById = new Map<string, number>();
+    for (const s of servicesRes.data ?? []) {
+      if (s.price_pence == null) continue;
+      const prev = priceById.get(s.professional_id);
+      if (prev == null || s.price_pence < prev) priceById.set(s.professional_id, s.price_pence);
+    }
+
+    // Aggregate review count + avg.
+    const reviewAggById = new Map<string, { count: number; sum: number }>();
+    for (const r of reviewsRes.data ?? []) {
+      const prev = reviewAggById.get(r.professional_id) ?? { count: 0, sum: 0 };
+      prev.count += 1;
+      prev.sum += Number(r.rating) || 0;
+      reviewAggById.set(r.professional_id, prev);
+    }
+
+    // Group gym pills (max 3 per pro, already ordered by position).
+    const gymsById = new Map<string, ProGymPill[]>();
+    for (const pg of proGymsRes.data ?? []) {
+      const list = gymsById.get(pg.professional_id) ?? [];
+      if (list.length >= 3) continue;
+      const g = (pg as { gym?: { id: string; name: string; chain_name: string | null; area: string | null } | null }).gym;
+      if (!g) continue;
+      list.push({
+        id: pg.id,
+        name: g.chain_name?.trim() || g.name,
+        branch: g.area?.trim() || null,
+      });
+      gymsById.set(pg.professional_id, list);
+    }
+
     const decorated: SearchProfessionalRow[] = list.map((r) => {
       const prof = profileById.get(r.id);
       const loc = locById.get(r.id);
+      const agg = reviewAggById.get(r.id);
       return {
         ...r,
         specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
         full_name: prof?.full_name ?? null,
         avatar_url: prof?.avatar_url ?? null,
         tier: tierById.get(r.id) ?? "free",
+        from_price_pence: priceById.get(r.id) ?? null,
+        review_count: agg?.count ?? 0,
+        rating_avg: agg && agg.count > 0 ? agg.sum / agg.count : null,
+        gyms: gymsById.get(r.id) ?? [],
         location: loc
           ? {
               postcode_outward: loc.postcode_outward,

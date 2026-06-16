@@ -89,7 +89,7 @@ import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { useResolveViewerLocation } from "@/lib/profile/useResolveViewerLocation";
 import { cn } from "@/lib/utils";
 
-export type ResultsBarSort = "recommended" | "nearest" | "rating";
+export type ResultsBarSort = "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
 export type ResultsBarMode = "any" | "in_person" | "online";
 
 export type ResultsBarState = {
@@ -129,9 +129,9 @@ export function ResultsSearchBar({
             const v = next[k];
             if (v == null || v === "" || v === "any" || v === 0) delete next[k];
           }
-          // Preserve sort even when it's "recommended" if user has just set it — but
+          // Preserve sort even when it's "nearest" if user has just set it — but
           // omit when it's the default to keep URLs short.
-          if (next.sort === "recommended") delete next.sort;
+          if (next.sort === "nearest") delete next.sort;
           return next;
         },
       });
@@ -678,11 +678,13 @@ function SortSelect({
       </SelectTrigger>
       <SelectContent className="rounded-[12px]">
         <SelectGroup>
-          <SelectItem value="recommended">Recommended</SelectItem>
-          <SelectItem value="rating">Top rated</SelectItem>
           <SelectItem value="nearest" disabled={!originAvailable}>
             {originAvailable ? "Nearest" : "Nearest (set location)"}
           </SelectItem>
+          <SelectItem value="recommended">Recommended</SelectItem>
+          <SelectItem value="rating">Highest rated</SelectItem>
+          <SelectItem value="most_reviewed">Most reviewed</SelectItem>
+          <SelectItem value="newest">Newest</SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>

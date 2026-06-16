@@ -47,7 +47,7 @@ const VALID_VENUE_SLUGS = new Set([
   "anytime-fitness",
 ]);
 
-const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating"]);
+const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating", "most_reviewed", "newest"]);
 const VALID_MODES = new Set<ResultsBarMode>(["any", "in_person", "online"]);
 
 export const Route = createFileRoute("/find-a-professional")({
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/find-a-professional")({
     const sortRaw =
       typeof raw.sort === "string" && VALID_SORTS.has(raw.sort as ResultsBarSort)
         ? (raw.sort as ResultsBarSort)
-        : ("recommended" as ResultsBarSort);
+        : ("nearest" as ResultsBarSort);
     const modeRaw =
       typeof raw.mode === "string" && VALID_MODES.has(raw.mode as ResultsBarMode)
         ? (raw.mode as ResultsBarMode)
@@ -113,11 +113,10 @@ export const Route = createFileRoute("/find-a-professional")({
 });
 
 
-type ProVenue = {
-  /** Matches a slug in @/components/marketing/VenueWordmarks VENUES. */
-  slug: string;
-  /** Neighbourhood/branch label shown next to the gym name. */
-  branch: string;
+type ProGymPill = {
+  id: string;
+  name: string;
+  branch: string | null;
 };
 
 type Pro = {
@@ -137,8 +136,12 @@ type Pro = {
   blurb: string;
   /** null → render Monogram fallback. Never substitute another pro's photo. */
   image: string | null;
-  /** Independent — REPS professionals choose where they train clients. */
-  venues: ProVenue[];
+  /** Real gym pills from professional_gyms. */
+  gyms: ProGymPill[];
+  /** Lowest published service price in pence. */
+  from_price_pence: number | null;
+  /** ISO timestamp — drives "Newest" sort. */
+  created_at: string | null;
   featured?: boolean;
   /** Override slug for live DB pros — otherwise derived from name. */
   slug?: string;
@@ -249,8 +252,8 @@ function DirectoryPage() {
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
-            rating: 0,
-            reviews: 0,
+            rating: r.rating_avg ?? 0,
+            reviews: r.review_count,
             mode: r.in_person_available && r.online_available
               ? "In-person & Online" as const
               : r.online_available
@@ -259,7 +262,9 @@ function DirectoryPage() {
             tags: specLabels.slice(0, 3),
             blurb: r.headline || "",
             image: r.avatar_url ?? null,
-            venues: [],
+            gyms: r.gyms,
+            from_price_pence: r.from_price_pence,
+            created_at: r.created_at,
             slug: r.slug ?? undefined,
             live: true,
             identity_status: r.identity_status,
@@ -271,18 +276,17 @@ function DirectoryPage() {
   );
 
   const venueFiltered = activeVenue
-    ? liveAsPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    ? liveAsPros.filter((p) =>
+        p.gyms.some((g) => g.name.toLowerCase().includes(activeVenue.label.toLowerCase())),
+      )
     : liveAsPros;
 
   // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
   const { origin } = useViewerOrigin();
 
-  // Fall back to Recommended if origin is cleared while Nearest is selected
-  React.useEffect(() => {
-    if (!origin && sort === "nearest") {
-      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: "recommended" as const }) });
-    }
-  }, [origin, sort, navigate]);
+  // No fallback: "Nearest" is the default sort. When viewer has no origin,
+  // server-side quality ranking applies (the client-side .sort() is a no-op
+  // for nearest without origin), so the list still renders sensibly.
 
   // Decorate with real miles when origin + coords both exist
   type WithMiles = Pro & { _miles: number | null };
@@ -337,6 +341,14 @@ function DirectoryPage() {
       });
     } else if (sort === "rating") {
       arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+    } else if (sort === "most_reviewed") {
+      arr.sort((a, b) => b.reviews - a.reviews || b.rating - a.rating);
+    } else if (sort === "newest") {
+      arr.sort((a, b) => {
+        const at = a.created_at ? Date.parse(a.created_at) : 0;
+        const bt = b.created_at ? Date.parse(b.created_at) : 0;
+        return bt - at;
+      });
     }
     return arr;
   }, [baseList, sort, origin]);
@@ -378,16 +390,16 @@ function DirectoryPage() {
 
   return (
     <div className="min-h-screen bg-reps-ivory">
-      <PublicHeader variant="transparent" />
+      <PublicHeader variant="solid" />
 
-      {/* Spacer so sticky search bar sits flush under the transparent header */}
+      {/* Spacer so sticky search bar sits flush under the solid header */}
       <div className="h-[72px]" aria-hidden />
 
       <ResultsSearchBar state={barState} total={total} countLabel={countLabel} />
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1100px] px-5 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-[1100px] px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-14 lg:pt-5">
           <div ref={resultsRef}>
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
@@ -428,23 +440,19 @@ function DirectoryPage() {
             ) : visiblePros.length === 0 ? (
               <EmptyResults />
             ) : (
-              <div className="space-y-4 pt-5">
+              <div className="space-y-3 pt-2 sm:pt-3">
                 {visiblePros.slice(0, 4).map((p, i) => (
                   <ProCard
                     key={p.slug ?? p.name}
                     pro={p}
-                    ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
+                    isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
                   />
                 ))}
 
                 {visiblePros.length > 4 && <EditorialBreak />}
 
-                {visiblePros.slice(4).map((p, i) => (
-                  <ProCard
-                    key={p.slug ?? p.name}
-                    pro={p}
-                    ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
-                  />
+                {visiblePros.slice(4).map((p) => (
+                  <ProCard key={p.slug ?? p.name} pro={p} />
                 ))}
               </div>
             )}
@@ -631,9 +639,23 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: number | null }; ctaLabel?: string }) {
-  const photoSize = pro.featured ? 160 : 112;
-  const mobilePhotoSize = pro.featured ? 96 : 80;
+function formatFromPrice(pence: number | null) {
+  if (pence == null) return null;
+  const pounds = Math.round(pence / 100);
+  return `From £${pounds}/session`;
+}
+
+function ProCard({
+  pro,
+  isClosest = false,
+}: {
+  pro: Pro & { _miles?: number | null };
+  isClosest?: boolean;
+}) {
+  const photoSize = pro.featured ? 144 : 120;
+  const mobilePhotoSize = pro.featured ? 96 : 88;
+  const priceLabel = formatFromPrice(pro.from_price_pence);
+  const showRating = pro.reviews > 0;
 
   return (
     <article
@@ -649,7 +671,8 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
           className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-reps-orange to-reps-orange-dark"
         />
       )}
-      <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
+      <div
+        className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-4 sm:[grid-template-columns:var(--cols)]"
         style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
         {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
@@ -659,7 +682,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               <img
                 src={pro.image}
                 alt={`${pro.name} — ${pro.role}`}
-                className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+                className="rounded-[16px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
                 style={{
                   width: mobilePhotoSize,
                   height: mobilePhotoSize,
@@ -684,9 +707,15 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               </>
             )}
             {pro.featured && (
-              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white sm:left-2 sm:top-2">
                 <Sparkles className="h-3 w-3" />
                 Featured
+              </span>
+            )}
+            {isClosest && !pro.featured && (
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-charcoal px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white sm:left-2 sm:top-2">
+                <MapPin className="h-3 w-3" />
+                Closest
               </span>
             )}
           </div>
@@ -726,7 +755,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
         <div className="min-w-0">
           {/* Desktop heading (hidden on mobile, shown sm+) */}
           <div className="hidden flex-wrap items-center gap-2 sm:flex">
-            <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
+            <h3 className="font-display text-[17px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
             <VerificationPill
@@ -734,19 +763,27 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               verification={pro.verification}
               tier={pro.tier}
             />
+            {!showRating && pro.live && (
+              <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-700">
+                New on REPs
+              </span>
+            )}
           </div>
-          <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
+          <div className="mt-0.5 hidden text-[12.5px] text-reps-muted-light sm:block">{pro.role}</div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[12.5px] text-reps-muted-light sm:text-[12.5px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
-              {pro._miles != null && pro.town
-                ? `${pro.town} · ${formatMiles(pro._miles)}`
-                : pro.town ?? pro.distance}
+              {pro._miles != null && pro.town ? (
+                <>
+                  {pro.town} ·{" "}
+                  <span className="font-semibold text-reps-charcoal">{formatMiles(pro._miles)}</span>
+                </>
+              ) : (
+                pro.town ?? pro.distance
+              )}
             </span>
-            {pro.live && pro.reviews === 0 ? (
-              <span className="text-reps-muted-light/80">No reviews yet</span>
-            ) : (
+            {showRating && (
               <span className="flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
                 <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
@@ -757,45 +794,44 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
             </span>
+            {priceLabel && (
+              <span className="font-semibold text-reps-charcoal">{priceLabel}</span>
+            )}
           </div>
           {pro.blurb && (
-            <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
+            <p className="mt-1.5 line-clamp-1 max-w-[560px] text-[13px] leading-snug text-reps-charcoal/80 lg:line-clamp-2">
               {pro.blurb}
             </p>
           )}
           {pro.tags.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {pro.tags.map((t) => (
                 <span
                   key={t}
-                  className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
+                  className="rounded-full border border-reps-stone bg-reps-ivory px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
                 >
                   {t}
                 </span>
               ))}
             </div>
           )}
-          {pro.venues.length > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
-              <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
+          {pro.gyms.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
               <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
                 Trains at
               </span>
-              {pro.venues.slice(0, 2).map((v) => {
-                const venue = VENUES.find((x) => x.slug === v.slug);
-                if (!venue) return null;
-                return (
-                  <span
-                    key={`${v.slug}-${v.branch}`}
-                    className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
-                  >
-                    {venue.label} · {v.branch}
-                  </span>
-                );
-              })}
-              {pro.venues.length > 2 && (
+              {pro.gyms.slice(0, 2).map((g) => (
+                <span
+                  key={g.id}
+                  className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
+                >
+                  {g.name}
+                  {g.branch ? ` · ${g.branch}` : ""}
+                </span>
+              ))}
+              {pro.gyms.length > 2 && (
                 <span className="text-[11px] text-reps-muted-light">
-                  +{pro.venues.length - 2}
+                  +{pro.gyms.length - 2}
                 </span>
               )}
             </div>
@@ -821,7 +857,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
-            {ctaLabel}
+            View profile
           </Link>
         </div>
 
@@ -831,7 +867,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
           params={{ slug: pro.slug ?? proSlug(pro.name) }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
-          {ctaLabel}
+          View profile
         </Link>
       </div>
     </article>
