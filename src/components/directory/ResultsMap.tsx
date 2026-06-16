@@ -213,8 +213,13 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
           <p className="text-[13px]">Couldn't load the map.</p>
         </div>
       )}
-      {status === "ready" && validPros.length === 0 && (
-        <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
+      {status === "ready" && !origin && (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
+          Set your location to see pros near you
+        </div>
+      )}
+      {status === "ready" && origin && validPros.length === 0 && (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
           No mappable professionals in this view
         </div>
       )}
