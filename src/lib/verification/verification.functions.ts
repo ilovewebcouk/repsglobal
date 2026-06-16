@@ -26,6 +26,13 @@ export const submitVerification = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    // Ownership check: every doc_path must live under the caller's storage folder.
+    for (const p of data.doc_paths) {
+      if (!p.startsWith(`${userId}/`)) {
+        throw new Error("Forbidden: doc_path does not belong to you");
+      }
+    }
+
     // Ensure a professional row exists (handle_new_user trigger should create it,
     // but a Google OAuth signup without signup_kind=professional may have skipped it).
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
