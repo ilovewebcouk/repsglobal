@@ -473,6 +473,15 @@ function DirectoryPage() {
               }
             >
 
+            {/* Results header — quiet count above the cards */}
+            {!isPending && !isError && visiblePros.length > 0 ? (
+              <div className="flex items-baseline justify-between gap-3 pt-1 pb-1">
+                <p className="text-[14px] text-reps-ink">
+                  <span className="font-medium">{countLabel}</span>
+                </p>
+              </div>
+            ) : null}
+
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
 
