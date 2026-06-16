@@ -576,9 +576,46 @@ function DirectoryPage() {
                 </Link>
               </div>
             </div>
+
+            {/* Sticky map column (lg+ only when view !== 'list') */}
+            {showMapAside ? (
+              <aside className="hidden lg:block">
+                <div className="sticky top-[148px] h-[calc(100vh-180px)]">
+                  <ResultsMap
+                    pros={mapPros}
+                    origin={origin}
+                    hoveredSlug={hoveredSlug}
+                    onHover={setHoveredSlug}
+                    className="h-full"
+                  />
+                </div>
+              </aside>
+            ) : null}
           </div>
         </div>
       </section>
+
+      {/* Mobile: floating "Show map" button + full-screen sheet */}
+      <button
+        type="button"
+        onClick={() => setMobileMapOpen(true)}
+        className="fixed bottom-5 left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-reps-charcoal px-5 py-3 text-[13px] font-semibold text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)] lg:hidden"
+        aria-label="Show map of professionals"
+      >
+        <MapIcon className="h-4 w-4" />
+        Map · {mapPros.length}
+      </button>
+      <Sheet open={mobileMapOpen} onOpenChange={setMobileMapOpen}>
+        <SheetContent side="bottom" className="h-[90vh] p-0">
+          <SheetTitle className="sr-only">Map of professionals</SheetTitle>
+          <ResultsMap
+            pros={mapPros}
+            origin={origin}
+            hoveredSlug={null}
+            className="h-full rounded-none border-0"
+          />
+        </SheetContent>
+      </Sheet>
 
 
 
