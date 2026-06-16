@@ -209,18 +209,21 @@ export const botFilterMiddleware = createMiddleware().server(
       return blockedResponse("ua");
     }
 
-    // 3. Marketing-only protections.
+    // 3. Global geo block — high-abuse countries (CN/RU/KP) are blocked on
+    //    every non-exempt path, not just marketing. /api, /auth, /dashboard,
+    //    /admin, webhooks etc. are already exempted above.
+    const country = (
+      request.headers.get("cf-ipcountry") ??
+      request.headers.get("x-vercel-ip-country") ??
+      ""
+    ).toUpperCase();
+
+    if (country && HIGH_ABUSE_COUNTRIES.has(country)) {
+      return blockedResponse("geo");
+    }
+
+    // 4. Marketing-only rate limit.
     if (isMarketingPath(pathname)) {
-      const country = (
-        request.headers.get("cf-ipcountry") ??
-        request.headers.get("x-vercel-ip-country") ??
-        ""
-      ).toUpperCase();
-
-      if (country && HIGH_ABUSE_COUNTRIES.has(country)) {
-        return blockedResponse("geo");
-      }
-
       const ip =
         request.headers.get("cf-connecting-ip") ??
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
