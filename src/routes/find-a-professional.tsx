@@ -196,15 +196,43 @@ const testimonials = [
 const PAGE_SIZE = 24;
 
 function DirectoryPage() {
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { venue: venueFilter, city, profession, specialism, q, page, sort } = Route.useSearch();
+  const {
+    venue: venueFilter,
+    city,
+    profession,
+    specialism,
+    q,
+    page,
+    sort,
+    mode,
+    min_rating,
+    radius_mi,
+  } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
+  // Map mode → server boolean filters (preserves existing search.functions API).
+  const serverFilters = {
+    online: mode === "online" ? true : undefined,
+    in_person: mode === "in_person" ? true : undefined,
+  };
+
   const search = useServerFn(searchProfessionals);
   const { data: liveResult, isPending, isError, refetch } = useQuery({
-    queryKey: ["directory", "search", { city, profession, specialism, q, page }],
-    queryFn: () => search({ data: { city, profession, specialism, q, page, limit: PAGE_SIZE } }),
+    queryKey: ["directory", "search", { city, profession, specialism, q, page, mode }],
+    queryFn: () =>
+      search({
+        data: {
+          city,
+          profession,
+          specialism,
+          q,
+          page,
+          limit: PAGE_SIZE,
+          online: serverFilters.online,
+          in_person: serverFilters.in_person,
+        },
+      }),
     staleTime: 60_000,
   });
   const livePros = liveResult?.rows ?? [];
@@ -237,7 +265,6 @@ function DirectoryPage() {
               : r.online_available
                 ? "Online" as const
                 : "In-person" as const,
-            // Only real specialism labels — no placeholder fallbacks.
             tags: specLabels.slice(0, 3),
             blurb: r.headline || "",
             image: r.avatar_url ?? null,
@@ -252,7 +279,6 @@ function DirectoryPage() {
     [livePros],
   );
 
-  // Live directory only — placeholder seed cards (directoryPros) intentionally hidden.
   const venueFiltered = activeVenue
     ? liveAsPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
     : liveAsPros;
@@ -281,8 +307,36 @@ function DirectoryPage() {
     [venueFiltered, origin],
   );
 
+  // Client-side filter: rating + radius. Auto-widen when a radius leaves <5 results.
+  const ratingFiltered = React.useMemo(
+    () => (min_rating > 0 ? decorated.filter((p) => p.rating >= min_rating) : decorated),
+    [decorated, min_rating],
+  );
+
+  const withinRadius = React.useMemo(() => {
+    if (!origin || radius_mi <= 0) return ratingFiltered;
+    return ratingFiltered.filter((p) => p._miles == null || p._miles <= radius_mi);
+  }, [ratingFiltered, origin, radius_mi]);
+
+  // Auto-widen rescue: if a radius cap leaves <5 results, surface the next tier.
+  const autoWidenTiers = [10, 25, 50, 100];
+  const autoWidenResult = React.useMemo(() => {
+    if (!origin || radius_mi <= 0) return null;
+    if (withinRadius.length >= 5) return null;
+    for (const tier of autoWidenTiers) {
+      if (tier <= radius_mi) continue;
+      const wider = ratingFiltered.filter((p) => p._miles == null || p._miles <= tier);
+      if (wider.length > withinRadius.length) {
+        return { tier, rows: wider, extras: wider.length - withinRadius.length };
+      }
+    }
+    return null;
+  }, [origin, radius_mi, withinRadius, ratingFiltered]);
+
+  const baseList = autoWidenResult ? autoWidenResult.rows : withinRadius;
+
   const visiblePros = React.useMemo(() => {
-    const arr = [...decorated];
+    const arr = [...baseList];
     if (sort === "nearest" && origin) {
       arr.sort((a, b) => {
         if (a._miles == null && b._miles == null) return 0;
@@ -294,10 +348,7 @@ function DirectoryPage() {
       arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
     }
     return arr;
-  }, [decorated, sort, origin]);
-
-  const setSort = (next: "recommended" | "nearest" | "rating") =>
-    navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: next, page: 1 }) });
+  }, [baseList, sort, origin]);
 
   const goToPage = (n: number) =>
     navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
@@ -316,352 +367,176 @@ function DirectoryPage() {
     }
   }, [page]);
 
-  const clearVenue = () =>
-    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined, page: 1 }) });
+  const barState: ResultsBarState = {
+    profession,
+    specialism,
+    q,
+    city,
+    venue: venueFilter,
+    mode,
+    min_rating,
+    radius_mi,
+    sort,
+  };
 
-
-
+  const countLabel = activeVenue
+    ? `${visiblePros.length} at ${activeVenue.label}`
+    : total === 0
+      ? "No results"
+      : `${total.toLocaleString()} professional${total === 1 ? "" : "s"}${city ? ` · ${city}` : ""}`;
 
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
 
-      {/* ============ SEARCH HERO ============ */}
-      <section className="relative isolate overflow-hidden bg-reps-black text-white">
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 -z-10 h-px bg-white/5"
-        />
+      {/* Spacer so sticky search bar sits flush under the transparent header */}
+      <div className="h-[72px]" aria-hidden />
 
-
-
-        <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[120px] sm:px-6 sm:pb-12 sm:pt-[140px] lg:px-10 lg:pb-16 lg:pt-[168px]">
-          {/* editorial title */}
-          <div className="max-w-[760px]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-reps-orange" />
-              <span className="hidden sm:inline">Every REP verified · qualified · insured</span>
-              <span className="sm:hidden">Verified · qualified · insured</span>
-            </div>
-            <h1 className="mt-5 font-display text-[32px] font-bold leading-[1.05] tracking-tight text-white sm:text-[40px] lg:text-[58px]">
-              Find a coach worth trusting.
-            </h1>
-            <p className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-white/70 sm:text-[15px] lg:text-[16px]">
-              Search the global register of qualified, insured and credential-checked
-              fitness professionals — in your city, on your schedule, in person or online.
-            </p>
-          </div>
-
-          {/* search panel */}
-          <div className="mt-7 rounded-[22px] border border-white/10 bg-reps-panel/75 p-2.5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md sm:mt-8 sm:p-3">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_1fr_auto]">
-              <SearchField
-                label="I'm looking for"
-                placeholder="e.g. Personal Trainer"
-                icon={UserRound}
-              />
-              <SearchField label="Near" placeholder="Your city" icon={MapPin} />
-              <SearchField
-                label="Training type"
-                placeholder="In-person, Online or Both"
-                icon={ChevronDown}
-                isSelect
-              />
-              <button
-                type="button"
-                className="inline-flex h-[56px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[15px] font-semibold text-white transition-colors hover:bg-reps-orange-dark md:col-span-2 lg:col-span-1 lg:h-[62px]"
-              >
-                <Search className="h-4 w-4" />
-                Find Professionals
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-2 pb-1 pt-4 text-[13px] sm:px-3 sm:pb-2">
-              <span className="font-medium text-white/55">Popular:</span>
-              {popularSearches.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className="story-link font-medium text-reps-orange transition-colors hover:text-white"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-      </section>
+      <ResultsSearchBar state={barState} total={total} countLabel={countLabel} />
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
-          <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
-            {/* Filter rail — collapsible on mobile/tablet */}
-            <aside className="lg:sticky lg:top-[88px] lg:self-start">
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]">
+        <div className="mx-auto max-w-[1100px] px-5 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+          <div ref={resultsRef}>
+            {/* Did-you-mean: free-text q with no structured filter */}
+            {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
+
+            {/* Auto-widen rescue banner */}
+            {autoWidenResult ? (
+              <div className="mt-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
+                <span className="font-medium">
+                  Only {withinRadius.length} within {radius_mi} mi.
+                </span>{" "}
+                <span className="text-reps-muted-light">
+                  Showing {autoWidenResult.extras} more within {autoWidenResult.tier} mi.
+                </span>
+              </div>
+            ) : null}
+
+            {/* Cards w/ rhythm break */}
+            {isPending ? (
+              <div className="space-y-4 pt-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[180px] animate-pulse rounded-[18px] border border-reps-stone bg-reps-warm-white"
+                  />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="mt-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-8 text-center">
+                <p className="text-[14px] text-reps-muted-light">Couldn't load professionals.</p>
                 <button
                   type="button"
-                  onClick={() => setMobileFiltersOpen((v) => !v)}
-                  aria-expanded={mobileFiltersOpen}
-                  className="flex w-full items-center justify-between gap-2 px-5 py-4 lg:hidden"
+                  onClick={() => refetch()}
+                  className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
                 >
-                  <span className="text-[14px] font-semibold text-reps-charcoal">Filters (5)</span>
-                  <ChevronDown className={"h-4 w-4 text-reps-muted-light transition-transform " + (mobileFiltersOpen ? "rotate-180" : "")} />
+                  Try again
                 </button>
-                <div className={(mobileFiltersOpen ? "block" : "hidden") + " px-5 pb-5 sm:px-6 sm:pb-6 lg:block lg:px-6 lg:pt-6"}>
-                  <div className="hidden items-center justify-between border-b border-reps-stone pb-3 lg:flex">
-                    <h2 className="text-[15px] font-semibold text-reps-charcoal">Filter results</h2>
-                    <button
-                      type="button"
-                      className="text-[12px] font-medium text-reps-orange hover:underline"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-
-                  <FilterGroup label="Distance">
-                    <Select value="Within 10 miles" />
-                  </FilterGroup>
-
-                  <FilterGroup label="Specialism">
-                    <Select value="Select specialism" placeholder />
-                  </FilterGroup>
-
-                  <FilterGroup label="Training Type">
-                    <Checkbox label="In-person" defaultChecked />
-                    <Checkbox label="Online" defaultChecked />
-                    <Checkbox label="Both" defaultChecked />
-                  </FilterGroup>
-
-                  <FilterGroup label="Availability">
-                    <Select value="Any day" />
-                  </FilterGroup>
-
-                  <FilterGroup label="Gym / venue">
-                    <VenueSelect
-                      value={activeVenue?.slug}
-                      onChange={(slug: string | undefined) =>
-                        navigate({
-                          search: (prev: { venue?: string }) => ({
-                            ...prev,
-                            venue: slug,
-                          }),
-                        })
-                      }
-                    />
-                  </FilterGroup>
-
-                  <FilterGroup label="Rating" last>
-                    <RatingRow stars={5} />
-                    <RatingRow stars={4} />
-                    <RatingRow stars={3} />
-                  </FilterGroup>
-                </div>
               </div>
+            ) : visiblePros.length === 0 ? (
+              <EmptyResults />
+            ) : (
+              <div className="space-y-4 pt-5">
+                {visiblePros.slice(0, 4).map((p, i) => (
+                  <ProCard
+                    key={p.slug ?? p.name}
+                    pro={p}
+                    ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
+                  />
+                ))}
 
-              {/* Help card — fills the sticky rail beyond the filters */}
-              <div className="mt-5 hidden rounded-[22px] border border-reps-stone bg-reps-warm-white p-5 lg:block">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange/12 text-reps-orange">
+                {visiblePros.length > 4 && <EditorialBreak />}
+
+                {visiblePros.slice(4).map((p, i) => (
+                  <ProCard
+                    key={p.slug ?? p.name}
+                    pro={p}
+                    ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <nav
+                aria-label="Pagination"
+                className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
+              >
+                <p className="text-[13px] text-reps-muted-light">
+                  Showing{" "}
+                  <span className="font-semibold text-reps-charcoal">
+                    {rangeStart}–{rangeEnd}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-reps-charcoal">
+                    {total.toLocaleString()}
+                  </span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <PagerBtn
+                    aria-label="Previous"
+                    disabled={page <= 1}
+                    onClick={() => goToPage(Math.max(1, page - 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </PagerBtn>
+                  {compactPagerRange(page, totalPages).map((item, idx) =>
+                    item === "…" ? (
+                      <span
+                        key={`gap-${idx}`}
+                        className="px-1 text-reps-muted-light"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <PagerNum
+                        key={item}
+                        n={item}
+                        active={item === page}
+                        onClick={() => goToPage(item)}
+                      />
+                    ),
+                  )}
+                  <PagerBtn
+                    aria-label="Next"
+                    disabled={page >= totalPages}
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                  >
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </PagerBtn>
+                </div>
+              </nav>
+            )}
+
+            {/* Help card — moved from sidebar */}
+            <div className="mt-10 rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 sm:p-6">
+              <div className="flex items-start gap-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-reps-orange/12 text-reps-orange">
                   <Compass className="h-4 w-4" strokeWidth={1.8} />
                 </span>
-                <h3 className="mt-3 font-display text-[15px] font-bold leading-snug text-reps-charcoal">
-                  Can't find your match?
-                </h3>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-reps-muted-light">
-                  Tell us what you're looking for and we'll hand-match you to a verified REP within 24 hours.
-                </p>
+                <div className="flex-1">
+                  <h3 className="font-display text-[15px] font-bold leading-snug text-reps-charcoal">
+                    Can't find your match?
+                  </h3>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-reps-muted-light">
+                    Tell us what you're looking for and we'll hand-match you to a verified REP within 24 hours.
+                  </p>
+                </div>
                 <Link
                   to="/find-a-professional"
-                  className="story-link mt-3 inline-flex items-center gap-1 text-[12.5px] font-semibold text-reps-orange"
+                  className="inline-flex items-center gap-1 self-center text-[12.5px] font-semibold text-reps-orange hover:text-reps-orange-dark"
                 >
                   Tell us what you need
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-            </aside>
-
-            {/* Results column */}
-            <div ref={resultsRef}>
-              {/* Sort/results bar */}
-              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
-                <div>
-                  <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
-                    {activeVenue
-                      ? `${visiblePros.length} professional${visiblePros.length === 1 ? "" : "s"} who coach at ${activeVenue.label}`
-                      : `${total.toLocaleString()} professional${total === 1 ? "" : "s"}${city ? ` in ${city}` : ""}`}
-                  </h1>
-                  <p className="mt-1 text-[12px] text-reps-muted-light">
-                    {activeVenue
-                      ? "Independent REPS-verified — not affiliated with the gym shown"
-                      : total === 0
-                        ? "No results yet"
-                        : `Showing ${rangeStart}–${rangeEnd}`}
-                  </p>
-                </div>
-                <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
-                  <span className="hidden sm:inline">Sort by</span>
-                  <span className="relative">
-                    <select
-                      className="appearance-none rounded-[10px] border border-reps-stone bg-reps-warm-white py-2 pl-3 pr-9 text-[13px] font-medium text-reps-charcoal focus:outline-none"
-                      value={sort}
-                      onChange={(e) => setSort(e.target.value as typeof sort)}
-                    >
-                      <option value="recommended">Recommended</option>
-                      <option value="rating">Top rated</option>
-                      <option value="nearest" disabled={!origin}>
-                        {origin ? "Nearest" : "Nearest (set your location)"}
-                      </option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-reps-muted-light" />
-                  </span>
-                </label>
-              </div>
-
-              {/* Did-you-mean: free-text q with no structured filter */}
-              {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
-
-              {/* Viewer origin chip — drives real distance + nearest sort */}
-              <div className="mt-3 flex items-center justify-end">
-                <ViewerOriginControl />
-              </div>
-
-
-
-              {/* Active filter chips */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-reps-muted-light">
-                  Active
-                </span>
-                {activeVenue && (
-                  <button
-                    type="button"
-                    onClick={clearVenue}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/10 px-3 py-1 text-[12px] font-medium text-reps-orange transition-colors hover:bg-reps-orange/15"
-                  >
-                    {activeVenue.label}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {["Within 10mi", "In-person", "Online", "5★ & up"].map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal transition-colors hover:border-reps-orange/40 hover:bg-white"
-                  >
-                    {chip}
-                    <X className="h-3 w-3 text-reps-muted-light" />
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={clearVenue}
-                  className="ml-1 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-dark"
-                >
-                  Clear all
-                </button>
-              </div>
-
-
-              {/* Cards w/ rhythm break */}
-              {isPending ? (
-                <div className="space-y-4 pt-5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-[180px] animate-pulse rounded-[18px] border border-reps-stone bg-reps-warm-white"
-                    />
-                  ))}
-                </div>
-              ) : isError ? (
-                <div className="mt-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-8 text-center">
-                  <p className="text-[14px] text-reps-muted-light">Couldn't load professionals.</p>
-                  <button
-                    type="button"
-                    onClick={() => refetch()}
-                    className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
-                  >
-                    Try again
-                  </button>
-                </div>
-              ) : visiblePros.length === 0 ? (
-                <EmptyResults />
-              ) : (
-                <div className="space-y-4 pt-5">
-                  {visiblePros.slice(0, 4).map((p, i) => (
-                    <ProCard
-                      key={p.slug ?? p.name}
-                      pro={p}
-                      ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
-                    />
-                  ))}
-
-                  {visiblePros.length > 4 && <EditorialBreak />}
-
-                  {visiblePros.slice(4).map((p, i) => (
-                    <ProCard
-                      key={p.slug ?? p.name}
-                      pro={p}
-                      ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <nav
-                  aria-label="Pagination"
-                  className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
-                >
-                  <p className="text-[13px] text-reps-muted-light">
-                    Showing{" "}
-                    <span className="font-semibold text-reps-charcoal">
-                      {rangeStart}–{rangeEnd}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-semibold text-reps-charcoal">
-                      {total.toLocaleString()}
-                    </span>
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <PagerBtn
-                      aria-label="Previous"
-                      disabled={page <= 1}
-                      onClick={() => goToPage(Math.max(1, page - 1))}
-                    >
-                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </PagerBtn>
-                    {compactPagerRange(page, totalPages).map((item, idx) =>
-                      item === "…" ? (
-                        <span
-                          key={`gap-${idx}`}
-                          className="px-1 text-reps-muted-light"
-                        >
-                          …
-                        </span>
-                      ) : (
-                        <PagerNum
-                          key={item}
-                          n={item}
-                          active={item === page}
-                          onClick={() => goToPage(item)}
-                        />
-                      ),
-                    )}
-                    <PagerBtn
-                      aria-label="Next"
-                      disabled={page >= totalPages}
-                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
-                    >
-                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </PagerBtn>
-                  </div>
-                </nav>
-              )}
             </div>
           </div>
         </div>
       </section>
+
 
 
       {/* ============ TRUST BAND — borderless editorial closer ============ */}
