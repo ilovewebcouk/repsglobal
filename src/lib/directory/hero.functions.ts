@@ -46,14 +46,22 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
         avatar_url: avatar,
         city: p.city ?? null,
       });
-      if (result.length >= 12) break;
     }
-    return result;
+
+    // Fisher–Yates shuffle so each page-load surfaces a different mix.
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result.slice(0, 12);
   },
 );
+
 
 export const heroAvatarsQueryOptions = queryOptions({
   queryKey: ["homepage-hero-avatars"],
   queryFn: () => getHomepageHeroAvatars(),
-  staleTime: 5 * 60_000,
+  // Re-fetch on each page load so the shuffle re-runs.
+  staleTime: 0,
 });
+

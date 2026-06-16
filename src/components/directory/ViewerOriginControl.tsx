@@ -1,8 +1,5 @@
 import * as React from "react";
 import { Crosshair, MapPin, X } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -10,11 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  resolveViewerPostcode,
-  resolveViewerLatLng,
-} from "@/lib/profile/location.functions";
-import { useViewerOrigin, type ViewerOrigin } from "@/lib/useViewerOrigin";
+import { useResolveViewerLocation } from "@/lib/profile/useResolveViewerLocation";
 
 /**
  * Inline control for the directory: "Set your location" → resolves and
@@ -22,57 +15,17 @@ import { useViewerOrigin, type ViewerOrigin } from "@/lib/useViewerOrigin";
  * become available.
  */
 export function ViewerOriginControl() {
-  const { origin, setOrigin } = useViewerOrigin();
   const [open, setOpen] = React.useState(false);
   const [postcode, setPostcode] = React.useState("");
+  const { origin, setOrigin, runPostcode, runGeolocate, busy } =
+    useResolveViewerLocation({
+      onResolved: () => {
+        setOpen(false);
+        setPostcode("");
+      },
+    });
 
-  const resolvePc = useServerFn(resolveViewerPostcode);
-  const resolveGeo = useServerFn(resolveViewerLatLng);
 
-  const apply = (o: ViewerOrigin) => {
-    setOrigin(o);
-    setOpen(false);
-    setPostcode("");
-    toast.success(`Searching from ${o.postcode_outward}.`);
-  };
-
-  const postcodeMutation = useMutation({
-    mutationFn: (pc: string) => resolvePc({ data: { postcode: pc } }),
-    onSuccess: (r) =>
-      apply({
-        postcode_outward: r.postcode_outward,
-        town: r.town,
-        latitude: r.latitude,
-        longitude: r.longitude,
-      }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Lookup failed."),
-  });
-
-  const geoMutation = useMutation({
-    mutationFn: async () => {
-      if (typeof navigator === "undefined" || !navigator.geolocation) {
-        throw new Error("Geolocation is not available in this browser.");
-      }
-      const pos = await new Promise<GeolocationPosition>((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 }),
-      );
-      const r = await resolveGeo({
-        data: { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
-      });
-      if (!r) throw new Error("Could not match your location to a UK postcode.");
-      return r;
-    },
-    onSuccess: (r) =>
-      apply({
-        postcode_outward: r.postcode_outward,
-        town: r.town,
-        latitude: r.latitude,
-        longitude: r.longitude,
-      }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Location blocked."),
-  });
-
-  const busy = postcodeMutation.isPending || geoMutation.isPending;
 
   if (origin) {
     return (
@@ -116,7 +69,7 @@ export function ViewerOriginControl() {
             type="button"
             variant="outline"
             className="w-full justify-start gap-2 rounded-[10px] shadow-none"
-            onClick={() => geoMutation.mutate()}
+            onClick={() => runGeolocate()}
             disabled={busy}
           >
             <Crosshair className="h-3.5 w-3.5" />
@@ -130,7 +83,7 @@ export function ViewerOriginControl() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (postcode.trim()) postcodeMutation.mutate(postcode);
+              if (postcode.trim()) runPostcode(postcode);
             }}
             className="flex gap-2"
           >

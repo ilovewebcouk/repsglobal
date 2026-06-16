@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { searchProfessionals } from "@/lib/directory/search.functions";
 import { getProfessionLabel } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+import { searchTaxonomy } from "@/lib/search/taxonomy";
+
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
 import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
@@ -498,10 +500,15 @@ function DirectoryPage() {
                 </label>
               </div>
 
+              {/* Did-you-mean: free-text q with no structured filter */}
+              {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
+
               {/* Viewer origin chip — drives real distance + nearest sort */}
               <div className="mt-3 flex items-center justify-end">
                 <ViewerOriginControl />
               </div>
+
+
 
               {/* Active filter chips */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -1214,4 +1221,34 @@ function compactPagerRange(current: number, total: number): Array<number | "…"
   for (let i = current - window; i <= current + window; i++) out.push(i);
   out.push("…", total);
   return out;
+}
+
+function DidYouMeanBanner({ query }: { query: string }) {
+  const matches = React.useMemo(() => searchTaxonomy(query).slice(0, 4), [query]);
+  if (matches.length === 0) return null;
+  return (
+    <div className="mt-4 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
+      <span className="font-medium">
+        Showing name matches for "{query}".
+      </span>{" "}
+      <span className="text-reps-muted-light">Did you mean:</span>{" "}
+      <span className="inline-flex flex-wrap gap-1.5 align-middle">
+        {matches.map((m) => (
+          <Link
+            key={m.slug}
+            to="/find-a-professional"
+            search={{
+              ...(m.route.profession ? { profession: m.route.profession } : {}),
+              ...(m.route.specialism ? { specialism: m.route.specialism } : {}),
+              page: 1,
+              sort: "recommended",
+            }}
+            className="inline-flex items-center rounded-full border border-reps-orange/40 bg-reps-orange/10 px-2.5 py-0.5 text-[12px] font-medium text-reps-orange transition-colors hover:bg-reps-orange/15"
+          >
+            {m.label}
+          </Link>
+        ))}
+      </span>
+    </div>
+  );
 }
