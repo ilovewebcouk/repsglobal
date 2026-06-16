@@ -317,7 +317,7 @@ export const setProfessionalSuspension = createServerFn({ method: 'POST' })
       _target_id: data.professional_id,
       _before_state: prev,
       _after_state: update,
-      _reason: data.reason,
+      _reason: data.reason ?? undefined,
     });
 
     return { ok: true };
