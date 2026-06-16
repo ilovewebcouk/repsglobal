@@ -305,19 +305,22 @@ const testimonials = [
   },
 ];
 
+const PAGE_SIZE = 24;
+
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { venue: venueFilter, city, profession, specialism, q } = Route.useSearch();
+  const { venue: venueFilter, city, profession, specialism, q, page, sort } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
   const search = useServerFn(searchProfessionals);
-  const { data: livePros = [] } = useQuery({
-    queryKey: ["directory", "search", { city, profession, specialism, q }],
-    queryFn: () => search({ data: { city, profession, specialism, q } }),
+  const { data: liveResult, isPending, isError, refetch } = useQuery({
+    queryKey: ["directory", "search", { city, profession, specialism, q, page }],
+    queryFn: () => search({ data: { city, profession, specialism, q, page, limit: PAGE_SIZE } }),
     staleTime: 60_000,
   });
-
+  const livePros = liveResult?.rows ?? [];
+  const total = liveResult?.total ?? 0;
 
   const liveAsPros: Pro[] = React.useMemo(
     () =>
@@ -337,7 +340,7 @@ function DirectoryPage() {
             role:
               getProfessionLabel(r.primary_profession) ||
               specLabels[0] ||
-              "Personal Trainer",
+              "Fitness Professional",
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
@@ -363,24 +366,20 @@ function DirectoryPage() {
     [livePros],
   );
 
-  const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
-
+  // Live directory only — placeholder seed cards (directoryPros) intentionally hidden.
   const venueFiltered = activeVenue
-    ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
-    : mergedPros;
+    ? liveAsPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : liveAsPros;
 
   // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
   const { origin } = useViewerOrigin();
 
-  // Sort
-  const [sort, setSort] = React.useState<"recommended" | "nearest" | "rating">(
-    "recommended",
-  );
-
   // Fall back to Recommended if origin is cleared while Nearest is selected
   React.useEffect(() => {
-    if (!origin && sort === "nearest") setSort("recommended");
-  }, [origin, sort]);
+    if (!origin && sort === "nearest") {
+      navigate({ search: (prev) => ({ ...prev, sort: "recommended" as const }) });
+    }
+  }, [origin, sort, navigate]);
 
   // Decorate with real miles when origin + coords both exist
   type WithMiles = Pro & { _miles: number | null };
@@ -411,8 +410,30 @@ function DirectoryPage() {
     return arr;
   }, [decorated, sort, origin]);
 
+  const setSort = (next: "recommended" | "nearest" | "rating") =>
+    navigate({ search: (prev) => ({ ...prev, sort: next, page: 1 }) });
+
+  const goToPage = (n: number) =>
+    navigate({ search: (prev) => ({ ...prev, page: n }) });
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
+
+  // Scroll to results on page change
+  const resultsRef = React.useRef<HTMLDivElement | null>(null);
+  const prevPage = React.useRef(page);
+  React.useEffect(() => {
+    if (prevPage.current !== page) {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      prevPage.current = page;
+    }
+  }, [page]);
+
   const clearVenue = () =>
-    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
+    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined, page: 1 }) });
+
+
 
 
   return (
