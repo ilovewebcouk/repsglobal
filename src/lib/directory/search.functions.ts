@@ -152,13 +152,20 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         .in("user_id", allIds)
         .in("status", ["active", "trialing", "past_due"]);
 
+      // NOTE: do NOT pass `.in("professional_id", allIds)` here — when
+      // allIds is large (hundreds of UUIDs) the filter goes into the URL
+      // and exceeds PostgREST's URL length limit, silently returning 0 rows.
+      // The secondary per-page locsRes fetch (max 24 ids) is fine; this
+      // ranking fetch must scan all primary public locations and filter
+      // in-memory by allIds afterward.
+      const allIdSet = new Set(allIds);
       const locsForRank = nearestMode
         ? await supabaseAdmin
             .from("professional_locations")
             .select("professional_id, latitude, longitude")
-            .in("professional_id", allIds)
             .eq("is_primary", true)
             .eq("is_public", true)
+            .limit(5000)
         : { data: null as Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null };
 
       const tierRank = (t: string | null | undefined) =>
