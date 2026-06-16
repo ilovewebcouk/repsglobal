@@ -15,6 +15,9 @@ import { template as enquiryNotification } from './enquiry-notification'
 import { template as proposalSent } from './proposal-sent'
 import { template as supportReply } from './support-reply'
 import { template as supportOutbound } from './support-outbound'
+import { template as professionalInvite } from './professional-invite'
+import { template as professionalSuspended } from './professional-suspended'
+import { template as professionalReinstated } from './professional-reinstated'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'client-invite': clientInvite,
@@ -23,5 +26,8 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'proposal-sent': proposalSent,
   'support-reply': supportReply,
   'support-outbound': supportOutbound,
+  'professional-invite': professionalInvite,
+  'professional-suspended': professionalSuspended,
+  'professional-reinstated': professionalReinstated,
 }
 
