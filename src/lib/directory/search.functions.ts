@@ -186,6 +186,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         }
       }
 
+      console.log("[searchProfessionals] allRows=", (allRows ?? []).length, "locsForRank.data=", (locsForRank.data ?? []).length, "coordById.size=", coordById.size);
 
       const origin = nearestMode
         ? { lat: data.viewer_lat!, lng: data.viewer_lng! }
@@ -219,6 +220,10 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });
+
+      if (origin) {
+        console.log("[searchProfessionals] top5 sorted=", decoratedAll.slice(0, 5).map((x) => ({ id: (x.row as {id:string}).id, d: x.d })));
+      }
 
       rows = decoratedAll.slice(offset, offset + pageSize).map((x) => x.row);
     }
