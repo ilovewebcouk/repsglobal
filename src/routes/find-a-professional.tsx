@@ -900,19 +900,34 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
         {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
         <div className="flex items-start gap-3 sm:block">
           <div className="relative shrink-0">
-            <img
-              src={pro.image}
-              alt={`${pro.name} — ${pro.role}`}
-              className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
-              style={{
-                width: mobilePhotoSize,
-                height: mobilePhotoSize,
-                ["--p" as never]: `${photoSize}px`,
-              }}
-              loading="lazy"
-              width={photoSize * 2}
-              height={photoSize * 2}
-            />
+            {pro.image ? (
+              <img
+                src={pro.image}
+                alt={`${pro.name} — ${pro.role}`}
+                className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+                style={{
+                  width: mobilePhotoSize,
+                  height: mobilePhotoSize,
+                  ["--p" as never]: `${photoSize}px`,
+                }}
+                loading="lazy"
+                width={photoSize * 2}
+                height={photoSize * 2}
+              />
+            ) : (
+              <>
+                <Monogram
+                  name={pro.name}
+                  size={mobilePhotoSize}
+                  className="sm:hidden"
+                />
+                <Monogram
+                  name={pro.name}
+                  size={photoSize}
+                  className="hidden sm:inline-flex"
+                />
+              </>
+            )}
             {pro.featured && (
               <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
                 <Sparkles className="h-3 w-3" />
@@ -928,10 +943,14 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
                 {pro.name}
               </h3>
               <div className="mt-0.5 text-[12px] text-reps-muted-light">{pro.role}</div>
-              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-                <BadgeCheck className="h-3 w-3" />
-                Verified
-              </span>
+              <div className="mt-1.5">
+                <VerificationPill
+                  identityStatus={pro.identity_status}
+                  verification={pro.verification}
+                  tier={pro.tier}
+                  compact
+                />
+              </div>
             </div>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -955,10 +974,11 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
             <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
-            <span className="inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-              <BadgeCheck className="h-3 w-3" />
-              REPS Verified
-            </span>
+            <VerificationPill
+              identityStatus={pro.identity_status}
+              verification={pro.verification}
+              tier={pro.tier}
+            />
           </div>
           <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
 
@@ -983,19 +1003,23 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               {pro.mode}
             </span>
           </div>
-          <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
-            {pro.blurb}
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {pro.tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
+          {pro.blurb && (
+            <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
+              {pro.blurb}
+            </p>
+          )}
+          {pro.tags.length > 0 && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {pro.tags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
           {pro.venues.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
               <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
