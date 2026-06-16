@@ -639,9 +639,23 @@ function proSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: number | null }; ctaLabel?: string }) {
-  const photoSize = pro.featured ? 160 : 112;
-  const mobilePhotoSize = pro.featured ? 96 : 80;
+function formatFromPrice(pence: number | null) {
+  if (pence == null) return null;
+  const pounds = Math.round(pence / 100);
+  return `From £${pounds}/session`;
+}
+
+function ProCard({
+  pro,
+  isClosest = false,
+}: {
+  pro: Pro & { _miles?: number | null };
+  isClosest?: boolean;
+}) {
+  const photoSize = pro.featured ? 144 : 120;
+  const mobilePhotoSize = pro.featured ? 96 : 88;
+  const priceLabel = formatFromPrice(pro.from_price_pence);
+  const showRating = pro.reviews > 0;
 
   return (
     <article
@@ -657,7 +671,8 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
           className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-reps-orange to-reps-orange-dark"
         />
       )}
-      <div className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-5 sm:[grid-template-columns:var(--cols)]"
+      <div
+        className="flex flex-col gap-4 sm:grid sm:items-center sm:gap-4 sm:[grid-template-columns:var(--cols)]"
         style={{ ["--cols" as never]: `${photoSize}px 1fr auto` }}
       >
         {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
@@ -667,7 +682,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               <img
                 src={pro.image}
                 alt={`${pro.name} — ${pro.role}`}
-                className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+                className="rounded-[16px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
                 style={{
                   width: mobilePhotoSize,
                   height: mobilePhotoSize,
@@ -692,9 +707,15 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               </>
             )}
             {pro.featured && (
-              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white sm:left-2 sm:top-2">
                 <Sparkles className="h-3 w-3" />
                 Featured
+              </span>
+            )}
+            {isClosest && !pro.featured && (
+              <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-charcoal px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white sm:left-2 sm:top-2">
+                <MapPin className="h-3 w-3" />
+                Closest
               </span>
             )}
           </div>
@@ -734,7 +755,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
         <div className="min-w-0">
           {/* Desktop heading (hidden on mobile, shown sm+) */}
           <div className="hidden flex-wrap items-center gap-2 sm:flex">
-            <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
+            <h3 className="font-display text-[17px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
             <VerificationPill
@@ -742,19 +763,27 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               verification={pro.verification}
               tier={pro.tier}
             />
+            {!showRating && pro.live && (
+              <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-700">
+                New on REPs
+              </span>
+            )}
           </div>
-          <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
+          <div className="mt-0.5 hidden text-[12.5px] text-reps-muted-light sm:block">{pro.role}</div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-reps-muted-light sm:mt-1.5 sm:text-[13px]">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[12.5px] text-reps-muted-light sm:text-[12.5px]">
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
-              {pro._miles != null && pro.town
-                ? `${pro.town} · ${formatMiles(pro._miles)}`
-                : pro.town ?? pro.distance}
+              {pro._miles != null && pro.town ? (
+                <>
+                  {pro.town} ·{" "}
+                  <span className="font-semibold text-reps-charcoal">{formatMiles(pro._miles)}</span>
+                </>
+              ) : (
+                pro.town ?? pro.distance
+              )}
             </span>
-            {pro.live && pro.reviews === 0 ? (
-              <span className="text-reps-muted-light/80">No reviews yet</span>
-            ) : (
+            {showRating && (
               <span className="flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
                 <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
@@ -765,18 +794,21 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
             </span>
+            {priceLabel && (
+              <span className="font-semibold text-reps-charcoal">{priceLabel}</span>
+            )}
           </div>
           {pro.blurb && (
-            <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
+            <p className="mt-1.5 line-clamp-1 max-w-[560px] text-[13px] leading-snug text-reps-charcoal/80 lg:line-clamp-2">
               {pro.blurb}
             </p>
           )}
           {pro.tags.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {pro.tags.map((t) => (
                 <span
                   key={t}
-                  className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
+                  className="rounded-full border border-reps-stone bg-reps-ivory px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
                 >
                   {t}
                 </span>
@@ -784,8 +816,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
             </div>
           )}
           {pro.gyms.length > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
-              <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
               <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
                 Trains at
               </span>
@@ -826,7 +857,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
-            {ctaLabel}
+            View profile
           </Link>
         </div>
 
@@ -836,7 +867,7 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
           params={{ slug: pro.slug ?? proSlug(pro.name) }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
-          {ctaLabel}
+          View profile
         </Link>
       </div>
     </article>
