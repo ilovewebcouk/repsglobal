@@ -124,16 +124,17 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let total: number;
 
     // Unified ranking: pull all matching candidates (cap 1000), enrich with
-    // tier / verification / avatar / coords, sort in-memory, then page-slice.
+    // tier / verification / coords, sort in-memory, then page-slice.
     //
     // Default sort (no origin):
-    //   verified -> hasAvatar -> paid tier -> quality -> recency
+    //   verified -> quality -> paid tier -> recency
     // Nearest sort (origin set):
-    //   distance (1-mile bucket) -> verified -> hasAvatar -> paid tier ->
-    //   quality -> raw distance -> recency
+    //   distance (1-mile bucket) -> verified -> quality -> paid tier ->
+    //   raw distance -> recency
     //
-    // Avatar-bumps-no-avatar applies only within the same verification tier —
-    // an unverified pro with an image NEVER outranks a verified pro without one.
+    // Avatar presence is NOT a discrete tier here — it's already weighted
+    // inside `quality_score` (+15 if avatar set, see compute_pro_quality_score).
+    // Paid tier is a tie-break only, never a primary signal.
     {
       const { data: allRows, error, count } = await qb
         .order("updated_at", { ascending: false })
