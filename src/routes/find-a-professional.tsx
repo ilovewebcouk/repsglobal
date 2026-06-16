@@ -395,6 +395,7 @@ function DirectoryPage() {
     min_rating,
     radius_mi,
     sort,
+    view,
   };
 
   const countLabel = activeVenue
