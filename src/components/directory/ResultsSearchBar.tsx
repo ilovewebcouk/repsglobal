@@ -103,6 +103,7 @@ export type ResultsBarState = {
   city?: string;
   venue?: string;
   mode: ResultsBarMode;
+  verified: boolean;
   min_rating: number; // 0 = any
   radius_mi: number; // 0 = any
   sort: ResultsBarSort;
@@ -133,7 +134,7 @@ export function ResultsSearchBar({
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
-            if (v == null || v === "" || v === "any" || v === 0) delete next[k];
+            if (v == null || v === "" || v === "any" || v === 0 || v === false) delete next[k];
           }
           // Defaults that should not appear in the URL.
           // (sort default is "recommended" — see validateSearch in find-a-professional.tsx)
@@ -148,6 +149,7 @@ export function ResultsSearchBar({
 
   const activeFilterCount =
     (state.mode !== "any" ? 1 : 0) +
+    (state.verified ? 1 : 0) +
     (state.min_rating > 0 ? 1 : 0) +
     (state.radius_mi > 0 ? 1 : 0) +
     (state.venue ? 1 : 0);
