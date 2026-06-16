@@ -303,8 +303,9 @@ function DirectoryPage() {
       )
     : liveAsPros;
 
-  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
-  const { origin } = useViewerOrigin();
+  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort.
+  // Already pulled above as `viewerOriginEarly` for the query key; alias for clarity.
+  const origin = viewerOriginEarly;
 
   // No fallback: "Nearest" is the default sort. When viewer has no origin,
   // server-side quality ranking applies (the client-side .sort() is a no-op
