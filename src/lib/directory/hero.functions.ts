@@ -35,12 +35,14 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
     const result: HeroAvatar[] = [];
     for (const p of pros) {
       const prof = profMap.get(p.id);
-      if (!prof?.avatar_url || !prof?.full_name) continue;
+      const avatar = prof?.avatar_url ?? null;
+      const name = prof?.full_name ?? null;
+      if (!avatar || !name) continue;
       result.push({
         id: p.id,
         slug: p.slug,
-        full_name: prof.full_name,
-        avatar_url: prof.avatar_url,
+        full_name: name,
+        avatar_url: avatar,
         city: p.city,
       });
       if (result.length >= 12) break;
