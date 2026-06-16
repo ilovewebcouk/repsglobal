@@ -171,11 +171,87 @@ export function ResultsSearchBar({
   return (
     <div
       className={cn(
-        "sticky top-[72px] z-30 bg-reps-warm-white/95 backdrop-blur-md transition-shadow",
+        "sticky top-[72px] z-30 transition-shadow",
+        // Mobile: dark chrome to match the chosen direction.
+        // Desktop: light, sticky over ivory.
+        "bg-reps-bg-deep lg:bg-reps-warm-white/95 lg:backdrop-blur-md",
         scrolled && "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]",
       )}
     >
-      <div className="mx-auto max-w-[1320px] px-4 py-2.5 sm:px-6 lg:px-10 lg:py-3">
+      {/* ============================== MOBILE (< lg) ============================== */}
+      <div className="lg:hidden">
+        {/* Dark search block — two stacked full-width inputs */}
+        <div className="px-4 pt-3 pb-3">
+          <div className="flex flex-col gap-2">
+            <WhatChip
+              variant="mobile-input"
+              label={whatLabel}
+              onPick={(entry) =>
+                patch({
+                  profession: entry?.route.profession,
+                  specialism: entry?.route.specialism,
+                  q: undefined,
+                })
+              }
+              onFreeText={(t) =>
+                patch({ q: t, profession: undefined, specialism: undefined })
+              }
+              onClear={() =>
+                patch({ profession: undefined, specialism: undefined, q: undefined })
+              }
+            />
+            <WhereChip
+              variant="mobile-input"
+              label={whereLabel}
+              origin={origin}
+              currentCity={state.city}
+              onCity={(c) => patch({ city: c, sort: "nearest" })}
+              onOriginSet={() => patch({ sort: "nearest" })}
+              onClear={() => patch({ city: undefined })}
+            />
+          </div>
+        </div>
+
+        {/* Filters / Sort split bar */}
+        <div className="grid grid-cols-2 border-t border-white/10">
+          <MobileFiltersSheet
+            variant="split-bar"
+            state={state}
+            originAvailable={Boolean(origin)}
+            activeCount={activeFilterCount}
+            onChange={patch}
+          />
+          <div className="border-l border-white/10">
+            <MobileSortButton
+              value={state.sort === "nearest" && !origin ? "recommended" : state.sort}
+              originAvailable={Boolean(origin)}
+              onChange={(s) => patch({ sort: s })}
+            />
+          </div>
+        </div>
+
+        {/* Active filter chips */}
+        {activeFilterCount > 0 || state.q || state.profession || state.specialism ? (
+          <div className="border-t border-white/10 bg-reps-bg-deep">
+            <ActiveChipsRow
+              state={state}
+              total={total}
+              onClear={patch}
+              variant="mobile-dark"
+            />
+          </div>
+        ) : null}
+
+        {/* Result count strip */}
+        <div className="border-y border-reps-stone bg-reps-warm-white px-4 py-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-reps-muted-light">
+            {total.toLocaleString()} {total === 1 ? "result" : "results"} found
+          </p>
+        </div>
+      </div>
+
+      {/* ============================== DESKTOP (lg+) ============================== */}
+      <div className="mx-auto hidden max-w-[1320px] px-4 py-2.5 sm:px-6 lg:block lg:px-10 lg:py-3">
         {/* Row 1 — Search chips */}
         <div className="flex flex-wrap items-center gap-2">
           <WhatChip
@@ -199,14 +275,11 @@ export function ResultsSearchBar({
             label={whereLabel}
             origin={origin}
             currentCity={state.city}
-            // Setting any origin (city, postcode, geo) forces sort→nearest so
-            // the list immediately re-ranks by distance.
             onCity={(c) => patch({ city: c, sort: "nearest" })}
             onOriginSet={() => patch({ sort: "nearest" })}
             onClear={() => patch({ city: undefined })}
           />
 
-          {/* Desktop: inline mode toggle. Mobile: hidden, lives in sheet. */}
           <div className="hidden lg:block">
             <ModeToggle
               value={state.mode}
@@ -214,7 +287,6 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Desktop filters popover (rating + radius + venue) */}
           <div className="hidden lg:block">
             <FiltersPopover
               state={state}
@@ -224,17 +296,6 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Mobile: single filters sheet (everything) */}
-          <div className="lg:hidden">
-            <MobileFiltersSheet
-              state={state}
-              originAvailable={Boolean(origin)}
-              activeCount={activeFilterCount}
-              onChange={patch}
-            />
-          </div>
-
-          {/* Right side: view toggle (desktop) + sort */}
           <div className="ml-auto flex items-center gap-3">
             <ViewToggle
               value={state.view}
@@ -248,12 +309,51 @@ export function ResultsSearchBar({
           </div>
         </div>
 
-        {/* Row 2 — Active filter chips, only when something is set beyond defaults */}
         {activeFilterCount > 0 || state.q || state.profession || state.specialism ? (
           <ActiveChipsRow state={state} total={total} onClear={patch} />
         ) : null}
       </div>
     </div>
+  );
+}
+
+/* ===================================================== MobileSortButton */
+
+const SORT_LABELS: Record<ResultsBarSort, string> = {
+  recommended: "Recommended",
+  nearest: "Nearest",
+  rating: "Highest rated",
+  most_reviewed: "Most reviewed",
+  newest: "Newest",
+};
+
+function MobileSortButton({
+  value,
+  originAvailable,
+  onChange,
+}: {
+  value: ResultsBarSort;
+  originAvailable: boolean;
+  onChange: (s: ResultsBarSort) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as ResultsBarSort)}>
+      <SelectTrigger
+        className="h-12 w-full justify-center gap-2 rounded-none border-0 bg-transparent px-4 text-[13.5px] font-medium text-white shadow-none hover:bg-white/5 focus:ring-0 [&>svg:last-child]:hidden"
+      >
+        <ArrowUpDown className="size-4 text-white/60" />
+        <span>{SORT_LABELS[value]}</span>
+      </SelectTrigger>
+      <SelectContent className="rounded-[12px]">
+        <SelectGroup>
+          {originAvailable && <SelectItem value="nearest">Nearest</SelectItem>}
+          <SelectItem value="recommended">Recommended</SelectItem>
+          <SelectItem value="rating">Highest rated</SelectItem>
+          <SelectItem value="most_reviewed">Most reviewed</SelectItem>
+          <SelectItem value="newest">Newest</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
 
