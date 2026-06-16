@@ -397,10 +397,6 @@ function DirectoryPage() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
 
-      {/* Header is fixed 72px — reserve that height so content starts below it,
-          then the sticky search bar mounts immediately and visually butts up
-          to the header at scroll-top. */}
-      <div className="h-[72px]" aria-hidden />
 
       <ResultsSearchBar state={barState} total={visibleTotal} countLabel={countLabel} />
 

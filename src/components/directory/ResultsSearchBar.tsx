@@ -163,9 +163,7 @@ export function ResultsSearchBar({
     <div
       className={cn(
         "sticky top-[72px] z-30 bg-reps-warm-white/95 backdrop-blur-md transition-shadow",
-        scrolled
-          ? "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]"
-          : "border-b border-reps-stone/70",
+        scrolled && "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]",
       )}
     >
       <div className="mx-auto max-w-[1320px] px-4 py-2.5 sm:px-6 lg:px-10 lg:py-3">
