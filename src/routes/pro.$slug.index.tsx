@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowLeft,
   Award,
   BadgeCheck,
   Bookmark,
@@ -281,18 +282,6 @@ function ProProfilePage() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
 
-      {/* Breadcrumb */}
-      <div className="border-b border-reps-border-soft/70 bg-reps-warm-white">
-        <div className="mx-auto max-w-[1320px] px-6 py-3.5 lg:px-10">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] tracking-wide text-reps-muted">
-            <Link to="/" className="hover:text-reps-charcoal transition-colors">Home</Link>
-            <ChevronRight className="h-2.5 w-2.5 opacity-35" />
-            <Link to="/find-a-professional" className="hover:text-reps-charcoal transition-colors">Find a Professional</Link>
-            <ChevronRight className="h-2.5 w-2.5 opacity-35" />
-            <span className="text-reps-charcoal">{pro.name}</span>
-          </nav>
-        </div>
-      </div>
 
       {/* ============ HERO ============ */}
       <section className="bg-reps-warm-white">
@@ -315,6 +304,13 @@ function ProProfilePage() {
 
             {/* Right info */}
             <div className="flex flex-col">
+              <Link
+                to="/find-a-professional"
+                className="mb-3 inline-flex items-center gap-1 text-[12px] text-reps-muted transition-colors hover:text-reps-charcoal"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Directory
+              </Link>
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
                 <BadgeCheck className="h-3 w-3" />
                 REPS Verified
