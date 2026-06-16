@@ -32,8 +32,9 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VENUES } from "@/components/marketing/VenueWordmarks";
+import { Monogram } from "@/components/directory/Monogram";
+import { VerificationPill } from "@/components/directory/VerificationPill";
 
-import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
@@ -121,9 +122,11 @@ type Pro = {
   rating: number;
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
-  tags: [string, string, string];
+  /** Real specialism labels — empty array when the pro hasn't set any yet. */
+  tags: string[];
   blurb: string;
-  image: string;
+  /** null → render Monogram fallback. Never substitute another pro's photo. */
+  image: string | null;
   /** Independent — REPS professionals choose where they train clients. */
   venues: ProVenue[];
   featured?: boolean;
@@ -131,145 +134,11 @@ type Pro = {
   slug?: string;
   /** True for rows pulled from the DB (vs static visual seed data). */
   live?: boolean;
+  /** Trust-state plumbing for VerificationPill. */
+  identity_status?: string | null;
+  verification?: string | null;
+  tier?: "studio" | "pro" | "verified" | "free";
 };
-
-const directoryPros: Pro[] = [
-  {
-    name: "James Wilson",
-    role: "Personal Trainer",
-    distance: "Mayfair · 0.8 mi",
-    town: "Mayfair",
-    coords: { latitude: 51.5083, longitude: -0.1521 },
-    rating: 5.0,
-    reviews: 128,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Fat Loss", "Health & Fitness"],
-    blurb: "Helping busy professionals build strength, improve fitness and feel their best.",
-    image: proJames,
-    venues: [
-      { slug: "third-space", branch: "Mayfair" },
-      { slug: "virgin-active", branch: "Mayfair" },
-    ],
-    featured: true,
-  },
-  {
-    name: "Sophie Taylor",
-    role: "Pilates Instructor",
-    distance: "Marylebone · 1.2 mi",
-    town: "Marylebone",
-    coords: { latitude: 51.5226, longitude: -0.1571 },
-    rating: 5.0,
-    reviews: 96,
-    mode: "In-person & Online",
-    tags: ["Pilates", "Posture", "Core Strength"],
-    blurb: "Pilates for strength, mobility and long-term wellness. All levels welcome.",
-    image: proSophie,
-    venues: [
-      { slug: "nuffield-health", branch: "Marylebone" },
-      { slug: "david-lloyd", branch: "Kensington" },
-    ],
-  },
-  {
-    name: "Liam Roberts",
-    role: "Strength Coach",
-    distance: "Soho · 1.5 mi",
-    town: "Soho",
-    coords: { latitude: 51.5136, longitude: -0.1318 },
-    rating: 4.9,
-    reviews: 74,
-    mode: "In-person",
-    tags: ["Strength Training", "Performance", "Muscle Building"],
-    blurb: "Build strength, move better and perform at your best.",
-    image: proDaniel,
-    venues: [
-      { slug: "puregym", branch: "Soho" },
-      { slug: "gym-group", branch: "Victoria" },
-    ],
-  },
-  {
-    name: "Priya Sharma",
-    role: "Nutritionist",
-    distance: "Fitzrovia · 2.1 mi",
-    town: "Fitzrovia",
-    coords: { latitude: 51.5202, longitude: -0.1392 },
-    rating: 5.0,
-    reviews: 112,
-    mode: "Online",
-    tags: ["Nutrition", "Weight Management", "Healthy Eating"],
-    blurb: "Science-based nutrition advice to help you build healthy habits and feel your best.",
-    image: proLaura,
-    venues: [],
-  },
-  {
-    name: "Daniel Hughes",
-    role: "Personal Trainer",
-    distance: "Covent Garden · 2.3 mi",
-    town: "Covent Garden",
-    coords: { latitude: 51.5117, longitude: -0.124 },
-    rating: 4.8,
-    reviews: 64,
-    mode: "In-person & Online",
-    tags: ["Functional Training", "Fat Loss", "Lifestyle Coaching"],
-    blurb: "Functional training and lifestyle coaching for long-term results.",
-    image: proJames,
-    venues: [
-      { slug: "anytime-fitness", branch: "Covent Garden" },
-      { slug: "puregym", branch: "Holborn" },
-    ],
-  },
-  {
-    name: "Emily Carter",
-    role: "Pilates Instructor",
-    distance: "Bloomsbury · 2.4 mi",
-    town: "Bloomsbury",
-    coords: { latitude: 51.5226, longitude: -0.1278 },
-    rating: 5.0,
-    reviews: 88,
-    mode: "In-person",
-    tags: ["Pilates", "Reformer Pilates", "Posture"],
-    blurb: "Reformer and mat Pilates to improve strength, flexibility and posture.",
-    image: proSophie,
-    venues: [
-      { slug: "third-space", branch: "Tower Bridge" },
-      { slug: "bannatyne", branch: "Russell Square" },
-    ],
-  },
-  {
-    name: "Marcus Lee",
-    role: "Strength Coach",
-    distance: "Holborn · 2.6 mi",
-    town: "Holborn",
-    coords: { latitude: 51.5174, longitude: -0.1182 },
-    rating: 4.9,
-    reviews: 51,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Athletic Performance", "Powerlifting"],
-    blurb: "Strength and conditioning for athletes and everyday lifters.",
-    image: proDaniel,
-    venues: [
-      { slug: "puregym", branch: "Holborn" },
-      { slug: "gym-group", branch: "Farringdon" },
-      { slug: "virgin-active", branch: "Barbican" },
-    ],
-  },
-  {
-    name: "Hannah Thompson",
-    role: "Pre & Postnatal Specialist",
-    distance: "Clerkenwell · 3.0 mi",
-    town: "Clerkenwell",
-    coords: { latitude: 51.5247, longitude: -0.1063 },
-    rating: 5.0,
-    reviews: 77,
-    mode: "In-person & Online",
-    tags: ["Pre & Postnatal", "Pelvic Health", "Core Recovery"],
-    blurb: "Support for every stage of pregnancy and postpartum recovery.",
-    image: proLaura,
-    venues: [
-      { slug: "david-lloyd", branch: "Islington" },
-      { slug: "nuffield-health", branch: "City" },
-    ],
-  },
-];
 
 const trustItems = [
   { icon: ShieldCheck, title: "REPS Verified", sub: "Qualifications & insurance check" },
@@ -325,7 +194,7 @@ function DirectoryPage() {
   const liveAsPros: Pro[] = React.useMemo(
     () =>
       livePros
-        .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
+        .filter((r) => r.slug)
         .map((r) => {
           const town = r.location?.town ?? r.location?.postcode_outward ?? r.city ?? null;
           const coords =
@@ -335,12 +204,10 @@ function DirectoryPage() {
           const specLabels = (r.specialisms ?? [])
             .map((s) => getSpecialismLabel(s) ?? s)
             .filter(Boolean) as string[];
+          const professionLabel = getProfessionLabel(r.primary_profession);
           return {
-            name: r.full_name || "REPS Professional",
-            role:
-              getProfessionLabel(r.primary_profession) ||
-              specLabels[0] ||
-              "Fitness Professional",
+            name: r.full_name || "REPs Professional",
+            role: professionLabel || specLabels[0] || "Fitness Professional",
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
@@ -351,16 +218,16 @@ function DirectoryPage() {
               : r.online_available
                 ? "Online" as const
                 : "In-person" as const,
-            tags: [
-              specLabels[0] || "Health & Fitness",
-              specLabels[1] || "Strength Training",
-              specLabels[2] || "Conditioning",
-            ] as [string, string, string],
-            blurb: r.headline || "REPS-verified professional.",
-            image: r.avatar_url || proJames,
+            // Only real specialism labels — no placeholder fallbacks.
+            tags: specLabels.slice(0, 3),
+            blurb: r.headline || "",
+            image: r.avatar_url ?? null,
             venues: [],
             slug: r.slug ?? undefined,
             live: true,
+            identity_status: r.identity_status,
+            verification: r.verification,
+            tier: r.tier,
           };
         }),
     [livePros],
@@ -609,7 +476,7 @@ function DirectoryPage() {
                       ? "Independent REPS-verified — not affiliated with the gym shown"
                       : total === 0
                         ? "No results yet"
-                        : `Showing ${rangeStart}–${rangeEnd} · all REPS Verified`}
+                        : `Showing ${rangeStart}–${rangeEnd}`}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -1033,19 +900,34 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
         {/* TOP: photo + heading + save (mobile inline; sm grid cell) */}
         <div className="flex items-start gap-3 sm:block">
           <div className="relative shrink-0">
-            <img
-              src={pro.image}
-              alt={`${pro.name} — ${pro.role}`}
-              className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
-              style={{
-                width: mobilePhotoSize,
-                height: mobilePhotoSize,
-                ["--p" as never]: `${photoSize}px`,
-              }}
-              loading="lazy"
-              width={photoSize * 2}
-              height={photoSize * 2}
-            />
+            {pro.image ? (
+              <img
+                src={pro.image}
+                alt={`${pro.name} — ${pro.role}`}
+                className="rounded-[12px] object-cover sm:!h-[var(--p)] sm:!w-[var(--p)]"
+                style={{
+                  width: mobilePhotoSize,
+                  height: mobilePhotoSize,
+                  ["--p" as never]: `${photoSize}px`,
+                }}
+                loading="lazy"
+                width={photoSize * 2}
+                height={photoSize * 2}
+              />
+            ) : (
+              <>
+                <Monogram
+                  name={pro.name}
+                  size={mobilePhotoSize}
+                  className="sm:hidden"
+                />
+                <Monogram
+                  name={pro.name}
+                  size={photoSize}
+                  className="hidden sm:inline-flex"
+                />
+              </>
+            )}
             {pro.featured && (
               <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm sm:left-2 sm:top-2">
                 <Sparkles className="h-3 w-3" />
@@ -1061,10 +943,14 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
                 {pro.name}
               </h3>
               <div className="mt-0.5 text-[12px] text-reps-muted-light">{pro.role}</div>
-              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-                <BadgeCheck className="h-3 w-3" />
-                Verified
-              </span>
+              <div className="mt-1.5">
+                <VerificationPill
+                  identityStatus={pro.identity_status}
+                  verification={pro.verification}
+                  tier={pro.tier}
+                  compact
+                />
+              </div>
             </div>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1088,10 +974,11 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
             <h3 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
               {pro.name}
             </h3>
-            <span className="inline-flex items-center gap-1 rounded-full bg-reps-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-              <BadgeCheck className="h-3 w-3" />
-              REPS Verified
-            </span>
+            <VerificationPill
+              identityStatus={pro.identity_status}
+              verification={pro.verification}
+              tier={pro.tier}
+            />
           </div>
           <div className="mt-0.5 hidden text-[13px] text-reps-muted-light sm:block">{pro.role}</div>
 
@@ -1116,19 +1003,23 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               {pro.mode}
             </span>
           </div>
-          <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
-            {pro.blurb}
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {pro.tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
+          {pro.blurb && (
+            <p className="mt-2 max-w-[460px] text-[13px] leading-snug text-reps-charcoal/80">
+              {pro.blurb}
+            </p>
+          )}
+          {pro.tags.length > 0 && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {pro.tags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-reps-stone bg-reps-ivory px-2.5 py-1 text-[11px] font-medium text-reps-charcoal"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
           {pro.venues.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
               <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
@@ -1302,12 +1193,25 @@ function PagerBtn({
 
 function compactPagerRange(current: number, total: number): Array<number | "…"> {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const out: Array<number | "…"> = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  if (start > 2) out.push("…");
-  for (let i = start; i <= end; i++) out.push(i);
-  if (end < total - 1) out.push("…");
-  out.push(total);
+  const out: Array<number | "…"> = [];
+  const window = 1; // pages either side of current
+  const head = current <= 4;
+  const tail = current >= total - 3;
+
+  if (head) {
+    for (let i = 1; i <= 5; i++) out.push(i);
+    out.push("…");
+    out.push(total);
+    return out;
+  }
+  if (tail) {
+    out.push(1);
+    out.push("…");
+    for (let i = total - 4; i <= total; i++) out.push(i);
+    return out;
+  }
+  out.push(1, "…");
+  for (let i = current - window; i <= current + window; i++) out.push(i);
+  out.push("…", total);
   return out;
 }
