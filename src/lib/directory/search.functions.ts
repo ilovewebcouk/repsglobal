@@ -24,20 +24,24 @@ export type SearchProfessionalsResult = {
 };
 
 const COLS =
-  "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available, updated_at";
+  "id, slug, headline, bio, primary_profession, specialisms, city, country, hourly_rate_pence, verification, identity_status, in_person_available, online_available, bd_seed_thin, quality_score, updated_at";
 
 export type SearchProfessionalRow = {
   id: string;
   slug: string | null;
   headline: string | null;
+  bio: string | null;
   primary_profession: string | null;
   specialisms: string[];
   city: string | null;
   country: string | null;
   hourly_rate_pence: number | null;
-  verification_status: string | null;
+  verification: string | null;
+  identity_status: string | null;
   in_person_available: boolean | null;
   online_available: boolean | null;
+  bd_seed_thin: boolean | null;
+  quality_score: number | null;
   full_name: string | null;
   avatar_url: string | null;
   tier: "studio" | "pro" | "verified" | "free";
@@ -74,13 +78,20 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       qb = qb.or(`headline.ilike.%${term}%,slug.ilike.%${term}%`);
     }
 
+    // Server-side ranking: profile quality (photo / verification / completeness / tier),
+    // tiebreak by recency. Pagination then uses this stable order.
     const { data: rows, error, count } = await qb
+      .order("quality_score", { ascending: false })
       .order("updated_at", { ascending: false })
       .range(offset, offset + pageSize - 1);
 
     if (error) throw error;
     const total = count ?? 0;
-    const list = (rows ?? []) as Array<Omit<SearchProfessionalRow, "full_name" | "avatar_url" | "tier" | "location"> & { specialisms: string[] | null }>;
+    const list = (rows ?? []) as Array<
+      Omit<SearchProfessionalRow, "full_name" | "avatar_url" | "tier" | "location"> & {
+        specialisms: string[] | null;
+      }
+    >;
     const ids = list.map((r) => r.id);
 
     if (!ids.length) return { rows: [], total, page, pageSize };
@@ -100,12 +111,8 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         .in("status", ["active", "trialing", "past_due"]),
     ]);
 
-    const profileById = new Map(
-      (profilesRes.data ?? []).map((p) => [p.id, p]),
-    );
-    const locById = new Map(
-      (locsRes.data ?? []).map((l) => [l.professional_id, l]),
-    );
+    const profileById = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
+    const locById = new Map((locsRes.data ?? []).map((l) => [l.professional_id, l]));
     const tierById = new Map<string, "studio" | "pro" | "verified" | "free">();
     for (const s of subsRes.data ?? []) {
       const t = s.tier as "studio" | "pro" | "verified" | "free" | null;
@@ -135,11 +142,6 @@ export const searchProfessionals = createServerFn({ method: "GET" })
           : null,
       };
     });
-
-    // Tier-sort: studio > pro > verified > free; within tier preserve recency.
-    const rank = (t: SearchProfessionalRow["tier"]) =>
-      t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
-    decorated.sort((a, b) => rank(b.tier) - rank(a.tier));
 
     return { rows: decorated, total, page, pageSize };
   });
