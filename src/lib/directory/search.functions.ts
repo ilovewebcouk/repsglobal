@@ -178,6 +178,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       }
       const coordById = new Map<string, { lat: number; lng: number }>();
       for (const l of locsForRank.data ?? []) {
+        if (!allIdSet.has(l.professional_id)) continue;
         if (l.latitude != null && l.longitude != null) {
           coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
         }
