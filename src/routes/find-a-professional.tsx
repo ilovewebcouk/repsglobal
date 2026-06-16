@@ -392,14 +392,14 @@ function DirectoryPage() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
 
-      {/* Spacer so sticky search bar sits flush under the transparent header */}
+      {/* Spacer so sticky search bar sits flush under the solid header */}
       <div className="h-[72px]" aria-hidden />
 
       <ResultsSearchBar state={barState} total={total} countLabel={countLabel} />
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1100px] px-5 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-[1100px] px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-14 lg:pt-5">
           <div ref={resultsRef}>
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
@@ -440,23 +440,19 @@ function DirectoryPage() {
             ) : visiblePros.length === 0 ? (
               <EmptyResults />
             ) : (
-              <div className="space-y-4 pt-5">
+              <div className="space-y-3 pt-2 sm:pt-3">
                 {visiblePros.slice(0, 4).map((p, i) => (
                   <ProCard
                     key={p.slug ?? p.name}
                     pro={p}
-                    ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
+                    isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
                   />
                 ))}
 
                 {visiblePros.length > 4 && <EditorialBreak />}
 
-                {visiblePros.slice(4).map((p, i) => (
-                  <ProCard
-                    key={p.slug ?? p.name}
-                    pro={p}
-                    ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
-                  />
+                {visiblePros.slice(4).map((p) => (
+                  <ProCard key={p.slug ?? p.name} pro={p} />
                 ))}
               </div>
             )}
