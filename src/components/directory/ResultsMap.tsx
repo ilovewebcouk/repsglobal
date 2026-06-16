@@ -177,9 +177,10 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
 
     if (!origin) {
       // No location set → don't zoom to global pros (that's how we end up
-      // viewing the whole world). Hold a steady regional default.
-      map.setCenter({ lat: 54.5, lng: -2.5 });
-      map.setZoom(5);
+      // viewing the whole world). Hold a steady UK-centered view that
+      // reads well on both mobile and desktop without showing Europe.
+      map.setCenter({ lat: 54.2, lng: -2.5 });
+      map.setZoom(6);
     } else if (pinList.length === 0) {
       // Origin set but nothing nearby — center on origin at city zoom.
       map.setCenter({ lat: origin.latitude, lng: origin.longitude });
