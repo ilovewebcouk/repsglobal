@@ -90,6 +90,26 @@ function AdminMigrationPage() {
     queryFn: () => fetchStats(),
   });
 
+  const fetchSeedStats = useServerFn(getBdSeedStats);
+  const { data: seedStats, refetch: refetchSeed } = useQuery({
+    queryKey: ["admin", "bd-seed", "stats"],
+    queryFn: () => fetchSeedStats(),
+  });
+
+  const seedFn = useServerFn(seedBdDirectory);
+  const queryClient = useQueryClient();
+  const [lastSeedResult, setLastSeedResult] = useState<BdSeedBatchResult | null>(null);
+  const seedMutation = useMutation({
+    mutationFn: (vars: { limit: number; dryRun?: boolean }) =>
+      seedFn({ data: vars }),
+    onSuccess: (res) => {
+      setLastSeedResult(res);
+      refetchSeed();
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin", "bd-migration"] });
+    },
+  });
+
   const s = data;
   const total = s?.total ?? 0;
   const activated = s ? s.claim.claimed : 0;
