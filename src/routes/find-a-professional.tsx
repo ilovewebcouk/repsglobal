@@ -113,11 +113,10 @@ export const Route = createFileRoute("/find-a-professional")({
 });
 
 
-type ProVenue = {
-  /** Matches a slug in @/components/marketing/VenueWordmarks VENUES. */
-  slug: string;
-  /** Neighbourhood/branch label shown next to the gym name. */
-  branch: string;
+type ProGymPill = {
+  id: string;
+  name: string;
+  branch: string | null;
 };
 
 type Pro = {
@@ -137,8 +136,12 @@ type Pro = {
   blurb: string;
   /** null → render Monogram fallback. Never substitute another pro's photo. */
   image: string | null;
-  /** Independent — REPS professionals choose where they train clients. */
-  venues: ProVenue[];
+  /** Real gym pills from professional_gyms. */
+  gyms: ProGymPill[];
+  /** Lowest published service price in pence. */
+  from_price_pence: number | null;
+  /** ISO timestamp — drives "Newest" sort. */
+  created_at: string | null;
   featured?: boolean;
   /** Override slug for live DB pros — otherwise derived from name. */
   slug?: string;
