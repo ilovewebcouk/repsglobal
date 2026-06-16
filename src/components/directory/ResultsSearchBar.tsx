@@ -652,25 +652,56 @@ function WhereChip({
     setText("");
   };
 
+  const isMobileInput = variant === "mobile-input";
+
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
-        label
-          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
-          : "border-reps-stone hover:border-reps-orange/40",
+        isMobileInput
+          ? "relative w-full"
+          : cn(
+              "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+              label
+                ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+                : "border-reps-stone hover:border-reps-orange/40",
+            ),
       )}
     >
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
-        >
-          <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
-          <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
-          {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
-        </button>
+        {isMobileInput ? (
+          <button
+            type="button"
+            className="flex h-12 w-full items-center gap-2.5 rounded-[12px] border border-white/10 bg-white/[0.06] px-3.5 text-left text-[14px] font-medium text-white transition-colors hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-reps-orange/60"
+          >
+            <MapPin className="size-4 shrink-0 text-white/50" />
+            <span className={cn("flex-1 truncate", !label && "text-white/45")}>
+              {label ?? "City or postcode"}
+            </span>
+            {label ? (
+              <span
+                role="button"
+                aria-label="Clear location"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearAll();
+                }}
+                className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+              >
+                <X className="size-3" />
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
+          >
+            <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
+            <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
+            {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
+          </button>
+        )}
       </PopoverTrigger>
 
       <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-3">
