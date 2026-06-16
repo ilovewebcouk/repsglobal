@@ -133,7 +133,8 @@ export function ResultsSearchBar({
             if (v == null || v === "" || v === "any" || v === 0) delete next[k];
           }
           // Defaults that should not appear in the URL.
-          if (next.sort === "nearest") delete next.sort;
+          // (sort default is "recommended" — see validateSearch in find-a-professional.tsx)
+          if (next.sort === "recommended") delete next.sort;
           if (next.view === "list") delete next.view;
           return next;
         },
