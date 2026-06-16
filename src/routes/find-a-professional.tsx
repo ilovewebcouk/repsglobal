@@ -356,9 +356,14 @@ function DirectoryPage() {
   const goToPage = (n: number) =>
     navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const rangeEnd = Math.min(page * PAGE_SIZE, total);
+  // When a radius is active with an origin, pagination must reflect the
+  // FILTERED visible set (client-side filter), not the raw server total.
+  // Otherwise a 1-mile radius showing 2 cards still offers 17 pages.
+  const radiusActive = Boolean(origin) && radius_mi > 0;
+  const visibleTotal = radiusActive ? visiblePros.length : total;
+  const totalPages = Math.max(1, Math.ceil(visibleTotal / PAGE_SIZE));
+  const rangeStart = visibleTotal === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, visibleTotal);
 
   // Scroll to results on page change
   const resultsRef = React.useRef<HTMLDivElement | null>(null);
@@ -384,18 +389,20 @@ function DirectoryPage() {
 
   const countLabel = activeVenue
     ? `${visiblePros.length} at ${activeVenue.label}`
-    : total === 0
+    : visibleTotal === 0
       ? "No results"
-      : `${total.toLocaleString()} professional${total === 1 ? "" : "s"}${city ? ` · ${city}` : ""}`;
+      : `${visibleTotal.toLocaleString()} professional${visibleTotal === 1 ? "" : "s"}${city ? ` · ${city}` : ""}`;
 
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
 
-      {/* Spacer so sticky search bar sits flush under the solid header */}
+      {/* Header is fixed 72px — reserve that height so content starts below it,
+          then the sticky search bar mounts immediately and visually butts up
+          to the header at scroll-top. */}
       <div className="h-[72px]" aria-hidden />
 
-      <ResultsSearchBar state={barState} total={total} countLabel={countLabel} />
+      <ResultsSearchBar state={barState} total={visibleTotal} countLabel={countLabel} />
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
@@ -470,7 +477,7 @@ function DirectoryPage() {
                   </span>{" "}
                   of{" "}
                   <span className="font-semibold text-reps-charcoal">
-                    {total.toLocaleString()}
+                    {visibleTotal.toLocaleString()}
                   </span>
                 </p>
                 <div className="flex items-center gap-2">
@@ -656,6 +663,14 @@ function ProCard({
   const mobilePhotoSize = pro.featured ? 96 : 88;
   const priceLabel = formatFromPrice(pro.from_price_pence);
   const showRating = pro.reviews > 0;
+  // "New on REPs" only for the first 60 days after the profile was created,
+  // and only when there are still zero reviews. After that the pill is hidden.
+  const NEW_PILL_WINDOW_MS = 60 * 24 * 60 * 60 * 1000;
+  const isNewPro =
+    !showRating &&
+    pro.live === true &&
+    pro.created_at != null &&
+    Date.now() - Date.parse(pro.created_at) < NEW_PILL_WINDOW_MS;
 
   return (
     <article
@@ -763,7 +778,7 @@ function ProCard({
               verification={pro.verification}
               tier={pro.tier}
             />
-            {!showRating && pro.live && (
+            {isNewPro && (
               <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-700">
                 New on REPs
               </span>
@@ -817,9 +832,7 @@ function ProCard({
           )}
           {pro.gyms.length > 0 && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
-              <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
-                Trains at
-              </span>
+              <span className="text-reps-muted-light/90">Trains at</span>
               {pro.gyms.slice(0, 2).map((g) => (
                 <span
                   key={g.id}
