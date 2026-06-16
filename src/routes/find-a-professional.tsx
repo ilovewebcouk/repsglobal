@@ -838,16 +838,12 @@ function ProCard({
               />
             ) : (
               <>
-                <Monogram
-                  name={pro.name}
-                  size={mobilePhotoSize}
-                  className="sm:hidden"
-                />
-                <Monogram
-                  name={pro.name}
-                  size={photoSize}
-                  className="hidden sm:inline-flex"
-                />
+                <span className="contents sm:hidden">
+                  <Monogram name={pro.name} size={mobilePhotoSize} />
+                </span>
+                <span className="hidden sm:contents">
+                  <Monogram name={pro.name} size={photoSize} />
+                </span>
               </>
             )}
             {pro.featured && (
