@@ -350,12 +350,7 @@ function WhereField(props: {
   const [suggestions, setSuggestions] = React.useState<PlacesSuggestion[]>([]);
   const [placesReady, setPlacesReady] = React.useState(false);
   const sessionTokenRef = React.useRef<unknown>(null);
-  const placesLibRef = React.useRef<{
-    AutocompleteSuggestion: {
-      fetchAutocompleteSuggestions: (req: Record<string, unknown>) => Promise<{ suggestions: PlacesSuggestion[] }>;
-    };
-    AutocompleteSessionToken: new () => unknown;
-  } | null>(null);
+  const placesLibRef = React.useRef<PlacesLibrary | null>(null);
 
   // Lazy-load Places JS on first open.
   React.useEffect(() => {
