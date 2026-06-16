@@ -309,103 +309,104 @@ function WhatChip({
             {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
           </button>
         </PopoverTrigger>
-        {label ? (
-          <button
-            type="button"
-            aria-label="Clear what"
-            onClick={onClear}
-            className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
-          >
-            <X className="size-3" />
-          </button>
-        ) : null}
-
-      <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
-        <Command shouldFilter={false}>
-          <CommandInput
-            value={query}
-            onValueChange={setQuery}
-            placeholder="Try 'PT', 'fat loss', 'bad back', 'yoga'…"
-          />
-          <CommandList>
-            {query.trim() === "" ? (
-              <CommandGroup heading="Popular">
-                {popular.map((entry) => (
-                  <CommandItem
-                    key={entry.slug}
-                    value={entry.slug}
-                    onSelect={() => {
-                      onPick(entry);
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                  >
-                    {entry.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            ) : (
-              <>
-                <CommandEmpty>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onFreeText(query.trim());
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                    className="w-full px-3 py-2 text-left text-[13px] text-reps-charcoal hover:bg-reps-warm-white"
-                  >
-                    Search for <span className="font-semibold">"{query.trim()}"</span>
-                  </button>
-                </CommandEmpty>
-                {(
-                  ["Professions", "Goals & specialisms", "Training mode"] as const
-                ).map((group) =>
-                  grouped[group].length > 0 ? (
-                    <CommandGroup key={group} heading={group}>
-                      {grouped[group].map((entry) => (
-                        <CommandItem
-                          key={entry.slug}
-                          value={entry.slug}
-                          onSelect={() => {
-                            onPick(entry);
-                            setOpen(false);
-                            setQuery("");
-                          }}
-                        >
-                          <span>{entry.label}</span>
-                          {entry.matchedSynonym ? (
-                            <span className="ml-auto text-[11px] text-reps-muted-light">
-                              matched "{entry.matchedSynonym}"
-                            </span>
-                          ) : null}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  ) : null,
-                )}
-                {ranked.length > 0 ? <CommandSeparator /> : null}
-                <CommandGroup>
-                  <CommandItem
-                    value={`__free:${query}`}
-                    onSelect={() => {
-                      onFreeText(query.trim());
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                  >
-                    Search for <span className="font-semibold">"{query.trim()}"</span>
-                  </CommandItem>
+        <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
+          <Command shouldFilter={false}>
+            <CommandInput
+              value={query}
+              onValueChange={setQuery}
+              placeholder="Try 'PT', 'fat loss', 'bad back', 'yoga'…"
+            />
+            <CommandList>
+              {query.trim() === "" ? (
+                <CommandGroup heading="Popular">
+                  {popular.map((entry) => (
+                    <CommandItem
+                      key={entry.slug}
+                      value={entry.slug}
+                      onSelect={() => {
+                        onPick(entry);
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                    >
+                      {entry.label}
+                    </CommandItem>
+                  ))}
                 </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              ) : (
+                <>
+                  <CommandEmpty>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onFreeText(query.trim());
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                      className="w-full px-3 py-2 text-left text-[13px] text-reps-charcoal hover:bg-reps-warm-white"
+                    >
+                      Search for <span className="font-semibold">"{query.trim()}"</span>
+                    </button>
+                  </CommandEmpty>
+                  {(
+                    ["Professions", "Goals & specialisms", "Training mode"] as const
+                  ).map((group) =>
+                    grouped[group].length > 0 ? (
+                      <CommandGroup key={group} heading={group}>
+                        {grouped[group].map((entry) => (
+                          <CommandItem
+                            key={entry.slug}
+                            value={entry.slug}
+                            onSelect={() => {
+                              onPick(entry);
+                              setOpen(false);
+                              setQuery("");
+                            }}
+                          >
+                            <span>{entry.label}</span>
+                            {entry.matchedSynonym ? (
+                              <span className="ml-auto text-[11px] text-reps-muted-light">
+                                matched "{entry.matchedSynonym}"
+                              </span>
+                            ) : null}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ) : null,
+                  )}
+                  {ranked.length > 0 ? <CommandSeparator /> : null}
+                  <CommandGroup>
+                    <CommandItem
+                      value={`__free:${query}`}
+                      onSelect={() => {
+                        onFreeText(query.trim());
+                        setOpen(false);
+                        setQuery("");
+                      }}
+                    >
+                      Search for <span className="font-semibold">"{query.trim()}"</span>
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {label ? (
+        <button
+          type="button"
+          aria-label="Clear what"
+          onClick={onClear}
+          className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
+        >
+          <X className="size-3" />
+        </button>
+      ) : null}
+    </div>
   );
 }
+
 
 /* =========================================================== WhereChip */
 
