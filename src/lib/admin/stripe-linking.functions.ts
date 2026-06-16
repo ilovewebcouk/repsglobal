@@ -285,13 +285,40 @@ export const runLegacyRenewalBatch = createServerFn({ method: "POST" })
 export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Promise<LegacyRenewalResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { createStripeClient, resolvePriceByLookupKey } = await import("@/lib/billing/stripe.server");
+  const { LAUNCH_AT_UTC } = await import("@/lib/launch");
+  const { VERIFIED_LEGACY_PRICE_LOOKUP } = await import("@/lib/billing");
   const stripe = createStripeClient(env);
 
+  const res: LegacyRenewalResult = {
+    processed: 0,
+    charged: 0,
+    awaiting_payment_method: 0,
+    errors: 0,
+    sample_errors: [],
+  };
+
+  // Hard pre-launch guard: BD members keep their existing Brilliant Directories
+  // access until launch day. We never create a REPs subscription before launch.
+  if (Date.now() < LAUNCH_AT_UTC.getTime()) {
+    res.sample_errors.push(
+      `Pre-launch: no renewals run until ${LAUNCH_AT_UTC.toISOString()} (BD access remains active).`,
+    );
+    return res;
+  }
+
   const verifiedPrice = await resolvePriceByLookupKey(stripe, "verified_annual");
+  // Legacy honour price is optional — if the admin hasn't created it in Stripe
+  // yet, we fall straight through to the £99 price for legacy members too.
+  let legacyPrice: { id: string } | null = null;
+  try {
+    legacyPrice = await resolvePriceByLookupKey(stripe, VERIFIED_LEGACY_PRICE_LOOKUP);
+  } catch {
+    legacyPrice = null;
+  }
 
   const { data: due } = await supabaseAdmin
     .from("legacy_stripe_link")
-    .select("bd_member_id,email,stripe_customer_id,access_expires_at")
+    .select("bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price")
     .eq("migration_status", "pending")
     .not("stripe_customer_id", "is", null)
     .lte("access_expires_at", new Date().toISOString())
@@ -302,15 +329,8 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
     email: string;
     stripe_customer_id: string;
     access_expires_at: string;
+    eligible_for_legacy_price: boolean | null;
   }[];
-
-  const res: LegacyRenewalResult = {
-    processed: 0,
-    charged: 0,
-    awaiting_payment_method: 0,
-    errors: 0,
-    sample_errors: [],
-  };
 
   for (const row of rows) {
     res.processed += 1;
@@ -332,6 +352,53 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
         Boolean(customer.invoice_settings?.default_payment_method) ||
         Boolean(customer.default_source);
 
+      const useLegacy = Boolean(row.eligible_for_legacy_price) && legacyPrice !== null;
+      const baseMetadata = {
+        reps_legacy_migration: "true",
+        bd_member_id: String(row.bd_member_id),
+        ...(useLegacy ? { reps_legacy_honored_price: "true" } : {}),
+      };
+
+      if (useLegacy) {
+        // Subscription Schedule: phase 1 = £34 for 12 months, then phase 2 = £99/yr ongoing.
+        // Stripe handles the price step-up automatically on the anniversary.
+        const collection_method = hasPm ? "charge_automatically" : "send_invoice";
+        const schedule = await stripe.subscriptionSchedules.create({
+          customer: row.stripe_customer_id,
+          start_date: "now",
+          end_behavior: "release",
+          phases: [
+            {
+              items: [{ price: legacyPrice!.id, quantity: 1 }],
+              iterations: 1,
+              collection_method,
+              ...(collection_method === "send_invoice" ? { invoice_settings: { days_until_due: 30 } } : {}),
+              metadata: baseMetadata,
+            },
+            {
+              items: [{ price: verifiedPrice.id, quantity: 1 }],
+              collection_method,
+              ...(collection_method === "send_invoice" ? { invoice_settings: { days_until_due: 30 } } : {}),
+              metadata: baseMetadata,
+            },
+          ],
+          metadata: baseMetadata,
+        });
+        await markRow(row.bd_member_id, {
+          migration_status: hasPm ? "renewed_to_verified" : "awaiting_payment_method",
+          stripe_subscription_id: schedule.subscription as string | null,
+          stripe_schedule_id: schedule.id,
+          last_attempt_at: new Date().toISOString(),
+          notes: hasPm
+            ? "Legacy honour: £34/yr for year 1, then auto-step to £99/yr."
+            : "Legacy honour scheduled (£34 → £99) but no card on file; awaiting payment method.",
+        });
+        if (hasPm) res.charged += 1;
+        else res.awaiting_payment_method += 1;
+        continue;
+      }
+
+      // Non-eligible (or legacy price not configured): straight to £99/yr.
       let sub;
       if (hasPm) {
         sub = await stripe.subscriptions.create({
@@ -339,10 +406,7 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
           items: [{ price: verifiedPrice.id }],
           collection_method: "charge_automatically",
           off_session: true,
-          metadata: {
-            reps_legacy_migration: "true",
-            bd_member_id: String(row.bd_member_id),
-          },
+          metadata: baseMetadata,
         });
         await markRow(row.bd_member_id, {
           migration_status: "renewed_to_verified",
@@ -357,11 +421,7 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
           items: [{ price: verifiedPrice.id }],
           collection_method: "send_invoice",
           days_until_due: 30,
-          metadata: {
-            reps_legacy_migration: "true",
-            reps_legacy_no_pm: "true",
-            bd_member_id: String(row.bd_member_id),
-          },
+          metadata: { ...baseMetadata, reps_legacy_no_pm: "true" },
         });
         await markRow(row.bd_member_id, {
           migration_status: "awaiting_payment_method",
@@ -396,6 +456,7 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
       .eq("bd_member_id", bd_member_id);
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin: reset the link table so we can re-run cleanly (e.g. after switching env).
