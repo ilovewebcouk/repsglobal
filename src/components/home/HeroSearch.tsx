@@ -98,8 +98,8 @@ export function HomeHeroSearch() {
       profession?: string;
       specialism?: string;
       page: number;
-      sort: "recommended" | "nearest" | "rating";
-    } = { page: 1, sort: "recommended" };
+      sort: "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
+    } = { page: 1, sort: "nearest" };
 
     if (what?.mode === "entry") {
       if (what.entry.route.profession) search.profession = what.entry.route.profession;
