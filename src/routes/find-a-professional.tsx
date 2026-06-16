@@ -477,7 +477,7 @@ function DirectoryPage() {
                   </span>{" "}
                   of{" "}
                   <span className="font-semibold text-reps-charcoal">
-                    {total.toLocaleString()}
+                    {visibleTotal.toLocaleString()}
                   </span>
                 </p>
                 <div className="flex items-center gap-2">
