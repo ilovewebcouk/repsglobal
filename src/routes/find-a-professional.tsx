@@ -626,7 +626,13 @@ function DirectoryPage() {
 
             {/* Map column (lg+ only when view !== 'list') — viewport-locked, list scrolls beside it */}
             {showMapAside ? (
-              <aside className="hidden lg:block lg:w-[460px] lg:shrink-0 lg:py-0">
+              <aside
+                className={
+                  hideListAtLg
+                    ? "hidden lg:block lg:flex-1 lg:min-w-0 lg:py-0"
+                    : "hidden lg:block lg:w-[460px] lg:shrink-0 lg:py-0"
+                }
+              >
                 <div className="h-full pb-3">
                   <ResultsMap
                     pros={mapPros}
