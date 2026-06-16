@@ -175,12 +175,17 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
 
     if (origin) bounds.extend(new lib.LatLng(origin.latitude, origin.longitude));
 
-    if (pinList.length > 1 || (pinList.length === 1 && origin)) {
+    if (!origin) {
+      // No location set → don't zoom to global pros (that's how we end up
+      // viewing the whole world). Hold a steady regional default.
+      map.setCenter({ lat: 54.5, lng: -2.5 });
+      map.setZoom(5);
+    } else if (pinList.length > 1 || (pinList.length === 1 && origin)) {
       map.fitBounds(bounds, 56);
     } else if (pinList.length === 1) {
       map.setCenter({ lat: pinList[0].coords!.latitude, lng: pinList[0].coords!.longitude });
       map.setZoom(13);
-    } else if (origin) {
+    } else {
       map.setCenter({ lat: origin.latitude, lng: origin.longitude });
       map.setZoom(12);
     }
