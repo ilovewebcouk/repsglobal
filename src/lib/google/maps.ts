@@ -3,9 +3,61 @@
  * `loadPlacesLibrary` so the API is loaded exactly once per session.
  */
 
-let mapsPromise: Promise<MapsLibrary> | null = null;
+declare global {
+  interface Window {
+    __repsPlacesInit?: () => void;
+  }
+}
 
-export type MapsLibrary = typeof import("google.maps");
+export type MapsLibrary = {
+  Map: new (
+    container: HTMLElement,
+    options?: Record<string, unknown>,
+  ) => GoogleMapInstance;
+  Marker: new (options?: Record<string, unknown>) => GoogleMarker;
+  Circle: new (options?: Record<string, unknown>) => GoogleCircle;
+  LatLng: new (lat: number, lng: number) => GoogleLatLng;
+  LatLngBounds: new () => GoogleLatLngBounds;
+  event: {
+    addListener: (
+      instance: unknown,
+      event: string,
+      handler: () => void,
+    ) => void;
+    removeListener: (listener: unknown) => void;
+  };
+};
+
+export type GoogleMapInstance = {
+  setCenter: (latLng: unknown) => void;
+  setZoom: (zoom: number) => void;
+  fitBounds: (bounds: unknown, padding?: number) => void;
+  panTo: (latLng: unknown) => void;
+  getBounds: () => unknown | null;
+};
+
+export type GoogleMarker = {
+  setMap: (map: GoogleMapInstance | null) => void;
+  setIcon: (icon: unknown) => void;
+  setZIndex: (z: number) => void;
+  addListener: (event: string, handler: () => void) => void;
+  getPosition: () => unknown | null;
+};
+
+export type GoogleCircle = {
+  setMap: (map: GoogleMapInstance | null) => void;
+};
+
+export type GoogleLatLng = {
+  lat: () => number;
+  lng: () => number;
+};
+
+export type GoogleLatLngBounds = {
+  extend: (latLng: unknown) => void;
+};
+
+let mapsPromise: Promise<MapsLibrary> | null = null;
 
 export async function loadMapsLibrary(): Promise<MapsLibrary> {
   if (mapsPromise) return mapsPromise;
@@ -52,7 +104,7 @@ export async function loadMapsLibrary(): Promise<MapsLibrary> {
     }
 
     // Script not present yet — inject it ourselves (same URL as places.ts).
-    (window as Record<string, unknown>).__repsPlacesInit = () => {
+    window.__repsPlacesInit = () => {
       void ensureLib().catch(reject);
     };
 
