@@ -153,21 +153,25 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       type LocsRow = { professional_id: string; latitude: number | null; longitude: number | null };
       type SubsRow = { user_id: string; tier: string | null; status: string };
 
-      const subsForRankPromise: Promise<{ data: SubsRow[] | null }> = supabaseAdmin
-        .from("subscriptions")
-        .select("user_id, tier, status")
-        .in("user_id", allIds)
-        .in("status", ["active", "trialing", "past_due"])
-        .then((r) => ({ data: (r.data as SubsRow[] | null) ?? null }));
+      const subsForRankPromise: Promise<{ data: SubsRow[] | null }> = Promise.resolve(
+        supabaseAdmin
+          .from("subscriptions")
+          .select("user_id, tier, status")
+          .in("user_id", allIds)
+          .in("status", ["active", "trialing", "past_due"])
+          .then((r) => ({ data: (r.data as SubsRow[] | null) ?? null })),
+      );
 
       const locsForRankPromise: Promise<{ data: LocsRow[] | null }> = nearestMode
-        ? supabaseAdmin
-            .from("professional_locations")
-            .select("professional_id, latitude, longitude")
-            .in("professional_id", allIds)
-            .eq("is_primary", true)
-            .eq("is_public", true)
-            .then((r) => ({ data: (r.data as LocsRow[] | null) ?? null }))
+        ? Promise.resolve(
+            supabaseAdmin
+              .from("professional_locations")
+              .select("professional_id, latitude, longitude")
+              .in("professional_id", allIds)
+              .eq("is_primary", true)
+              .eq("is_public", true)
+              .then((r) => ({ data: (r.data as LocsRow[] | null) ?? null })),
+          )
         : Promise.resolve({ data: null as LocsRow[] | null });
 
       const [subsForRank, locsForRank] = await Promise.all([
