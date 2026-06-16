@@ -321,6 +321,54 @@ function AdminMigrationPage() {
             </PPanel>
           </div>
 
+          <PPanel className="mt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
+              <div>
+                <h2 className="font-display text-[16px] font-bold text-white">Seed directory</h2>
+                <p className="text-[12px] text-white/55">
+                  Create live unverified pro profiles from the seed table. No claim emails — they
+                  sign in via /auth and use "Forgot password".
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-[12px] text-white/70">
+                <span><b className="text-white">{seedStats?.total ?? "…"}</b> total</span>
+                <span><b className="text-reps-green">{seedStats?.seeded ?? "…"}</b> seeded</span>
+                <span><b className="text-reps-orange">{seedStats?.remaining ?? "…"}</b> remaining</span>
+              </div>
+            </div>
+            <div className="p-5 text-[13px] text-white/80">
+              {lastSeedResult ? (
+                <div className="space-y-3">
+                  <div>
+                    Last batch: attempted <b>{lastSeedResult.attempted}</b>, inserted{" "}
+                    <b className="text-reps-green">{lastSeedResult.inserted}</b>, failed{" "}
+                    <b className={lastSeedResult.failed.length ? "text-red-400" : "text-white/55"}>
+                      {lastSeedResult.failed.length}
+                    </b>
+                    .
+                  </div>
+                  {lastSeedResult.failed.length > 0 && (
+                    <div className="rounded-[12px] border border-reps-border bg-reps-ink p-3">
+                      <div className="mb-2 text-[12px] font-semibold text-white/70">Failures</div>
+                      <ul className="space-y-1 text-[12px] text-white/65">
+                        {lastSeedResult.failed.slice(0, 20).map((f) => (
+                          <li key={f.bd_member_id} className="font-mono">
+                            #{f.bd_member_id} {f.email} — <span className="text-red-300">{f.error}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-white/55">
+                  Run a dry run first to confirm row count, then seed in batches of 25 or all at once.
+                </div>
+              )}
+            </div>
+          </PPanel>
+
+
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <PPanel>
               <div className="border-b border-reps-border px-5 py-4">
