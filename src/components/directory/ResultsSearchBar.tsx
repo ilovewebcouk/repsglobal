@@ -622,8 +622,20 @@ function WhereChip({
         </div>
       </PopoverContent>
     </Popover>
+      {label ? (
+        <button
+          type="button"
+          aria-label="Clear location"
+          onClick={clearAll}
+          className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
+        >
+          <X className="size-3" />
+        </button>
+      ) : null}
+    </div>
   );
 }
+
 
 /* ========================================================== ModeToggle */
 
