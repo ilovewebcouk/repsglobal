@@ -98,6 +98,51 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_pro_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_user_id: string | null
+          created_at: string
+          email: string
+          email_message_id: string | null
+          expires_at: string
+          full_name: string | null
+          id: string
+          invite_url: string | null
+          invited_by: string
+          plan: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email: string
+          email_message_id?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invite_url?: string | null
+          invited_by: string
+          plan?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email?: string
+          email_message_id?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invite_url?: string | null
+          invited_by?: string
+          plan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bd_member_seed: {
         Row: {
           about_me: string | null
@@ -1961,6 +2006,8 @@ export type Database = {
           social_youtube: string | null
           specialisms: string[]
           stripe_identity_session_id: string | null
+          suspended_at: string | null
+          suspension_reason: string | null
           timezone: string
           trading_name: string | null
           updated_at: string
@@ -2005,6 +2052,8 @@ export type Database = {
           social_youtube?: string | null
           specialisms?: string[]
           stripe_identity_session_id?: string | null
+          suspended_at?: string | null
+          suspension_reason?: string | null
           timezone?: string
           trading_name?: string | null
           updated_at?: string
@@ -2049,6 +2098,8 @@ export type Database = {
           social_youtube?: string | null
           specialisms?: string[]
           stripe_identity_session_id?: string | null
+          suspended_at?: string | null
+          suspension_reason?: string | null
           timezone?: string
           trading_name?: string | null
           updated_at?: string
