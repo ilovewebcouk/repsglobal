@@ -221,9 +221,18 @@ function DirectoryPage() {
     in_person: mode === "in_person" ? true : undefined,
   };
 
+  const { origin: viewerOriginEarly } = useViewerOrigin();
+  const useNearestServer = sort === "nearest" && Boolean(viewerOriginEarly);
+
   const search = useServerFn(searchProfessionals);
   const { data: liveResult, isPending, isError, refetch } = useQuery({
-    queryKey: ["directory", "search", { city, profession, specialism, q, page, mode }],
+    queryKey: [
+      "directory",
+      "search",
+      { city, profession, specialism, q, page, mode, useNearestServer,
+        vlat: useNearestServer ? viewerOriginEarly?.latitude : null,
+        vlng: useNearestServer ? viewerOriginEarly?.longitude : null },
+    ],
     queryFn: () =>
       search({
         data: {
@@ -235,6 +244,9 @@ function DirectoryPage() {
           limit: PAGE_SIZE,
           online: serverFilters.online,
           in_person: serverFilters.in_person,
+          sort_by_nearest: useNearestServer,
+          viewer_lat: useNearestServer ? viewerOriginEarly!.latitude : undefined,
+          viewer_lng: useNearestServer ? viewerOriginEarly!.longitude : undefined,
         },
       }),
     staleTime: 60_000,
@@ -291,8 +303,9 @@ function DirectoryPage() {
       )
     : liveAsPros;
 
-  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
-  const { origin } = useViewerOrigin();
+  // Viewer origin (postcode / geolocation) — drives live distance + nearest sort.
+  // Already pulled above as `viewerOriginEarly` for the query key; alias for clarity.
+  const origin = viewerOriginEarly;
 
   // No fallback: "Nearest" is the default sort. When viewer has no origin,
   // server-side quality ranking applies (the client-side .sort() is a no-op

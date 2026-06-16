@@ -13,7 +13,28 @@ const SearchSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
+  // When provided, server sorts by haversine distance from this point and
+  // returns only the page slice of nearest-first IDs.
+  viewer_lat: z.number().min(-90).max(90).optional(),
+  viewer_lng: z.number().min(-180).max(180).optional(),
+  sort_by_nearest: z.boolean().optional(),
 });
+
+function haversineMi(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+): number {
+  const R = 3958.7613;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
 
 export type SearchProfessionalsInput = z.infer<typeof SearchSchema>;
 export type SearchProfessionalsResult = {
@@ -79,6 +100,10 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     const pageSize = data.limit ?? 24;
     const page = data.page ?? (data.offset != null ? Math.floor(data.offset / pageSize) + 1 : 1);
     const offset = data.offset ?? (page - 1) * pageSize;
+    const nearestMode =
+      data.sort_by_nearest === true &&
+      typeof data.viewer_lat === "number" &&
+      typeof data.viewer_lng === "number";
 
     let qb = supabaseAdmin
       .from("professionals")
@@ -95,16 +120,54 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       qb = qb.or(`headline.ilike.%${term}%,slug.ilike.%${term}%`);
     }
 
-    // Server-side ranking: profile quality (photo / verification / completeness / tier),
-    // tiebreak by recency. Pagination then uses this stable order.
-    const { data: rows, error, count } = await qb
-      .order("quality_score", { ascending: false })
-      .order("updated_at", { ascending: false })
-      .range(offset, offset + pageSize - 1);
+    let rows: Array<Record<string, unknown>>;
+    let total: number;
 
-    if (error) throw error;
-    const total = count ?? 0;
-    const list = (rows ?? []) as Array<
+    if (nearestMode) {
+      // Pull ALL matching pros (cap 1000), join coords, sort by distance,
+      // paginate. This makes "Nearest" truly nearest, not "nearest within
+      // whatever quality-ranked page happened to load".
+      const { data: allRows, error, count } = await qb
+        .order("updated_at", { ascending: false })
+        .range(0, 999);
+      if (error) throw error;
+      total = count ?? (allRows?.length ?? 0);
+      const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
+
+      const { data: locs } = await supabaseAdmin
+        .from("professional_locations")
+        .select("professional_id, latitude, longitude")
+        .in("professional_id", allIds)
+        .eq("is_primary", true)
+        .eq("is_public", true);
+
+      const coordById = new Map<string, { lat: number; lng: number }>();
+      for (const l of locs ?? []) {
+        if (l.latitude != null && l.longitude != null) {
+          coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
+        }
+      }
+
+      const origin = { lat: data.viewer_lat!, lng: data.viewer_lng! };
+      const decoratedAll = (allRows ?? []).map((r) => {
+        const c = coordById.get((r as { id: string }).id);
+        const d = c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
+        return { row: r, d };
+      });
+      decoratedAll.sort((a, b) => a.d - b.d);
+      rows = decoratedAll.slice(offset, offset + pageSize).map((x) => x.row);
+    } else {
+      // Server-side ranking: profile quality, tiebreak by recency.
+      const { data: pagedRows, error, count } = await qb
+        .order("quality_score", { ascending: false })
+        .order("updated_at", { ascending: false })
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      total = count ?? 0;
+      rows = pagedRows ?? [];
+    }
+
+    const list = rows as Array<
       Omit<
         SearchProfessionalRow,
         "full_name" | "avatar_url" | "tier" | "location" | "from_price_pence" | "review_count" | "rating_avg" | "gyms"

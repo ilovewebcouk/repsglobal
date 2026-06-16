@@ -88,10 +88,12 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
           ? { lat: origin.latitude, lng: origin.longitude }
           : validPros[0]?.coords
             ? { lat: validPros[0].coords.latitude, lng: validPros[0].coords.longitude }
-            : { lat: 54.5, lng: -2.5 }; // UK fallback
+            : { lat: 54.5, lng: -2.5 };
         mapRef.current = new lib.Map(ref.current, {
           center,
-          zoom: 11,
+          zoom: origin ? 11 : 5,
+          minZoom: 4,
+          maxZoom: 16,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
@@ -124,9 +126,36 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
 
     if (validPros.length === 0 && !origin) return;
 
+    // When an origin is set, only pin the nearest ~30 pros within a sensible
+    // window so the bounds don't blow up to the whole world. Without origin,
+    // we pin everything in the current page (already capped by pagination).
+    const PIN_LIMIT = origin ? 30 : validPros.length;
+    const NEAR_RADIUS_MI = 150;
+    const toMiles = (a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) => {
+      const R = 3958.7613;
+      const toRad = (d: number) => (d * Math.PI) / 180;
+      const dLat = toRad(b.latitude - a.latitude);
+      const dLng = toRad(b.longitude - a.longitude);
+      const lat1 = toRad(a.latitude);
+      const lat2 = toRad(b.latitude);
+      const h =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    };
+    let pinList = validPros;
+    if (origin) {
+      pinList = validPros
+        .map((p) => ({ p, d: toMiles(origin, p.coords!) }))
+        .filter((x) => x.d <= NEAR_RADIUS_MI)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, PIN_LIMIT)
+        .map((x) => x.p);
+    }
+
     const bounds = new lib.LatLngBounds();
 
-    validPros.forEach((p) => {
+    pinList.forEach((p) => {
       const isActive = p.slug === hoveredSlug;
       const marker = new lib.Marker({
         position: { lat: p.coords!.latitude, lng: p.coords!.longitude },
@@ -146,12 +175,17 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
 
     if (origin) bounds.extend(new lib.LatLng(origin.latitude, origin.longitude));
 
-    if (validPros.length > 1 || (validPros.length === 1 && origin)) {
+    if (!origin) {
+      // No location set → don't zoom to global pros (that's how we end up
+      // viewing the whole world). Hold a steady regional default.
+      map.setCenter({ lat: 54.5, lng: -2.5 });
+      map.setZoom(5);
+    } else if (pinList.length > 1 || (pinList.length === 1 && origin)) {
       map.fitBounds(bounds, 56);
-    } else if (validPros.length === 1) {
-      map.setCenter({ lat: validPros[0].coords!.latitude, lng: validPros[0].coords!.longitude });
+    } else if (pinList.length === 1) {
+      map.setCenter({ lat: pinList[0].coords!.latitude, lng: pinList[0].coords!.longitude });
       map.setZoom(13);
-    } else if (origin) {
+    } else {
       map.setCenter({ lat: origin.latitude, lng: origin.longitude });
       map.setZoom(12);
     }
@@ -184,8 +218,13 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
           <p className="text-[13px]">Couldn't load the map.</p>
         </div>
       )}
-      {status === "ready" && validPros.length === 0 && (
-        <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
+      {status === "ready" && !origin && (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
+          Set your location to see pros near you
+        </div>
+      )}
+      {status === "ready" && origin && validPros.length === 0 && (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-reps-charcoal shadow-md ring-1 ring-reps-stone">
           No mappable professionals in this view
         </div>
       )}

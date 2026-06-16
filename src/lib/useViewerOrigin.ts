@@ -1,6 +1,7 @@
 import * as React from "react";
 
 const KEY = "reps:viewerOrigin";
+const EVT = "reps:viewerOrigin:change";
 
 export type ViewerOrigin = {
   postcode_outward: string;
@@ -28,18 +29,22 @@ function read(): ViewerOrigin | null {
   }
 }
 
+/**
+ * Cross-instance sync: every `useViewerOrigin()` consumer in the same tab
+ * must update when ANY consumer calls setOrigin. The native `storage` event
+ * only fires for OTHER tabs, so we broadcast via a custom event on window.
+ */
 export function useViewerOrigin() {
-  // IMPORTANT: start as null on both server AND first client render so SSR
-  // markup matches hydration. The real value loads in the effect below.
   const [origin, setOriginState] = React.useState<ViewerOrigin | null>(null);
 
   React.useEffect(() => {
     setOriginState(read());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) setOriginState(read());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    const onChange = () => setOriginState(read());
+    window.addEventListener(EVT, onChange);
+    window.addEventListener("storage", (e) => {
+      if (e.key === KEY) onChange();
+    });
+    return () => window.removeEventListener(EVT, onChange);
   }, []);
 
   const setOrigin = React.useCallback((v: ViewerOrigin | null) => {
@@ -50,6 +55,7 @@ export function useViewerOrigin() {
       window.localStorage.removeItem(KEY);
     }
     setOriginState(v);
+    window.dispatchEvent(new Event(EVT));
   }, []);
 
   return { origin, setOrigin };
