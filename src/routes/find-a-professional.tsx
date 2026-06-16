@@ -122,9 +122,11 @@ type Pro = {
   rating: number;
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
-  tags: [string, string, string];
+  /** Real specialism labels — empty array when the pro hasn't set any yet. */
+  tags: string[];
   blurb: string;
-  image: string;
+  /** null → render Monogram fallback. Never substitute another pro's photo. */
+  image: string | null;
   /** Independent — REPS professionals choose where they train clients. */
   venues: ProVenue[];
   featured?: boolean;
@@ -132,145 +134,11 @@ type Pro = {
   slug?: string;
   /** True for rows pulled from the DB (vs static visual seed data). */
   live?: boolean;
+  /** Trust-state plumbing for VerificationPill. */
+  identity_status?: string | null;
+  verification?: string | null;
+  tier?: "studio" | "pro" | "verified" | "free";
 };
-
-const directoryPros: Pro[] = [
-  {
-    name: "James Wilson",
-    role: "Personal Trainer",
-    distance: "Mayfair · 0.8 mi",
-    town: "Mayfair",
-    coords: { latitude: 51.5083, longitude: -0.1521 },
-    rating: 5.0,
-    reviews: 128,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Fat Loss", "Health & Fitness"],
-    blurb: "Helping busy professionals build strength, improve fitness and feel their best.",
-    image: proJames,
-    venues: [
-      { slug: "third-space", branch: "Mayfair" },
-      { slug: "virgin-active", branch: "Mayfair" },
-    ],
-    featured: true,
-  },
-  {
-    name: "Sophie Taylor",
-    role: "Pilates Instructor",
-    distance: "Marylebone · 1.2 mi",
-    town: "Marylebone",
-    coords: { latitude: 51.5226, longitude: -0.1571 },
-    rating: 5.0,
-    reviews: 96,
-    mode: "In-person & Online",
-    tags: ["Pilates", "Posture", "Core Strength"],
-    blurb: "Pilates for strength, mobility and long-term wellness. All levels welcome.",
-    image: proSophie,
-    venues: [
-      { slug: "nuffield-health", branch: "Marylebone" },
-      { slug: "david-lloyd", branch: "Kensington" },
-    ],
-  },
-  {
-    name: "Liam Roberts",
-    role: "Strength Coach",
-    distance: "Soho · 1.5 mi",
-    town: "Soho",
-    coords: { latitude: 51.5136, longitude: -0.1318 },
-    rating: 4.9,
-    reviews: 74,
-    mode: "In-person",
-    tags: ["Strength Training", "Performance", "Muscle Building"],
-    blurb: "Build strength, move better and perform at your best.",
-    image: proDaniel,
-    venues: [
-      { slug: "puregym", branch: "Soho" },
-      { slug: "gym-group", branch: "Victoria" },
-    ],
-  },
-  {
-    name: "Priya Sharma",
-    role: "Nutritionist",
-    distance: "Fitzrovia · 2.1 mi",
-    town: "Fitzrovia",
-    coords: { latitude: 51.5202, longitude: -0.1392 },
-    rating: 5.0,
-    reviews: 112,
-    mode: "Online",
-    tags: ["Nutrition", "Weight Management", "Healthy Eating"],
-    blurb: "Science-based nutrition advice to help you build healthy habits and feel your best.",
-    image: proLaura,
-    venues: [],
-  },
-  {
-    name: "Daniel Hughes",
-    role: "Personal Trainer",
-    distance: "Covent Garden · 2.3 mi",
-    town: "Covent Garden",
-    coords: { latitude: 51.5117, longitude: -0.124 },
-    rating: 4.8,
-    reviews: 64,
-    mode: "In-person & Online",
-    tags: ["Functional Training", "Fat Loss", "Lifestyle Coaching"],
-    blurb: "Functional training and lifestyle coaching for long-term results.",
-    image: proJames,
-    venues: [
-      { slug: "anytime-fitness", branch: "Covent Garden" },
-      { slug: "puregym", branch: "Holborn" },
-    ],
-  },
-  {
-    name: "Emily Carter",
-    role: "Pilates Instructor",
-    distance: "Bloomsbury · 2.4 mi",
-    town: "Bloomsbury",
-    coords: { latitude: 51.5226, longitude: -0.1278 },
-    rating: 5.0,
-    reviews: 88,
-    mode: "In-person",
-    tags: ["Pilates", "Reformer Pilates", "Posture"],
-    blurb: "Reformer and mat Pilates to improve strength, flexibility and posture.",
-    image: proSophie,
-    venues: [
-      { slug: "third-space", branch: "Tower Bridge" },
-      { slug: "bannatyne", branch: "Russell Square" },
-    ],
-  },
-  {
-    name: "Marcus Lee",
-    role: "Strength Coach",
-    distance: "Holborn · 2.6 mi",
-    town: "Holborn",
-    coords: { latitude: 51.5174, longitude: -0.1182 },
-    rating: 4.9,
-    reviews: 51,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Athletic Performance", "Powerlifting"],
-    blurb: "Strength and conditioning for athletes and everyday lifters.",
-    image: proDaniel,
-    venues: [
-      { slug: "puregym", branch: "Holborn" },
-      { slug: "gym-group", branch: "Farringdon" },
-      { slug: "virgin-active", branch: "Barbican" },
-    ],
-  },
-  {
-    name: "Hannah Thompson",
-    role: "Pre & Postnatal Specialist",
-    distance: "Clerkenwell · 3.0 mi",
-    town: "Clerkenwell",
-    coords: { latitude: 51.5247, longitude: -0.1063 },
-    rating: 5.0,
-    reviews: 77,
-    mode: "In-person & Online",
-    tags: ["Pre & Postnatal", "Pelvic Health", "Core Recovery"],
-    blurb: "Support for every stage of pregnancy and postpartum recovery.",
-    image: proLaura,
-    venues: [
-      { slug: "david-lloyd", branch: "Islington" },
-      { slug: "nuffield-health", branch: "City" },
-    ],
-  },
-];
 
 const trustItems = [
   { icon: ShieldCheck, title: "REPS Verified", sub: "Qualifications & insurance check" },
