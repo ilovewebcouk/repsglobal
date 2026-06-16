@@ -576,6 +576,7 @@ function DirectoryPage() {
                 </Link>
               </div>
             </div>
+            </div>
 
             {/* Sticky map column (lg+ only when view !== 'list') */}
             {showMapAside ? (
