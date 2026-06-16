@@ -1,98 +1,136 @@
-# Wire up `/admin/professionals` + ship "View as"
+# Admin Professionals — polish pass to 10/10
 
-## Brutal honest truth first
+## Brutal honest truth on each ask
 
-**1. Admins.** You're right — only `cruz.pt@icloud.com` has admin in the live DB. `pros@repsuk.org` is in an old seed migration intent but doesn't exist as a user. I'll drop the reference from project memory and not re-seed. **One admin = `cruz.pt@icloud.com`.**
+### 1. Sort — yes, this is the missing piece
 
-**2. The page already exists** as a static mock at `src/routes/admin_.professionals.tsx` (237 lines, hardcoded fixture data, no DB). It's a really nice layout — let's keep the design **pixel-identical** and wire the data through. No redesign.
+The list is "newest first" with no way to change it. For an admin register, that's a real gap. Recommended sort set, in priority order:
 
-**3. The columns aren't all right.** Reviewing each one honestly:
-
-| Column | Verdict | Action |
+| Sort | Why it matters | Default direction |
 |---|---|---|
-| Professional (avatar + name + handle) | ✅ Perfect | Wire `profiles.full_name`, `profiles.avatar_url`, `professionals.slug` |
-| Location | ✅ Perfect | Wire `professionals.city` (fall back to `professional_locations.town`) |
-| **Tier** | ❌ **Wrong** — currently shows "Level 4 PT" / "Nutrition L4" which is *profession+qualification*, not the REPs business tier | **Rename to "Plan"** → shows `Verified` / `Pro` / `Studio` / `Free` from `subscriptions.tier`. Add a separate compact **Profession** column for "PT / Nutritionist / Pilates" etc. |
-| Status | ⚠️ Half right | Drive from `verification` enum (`pending` / `verified` / `rejected`) + `is_published` flag. Add `Suspended` and `Unpublished` states. Tabs (All/Verified/Pending/Flagged/Suspended/Recently joined) wire to this. |
-| Rating | ✅ Keep | `avg(reviews.rating)` joined per pro. `—` when no reviews. |
-| Clients | ✅ Keep | `count(coach_client where status='active')` per pro. |
-| **MRR** | ⚠️ **Misleading as labelled** — £8,420 implies what the trainer bills their clients (which REPs has no insight into and doesn't take a cut of). Honest meaning here is "what they pay REPs". | **Rename to "Plan MRR"** = monthly value of their REPs subscription (£0 / £8.25 [Verified £99÷12] / £59 / £149). Keeps the column useful (revenue per pro) without lying about scope. |
-| Joined | ✅ Keep | `professionals.created_at` formatted as `MMM YYYY`. |
-| ⋯ menu | ❌ Currently dead | This becomes the **View as** entry point + 5 more actions. |
+| **Joined** | Spot brand-new pros, audit recent activity | Newest first |
+| **Name (A→Z)** | Find a specific pro fast when you don't know the slug | Ascending |
+| **Plan value** (Studio → Pro → Verified → Free) | See your highest-paying pros first; quick MRR audit | Highest first |
+| **Plan MRR (£)** | Same as above but numeric — useful once Studio launches and there are mixed-cycle plans | Highest first |
+| **Clients (active count)** | Identify pros with real client books | Highest first |
+| **Rating** | Spot top-rated pros and (sorted ascending) anyone with a poor average | Highest first, with ascending option |
+| **Status** | Group all Unverified / Flagged together — useful in the All tab | A→Z |
 
-So the columns become:
-**Professional · Location · Profession · Plan · Status · Rating · Clients · Plan MRR · Joined · ⋯**
+**UX**: shadcn `Select` to the left of the existing Filters/Export buttons (label "Sort"). Click a value → updates `sort` query param. Direction icon (↑/↓) toggle button next to it. Both persist in the URL so admins can share/bookmark "show me all Verified pros sorted by clients desc".
 
-Profession is a compact pill ("PT", "Pilates", "Nutrition", "S&C"), Plan is a coloured pill (Verified emerald / Pro orange / Studio violet / Free white-tint).
+Server-side sort (not client-side) — the list is paginated, so sorting only the current page is wrong. Sorts on `plan`, `plan_mrr_pence`, `clients` and `rating` need a join-aware query — I'll switch `listAdminProfessionals` to a single SQL query via `supabaseAdmin.rpc` to a new SECURITY DEFINER function `admin_list_professionals(...)` that does the joins + sort + pagination in Postgres. Cleaner than juggling 4 client-side aggregations, and ratings/clients sorts actually work.
 
-**4. KPIs at top** — all 4 are computable from real data, no fakery:
-- Active professionals = `count(*) from professionals where is_published`
-- Verified = `count where verification='verified'` + % of base
-- Avg rating = `avg(rating) from reviews` (last 12 months)
-- New signups (30d) = `count where created_at > now()-30d` + WoW delta
+### 2. Filters — wire them properly
 
-**5. The `⋯` dropdown** becomes the View-as launcher + admin actions:
-- **View as on dashboard** (impersonate → `/dashboard`)
-- View public profile (`/pro/<slug>`)
-- View shop-front (`/c/<slug>`, only if Pro/Studio)
-- View enquire page (`/pro/<slug>/enquire`)
-- ─
-- Send admin message
-- Suspend / unpublish
+Build a shadcn `Sheet` opened by the Filters button. Filters:
 
-The "View as" still uses the secure cookie + 30-min auto-expire + orange banner approach from the earlier plan — just launched from this row instead of a separate picker page.
+- **Plan** — multi-select chips: Free / Verified / Pro / Studio
+- **Profession** — multi-select: PT / Pilates / S&C / Nutrition / Group Ex / Fitness / Yoga
+- **Has avatar** — yes / no / any (admin-only quality filter)
+- **Identity verified** — yes / no / any
+- **City** — async combobox querying distinct `professionals.city`
+- **Joined window** — last 7 / 30 / 90 days / custom range
+- **Active clients** — slider 0–50+ (min)
 
-## Implementation
+"Active filters" pill row appears under the tabs when any are set, with an `× Clear all`. All state lives in URL search params (so tabs + filters compose: e.g. tab=verified + plan=pro + city=Soho).
 
-### Database (one migration)
+Tabs become "saved view" presets that pre-set the right filter combo behind the scenes:
+- All → no filters
+- Verified → `verification=verified`
+- Unverified → `verification=pending` (renamed from "Pending" per your call — clearer)
+- Flagged → `verification=rejected`
+- Suspended → `is_published=false AND status was previously verified`
+- Recently joined → `joined=last 30 days`
 
-- **Seed migration cleanup**: drop the unused `pros@repsuk.org` admin seed entirely. `cruz.pt@icloud.com` stays as the sole admin (no change needed, already there).
-- **`admin_impersonation_sessions` table** (admin_id, professional_id, started_at, ends_at, ended_at, ended_reason) — RLS admin-only, includes service_role grant.
-- **`public.acting_professional_id(_admin_id uuid)` SECURITY DEFINER function** returning the live impersonation target (NULL if expired/none). Used by RLS *and* the middleware.
-- **Extend RLS** on `professionals`, `enquiries`, `services`, `shop_fronts`, `bookings`, `clients`, `coach_client`, `client_roster`, `reviews`, `professional_locations`, `professional_gyms`, `pro_titles`, `verification_submissions`, `identity_documents`, `insurance_policies`, `subscriptions`, `notification_preferences`, `support_tickets`, `support_messages` with `OR id/professional_id = public.acting_professional_id(auth.uid())` on USING + WITH CHECK. Lets impersonating admins read *and* write through normal RLS without bypassing it via service-role.
+### 3. Rename "Pending" → "Unverified"
 
-### Server functions (new file `src/lib/admin/professionals.functions.ts`)
+Agreed — Pending is bank-app jargon. Unverified is honest and matches the user-facing /pro/$slug verification badge language. One-line change in the tab list + the `statusClass` map (the status string is just a label).
 
-- **`listAdminProfessionals({ q, tab, page, pageSize })`** — admin-gated. Returns paginated rows joining `professionals` + `profiles` + `subscriptions` (latest active) + avg `reviews.rating` + `count(coach_client)`. Computes plan MRR from tier. Supports search by name/slug/handle/email and tab filter. Default 25/page.
-- **`getAdminProfessionalsKpis()`** — 4 KPIs above with 30-day deltas.
-- **`startImpersonation({ professional_id })`** — sets HttpOnly cookie `reps_impersonate` (maxAge 1800), writes audit row + session row, logs via `log_admin_action`. Returns `{ redirect: '/dashboard' }`.
-- **`stopImpersonation()`** — clears cookie + closes session row.
-- **`getImpersonationStatus()`** — for the persistent banner.
-- **`exportProfessionalsCsv({ q, tab })`** — wires the "Export CSV" button (streams from a server route under `/api/admin/professionals.csv` so headers/streaming work).
+### 4. Suspend / unpublish — flesh out the dropdown properly
 
-### Middleware swap
+The dropdown's row-level actions become the only place where suspend lives. The flagged tab stays useful because flagged ≠ suspended — a flagged pro is one we've rejected verification on, a suspended pro is one we've actively pulled from the directory.
 
-- New `requireSupabaseAuthWithImpersonation` drop-in replacement for `requireSupabaseAuth`. Injects `context.actingProfessionalId` (either cookie value, after re-verifying admin role, or `context.userId`). `context.userId` stays as the real admin for audit writes.
-- Refactor ~10 dashboard server-fn files to read `context.actingProfessionalId` instead of `context.userId` for the "current pro" filter. List: `dashboard.functions.ts`, `enquiries.functions.ts`, `dashboard-profile.functions.ts`, `settings.functions.ts`, `cpd.functions.ts`, `verification/trust.functions.ts`, `shop-front/shop-front.functions.ts`, `bookings/*`, `clients/*`, `services/*`.
+**Dropdown layout** (revised):
+```
+View as
+  • Open their dashboard           ← primary, orange-tinted
 
-### UI changes to `src/routes/admin_.professionals.tsx`
+Public surfaces
+  • View public profile  ↗
+  • View shop-front  ↗              ← only if Pro/Studio
 
-- Convert hardcoded `KPIS` + `ROWS` to TanStack-Query loader (`ensureQueryData` + `useSuspenseQuery`) calling the new server fns.
-- Replace `Tier` column with `Profession` + `Plan` (shadcn `Badge` for both, semantic colour map).
-- Replace status pills with the new 5-state map (Verified / Pending / Flagged / Suspended / Unpublished) — uses `bg-emerald-500/15 text-emerald-300` for Verified per the status-colour rule in project memory.
-- Wire tabs to `tab` query param (TanStack Router `useSearch`).
-- Wire search input top-right to a debounced `q` param.
-- Wire pagination to `page` param.
-- Replace `⋯` button with shadcn `DropdownMenu` containing the 6 actions above.
-- "View as on dashboard" calls `startImpersonation` then `navigate({ to: '/dashboard' })`.
+Moderation
+  • Suspend / Unsuspend
+  • Mark as flagged / Clear flag
+```
 
-### Persistent impersonation banner
+**Suspend behaviour** (your point about notification email):
+1. Confirm dialog: "Suspend James Wilson? Their profile will be removed from the public directory and they'll be notified by email." + required reason textarea (free text, becomes the `reason` in the email).
+2. Server fn `setProfessionalSuspension({ professional_id, suspended, reason })`:
+   - Admin-gated (re-check role).
+   - Sets `professionals.is_published = false`, `professionals.suspended_at = now()`, `professionals.suspension_reason = reason`. Needs a tiny migration to add those two columns + an audit-log row via existing `log_admin_action`.
+   - Sends transactional email via `/lovable/email/transactional/send` with a new template `professional-suspended` (recipient = the pro's auth email).
+   - Returns the new state; UI invalidates the list query.
+3. Unsuspend = same flow in reverse, sends `professional-reinstated` template, no reason required. Restores `is_published = true`.
 
-- `src/components/admin/ImpersonationBanner.tsx` — sticky orange bar above `TopBar` inside `DashboardShell`. Shows target avatar/name, "Started HH:MM · Expires HH:MM", **Exit view** button. Polls `getImpersonationStatus` every 60s; auto-hides when expired.
-- Mounted once inside `DashboardShell` so it shows on every authenticated page (dashboard *and* admin) — admin sees it everywhere until they exit.
+**Flag/unflag** is lighter — flips `verification` between `verified` and `rejected`. No email. Same audit log.
+
+### 5. Invite professional — ship the full thing today
+
+You asked for the full version. Truth-check: this is genuinely the most-used admin action once you start onboarding pros manually, so it's worth doing properly.
+
+**Invite button** → `Dialog`:
+- Email (required)
+- Optional name
+- Optional pre-selected plan: Verified £99/yr or Pro £59/mo Founding (defaults to Pro)
+- "Send invite" → server fn `sendProfessionalInvite({ email, full_name?, plan? })`:
+  - Admin-gated.
+  - Generates a single-use token, stores row in new tiny table `admin_pro_invites` (id, email, full_name, plan, token_hash, sent_by, sent_at, accepted_at, accepted_user_id, expires_at = now+14d). RLS admin-read-only + service-role-write.
+  - Sends transactional email `professional-invite` (new template) with CTA → `https://repsuk.org/auth?invite=<token>&plan=<plan>`.
+  - On `/auth`, if `?invite=<token>` is present, the sign-up flow pre-fills the email (read-only), and on successful sign-up writes `admin_pro_invites.accepted_user_id = new uid, accepted_at = now()` and routes the user straight to `/dashboard/syncing` (post-checkout path) — i.e. they skip the pricing screen because the plan is already locked in for them at checkout via the `plan` query param.
+- Toast confirms; the button stays open so admins can send a second one without re-clicking.
+
+**Secondary action under the same Invite button** — a small `Copy sign-up link` item in a kebab menu beside the button, which copies `https://repsuk.org/pricing?ref=admin-<adminId>` (no token, just attribution). Useful for putting in a DM.
+
+### 6. Honest tradeoffs / out of scope
+
+- **Bulk invite (CSV upload)** — would be useful but not for today. Defer until BD migration kicks off in earnest.
+- **Saved views** (named filter combos like "Studio pros in London") — defer, URL params get us 90% there.
+- **Per-tab counts in the tab pills** (e.g. "Verified 9") — small DX win, defer until we see admins actually want them.
+- **Server-side ratings/clients sort** requires the new RPC. If you'd rather not add the SQL function this turn, I can do a hybrid: ratings/clients sort falls back to client-side and the badge shows "(this page only)". Strongly recommend doing the RPC properly.
 
 ## Files touched
 
-- **New SQL migration** (1) — impersonation table, function, RLS extensions.
-- **New** `src/lib/admin/professionals.functions.ts`, `src/lib/admin/impersonation.functions.ts`, `src/integrations/supabase/auth-middleware-impersonation.ts`, `src/components/admin/ImpersonationBanner.tsx`, `src/routes/api/admin/professionals.csv.ts`.
-- **Edited** `src/routes/admin_.professionals.tsx` (data wiring + column changes + dropdown + impersonation trigger), `src/components/dashboard/DashboardShell.tsx` (mount banner), ~10 dashboard `*.functions.ts` (userId → actingProfessionalId).
+**New SQL migration:**
+- Add `suspended_at timestamptz`, `suspension_reason text` columns to `professionals`.
+- Create table `admin_pro_invites` + grants + RLS (admin-read, service-role-write).
+- Create SECURITY DEFINER `admin_list_professionals(_q text, _tab text, _filters jsonb, _sort text, _direction text, _limit int, _offset int)` returning rows + total count.
 
-## Out of scope (call out for follow-up)
+**New email templates** (`src/lib/email-templates/`):
+- `professional-invite.tsx`
+- `professional-suspended.tsx`
+- `professional-reinstated.tsx`
 
-- Suspend / unpublish actions in the dropdown wire to existing pro mutations; if those mutations don't yet exist for admin-on-behalf, I'll stub the button as disabled with a tooltip rather than half-build it.
-- "Send admin message" needs a small modal — happy to ship it in this turn or defer. Recommend defer to keep the PR focused.
-- Memory update: I'll rewrite the Phase 2.0 memory line so it no longer claims `pros@repsuk.org` is an admin seed.
+**New server fns** (`src/lib/admin/professionals.functions.ts`):
+- `setProfessionalSuspension`, `setProfessionalFlag`
+- (`src/lib/admin/invites.functions.ts`) `sendProfessionalInvite`
+
+**New server route:** `src/routes/api/admin/professionals.csv.ts` (Export CSV).
+
+**Edited:**
+- `src/routes/admin_.professionals.tsx` — sort `Select`, direction toggle, Filters `Sheet`, rename "Pending"→"Unverified", restyled dark dropdown, suspend/flag dialogs, Invite dialog, remove `hidden sm:flex` from Invite button, Export CSV `<a>` link, URL-param state.
+- `src/lib/admin/professionals.functions.ts` — swap to RPC, return new fields (`suspended_at`, `is_published`), add sort/filter inputs.
+- `src/routes/_authenticated/_professional/route.tsx` — admin-with-impersonation passthrough (carry-over from previous plan, still needed).
+- `src/lib/admin/impersonation.functions.ts` — `getImpersonationTarget` server fn.
+- ~8 dashboard `*.functions.ts` — middleware swap to `requireSupabaseAuthWithImpersonation` (carry-over).
+- `src/routes/auth.tsx` — read `?invite=<token>&plan=<...>` and wire post-signup behaviour.
 
 ## Verdict
 
-Yes, ship it. The mock-up's design is genuinely 9/10 — it just needs the Tier rename (huge clarity win), the Profession split, the honest MRR label, and the dropdown wired. That plus the impersonation cookie machinery gets you a 10/10 admin console with the View-as flow embedded exactly where it belongs.
+Sort + filters + suspend-with-email + invite-with-token is the right cluster to ship together — they all share the same "real admin workflow" muscle. After this turn, the Professionals page is genuinely the operational hub for running REPs and we never have to come back to it for v1.
+
+## Confirm before I build
+
+1. **RPC for the list query** — yes, do it properly with the SQL function (recommended)?
+2. **Default invite plan in the dialog** — Pro Founding or Verified?
+3. **Suspension email tone** — strict ("Your profile has been suspended pending review") or soft ("We've temporarily unpublished your profile — here's why")? Recommend strict.
