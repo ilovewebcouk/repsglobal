@@ -71,7 +71,7 @@ const MAP_STYLES = [
   { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] },
 ];
 
-export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Props) {
+export function ResultsMap({ pros, origin, hoveredSlug, onHover, className, expanded, onToggleExpand }: Props) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<GoogleMapInstance | null>(null);
   const libRef = React.useRef<MapsLibrary | null>(null);
