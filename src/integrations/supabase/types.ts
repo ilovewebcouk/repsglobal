@@ -1884,6 +1884,7 @@ export type Database = {
       }
       professionals: {
         Row: {
+          bd_seed_thin: boolean
           bio: string | null
           cert_uploaded_at: string | null
           city: string | null
@@ -1926,6 +1927,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          bd_seed_thin?: boolean
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
@@ -1968,6 +1970,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          bd_seed_thin?: boolean
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
@@ -2971,6 +2974,11 @@ export type Database = {
         }[]
       }
       run_monthly_credit_refills: { Args: never; Returns: number }
+      seed_bd_member_into_directory: {
+        Args: { _bd_member_id: number; _user_id: string }
+        Returns: undefined
+      }
+      slugify_unique: { Args: { _base: string }; Returns: string }
       spend_credits: {
         Args: {
           _action: string
@@ -2997,6 +3005,7 @@ export type Database = {
         | "subscription_created"
         | "failed"
         | "skipped"
+        | "seeded"
       billing_period: "monthly" | "annual"
       booking_status:
         | "pending"
@@ -3197,6 +3206,7 @@ export const Constants = {
         "subscription_created",
         "failed",
         "skipped",
+        "seeded",
       ],
       billing_period: ["monthly", "annual"],
       booking_status: [
