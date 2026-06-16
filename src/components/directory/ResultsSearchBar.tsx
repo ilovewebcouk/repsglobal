@@ -1289,6 +1289,42 @@ function ActiveChipsRow({
 
   if (chips.length === 0) return null;
 
+  if (isDark) {
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {chips.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => onClear(c.clear)}
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-3 text-[12px] font-semibold text-reps-orange-light transition-colors hover:bg-reps-orange/20"
+          >
+            <span className="whitespace-nowrap">{c.label}</span>
+            <X className="size-3" />
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() =>
+            onClear({
+              profession: undefined,
+              specialism: undefined,
+              q: undefined,
+              mode: "any",
+              verified: false,
+              min_rating: 0,
+              radius_mi: 0,
+              venue: undefined,
+            })
+          }
+          className="shrink-0 whitespace-nowrap px-1 text-[12px] font-semibold text-white/70 hover:text-white"
+        >
+          Clear
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-2.5 flex flex-wrap items-center gap-2">
       <span className="text-[11px] text-reps-muted-light md:hidden">
