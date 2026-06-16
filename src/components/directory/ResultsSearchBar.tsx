@@ -551,6 +551,7 @@ function WhereChip({
   onCity,
   onOriginSet,
   onClear,
+  variant = "chip",
 }: {
   label: string | null;
   origin: ReturnType<typeof useViewerOrigin>["origin"];
@@ -558,6 +559,7 @@ function WhereChip({
   onCity: (city: string) => void;
   onOriginSet: () => void;
   onClear: () => void;
+  variant?: "chip" | "mobile-input";
 }) {
   const [open, setOpen] = React.useState(false);
   const { setOrigin, runPostcode, runGeolocate, setManual, busy } =
