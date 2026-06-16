@@ -521,7 +521,7 @@ function DirectoryPage() {
                   >
                     <ProCard
                       pro={p}
-                      isClosest={i === 0 && sort === "nearest" && Boolean(origin) && p._miles != null}
+                      isClosest={i === 0 && page === 1 && sort === "nearest" && Boolean(origin) && p._miles != null}
                       highlighted={Boolean(p.slug) && p.slug === hoveredSlug}
                     />
                   </div>
@@ -838,16 +838,12 @@ function ProCard({
               />
             ) : (
               <>
-                <Monogram
-                  name={pro.name}
-                  size={mobilePhotoSize}
-                  className="sm:hidden"
-                />
-                <Monogram
-                  name={pro.name}
-                  size={photoSize}
-                  className="hidden sm:inline-flex"
-                />
+                <span className="contents sm:hidden">
+                  <Monogram name={pro.name} size={mobilePhotoSize} />
+                </span>
+                <span className="hidden sm:contents">
+                  <Monogram name={pro.name} size={photoSize} />
+                </span>
               </>
             )}
             {pro.featured && (
