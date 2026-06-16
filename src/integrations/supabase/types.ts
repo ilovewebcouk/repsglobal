@@ -1538,6 +1538,7 @@ export type Database = {
           bd_member_id: number
           created_at: string
           current_price_id: string | null
+          eligible_for_legacy_price: boolean
           email: string
           last_attempt_at: string | null
           legacy_kind: string
@@ -1545,6 +1546,7 @@ export type Database = {
           migration_status: string
           notes: string | null
           stripe_customer_id: string | null
+          stripe_schedule_id: string | null
           stripe_subscription_id: string | null
           updated_at: string
         }
@@ -1553,6 +1555,7 @@ export type Database = {
           bd_member_id: number
           created_at?: string
           current_price_id?: string | null
+          eligible_for_legacy_price?: boolean
           email: string
           last_attempt_at?: string | null
           legacy_kind?: string
@@ -1560,6 +1563,7 @@ export type Database = {
           migration_status?: string
           notes?: string | null
           stripe_customer_id?: string | null
+          stripe_schedule_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
         }
@@ -1568,6 +1572,7 @@ export type Database = {
           bd_member_id?: number
           created_at?: string
           current_price_id?: string | null
+          eligible_for_legacy_price?: boolean
           email?: string
           last_attempt_at?: string | null
           legacy_kind?: string
@@ -1575,6 +1580,7 @@ export type Database = {
           migration_status?: string
           notes?: string | null
           stripe_customer_id?: string | null
+          stripe_schedule_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
         }
