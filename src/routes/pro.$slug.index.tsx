@@ -281,6 +281,17 @@ function ProProfilePage() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
 
+      {/* Breadcrumb */}
+      <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-reps-muted-light">
+          <Link to="/" className="hover:text-reps-charcoal">Home</Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link to="/find-a-professional" className="hover:text-reps-charcoal">Find a Professional</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="font-medium text-reps-charcoal">{pro.name}</span>
+        </nav>
+      </div>
+
       {/* ============ HERO ============ */}
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-8 lg:px-10">
