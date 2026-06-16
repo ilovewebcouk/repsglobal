@@ -380,10 +380,16 @@ function DirectoryPage() {
   const prevPage = React.useRef(page);
   React.useEffect(() => {
     if (prevPage.current !== page) {
-      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const el = resultsRef.current;
+      if (el && el.scrollHeight > el.clientHeight) {
+        el.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       prevPage.current = page;
     }
   }, [page]);
+
 
   const barState: ResultsBarState = {
     profession,
