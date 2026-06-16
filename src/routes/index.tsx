@@ -339,16 +339,17 @@ function HomeV2() {
 
             <div className="grid grid-cols-4 gap-4 lg:grid-cols-8">
               {specialisms.map((sp) => (
-                <button
+                <Link
                   key={sp.label}
-                  type="button"
-                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5"
+                  to="/find-a-professional"
+                  search={sp.search}
+                  className="group flex flex-col items-center gap-3 text-center transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-ivory"
                 >
                   <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-reps-stone bg-reps-warm-white text-reps-charcoal transition-all group-hover:border-reps-orange/40 group-hover:text-reps-orange">
                     <sp.icon className="h-7 w-7" strokeWidth={1.6} />
                   </span>
                   <span className="text-[13px] font-medium text-reps-charcoal">{sp.label}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
