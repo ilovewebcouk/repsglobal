@@ -11,10 +11,17 @@ const SearchSchema = z.object({
   online: z.boolean().optional(),
   in_person: z.boolean().optional(),
   limit: z.number().int().min(1).max(100).optional(),
-  offset: z.number().int().min(0).max(1000).optional(),
+  offset: z.number().int().min(0).max(10000).optional(),
+  page: z.number().int().min(1).max(1000).optional(),
 });
 
 export type SearchProfessionalsInput = z.infer<typeof SearchSchema>;
+export type SearchProfessionalsResult = {
+  rows: SearchProfessionalRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
 const COLS =
   "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available, updated_at";
