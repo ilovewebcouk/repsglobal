@@ -174,7 +174,7 @@ export function ResultsSearchBar({
         "sticky top-[72px] z-30 transition-shadow",
         // Mobile: dark chrome to match the chosen direction.
         // Desktop: light, sticky over ivory.
-        "bg-reps-bg-deep lg:bg-reps-warm-white/95 lg:backdrop-blur-md",
+        "bg-reps-ink lg:bg-reps-warm-white/95 lg:backdrop-blur-md",
         scrolled && "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]",
       )}
     >
@@ -232,7 +232,7 @@ export function ResultsSearchBar({
 
         {/* Active filter chips */}
         {activeFilterCount > 0 || state.q || state.profession || state.specialism ? (
-          <div className="border-t border-white/10 bg-reps-bg-deep">
+          <div className="border-t border-white/10 bg-reps-ink">
             <ActiveChipsRow
               state={state}
               total={total}
@@ -1297,7 +1297,7 @@ function ActiveChipsRow({
             key={c.key}
             type="button"
             onClick={() => onClear(c.clear)}
-            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-3 text-[12px] font-semibold text-reps-orange-light transition-colors hover:bg-reps-orange/20"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-3 text-[12px] font-semibold text-reps-orange transition-colors hover:bg-reps-orange/20"
           >
             <span className="whitespace-nowrap">{c.label}</span>
             <X className="size-3" />
