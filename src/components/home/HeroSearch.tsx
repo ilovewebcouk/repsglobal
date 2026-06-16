@@ -51,24 +51,6 @@ import {
   type PlacesLibrary,
 } from "@/lib/google/places";
 
-type PlacesSuggestion = {
-  placePrediction: {
-    placeId: string;
-    text: { text: string };
-    structuredFormat?: {
-      mainText?: { text: string };
-      secondaryText?: { text: string };
-    };
-    toPlace: () => {
-      fetchFields: (opts: { fields: string[] }) => Promise<void>;
-    } & {
-      location?: { lat: () => number; lng: () => number };
-      formattedAddress?: string;
-      displayName?: string;
-    };
-  };
-};
-
 type SelectedWhat =
   | { mode: "entry"; entry: SearchEntry }
   | { mode: "free"; text: string }
