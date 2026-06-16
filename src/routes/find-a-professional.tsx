@@ -113,14 +113,6 @@ export const Route = createFileRoute("/find-a-professional")({
   component: DirectoryPage,
 });
 
-const popularSearches = [
-  "Personal Trainer",
-  "Pilates Instructor",
-  "Nutritionist",
-  "Strength Coach",
-  "Pre & Postnatal",
-  "Online Coaching",
-];
 
 type ProVenue = {
   /** Matches a slug in @/components/marketing/VenueWordmarks VENUES. */
