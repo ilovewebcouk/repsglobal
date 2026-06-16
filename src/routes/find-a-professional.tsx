@@ -595,19 +595,21 @@ function DirectoryPage() {
             </aside>
 
             {/* Results column */}
-            <div>
+            <div ref={resultsRef}>
               {/* Sort/results bar */}
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
                   <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
                     {activeVenue
                       ? `${visiblePros.length} professional${visiblePros.length === 1 ? "" : "s"} who coach at ${activeVenue.label}`
-                      : "126 professionals in London"}
+                      : `${total.toLocaleString()} professional${total === 1 ? "" : "s"}${city ? ` in ${city}` : ""}`}
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
                     {activeVenue
                       ? "Independent REPS-verified — not affiliated with the gym shown"
-                      : "Showing 1–8 · all REPS Verified"}
+                      : total === 0
+                        ? "No results yet"
+                        : `Showing ${rangeStart}–${rangeEnd} · all REPS Verified`}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -670,13 +672,33 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              {visiblePros.length === 0 ? (
+              {isPending ? (
+                <div className="space-y-4 pt-5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[180px] animate-pulse rounded-[18px] border border-reps-stone bg-reps-warm-white"
+                    />
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className="mt-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-8 text-center">
+                  <p className="text-[14px] text-reps-muted-light">Couldn't load professionals.</p>
+                  <button
+                    type="button"
+                    onClick={() => refetch()}
+                    className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : visiblePros.length === 0 ? (
                 <EmptyResults />
               ) : (
                 <div className="space-y-4 pt-5">
                   {visiblePros.slice(0, 4).map((p, i) => (
                     <ProCard
-                      key={p.name}
+                      key={p.slug ?? p.name}
                       pro={p}
                       ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
                     />
@@ -686,7 +708,7 @@ function DirectoryPage() {
 
                   {visiblePros.slice(4).map((p, i) => (
                     <ProCard
-                      key={p.name}
+                      key={p.slug ?? p.name}
                       pro={p}
                       ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
                     />
@@ -695,32 +717,56 @@ function DirectoryPage() {
               )}
 
               {/* Pagination */}
-              <nav
-                aria-label="Pagination"
-                className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
-              >
-                <p className="text-[13px] text-reps-muted-light">
-                  Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
-                  <span className="font-semibold text-reps-charcoal">126</span>
-                </p>
-                <div className="flex items-center gap-2">
-                  <PagerBtn aria-label="Previous">
-                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </PagerBtn>
-                  <PagerNum n={1} active />
-                  <PagerNum n={2} />
-                  <PagerNum n={3} className="hidden sm:flex" />
-                  <span className="hidden sm:contents">
-                    <PagerNum n={4} />
-                    <PagerNum n={5} />
-                  </span>
-                  <span className="hidden px-1 text-reps-muted-light sm:inline">…</span>
-                  <PagerNum n={13} className="hidden sm:flex" />
-                  <PagerBtn aria-label="Next">
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </PagerBtn>
-                </div>
-              </nav>
+              {totalPages > 1 && (
+                <nav
+                  aria-label="Pagination"
+                  className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
+                >
+                  <p className="text-[13px] text-reps-muted-light">
+                    Showing{" "}
+                    <span className="font-semibold text-reps-charcoal">
+                      {rangeStart}–{rangeEnd}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-reps-charcoal">
+                      {total.toLocaleString()}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <PagerBtn
+                      aria-label="Previous"
+                      disabled={page <= 1}
+                      onClick={() => goToPage(Math.max(1, page - 1))}
+                    >
+                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </PagerBtn>
+                    {compactPagerRange(page, totalPages).map((item, idx) =>
+                      item === "…" ? (
+                        <span
+                          key={`gap-${idx}`}
+                          className="px-1 text-reps-muted-light"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <PagerNum
+                          key={item}
+                          n={item}
+                          active={item === page}
+                          onClick={() => goToPage(item)}
+                        />
+                      ),
+                    )}
+                    <PagerBtn
+                      aria-label="Next"
+                      disabled={page >= totalPages}
+                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                    >
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </PagerBtn>
+                  </div>
+                </nav>
+              )}
             </div>
           </div>
         </div>
