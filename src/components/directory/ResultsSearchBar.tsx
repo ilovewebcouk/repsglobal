@@ -235,7 +235,7 @@ export function ResultsSearchBar({
               onChange={(v) => patch({ view: v })}
             />
             <SortSelect
-              value={state.sort}
+              value={state.sort === "nearest" && !origin ? "recommended" : state.sort}
               originAvailable={Boolean(origin)}
               onChange={(s) => patch({ sort: s })}
             />
@@ -735,9 +735,7 @@ function SortSelect({
       </SelectTrigger>
       <SelectContent className="rounded-[12px]">
         <SelectGroup>
-          <SelectItem value="nearest" disabled={!originAvailable}>
-            {originAvailable ? "Nearest" : "Nearest (set location)"}
-          </SelectItem>
+          {originAvailable && <SelectItem value="nearest">Nearest</SelectItem>}
           <SelectItem value="recommended">Recommended</SelectItem>
           <SelectItem value="rating">Highest rated</SelectItem>
           <SelectItem value="most_reviewed">Most reviewed</SelectItem>
