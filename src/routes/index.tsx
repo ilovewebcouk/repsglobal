@@ -60,6 +60,9 @@ export const Route = createFileRoute("/")({
       { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(heroAvatarsQueryOptions);
+  },
   component: HomeV2,
 });
 
