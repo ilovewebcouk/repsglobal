@@ -143,24 +143,30 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
       const fetches: Array<Promise<unknown>> = [
-        supabaseAdmin
-          .from("profiles")
-          .select("id, avatar_url")
-          .in("id", allIds),
-        supabaseAdmin
-          .from("subscriptions")
-          .select("user_id, tier, status")
-          .in("user_id", allIds)
-          .in("status", ["active", "trialing", "past_due"]),
+        Promise.resolve(
+          supabaseAdmin
+            .from("profiles")
+            .select("id, avatar_url")
+            .in("id", allIds),
+        ),
+        Promise.resolve(
+          supabaseAdmin
+            .from("subscriptions")
+            .select("user_id, tier, status")
+            .in("user_id", allIds)
+            .in("status", ["active", "trialing", "past_due"]),
+        ),
       ];
       if (nearestMode) {
         fetches.push(
-          supabaseAdmin
-            .from("professional_locations")
-            .select("professional_id, latitude, longitude")
-            .in("professional_id", allIds)
-            .eq("is_primary", true)
-            .eq("is_public", true),
+          Promise.resolve(
+            supabaseAdmin
+              .from("professional_locations")
+              .select("professional_id, latitude, longitude")
+              .in("professional_id", allIds)
+              .eq("is_primary", true)
+              .eq("is_public", true),
+          ),
         );
       }
       const results = await Promise.all(fetches);
