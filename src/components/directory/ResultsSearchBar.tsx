@@ -1223,11 +1223,14 @@ function ActiveChipsRow({
   state,
   total,
   onClear,
+  variant = "default",
 }: {
   state: ResultsBarState;
   total: number;
   onClear: (p: Patch) => void;
+  variant?: "default" | "mobile-dark";
 }) {
+  const isDark = variant === "mobile-dark";
   const chips: Array<{ key: string; label: string; clear: Patch }> = [];
 
   if (state.profession) {
