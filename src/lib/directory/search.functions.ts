@@ -13,7 +13,28 @@ const SearchSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
+  // When provided, server sorts by haversine distance from this point and
+  // returns only the page slice of nearest-first IDs.
+  viewer_lat: z.number().min(-90).max(90).optional(),
+  viewer_lng: z.number().min(-180).max(180).optional(),
+  sort_by_nearest: z.boolean().optional(),
 });
+
+function haversineMi(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+): number {
+  const R = 3958.7613;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
 
 export type SearchProfessionalsInput = z.infer<typeof SearchSchema>;
 export type SearchProfessionalsResult = {
