@@ -47,7 +47,7 @@ const VALID_VENUE_SLUGS = new Set([
   "anytime-fitness",
 ]);
 
-const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating"]);
+const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating", "most_reviewed", "newest"]);
 const VALID_MODES = new Set<ResultsBarMode>(["any", "in_person", "online"]);
 
 export const Route = createFileRoute("/find-a-professional")({
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/find-a-professional")({
     const sortRaw =
       typeof raw.sort === "string" && VALID_SORTS.has(raw.sort as ResultsBarSort)
         ? (raw.sort as ResultsBarSort)
-        : ("recommended" as ResultsBarSort);
+        : ("nearest" as ResultsBarSort);
     const modeRaw =
       typeof raw.mode === "string" && VALID_MODES.has(raw.mode as ResultsBarMode)
         ? (raw.mode as ResultsBarMode)
@@ -378,7 +378,7 @@ function DirectoryPage() {
 
   return (
     <div className="min-h-screen bg-reps-ivory">
-      <PublicHeader variant="transparent" />
+      <PublicHeader variant="solid" />
 
       {/* Spacer so sticky search bar sits flush under the transparent header */}
       <div className="h-[72px]" aria-hidden />
