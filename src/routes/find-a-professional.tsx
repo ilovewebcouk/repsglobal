@@ -210,6 +210,7 @@ function DirectoryPage() {
     mode,
     min_rating,
     radius_mi,
+    view,
   } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
