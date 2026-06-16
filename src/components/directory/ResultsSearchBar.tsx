@@ -288,46 +288,38 @@ function WhatChip({
   }, [ranked]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium transition-colors",
-            label
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal hover:border-reps-orange/60"
-              : "border-reps-stone text-reps-charcoal hover:border-reps-orange/40",
-          )}
-        >
-          <Search className="h-3.5 w-3.5 text-reps-orange" />
-          <span className="max-w-[180px] truncate">
-            {label ?? "What are you looking for?"}
-          </span>
-          {label ? (
-            <span
-              role="button"
-              tabIndex={0}
-              aria-label="Clear what"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onClear();
-                }
-              }}
-              className="inline-flex size-4 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
-            >
-              <X className="size-3" />
+    <div
+      className={cn(
+        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+        label
+          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+          : "border-reps-stone hover:border-reps-orange/40",
+      )}
+    >
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
+          >
+            <Search className="h-3.5 w-3.5 text-reps-orange" />
+            <span className="max-w-[180px] truncate">
+              {label ?? "What are you looking for?"}
             </span>
-          ) : (
-            <ChevronDown className="size-3.5 text-reps-muted-light" />
-          )}
-        </button>
-      </PopoverTrigger>
+            {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
+          </button>
+        </PopoverTrigger>
+        {label ? (
+          <button
+            type="button"
+            aria-label="Clear what"
+            onClick={onClear}
+            className="mr-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
+          >
+            <X className="size-3" />
+          </button>
+        ) : null}
+
       <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
         <Command shouldFilter={false}>
           <CommandInput
