@@ -832,9 +832,7 @@ function ProCard({
           )}
           {pro.gyms.length > 0 && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
-              <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
-                Trains at
-              </span>
+              <span className="text-reps-muted-light/90">Trains at</span>
               {pro.gyms.slice(0, 2).map((g) => (
                 <span
                   key={g.id}
