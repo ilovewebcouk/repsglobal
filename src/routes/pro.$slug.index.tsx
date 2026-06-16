@@ -282,7 +282,7 @@ function ProProfilePage() {
       <PublicHeader variant="solid" />
 
       {/* Breadcrumb */}
-      <div className="border-b border-reps-border-soft/70 bg-reps-warm-white">
+      <div className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-3.5 lg:px-10">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] tracking-wide text-reps-muted">
             <Link to="/" className="hover:text-reps-charcoal transition-colors">Home</Link>
