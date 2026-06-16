@@ -31,13 +31,10 @@ export const sendProfessionalInvite = createServerFn({ method: 'POST' })
       .from('profiles').select('full_name').eq('id', context.userId).maybeSingle();
     const inviterName = inviter?.full_name ?? 'The REPs team';
 
-    // Check if the email already exists in auth.users. If yes, return early with friendly error.
-    const { data: existingByEmail } = await supabaseAdmin
-      .rpc('has_role' as never, { _user_id: '00000000-0000-0000-0000-000000000000', _role: 'admin' as never })
-      .then(() => ({ data: null }))
-      .catch(() => ({ data: null }));
-    // (We skip the lookup — Supabase's generateLink will throw a clear error if the user exists.)
-    void existingByEmail;
+    // Supabase's generateLink throws a clear error if the email already exists,
+    // so we let it surface naturally below.
+
+
 
     // Generate Supabase invite link (creates user + sends magic-link to redirectTo on click).
     const redirectTo = `https://repsuk.org/pricing?invited_plan=${data.plan}`;
