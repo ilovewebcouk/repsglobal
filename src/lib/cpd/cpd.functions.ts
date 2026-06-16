@@ -164,6 +164,13 @@ export const submitCertificate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    // Ownership check: every doc_path must live under the caller's storage folder.
+    for (const p of data.doc_paths) {
+      if (!p.startsWith(`${userId}/`)) {
+        throw new Error("Forbidden: doc_path does not belong to you");
+      }
+    }
+
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     // Holder name match vs identity-verified name (if available)
