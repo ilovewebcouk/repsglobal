@@ -28,6 +28,11 @@ import {
   runLegacyRenewalBatch,
   type LegacyLinkingStats,
 } from "@/lib/admin/stripe-linking.functions";
+import {
+  getBdSeedStats,
+  seedBdDirectory,
+  type BdSeedBatchResult,
+} from "@/lib/admin/bd-seed.functions";
 import Papa from "papaparse";
 
 
