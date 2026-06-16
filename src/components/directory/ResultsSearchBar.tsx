@@ -527,7 +527,7 @@ function WhatChip({
           </Command>
         </PopoverContent>
       </Popover>
-      {label ? (
+      {label && !isMobileInput ? (
         <button
           type="button"
           aria-label="Clear what"
