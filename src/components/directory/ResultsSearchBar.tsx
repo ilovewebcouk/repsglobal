@@ -175,7 +175,10 @@ export function ResultsSearchBar({
             label={whereLabel}
             origin={origin}
             currentCity={state.city}
-            onCity={(c) => patch({ city: c })}
+            // Setting any origin (city, postcode, geo) forces sort→nearest so
+            // the list immediately re-ranks by distance.
+            onCity={(c) => patch({ city: c, sort: "nearest" })}
+            onOriginSet={() => patch({ sort: "nearest" })}
             onClear={() => patch({ city: undefined })}
           />
 
