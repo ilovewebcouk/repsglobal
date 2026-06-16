@@ -61,7 +61,24 @@ export const Route = createFileRoute("/find-a-professional")({
         : undefined;
     const pageRaw = Number(raw.page);
     const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
-    const sortRaw = typeof raw.sort === "string" && VALID_SORTS.has(raw.sort) ? raw.sort : "recommended";
+    const sortRaw =
+      typeof raw.sort === "string" && VALID_SORTS.has(raw.sort as ResultsBarSort)
+        ? (raw.sort as ResultsBarSort)
+        : ("recommended" as ResultsBarSort);
+    const modeRaw =
+      typeof raw.mode === "string" && VALID_MODES.has(raw.mode as ResultsBarMode)
+        ? (raw.mode as ResultsBarMode)
+        : ("any" as ResultsBarMode);
+    const ratingRaw = Number(raw.min_rating);
+    const min_rating =
+      Number.isFinite(ratingRaw) && ratingRaw >= 0 && ratingRaw <= 5
+        ? Math.floor(ratingRaw)
+        : 0;
+    const radiusRaw = Number(raw.radius_mi);
+    const radius_mi =
+      Number.isFinite(radiusRaw) && radiusRaw >= 0 && radiusRaw <= 200
+        ? Math.floor(radiusRaw)
+        : 0;
     return {
       venue,
       city: str("city"),
@@ -69,7 +86,10 @@ export const Route = createFileRoute("/find-a-professional")({
       specialism: str("specialism"),
       q: str("q"),
       page,
-      sort: sortRaw as "recommended" | "nearest" | "rating",
+      sort: sortRaw,
+      mode: modeRaw,
+      min_rating,
+      radius_mi,
     };
   },
   head: () => ({
