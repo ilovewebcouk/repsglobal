@@ -92,15 +92,23 @@ const steps = [
   { icon: Target, t: "Transform", body: "Train with a coach who actually knows what they're doing." },
 ];
 
-const specialisms = [
-  { icon: Dumbbell, label: "Personal Trainer" },
-  { icon: Activity, label: "Pilates" },
-  { icon: Apple, label: "Nutritionist" },
-  { icon: Target, label: "Strength Coach" },
-  { icon: Heart, label: "Pre & Postnatal" },
-  { icon: Stethoscope, label: "Rehab Specialist" },
-  { icon: Users, label: "Sports Coach" },
-  { icon: Laptop, label: "Online Coaching" },
+type SpecialismSearch = {
+  page: 1;
+  sort: "nearest";
+  profession?: string;
+  specialism?: string;
+  mode?: "online";
+};
+
+const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSearch }[] = [
+  { icon: Dumbbell, label: "Personal Trainer", search: { page: 1, sort: "nearest", profession: "personal-trainer" } },
+  { icon: Activity, label: "Pilates", search: { page: 1, sort: "nearest", profession: "pilates-instructor" } },
+  { icon: Apple, label: "Nutritionist", search: { page: 1, sort: "nearest", profession: "nutritionist" } },
+  { icon: Target, label: "Strength Coach", search: { page: 1, sort: "nearest", profession: "strength-coach" } },
+  { icon: Heart, label: "Pre & Postnatal", search: { page: 1, sort: "nearest", specialism: "pre-post-natal" } },
+  { icon: Stethoscope, label: "Rehab Specialist", search: { page: 1, sort: "nearest", specialism: "rehab-injury" } },
+  { icon: Users, label: "Sports Coach", search: { page: 1, sort: "nearest", specialism: "sports-performance" } },
+  { icon: Laptop, label: "Online Coaching", search: { page: 1, sort: "nearest", mode: "online" } },
 ];
 
 const featuredPros = [
