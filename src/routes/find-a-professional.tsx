@@ -276,7 +276,9 @@ function DirectoryPage() {
   );
 
   const venueFiltered = activeVenue
-    ? liveAsPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    ? liveAsPros.filter((p) =>
+        p.gyms.some((g) => g.name.toLowerCase().includes(activeVenue.label.toLowerCase())),
+      )
     : liveAsPros;
 
   // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
@@ -780,27 +782,24 @@ function ProCard({ pro, ctaLabel = "View profile" }: { pro: Pro & { _miles?: num
               ))}
             </div>
           )}
-          {pro.venues.length > 0 && (
+          {pro.gyms.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-reps-muted-light">
               <MapPin className="h-3 w-3 text-reps-orange" aria-hidden />
               <span className="font-semibold uppercase tracking-[0.08em] text-reps-muted-light/90">
                 Trains at
               </span>
-              {pro.venues.slice(0, 2).map((v) => {
-                const venue = VENUES.find((x) => x.slug === v.slug);
-                if (!venue) return null;
-                return (
-                  <span
-                    key={`${v.slug}-${v.branch}`}
-                    className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
-                  >
-                    {venue.label} · {v.branch}
-                  </span>
-                );
-              })}
-              {pro.venues.length > 2 && (
+              {pro.gyms.slice(0, 2).map((g) => (
+                <span
+                  key={g.id}
+                  className="rounded-full border border-reps-stone bg-reps-warm-white px-2 py-0.5 text-[11px] font-medium text-reps-charcoal"
+                >
+                  {g.name}
+                  {g.branch ? ` · ${g.branch}` : ""}
+                </span>
+              ))}
+              {pro.gyms.length > 2 && (
                 <span className="text-[11px] text-reps-muted-light">
-                  +{pro.venues.length - 2}
+                  +{pro.gyms.length - 2}
                 </span>
               )}
             </div>
