@@ -404,6 +404,27 @@ function DirectoryPage() {
       ? "No results"
       : `${visibleTotal.toLocaleString()} professional${visibleTotal === 1 ? "" : "s"}${city ? ` · ${city}` : ""}`;
 
+  // Map: hover state + visible coords for pins
+  const [hoveredSlug, setHoveredSlug] = React.useState<string | null>(null);
+  const [mobileMapOpen, setMobileMapOpen] = React.useState(false);
+  const mapPros = React.useMemo(
+    () =>
+      visiblePros
+        .filter((p) => Boolean(p.slug) && Boolean(p.coords))
+        .map((p) => ({
+          slug: p.slug!,
+          name: p.name,
+          from_price_pence: p.from_price_pence,
+          coords: p.coords,
+        })),
+    [visiblePros],
+  );
+
+  // Layout: "list" = single column (current). "split"/"map" = wider canvas
+  // with a sticky map column on the right (lg+ only — falls back to list below lg).
+  const showMapAside = view !== "list";
+  const hideListAtLg = view === "map";
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
