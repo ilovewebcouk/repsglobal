@@ -1,123 +1,110 @@
-# Plan — directory + homepage, world-class pass
+# Plan — Directory polish pass + Phase B (map)
 
-Folds the four asks, the previous 10/10 review, **and** the "Trains at" gym pills back into one plan. Profile-page wiring stays deferred.
-
-## Part 1 — Quick fixes (the four asks)
-
-### 1.1 Fix the "white nav" on the results page
-`/find-a-professional` currently renders `<PublicHeader variant="transparent" />` — transparent is designed for the dark home hero, so on the ivory results page the white links wash out. Switch to `<PublicHeader variant="solid" />` so the dark `bg-reps-ink/95` bar sits properly above the sticky search bar.
-
-### 1.2 Remove the location dropdown from the header
-The hero and results bar now both have a proper Where field (Places autocomplete + geolocate + postcode), so the header pin is redundant chrome.
-- Delete `<LocationPin city={…} onChange={…} />` from row 1 of `PublicHeader.tsx` (~line 201) and from the mobile sheet (~line 332).
-- Remove the `LocationPin` component definition, `useLocationPin` hook, and `LOCATION_KEY` constant if no other consumer remains.
-- Leave existing `localStorage` data on devices — becomes dead, no migration needed.
-
-### 1.3 Results page default sort = "Nearest"
-- `validateSearch` default for `sort` → `"nearest"`.
-- `HeroSearch.handleSubmit` → set `sort: "nearest"` as the initial value; when no origin is known the server fn already falls back to recommended-style ordering, so the URL just looks consistent.
-- Sort dropdown gains the full set: **Nearest · Best match · Most reviewed · Highest rated · Newest · Price (low→high)**.
-
-### 1.4 Wire up the homepage specialism tiles
-Each `<button>` in the Specialism grid becomes a typed `<Link>` to `/find-a-professional`:
-
-| Label | Search params |
-| --- | --- |
-| Personal Trainer | `profession=personal-trainer` |
-| Pilates | `profession=pilates-instructor` |
-| Nutritionist | `profession=nutritionist` |
-| Strength Coach | `profession=strength-coach` |
-| Pre & Postnatal | `specialism=pre-post-natal` |
-| Rehab Specialist | `specialism=rehab-injury` |
-| Sports Coach | `specialism=sports-performance` |
-| Online Coaching | `mode=online` |
-
-All carry `page=1, sort="nearest"`. No visual change beyond hover/focus already present.
+Answers your five questions, then ships Phase B.
 
 ---
 
-## Part 2 — Results page to a real 10/10
+## Part 0 — The five things from your message
 
-### Phase A — Density, price, ratings, unified CTA, "Trains at" pills
+### 0.1 Sticky filter bar sits ~140px below header (looks disconnected)
+Cause: `<PublicHeader variant="solid" />` is fixed-72px, then `find-a-professional.tsx` adds a **second** 72px spacer (`<div className="h-[72px]" />`) before `<ResultsSearchBar>`, which is itself `sticky top-[72px]`. So at scroll-top the bar sits at y≈144, not y≈72 — exactly the "big gap" in your screenshot.
 
-**ResultCard rewrite** (~120px photo, tighter padding, single-line bio, gym pills restored):
+Fix:
+- Delete the 72px spacer. The header reserves its own 72px via the fixed-layout offset; the sticky bar should mount immediately under it so at scroll-top it visually butts up to the header (border-b becomes the seam).
+- Drop the bar's own `py-3 lg:py-4` to `py-2.5 lg:py-3` so the row sits tighter under the dark nav.
+- Add a 1px hairline shadow on scroll only (`shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]` when `window.scrollY > 0`) so the bar separates from results without the current dead-ivory band.
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ [photo]  Katie Gibbs  ✓ Verified                       ♡    │
-│  120px   Personal Trainer · Lowestoft · 0.3 mi away          │
-│          ★ 4.9 (37)   ·   From £45/session                   │
-│          "Strength + functional fitness for over-50s…"       │
-│          [In-person] [Online] [Over-50s] [Rehab]             │
-│          Trains at  [Virgin Active · Barbican]               │
-│                     [PureGym · Old Street] [+2]              │
-│                                           [ View profile → ] │
-└──────────────────────────────────────────────────────────────┘
-```
+Result: bar reads as "row 2 of the header", not a floating strip.
 
-Concrete changes:
-- Photo: fixed `w-[120px] h-[120px]` (mobile `w-[88px] h-[88px]`), `rounded-[16px]`.
-- Bio: `line-clamp-1`; `lg:` may expand to `line-clamp-2`.
-- Vertical padding `p-4 lg:p-5`; density target 4–6 results on 1160px viewport.
-- **Price row** — server returns `from_price_pennies` (lowest service price). `From £{n}/session`; row hidden if no priced service.
-- **Rating row** — `★ {avg.toFixed(1)} ({count})` when `review_count > 0`; otherwise a single subtle emerald pill `New on REPs` (status-only, within allowed token).
-- **Unified CTA** — every card gets one primary `View profile →`. Pro+Studio tier with instant-book enabled gets a small emerald `Instant book` chip beside the name, not a second button.
-- **Distance hierarchy** — distance string becomes `font-semibold text-reps-charcoal`. First card when `sort=nearest` gets a small `Closest to you` ribbon top-left of the photo.
-- **"Trains at" row (restored)** —
-  - New row directly under the specialism chips, labelled `Trains at` in `text-[12px] uppercase tracking-wider text-reps-muted-light`.
-  - Render up to 2 gym pills inline, each shown as `{Gym name} · {Branch}` (e.g. `Virgin Active · Barbican`) in a `rounded-full border border-reps-stone bg-reps-warm-white px-2.5 py-1 text-[12px]` pill (no shadow, matches existing pill chrome on the profile page so the directory and profile read as the same component family).
-  - If the pro has > 2 gyms, show a third `+{N}` pill that links to the profile.
-  - Online-only pros (no gyms) hide the row entirely — never show an empty "Trains at" label.
-  - Source: each pro already has `professional_gyms` (the same join used on the locked profile's "Trains at" card). The directory server fn currently drops this — Phase A widens the select to include it (`gym_name`, `branch`, ordered by `display_order` ASC, limit 3).
-  - Independent disclaimer (`Independent — not affiliated with the gyms shown`) is **not** repeated on the card; it stays on the profile page only, to keep the card visually quiet.
+### 0.2 "New on REPs" — how long, and does it become reviews?
+Today the pill shows whenever `review_count === 0`. That's fine but unbounded — a pro with zero reviews after 12 months should not still read "New".
 
-**Sort dropdown options** — as listed in 1.3. Default `nearest`.
+Rule (Phase A.1 tweak):
+- Show **New on REPs** only when `review_count === 0` **AND** `created_at` is within the last **60 days**.
+- After 60 days with no reviews, hide the pill entirely (the rating row just doesn't render). No fake stars, no placeholder.
+- The moment `review_count > 0`, the pill is replaced by the real `★ {avg} ({count})` row — automatic, no manual flip.
+- Implementation: `created_at` already comes back from `searchProfessionals`; the check is a single `Date.now() - createdAt < 60d` on the card. No backend change.
 
-**Skeletons** — 6 `ResultCardSkeleton` rows during `isPending`. No bare spinner.
+### 0.3 "If origin is set, default to nearest" — make it bulletproof
+Today `sort` defaults to `nearest` in the URL validator, but if the user lands with a stale URL (`?sort=best_match`) and an origin is present, we still honour the URL. That's wrong — origin-presence should win on first navigation.
 
-**Mobile chip row** — wrap the active-filter chip row in a horizontally-scrolling `overflow-x-auto snap-x` container below `sm:`, so it never line-wraps ugly on <400px.
+Fix:
+- In `HeroSearch.handleSubmit` and the homepage specialism `<Link>`s: always set `sort: "nearest"` when an origin (city / postcode / geo) is being submitted.
+- In the results route: if URL has no explicit `sort` and `origin != null`, treat default as `nearest` (already true); additionally, when a user opens the location chip and **adds** an origin from inside results, `WhereChip.onCity` should call `patch({ city, sort: "nearest", page: 1 })`. Today it only patches `city`, so the sort stays on whatever it was.
 
-**Empty top gap** — reduce spacing between the sticky bar and the first card from ~80px to ~24px.
+### 0.4 Pagination shows 17 pages when only 2 results fit the 1-mile radius
+Cause: `total` is the **server count** (399), which is computed before the **client-side** radius filter runs. Pagination uses `total`, so it offers 17 pages even though radius collapses the visible set to 2.
 
-### Phase B — Map view (split-screen, the real 10/10)
+Fix (Phase A.2 — backend):
+- Move radius filtering to the server. `searchProfessionals` already receives `origin` (we'll add `radius_mi` to the input schema) and joins `professional_locations` (lat/lng). Compute Haversine in-DB with a `RPC`, OR simpler: select all `professional_locations` for the matched id set, filter in the server function, and re-count.
+- Cleanest: add an optional `radius_mi` + `origin_lat` + `origin_lng` to the input. When present:
+  1. Run the filtered Supabase query (same filters as today).
+  2. Fetch lat/lng for matched ids.
+  3. Drop ids outside the radius.
+  4. **Recompute `total` from the filtered id list**, then slice for the page.
+- Result: `total` matches what the user sees. Pagination shows 1 page when 2 results, 17 pages only when 399 results are actually in scope.
+- Side effect: removes the "Only N within X mi. Showing N more within 50 mi" rescue banner's need to widen client-side — we widen server-side instead and the banner just reads the server's "widened to 50 mi" flag.
 
-- `MapToggle` in the results header: `[ ☰ List ] [ 🗺 Map ]`.
-- URL state: `view=list|map|split` (default `list` on mobile, `split` on `lg:`).
-- Split layout on `lg:` — list `w-[560px]` left, map flex-1 right. Virtualised with `@tanstack/react-virtual` once results > 50.
-- Map uses the existing Google Maps Platform connector and `VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY`. Custom orange marker for the hovered card; hover sync both directions (card ↔ pin). No `mapId`, no `AdvancedMarkerElement`.
-- Bounds: fit to all visible results; respect `radius_mi` when set.
-- Mobile: map opens as a full-screen bottom Sheet; no split.
+### 0.5 "Is this 10/10?" — brutal honest
+Right now: strong **8/10**. What's still missing to hit 10:
+- **Map view** (Phase B below) — directories without a map feel 2015.
+- **Price + rating on every card** — price is wired, rating only shows when reviewed; that's correct, but at zero coverage today every card reads "New on REPs", which is a tell. Phase A.1 60-day rule fixes that.
+- **Origin-aware empty state** — when radius collapses to 0, show a single hero empty state ("No pros within 1 mi of Lowestoft — widen to 5 mi?") with one-tap radius buttons (1 / 5 / 10 / 25 / 50). Today we silently show 0 cards.
+- **Saved searches + compare** — Phase C, still deferred.
+- **Card scan-rhythm** — gym pill row currently labelled `TRAINS AT` in caps reads heavy; demote to lowercase `Trains at` and inline with the pills (one row, not a two-row block).
 
-### Phase C — Saved searches + compare drawer
-
-Deferred. Logged so it doesn't get lost:
-- Save current `?…` URL to a `saved_searches` table per user; chip strip on results.
-- Per-card compare checkbox; sticky bottom drawer with 2–3 pros side-by-side.
+Parts 0.1–0.4 + the empty-state + the `Trains at` demotion are folded into **Phase A.1** below.
 
 ---
 
-## Backend touches required (Phase A only)
+## Phase A.1 — Polish pass (the five fixes, ~1 PR)
 
-- `getDirectoryResults` server fn — widen the select to include:
-  - `from_price_pennies`, `review_count`, `rating_avg`, `tier`, `instant_book_enabled` (already exist as columns / aggregates).
-  - `professional_gyms` (gym_name, branch, display_order, limit 3) joined per pro.
-- Sort branches added on the server: `best_match` (existing recommended), `most_reviewed` (`review_count desc`), `highest_rated` (`rating_avg desc nulls last`), `newest` (`created_at desc`), `price_low` (`from_price_pennies asc nulls last`).
-- No schema migration — every field already exists for the locked profile page.
+1. Remove 72px spacer, tighten bar padding, add on-scroll shadow.
+2. "New on REPs" gated by `created_at < 60d` AND `review_count === 0`.
+3. `sort: "nearest"` enforced when origin is added (hero, homepage tiles, WhereChip in results).
+4. Server-side radius filter → correct `total` → correct pagination.
+5. Origin-aware empty state with 1/5/10/25/50 mi quick-widen buttons.
+6. `Trains at` row: lowercase label, inline with pills, one row.
 
-## Out of scope (deferred, acknowledged)
+## Phase B — Map view (the real 10/10)
+
+- `view=list|map|split` in URL (`validateSearch` + `fallback`).
+- `MapToggle` in the results bar header (`[☰ List] [🗺 Map]`), `split` default on `lg:`, `list` on mobile.
+- Split layout `lg:`: list `w-[560px]` left, map `flex-1` right. Virtualise list with `@tanstack/react-virtual` when `total > 50`.
+- Google Maps via the existing browser key (`VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY`). No `mapId`, no `AdvancedMarkerElement`. Custom orange `google.maps.Marker` for each result; pin scales + raises z-index on card hover and vice-versa.
+- Bounds: fit to all visible markers; clamp to `radius_mi` circle when set (draw a soft orange `Circle` overlay).
+- Mobile: map opens as a full-screen bottom `Sheet`, never split. "Show map" floating pill above the result list.
+- Markers source `location.latitude/longitude` from the row shape we already return.
+
+## Phase C — deferred (unchanged)
+
+Saved searches, compare drawer. Not in this PR.
+
+---
+
+## Backend touches
+
+- `searchProfessionals` input schema gains `radius_mi`, `origin_lat`, `origin_lng`.
+- Handler: when radius present, fetch matched `professional_locations`, Haversine-filter, recompute `total`, then page.
+- No schema migration.
+
+## Out of scope
 
 - Wiring `/pro/$slug` to live data.
-- Phase C above.
-- Any change to locked profile / homepage / city / enquire pages beyond what's listed here.
+- Phase C.
+- Any locked profile / homepage / city / enquire visual changes.
 
-## Suggested ship order
+## Ship order
 
-1. **Part 1 + Phase A** in one PR — biggest quality jump per hour, lands every user-visible ask incl. gym pills.
-2. **Phase B** (map) in a follow-up PR.
-3. **Phase C** later, after real usage data.
+1. **Phase A.1** — six-fix polish PR (lands every question above).
+2. **Phase B** — map view, follow-up PR.
+3. Phase C later.
 
 ## Verification
 
-- `/find-a-professional`: dark solid nav, no header location pin, URL defaults to `sort=nearest`, 4–6 cards on 1160px viewport, each card shows price (or omits cleanly), rating or `New on REPs`, unified CTA, closest-result ribbon, **Trains at gym pills (max 2 + overflow)** on every in-person pro and hidden on online-only pros. Sort dropdown shows full option set. Mobile chip row scrolls horizontally without wrapping.
-- `/`: no header location pin, every specialism tile keyboard-focusable and routes to the correct filtered results.
-- Phase B only: `?view=map` and `?view=split` render the Google map; hovering a card highlights its pin and vice versa; mobile opens map as a bottom Sheet.
+- Sticky bar sits flush under the dark header at scroll-top, gains a shadow on scroll.
+- Pro created >60d ago with 0 reviews shows no rating row and no "New on REPs" pill.
+- Submitting a city or postcode from the hero, homepage tiles, or WhereChip forces `sort=nearest`.
+- `?radius_mi=1` in Lowestoft shows "1 page · 2 results", not 17 pages.
+- 0 results in radius shows the radius-widen empty state.
+- Phase B: `?view=split` renders the map; hovering a card highlights its pin; mobile opens the map Sheet.
