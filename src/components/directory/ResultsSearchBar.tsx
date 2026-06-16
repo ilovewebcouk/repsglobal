@@ -17,6 +17,7 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  ArrowUpDown,
   ChevronDown,
   Crosshair,
   Filter,
@@ -170,11 +171,87 @@ export function ResultsSearchBar({
   return (
     <div
       className={cn(
-        "sticky top-[72px] z-30 bg-reps-warm-white/95 backdrop-blur-md transition-shadow",
+        "sticky top-[72px] z-30 transition-shadow",
+        // Mobile: dark chrome to match the chosen direction.
+        // Desktop: light, sticky over ivory.
+        "bg-reps-ink lg:bg-reps-warm-white/95 lg:backdrop-blur-md",
         scrolled && "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]",
       )}
     >
-      <div className="mx-auto max-w-[1320px] px-4 py-2.5 sm:px-6 lg:px-10 lg:py-3">
+      {/* ============================== MOBILE (< lg) ============================== */}
+      <div className="lg:hidden">
+        {/* Dark search block — two stacked full-width inputs */}
+        <div className="px-4 pt-3 pb-3">
+          <div className="flex flex-col gap-2">
+            <WhatChip
+              variant="mobile-input"
+              label={whatLabel}
+              onPick={(entry) =>
+                patch({
+                  profession: entry?.route.profession,
+                  specialism: entry?.route.specialism,
+                  q: undefined,
+                })
+              }
+              onFreeText={(t) =>
+                patch({ q: t, profession: undefined, specialism: undefined })
+              }
+              onClear={() =>
+                patch({ profession: undefined, specialism: undefined, q: undefined })
+              }
+            />
+            <WhereChip
+              variant="mobile-input"
+              label={whereLabel}
+              origin={origin}
+              currentCity={state.city}
+              onCity={(c) => patch({ city: c, sort: "nearest" })}
+              onOriginSet={() => patch({ sort: "nearest" })}
+              onClear={() => patch({ city: undefined })}
+            />
+          </div>
+        </div>
+
+        {/* Filters / Sort split bar */}
+        <div className="grid grid-cols-2 border-t border-white/10">
+          <MobileFiltersSheet
+            variant="split-bar"
+            state={state}
+            originAvailable={Boolean(origin)}
+            activeCount={activeFilterCount}
+            onChange={patch}
+          />
+          <div className="border-l border-white/10">
+            <MobileSortButton
+              value={state.sort === "nearest" && !origin ? "recommended" : state.sort}
+              originAvailable={Boolean(origin)}
+              onChange={(s) => patch({ sort: s })}
+            />
+          </div>
+        </div>
+
+        {/* Active filter chips */}
+        {activeFilterCount > 0 || state.q || state.profession || state.specialism ? (
+          <div className="border-t border-white/10 bg-reps-ink">
+            <ActiveChipsRow
+              state={state}
+              total={total}
+              onClear={patch}
+              variant="mobile-dark"
+            />
+          </div>
+        ) : null}
+
+        {/* Result count strip */}
+        <div className="border-y border-reps-stone bg-reps-warm-white px-4 py-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-reps-muted-light">
+            {total.toLocaleString()} {total === 1 ? "result" : "results"} found
+          </p>
+        </div>
+      </div>
+
+      {/* ============================== DESKTOP (lg+) ============================== */}
+      <div className="mx-auto hidden max-w-[1320px] px-4 py-2.5 sm:px-6 lg:block lg:px-10 lg:py-3">
         {/* Row 1 — Search chips */}
         <div className="flex flex-wrap items-center gap-2">
           <WhatChip
@@ -198,14 +275,11 @@ export function ResultsSearchBar({
             label={whereLabel}
             origin={origin}
             currentCity={state.city}
-            // Setting any origin (city, postcode, geo) forces sort→nearest so
-            // the list immediately re-ranks by distance.
             onCity={(c) => patch({ city: c, sort: "nearest" })}
             onOriginSet={() => patch({ sort: "nearest" })}
             onClear={() => patch({ city: undefined })}
           />
 
-          {/* Desktop: inline mode toggle. Mobile: hidden, lives in sheet. */}
           <div className="hidden lg:block">
             <ModeToggle
               value={state.mode}
@@ -213,7 +287,6 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Desktop filters popover (rating + radius + venue) */}
           <div className="hidden lg:block">
             <FiltersPopover
               state={state}
@@ -223,17 +296,6 @@ export function ResultsSearchBar({
             />
           </div>
 
-          {/* Mobile: single filters sheet (everything) */}
-          <div className="lg:hidden">
-            <MobileFiltersSheet
-              state={state}
-              originAvailable={Boolean(origin)}
-              activeCount={activeFilterCount}
-              onChange={patch}
-            />
-          </div>
-
-          {/* Right side: view toggle (desktop) + sort */}
           <div className="ml-auto flex items-center gap-3">
             <ViewToggle
               value={state.view}
@@ -247,12 +309,51 @@ export function ResultsSearchBar({
           </div>
         </div>
 
-        {/* Row 2 — Active filter chips, only when something is set beyond defaults */}
         {activeFilterCount > 0 || state.q || state.profession || state.specialism ? (
           <ActiveChipsRow state={state} total={total} onClear={patch} />
         ) : null}
       </div>
     </div>
+  );
+}
+
+/* ===================================================== MobileSortButton */
+
+const SORT_LABELS: Record<ResultsBarSort, string> = {
+  recommended: "Recommended",
+  nearest: "Nearest",
+  rating: "Highest rated",
+  most_reviewed: "Most reviewed",
+  newest: "Newest",
+};
+
+function MobileSortButton({
+  value,
+  originAvailable,
+  onChange,
+}: {
+  value: ResultsBarSort;
+  originAvailable: boolean;
+  onChange: (s: ResultsBarSort) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as ResultsBarSort)}>
+      <SelectTrigger
+        className="h-12 w-full justify-center gap-2 rounded-none border-0 bg-transparent px-4 text-[13.5px] font-medium text-white shadow-none hover:bg-white/5 focus:ring-0 [&>svg:last-child]:hidden"
+      >
+        <ArrowUpDown className="size-4 text-white/60" />
+        <span>{SORT_LABELS[value]}</span>
+      </SelectTrigger>
+      <SelectContent className="rounded-[12px]">
+        <SelectGroup>
+          {originAvailable && <SelectItem value="nearest">Nearest</SelectItem>}
+          <SelectItem value="recommended">Recommended</SelectItem>
+          <SelectItem value="rating">Highest rated</SelectItem>
+          <SelectItem value="most_reviewed">Most reviewed</SelectItem>
+          <SelectItem value="newest">Newest</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -263,11 +364,13 @@ function WhatChip({
   onPick,
   onFreeText,
   onClear,
+  variant = "chip",
 }: {
   label: string | null;
   onPick: (entry: SearchEntry) => void;
   onFreeText: (text: string) => void;
   onClear: () => void;
+  variant?: "chip" | "mobile-input";
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
@@ -287,27 +390,58 @@ function WhatChip({
     return out;
   }, [ranked]);
 
+  const isMobileInput = variant === "mobile-input";
+
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
-        label
-          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
-          : "border-reps-stone hover:border-reps-orange/40",
+        isMobileInput
+          ? "relative w-full"
+          : cn(
+              "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+              label
+                ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+                : "border-reps-stone hover:border-reps-orange/40",
+            ),
       )}
     >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
-          >
-            <Search className="h-3.5 w-3.5 text-reps-orange" />
-            <span className="max-w-[180px] truncate">
-              {label ?? "What are you looking for?"}
-            </span>
-            {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
-          </button>
+          {isMobileInput ? (
+            <button
+              type="button"
+              className="flex h-12 w-full items-center gap-2.5 rounded-[12px] border border-white/10 bg-white/[0.06] px-3.5 text-left text-[14px] font-medium text-white transition-colors hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-reps-orange/60"
+            >
+              <Search className="size-4 shrink-0 text-white/50" />
+              <span className={cn("flex-1 truncate", !label && "text-white/45")}>
+                {label ?? "Personal trainer, yoga, fat loss…"}
+              </span>
+              {label ? (
+                <span
+                  role="button"
+                  aria-label="Clear what"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClear();
+                  }}
+                  className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="size-3" />
+                </span>
+              ) : null}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
+            >
+              <Search className="h-3.5 w-3.5 text-reps-orange" />
+              <span className="max-w-[180px] truncate">
+                {label ?? "What are you looking for?"}
+              </span>
+              {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
+            </button>
+          )}
         </PopoverTrigger>
         <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-0">
           <Command shouldFilter={false}>
@@ -393,7 +527,7 @@ function WhatChip({
           </Command>
         </PopoverContent>
       </Popover>
-      {label ? (
+      {label && !isMobileInput ? (
         <button
           type="button"
           aria-label="Clear what"
@@ -417,6 +551,7 @@ function WhereChip({
   onCity,
   onOriginSet,
   onClear,
+  variant = "chip",
 }: {
   label: string | null;
   origin: ReturnType<typeof useViewerOrigin>["origin"];
@@ -424,6 +559,7 @@ function WhereChip({
   onCity: (city: string) => void;
   onOriginSet: () => void;
   onClear: () => void;
+  variant?: "chip" | "mobile-input";
 }) {
   const [open, setOpen] = React.useState(false);
   const { setOrigin, runPostcode, runGeolocate, setManual, busy } =
@@ -516,25 +652,56 @@ function WhereChip({
     setText("");
   };
 
+  const isMobileInput = variant === "mobile-input";
+
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
-        label
-          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
-          : "border-reps-stone hover:border-reps-orange/40",
+        isMobileInput
+          ? "relative w-full"
+          : cn(
+              "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+              label
+                ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+                : "border-reps-stone hover:border-reps-orange/40",
+            ),
       )}
     >
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
-        >
-          <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
-          <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
-          {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
-        </button>
+        {isMobileInput ? (
+          <button
+            type="button"
+            className="flex h-12 w-full items-center gap-2.5 rounded-[12px] border border-white/10 bg-white/[0.06] px-3.5 text-left text-[14px] font-medium text-white transition-colors hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-reps-orange/60"
+          >
+            <MapPin className="size-4 shrink-0 text-white/50" />
+            <span className={cn("flex-1 truncate", !label && "text-white/45")}>
+              {label ?? "City or postcode"}
+            </span>
+            {label ? (
+              <span
+                role="button"
+                aria-label="Clear location"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearAll();
+                }}
+                className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+              >
+                <X className="size-3" />
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
+          >
+            <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
+            <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
+            {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
+          </button>
+        )}
       </PopoverTrigger>
 
       <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-3">
@@ -622,7 +789,7 @@ function WhereChip({
         </div>
       </PopoverContent>
     </Popover>
-      {label ? (
+      {label && !isMobileInput ? (
         <button
           type="button"
           aria-label="Clear location"
@@ -821,33 +988,51 @@ function MobileFiltersSheet({
   originAvailable,
   activeCount,
   onChange,
+  variant = "chip",
 }: {
   state: ResultsBarState;
   originAvailable: boolean;
   activeCount: number;
   onChange: (p: Patch) => void;
+  variant?: "chip" | "split-bar";
 }) {
   const [open, setOpen] = React.useState(false);
+  const isSplitBar = variant === "split-bar";
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium",
-            activeCount > 0
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal"
-              : "border-reps-stone text-reps-charcoal",
-          )}
-        >
-          <Filter className="size-3.5" />
-          Filters
-          {activeCount > 0 ? (
-            <Badge variant="secondary" className="rounded-full px-1.5 text-[11px]">
-              {activeCount}
-            </Badge>
-          ) : null}
-        </button>
+        {isSplitBar ? (
+          <button
+            type="button"
+            className="flex h-12 w-full items-center justify-center gap-2 px-4 text-[13.5px] font-medium text-white transition-colors hover:bg-white/5"
+          >
+            <SlidersHorizontal className="size-4 text-white/60" />
+            Filters
+            {activeCount > 0 ? (
+              <span className="ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-reps-orange text-[11px] font-bold text-white">
+                {activeCount}
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium",
+              activeCount > 0
+                ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal"
+                : "border-reps-stone text-reps-charcoal",
+            )}
+          >
+            <Filter className="size-3.5" />
+            Filters
+            {activeCount > 0 ? (
+              <Badge variant="secondary" className="rounded-full px-1.5 text-[11px]">
+                {activeCount}
+              </Badge>
+            ) : null}
+          </button>
+        )}
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-[22px] p-0">
         <SheetHeader className="border-b border-reps-stone/70 px-5 py-4 text-left">
@@ -1038,11 +1223,14 @@ function ActiveChipsRow({
   state,
   total,
   onClear,
+  variant = "default",
 }: {
   state: ResultsBarState;
   total: number;
   onClear: (p: Patch) => void;
+  variant?: "default" | "mobile-dark";
 }) {
+  const isDark = variant === "mobile-dark";
   const chips: Array<{ key: string; label: string; clear: Patch }> = [];
 
   if (state.profession) {
@@ -1100,6 +1288,42 @@ function ActiveChipsRow({
   }
 
   if (chips.length === 0) return null;
+
+  if (isDark) {
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {chips.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => onClear(c.clear)}
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-3 text-[12px] font-semibold text-reps-orange transition-colors hover:bg-reps-orange/20"
+          >
+            <span className="whitespace-nowrap">{c.label}</span>
+            <X className="size-3" />
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() =>
+            onClear({
+              profession: undefined,
+              specialism: undefined,
+              q: undefined,
+              mode: "any",
+              verified: false,
+              min_rating: 0,
+              radius_mi: 0,
+              venue: undefined,
+            })
+          }
+          className="shrink-0 whitespace-nowrap px-1 text-[12px] font-semibold text-white/70 hover:text-white"
+        >
+          Clear
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-2.5 flex flex-wrap items-center gap-2">
