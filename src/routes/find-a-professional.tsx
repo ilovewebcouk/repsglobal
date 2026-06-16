@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { searchProfessionals } from "@/lib/directory/search.functions";
 import { getProfessionLabel } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+import { searchTaxonomy } from "@/lib/search/taxonomy";
+
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
 import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
