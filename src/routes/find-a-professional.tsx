@@ -252,8 +252,8 @@ function DirectoryPage() {
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
-            rating: 0,
-            reviews: 0,
+            rating: r.rating_avg ?? 0,
+            reviews: r.review_count,
             mode: r.in_person_available && r.online_available
               ? "In-person & Online" as const
               : r.online_available
@@ -262,7 +262,9 @@ function DirectoryPage() {
             tags: specLabels.slice(0, 3),
             blurb: r.headline || "",
             image: r.avatar_url ?? null,
-            venues: [],
+            gyms: r.gyms,
+            from_price_pence: r.from_price_pence,
+            created_at: r.created_at,
             slug: r.slug ?? undefined,
             live: true,
             identity_status: r.identity_status,
