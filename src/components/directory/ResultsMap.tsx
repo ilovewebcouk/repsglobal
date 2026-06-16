@@ -16,7 +16,7 @@ import {
   type GoogleMarker,
   type MapsLibrary,
 } from "@/lib/google/maps";
-import { Crosshair, Loader2 } from "lucide-react";
+import { Crosshair, Loader2, Maximize2, Minimize2 } from "lucide-react";
 
 export type MapPro = {
   slug: string;
@@ -31,7 +31,11 @@ type Props = {
   hoveredSlug: string | null;
   onHover?: (slug: string | null) => void;
   className?: string;
+  /** When provided, renders an Airbnb-style expand pill (lg+ only). */
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 };
+
 
 // Inline SVG pin (data URI) — orange dot with white ring + price chip.
 function pinIcon(active: boolean, priceLabel: string | null) {
