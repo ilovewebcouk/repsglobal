@@ -789,7 +789,7 @@ function WhereChip({
         </div>
       </PopoverContent>
     </Popover>
-      {label ? (
+      {label && !isMobileInput ? (
         <button
           type="button"
           aria-label="Clear location"
