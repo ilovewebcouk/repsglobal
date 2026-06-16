@@ -688,6 +688,61 @@ function ModeToggle({
   );
 }
 
+/* ============================================================ ViewToggle */
+
+function ViewToggle({
+  value,
+  onChange,
+}: {
+  value: ResultsBarView;
+  onChange: (v: ResultsBarView) => void;
+}) {
+  // Mobile: List ↔ Map. Desktop (lg): List · Split · Map.
+  // Split is the rich power-user view; mobile collapses to a binary.
+  return (
+    <div className="hidden items-center gap-0.5 rounded-full border border-reps-stone bg-reps-warm-white p-0.5 md:inline-flex">
+      <button
+        type="button"
+        aria-pressed={value === "list"}
+        onClick={() => onChange("list")}
+        className={cn(
+          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+          value === "list"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        List
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "split"}
+        onClick={() => onChange("split")}
+        className={cn(
+          "hidden h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors lg:inline-flex lg:items-center",
+          value === "split"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        Split
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "map"}
+        onClick={() => onChange("map")}
+        className={cn(
+          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+          value === "map"
+            ? "bg-reps-charcoal text-white"
+            : "text-reps-charcoal hover:bg-white",
+        )}
+      >
+        Map
+      </button>
+    </div>
+  );
+
 /* ========================================================== SortSelect */
 
 function SortSelect({
