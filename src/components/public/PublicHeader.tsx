@@ -27,7 +27,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import {
   Tooltip,
   TooltipContent,
@@ -151,8 +151,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
 
   
 
-  // Two-row expanded layout only on home, at rest, on desktop.
-  const expanded = active.isHome && !isSolid;
 
   const wrapperClass = cn(
     "z-50 transition-colors duration-200",
