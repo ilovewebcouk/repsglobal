@@ -1257,14 +1257,18 @@ function PagerNum({
   n,
   active,
   className,
+  onClick,
 }: {
   n: number;
   active?: boolean;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={`flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-semibold transition-colors sm:h-11 sm:w-11 ${
         active
           ? "bg-reps-orange text-white"
@@ -1278,15 +1282,32 @@ function PagerNum({
 
 function PagerBtn({
   children,
+  className,
+  disabled,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
+      disabled={disabled}
       {...rest}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11"
+      className={`flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11 ${
+        disabled ? "cursor-not-allowed opacity-40 hover:bg-white" : ""
+      } ${className ?? ""}`}
     >
       {children}
     </button>
   );
+}
+
+function compactPagerRange(current: number, total: number): Array<number | "…"> {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: Array<number | "…"> = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) out.push("…");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("…");
+  out.push(total);
+  return out;
 }
