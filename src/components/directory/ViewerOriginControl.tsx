@@ -69,7 +69,7 @@ export function ViewerOriginControl() {
             type="button"
             variant="outline"
             className="w-full justify-start gap-2 rounded-[10px] shadow-none"
-            onClick={() => geoMutation.mutate()}
+            onClick={() => runGeolocate()}
             disabled={busy}
           >
             <Crosshair className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export function ViewerOriginControl() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (postcode.trim()) postcodeMutation.mutate(postcode);
+              if (postcode.trim()) runPostcode(postcode);
             }}
             className="flex gap-2"
           >
