@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -10,11 +9,10 @@ import { searchTaxonomy } from "@/lib/search/taxonomy";
 
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
-import { ViewerOriginControl } from "@/components/directory/ViewerOriginControl";
+import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
 import {
   BadgeCheck,
   Bookmark,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Compass,
@@ -25,9 +23,7 @@ import {
   Sparkles,
   Star,
   Trophy,
-  UserRound,
   Users,
-  X,
 } from "lucide-react";
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -52,7 +48,8 @@ const VALID_VENUE_SLUGS = new Set([
   "anytime-fitness",
 ]);
 
-const VALID_SORTS = new Set(["recommended", "nearest", "rating"]);
+const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating"]);
+const VALID_MODES = new Set<ResultsBarMode>(["any", "in_person", "online"]);
 
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
