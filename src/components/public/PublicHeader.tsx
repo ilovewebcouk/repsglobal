@@ -63,7 +63,6 @@ import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 type Variant = "transparent" | "solid";
 
 const SCROLL_THRESHOLD = 96;
-const LOCATION_KEY = "reps.location";
 
 /* ---------------- hooks ---------------- */
 
@@ -108,26 +107,8 @@ function useActive() {
   };
 }
 
-function useLocationPin() {
-  const [city, setCity] = useState<string>("London");
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(LOCATION_KEY);
-      if (saved) setCity(saved);
-    } catch {
-      /* noop */
-    }
-  }, []);
-  const update = (next: string) => {
-    setCity(next);
-    try {
-      window.localStorage.setItem(LOCATION_KEY, next);
-    } catch {
-      /* noop */
-    }
-  };
-  return { city, setCity: update };
-}
+
+
 
 
 
@@ -166,7 +147,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
   const [mobileOpen, setMobileOpen] = useState(false);
   
   
-  const { city, setCity } = useLocationPin();
   const { user, isAdmin, signOut } = useSessionUser();
 
   
@@ -193,14 +173,8 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                 <RepsWordmark className="h-[22px] text-white" />
               </Link>
 
-
-
-              <LocationPin
-                city={city}
-                onChange={setCity}
-                className={cn("hidden lg:inline-flex", expanded && "lg:hidden")}
-              />
             </div>
+
 
             <NavigationMenu.Root
               delayDuration={120}
