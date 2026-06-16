@@ -377,7 +377,7 @@ function DirectoryPage() {
   // Fall back to Recommended if origin is cleared while Nearest is selected
   React.useEffect(() => {
     if (!origin && sort === "nearest") {
-      navigate({ search: (prev) => ({ ...prev, sort: "recommended" as const }) });
+      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: "recommended" as const }) });
     }
   }, [origin, sort, navigate]);
 
