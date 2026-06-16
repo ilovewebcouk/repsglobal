@@ -49,6 +49,8 @@ const VALID_VENUE_SLUGS = new Set([
   "anytime-fitness",
 ]);
 
+const VALID_SORTS = new Set(["recommended", "nearest", "rating"]);
+
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
     const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
@@ -57,12 +59,17 @@ export const Route = createFileRoute("/find-a-professional")({
       typeof raw[k] === "string" && (raw[k] as string).length > 0
         ? ((raw[k] as string).slice(0, 120))
         : undefined;
+    const pageRaw = Number(raw.page);
+    const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+    const sortRaw = typeof raw.sort === "string" && VALID_SORTS.has(raw.sort) ? raw.sort : "recommended";
     return {
       venue,
       city: str("city"),
       profession: str("profession"),
       specialism: str("specialism"),
       q: str("q"),
+      page,
+      sort: sortRaw as "recommended" | "nearest" | "rating",
     };
   },
   head: () => ({
