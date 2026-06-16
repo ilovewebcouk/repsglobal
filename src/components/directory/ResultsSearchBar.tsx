@@ -22,6 +22,7 @@ import {
   Filter,
   MapPin,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Star,
   X,
@@ -69,6 +70,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 
 import {
   type SearchEntry,
@@ -100,6 +102,7 @@ export type ResultsBarState = {
   city?: string;
   venue?: string;
   mode: ResultsBarMode;
+  verified: boolean;
   min_rating: number; // 0 = any
   radius_mi: number; // 0 = any
   sort: ResultsBarSort;
@@ -130,7 +133,7 @@ export function ResultsSearchBar({
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
-            if (v == null || v === "" || v === "any" || v === 0) delete next[k];
+            if (v == null || v === "" || v === "any" || v === 0 || v === false) delete next[k];
           }
           // Defaults that should not appear in the URL.
           // (sort default is "recommended" — see validateSearch in find-a-professional.tsx)
@@ -145,6 +148,7 @@ export function ResultsSearchBar({
 
   const activeFilterCount =
     (state.mode !== "any" ? 1 : 0) +
+    (state.verified ? 1 : 0) +
     (state.min_rating > 0 ? 1 : 0) +
     (state.radius_mi > 0 ? 1 : 0) +
     (state.venue ? 1 : 0);
@@ -867,6 +871,7 @@ function MobileFiltersSheet({
             onClick={() =>
               onChange({
                 mode: "any",
+                verified: false,
                 min_rating: 0,
                 radius_mi: 0,
                 venue: undefined,
@@ -911,6 +916,22 @@ function FiltersBody({
           />
         </FilterBlock>
       ) : null}
+
+      <FilterBlock label="Verified only">
+        <label className="flex cursor-pointer items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[13px] text-reps-charcoal">
+            <ShieldCheck className="size-4 text-emerald-500" />
+            Verified only
+          </span>
+          <Switch
+            checked={state.verified}
+            onCheckedChange={(v) => onChange({ verified: v })}
+          />
+        </label>
+        <p className="text-[11px] leading-snug text-reps-muted-light">
+          Only show REPs Verified professionals
+        </p>
+      </FilterBlock>
 
       <FilterBlock label="Minimum rating">
         <RadioGroup
@@ -1048,6 +1069,13 @@ function ActiveChipsRow({
       clear: { mode: "any" },
     });
   }
+  if (state.verified) {
+    chips.push({
+      key: "verified",
+      label: "Verified only",
+      clear: { verified: false },
+    });
+  }
   if (state.min_rating > 0) {
     chips.push({
       key: "rating",
@@ -1098,6 +1126,7 @@ function ActiveChipsRow({
             specialism: undefined,
             q: undefined,
             mode: "any",
+            verified: false,
             min_rating: 0,
             radius_mi: 0,
             venue: undefined,

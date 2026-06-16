@@ -10,6 +10,7 @@ const SearchSchema = z.object({
   specialism: z.string().trim().max(60).optional(),
   online: z.boolean().optional(),
   in_person: z.boolean().optional(),
+  verified: z.boolean().optional(),
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
@@ -115,6 +116,9 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (data.specialism) qb = qb.contains("specialisms", [data.specialism]);
     if (data.online === true) qb = qb.eq("online_available", true);
     if (data.in_person === true) qb = qb.eq("in_person_available", true);
+    if (data.verified === true) {
+      qb = qb.eq("verification", "verified").eq("identity_status", "approved");
+    }
     if (data.q) {
       const term = data.q.replace(/[%_]/g, "\\$&");
       qb = qb.or(`headline.ilike.%${term}%,slug.ilike.%${term}%`);

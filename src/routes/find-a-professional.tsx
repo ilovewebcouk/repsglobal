@@ -86,6 +86,8 @@ export const Route = createFileRoute("/find-a-professional")({
       typeof raw.view === "string" && VALID_VIEWS.has(raw.view as ResultsBarView)
         ? (raw.view as ResultsBarView)
         : ("list" as ResultsBarView);
+    const verified =
+      raw.verified === true || raw.verified === "1" || raw.verified === "true";
     return {
       venue,
       city: str("city"),
@@ -95,6 +97,7 @@ export const Route = createFileRoute("/find-a-professional")({
       page,
       sort: sortRaw,
       mode: modeRaw,
+      verified,
       min_rating,
       radius_mi,
       view: viewRaw,
@@ -208,6 +211,7 @@ function DirectoryPage() {
     page,
     sort,
     mode,
+    verified,
     min_rating,
     radius_mi,
     view,
@@ -229,7 +233,7 @@ function DirectoryPage() {
     queryKey: [
       "directory",
       "search",
-      { city, profession, specialism, q, page, mode, useNearestServer,
+      { city, profession, specialism, q, page, mode, verified, useNearestServer,
         vlat: useNearestServer ? viewerOriginEarly?.latitude : null,
         vlng: useNearestServer ? viewerOriginEarly?.longitude : null },
     ],
@@ -244,6 +248,7 @@ function DirectoryPage() {
           limit: PAGE_SIZE,
           online: serverFilters.online,
           in_person: serverFilters.in_person,
+          verified,
           sort_by_nearest: useNearestServer,
           viewer_lat: useNearestServer ? viewerOriginEarly!.latitude : undefined,
           viewer_lng: useNearestServer ? viewerOriginEarly!.longitude : undefined,
@@ -408,6 +413,7 @@ function DirectoryPage() {
     city,
     venue: venueFilter,
     mode,
+    verified,
     min_rating,
     radius_mi,
     sort,
