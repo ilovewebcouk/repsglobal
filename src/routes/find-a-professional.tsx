@@ -435,16 +435,28 @@ function DirectoryPage() {
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
         <div
-          className={`mx-auto px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-14 lg:pt-5 ${
-            showMapAside ? "max-w-[1480px]" : "max-w-[1100px]"
+          className={`mx-auto px-5 pb-10 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pt-5 ${
+            showMapAside ? "max-w-[1480px] lg:pb-0" : "max-w-[1100px] lg:pb-14"
           }`}
         >
           <div
-            className={`${
-              showMapAside ? "lg:grid lg:gap-6 lg:grid-cols-[minmax(0,1fr)_460px]" : ""
-            }`}
+            className={
+              showMapAside
+                ? "lg:flex lg:gap-6 lg:h-[calc(100vh-148px)]"
+                : ""
+            }
           >
-            <div ref={resultsRef} className={hideListAtLg ? "lg:hidden" : ""}>
+            <div
+              ref={resultsRef}
+              className={
+                showMapAside
+                  ? `lg:flex-1 lg:min-w-0 lg:overflow-y-auto lg:pr-1 lg:pb-10 ${
+                      hideListAtLg ? "lg:hidden" : ""
+                    }`
+                  : ""
+              }
+            >
+
             {/* Did-you-mean: free-text q with no structured filter */}
             {q && !profession && !specialism ? <DidYouMeanBanner query={q} /> : null}
 
