@@ -1909,6 +1909,7 @@ export type Database = {
           primary_profession: string | null
           primary_title_slug: string | null
           public_email: string | null
+          quality_score: number
           reps_level: Database["public"]["Enums"]["reps_level"] | null
           slug: string | null
           social_instagram: string | null
@@ -1952,6 +1953,7 @@ export type Database = {
           primary_profession?: string | null
           primary_title_slug?: string | null
           public_email?: string | null
+          quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
           social_instagram?: string | null
@@ -1995,6 +1997,7 @@ export type Database = {
           primary_profession?: string | null
           primary_title_slug?: string | null
           public_email?: string | null
+          quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
           social_instagram?: string | null
@@ -2866,6 +2869,8 @@ export type Database = {
           seeded: number
         }[]
       }
+      admin_seed_demo_pros: { Args: never; Returns: number }
+      compute_pro_quality_score: { Args: { _pro_id: string }; Returns: number }
       convert_lead_to_client: { Args: { _enquiry_id: string }; Returns: string }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
@@ -2979,6 +2984,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      refresh_pro_quality_score: {
+        Args: { _pro_id: string }
+        Returns: undefined
       }
       run_monthly_credit_refills: { Args: never; Returns: number }
       seed_bd_member_into_directory: {
