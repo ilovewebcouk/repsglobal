@@ -8,12 +8,18 @@ export type AdminProRow = {
   avatarUrl: string | null;
   location: string | null;
   profession: string | null;
+  professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio';
   planMrrPence: number;
   status: 'verified' | 'pending' | 'flagged' | 'suspended' | 'unpublished';
   rating: number | null;
   clients: number;
   joined: string;
+  isPublished: boolean;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
+  verification: string;
+  email: string | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -28,12 +34,14 @@ const PROFESSION_LABEL: Record<string, string> = {
 
 function planMrrPence(tier: string): number {
   switch (tier) {
-    case 'verified': return 825;   // £99/yr ÷ 12
-    case 'pro':      return 5900;  // £59/mo
-    case 'studio':   return 14900; // £149/mo
+    case 'verified': return 825;
+    case 'pro':      return 5900;
+    case 'studio':   return 14900;
     default:         return 0;
   }
 }
+
+const PLAN_RANK: Record<string, number> = { studio: 4, pro: 3, verified: 2, free: 1 };
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data: isAdmin } = await ctx.supabase.rpc('has_role', {
@@ -69,42 +77,57 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
 
     return {
-      activeCount,
-      verifiedCount,
+      activeCount, verifiedCount,
       verifiedPct: activeCount ? (verifiedCount / activeCount) * 100 : 0,
-      avgRating,
-      newSignups30: signups,
-      newSignupsDeltaPct: wow,
+      avgRating, newSignups30: signups, newSignupsDeltaPct: wow,
     };
   });
 
 const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'recent'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
+export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr';
+export type SortDir = 'asc' | 'desc';
+
+export type AdminProFilters = {
+  plans?: ('free' | 'verified' | 'pro' | 'studio')[];
+  professions?: string[];
+  hasAvatar?: boolean;
+};
 
 export const listAdminProfessionals = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { q?: string; tab?: AdminProTab; page?: number; pageSize?: number }) => ({
+  .inputValidator((d: {
+    q?: string; tab?: AdminProTab; page?: number; pageSize?: number;
+    sort?: AdminProSort; dir?: SortDir; filters?: AdminProFilters;
+  }) => ({
     q: (d.q ?? '').trim(),
     tab: (d.tab ?? 'all') as AdminProTab,
     page: Math.max(1, d.page ?? 1),
     pageSize: Math.min(100, Math.max(5, d.pageSize ?? 25)),
+    sort: (d.sort ?? 'joined') as AdminProSort,
+    dir: (d.dir ?? 'desc') as SortDir,
+    filters: d.filters ?? {},
   }))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
 
+    // Fetch a generously sized window so we can sort across joined data
+    // (rating/clients/plan) without an RPC. Realistic register sizes for v1.
+    const FETCH_CAP = 1000;
+
     let query = supabaseAdmin
       .from('professionals')
       .select(
-        'id, slug, city, primary_profession, verification, is_published, created_at',
+        'id, slug, city, primary_profession, verification, is_published, created_at, suspended_at, suspension_reason',
         { count: 'exact' }
       );
 
     switch (data.tab) {
-      case 'verified':   query = query.eq('verification', 'verified'); break;
+      case 'verified':   query = query.eq('verification', 'verified').eq('is_published', true); break;
       case 'pending':    query = query.eq('verification', 'pending'); break;
       case 'flagged':    query = query.eq('verification', 'rejected'); break;
-      case 'suspended':  query = query.eq('is_published', false).eq('verification', 'verified'); break;
+      case 'suspended':  query = query.eq('is_published', false).not('suspended_at', 'is', null); break;
       case 'recent': {
         const since = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
         query = query.gte('created_at', since);
@@ -112,16 +135,18 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       }
     }
 
+    if (data.filters.professions?.length) {
+      query = query.in('primary_profession', data.filters.professions);
+    }
     if (data.q) {
-      // Match against slug; name search runs after we join profiles below.
       query = query.or(`slug.ilike.%${data.q}%,city.ilike.%${data.q}%`);
     }
 
-    const from = (data.page - 1) * data.pageSize;
-    const to = from + data.pageSize - 1;
+    // We need to over-fetch to sort across joined data. Server orders by
+    // created_at desc as the stable cursor; we re-sort in JS.
     const { data: pros, count, error } = await query
       .order('created_at', { ascending: false })
-      .range(from, to);
+      .limit(FETCH_CAP);
     if (error) throw error;
 
     const ids = (pros ?? []).map(p => p.id);
@@ -158,7 +183,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
-        p.is_published === false && p.verification === 'verified' ? 'suspended'
+        p.is_published === false && p.suspended_at ? 'suspended'
         : p.is_published === false ? 'unpublished'
         : p.verification === 'verified' ? 'verified'
         : p.verification === 'rejected' ? 'flagged'
@@ -171,16 +196,22 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         avatarUrl: profile?.avatar_url ?? null,
         location: p.city ?? null,
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
+        professionSlug: p.primary_profession ?? null,
         plan: tier,
         planMrrPence: planMrrPence(tier),
         status,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,
         clients: clientCount.get(p.id) ?? 0,
         joined: p.created_at,
+        isPublished: p.is_published ?? false,
+        suspendedAt: p.suspended_at ?? null,
+        suspensionReason: p.suspension_reason ?? null,
+        verification: p.verification as string,
+        email: null,
       };
     });
 
-    // Name-side search filter (we can't easily server-filter across the join).
+    // Free-text filter on name (post-join).
     if (data.q) {
       const q = data.q.toLowerCase();
       rows = rows.filter(r =>
@@ -190,5 +221,122 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       );
     }
 
-    return { rows, total: count ?? 0, page: data.page, pageSize: data.pageSize };
+    // Plan & hasAvatar filters (post-join).
+    if (data.filters.plans?.length) {
+      const set = new Set(data.filters.plans);
+      rows = rows.filter(r => set.has(r.plan));
+    }
+    if (data.filters.hasAvatar === true) rows = rows.filter(r => !!r.avatarUrl);
+    if (data.filters.hasAvatar === false) rows = rows.filter(r => !r.avatarUrl);
+
+    // Sort.
+    const dir = data.dir === 'asc' ? 1 : -1;
+    rows.sort((a, b) => {
+      switch (data.sort) {
+        case 'name':    return a.name.localeCompare(b.name) * dir;
+        case 'plan':    return ((PLAN_RANK[a.plan] ?? 0) - (PLAN_RANK[b.plan] ?? 0)) * dir;
+        case 'mrr':     return (a.planMrrPence - b.planMrrPence) * dir;
+        case 'rating':  return ((a.rating ?? -1) - (b.rating ?? -1)) * dir;
+        case 'clients': return (a.clients - b.clients) * dir;
+        case 'joined':
+        default:        return (new Date(a.joined).getTime() - new Date(b.joined).getTime()) * dir;
+      }
+    });
+
+    const total = rows.length;
+    const from = (data.page - 1) * data.pageSize;
+    const paged = rows.slice(from, from + data.pageSize);
+
+    return { rows: paged, total, page: data.page, pageSize: data.pageSize };
+  });
+
+// --- Moderation mutations -------------------------------------------------
+
+export const setProfessionalSuspension = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { professional_id: string; suspended: boolean; reason?: string }) => {
+    if (!d.professional_id) throw new Error('professional_id required');
+    if (d.suspended && !(d.reason ?? '').trim()) {
+      throw new Error('Please provide a reason for suspension.');
+    }
+    return {
+      professional_id: d.professional_id,
+      suspended: !!d.suspended,
+      reason: d.reason?.trim() || null,
+    };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+
+    const { data: prev } = await supabaseAdmin
+      .from('professionals')
+      .select('id, is_published, suspended_at, suspension_reason')
+      .eq('id', data.professional_id)
+      .maybeSingle();
+    if (!prev) throw new Error('Professional not found');
+
+    const update = data.suspended
+      ? { is_published: false, suspended_at: new Date().toISOString(), suspension_reason: data.reason }
+      : { is_published: true, suspended_at: null, suspension_reason: null };
+
+    const { error } = await supabaseAdmin
+      .from('professionals')
+      .update(update)
+      .eq('id', data.professional_id);
+    if (error) throw error;
+
+    // Look up name + email for the notification.
+    const [{ data: profile }, { data: authUser }] = await Promise.all([
+      supabaseAdmin.from('profiles').select('full_name').eq('id', data.professional_id).maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(data.professional_id),
+    ]);
+    const email = authUser?.user?.email ?? null;
+    const proName = profile?.full_name ?? null;
+
+    if (email) {
+      const { sendTransactionalEmailServer } = await import('@/lib/email/send.server');
+      await sendTransactionalEmailServer({
+        templateName: data.suspended ? 'professional-suspended' : 'professional-reinstated',
+        recipientEmail: email,
+        templateData: data.suspended
+          ? { proName, reason: data.reason }
+          : { proName },
+      }).catch((e) => { console.error('suspension email failed', e); });
+    }
+
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: data.suspended ? 'professional.suspend' : 'professional.unsuspend',
+      _target_table: 'professionals',
+      _target_id: data.professional_id,
+      _before_state: prev,
+      _after_state: update,
+      _reason: data.reason ?? undefined,
+    });
+
+    return { ok: true };
+  });
+
+export const setProfessionalFlag = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { professional_id: string; flagged: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const verification = data.flagged ? 'rejected' : 'verified';
+    const { error } = await supabaseAdmin
+      .from('professionals')
+      .update({ verification })
+      .eq('id', data.professional_id);
+    if (error) throw error;
+
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: data.flagged ? 'professional.flag' : 'professional.unflag',
+      _target_table: 'professionals',
+      _target_id: data.professional_id,
+    });
+
+    return { ok: true };
   });
