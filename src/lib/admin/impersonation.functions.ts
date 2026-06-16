@@ -129,7 +129,7 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
       return { active: false as const };
     }
 
-    const [{ data: prof }, { data: profile }] = await Promise.all([
+    const [{ data: prof }, { data: profile }, { data: sub }] = await Promise.all([
       supabaseAdmin
         .from('professionals')
         .select('id, slug')
@@ -140,7 +140,21 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
         .select('full_name, avatar_url')
         .eq('id', session.professional_id)
         .maybeSingle(),
+      supabaseAdmin
+        .from('subscriptions')
+        .select('tier, status')
+        .eq('user_id', session.professional_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
+
+    const liveStatuses = ['active', 'trialing', 'past_due', 'unpaid'];
+    const tier: 'verified' | 'pro' | 'studio' =
+      sub && liveStatuses.includes(sub.status as string) &&
+      (sub.tier === 'verified' || sub.tier === 'pro' || sub.tier === 'studio')
+        ? (sub.tier as 'verified' | 'pro' | 'studio')
+        : 'verified';
 
     return {
       active: true as const,
@@ -148,6 +162,7 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
       slug: prof?.slug ?? null,
       name: profile?.full_name ?? 'Professional',
       avatarUrl: profile?.avatar_url ?? null,
+      tier,
       startedAt: session.started_at,
       endsAt: session.ends_at,
     };
