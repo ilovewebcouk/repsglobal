@@ -398,17 +398,19 @@ function WhereChip({
   origin,
   currentCity,
   onCity,
+  onOriginSet,
   onClear,
 }: {
   label: string | null;
   origin: ReturnType<typeof useViewerOrigin>["origin"];
   currentCity: string | undefined;
   onCity: (city: string) => void;
+  onOriginSet: () => void;
   onClear: () => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const { setOrigin, runPostcode, runGeolocate, setManual, busy } =
-    useResolveViewerLocation({ onResolved: () => setOpen(false) });
+    useResolveViewerLocation({ onResolved: () => { onOriginSet(); setOpen(false); } });
 
   const [text, setText] = React.useState("");
   const [debounced, setDebounced] = React.useState("");
