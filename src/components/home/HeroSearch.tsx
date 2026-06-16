@@ -44,26 +44,12 @@ import {
 } from "@/lib/search/taxonomy";
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { useResolveViewerLocation } from "@/lib/profile/useResolveViewerLocation";
-
-const UK_POSTCODE_RE = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i;
-
-type PlacesSuggestion = {
-  placePrediction: {
-    placeId: string;
-    text: { text: string };
-    structuredFormat?: {
-      mainText?: { text: string };
-      secondaryText?: { text: string };
-    };
-    toPlace: () => {
-      fetchFields: (opts: { fields: string[] }) => Promise<void>;
-    } & {
-      location?: { lat: () => number; lng: () => number };
-      formattedAddress?: string;
-      displayName?: string;
-    };
-  };
-};
+import {
+  loadPlacesLibrary,
+  UK_POSTCODE_RE,
+  type PlacesSuggestion,
+  type PlacesLibrary,
+} from "@/lib/google/places";
 
 type SelectedWhat =
   | { mode: "entry"; entry: SearchEntry }
@@ -364,12 +350,7 @@ function WhereField(props: {
   const [suggestions, setSuggestions] = React.useState<PlacesSuggestion[]>([]);
   const [placesReady, setPlacesReady] = React.useState(false);
   const sessionTokenRef = React.useRef<unknown>(null);
-  const placesLibRef = React.useRef<{
-    AutocompleteSuggestion: {
-      fetchAutocompleteSuggestions: (req: Record<string, unknown>) => Promise<{ suggestions: PlacesSuggestion[] }>;
-    };
-    AutocompleteSessionToken: new () => unknown;
-  } | null>(null);
+  const placesLibRef = React.useRef<PlacesLibrary | null>(null);
 
   // Lazy-load Places JS on first open.
   React.useEffect(() => {
@@ -592,93 +573,4 @@ function WhereField(props: {
       </PopoverContent>
     </Popover>
   );
-}
-
-// ------------------------------------------------------- Places JS loader
-
-let placesPromise: Promise<NonNullable<unknown>> | null = null;
-
-declare global {
-  interface Window {
-    google?: {
-      maps?: {
-        importLibrary?: (name: string) => Promise<unknown>;
-      };
-    };
-    __repsHeroPlacesInit?: () => void;
-  }
-}
-
-function loadPlacesLibrary(): Promise<{
-  AutocompleteSuggestion: {
-    fetchAutocompleteSuggestions: (req: Record<string, unknown>) => Promise<{ suggestions: PlacesSuggestion[] }>;
-  };
-  AutocompleteSessionToken: new () => unknown;
-}> {
-  if (placesPromise) return placesPromise as Promise<never>;
-
-  placesPromise = new Promise((resolve, reject) => {
-    if (typeof window === "undefined") {
-      reject(new Error("Places JS requires a browser."));
-      return;
-    }
-
-    const key = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as
-      | string
-      | undefined;
-    if (!key) {
-      reject(new Error("Google Maps browser key not configured."));
-      return;
-    }
-
-    const ensureLib = async () => {
-      const importLibrary = window.google?.maps?.importLibrary;
-      if (!importLibrary) throw new Error("Google Maps API not ready.");
-      const lib = (await importLibrary("places")) as {
-        AutocompleteSuggestion: {
-          fetchAutocompleteSuggestions: (
-            req: Record<string, unknown>,
-          ) => Promise<{ suggestions: PlacesSuggestion[] }>;
-        };
-        AutocompleteSessionToken: new () => unknown;
-      };
-      resolve(lib);
-    };
-
-    if (window.google?.maps?.importLibrary) {
-      void ensureLib().catch(reject);
-      return;
-    }
-
-    window.__repsHeroPlacesInit = () => {
-      void ensureLib().catch(reject);
-    };
-
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-reps-places="1"]',
-    );
-    if (existing) {
-      // Another mount is already loading the script — wait for it.
-      const checker = window.setInterval(() => {
-        if (window.google?.maps?.importLibrary) {
-          window.clearInterval(checker);
-          void ensureLib().catch(reject);
-        }
-      }, 100);
-      window.setTimeout(() => {
-        window.clearInterval(checker);
-      }, 8000);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&libraries=places&loading=async&callback=__repsHeroPlacesInit`;
-    script.async = true;
-    script.defer = true;
-    script.dataset.repsPlaces = "1";
-    script.onerror = () => reject(new Error("Failed to load Google Maps JS."));
-    document.head.appendChild(script);
-  });
-
-  return placesPromise as Promise<never>;
 }
