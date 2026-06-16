@@ -517,44 +517,26 @@ function WhereChip({
   };
 
   return (
+    <div
+      className={cn(
+        "inline-flex h-10 items-center rounded-full border bg-reps-warm-white transition-colors",
+        label
+          ? "border-reps-orange/40 bg-reps-orange/8 hover:border-reps-orange/60"
+          : "border-reps-stone hover:border-reps-orange/40",
+      )}
+    >
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium transition-colors",
-            label
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal hover:border-reps-orange/60"
-              : "border-reps-stone text-reps-charcoal hover:border-reps-orange/40",
-          )}
+          className="inline-flex h-10 items-center gap-2 rounded-full px-3.5 text-[13.5px] font-medium text-reps-charcoal"
         >
           <MapPin className="h-3.5 w-3.5 text-reps-muted-light" />
           <span className="max-w-[160px] truncate">{label ?? "Anywhere"}</span>
-          {label ? (
-            <span
-              role="button"
-              tabIndex={0}
-              aria-label="Clear location"
-              onClick={(e) => {
-                e.stopPropagation();
-                clearAll();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  clearAll();
-                }
-              }}
-              className="inline-flex size-4 cursor-pointer items-center justify-center rounded-full text-reps-muted-light hover:bg-reps-stone/60 hover:text-reps-charcoal"
-            >
-              <X className="size-3" />
-            </span>
-          ) : (
-            <ChevronDown className="size-3.5 text-reps-muted-light" />
-          )}
+          {label ? null : <ChevronDown className="size-3.5 text-reps-muted-light" />}
         </button>
       </PopoverTrigger>
+
       <PopoverContent align="start" sideOffset={8} className="w-[340px] rounded-[16px] p-3">
         <div className="flex flex-col gap-3">
           <Button
