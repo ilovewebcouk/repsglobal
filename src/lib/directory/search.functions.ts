@@ -143,28 +143,36 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       total = count ?? (allRows?.length ?? 0);
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
-      // Parallel auxiliary fetches. Important: do NOT wrap supabase query
-      // builders in `Promise.resolve(...)` — that has produced empty results
-      // for the second builder in some runtimes. Call `.then()` (i.e. just
-      // pass the builder into Promise.all) so each request fires correctly.
-      const subsPromise = supabaseAdmin
+      // Parallel auxiliary fetches. IMPORTANT: trigger each Supabase
+      // PostgrestFilterBuilder explicitly with `.then((r) => r)` so it
+      // resolves to a real `{ data, error }` payload. Passing the raw
+      // builder into Promise.all has produced empty results for one of the
+      // requests in this runtime, which silently collapses the nearest-sort
+      // distance map and falls back to quality ordering. Forcing `.then()`
+      // is the only reliable way to fire both requests in parallel here.
+      type LocsRow = { professional_id: string; latitude: number | null; longitude: number | null };
+      type SubsRow = { user_id: string; tier: string | null; status: string };
+
+      const subsForRankPromise: Promise<{ data: SubsRow[] | null }> = supabaseAdmin
         .from("subscriptions")
         .select("user_id, tier, status")
         .in("user_id", allIds)
-        .in("status", ["active", "trialing", "past_due"]);
+        .in("status", ["active", "trialing", "past_due"])
+        .then((r) => ({ data: (r.data as SubsRow[] | null) ?? null }));
 
-      const locsPromise = nearestMode
+      const locsForRankPromise: Promise<{ data: LocsRow[] | null }> = nearestMode
         ? supabaseAdmin
             .from("professional_locations")
             .select("professional_id, latitude, longitude")
             .in("professional_id", allIds)
             .eq("is_primary", true)
             .eq("is_public", true)
-        : null;
+            .then((r) => ({ data: (r.data as LocsRow[] | null) ?? null }))
+        : Promise.resolve({ data: null as LocsRow[] | null });
 
       const [subsForRank, locsForRank] = await Promise.all([
-        subsPromise,
-        locsPromise ?? Promise.resolve({ data: null as Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null }),
+        subsForRankPromise,
+        locsForRankPromise,
       ]);
 
       const tierRank = (t: string | null | undefined) =>
