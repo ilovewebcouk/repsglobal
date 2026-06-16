@@ -364,11 +364,13 @@ function WhatChip({
   onPick,
   onFreeText,
   onClear,
+  variant = "chip",
 }: {
   label: string | null;
   onPick: (entry: SearchEntry) => void;
   onFreeText: (text: string) => void;
   onClear: () => void;
+  variant?: "chip" | "mobile-input";
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
