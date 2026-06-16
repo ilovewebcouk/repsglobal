@@ -5,11 +5,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  MapPin,
   ShieldCheck,
   Heart,
-  
-  Crosshair,
   User,
   LogOut,
   CalendarCheck,
