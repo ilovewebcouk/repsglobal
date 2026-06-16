@@ -605,10 +605,10 @@ function DirectoryPage() {
             </div>
             </div>
 
-            {/* Sticky map column (lg+ only when view !== 'list') */}
+            {/* Map column (lg+ only when view !== 'list') — viewport-locked, list scrolls beside it */}
             {showMapAside ? (
-              <aside className="hidden lg:block">
-                <div className="sticky top-[148px] h-[calc(100vh-180px)]">
+              <aside className="hidden lg:block lg:w-[460px] lg:shrink-0 lg:py-0">
+                <div className="h-full pb-3">
                   <ResultsMap
                     pros={mapPros}
                     origin={origin}
@@ -619,6 +619,7 @@ function DirectoryPage() {
                 </div>
               </aside>
             ) : null}
+
           </div>
         </div>
       </section>
