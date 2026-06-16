@@ -284,12 +284,9 @@ function DirectoryPage() {
   // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
   const { origin } = useViewerOrigin();
 
-  // Fall back to Recommended if origin is cleared while Nearest is selected
-  React.useEffect(() => {
-    if (!origin && sort === "nearest") {
-      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: "recommended" as const }) });
-    }
-  }, [origin, sort, navigate]);
+  // No fallback: "Nearest" is the default sort. When viewer has no origin,
+  // server-side quality ranking applies (the client-side .sort() is a no-op
+  // for nearest without origin), so the list still renders sensibly.
 
   // Decorate with real miles when origin + coords both exist
   type WithMiles = Pro & { _miles: number | null };
