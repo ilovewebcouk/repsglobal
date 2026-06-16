@@ -149,9 +149,26 @@ export function ResultsSearchBar({
   const whereLabel =
     origin?.town ?? origin?.postcode_outward ?? state.city ?? null;
 
+  // Add a soft shadow once the user scrolls so the bar separates from the
+  // ivory results without an always-on hairline border under the dark header.
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <div className="sticky top-[72px] z-30 border-b border-reps-stone/70 bg-reps-warm-white/95 backdrop-blur-md">
-      <div className="mx-auto max-w-[1320px] px-4 py-3 sm:px-6 lg:px-10 lg:py-4">
+    <div
+      className={cn(
+        "sticky top-[72px] z-30 bg-reps-warm-white/95 backdrop-blur-md transition-shadow",
+        scrolled
+          ? "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]"
+          : "border-b border-reps-stone/70",
+      )}
+    >
+      <div className="mx-auto max-w-[1320px] px-4 py-2.5 sm:px-6 lg:px-10 lg:py-3">
         {/* Row 1 — Search chips */}
         <div className="flex flex-wrap items-center gap-2">
           <WhatChip
