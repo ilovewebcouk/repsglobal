@@ -300,7 +300,6 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
                   </SheetDescription>
                   <MobileDrawer
                     active={active}
-                    city={city}
                     user={user}
                     isAdmin={isAdmin}
                     onSignOut={signOut}
@@ -789,14 +788,12 @@ const mobileSubLinkClass =
 
 function MobileDrawer({
   active,
-  city,
   user,
   isAdmin,
   onSignOut,
   onNavigate,
 }: {
   active: ActiveState;
-  city: string;
   user: SessionUser | null;
   isAdmin: boolean;
   onSignOut: () => void;
