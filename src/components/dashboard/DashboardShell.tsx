@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 
 
 import { useAccountMenu } from "@/hooks/use-account-menu";
@@ -589,6 +590,7 @@ export function DashboardShell({
           <Sidebar role={role} tier={tier} active={active} member={member} />
         </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <ImpersonationBanner />
           <TopBar
             role={role}
             title={title}
