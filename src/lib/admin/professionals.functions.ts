@@ -177,10 +177,6 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     for (const c of ccRes.data ?? []) {
       clientCount.set(c.professional_id, (clientCount.get(c.professional_id) ?? 0) + 1);
     }
-    const emailMap = new Map<string, string>();
-    for (const u of authRes.data?.users ?? []) {
-      if (u.id && u.email) emailMap.set(u.id, u.email);
-    }
 
     let rows: AdminProRow[] = (pros ?? []).map(p => {
       const profile = profileMap.get(p.id);
@@ -211,7 +207,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         suspendedAt: p.suspended_at ?? null,
         suspensionReason: p.suspension_reason ?? null,
         verification: p.verification as string,
-        email: emailMap.get(p.id) ?? null,
+        email: null,
       };
     });
 
