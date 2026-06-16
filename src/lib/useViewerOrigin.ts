@@ -29,10 +29,12 @@ function read(): ViewerOrigin | null {
 }
 
 export function useViewerOrigin() {
-  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(() => read());
+  // IMPORTANT: start as null on both server AND first client render so SSR
+  // markup matches hydration. The real value loads in the effect below.
+  const [origin, setOriginState] = React.useState<ViewerOrigin | null>(null);
 
-  // Cross-tab sync
   React.useEffect(() => {
+    setOriginState(read());
     const onStorage = (e: StorageEvent) => {
       if (e.key === KEY) setOriginState(read());
     };
