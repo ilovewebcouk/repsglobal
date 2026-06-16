@@ -684,10 +684,10 @@ function ViewToggle({
   value: ResultsBarView;
   onChange: (v: ResultsBarView) => void;
 }) {
-  // Mobile: List ↔ Map. Desktop (lg): List · Split · Map.
-  // Split is the rich power-user view; mobile collapses to a binary.
+  // Desktop (lg+): List ↔ Split. Map is reached via the in-map "Expand" pill.
+  // Mobile: hidden — mobile uses the floating "Map" FAB instead.
   return (
-    <div className="hidden items-center gap-0.5 rounded-full border border-reps-stone bg-reps-warm-white p-0.5 md:inline-flex">
+    <div className="hidden items-center gap-0.5 rounded-full border border-reps-stone bg-reps-warm-white p-0.5 lg:inline-flex">
       <button
         type="button"
         aria-pressed={value === "list"}
@@ -703,33 +703,21 @@ function ViewToggle({
       </button>
       <button
         type="button"
-        aria-pressed={value === "split"}
+        aria-pressed={value === "split" || value === "map"}
         onClick={() => onChange("split")}
         className={cn(
-          "hidden h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors lg:inline-flex lg:items-center",
-          value === "split"
+          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+          value === "split" || value === "map"
             ? "bg-reps-charcoal text-white"
             : "text-reps-charcoal hover:bg-white",
         )}
       >
         Split
       </button>
-      <button
-        type="button"
-        aria-pressed={value === "map"}
-        onClick={() => onChange("map")}
-        className={cn(
-          "h-9 rounded-full px-3 text-[12.5px] font-medium transition-colors",
-          value === "map"
-            ? "bg-reps-charcoal text-white"
-            : "text-reps-charcoal hover:bg-white",
-        )}
-      >
-        Map
-      </button>
     </div>
   );
 }
+
 
 
 

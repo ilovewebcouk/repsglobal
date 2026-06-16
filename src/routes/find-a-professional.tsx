@@ -637,7 +637,17 @@ function DirectoryPage() {
                     hoveredSlug={hoveredSlug}
                     onHover={setHoveredSlug}
                     className="h-full"
+                    expanded={view === "map"}
+                    onToggleExpand={() =>
+                      navigate({
+                        search: (prev: Record<string, unknown>) => ({
+                          ...prev,
+                          view: view === "map" ? "split" : "map",
+                        }),
+                      })
+                    }
                   />
+
                 </div>
               </aside>
             ) : null}

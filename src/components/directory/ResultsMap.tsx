@@ -16,7 +16,7 @@ import {
   type GoogleMarker,
   type MapsLibrary,
 } from "@/lib/google/maps";
-import { Crosshair, Loader2 } from "lucide-react";
+import { Crosshair, Loader2, Maximize2, Minimize2 } from "lucide-react";
 
 export type MapPro = {
   slug: string;
@@ -31,7 +31,11 @@ type Props = {
   hoveredSlug: string | null;
   onHover?: (slug: string | null) => void;
   className?: string;
+  /** When provided, renders an Airbnb-style expand pill (lg+ only). */
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 };
+
 
 // Inline SVG pin (data URI) — orange dot with white ring + price chip.
 function pinIcon(active: boolean, priceLabel: string | null) {
@@ -67,7 +71,7 @@ const MAP_STYLES = [
   { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] },
 ];
 
-export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Props) {
+export function ResultsMap({ pros, origin, hoveredSlug, onHover, className, expanded, onToggleExpand }: Props) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<GoogleMapInstance | null>(null);
   const libRef = React.useRef<MapsLibrary | null>(null);
@@ -232,6 +236,27 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className }: Pr
           No mappable professionals in this view
         </div>
       )}
+      {status === "ready" && onToggleExpand && (
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          aria-label={expanded ? "Show list" : "Expand map"}
+          className="absolute right-3 top-3 z-10 hidden items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-semibold text-reps-charcoal shadow-md ring-1 ring-reps-stone transition-colors hover:bg-white lg:inline-flex"
+        >
+          {expanded ? (
+            <>
+              <Minimize2 className="h-3.5 w-3.5" />
+              Show list
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-3.5 w-3.5" />
+              Expand map
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
+
 }
