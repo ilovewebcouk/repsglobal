@@ -194,7 +194,7 @@ function DirectoryPage() {
   const liveAsPros: Pro[] = React.useMemo(
     () =>
       livePros
-        .filter((r) => r.slug && !["james-wilson", "sophie-taylor", "daniel-okafor", "laura-finch"].includes(r.slug))
+        .filter((r) => r.slug)
         .map((r) => {
           const town = r.location?.town ?? r.location?.postcode_outward ?? r.city ?? null;
           const coords =
@@ -204,12 +204,10 @@ function DirectoryPage() {
           const specLabels = (r.specialisms ?? [])
             .map((s) => getSpecialismLabel(s) ?? s)
             .filter(Boolean) as string[];
+          const professionLabel = getProfessionLabel(r.primary_profession);
           return {
-            name: r.full_name || "REPS Professional",
-            role:
-              getProfessionLabel(r.primary_profession) ||
-              specLabels[0] ||
-              "Fitness Professional",
+            name: r.full_name || "REPs Professional",
+            role: professionLabel || specLabels[0] || "Fitness Professional",
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
@@ -220,16 +218,16 @@ function DirectoryPage() {
               : r.online_available
                 ? "Online" as const
                 : "In-person" as const,
-            tags: [
-              specLabels[0] || "Health & Fitness",
-              specLabels[1] || "Strength Training",
-              specLabels[2] || "Conditioning",
-            ] as [string, string, string],
-            blurb: r.headline || "REPS-verified professional.",
-            image: r.avatar_url || proJames,
+            // Only real specialism labels — no placeholder fallbacks.
+            tags: specLabels.slice(0, 3),
+            blurb: r.headline || "",
+            image: r.avatar_url ?? null,
             venues: [],
             slug: r.slug ?? undefined,
             live: true,
+            identity_status: r.identity_status,
+            verification: r.verification,
+            tier: r.tier,
           };
         }),
     [livePros],
