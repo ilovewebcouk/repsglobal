@@ -44,8 +44,12 @@ import {
 } from "@/lib/search/taxonomy";
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { useResolveViewerLocation } from "@/lib/profile/useResolveViewerLocation";
-
-const UK_POSTCODE_RE = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i;
+import {
+  loadPlacesLibrary,
+  UK_POSTCODE_RE,
+  type PlacesSuggestion,
+  type PlacesLibrary,
+} from "@/lib/google/places";
 
 type PlacesSuggestion = {
   placePrediction: {
