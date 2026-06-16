@@ -163,11 +163,28 @@ function AdminMigrationPage() {
             <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button
-            disabled
-            title="Coming next: activates the next batch as unverified pros"
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white opacity-60"
+            onClick={() => seedMutation.mutate({ limit: 25, dryRun: true })}
+            disabled={seedMutation.isPending}
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white/85 disabled:opacity-50"
           >
-            <PlayCircle className="h-4 w-4" /> Activate next batch
+            Dry run (25)
+          </button>
+          <button
+            onClick={() => seedMutation.mutate({ limit: 25 })}
+            disabled={seedMutation.isPending || (seedStats?.remaining ?? 0) === 0}
+            className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-4 text-[13px] font-semibold text-white disabled:opacity-50"
+          >
+            <PlayCircle className="h-4 w-4" /> Seed next 25
+          </button>
+          <button
+            onClick={() => seedMutation.mutate({ limit: 500 })}
+            disabled={seedMutation.isPending || (seedStats?.remaining ?? 0) === 0}
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white disabled:opacity-50"
+          >
+            <PlayCircle className="h-4 w-4" />
+            {seedMutation.isPending
+              ? "Seeding…"
+              : `Seed all remaining (${seedStats?.remaining ?? "…"})`}
           </button>
         </div>
       }
