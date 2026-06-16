@@ -123,11 +123,18 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let rows: Array<Record<string, unknown>>;
     let total: number;
 
-    if (nearestMode) {
-      // Quality-weighted nearest: pull all matching pros (cap 1000), join coords
-      // + verification tier, bucket by distance, then rank inside each bucket so
-      // Verified + high-quality profiles surface ahead of empty shells at
-      // roughly the same distance. Result: "nearest AND best", not raw haversine.
+    // Unified ranking: pull all matching candidates (cap 1000), enrich with
+    // tier / verification / avatar / coords, sort in-memory, then page-slice.
+    //
+    // Default sort (no origin):
+    //   verified -> hasAvatar -> paid tier -> quality -> recency
+    // Nearest sort (origin set):
+    //   distance (1-mile bucket) -> verified -> hasAvatar -> paid tier ->
+    //   quality -> raw distance -> recency
+    //
+    // Avatar-bumps-no-avatar applies only within the same verification tier —
+    // an unverified pro with an image NEVER outranks a verified pro without one.
+    {
       const { data: allRows, error, count } = await qb
         .order("updated_at", { ascending: false })
         .range(0, 999);
@@ -135,81 +142,91 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       total = count ?? (allRows?.length ?? 0);
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
-      const [locsRes, subsForRank] = await Promise.all([
+      const fetches: Array<Promise<unknown>> = [
         supabaseAdmin
-          .from("professional_locations")
-          .select("professional_id, latitude, longitude")
-          .in("professional_id", allIds)
-          .eq("is_primary", true)
-          .eq("is_public", true),
+          .from("profiles")
+          .select("id, avatar_url")
+          .in("id", allIds),
         supabaseAdmin
           .from("subscriptions")
           .select("user_id, tier, status")
           .in("user_id", allIds)
           .in("status", ["active", "trialing", "past_due"]),
-      ]);
+      ];
+      if (nearestMode) {
+        fetches.push(
+          supabaseAdmin
+            .from("professional_locations")
+            .select("professional_id, latitude, longitude")
+            .in("professional_id", allIds)
+            .eq("is_primary", true)
+            .eq("is_public", true),
+        );
+      }
+      const results = await Promise.all(fetches);
+      const profilesForRank = results[0] as { data: Array<{ id: string; avatar_url: string | null }> | null };
+      const subsForRank = results[1] as { data: Array<{ user_id: string; tier: string | null }> | null };
+      const locsForRank = nearestMode
+        ? (results[2] as { data: Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null })
+        : { data: null };
 
-      const coordById = new Map<string, { lat: number; lng: number }>();
-      for (const l of locsRes.data ?? []) {
-        if (l.latitude != null && l.longitude != null) {
-          coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
-        }
+      const avatarById = new Map<string, boolean>();
+      for (const p of profilesForRank.data ?? []) {
+        avatarById.set(p.id, Boolean(p.avatar_url && p.avatar_url.trim()));
       }
       const tierRank = (t: string | null | undefined) =>
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
       const paidTierById = new Map<string, number>();
       for (const s of subsForRank.data ?? []) {
-        const r = tierRank(s.tier as string | null);
+        const r = tierRank(s.tier);
         const prev = paidTierById.get(s.user_id) ?? 0;
         if (r > prev) paidTierById.set(s.user_id, r);
       }
+      const coordById = new Map<string, { lat: number; lng: number }>();
+      for (const l of locsForRank.data ?? []) {
+        if (l.latitude != null && l.longitude != null) {
+          coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
+        }
+      }
 
-      // Distance buckets in miles. Pros inside the same bucket are ranked by
-      // verified/paid tier, quality_score, then recency. "Verified beats
-      // unverified" is enforced WITHIN bucket only — a distant verified pro
-      // never leapfrogs a much-closer one.
-      const bucketFor = (mi: number) => {
-        if (mi <= 5) return 0;
-        if (mi <= 15) return 1;
-        if (mi <= 30) return 2;
-        if (mi <= 60) return 3;
-        if (mi <= 150) return 4;
-        return 5;
-      };
+      const origin = nearestMode
+        ? { lat: data.viewer_lat!, lng: data.viewer_lng! }
+        : null;
 
-      const origin = { lat: data.viewer_lat!, lng: data.viewer_lng! };
       const decoratedAll = (allRows ?? []).map((r) => {
         const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
-        const c = coordById.get(row.id);
-        const d = c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
-        const bucket = bucketFor(d);
-        const paidRank = paidTierById.get(row.id) ?? 0;
+        const c = origin ? coordById.get(row.id) : undefined;
+        const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
+        // 1-mile distance buckets — keeps "distance always wins" while
+        // letting verified/image break true ties at the same locale.
+        const bucket = origin ? (c ? Math.floor(d) : 9999) : 0;
         const verifiedRank = row.verification === "verified" ? 1 : 0;
-        // Composite within-bucket score: paid tier dominates, then verified
-        // badge, then profile quality, then rating fallback via updated_at recency.
-        const quality = (row.quality_score ?? 0);
-        return { row: r, d, bucket, paidRank, verifiedRank, quality, updatedAt: row.updated_at ?? "" };
+        const hasAvatar = avatarById.get(row.id) ? 1 : 0;
+        const paidRank = paidTierById.get(row.id) ?? 0;
+        const quality = row.quality_score ?? 0;
+        return {
+          row: r,
+          d,
+          bucket,
+          verifiedRank,
+          hasAvatar,
+          paidRank,
+          quality,
+          updatedAt: row.updated_at ?? "",
+        };
       });
 
       decoratedAll.sort((a, b) => {
-        if (a.bucket !== b.bucket) return a.bucket - b.bucket;
-        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
+        if (origin && a.bucket !== b.bucket) return a.bucket - b.bucket;
         if (a.verifiedRank !== b.verifiedRank) return b.verifiedRank - a.verifiedRank;
+        if (a.hasAvatar !== b.hasAvatar) return b.hasAvatar - a.hasAvatar;
+        if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
         if (a.quality !== b.quality) return b.quality - a.quality;
-        if (a.d !== b.d) return a.d - b.d;
+        if (origin && a.d !== b.d) return a.d - b.d;
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });
 
       rows = decoratedAll.slice(offset, offset + pageSize).map((x) => x.row);
-    } else {
-      // Server-side ranking: profile quality, tiebreak by recency.
-      const { data: pagedRows, error, count } = await qb
-        .order("quality_score", { ascending: false })
-        .order("updated_at", { ascending: false })
-        .range(offset, offset + pageSize - 1);
-      if (error) throw error;
-      total = count ?? 0;
-      rows = pagedRows ?? [];
     }
 
     const list = rows as Array<
