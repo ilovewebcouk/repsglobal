@@ -79,8 +79,11 @@ export async function loadMapsLibrary(): Promise<MapsLibrary> {
     const ensureLib = async () => {
       const importLibrary = window.google?.maps?.importLibrary;
       if (!importLibrary) throw new Error("Google Maps API not ready.");
-      const lib = (await importLibrary("maps")) as MapsLibrary;
-      resolve(lib);
+      // Load every namespace we use (core = LatLng/LatLngBounds, maps = Map/Marker/Circle).
+      await Promise.all([importLibrary("core"), importLibrary("maps")]);
+      // The full `google.maps` namespace is the library — `importLibrary("maps")`
+      // alone doesn't include LatLng/LatLngBounds (those live in "core").
+      resolve(window.google!.maps as unknown as MapsLibrary);
     };
 
     if (window.google?.maps?.importLibrary) {
