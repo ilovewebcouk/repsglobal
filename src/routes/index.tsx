@@ -1,4 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import * as React from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { heroAvatarsQueryOptions, type HeroAvatar } from "@/lib/directory/hero.functions";
 import {
   Activity,
   Apple,
@@ -57,10 +60,20 @@ export const Route = createFileRoute("/")({
       { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(heroAvatarsQueryOptions);
+  },
   component: HomeV2,
 });
 
-const goalChips = ["Fat loss", "Strength", "Mobility", "Pre/post-natal", "Rehab", "Sport-specific"];
+const goalChips: { label: string; specialism: string }[] = [
+  { label: "Fat loss", specialism: "fat-loss" },
+  { label: "Strength", specialism: "strength" },
+  { label: "Mobility", specialism: "mobility" },
+  { label: "Pre/post-natal", specialism: "pre-post-natal" },
+  { label: "Rehab", specialism: "rehab-injury" },
+  { label: "Sport-specific", specialism: "sports-performance" },
+];
 
 
 const stats = [
@@ -185,51 +198,21 @@ function HomeV2() {
                 <span className="text-white">Book in 30 seconds.</span>
               </p>
 
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="animate-rise-in mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
-                style={{ animationDelay: "320ms" }}
-              >
-                <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
-                  <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
-                  <input
-                    type="text"
-                    placeholder="Search coaches, goals, specialisms"
-                    aria-label="What do you want to train?"
-                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-                  />
-                </label>
-                <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
-                <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[168px] lg:w-[200px]">
-                  <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
-                  <input
-                    type="text"
-                    placeholder="London"
-                    aria-label="Where?"
-                    className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.6)] transition-all hover:bg-reps-orange-dark hover:shadow-[0_14px_38px_-10px_rgba(255,122,0,0.7)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                >
-                  <Search className="h-4 w-4" aria-hidden />
-                  Find your coach
-                </button>
-              </form>
+              <HomeHeroSearch />
 
               <div
                 className="animate-rise-in mt-5 flex flex-wrap gap-2"
                 style={{ animationDelay: "420ms" }}
               >
                 {goalChips.map((g) => (
-                  <button
-                    key={g}
-                    type="button"
+                  <Link
+                    key={g.specialism}
+                    to="/find-a-professional"
+                    search={{ specialism: g.specialism, page: 1, sort: "recommended" }}
                     className="inline-flex h-9 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[13px] font-medium text-white/85 transition-colors hover:border-reps-orange-border hover:bg-[rgba(255,122,0,0.08)] hover:text-white"
                   >
-                    {g}
-                  </button>
+                    {g.label}
+                  </Link>
                 ))}
               </div>
 
@@ -237,13 +220,8 @@ function HomeV2() {
                 className="animate-rise-in mt-7 flex items-center gap-4"
                 style={{ animationDelay: "520ms" }}
               >
-                <div className="flex items-center -space-x-3">
-                  {[proJames, proSophie, proDaniel, proLaura].map((src, i) => (
-                    <span key={i} className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black">
-                      <img src={src} alt="" className="h-full w-full object-cover" />
-                    </span>
-                  ))}
-                </div>
+                <HomeHeroAvatars />
+
                 <div className="text-[13px] leading-snug text-white/70">
                   <div>
                     Trusted by <strong className="font-semibold text-white">25,000+</strong> clients worldwide
@@ -550,6 +528,111 @@ function HomeV2() {
 
 
       <PublicFooter />
+    </div>
+  );
+}
+
+function HomeHeroSearch() {
+  const navigate = useNavigate();
+  const [q, setQ] = React.useState("");
+  const [city, setCity] = React.useState("");
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const search: { q?: string; city?: string; page: number; sort: "recommended" } = {
+          page: 1,
+          sort: "recommended",
+        };
+        const qt = q.trim();
+        const ct = city.trim();
+        if (qt) search.q = qt;
+        if (ct) search.city = ct;
+        navigate({ to: "/find-a-professional", search });
+      }}
+      className="animate-rise-in mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+      style={{ animationDelay: "320ms" }}
+    >
+      <label className="group flex flex-1 items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5">
+        <Search className="h-4 w-4 shrink-0 text-reps-orange" aria-hidden />
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search coaches, goals, specialisms"
+          aria-label="What do you want to train?"
+          className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+        />
+      </label>
+      <span aria-hidden className="hidden h-8 w-px self-center bg-white/10 sm:block" />
+      <label className="group flex items-center gap-3 rounded-[16px] px-4 py-3 transition-colors focus-within:bg-white/5 sm:w-[168px] lg:w-[200px]">
+        <MapPin className="h-4 w-4 shrink-0 text-white/60" aria-hidden />
+        <input
+          type="text"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="London"
+          aria-label="Where?"
+          className="w-full bg-transparent text-[15px] font-medium text-white placeholder:text-white/50 focus:outline-none"
+        />
+      </label>
+      <button
+        type="submit"
+        className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(255,122,0,0.6)] transition-all hover:bg-reps-orange-dark hover:shadow-[0_14px_38px_-10px_rgba(255,122,0,0.7)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      >
+        <Search className="h-4 w-4" aria-hidden />
+        Find your coach
+      </button>
+    </form>
+  );
+}
+
+const FALLBACK_AVATARS: { src: string; alt: string }[] = [
+  { src: proJames, alt: "" },
+  { src: proSophie, alt: "" },
+  { src: proDaniel, alt: "" },
+  { src: proLaura, alt: "" },
+];
+
+function HomeHeroAvatars() {
+  const { data } = useSuspenseQuery(heroAvatarsQueryOptions);
+  const pool: HeroAvatar[] = data ?? [];
+  const [offset, setOffset] = React.useState(0);
+
+  React.useEffect(() => {
+    if (pool.length <= 4) return;
+    const id = window.setInterval(() => {
+      setOffset((o) => (o + 1) % pool.length);
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [pool.length]);
+
+  if (pool.length < 4) {
+    return (
+      <div className="flex items-center -space-x-3">
+        {FALLBACK_AVATARS.map((a, i) => (
+          <span key={i} className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black">
+            <img src={a.src} alt={a.alt} className="h-full w-full object-cover" />
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  const visible = Array.from({ length: 4 }, (_, i) => pool[(offset + i) % pool.length]);
+  return (
+    <div className="flex items-center -space-x-3">
+      {visible.map((p, i) => (
+        <Link
+          key={`${p.id}-${i}`}
+          to="/pro/$slug"
+          params={{ slug: p.slug }}
+          className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black transition-opacity duration-700"
+          title={p.full_name}
+        >
+          <img src={p.avatar_url} alt={p.full_name} className="h-full w-full object-cover" />
+        </Link>
+      ))}
     </div>
   );
 }

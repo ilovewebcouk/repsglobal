@@ -1,136 +1,71 @@
-# Admin Professionals — polish pass to 10/10
+## What this changes
 
-## Brutal honest truth on each ask
+Homepage hero only — no visual redesign, no other sections touched. The locked homepage layout stays exactly as it is; we're swapping dummy form/chips/avatars for live behaviour.
 
-### 1. Sort — yes, this is the missing piece
+## 1. Search inputs wired
 
-The list is "newest first" with no way to change it. For an admin register, that's a real gap. Recommended sort set, in priority order:
+Convert the hero form into a tiny controlled component (`HomeHeroSearch`) inside `src/routes/index.tsx`:
 
-| Sort | Why it matters | Default direction |
-|---|---|---|
-| **Joined** | Spot brand-new pros, audit recent activity | Newest first |
-| **Name (A→Z)** | Find a specific pro fast when you don't know the slug | Ascending |
-| **Plan value** (Studio → Pro → Verified → Free) | See your highest-paying pros first; quick MRR audit | Highest first |
-| **Plan MRR (£)** | Same as above but numeric — useful once Studio launches and there are mixed-cycle plans | Highest first |
-| **Clients (active count)** | Identify pros with real client books | Highest first |
-| **Rating** | Spot top-rated pros and (sorted ascending) anyone with a poor average | Highest first, with ascending option |
-| **Status** | Group all Unverified / Flagged together — useful in the All tab | A→Z |
+- Two inputs (query + location) backed by `useState`.
+- Submit (button or Enter) calls `navigate({ to: "/find-a-professional", search: { q, city, page: 1, sort: "recommended" } })` — `q` and `city` are already valid search params on that route (`validateSearch` accepts both). Empty strings are dropped.
+- "Find your coach" button stays exactly as it looks today.
+- No autocomplete in this pass — just the navigation. Autocomplete is a separate, bigger job.
 
-**UX**: shadcn `Select` to the left of the existing Filters/Export buttons (label "Sort"). Click a value → updates `sort` query param. Direction icon (↑/↓) toggle button next to it. Both persist in the URL so admins can share/bookmark "show me all Verified pros sorted by clients desc".
+## 2. Goal chips wired
 
-Server-side sort (not client-side) — the list is paginated, so sorting only the current page is wrong. Sorts on `plan`, `plan_mrr_pence`, `clients` and `rating` need a join-aware query — I'll switch `listAdminProfessionals` to a single SQL query via `supabaseAdmin.rpc` to a new SECURITY DEFINER function `admin_list_professionals(...)` that does the joins + sort + pagination in Postgres. Cleaner than juggling 4 client-side aggregations, and ratings/clients sorts actually work.
+The six chips already on the page map cleanly to existing specialism slugs in `src/lib/specialisms.ts`:
 
-### 2. Filters — wire them properly
+| Chip label (on-screen)   | Specialism slug          |
+| ------------------------ | ------------------------ |
+| Fat loss                 | `fat-loss`               |
+| Strength                 | `strength`               |
+| Mobility                 | `mobility`               |
+| Pre/post-natal           | `pre-post-natal`         |
+| Rehab                    | `rehab-injury`           |
+| Sport-specific           | `sports-performance`     |
 
-Build a shadcn `Sheet` opened by the Filters button. Filters:
+Each chip becomes a `<Link to="/find-a-professional" search={{ specialism: slug, page: 1, sort: "recommended" }}>` — keeps the existing pill styling untouched, just makes them navigable. (Behavioural change only; the design memory permits this — no markup restructure.)
 
-- **Plan** — multi-select chips: Free / Verified / Pro / Studio
-- **Profession** — multi-select: PT / Pilates / S&C / Nutrition / Group Ex / Fitness / Yoga
-- **Has avatar** — yes / no / any (admin-only quality filter)
-- **Identity verified** — yes / no / any
-- **City** — async combobox querying distinct `professionals.city`
-- **Joined window** — last 7 / 30 / 90 days / custom range
-- **Active clients** — slider 0–50+ (min)
+## 3. Avatar rotation from real professionals
 
-"Active filters" pill row appears under the tabs when any are set, with an `× Clear all`. All state lives in URL search params (so tabs + filters compose: e.g. tab=verified + plan=pro + city=Soho).
+New server function `getHomepageHeroAvatars` in `src/lib/directory/hero.functions.ts`:
 
-Tabs become "saved view" presets that pre-set the right filter combo behind the scenes:
-- All → no filters
-- Verified → `verification=verified`
-- Unverified → `verification=pending` (renamed from "Pending" per your call — clearer)
-- Flagged → `verification=rejected`
-- Suspended → `is_published=false AND status was previously verified`
-- Recently joined → `joined=last 30 days`
+- Public (no auth), uses `supabaseAdmin` (loaded inside the handler).
+- Selects from `professionals` joined to `profiles` where: `is_published = true` AND `identity_status = 'approved'` AND `bd_seed_thin = false` AND `avatar_url IS NOT NULL`.
+- Orders by `quality_score DESC NULLS LAST`, limit 12.
+- Returns `{ id, slug, full_name, avatar_url, city }[]`.
 
-### 3. Rename "Pending" → "Unverified"
+Homepage `loader` calls `context.queryClient.ensureQueryData(heroAvatarsQueryOptions)`; the hero renders the first 4 with a slow cross-fade rotation through the rest every 4s (CSS opacity transition, no library). Falls back to the existing four static imports (James/Sophie/Daniel/Laura) if the query returns fewer than 4 rows or errors during SSR.
 
-Agreed — Pending is bank-app jargon. Unverified is honest and matches the user-facing /pro/$slug verification badge language. One-line change in the tab list + the `statusClass` map (the status string is just a label).
-
-### 4. Suspend / unpublish — flesh out the dropdown properly
-
-The dropdown's row-level actions become the only place where suspend lives. The flagged tab stays useful because flagged ≠ suspended — a flagged pro is one we've rejected verification on, a suspended pro is one we've actively pulled from the directory.
-
-**Dropdown layout** (revised):
-```
-View as
-  • Open their dashboard           ← primary, orange-tinted
-
-Public surfaces
-  • View public profile  ↗
-  • View shop-front  ↗              ← only if Pro/Studio
-
-Moderation
-  • Suspend / Unsuspend
-  • Mark as flagged / Clear flag
-```
-
-**Suspend behaviour** (your point about notification email):
-1. Confirm dialog: "Suspend James Wilson? Their profile will be removed from the public directory and they'll be notified by email." + required reason textarea (free text, becomes the `reason` in the email).
-2. Server fn `setProfessionalSuspension({ professional_id, suspended, reason })`:
-   - Admin-gated (re-check role).
-   - Sets `professionals.is_published = false`, `professionals.suspended_at = now()`, `professionals.suspension_reason = reason`. Needs a tiny migration to add those two columns + an audit-log row via existing `log_admin_action`.
-   - Sends transactional email via `/lovable/email/transactional/send` with a new template `professional-suspended` (recipient = the pro's auth email).
-   - Returns the new state; UI invalidates the list query.
-3. Unsuspend = same flow in reverse, sends `professional-reinstated` template, no reason required. Restores `is_published = true`.
-
-**Flag/unflag** is lighter — flips `verification` between `verified` and `rejected`. No email. Same audit log.
-
-### 5. Invite professional — ship the full thing today
-
-You asked for the full version. Truth-check: this is genuinely the most-used admin action once you start onboarding pros manually, so it's worth doing properly.
-
-**Invite button** → `Dialog`:
-- Email (required)
-- Optional name
-- Optional pre-selected plan: Verified £99/yr or Pro £59/mo Founding (defaults to Pro)
-- "Send invite" → server fn `sendProfessionalInvite({ email, full_name?, plan? })`:
-  - Admin-gated.
-  - Generates a single-use token, stores row in new tiny table `admin_pro_invites` (id, email, full_name, plan, token_hash, sent_by, sent_at, accepted_at, accepted_user_id, expires_at = now+14d). RLS admin-read-only + service-role-write.
-  - Sends transactional email `professional-invite` (new template) with CTA → `https://repsuk.org/auth?invite=<token>&plan=<plan>`.
-  - On `/auth`, if `?invite=<token>` is present, the sign-up flow pre-fills the email (read-only), and on successful sign-up writes `admin_pro_invites.accepted_user_id = new uid, accepted_at = now()` and routes the user straight to `/dashboard/syncing` (post-checkout path) — i.e. they skip the pricing screen because the plan is already locked in for them at checkout via the `plan` query param.
-- Toast confirms; the button stays open so admins can send a second one without re-clicking.
-
-**Secondary action under the same Invite button** — a small `Copy sign-up link` item in a kebab menu beside the button, which copies `https://repsuk.org/pricing?ref=admin-<adminId>` (no token, just attribution). Useful for putting in a DM.
-
-### 6. Honest tradeoffs / out of scope
-
-- **Bulk invite (CSV upload)** — would be useful but not for today. Defer until BD migration kicks off in earnest.
-- **Saved views** (named filter combos like "Studio pros in London") — defer, URL params get us 90% there.
-- **Per-tab counts in the tab pills** (e.g. "Verified 9") — small DX win, defer until we see admins actually want them.
-- **Server-side ratings/clients sort** requires the new RPC. If you'd rather not add the SQL function this turn, I can do a hybrid: ratings/clients sort falls back to client-side and the badge shows "(this page only)". Strongly recommend doing the RPC properly.
+Avatars served from the public `avatars` bucket render directly via their public URL; legacy `/demo-avatars/*` paths already work as static files.
 
 ## Files touched
 
-**New SQL migration:**
-- Add `suspended_at timestamptz`, `suspension_reason text` columns to `professionals`.
-- Create table `admin_pro_invites` + grants + RLS (admin-read, service-role-write).
-- Create SECURITY DEFINER `admin_list_professionals(_q text, _tab text, _filters jsonb, _sort text, _direction text, _limit int, _offset int)` returning rows + total count.
+- `src/routes/index.tsx` — extract hero block into `HomeHeroSearch` + `HomeHeroAvatars`; add loader call. No layout changes.
+- `src/lib/directory/hero.functions.ts` — new file (server fn + queryOptions).
 
-**New email templates** (`src/lib/email-templates/`):
-- `professional-invite.tsx`
-- `professional-suspended.tsx`
-- `professional-reinstated.tsx`
+Nothing else changes. No DB migration, no styling tokens, no copy edits, no new routes.
 
-**New server fns** (`src/lib/admin/professionals.functions.ts`):
-- `setProfessionalSuspension`, `setProfessionalFlag`
-- (`src/lib/admin/invites.functions.ts`) `sendProfessionalInvite`
+## Brutal-honest truth
 
-**New server route:** `src/routes/api/admin/professionals.csv.ts` (Export CSV).
+You asked for one — here it is, in order of severity:
 
-**Edited:**
-- `src/routes/admin_.professionals.tsx` — sort `Select`, direction toggle, Filters `Sheet`, rename "Pending"→"Unverified", restyled dark dropdown, suspend/flag dialogs, Invite dialog, remove `hidden sm:flex` from Invite button, Export CSV `<a>` link, URL-param state.
-- `src/lib/admin/professionals.functions.ts` — swap to RPC, return new fields (`suspended_at`, `is_published`), add sort/filter inputs.
-- `src/routes/_authenticated/_professional/route.tsx` — admin-with-impersonation passthrough (carry-over from previous plan, still needed).
-- `src/lib/admin/impersonation.functions.ts` — `getImpersonationTarget` server fn.
-- ~8 dashboard `*.functions.ts` — middleware swap to `requireSupabaseAuthWithImpersonation` (carry-over).
-- `src/routes/auth.tsx` — read `?invite=<token>&plan=<...>` and wire post-signup behaviour.
+1. **"Real avatars" is currently a polite fiction.** The directory has 8 demo seed pros (`james.wilson@demo.repsuk.org`, etc.) with stock photos, plus exactly **one** genuine real member with an uploaded avatar (Katie Gibbs). Every BD-migrated row is `bd_seed_thin = true` with no avatar. So "rotate real professionals" will, today, rotate **demo seed photos plus Katie**. That's still better than four hard-coded JPEGs, and the moment any real member uploads an avatar they'll appear automatically. But don't tell yourself we're showing real users yet — we're showing a placeholder pool that drains and refills as real onboarding happens.
 
-## Verdict
+2. **The "25,000+ verified professionals" / "50,000+ reviews" copy directly above the avatars is unverifiable today.** With 9 photo-bearing rows in the DB, a journalist or a competitor screenshotting this page pre-launch is a real reputational risk. That's not in scope for this ticket, but flag for you: at minimum we should soften to "Built on the BD register of 25,000+ members migrating to REPs" before launch.
 
-Sort + filters + suspend-with-email + invite-with-token is the right cluster to ship together — they all share the same "real admin workflow" muscle. After this turn, the Professionals page is genuinely the operational hub for running REPs and we never have to come back to it for v1.
+3. **The location input is dumb.** It just shoves whatever the user types into `?city=`. Type "Lndon" and you get zero results. The proper fix is Google Places autocomplete (we already have `GOOGLE_MAPS_BROWSER_KEY` wired) feeding the canonical city + lat/lng. I'd recommend doing that as the very next ticket — it's the single biggest source of "I searched and saw nothing" bounces a homepage hero will produce.
 
-## Confirm before I build
+4. **The query input is also dumb.** It free-text-searches by `q`, but `/find-a-professional`'s server fn treats `q` as a name/headline ILIKE match. So typing "yoga" returns trainers whose bio happens to contain "yoga", not yoga teachers. Profession routing ("yoga" → `profession=yoga-teacher`) needs a small slug-detection step. I can add that in this same ticket if you want, but it's worth being explicit — without it the query box is mostly for typing a coach's name.
 
-1. **RPC for the list query** — yes, do it properly with the SQL function (recommended)?
-2. **Default invite plan in the dialog** — Pro Founding or Verified?
-3. **Suspension email tone** — strict ("Your profile has been suspended pending review") or soft ("We've temporarily unpublished your profile — here's why")? Recommend strict.
+5. **No analytics on submit.** We won't know which chip / which query / which city converts. Tiny add — a `console.log` or a `track("hero_search", {...})` stub — but worth deciding now whether you want it.
+
+## Recommended order
+
+Ship this ticket as scoped (1 + 2 + 3). Then immediately do "hero location autocomplete via Google Places" + "query string profession detection" as the very next pass. Don't push the homepage live with a dumb location box.
+
+## Questions for you before I build
+
+- **Avatar pool**: ship rotation now with the demo-pro pool (and accept it'll be mostly demos until real members onboard), or wait until you've imported BD avatars?
+- **Smart query**: include the slug-detection (yoga → yoga-teacher etc.) in this ticket, or split it out?
+- **Chip count**: the homepage shows 6 chips. The actual specialisms list has 16. Keep the curated 6, or rotate them?
