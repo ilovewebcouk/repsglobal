@@ -61,7 +61,7 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
           supabase: userSupabase,
           userId: realUserId,
           realUserId,
-          isImpersonating: false as const,
+          isImpersonating: false as boolean,
           claims: data.claims,
         },
       });
@@ -79,7 +79,7 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
           supabase: userSupabase,
           userId: realUserId,
           realUserId,
-          isImpersonating: false as const,
+          isImpersonating: false as boolean,
           claims: data.claims,
         },
       });
@@ -102,7 +102,7 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
           supabase: userSupabase,
           userId: realUserId,
           realUserId,
-          isImpersonating: false as const,
+          isImpersonating: false as boolean,
           claims: data.claims,
         },
       });
@@ -116,7 +116,7 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
         supabase: supabaseAdmin as unknown as typeof userSupabase,
         userId: session.professional_id,
         realUserId,
-        isImpersonating: true as const,
+        isImpersonating: true as boolean,
         claims: data.claims,
       },
     });
