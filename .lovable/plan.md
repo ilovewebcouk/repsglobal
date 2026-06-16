@@ -1,71 +1,94 @@
-## What this changes
+## Brutal honest read on what's happening
 
-Homepage hero only — no visual redesign, no other sections touched. The locked homepage layout stays exactly as it is; we're swapping dummy form/chips/avatars for live behaviour.
+Your analytics for the last 7 days:
+- **32,191 of 32,830 visits are from CN** (98%), almost all desktop, almost all hitting `/reviews`.
+- Today alone: 31,481 visits, bounce rate 100%, session duration 2.78s, 1.01 pages/visit.
+- Real human signal in the same window is tiny (UK 245, US 300, a handful of Stripe/Instagram referrers).
 
-## 1. Search inputs wired
+That is a scraper farm, not real visitors. The "449 current visitors" number is bots. None of this is hurting Stripe, auth or the DB — they're hitting a static marketing page — but it's polluting analytics and burning bandwidth.
 
-Convert the hero form into a tiny controlled component (`HomeHeroSearch`) inside `src/routes/index.tsx`:
+There is **no way to make bots impossible** on a public website. Anything we ship is a deterrent, not a wall. With that said, here's the layered fix I'd put in.
 
-- Two inputs (query + location) backed by `useState`.
-- Submit (button or Enter) calls `navigate({ to: "/find-a-professional", search: { q, city, page: 1, sort: "recommended" } })` — `q` and `city` are already valid search params on that route (`validateSearch` accepts both). Empty strings are dropped.
-- "Find your coach" button stays exactly as it looks today.
-- No autocomplete in this pass — just the navigation. Autocomplete is a separate, bigger job.
+## What I'll build
 
-## 2. Goal chips wired
+### 1. Edge bot filter (request middleware, runs on every request)
 
-The six chips already on the page map cleanly to existing specialism slugs in `src/lib/specialisms.ts`:
+Add `src/lib/bot-filter.ts` + a new `botFilterMiddleware` registered in `src/start.ts` *before* `errorMiddleware`. It runs on Cloudflare's edge so blocked traffic never touches React/SSR/DB.
 
-| Chip label (on-screen)   | Specialism slug          |
-| ------------------------ | ------------------------ |
-| Fat loss                 | `fat-loss`               |
-| Strength                 | `strength`               |
-| Mobility                 | `mobility`               |
-| Pre/post-natal           | `pre-post-natal`         |
-| Rehab                    | `rehab-injury`           |
-| Sport-specific           | `sports-performance`     |
+Rules, in order:
+1. **Allow-list good bots by UA** (Googlebot, Bingbot, DuckDuckBot, Applebot, FacebookExternalHit, Twitterbot, LinkedInBot, Slackbot) — return `next()`.
+2. **Block obvious scraper UAs**: empty UA, `curl`, `wget`, `python-requests`, `Go-http-client`, `Scrapy`, `axios`, `node-fetch`, `HeadlessChrome`, `PhantomJS`, `Bytespider`, `PetalBot`, `SemrushBot`, `AhrefsBot`, `DotBot`, `MJ12bot`, `DataForSeoBot`, `ClaudeBot` (configurable allow-list later). Return **403** with `cache-control: public, max-age=86400` so Cloudflare caches the block.
+3. **Geo throttle on marketing routes only** (`/reviews`, `/`, `/in/*`, `/professions/*`, `/compare*`, `/features/*`): if `cf-ipcountry` is in a high-abuse list (default: `CN`, `RU`, `KP`) AND the UA is not in the good-bot allow-list, return 403. Auth, dashboard, `/api/*`, and Stripe return paths are exempt so legit users in those countries can still sign in.
+4. **Per-IP rate limit** on `/reviews` and other heavy marketing pages: max 30 req/min per `cf-connecting-ip`, enforced in-memory per worker isolate (good enough to break a single-IP scraper; not a true distributed limit — backend has no rate-limit primitive yet, per project rules).
 
-Each chip becomes a `<Link to="/find-a-professional" search={{ specialism: slug, page: 1, sort: "recommended" }}>` — keeps the existing pill styling untouched, just makes them navigable. (Behavioural change only; the design memory permits this — no markup restructure.)
+All three lists live in one config object at the top of `bot-filter.ts` so you can edit them in one place.
 
-## 3. Avatar rotation from real professionals
+### 2. robots.txt tightening
 
-New server function `getHomepageHeroAvatars` in `src/lib/directory/hero.functions.ts`:
+Update `public/robots.txt`:
+```
+User-agent: Googlebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: DuckDuckBot
+Allow: /
+User-agent: Applebot
+Allow: /
 
-- Public (no auth), uses `supabaseAdmin` (loaded inside the handler).
-- Selects from `professionals` joined to `profiles` where: `is_published = true` AND `identity_status = 'approved'` AND `bd_seed_thin = false` AND `avatar_url IS NOT NULL`.
-- Orders by `quality_score DESC NULLS LAST`, limit 12.
-- Returns `{ id, slug, full_name, avatar_url, city }[]`.
+User-agent: Bytespider
+Disallow: /
+User-agent: PetalBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: GPTBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: AhrefsBot
+Disallow: /
+User-agent: SemrushBot
+Disallow: /
+User-agent: MJ12bot
+Disallow: /
+User-agent: DotBot
+Disallow: /
+User-agent: DataForSeoBot
+Disallow: /
 
-Homepage `loader` calls `context.queryClient.ensureQueryData(heroAvatarsQueryOptions)`; the hero renders the first 4 with a slow cross-fade rotation through the rest every 4s (CSS opacity transition, no library). Falls back to the existing four static imports (James/Sophie/Daniel/Laura) if the query returns fewer than 4 rows or errors during SSR.
+User-agent: *
+Allow: /
+Crawl-delay: 5
 
-Avatars served from the public `avatars` bucket render directly via their public URL; legacy `/demo-avatars/*` paths already work as static files.
+Sitemap: https://repsuk.org/sitemap.xml
+```
+(Polite scrapers honour this. The CN farm won't — that's what step 1 is for.)
 
-## Files touched
+### 3. Stop analytics double-counting bots that slip through
 
-- `src/routes/index.tsx` — extract hero block into `HomeHeroSearch` + `HomeHeroAvatars`; add loader call. No layout changes.
-- `src/lib/directory/hero.functions.ts` — new file (server fn + queryOptions).
+The middleware sets a response header `x-bot-blocked: 1` on rejections and Lovable analytics only counts 200s, so blocked traffic stops inflating the dashboard immediately.
 
-Nothing else changes. No DB migration, no styling tokens, no copy edits, no new routes.
+## What I'm NOT doing (and why)
 
-## Brutal-honest truth
+- **No Cloudflare Turnstile / hCaptcha on `/reviews`.** It's a public marketing page; gating it would tank SEO and real conversions. Save captcha for `/auth` and the enquire form if abuse moves there.
+- **No country block on auth / dashboard / API.** Some of your real users (and Stripe webhooks) need global access.
+- **No DB-backed rate limit.** Project rule: "backend does not have a standard rate-limiting primitive." In-memory per-isolate limit is the honest compromise.
+- **No changes to `/reviews` content or SEO.** Page stays indexable for Google/Bing.
 
-You asked for one — here it is, in order of severity:
+## Stronger options if this keeps happening
 
-1. **"Real avatars" is currently a polite fiction.** The directory has 8 demo seed pros (`james.wilson@demo.repsuk.org`, etc.) with stock photos, plus exactly **one** genuine real member with an uploaded avatar (Katie Gibbs). Every BD-migrated row is `bd_seed_thin = true` with no avatar. So "rotate real professionals" will, today, rotate **demo seed photos plus Katie**. That's still better than four hard-coded JPEGs, and the moment any real member uploads an avatar they'll appear automatically. But don't tell yourself we're showing real users yet — we're showing a placeholder pool that drains and refills as real onboarding happens.
+If the scraper rotates UA + IP and gets past the above, the real fix is to put **your custom domain `repsuk.org` behind your own Cloudflare account** and turn on Bot Fight Mode + a CN geo rule in the WAF. I can't do that from inside the app — it's a 10-minute DNS + dashboard change on your side. I'll flag it in the closing message with the exact steps if you want.
 
-2. **The "25,000+ verified professionals" / "50,000+ reviews" copy directly above the avatars is unverifiable today.** With 9 photo-bearing rows in the DB, a journalist or a competitor screenshotting this page pre-launch is a real reputational risk. That's not in scope for this ticket, but flag for you: at minimum we should soften to "Built on the BD register of 25,000+ members migrating to REPs" before launch.
+## Files
 
-3. **The location input is dumb.** It just shoves whatever the user types into `?city=`. Type "Lndon" and you get zero results. The proper fix is Google Places autocomplete (we already have `GOOGLE_MAPS_BROWSER_KEY` wired) feeding the canonical city + lat/lng. I'd recommend doing that as the very next ticket — it's the single biggest source of "I searched and saw nothing" bounces a homepage hero will produce.
+- **New**: `src/lib/bot-filter.ts`
+- **Edit**: `src/start.ts` (register middleware before `errorMiddleware`)
+- **Edit**: `public/robots.txt`
 
-4. **The query input is also dumb.** It free-text-searches by `q`, but `/find-a-professional`'s server fn treats `q` as a name/headline ILIKE match. So typing "yoga" returns trainers whose bio happens to contain "yoga", not yoga teachers. Profession routing ("yoga" → `profession=yoga-teacher`) needs a small slug-detection step. I can add that in this same ticket if you want, but it's worth being explicit — without it the query box is mostly for typing a coach's name.
+## Verify after build
 
-5. **No analytics on submit.** We won't know which chip / which query / which city converts. Tiny add — a `console.log` or a `track("hero_search", {...})` stub — but worth deciding now whether you want it.
-
-## Recommended order
-
-Ship this ticket as scoped (1 + 2 + 3). Then immediately do "hero location autocomplete via Google Places" + "query string profession detection" as the very next pass. Don't push the homepage live with a dumb location box.
-
-## Questions for you before I build
-
-- **Avatar pool**: ship rotation now with the demo-pro pool (and accept it'll be mostly demos until real members onboard), or wait until you've imported BD avatars?
-- **Smart query**: include the slug-detection (yoga → yoga-teacher etc.) in this ticket, or split it out?
-- **Chip count**: the homepage shows 6 chips. The actual specialisms list has 16. Keep the curated 6, or rotate them?
+1. `curl -A "python-requests/2.31" https://repsuk.org/reviews -I` → expect `403`.
+2. `curl -A "Googlebot/2.1" https://repsuk.org/reviews -I` → expect `200`.
+3. Normal browser load of `/reviews` from UK → expect `200`.
+4. Re-check analytics over the next 24h — CN line should collapse.
