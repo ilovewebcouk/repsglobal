@@ -11,7 +11,6 @@ import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
 import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
 import {
-  BadgeCheck,
   Bookmark,
   ChevronLeft,
   ChevronRight,
