@@ -2859,6 +2859,13 @@ export type Database = {
     }
     Functions: {
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
+      admin_seed_all_bd_members: {
+        Args: { _limit?: number }
+        Returns: {
+          failed: number
+          seeded: number
+        }[]
+      }
       convert_lead_to_client: { Args: { _enquiry_id: string }; Returns: string }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
