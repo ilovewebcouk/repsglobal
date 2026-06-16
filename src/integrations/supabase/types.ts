@@ -2861,6 +2861,23 @@ export type Database = {
       }
     }
     Functions: {
+      _seed_one_demo_pro: {
+        Args: {
+          _avatar: string
+          _bio: string
+          _city: string
+          _country_code: string
+          _email: string
+          _full_name: string
+          _headline: string
+          _lat: number
+          _lon: number
+          _profession: string
+          _slug: string
+          _specs: string[]
+        }
+        Returns: string
+      }
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
       admin_seed_all_bd_members: {
         Args: { _limit?: number }
