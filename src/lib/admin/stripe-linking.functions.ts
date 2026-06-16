@@ -363,14 +363,16 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
         // Subscription Schedule: phase 1 = £34 for 12 months, then phase 2 = £99/yr ongoing.
         // Stripe handles the price step-up automatically on the anniversary.
         const collection_method = hasPm ? "charge_automatically" : "send_invoice";
+        const nowSec = Math.floor(Date.now() / 1000);
+        const oneYearSec = 365 * 24 * 60 * 60;
         const schedule = await stripe.subscriptionSchedules.create({
           customer: row.stripe_customer_id,
-          start_date: "now",
+          start_date: nowSec,
           end_behavior: "release",
           phases: [
             {
               items: [{ price: legacyPrice!.id, quantity: 1 }],
-              iterations: 1,
+              end_date: nowSec + oneYearSec,
               collection_method,
               ...(collection_method === "send_invoice" ? { invoice_settings: { days_until_due: 30 } } : {}),
               metadata: baseMetadata,
@@ -384,6 +386,7 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
           ],
           metadata: baseMetadata,
         });
+
         await markRow(row.bd_member_id, {
           migration_status: hasPm ? "renewed_to_verified" : "awaiting_payment_method",
           stripe_subscription_id: schedule.subscription as string | null,
