@@ -344,6 +344,14 @@ function DirectoryPage() {
       });
     } else if (sort === "rating") {
       arr.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+    } else if (sort === "most_reviewed") {
+      arr.sort((a, b) => b.reviews - a.reviews || b.rating - a.rating);
+    } else if (sort === "newest") {
+      arr.sort((a, b) => {
+        const at = a.created_at ? Date.parse(a.created_at) : 0;
+        const bt = b.created_at ? Date.parse(b.created_at) : 0;
+        return bt - at;
+      });
     }
     return arr;
   }, [baseList, sort, origin]);
