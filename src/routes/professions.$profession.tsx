@@ -375,11 +375,12 @@ function ProfessionLanding() {
   const meta = getProfession(profession);
 
   const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
-  const { data: livePros = [] } = useQuery({
+  const { data: liveResult } = useQuery({
     queryKey: ["directory-featured-profession", meta.slug],
     queryFn: () => searchProfessionals({ data: { profession: meta.slug, limit: 4 } }),
     staleTime: 60_000,
   });
+  const livePros = liveResult?.rows ?? [];
   const featured: FeaturedPro[] = livePros.length
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);

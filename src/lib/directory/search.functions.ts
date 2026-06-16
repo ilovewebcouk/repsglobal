@@ -11,10 +11,17 @@ const SearchSchema = z.object({
   online: z.boolean().optional(),
   in_person: z.boolean().optional(),
   limit: z.number().int().min(1).max(100).optional(),
-  offset: z.number().int().min(0).max(1000).optional(),
+  offset: z.number().int().min(0).max(10000).optional(),
+  page: z.number().int().min(1).max(1000).optional(),
 });
 
 export type SearchProfessionalsInput = z.infer<typeof SearchSchema>;
+export type SearchProfessionalsResult = {
+  rows: SearchProfessionalRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
 const COLS =
   "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available, updated_at";
@@ -45,15 +52,16 @@ export type SearchProfessionalRow = {
 
 export const searchProfessionals = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => SearchSchema.parse(d ?? {}))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SearchProfessionalsResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const limit = data.limit ?? 60;
-    const offset = data.offset ?? 0;
+    const pageSize = data.limit ?? 24;
+    const page = data.page ?? (data.offset != null ? Math.floor(data.offset / pageSize) + 1 : 1);
+    const offset = data.offset ?? (page - 1) * pageSize;
 
     let qb = supabaseAdmin
       .from("professionals")
-      .select(COLS)
+      .select(COLS, { count: "exact" })
       .eq("is_published", true);
 
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
@@ -66,15 +74,16 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       qb = qb.or(`headline.ilike.%${term}%,slug.ilike.%${term}%`);
     }
 
-    const { data: rows, error } = await qb
+    const { data: rows, error, count } = await qb
       .order("updated_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + pageSize - 1);
 
     if (error) throw error;
+    const total = count ?? 0;
     const list = (rows ?? []) as Array<Omit<SearchProfessionalRow, "full_name" | "avatar_url" | "tier" | "location"> & { specialisms: string[] | null }>;
     const ids = list.map((r) => r.id);
 
-    if (!ids.length) return [] as SearchProfessionalRow[];
+    if (!ids.length) return { rows: [], total, page, pageSize };
 
     const [profilesRes, locsRes, subsRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
@@ -132,5 +141,5 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
     decorated.sort((a, b) => rank(b.tier) - rank(a.tier));
 
-    return decorated;
+    return { rows: decorated, total, page, pageSize };
   });

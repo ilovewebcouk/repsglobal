@@ -49,6 +49,8 @@ const VALID_VENUE_SLUGS = new Set([
   "anytime-fitness",
 ]);
 
+const VALID_SORTS = new Set(["recommended", "nearest", "rating"]);
+
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
     const venueRaw = typeof raw.venue === "string" ? raw.venue : undefined;
@@ -57,12 +59,17 @@ export const Route = createFileRoute("/find-a-professional")({
       typeof raw[k] === "string" && (raw[k] as string).length > 0
         ? ((raw[k] as string).slice(0, 120))
         : undefined;
+    const pageRaw = Number(raw.page);
+    const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+    const sortRaw = typeof raw.sort === "string" && VALID_SORTS.has(raw.sort) ? raw.sort : "recommended";
     return {
       venue,
       city: str("city"),
       profession: str("profession"),
       specialism: str("specialism"),
       q: str("q"),
+      page,
+      sort: sortRaw as "recommended" | "nearest" | "rating",
     };
   },
   head: () => ({
@@ -298,19 +305,22 @@ const testimonials = [
   },
 ];
 
+const PAGE_SIZE = 24;
+
 function DirectoryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { venue: venueFilter, city, profession, specialism, q } = Route.useSearch();
+  const { venue: venueFilter, city, profession, specialism, q, page, sort } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
 
   const search = useServerFn(searchProfessionals);
-  const { data: livePros = [] } = useQuery({
-    queryKey: ["directory", "search", { city, profession, specialism, q }],
-    queryFn: () => search({ data: { city, profession, specialism, q } }),
+  const { data: liveResult, isPending, isError, refetch } = useQuery({
+    queryKey: ["directory", "search", { city, profession, specialism, q, page }],
+    queryFn: () => search({ data: { city, profession, specialism, q, page, limit: PAGE_SIZE } }),
     staleTime: 60_000,
   });
-
+  const livePros = liveResult?.rows ?? [];
+  const total = liveResult?.total ?? 0;
 
   const liveAsPros: Pro[] = React.useMemo(
     () =>
@@ -330,7 +340,7 @@ function DirectoryPage() {
             role:
               getProfessionLabel(r.primary_profession) ||
               specLabels[0] ||
-              "Personal Trainer",
+              "Fitness Professional",
             distance: town ?? "—",
             town: town ?? undefined,
             coords,
@@ -356,24 +366,20 @@ function DirectoryPage() {
     [livePros],
   );
 
-  const mergedPros = React.useMemo(() => [...liveAsPros, ...directoryPros], [liveAsPros]);
-
+  // Live directory only — placeholder seed cards (directoryPros) intentionally hidden.
   const venueFiltered = activeVenue
-    ? mergedPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
-    : mergedPros;
+    ? liveAsPros.filter((p) => p.venues.some((v) => v.slug === activeVenue.slug))
+    : liveAsPros;
 
   // Viewer origin (postcode / geolocation) — drives live distance + nearest sort
   const { origin } = useViewerOrigin();
 
-  // Sort
-  const [sort, setSort] = React.useState<"recommended" | "nearest" | "rating">(
-    "recommended",
-  );
-
   // Fall back to Recommended if origin is cleared while Nearest is selected
   React.useEffect(() => {
-    if (!origin && sort === "nearest") setSort("recommended");
-  }, [origin, sort]);
+    if (!origin && sort === "nearest") {
+      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: "recommended" as const }) });
+    }
+  }, [origin, sort, navigate]);
 
   // Decorate with real miles when origin + coords both exist
   type WithMiles = Pro & { _miles: number | null };
@@ -404,8 +410,30 @@ function DirectoryPage() {
     return arr;
   }, [decorated, sort, origin]);
 
+  const setSort = (next: "recommended" | "nearest" | "rating") =>
+    navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, sort: next, page: 1 }) });
+
+  const goToPage = (n: number) =>
+    navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
+
+  // Scroll to results on page change
+  const resultsRef = React.useRef<HTMLDivElement | null>(null);
+  const prevPage = React.useRef(page);
+  React.useEffect(() => {
+    if (prevPage.current !== page) {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      prevPage.current = page;
+    }
+  }, [page]);
+
   const clearVenue = () =>
-    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined }) });
+    navigate({ search: (prev: { venue?: string }) => ({ ...prev, venue: undefined, page: 1 }) });
+
+
 
 
   return (
@@ -567,19 +595,21 @@ function DirectoryPage() {
             </aside>
 
             {/* Results column */}
-            <div>
+            <div ref={resultsRef}>
               {/* Sort/results bar */}
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-reps-stone/70 pb-4 sm:pb-5">
                 <div>
                   <h1 className="font-display text-[18px] font-semibold text-reps-charcoal sm:text-[20px] lg:text-[22px]">
                     {activeVenue
                       ? `${visiblePros.length} professional${visiblePros.length === 1 ? "" : "s"} who coach at ${activeVenue.label}`
-                      : "126 professionals in London"}
+                      : `${total.toLocaleString()} professional${total === 1 ? "" : "s"}${city ? ` in ${city}` : ""}`}
                   </h1>
                   <p className="mt-1 text-[12px] text-reps-muted-light">
                     {activeVenue
                       ? "Independent REPS-verified — not affiliated with the gym shown"
-                      : "Showing 1–8 · all REPS Verified"}
+                      : total === 0
+                        ? "No results yet"
+                        : `Showing ${rangeStart}–${rangeEnd} · all REPS Verified`}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px] text-reps-muted-light">
@@ -642,13 +672,33 @@ function DirectoryPage() {
 
 
               {/* Cards w/ rhythm break */}
-              {visiblePros.length === 0 ? (
+              {isPending ? (
+                <div className="space-y-4 pt-5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[180px] animate-pulse rounded-[18px] border border-reps-stone bg-reps-warm-white"
+                    />
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className="mt-6 rounded-[18px] border border-reps-stone bg-reps-warm-white p-8 text-center">
+                  <p className="text-[14px] text-reps-muted-light">Couldn't load professionals.</p>
+                  <button
+                    type="button"
+                    onClick={() => refetch()}
+                    className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : visiblePros.length === 0 ? (
                 <EmptyResults />
               ) : (
                 <div className="space-y-4 pt-5">
                   {visiblePros.slice(0, 4).map((p, i) => (
                     <ProCard
-                      key={p.name}
+                      key={p.slug ?? p.name}
                       pro={p}
                       ctaLabel={p.featured ? "See availability" : i % 2 === 0 ? "View profile" : "See availability"}
                     />
@@ -658,7 +708,7 @@ function DirectoryPage() {
 
                   {visiblePros.slice(4).map((p, i) => (
                     <ProCard
-                      key={p.name}
+                      key={p.slug ?? p.name}
                       pro={p}
                       ctaLabel={p.featured ? "See availability" : (i + 1) % 2 === 0 ? "View profile" : "See availability"}
                     />
@@ -667,32 +717,56 @@ function DirectoryPage() {
               )}
 
               {/* Pagination */}
-              <nav
-                aria-label="Pagination"
-                className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
-              >
-                <p className="text-[13px] text-reps-muted-light">
-                  Showing <span className="font-semibold text-reps-charcoal">1–8</span> of{" "}
-                  <span className="font-semibold text-reps-charcoal">126</span>
-                </p>
-                <div className="flex items-center gap-2">
-                  <PagerBtn aria-label="Previous">
-                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </PagerBtn>
-                  <PagerNum n={1} active />
-                  <PagerNum n={2} />
-                  <PagerNum n={3} className="hidden sm:flex" />
-                  <span className="hidden sm:contents">
-                    <PagerNum n={4} />
-                    <PagerNum n={5} />
-                  </span>
-                  <span className="hidden px-1 text-reps-muted-light sm:inline">…</span>
-                  <PagerNum n={13} className="hidden sm:flex" />
-                  <PagerBtn aria-label="Next">
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </PagerBtn>
-                </div>
-              </nav>
+              {totalPages > 1 && (
+                <nav
+                  aria-label="Pagination"
+                  className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
+                >
+                  <p className="text-[13px] text-reps-muted-light">
+                    Showing{" "}
+                    <span className="font-semibold text-reps-charcoal">
+                      {rangeStart}–{rangeEnd}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-reps-charcoal">
+                      {total.toLocaleString()}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <PagerBtn
+                      aria-label="Previous"
+                      disabled={page <= 1}
+                      onClick={() => goToPage(Math.max(1, page - 1))}
+                    >
+                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </PagerBtn>
+                    {compactPagerRange(page, totalPages).map((item, idx) =>
+                      item === "…" ? (
+                        <span
+                          key={`gap-${idx}`}
+                          className="px-1 text-reps-muted-light"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <PagerNum
+                          key={item}
+                          n={item}
+                          active={item === page}
+                          onClick={() => goToPage(item)}
+                        />
+                      ),
+                    )}
+                    <PagerBtn
+                      aria-label="Next"
+                      disabled={page >= totalPages}
+                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                    >
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </PagerBtn>
+                  </div>
+                </nav>
+              )}
             </div>
           </div>
         </div>
@@ -1183,14 +1257,18 @@ function PagerNum({
   n,
   active,
   className,
+  onClick,
 }: {
   n: number;
   active?: boolean;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={`flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-semibold transition-colors sm:h-11 sm:w-11 ${
         active
           ? "bg-reps-orange text-white"
@@ -1204,15 +1282,32 @@ function PagerNum({
 
 function PagerBtn({
   children,
+  className,
+  disabled,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
+      disabled={disabled}
       {...rest}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11"
+      className={`flex h-10 w-10 items-center justify-center rounded-full border border-reps-stone bg-white text-reps-charcoal transition-colors hover:bg-reps-warm-white sm:h-11 sm:w-11 ${
+        disabled ? "cursor-not-allowed opacity-40 hover:bg-white" : ""
+      } ${className ?? ""}`}
     >
       {children}
     </button>
   );
+}
+
+function compactPagerRange(current: number, total: number): Array<number | "…"> {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: Array<number | "…"> = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) out.push("…");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("…");
+  out.push(total);
+  return out;
 }
