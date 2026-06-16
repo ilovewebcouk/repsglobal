@@ -446,7 +446,7 @@ function DirectoryPage() {
       <PublicHeader variant="solid" />
 
 
-      <ResultsSearchBar state={barState} total={visibleTotal} countLabel={countLabel} />
+      <ResultsSearchBar state={barState} total={visibleTotal} />
 
       {/* ============ RESULTS ============ */}
       <section className="bg-reps-ivory">
