@@ -63,7 +63,14 @@ export const Route = createFileRoute("/")({
   component: HomeV2,
 });
 
-const goalChips = ["Fat loss", "Strength", "Mobility", "Pre/post-natal", "Rehab", "Sport-specific"];
+const goalChips: { label: string; specialism: string }[] = [
+  { label: "Fat loss", specialism: "fat-loss" },
+  { label: "Strength", specialism: "strength" },
+  { label: "Mobility", specialism: "mobility" },
+  { label: "Pre/post-natal", specialism: "pre-post-natal" },
+  { label: "Rehab", specialism: "rehab-injury" },
+  { label: "Sport-specific", specialism: "sports-performance" },
+];
 
 
 const stats = [
