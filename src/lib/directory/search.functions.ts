@@ -143,41 +143,23 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       total = count ?? (allRows?.length ?? 0);
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
-      // Parallel auxiliary fetches. IMPORTANT: trigger each Supabase
-      // PostgrestFilterBuilder explicitly with `.then((r) => r)` so it
-      // resolves to a real `{ data, error }` payload. Passing the raw
-      // builder into Promise.all has produced empty results for one of the
-      // requests in this runtime, which silently collapses the nearest-sort
-      // distance map and falls back to quality ordering. Forcing `.then()`
-      // is the only reliable way to fire both requests in parallel here.
-      type LocsRow = { professional_id: string; latitude: number | null; longitude: number | null };
-      type SubsRow = { user_id: string; tier: string | null; status: string };
+      // Auxiliary fetches for ranking. Awaited directly — Promise.all with
+      // Supabase PostgrestFilterBuilders has produced empty results in this
+      // runtime for one of the queries, silently collapsing the distance map.
+      const subsForRank = await supabaseAdmin
+        .from("subscriptions")
+        .select("user_id, tier, status")
+        .in("user_id", allIds)
+        .in("status", ["active", "trialing", "past_due"]);
 
-      const subsForRankPromise: Promise<{ data: SubsRow[] | null }> = Promise.resolve(
-        supabaseAdmin
-          .from("subscriptions")
-          .select("user_id, tier, status")
-          .in("user_id", allIds)
-          .in("status", ["active", "trialing", "past_due"])
-          .then((r) => ({ data: (r.data as SubsRow[] | null) ?? null })),
-      );
-
-      const locsForRankPromise: Promise<{ data: LocsRow[] | null }> = nearestMode
-        ? Promise.resolve(
-            supabaseAdmin
-              .from("professional_locations")
-              .select("professional_id, latitude, longitude")
-              .in("professional_id", allIds)
-              .eq("is_primary", true)
-              .eq("is_public", true)
-              .then((r) => ({ data: (r.data as LocsRow[] | null) ?? null })),
-          )
-        : Promise.resolve({ data: null as LocsRow[] | null });
-
-      const [subsForRank, locsForRank] = await Promise.all([
-        subsForRankPromise,
-        locsForRankPromise,
-      ]);
+      const locsForRank = nearestMode
+        ? await supabaseAdmin
+            .from("professional_locations")
+            .select("professional_id, latitude, longitude")
+            .in("professional_id", allIds)
+            .eq("is_primary", true)
+            .eq("is_public", true)
+        : { data: null as Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null };
 
       const tierRank = (t: string | null | undefined) =>
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
@@ -192,6 +174,13 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         if (l.latitude != null && l.longitude != null) {
           coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
         }
+      }
+
+      // Debug log to verify the ranking inputs in the dev server logs.
+      if (nearestMode) {
+        console.log(
+          `[searchProfessionals] nearestMode origin=${data.viewer_lat},${data.viewer_lng} allIds=${allIds.length} coords=${coordById.size}`,
+        );
       }
 
 
