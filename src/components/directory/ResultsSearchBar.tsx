@@ -988,33 +988,51 @@ function MobileFiltersSheet({
   originAvailable,
   activeCount,
   onChange,
+  variant = "chip",
 }: {
   state: ResultsBarState;
   originAvailable: boolean;
   activeCount: number;
   onChange: (p: Patch) => void;
+  variant?: "chip" | "split-bar";
 }) {
   const [open, setOpen] = React.useState(false);
+  const isSplitBar = variant === "split-bar";
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium",
-            activeCount > 0
-              ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal"
-              : "border-reps-stone text-reps-charcoal",
-          )}
-        >
-          <Filter className="size-3.5" />
-          Filters
-          {activeCount > 0 ? (
-            <Badge variant="secondary" className="rounded-full px-1.5 text-[11px]">
-              {activeCount}
-            </Badge>
-          ) : null}
-        </button>
+        {isSplitBar ? (
+          <button
+            type="button"
+            className="flex h-12 w-full items-center justify-center gap-2 px-4 text-[13.5px] font-medium text-white transition-colors hover:bg-white/5"
+          >
+            <SlidersHorizontal className="size-4 text-white/60" />
+            Filters
+            {activeCount > 0 ? (
+              <span className="ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-reps-orange text-[11px] font-bold text-white">
+                {activeCount}
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              "inline-flex h-10 items-center gap-2 rounded-full border bg-reps-warm-white px-3.5 text-[13.5px] font-medium",
+              activeCount > 0
+                ? "border-reps-orange/40 bg-reps-orange/8 text-reps-charcoal"
+                : "border-reps-stone text-reps-charcoal",
+            )}
+          >
+            <Filter className="size-3.5" />
+            Filters
+            {activeCount > 0 ? (
+              <Badge variant="secondary" className="rounded-full px-1.5 text-[11px]">
+                {activeCount}
+              </Badge>
+            ) : null}
+          </button>
+        )}
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-[22px] p-0">
         <SheetHeader className="border-b border-reps-stone/70 px-5 py-4 text-left">
