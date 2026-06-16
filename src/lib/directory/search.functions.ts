@@ -143,29 +143,30 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       total = count ?? (allRows?.length ?? 0);
       const allIds = (allRows ?? []).map((r) => (r as { id: string }).id);
 
-      // Parallel auxiliary fetches. Important: do NOT wrap supabase query
-      // builders in `Promise.resolve(...)` — that has produced empty results
-      // for the second builder in some runtimes. Call `.then()` (i.e. just
-      // pass the builder into Promise.all) so each request fires correctly.
-      const subsPromise = supabaseAdmin
+      // Auxiliary fetches for ranking. Awaited directly — Promise.all with
+      // Supabase PostgrestFilterBuilders has produced empty results in this
+      // runtime for one of the queries, silently collapsing the distance map.
+      const subsForRank = await supabaseAdmin
         .from("subscriptions")
         .select("user_id, tier, status")
         .in("user_id", allIds)
         .in("status", ["active", "trialing", "past_due"]);
 
-      const locsPromise = nearestMode
-        ? supabaseAdmin
+      // NOTE: do NOT pass `.in("professional_id", allIds)` here — when
+      // allIds is large (hundreds of UUIDs) the filter goes into the URL
+      // and exceeds PostgREST's URL length limit, silently returning 0 rows.
+      // The secondary per-page locsRes fetch (max 24 ids) is fine; this
+      // ranking fetch must scan all primary public locations and filter
+      // in-memory by allIds afterward.
+      const allIdSet = new Set(allIds);
+      const locsForRank = nearestMode
+        ? await supabaseAdmin
             .from("professional_locations")
             .select("professional_id, latitude, longitude")
-            .in("professional_id", allIds)
             .eq("is_primary", true)
             .eq("is_public", true)
-        : null;
-
-      const [subsForRank, locsForRank] = await Promise.all([
-        subsPromise,
-        locsPromise ?? Promise.resolve({ data: null as Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null }),
-      ]);
+            .limit(5000)
+        : { data: null as Array<{ professional_id: string; latitude: number | null; longitude: number | null }> | null };
 
       const tierRank = (t: string | null | undefined) =>
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
@@ -177,10 +178,14 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       }
       const coordById = new Map<string, { lat: number; lng: number }>();
       for (const l of locsForRank.data ?? []) {
+        if (!allIdSet.has(l.professional_id)) continue;
         if (l.latitude != null && l.longitude != null) {
           coordById.set(l.professional_id, { lat: l.latitude, lng: l.longitude });
         }
       }
+
+
+
 
 
       const origin = nearestMode
