@@ -9,7 +9,10 @@ import { searchTaxonomy } from "@/lib/search/taxonomy";
 
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import { haversineMiles, formatMiles } from "@/lib/geo";
-import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
+import { ResultsSearchBar, type ResultsBarMode, type ResultsBarSort, type ResultsBarView, type ResultsBarState } from "@/components/directory/ResultsSearchBar";
+import { ResultsMap } from "@/components/directory/ResultsMap";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Map as MapIcon } from "lucide-react";
 import {
   Bookmark,
   ChevronLeft,
@@ -49,6 +52,7 @@ const VALID_VENUE_SLUGS = new Set([
 
 const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating", "most_reviewed", "newest"]);
 const VALID_MODES = new Set<ResultsBarMode>(["any", "in_person", "online"]);
+const VALID_VIEWS = new Set<ResultsBarView>(["list", "split", "map"]);
 
 export const Route = createFileRoute("/find-a-professional")({
   validateSearch: (raw: Record<string, unknown>) => {
@@ -78,6 +82,10 @@ export const Route = createFileRoute("/find-a-professional")({
       Number.isFinite(radiusRaw) && radiusRaw >= 0 && radiusRaw <= 200
         ? Math.floor(radiusRaw)
         : 0;
+    const viewRaw =
+      typeof raw.view === "string" && VALID_VIEWS.has(raw.view as ResultsBarView)
+        ? (raw.view as ResultsBarView)
+        : ("list" as ResultsBarView);
     return {
       venue,
       city: str("city"),
@@ -89,6 +97,7 @@ export const Route = createFileRoute("/find-a-professional")({
       mode: modeRaw,
       min_rating,
       radius_mi,
+      view: viewRaw,
     };
   },
   head: () => ({
