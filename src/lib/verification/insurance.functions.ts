@@ -16,6 +16,10 @@ export const saveInsurance = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => insuranceInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // Ownership check: doc_path must live under the caller's storage folder.
+    if (!data.doc_path.startsWith(`${userId}/`)) {
+      throw new Error("Forbidden: doc_path does not belong to you");
+    }
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
     const { data: row, error } = await supabase
       .from("insurance_policies")

@@ -15,9 +15,19 @@ export const Route = createFileRoute("/api/public/hooks/legacy-renewal")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = request.headers.get("apikey");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
-        if (!apiKey || !expected || apiKey !== expected) {
+        // Authenticate the cron caller with a server-only secret. The Supabase
+        // publishable/anon key is NOT acceptable here — it ships in the client
+        // bundle and would let any visitor trigger Stripe charges.
+        const cronSecret = process.env.CRON_SECRET;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const presented =
+          request.headers.get("x-cron-secret") ??
+          request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+          request.headers.get("apikey");
+        const accepted =
+          (!!cronSecret && presented === cronSecret) ||
+          (!!serviceRoleKey && presented === serviceRoleKey);
+        if (!accepted) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
