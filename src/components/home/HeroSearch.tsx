@@ -72,8 +72,9 @@ type SelectedWhat =
 
 type SelectedWhere =
   | { mode: "origin"; label: string }
-  | { mode: "city"; text: string }
+  | { mode: "city"; label: string }
   | null;
+
 
 export function HomeHeroSearch() {
   const navigate = useNavigate();
