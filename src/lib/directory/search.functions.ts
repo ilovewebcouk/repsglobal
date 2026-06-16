@@ -194,16 +194,12 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
-        // 1-mile distance buckets — keeps "distance always wins" while
-        // letting verified / quality break true ties at the same locale.
-        const bucket = origin ? (c ? Math.floor(d) : 9999) : 0;
         const verifiedRank = row.verification === "verified" ? 1 : 0;
         const paidRank = paidTierById.get(row.id) ?? 0;
         const quality = row.quality_score ?? 0;
         return {
           row: r,
           d,
-          bucket,
           verifiedRank,
           paidRank,
           quality,
@@ -211,12 +207,15 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         };
       });
 
+      // Nearest: raw distance ALWAYS wins. No buckets — closest is closest.
+      // Tie-breakers (same exact distance, e.g. online-only pros at infinity):
+      //   verified -> quality -> paid tier -> recency.
+      // Default (no origin): verified -> quality -> paid tier -> recency.
       decoratedAll.sort((a, b) => {
-        if (origin && a.bucket !== b.bucket) return a.bucket - b.bucket;
+        if (origin && a.d !== b.d) return a.d - b.d;
         if (a.verifiedRank !== b.verifiedRank) return b.verifiedRank - a.verifiedRank;
         if (a.quality !== b.quality) return b.quality - a.quality;
         if (a.paidRank !== b.paidRank) return b.paidRank - a.paidRank;
-        if (origin && a.d !== b.d) return a.d - b.d;
         return a.updatedAt < b.updatedAt ? 1 : -1;
       });
 
