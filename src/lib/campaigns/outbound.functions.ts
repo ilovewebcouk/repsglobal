@@ -396,7 +396,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
           inbox: data.inbox,
           subject: data.subject,
           body_text: data.body,
-          body_html: html,
+          body_html: previewHtml,
           created_by: context.userId,
           total_recipients: recipients.length,
           tiers: data.tiers ?? [],
