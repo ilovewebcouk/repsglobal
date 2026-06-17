@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "spam" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash" | "all";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -144,12 +144,16 @@ function snoozedLabel(iso?: string | null) {
   return `Wakes in ${days}d`;
 }
 
-function labelFor(action: "resolve" | "reopen" | "pending" | "spam" | "not_spam"): string {
+function labelFor(
+  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "close" | "restore",
+): string {
   if (action === "resolve") return "Resolved";
   if (action === "reopen") return "Reopened";
   if (action === "pending") return "Marked pending";
   if (action === "spam") return "Marked as spam";
-  return "Restored from spam";
+  if (action === "not_spam") return "Restored from spam";
+  if (action === "close") return "Closed (archived)";
+  return "Restored from Trash";
 }
 
 
@@ -175,8 +179,8 @@ function AdminSupport() {
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const [purgeConfirm, setPurgeConfirm] = useState("");
   const bulkFn = useServerFn(bulkUpdateTickets);
   const undoFn = useServerFn(undoBulkUpdateTickets);
   const [bulkPending, setBulkPending] = useState(false);
@@ -209,23 +213,27 @@ function AdminSupport() {
     const isActiveSnoozed = (r: any) =>
       r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
     const isSpam = (r: any) => r.status === "spam";
-    const nonSpam = rows.filter((r: any) => !isSpam(r));
-    const openRows = nonSpam.filter(
+    const isClosed = (r: any) => r.status === "closed";
+    const isTrash = (r: any) => !!r.deleted_at;
+    const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
+    const openRows = active.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
-    const pendingRows = nonSpam.filter(
+    const pendingRows = active.filter(
       (r: any) => r.status === "pending" && !isActiveSnoozed(r),
     );
     return {
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: nonSpam.filter(isActiveSnoozed).length,
-      resolved: nonSpam.filter((r: any) => r.status === "resolved").length,
-      spam: rows.filter(isSpam).length,
-      all: nonSpam.length,
+      snoozed: active.filter(isActiveSnoozed).length,
+      resolved: active.filter((r: any) => r.status === "resolved").length,
+      closed: rows.filter((r: any) => !isTrash(r) && isClosed(r)).length,
+      spam: rows.filter((r: any) => !isTrash(r) && isSpam(r)).length,
+      trash: rows.filter(isTrash).length,
+      all: active.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
       unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: nonSpam.filter(
+      resolvedToday: active.filter(
         (r: any) =>
           r.resolved_at &&
           new Date(r.resolved_at).toDateString() === new Date().toDateString(),
@@ -335,12 +343,21 @@ function AdminSupport() {
   }
 
   async function runBulk(
-    action: "resolve" | "reopen" | "pending" | "delete" | "spam" | "not_spam",
+    action:
+      | "resolve"
+      | "reopen"
+      | "pending"
+      | "delete"
+      | "restore"
+      | "purge"
+      | "close"
+      | "spam"
+      | "not_spam",
     extraPayload?: Record<string, unknown>,
   ) {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
-    if (action !== "delete" && ids.length > 25) {
+    if (action !== "delete" && action !== "purge" && ids.length > 25) {
       const ok = window.confirm(`Apply "${action}" to ${ids.length} tickets?`);
       if (!ok) return;
     }
@@ -351,8 +368,28 @@ function AdminSupport() {
       });
       setSelectedIds(new Set());
       void qc.invalidateQueries({ queryKey: ["admin", "support"] });
-      if (action === "delete") {
-        toast.success(`Deleted ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      if (action === "purge") {
+        toast.success(`Deleted forever: ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      } else if (action === "delete") {
+        const previousStates = res.previousStates;
+        toast.success(
+          `Moved ${res.updated} ticket${res.updated === 1 ? "" : "s"} to Trash`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await undoFn({ data: { previousStates } });
+                  void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+                  toast.success("Restored");
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Undo failed");
+                }
+              },
+            },
+            duration: 8000,
+          },
+        );
       } else {
         const previousStates = res.previousStates;
         toast.success(
@@ -443,7 +480,9 @@ function AdminSupport() {
                   ["pending", "Waiting on customer", counts.pending],
                   ["snoozed", "Snoozed", counts.snoozed],
                   ["resolved", "Resolved today", counts.resolvedToday],
+                  ["closed", "Closed", counts.closed],
                   ["spam", "Spam", counts.spam],
+                  ["trash", "Trash", counts.trash],
                   ["all", "All", counts.all],
                 ] as const
               ).map(([v, label, count]) => (
@@ -701,27 +740,41 @@ function AdminSupport() {
       <BulkActionBar
         count={selectedIds.size}
         isPending={bulkPending}
-        spamMode={tab === "spam" ? "not_spam" : "spam"}
+        mode={
+          tab === "trash"
+            ? "trash"
+            : tab === "spam"
+              ? "spam"
+              : tab === "closed"
+                ? "closed"
+                : tab === "resolved"
+                  ? "resolved"
+                  : "default"
+        }
         onClear={() => setSelectedIds(new Set())}
         onResolve={() => runBulk("resolve")}
         onReopen={() => runBulk("reopen")}
         onPending={() => runBulk("pending")}
+        onClose={() => runBulk("close")}
         onSpam={() => runBulk(tab === "spam" ? "not_spam" : "spam")}
-        onDelete={() => {
-          setDeleteConfirm("");
-          setDeleteOpen(true);
+        onRestore={() => runBulk("restore")}
+        onPurge={() => {
+          setPurgeConfirm("");
+          setPurgeOpen(true);
         }}
+        onDelete={() => runBulk("delete")}
       />
 
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <AlertDialog open={purgeOpen} onOpenChange={setPurgeOpen}>
         <AlertDialogContent className="bg-reps-bg border-reps-border text-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">
-              Delete {selectedIds.size} ticket{selectedIds.size === 1 ? "" : "s"}?
+              Delete {selectedIds.size} ticket{selectedIds.size === 1 ? "" : "s"} forever?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-white/65">
-              This permanently removes the tickets, messages, and attachments. This cannot
-              be undone. Type{" "}
+              This permanently removes the tickets, messages, and attachments.
+              Anything left in Trash auto-purges after 30 days. This cannot be undone.
+              Type{" "}
               <span className="font-mono font-semibold text-white">
                 {selectedIds.size}
               </span>{" "}
@@ -730,8 +783,8 @@ function AdminSupport() {
           </AlertDialogHeader>
           <Input
             autoFocus
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
+            value={purgeConfirm}
+            onChange={(e) => setPurgeConfirm(e.target.value)}
             placeholder={`Type ${selectedIds.size}`}
             className="bg-white/[0.04] border-reps-border text-white"
           />
@@ -741,15 +794,15 @@ function AdminSupport() {
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={
-                bulkPending || Number(deleteConfirm) !== selectedIds.size
+                bulkPending || Number(purgeConfirm) !== selectedIds.size
               }
               onClick={async () => {
-                await runBulk("delete", { confirmCount: selectedIds.size });
-                setDeleteOpen(false);
+                await runBulk("purge", { confirmCount: selectedIds.size });
+                setPurgeOpen(false);
               }}
               className="bg-rose-500 text-white hover:bg-rose-500/90"
             >
-              Delete {selectedIds.size}
+              Delete forever
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

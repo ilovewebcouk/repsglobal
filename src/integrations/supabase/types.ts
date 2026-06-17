@@ -2525,7 +2525,9 @@ export type Database = {
       support_tickets: {
         Row: {
           assignee_id: string | null
+          closed_at: string | null
           created_at: string
+          deleted_at: string | null
           first_response_at: string | null
           id: string
           inbox: string
@@ -2534,6 +2536,7 @@ export type Database = {
           last_opened_at: string | null
           last_opened_by: string | null
           priority: Database["public"]["Enums"]["support_priority"]
+          reopened_from_ticket_id: string | null
           requester_email: string
           requester_name: string | null
           requester_user_id: string | null
@@ -2550,7 +2553,9 @@ export type Database = {
         }
         Insert: {
           assignee_id?: string | null
+          closed_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           first_response_at?: string | null
           id?: string
           inbox?: string
@@ -2559,6 +2564,7 @@ export type Database = {
           last_opened_at?: string | null
           last_opened_by?: string | null
           priority?: Database["public"]["Enums"]["support_priority"]
+          reopened_from_ticket_id?: string | null
           requester_email: string
           requester_name?: string | null
           requester_user_id?: string | null
@@ -2575,7 +2581,9 @@ export type Database = {
         }
         Update: {
           assignee_id?: string | null
+          closed_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           first_response_at?: string | null
           id?: string
           inbox?: string
@@ -2584,6 +2592,7 @@ export type Database = {
           last_opened_at?: string | null
           last_opened_by?: string | null
           priority?: Database["public"]["Enums"]["support_priority"]
+          reopened_from_ticket_id?: string | null
           requester_email?: string
           requester_name?: string | null
           requester_user_id?: string | null
@@ -2598,7 +2607,15 @@ export type Database = {
           ticket_number?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_reopened_from_ticket_id_fkey"
+            columns: ["reopened_from_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
@@ -3120,6 +3137,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      support_run_maintenance: {
+        Args: never
+        Returns: {
+          auto_closed: number
+          hard_purged: number
+        }[]
       }
     }
     Enums: {

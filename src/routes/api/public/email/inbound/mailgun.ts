@@ -139,6 +139,28 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           if (target) ticketId = target.id;
         }
 
+        // 2b) Reply-after-archive guard: if the matched ticket is closed,
+        // marked as spam, or soft-deleted (in Trash), we DO NOT reopen it.
+        // Spawn a brand-new ticket linked back via reopened_from_ticket_id
+        // so the conversation history stays intact.
+        let reopenedFromId: string | null = null;
+        if (ticketId) {
+          const { data: existing } = await supabaseAdmin
+            .from("support_tickets")
+            .select("status, deleted_at")
+            .eq("id", ticketId)
+            .maybeSingle();
+          if (
+            existing &&
+            (existing.deleted_at !== null ||
+              existing.status === "closed" ||
+              existing.status === "spam")
+          ) {
+            reopenedFromId = ticketId;
+            ticketId = null;
+          }
+        }
+
         // 3) Otherwise create a new ticket
         let createdNewTicket = false;
         let newTicketNumber: string | null = null;
@@ -156,7 +178,8 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
               tags: campaignTags ?? [],
               sla_due_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
               thread_key: messageId || null,
-            })
+              reopened_from_ticket_id: reopenedFromId,
+            } as never)
             .select("id, ticket_number")
             .single();
           if (cErr) {

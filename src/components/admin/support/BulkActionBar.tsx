@@ -1,5 +1,18 @@
 import { useEffect } from "react";
-import { Check, RotateCcw, Clock, Trash2, X, Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  Check,
+  RotateCcw,
+  Clock,
+  Trash2,
+  X,
+  Loader2,
+  ShieldAlert,
+  ShieldCheck,
+  Archive,
+  ArchiveRestore,
+} from "lucide-react";
+
+type Mode = "default" | "resolved" | "closed" | "spam" | "trash";
 
 type Props = {
   count: number;
@@ -9,8 +22,11 @@ type Props = {
   onPending: () => void;
   onDelete: () => void;
   onSpam: () => void;
-  /** When true, the spam button becomes "Not spam" (used on the Spam tab). */
-  spamMode?: "spam" | "not_spam";
+  onClose: () => void;
+  onRestore: () => void;
+  onPurge: () => void;
+  /** Which tab the bar is rendered under — toggles which actions appear. */
+  mode?: Mode;
   isPending: boolean;
 };
 
@@ -26,28 +42,38 @@ export function BulkActionBar({
   onPending,
   onDelete,
   onSpam,
-  spamMode = "spam",
+  onClose,
+  onRestore,
+  onPurge,
+  mode = "default",
   isPending,
 }: Props) {
   useEffect(() => {
     if (count === 0) return;
     function onKey(e: KeyboardEvent) {
-      // Ignore when typing in inputs
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) {
         return;
       }
       if (e.key === "Escape") onClear();
       else if (e.key.toLowerCase() === "e") onResolve();
-      else if (e.key.toLowerCase() === "r") onReopen();
+      else if (e.key.toLowerCase() === "r") {
+        if (mode === "trash") onRestore();
+        else onReopen();
+      }
       else if (e.key.toLowerCase() === "p") onPending();
       else if (e.key.toLowerCase() === "s") onSpam();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, onClear, onResolve, onReopen, onPending, onSpam]);
+  }, [count, mode, onClear, onResolve, onReopen, onPending, onSpam, onRestore]);
 
   if (count === 0) return null;
+
+  const isTrash = mode === "trash";
+  const isSpam = mode === "spam";
+  const isClosed = mode === "closed";
+  const isResolved = mode === "resolved";
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
@@ -60,37 +86,74 @@ export function BulkActionBar({
 
         <span className="mx-0.5 h-4 w-px bg-white/10" />
 
-        <PillButton onClick={onResolve} disabled={isPending} title="Resolve (E)">
-          <Check className="size-3.5 text-emerald-300" />
-          Resolve
-        </PillButton>
-        <PillButton onClick={onPending} disabled={isPending} title="Mark pending (P)">
-          <Clock className="size-3.5 text-reps-orange" />
-          Pending
-        </PillButton>
-        <PillButton onClick={onReopen} disabled={isPending} title="Reopen (R)">
-          <RotateCcw className="size-3.5 text-white/70" />
-          Reopen
-        </PillButton>
-
-        <span className="mx-0.5 h-4 w-px bg-white/10" />
-
-        {spamMode === "not_spam" ? (
-          <PillButton onClick={onSpam} disabled={isPending} title="Not spam (S)">
-            <ShieldCheck className="size-3.5 text-emerald-300" />
-            Not spam
-          </PillButton>
+        {isTrash ? (
+          <>
+            <PillButton onClick={onRestore} disabled={isPending} title="Restore (R)">
+              <ArchiveRestore className="size-3.5 text-emerald-300" />
+              Restore
+            </PillButton>
+            <PillButton onClick={onPurge} disabled={isPending} danger title="Delete forever">
+              <Trash2 className="size-3.5" />
+              Delete forever
+            </PillButton>
+          </>
+        ) : isSpam ? (
+          <>
+            <PillButton onClick={onSpam} disabled={isPending} title="Not spam (S)">
+              <ShieldCheck className="size-3.5 text-emerald-300" />
+              Not spam
+            </PillButton>
+            <PillButton onClick={onDelete} disabled={isPending} danger title="Move to Trash">
+              <Trash2 className="size-3.5" />
+              Trash
+            </PillButton>
+          </>
+        ) : isClosed ? (
+          <>
+            <PillButton onClick={onReopen} disabled={isPending} title="Reopen (R)">
+              <RotateCcw className="size-3.5 text-white/70" />
+              Reopen
+            </PillButton>
+            <PillButton onClick={onDelete} disabled={isPending} danger title="Move to Trash">
+              <Trash2 className="size-3.5" />
+              Trash
+            </PillButton>
+          </>
         ) : (
-          <PillButton onClick={onSpam} disabled={isPending} title="Mark as spam (S)">
-            <ShieldAlert className="size-3.5 text-amber-300" />
-            Spam
-          </PillButton>
-        )}
+          <>
+            <PillButton onClick={onResolve} disabled={isPending} title="Resolve (E)">
+              <Check className="size-3.5 text-emerald-300" />
+              Resolve
+            </PillButton>
+            <PillButton onClick={onPending} disabled={isPending} title="Mark pending (P)">
+              <Clock className="size-3.5 text-reps-orange" />
+              Pending
+            </PillButton>
+            <PillButton onClick={onReopen} disabled={isPending} title="Reopen (R)">
+              <RotateCcw className="size-3.5 text-white/70" />
+              Reopen
+            </PillButton>
 
-        <PillButton onClick={onDelete} disabled={isPending} danger title="Delete">
-          <Trash2 className="size-3.5" />
-          Delete
-        </PillButton>
+            {isResolved ? (
+              <PillButton onClick={onClose} disabled={isPending} title="Close (archive)">
+                <Archive className="size-3.5 text-white/70" />
+                Close
+              </PillButton>
+            ) : null}
+
+            <span className="mx-0.5 h-4 w-px bg-white/10" />
+
+            <PillButton onClick={onSpam} disabled={isPending} title="Mark as spam (S)">
+              <ShieldAlert className="size-3.5 text-amber-300" />
+              Spam
+            </PillButton>
+
+            <PillButton onClick={onDelete} disabled={isPending} danger title="Move to Trash">
+              <Trash2 className="size-3.5" />
+              Trash
+            </PillButton>
+          </>
+        )}
 
         <span className="mx-0.5 h-4 w-px bg-white/10" />
 
