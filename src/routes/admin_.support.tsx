@@ -700,10 +700,12 @@ function AdminSupport() {
       <BulkActionBar
         count={selectedIds.size}
         isPending={bulkPending}
+        spamMode={tab === "spam" ? "not_spam" : "spam"}
         onClear={() => setSelectedIds(new Set())}
         onResolve={() => runBulk("resolve")}
         onReopen={() => runBulk("reopen")}
         onPending={() => runBulk("pending")}
+        onSpam={() => runBulk(tab === "spam" ? "not_spam" : "spam")}
         onDelete={() => {
           setDeleteConfirm("");
           setDeleteOpen(true);
