@@ -219,6 +219,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     name: row.full_name ?? "REPS Professional",
     firstName: (row.full_name ?? "").split(" ")[0] || "Coach",
     role: professionLabel,
+    professionSlug: row.primary_profession ?? null,
     location: row.location?.town ?? row.location?.postcode_outward ?? row.city ?? "Online",
     region: row.location?.region ?? row.country ?? "",
     rating: 0,
