@@ -37,7 +37,36 @@ export type ShopFrontDTO = {
   in_person_available: boolean;
   online_available: boolean;
   member_since: string | null;
+  coaching_since_year: number | null;
 };
+
+// Helper: earliest year from approved verification submissions whose
+// derived_title_slug matches the pro's primary_title_slug.
+async function fetchCoachingSinceYear(
+  supabaseAdmin: { from: (t: string) => any },
+  professionalId: string,
+  primaryTitleSlug: string | null,
+): Promise<number | null> {
+  if (!primaryTitleSlug) return null;
+  const { data } = await supabaseAdmin
+    .from("verification_submissions")
+    .select("issue_date, year")
+    .eq("professional_id", professionalId)
+    .eq("status", "approved")
+    .eq("derived_title_slug", primaryTitleSlug);
+  if (!data || data.length === 0) return null;
+  let earliest: number | null = null;
+  for (const row of data as Array<{ issue_date: string | null; year: number | null }>) {
+    let y: number | null = null;
+    if (row.issue_date) {
+      const parsed = new Date(row.issue_date);
+      if (!isNaN(parsed.getTime())) y = parsed.getFullYear();
+    }
+    if (y == null && row.year != null) y = row.year;
+    if (y != null && (earliest == null || y < earliest)) earliest = y;
+  }
+  return earliest;
+}
 
 export type ServiceDTO = {
   id: string;
@@ -63,14 +92,14 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
+        "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, coachingSinceYear] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
@@ -88,6 +117,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("professional_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
+      fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
 
     if (!sf) return null;
@@ -112,6 +142,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         in_person_available: !!pro.in_person_available,
         online_available: !!pro.online_available,
         member_since: pro.member_since ?? null,
+        coaching_since_year: coachingSinceYear,
       },
       services: (services ?? []) as ServiceDTO[],
     };
@@ -129,7 +160,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("professionals")
         .select(
-          "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
+          "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -152,6 +183,12 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
     if (!pro) return { shopFront: null, services: [] };
 
+    const coachingSinceYear = await fetchCoachingSinceYear(
+      supabaseAdmin,
+      userId,
+      pro.primary_title_slug ?? null,
+    );
+
     const shopFront: ShopFrontDTO | null = sf
       ? {
           professional_id: userId,
@@ -172,6 +209,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
+          coaching_since_year: coachingSinceYear,
         }
       : null;
 

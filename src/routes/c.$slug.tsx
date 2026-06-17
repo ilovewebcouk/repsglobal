@@ -337,8 +337,8 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())
     ? memberSinceDate.getFullYear()
     : null;
-  const yearsCoaching = memberYear
-    ? Math.max(1, new Date().getFullYear() - memberYear)
+  const yearsCoaching = sf.coaching_since_year
+    ? Math.max(1, new Date().getFullYear() - sf.coaching_since_year)
     : base.years;
   return {
     ...base,
