@@ -180,10 +180,10 @@ async function resolveTierRecipients(
 
   // Pull all professionals (we filter in-memory; small dataset on REPs today).
   // No FK exists between professionals and profiles, so we can't embed-join —
-  // fetch full_name separately below.
+  // fetch full_name / business_name separately below.
   const { data: allPros, error: pErr } = await supabaseAdmin
     .from("professionals")
-    .select("id, public_email, trading_name");
+    .select("id");
   if (pErr) throw new Error(pErr.message);
 
   let proSet: any[] = allPros ?? [];
@@ -216,34 +216,35 @@ async function resolveTierRecipients(
     proSet = proSet.filter((p: any) => !everyPaid.has(p.id));
   }
 
-  // Fetch full_name for the surviving set
+  // Fetch full_name + business_name for the surviving set
   const nameMap = new Map<string, string>();
+  const businessMap = new Map<string, string>();
   if (proSet.length > 0) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, business_name")
       .in("id", proSet.map((p: any) => p.id));
     for (const p of profs ?? []) {
       if (p.full_name) nameMap.set(p.id, p.full_name);
+      if (p.business_name) businessMap.set(p.id, p.business_name);
     }
   }
 
-  const needEmailIds = proSet
-    .filter((p: any) => !p.public_email)
-    .map((p: any) => p.id);
-  const emailMap = await buildUserEmailMap(supabaseAdmin, needEmailIds);
+  // Email: always the auth.users login email.
+  const emailMap = await buildUserEmailMap(supabaseAdmin, proSet.map((p: any) => p.id));
 
   return proSet
     .map((p: any) => {
-      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase().trim();
+      const email = (emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
         userId: p.id,
         email,
-        name: nameMap.get(p.id) ?? p.trading_name ?? "",
+        name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "",
       };
     })
     .filter((r) => r.email && isValidEmail(r.email));
 }
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
