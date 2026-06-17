@@ -135,6 +135,7 @@ export function ComposeDialog({
   function reset() {
     setSubject("");
     setBody("");
+    setFormat("text");
     setRecipients([]);
     setAttachments([]);
     setConfirming(false);
