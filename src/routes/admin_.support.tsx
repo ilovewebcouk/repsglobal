@@ -68,8 +68,6 @@ import {
   addInternalNote,
   getAttachmentUrl,
   markTicketRead,
-  snoozeTicket,
-  unsnoozeTicket,
   listRequesterTickets,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply } from "@/lib/support/ai-draft.functions";
