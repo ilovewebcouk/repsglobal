@@ -431,13 +431,18 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
       for (const r of recipients) {
         const messageId = buildMessageId(`campaign-${campaign.id}`);
+        const recipientHtml = wrapEmail(
+          renderInnerHtml(data.body, fmt, r),
+          inboxMeta.label,
+        );
+        const recipientText = renderPlainText(data.body, fmt, r);
         try {
           await sendViaMailgun({
             from: `${inboxMeta.name} <${inboxMeta.email}>`,
             to: r.name ? `${r.name} <${r.email}>` : r.email,
             subject: data.subject,
-            text: data.body,
-            html,
+            text: recipientText,
+            html: recipientHtml,
             messageId,
             replyTo: inboxMeta.email,
             attachments: attachmentPayloads.map((a) => ({
