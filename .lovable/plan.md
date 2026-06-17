@@ -1,28 +1,45 @@
-## QA findings on `/admin/professionals`
+## 1. Fix the missing close (X) on the Filters sheet
 
-1. **"Unnamed" + missing avatars (rendering bug, not data).** All 402 professionals show "Unnamed" and the "UN" initials fallback, even for rows whose `profiles.full_name` is populated. Cause: `listAdminProfessionals` over-fetches up to 1000 professionals and then calls `supabase.from('profiles').select(...).in('id', ids)` with all of them in a single request. With ~400+ UUIDs the URL exceeds the edge worker limit and the request fails silently — `profilesRes.data` comes back null, so every row falls through to `'Unnamed'` and `avatarUrl: null`. The same bug silently kills `subscriptions`, `reviews`, and `coach_client` enrichment (Plan / MRR / Rating / Clients all read as `Free` / `—` / `0`).
+`src/components/ui/sheet.tsx` renders the close button as `text-foreground/60` against a dark `bg-reps-panel` panel, so the X is nearly invisible on `/admin/professionals` (and any other sheet on a dark surface).
 
-2. **"Joined" column uses REPs import date for BD members.** It currently reads `professionals.created_at`, which is the date we seeded the BD member into REPs (Jun 2026 for everyone). It should use the same `member_since` we backfilled — BD signup date for imported pros, REPs sign-up date for new pros.
+Update only the close button styling inside `SheetContent` so it always reads on dark surfaces:
+- `text-foreground/60` → `text-white/65`
+- `hover:bg-foreground/5 hover:text-foreground` → `hover:bg-white/10 hover:text-white`
+- Bump icon from `h-4 w-4` → `h-4 w-4` (keep) and increase hit target padding to `p-1.5` (already there)
 
-## Plan
+No other sheet behaviour changes.
 
-### `src/lib/admin/professionals.functions.ts`
+## 2. Delete the 3 demo Unpublished professionals
 
-1. **Add chunked-`in()` helper.** Run the four enrichment queries (`profiles`, `subscriptions`, `reviews`, `coach_client`) in batches of 200 ids and concatenate results. Keeps URL length under the edge worker limit.
-2. **Treat empty/null enrichment data as an error.** Throw if `profilesRes.error` is set instead of silently producing "Unnamed" rows.
-3. **Select `member_since`** on the `professionals` query, and use it for the `joined` field returned to the UI. Fall back to `created_at` when null (defence in depth — the trigger guarantees it on insert).
-4. **Use `member_since` for the server-side `order(...)`** that drives the FETCH_CAP window so the "Joined desc" sort returns the right slice.
+Hard-delete Bob, Scott Pro, and Scott so the register only contains real signups. One migration (delete cascades from `auth.users`) covering:
 
-### `src/routes/admin_.professionals.tsx`
+- `auth.users` rows for the 3 demo emails — `ON DELETE CASCADE` from FKs in `profiles`, `professionals`, `user_roles`, `subscriptions`, `coach_client`, `client_roster`, `verification_submissions`, `professional_locations`, `services`, `shop_fronts`, `enquiries`, `bookings`, etc. handles the rest.
+- Defensive `DELETE FROM public.professionals WHERE id IN (...)` first for any rows missing the cascade.
 
-No change — it already renders `joinedLabel(row.joined)` and `row.name` / `row.avatarUrl`.
+I'll confirm the exact 3 user_ids/emails with a `SELECT` against `professionals` joined to `profiles` filtered to `is_published=false AND suspended_at IS NULL` before running the delete, and list them in the migration description for you to approve.
 
-### No migration needed
+## 3. Retire the "Unpublished" status
 
-`member_since` already exists on `professionals` and was backfilled from `bd_member_seed.legacy_signup_at`.
+After the demos are gone, "Unpublished" has no real-world meaning on this platform — every live pro is Verified / Unverified / Flagged / Suspended.
+
+Code changes (`src/lib/admin/professionals.functions.ts` + `src/routes/admin_.professionals.tsx`):
+
+- Drop `'unpublished'` from the `AdminProRow.status` union and from the `STATUS_LABEL` / `STATUS_TONE` maps.
+- Status derivation collapses to:
+  ```
+  is_published=false + suspended_at set        → 'suspended'
+  is_published=false + suspended_at null       → 'pending'  (Unverified)
+  verification='verified' + is_published=true  → 'verified'
+  verification='rejected' + is_published=true  → 'flagged'
+  otherwise                                    → 'pending'
+  ```
+- Remove the Unpublished tab/filter from the tab list (and from `statusCounts`).
+- KPI tile count for "Unverified" already covers `verification='pending'` regardless of `is_published`, so no KPI math change needed.
+
+No schema migration on `professionals` — `is_published` stays on the row (it's still used by Suspend/Reinstate and by the public directory's visibility filter). We're just removing it as a user-facing *status* in the admin UI.
 
 ## Out of scope
 
-- Adding a separate "REPs since" column.
-- Touching the KPI tiles ("New signups (30d)" still uses created_at — fine, that's the import event).
-- Other admin tables.
+- Touching the Suspend/Reinstate flow.
+- Changing the public directory's `is_published=true` filter.
+- Any change to KPI tiles beyond removing the Unpublished bucket.
