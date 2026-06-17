@@ -590,6 +590,97 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+// Replace {{first_name}}, {{last_name}}, {{full_name}}, {{name}}, {{email}}.
+function applyMergeTags(
+  body: string,
+  recipient: { email: string; name: string | null },
+): string {
+  const full = (recipient.name ?? "").trim();
+  const parts = full.split(/\s+/).filter(Boolean);
+  const first = parts[0] ?? "";
+  const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+  const map: Record<string, string> = {
+    first_name: first || "there",
+    last_name: last,
+    full_name: full,
+    name: full || first || "there",
+    email: recipient.email,
+  };
+  return body.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_m, key: string) => {
+    const k = String(key).toLowerCase();
+    return k in map ? map[k] : `{{${key}}}`;
+  });
+}
+
+function inlineFormat(s: string): string {
+  let out = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  out = out.replace(
+    /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
+    '<a href="$1" style="color:#0f172a;text-decoration:underline;">$1</a>',
+  );
+  return out;
+}
+
+// Plain-text body with light markdown → safe HTML paragraphs/lists.
+function textToHtml(text: string): string {
+  const escaped = escapeHtml(text);
+  const blocks = escaped.split(/\n{2,}/);
+  const out: string[] = [];
+  for (const raw of blocks) {
+    const lines = raw.split(/\n/);
+    const isList = lines.length > 0 && lines.every((l) => /^\s*[-*]\s+/.test(l));
+    if (isList) {
+      const items = lines
+        .map((l) => l.replace(/^\s*[-*]\s+/, ""))
+        .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
+        .join("");
+      out.push(
+        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${items}</ul>`,
+      );
+    } else {
+      out.push(
+        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${inlineFormat(
+          raw.replace(/\n/g, "<br/>"),
+        )}</p>`,
+      );
+    }
+  }
+  return out.join("\n");
+}
+
+// HTML mode: trust admin input but strip <script>/<style>.
+function sanitiseHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "");
+}
+
+function renderInnerHtml(
+  body: string,
+  format: "text" | "html",
+  recipient: { email: string; name: string | null },
+): string {
+  const personalised = applyMergeTags(body, recipient);
+  return format === "html" ? sanitiseHtml(personalised) : textToHtml(personalised);
+}
+
+function renderPlainText(
+  body: string,
+  format: "text" | "html",
+  recipient: { email: string; name: string | null },
+): string {
+  const personalised = applyMergeTags(body, recipient);
+  if (format === "text") return personalised;
+  return personalised
+    .replace(/<br\s*\/?>(\s*)/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function wrapEmail(text: string, inboxLabel: string): string {
   const paragraphs = text
     .split(/\n{2,}/)
