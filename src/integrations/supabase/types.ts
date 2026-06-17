@@ -2002,7 +2002,6 @@ export type Database = {
           online_available: boolean
           primary_profession: string | null
           primary_title_slug: string | null
-          public_email: string | null
           quality_score: number
           reps_level: Database["public"]["Enums"]["reps_level"] | null
           slug: string | null
@@ -2016,7 +2015,6 @@ export type Database = {
           suspended_at: string | null
           suspension_reason: string | null
           timezone: string
-          trading_name: string | null
           updated_at: string
           verification: Database["public"]["Enums"]["verification_status"]
           verification_grace_until: string | null
@@ -2049,7 +2047,6 @@ export type Database = {
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null
-          public_email?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
@@ -2063,7 +2060,6 @@ export type Database = {
           suspended_at?: string | null
           suspension_reason?: string | null
           timezone?: string
-          trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
@@ -2096,7 +2092,6 @@ export type Database = {
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null
-          public_email?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
           slug?: string | null
@@ -2110,7 +2105,6 @@ export type Database = {
           suspended_at?: string | null
           suspension_reason?: string | null
           timezone?: string
-          trading_name?: string | null
           updated_at?: string
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
