@@ -101,7 +101,7 @@ export const startStripeConnect = createServerFn({ method: "POST" })
     } else {
       const { data: pro } = await supabaseAdmin
         .from("professionals")
-        .select("country, public_email")
+        .select("country")
         .eq("id", context.userId)
         .maybeSingle();
       const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(context.userId);
@@ -110,7 +110,7 @@ export const startStripeConnect = createServerFn({ method: "POST" })
       const account = await stripe.accounts.create({
         type: "standard",
         country: countryCode,
-        email: pro?.public_email ?? user?.email ?? undefined,
+        email: user?.email ?? undefined,
         metadata: { reps_user_id: context.userId },
       });
       accountId = account.id;

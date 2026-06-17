@@ -318,12 +318,7 @@ async function ensureInviteSentInternal(opts: {
   // Fetch pro display info
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("full_name")
-    .eq("id", professionalId)
-    .maybeSingle();
-  const { data: pro } = await supabaseAdmin
-    .from("professionals")
-    .select("trading_name")
+    .select("full_name, business_name")
     .eq("id", professionalId)
     .maybeSingle();
 
@@ -337,7 +332,7 @@ async function ensureInviteSentInternal(opts: {
       idempotencyKey: `client-invite-${invite.id}`,
       templateData: {
         proName: profile?.full_name ?? "Your coach",
-        tradingName: pro?.trading_name ?? null,
+        tradingName: profile?.business_name ?? null,
         clientName: invite.full_name ?? null,
         acceptUrl,
       },

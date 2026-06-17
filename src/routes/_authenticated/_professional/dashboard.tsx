@@ -167,7 +167,7 @@ function DashboardPage() {
   };
 
   const tierLabel = hasPaidTier ? TIERS[subTier as "verified" | "pro"]?.label ?? subTier : "No plan";
-  const memberName = data?.identity?.full_name ?? data?.profile?.trading_name ?? "REPS member";
+  const memberName = data?.identity?.full_name ?? data?.identity?.business_name ?? "REPS member";
 
   const statusData = {
     isVerified,

@@ -11,13 +11,13 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
         supabase
           .from("professionals")
           .select(
-            "slug, trading_name, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until",
+            "slug, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until",
           )
           .eq("id", userId)
           .maybeSingle(),
         supabase
           .from("profiles")
-          .select("full_name, avatar_url")
+          .select("full_name, business_name, avatar_url")
           .eq("id", userId)
           .maybeSingle(),
         supabase
@@ -38,7 +38,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
 
     const profileComplete = !!(
       profile?.slug &&
-      profile?.trading_name &&
+      identity?.business_name &&
       profile?.headline &&
       profile?.bio &&
       (profile?.specialisms?.length ?? 0) > 0 &&
