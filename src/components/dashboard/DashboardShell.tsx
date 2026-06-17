@@ -432,7 +432,7 @@ function Sidebar({
           <DashboardButton
             variant="ghost"
             disabled
-            className="justify-start hover:bg-white/[0.04] hover:text-white hover:border-white/12"
+            className="hover:bg-white/[0.04] hover:text-white hover:border-white/12"
           >
             <Sparkles className="h-4 w-4" />
             AI Assistant · coming soon
