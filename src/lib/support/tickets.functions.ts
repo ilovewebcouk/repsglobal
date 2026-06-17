@@ -670,9 +670,6 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
     if (nameErr) throw new Error(nameErr.message);
 
     const idsFromName = (nameMatches ?? []).map((r: any) => r.id);
-    const displayNameByNameSearch = new Map<string, string>(
-      (nameMatches ?? []).map((r: any) => [r.id, r.full_name || r.business_name || ""]),
-    );
 
     // 2) Resolve emails for name-matched IDs via the Auth Admin API.
     // The PostgREST path to auth.users is not always available, so this
