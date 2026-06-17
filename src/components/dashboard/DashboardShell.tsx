@@ -303,7 +303,7 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
         <div className="truncate text-[13px] font-semibold text-white">{name}</div>
         <div className="truncate text-[11px] text-white/55">{headline}</div>
         {tierLabel ? (
-          <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange">
+          <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft">
             {tierLabel}
           </Badge>
         ) : null}
