@@ -60,7 +60,7 @@ export const listTickets = createServerFn({ method: "POST" })
       q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
     } else {
       // "all" tab hides spam, closed and Trash — each has its own dedicated tab.
-      q = q.is("deleted_at", null).not("status", "in", "(spam,closed)");
+      q = q.is("deleted_at", null).neq("status", "spam").neq("status", "closed");
     }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
     if (data?.q && data.q.trim().length > 0) {
