@@ -147,7 +147,7 @@ function snoozedLabel(iso?: string | null) {
 function labelFor(
   action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "close" | "restore",
 ): string {
-  if (action === "resolve") return "Resolved";
+  if (action === "resolve") return "Solved";
   if (action === "reopen") return "Reopened";
   if (action === "pending") return "Marked pending";
   if (action === "spam") return "Marked as spam";
@@ -447,7 +447,7 @@ function AdminSupport() {
       role="admin"
       active="Support"
       title="Support queue"
-      subtitle={`${counts.open} open · ${counts.pending} pending · ${counts.resolvedToday} resolved today`}
+      subtitle={`${counts.open} open · ${counts.pending} pending · ${counts.resolvedToday} solved today`}
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
@@ -462,7 +462,7 @@ function AdminSupport() {
         />
         <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
         <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
-        <Kpi label="Resolved today" value={counts.resolvedToday} detail="Across all agents" />
+        <Kpi label="Solved today" value={counts.resolvedToday} detail="Across all agents" />
       </div>
 
       <PPanel className="mt-6 p-0">
@@ -916,7 +916,7 @@ function TicketDrawer({
       toast.success(
         wasReply
           ? wasClose
-            ? "Reply sent · ticket set to Resolved"
+            ? "Reply sent · ticket set to Solved"
             : "Reply sent · ticket set to Pending"
           : "Note added",
       );
