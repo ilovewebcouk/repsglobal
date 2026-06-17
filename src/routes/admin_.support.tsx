@@ -208,21 +208,24 @@ function AdminSupport() {
     const nowMs = Date.now();
     const isActiveSnoozed = (r: any) =>
       r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
-    const openRows = rows.filter(
+    const isSpam = (r: any) => r.status === "spam";
+    const nonSpam = rows.filter((r: any) => !isSpam(r));
+    const openRows = nonSpam.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
-    const pendingRows = rows.filter(
+    const pendingRows = nonSpam.filter(
       (r: any) => r.status === "pending" && !isActiveSnoozed(r),
     );
     return {
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: rows.filter(isActiveSnoozed).length,
-      resolved: rows.filter((r: any) => r.status === "resolved").length,
-      all: rows.length,
+      snoozed: nonSpam.filter(isActiveSnoozed).length,
+      resolved: nonSpam.filter((r: any) => r.status === "resolved").length,
+      spam: rows.filter(isSpam).length,
+      all: nonSpam.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
       unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: rows.filter(
+      resolvedToday: nonSpam.filter(
         (r: any) =>
           r.resolved_at &&
           new Date(r.resolved_at).toDateString() === new Date().toDateString(),
