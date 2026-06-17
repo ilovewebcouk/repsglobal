@@ -124,9 +124,8 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
   );
   const { renderForRecipient } = await import("./email-render.server");
 
-  // Mailgun probation cap = 100 msgs/hour. 37s spacing ≈ 97/hr — safely under.
-  // When probation is lifted (or plan upgraded), drop this to ~750ms.
-  const SEND_DELAY_MS = 37_000;
+  // Foundation 50K plan: 250ms spacing keeps delivery polite (~240 msgs/min).
+  const SEND_DELAY_MS = 250;
   const MAX_RETRIES = 3;
   const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
   const parseRetryAfter = (msg: string): number | null => {
