@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import * as React from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import {
   BadgeCheck,
   ChevronRight,
