@@ -171,6 +171,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           city: pro.city,
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
+          member_since: pro.member_since ?? null,
         }
       : null;
 
