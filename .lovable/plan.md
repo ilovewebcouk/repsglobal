@@ -1,42 +1,36 @@
 ## Goal
 
-1. Remove "New on REPs" pill from listing cards entirely.
-2. On `/c/$slug` (coach shop-front), drive "Verified since" and "Years coaching" from the member's signup date — BD members use their BD signup date, new sign-ups use their REPs sign-up date.
+"Years coaching" on `/c/$slug` = years since the date on the certificate that **unlocks their primary profession**. "Verified since" still uses `member_since`.
 
-Reviews-when-zero is a separate task, saved for later.
+## Source
 
-## Source of truth: `member_since`
+`verification_submissions` for the pro, filtered to:
+- `status = 'approved'`, and
+- `derived_title_slug = professionals.primary_title_slug` (the cert that unlocks the profession).
 
-One derived date per professional:
+From those, take the earliest by `COALESCE(issue_date, make_date(year, 1, 1))` — `issue_date` is the date on the certificate, `year` is the fallback when only a year was captured.
 
 ```
-member_since = COALESCE(bd_member_seed.legacy_signup_at, professionals.created_at)
+coaching_since_year = year(earliest qualifying cert date)
+years_coaching      = max(1, current_year - coaching_since_year)
 ```
 
-- Add `professionals.member_since timestamptz`.
-- Backfill from `bd_member_seed.legacy_signup_at` where linked; otherwise `created_at`.
-- Insert trigger defaults to `created_at` when null so brand-new sign-ups get today.
-- Expose `member_since` on the `/c/$slug` loader payload.
-
-Derived for the page:
-- `verified_since_year = year(member_since)`
-- `years_coaching = max(1, current_year - verified_since_year)`
+If no approved cert matches `primary_title_slug` (or the pro has no `primary_title_slug` set), fall back to `base.years` so the locked Katie Gibbs mock keeps its hardcoded value.
 
 ## Changes
 
-1. **Migration** — add `professionals.member_since`, backfill, insert trigger.
+1. **`src/lib/shop-front/shop-front.functions.ts`**
+   - Select `primary_title_slug` alongside the other professional columns.
+   - Add a parallel query on `verification_submissions` filtered to `professional_id = pro.id`, `status = 'approved'`, `derived_title_slug = pro.primary_title_slug`, selecting `issue_date, year`, ordered ascending by `COALESCE(issue_date, make_date(year,1,1))`, limit 1.
+   - Add `coaching_since_year: number | null` to `ShopFrontDTO` and populate from that row.
 
-2. **Listing card — `src/routes/find-a-professional.tsx` (lines 817–934)**
-   - Delete the `NEW_PILL_WINDOW_MS` / `isNewPro` constant and the entire `{isNewPro && (...)}` "New on REPs" pill JSX.
-   - No replacement element. Header stays: name + VerificationPill.
+2. **`src/routes/c.$slug.tsx` — `mergeLiveIntoCoach`**
+   - Replace the `member_since`-based `yearsCoaching` calc with `sf.coaching_since_year`-driven calc.
+   - Keep `verifiedSince` derived from `member_since` (unchanged).
+   - Fall back to `base.years` when no qualifying approved cert exists.
 
-3. **Coach shop-front — `src/routes/c.$slug.tsx` (lines 621–624)**
-   - For real coaches: "Verified since" tile = `year(member_since)`; "Years coaching" tile = `years_coaching` (no `+` suffix when 1).
-   - Mock Katie Gibbs coach object retains its hardcoded `verifiedSince` / `years` values so the locked demo screen does not change visually.
+## Out of scope
 
-## Out of scope (saved for later)
-
-- Showing "0 reviews" on listing cards (separate reviews wiring pass).
-- Any other change to the listing card layout.
-- Renaming "Verified since" copy or touching the verification badge.
-- Admin/migration table surfacing of `member_since`.
+- Editing the mock Katie Gibbs values.
+- Changing the "Verified since" tile or label.
+- Exposing this elsewhere (admin, listing card, /pro/$slug).
