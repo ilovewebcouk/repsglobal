@@ -1072,31 +1072,6 @@ function TicketDrawer({
                   {INBOX_META[ticket.inbox as Exclude<InboxFilter, "all">]?.label ?? ticket.inbox}
                 </Badge>
               ) : null}
-              <SnoozePopover
-                snoozedUntil={ticket.snoozed_until}
-                onSnooze={async (until) => {
-                  if (!ticketId) return;
-                  try {
-                    await snoozeFn({ data: { id: ticketId, until } });
-                    toast.success("Snoozed");
-                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
-                    onChanged();
-                  } catch (e: any) {
-                    toast.error(e?.message ?? "Could not snooze");
-                  }
-                }}
-                onUnsnooze={async () => {
-                  if (!ticketId) return;
-                  try {
-                    await unsnoozeFn({ data: { id: ticketId } });
-                    toast.success("Woken up");
-                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
-                    onChanged();
-                  } catch (e: any) {
-                    toast.error(e?.message ?? "Could not wake");
-                  }
-                }}
-              />
             </div>
           ) : null}
         </SheetHeader>
