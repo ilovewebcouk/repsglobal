@@ -480,7 +480,9 @@ function AdminSupport() {
                   ["pending", "Waiting on customer", counts.pending],
                   ["snoozed", "Snoozed", counts.snoozed],
                   ["resolved", "Resolved today", counts.resolvedToday],
+                  ["closed", "Closed", counts.closed],
                   ["spam", "Spam", counts.spam],
+                  ["trash", "Trash", counts.trash],
                   ["all", "All", counts.all],
                 ] as const
               ).map(([v, label, count]) => (
