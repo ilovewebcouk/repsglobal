@@ -97,6 +97,12 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       } else if (data.action === "pending") {
         patch.status = "pending";
         patch.resolved_at = null;
+      } else if (data.action === "spam") {
+        patch.status = "spam";
+        patch.resolved_at = null;
+      } else if (data.action === "not_spam") {
+        patch.status = "open";
+        patch.resolved_at = null;
       } else if (data.action === "priority") {
         if (!data.payload?.priority) throw new Error("Priority required");
         patch.priority = data.payload.priority;
