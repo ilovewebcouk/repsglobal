@@ -537,7 +537,44 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
     // ── DIRECT (1-to-1) branch ─────────────────────────────────────────────
     // Direct sends still create one ticket per recipient — that's the point
-    // of a 1-to-1 conversation. Same behaviour as before.
+    // of a 1-to-1 conversation. We ALSO log a single `outbound_campaigns`
+    // row (+ per-recipient rows) so direct sends are visible in the
+    // Campaigns list alongside broadcasts.
+    const { data: directCampaign, error: dcErr } = await supabaseAdmin
+      .from("outbound_campaigns")
+      .insert({
+        inbox: data.inbox,
+        subject: data.subject,
+        body_text: data.body,
+        body_html: previewHtml,
+        created_by: context.userId,
+        total_recipients: recipients.length,
+        tiers: [],
+        attachments: (data.attachments ?? []).map((a) => ({
+          filename: a.filename,
+          mimeType: a.mimeType,
+          sizeBytes: a.sizeBytes,
+        })),
+      })
+      .select("id")
+      .single();
+    if (dcErr || !directCampaign) {
+      throw new Error(dcErr?.message ?? "campaign insert failed");
+    }
+
+    const directRecipientRows = recipients.map((r) => ({
+      campaign_id: directCampaign.id,
+      email: r.email,
+      name: r.name,
+      status: "queued" as const,
+    }));
+    if (directRecipientRows.length > 0) {
+      const { error: rErr } = await supabaseAdmin
+        .from("outbound_campaign_recipients")
+        .insert(directRecipientRows);
+      if (rErr) throw new Error(`recipient insert failed: ${rErr.message}`);
+    }
+
     let sent = 0;
     const failures: Array<{ email: string; error: string }> = [];
 
@@ -617,20 +654,45 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
           .update({ thread_key: messageId })
           .eq("id", ticket.id);
 
+        await supabaseAdmin
+          .from("outbound_campaign_recipients")
+          .update({
+            status: "sent",
+            mailgun_message_id: messageId,
+            sent_at: new Date().toISOString(),
+          })
+          .eq("campaign_id", directCampaign.id)
+          .eq("email", r.email);
+
         sent += 1;
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         failures.push({
           email: r.email,
-          error: err instanceof Error ? err.message : String(err),
+          error: errorMsg,
         });
+        await supabaseAdmin
+          .from("outbound_campaign_recipients")
+          .update({ status: "failed", error_message: errorMsg })
+          .eq("campaign_id", directCampaign.id)
+          .eq("email", r.email);
       }
     }
+
+    await supabaseAdmin
+      .from("outbound_campaigns")
+      .update({
+        sent_count: sent,
+        failed_count: failures.length,
+        sent_at: new Date().toISOString(),
+      })
+      .eq("id", directCampaign.id);
 
     return {
       sent,
       failed: failures.length,
       total: recipients.length,
-      campaignId: null as string | null,
+      campaignId: directCampaign.id as string | null,
       failures: failures.slice(0, 10),
       skipped: skipped.slice(0, 20),
     };
