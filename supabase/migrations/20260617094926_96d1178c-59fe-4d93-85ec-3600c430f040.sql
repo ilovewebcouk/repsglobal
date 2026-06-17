@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone views published professionals" ON public.professionals;
