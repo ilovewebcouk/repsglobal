@@ -179,8 +179,8 @@ function AdminSupport() {
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const [purgeConfirm, setPurgeConfirm] = useState("");
   const bulkFn = useServerFn(bulkUpdateTickets);
   const undoFn = useServerFn(undoBulkUpdateTickets);
   const [bulkPending, setBulkPending] = useState(false);
