@@ -26,17 +26,28 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
   if (!data) throw new Error("Forbidden");
 }
 
-// Build a map of userId -> email by paging through auth.users.
-// Small admin tool, infrequent calls — adequate for tens of thousands.
-async function buildUserEmailMap(
+async function resolveUserEmailsById(
   supabaseAdmin: any,
   userIds: string[],
 ): Promise<Map<string, string>> {
-  const wanted = new Set(userIds);
+  const map = new Map<string, string>();
+  await Promise.all(
+    [...new Set(userIds)].map(async (id) => {
+      const { data, error } = await supabaseAdmin.auth.admin.getUserById(id);
+      if (!error && data?.user?.email) map.set(id, data.user.email.toLowerCase().trim());
+    }),
+  );
+  return map;
+}
+
+async function searchUserIdsByEmail(
+  supabaseAdmin: any,
+  q: string,
+): Promise<Map<string, string>> {
+  const needle = q.toLowerCase().trim();
   const map = new Map<string, string>();
   let page = 1;
-  // Hard cap to avoid runaway loops
-  for (let i = 0; i < 50 && map.size < wanted.size; i++) {
+  for (let i = 0; i < 50 && map.size < 20; i++) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({
       page,
       perPage: 1000,
@@ -45,7 +56,8 @@ async function buildUserEmailMap(
     const users = data?.users ?? [];
     if (users.length === 0) break;
     for (const u of users) {
-      if (u.email && wanted.has(u.id)) map.set(u.id, u.email);
+      if (u.email?.toLowerCase().includes(needle)) map.set(u.id, u.email.toLowerCase().trim());
+      if (map.size >= 20) break;
     }
     if (users.length < 1000) break;
     page += 1;
@@ -69,12 +81,47 @@ export const searchTrainers = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const q = data.q?.trim() ?? "";
+    const needle = q.toLowerCase();
+    const escaped = q.replace(/[%,]/g, "");
+    const like = `%${escaped}%`;
 
-    // Pull all professionals (dataset is small on REPs today).
-    const { data: pros, error } = await supabaseAdmin
+    const matchingIds = new Set<string>();
+    const emailById = q.length >= 2 ? await searchUserIdsByEmail(supabaseAdmin, q) : new Map<string, string>();
+    for (const id of emailById.keys()) matchingIds.add(id);
+
+    if (q.length >= 2) {
+      const [{ data: profileRows, error: profileErr }, { data: proRows, error: proErr }, idRes] = await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .or(`full_name.ilike.${like},business_name.ilike.${like}`)
+          .limit(50),
+        supabaseAdmin
+          .from("professionals")
+          .select("id")
+          .or(`city.ilike.${like},primary_profession.ilike.${like}`)
+          .limit(50),
+        /^[0-9a-fA-F-]{4,}$/.test(q)
+          ? supabaseAdmin.rpc("search_profiles_by_id_prefix", { _q: q })
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (profileErr) throw new Error(profileErr.message);
+      if (proErr) throw new Error(proErr.message);
+      if (idRes.error) throw new Error(idRes.error.message);
+      for (const r of profileRows ?? []) matchingIds.add(r.id);
+      for (const r of proRows ?? []) matchingIds.add(r.id);
+      for (const r of idRes.data ?? []) matchingIds.add(r.id);
+    }
+
+    let proQuery = supabaseAdmin
       .from("professionals")
-      .select("id, primary_profession, city")
-      .limit(500);
+      .select("id, primary_profession, city");
+    if (matchingIds.size > 0) proQuery = proQuery.in("id", [...matchingIds]);
+    else if (q.length >= 2) return [];
+    else proQuery = proQuery.limit(500);
+
+    const { data: pros, error } = await proQuery;
     if (error) throw new Error(error.message);
 
     const ids = (pros ?? []).map((p: any) => p.id);
@@ -105,44 +152,30 @@ export const searchTrainers = createServerFn({ method: "POST" })
       for (const s of subs ?? []) tierMap.set(s.user_id, s.tier);
     }
 
-    // Build rows WITHOUT email first so we can filter cheaply.
+    const missingEmailIds = ids.filter((id: string) => !emailById.has(id));
+    const resolvedEmails = await resolveUserEmailsById(supabaseAdmin, missingEmailIds);
+    for (const [id, email] of resolvedEmails) emailById.set(id, email);
+
     let rows = (pros ?? []).map((p: any) => ({
       id: p.id,
       full_name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "Unnamed",
       trading_name: businessMap.get(p.id) ?? null,
-      email: "" as string,
+      email: emailById.get(p.id) ?? "",
       tier: tierMap.get(p.id) ?? ("free" as Tier),
       profession: p.primary_profession,
       city: p.city,
     }));
 
-    // Free-text filter across name / business / city (email not needed for matching).
-    if (data.q && data.q.trim().length > 0) {
-      const needle = data.q.trim().toLowerCase();
+    if (q.length >= 2) {
       rows = rows.filter((r) =>
-        [r.full_name, r.trading_name, r.city]
+        [r.id, r.full_name, r.trading_name, r.city, r.profession, r.email]
           .filter(Boolean)
           .some((v: string) => v.toLowerCase().includes(needle)),
       );
     }
     if (data.tier) rows = rows.filter((r) => r.tier === data.tier);
 
-    // Cap to the top 20, THEN look up emails just for those (auth.admin
-    // pagination is too slow to do for every pro on every keystroke).
-    rows = rows.slice(0, 20);
-    if (rows.length === 0) return rows;
-
-    const emails = await Promise.all(
-      rows.map(async (r) => {
-        const { data: u } = await supabaseAdmin.auth.admin.getUserById(r.id);
-        return (u?.user?.email ?? "").toLowerCase();
-      }),
-    );
-    rows = rows
-      .map((r, i) => ({ ...r, email: emails[i] }))
-      .filter((r) => r.email);
-
-    return rows;
+    return rows.filter((r) => r.email).slice(0, 20);
   });
 
 
@@ -243,7 +276,7 @@ async function resolveTierRecipients(
   }
 
   // Email: always the auth.users login email.
-  const emailMap = await buildUserEmailMap(supabaseAdmin, proSet.map((p: any) => p.id));
+  const emailMap = await resolveUserEmailsById(supabaseAdmin, proSet.map((p: any) => p.id));
 
   return proSet
     .map((p: any) => {
