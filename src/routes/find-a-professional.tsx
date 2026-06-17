@@ -814,6 +814,9 @@ function ProCard({
   const mobilePhotoSize = pro.featured ? 96 : 88;
   const priceLabel = formatFromPrice(pro.from_price_pence);
   const showRating = pro.reviews > 0;
+  const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
+  const createdAtMs = pro.created_at ? Date.parse(pro.created_at) : 0;
+  const isNew = !showRating && createdAtMs > 0 && Date.now() - createdAtMs < SIXTY_DAYS_MS;
 
 
   return (
