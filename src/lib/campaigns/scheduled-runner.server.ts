@@ -274,7 +274,8 @@ async function runBroadcastBatch(opts: BatchOpts) {
   };
 
 
-  const SEND_DELAY_MS = 750;
+  // Mailgun probation cap = 100 msgs/hour. 37s spacing ≈ 97/hr.
+  const SEND_DELAY_MS = 37_000;
   const MAX_RETRIES = 3;
   const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
   const parseRetryAfter = (msg: string): number | null => {
@@ -332,7 +333,11 @@ async function runBroadcastBatch(opts: BatchOpts) {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         lastError = msg;
-        if (/daily (request )?limit exceeded/i.test(msg)) {
+        if (
+          /daily (request )?limit exceeded/i.test(msg) ||
+          /sending too fast/i.test(msg) ||
+          /account.*(temporarily disabled|on probation)/i.test(msg)
+        ) {
           dailyLimitHit = true;
           break;
         }
