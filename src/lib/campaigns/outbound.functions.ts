@@ -73,23 +73,24 @@ export const searchTrainers = createServerFn({ method: "POST" })
     // Pull all professionals (dataset is small on REPs today).
     const { data: pros, error } = await supabaseAdmin
       .from("professionals")
-      .select("id, trading_name, primary_profession, city, public_email")
+      .select("id, primary_profession, city")
       .limit(500);
     if (error) throw new Error(error.message);
 
     const ids = (pros ?? []).map((p: any) => p.id);
 
-    // Fetch profile names separately — there's no FK between professionals
-    // and profiles, so PostgREST can't embed-join them. Building this map by
-    // hand is the only way to get full_name reliably.
+    // Fetch profile names + business_name separately — no FK between
+    // professionals and profiles, so PostgREST can't embed-join them.
     const nameMap = new Map<string, string>();
+    const businessMap = new Map<string, string>();
     if (ids.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, business_name")
         .in("id", ids);
       for (const p of profs ?? []) {
         if (p.full_name) nameMap.set(p.id, p.full_name);
+        if (p.business_name) businessMap.set(p.id, p.business_name);
       }
     }
 
@@ -104,26 +105,22 @@ export const searchTrainers = createServerFn({ method: "POST" })
       for (const s of subs ?? []) tierMap.set(s.user_id, s.tier);
     }
 
-    // Resolve email: prefer public_email, else auth.users.email
-    const missingEmail = (pros ?? []).filter((p: any) => !p.public_email);
-    const emailMap = await buildUserEmailMap(
-      supabaseAdmin,
-      missingEmail.map((p: any) => p.id),
-    );
+    // Email: always the auth.users login email (the address the user actually controls).
+    const emailMap = await buildUserEmailMap(supabaseAdmin, ids);
 
     let rows = (pros ?? [])
       .map((p: any) => ({
         id: p.id,
-        full_name: nameMap.get(p.id) ?? p.trading_name ?? "Unnamed",
-        trading_name: p.trading_name,
-        email: (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase(),
+        full_name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "Unnamed",
+        trading_name: businessMap.get(p.id) ?? null,
+        email: (emailMap.get(p.id) ?? "").toLowerCase(),
         tier: tierMap.get(p.id) ?? ("free" as Tier),
         profession: p.primary_profession,
         city: p.city,
       }))
       .filter((r: any) => r.email);
 
-    // Free-text filter across name / trading_name / email / city
+    // Free-text filter across name / business / email / city
     if (data.q && data.q.trim().length > 0) {
       const needle = data.q.trim().toLowerCase();
       rows = rows.filter((r) =>
@@ -136,6 +133,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     const filtered = data.tier ? rows.filter((r) => r.tier === data.tier) : rows;
     return filtered.slice(0, 20);
   });
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,10 +180,10 @@ async function resolveTierRecipients(
 
   // Pull all professionals (we filter in-memory; small dataset on REPs today).
   // No FK exists between professionals and profiles, so we can't embed-join —
-  // fetch full_name separately below.
+  // fetch full_name / business_name separately below.
   const { data: allPros, error: pErr } = await supabaseAdmin
     .from("professionals")
-    .select("id, public_email, trading_name");
+    .select("id");
   if (pErr) throw new Error(pErr.message);
 
   let proSet: any[] = allPros ?? [];
@@ -218,34 +216,35 @@ async function resolveTierRecipients(
     proSet = proSet.filter((p: any) => !everyPaid.has(p.id));
   }
 
-  // Fetch full_name for the surviving set
+  // Fetch full_name + business_name for the surviving set
   const nameMap = new Map<string, string>();
+  const businessMap = new Map<string, string>();
   if (proSet.length > 0) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, business_name")
       .in("id", proSet.map((p: any) => p.id));
     for (const p of profs ?? []) {
       if (p.full_name) nameMap.set(p.id, p.full_name);
+      if (p.business_name) businessMap.set(p.id, p.business_name);
     }
   }
 
-  const needEmailIds = proSet
-    .filter((p: any) => !p.public_email)
-    .map((p: any) => p.id);
-  const emailMap = await buildUserEmailMap(supabaseAdmin, needEmailIds);
+  // Email: always the auth.users login email.
+  const emailMap = await buildUserEmailMap(supabaseAdmin, proSet.map((p: any) => p.id));
 
   return proSet
     .map((p: any) => {
-      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase().trim();
+      const email = (emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
         userId: p.id,
         email,
-        name: nameMap.get(p.id) ?? p.trading_name ?? "",
+        name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "",
       };
     })
     .filter((r) => r.email && isValidEmail(r.email));
 }
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
