@@ -141,7 +141,13 @@ function ActiveDot({ show }: { show: boolean }) {
 
 /* ---------------- root ---------------- */
 
-export function PublicHeader({ variant = "transparent" }: { variant?: Variant }) {
+export function PublicHeader({
+  variant = "transparent",
+  mobileOpaque = false,
+}: {
+  variant?: Variant;
+  mobileOpaque?: boolean;
+}) {
   const isSolid = useIsSolid(variant);
   const active = useActive();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -156,7 +162,12 @@ export function PublicHeader({ variant = "transparent" }: { variant?: Variant })
     "z-50 transition-colors duration-200",
     variant === "transparent" ? "fixed inset-x-0 top-0" : "sticky top-0",
     isSolid
-      ? "bg-reps-ink/95 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/80 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]"
+      ? cn(
+          "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]",
+          mobileOpaque
+            ? "bg-reps-ink lg:bg-reps-ink/95 lg:backdrop-blur"
+            : "bg-reps-ink/95 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/80",
+        )
       : "bg-transparent",
   );
 
