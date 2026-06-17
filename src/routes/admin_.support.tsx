@@ -605,13 +605,13 @@ function AdminSupport() {
             <tbody>
               {ticketsQuery.isLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-8 text-center text-white/45 text-[12px]">
+                  <td colSpan={8} className="px-5 py-8 text-center text-white/45 text-[12px]">
                     Loading tickets…
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-10 text-center text-white/55">
+                  <td colSpan={8} className="px-5 py-10 text-center text-white/55">
 
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
