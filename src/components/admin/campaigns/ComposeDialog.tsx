@@ -56,6 +56,7 @@ const INBOXES: { value: Inbox; label: string; email: string }[] = [
 ];
 
 const TIERS: { value: Tier; label: string }[] = [
+  { value: "free", label: "Unverified" },
   { value: "verified", label: "Verified" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
@@ -103,12 +104,21 @@ export function ComposeDialog({
       });
     },
     onSuccess: (res) => {
+      const skipped = res.skipped?.length ?? 0;
       if (res.failed > 0) {
+        const first = res.failures?.[0];
         toast.warning(`Sent ${res.sent} · failed ${res.failed}`, {
-          description: res.failures.map((f) => f.email).join(", ").slice(0, 200),
+          description: first
+            ? `${first.email}: ${first.error}`.slice(0, 200)
+            : res.failures.map((f) => f.email).join(", ").slice(0, 200),
         });
       } else {
-        toast.success(`Sent to ${res.sent} ${res.sent === 1 ? "recipient" : "recipients"}`);
+        toast.success(
+          `Sent to ${res.sent} ${res.sent === 1 ? "recipient" : "recipients"}`,
+          skipped > 0
+            ? { description: `Skipped ${skipped} invalid address${skipped === 1 ? "" : "es"}` }
+            : undefined,
+        );
       }
       onSent();
       reset();
