@@ -160,7 +160,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("professionals")
         .select(
-          "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
+          "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -183,6 +183,12 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
     if (!pro) return { shopFront: null, services: [] };
 
+    const coachingSinceYear = await fetchCoachingSinceYear(
+      supabaseAdmin,
+      userId,
+      pro.primary_title_slug ?? null,
+    );
+
     const shopFront: ShopFrontDTO | null = sf
       ? {
           professional_id: userId,
@@ -203,6 +209,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
+          coaching_since_year: coachingSinceYear,
         }
       : null;
 
