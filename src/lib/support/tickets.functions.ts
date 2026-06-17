@@ -701,7 +701,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
         .ilike("email", like)
         .limit(20);
       if (!emailErr) {
-        for (const u of usersByEmail ?? []) {
+        for (const u of (usersByEmail ?? []) as any[]) {
           if (u.email) emailById.set(u.id, u.email);
         }
       }
