@@ -213,23 +213,27 @@ function AdminSupport() {
     const isActiveSnoozed = (r: any) =>
       r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
     const isSpam = (r: any) => r.status === "spam";
-    const nonSpam = rows.filter((r: any) => !isSpam(r));
-    const openRows = nonSpam.filter(
+    const isClosed = (r: any) => r.status === "closed";
+    const isTrash = (r: any) => !!r.deleted_at;
+    const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
+    const openRows = active.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
-    const pendingRows = nonSpam.filter(
+    const pendingRows = active.filter(
       (r: any) => r.status === "pending" && !isActiveSnoozed(r),
     );
     return {
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: nonSpam.filter(isActiveSnoozed).length,
-      resolved: nonSpam.filter((r: any) => r.status === "resolved").length,
-      spam: rows.filter(isSpam).length,
-      all: nonSpam.length,
+      snoozed: active.filter(isActiveSnoozed).length,
+      resolved: active.filter((r: any) => r.status === "resolved").length,
+      closed: rows.filter((r: any) => !isTrash(r) && isClosed(r)).length,
+      spam: rows.filter((r: any) => !isTrash(r) && isSpam(r)).length,
+      trash: rows.filter(isTrash).length,
+      all: active.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
       unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: nonSpam.filter(
+      resolvedToday: active.filter(
         (r: any) =>
           r.resolved_at &&
           new Date(r.resolved_at).toDateString() === new Date().toDateString(),
