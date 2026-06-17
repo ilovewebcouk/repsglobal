@@ -623,8 +623,11 @@ function wrapEmail(text: string, inboxLabel: string): string {
             ${paragraphs}
           </td></tr>
           <tr><td style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
-            <div style="margin-bottom:12px;">${REPS_WORDMARK_SVG(16)}</div>
-            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.55;color:#475569;">REPs — the global register of exercise professionals.</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;"><tr>
+              <td style="vertical-align:middle;padding-right:12px;">${REPS_WORDMARK_SVG(18)}</td>
+              <td style="vertical-align:middle;border-left:1px solid #cbd5e1;padding-left:12px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;line-height:1.35;color:#475569;letter-spacing:0.02em;text-transform:uppercase;">The Register of<br/>Exercise Professionals</td>
+            </tr></table>
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.55;color:#475569;">The professional platform for the modern fitness industry.</p>
             <p style="margin:0 0 14px 0;font-size:12.5px;line-height:1.55;color:#64748b;">Reply directly to this email — it goes straight to the ${escapeHtml(inboxLabel)} team.</p>
             <p style="margin:0 0 6px 0;font-size:12px;line-height:1.55;color:#64748b;">
               <a href="${SITE}" style="color:#64748b;text-decoration:underline;">repsuk.org</a>
