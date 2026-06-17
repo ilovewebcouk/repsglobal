@@ -664,14 +664,8 @@ function AdminSupport() {
                       </span>
                     </td>
                     <td className="px-3 py-3 text-white/70 max-w-[200px]">
-                      <div className="text-[12.5px] truncate" title={t.requester_name ?? undefined}>
-                        {t.requester_name ?? "—"}
-                      </div>
-                      <div
-                        className="text-[11px] text-white/45 truncate"
-                        title={t.requester_email}
-                      >
-                        {t.requester_email}
+                      <div className="text-[12.5px] truncate" title={t.requester_email ?? t.requester_name ?? undefined}>
+                        {t.requester_name ?? t.requester_email ?? "—"}
                       </div>
                     </td>
                     <td className="px-3 py-3">
