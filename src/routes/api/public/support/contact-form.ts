@@ -138,7 +138,7 @@ export const Route = createFileRoute("/api/public/support/contact-form")({
             requester_name: data.fullName,
             priority,
             source: "contact_form",
-            status: "open",
+            status: "new",
             inbox,
             sla_due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           })
