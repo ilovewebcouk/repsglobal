@@ -3188,7 +3188,7 @@ export type Database = {
       support_msg_direction: "inbound" | "outbound" | "internal_note"
       support_priority: "urgent" | "high" | "normal" | "low"
       support_source: "email" | "web" | "admin" | "api" | "contact_form"
-      support_status: "open" | "pending" | "resolved" | "closed"
+      support_status: "open" | "pending" | "resolved" | "closed" | "spam"
       verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
       verification_submission_status:
@@ -3395,7 +3395,7 @@ export const Constants = {
       support_msg_direction: ["inbound", "outbound", "internal_note"],
       support_priority: ["urgent", "high", "normal", "low"],
       support_source: ["email", "web", "admin", "api", "contact_form"],
-      support_status: ["open", "pending", "resolved", "closed"],
+      support_status: ["open", "pending", "resolved", "closed", "spam"],
       verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
       verification_submission_status: [
