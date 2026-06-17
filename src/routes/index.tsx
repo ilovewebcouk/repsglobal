@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Dumbbell,
   Globe,
+  Laptop,
   MapPin,
   MessageCircle,
   Quote,
