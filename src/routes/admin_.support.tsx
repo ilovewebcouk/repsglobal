@@ -609,7 +609,7 @@ function AdminSupport() {
                   const isSelected = selectedIds.has(t.id);
                   const isCursor = cursorId === t.id;
                   const isUnread = !!t.is_unread;
-                  const snoozeMsg = snoozedLabel(t.snoozed_until);
+                  
                   return (
                   <tr
                     key={t.id}
