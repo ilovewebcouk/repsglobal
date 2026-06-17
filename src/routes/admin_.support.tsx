@@ -142,6 +142,9 @@ function formatReceived(iso?: string | null) {
   if (sameDay) return time;
   const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   return `${date} · ${time}`;
+}
+
+
 
 
 function labelFor(
