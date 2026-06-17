@@ -377,7 +377,12 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }
 
     const inboxMeta = INBOX_META[data.inbox];
-    const html = wrapEmail(data.body, inboxMeta.label);
+    const fmt: "text" | "html" = data.format ?? "text";
+    // Template preview (with merge tags intact) for the campaign record.
+    const previewHtml = wrapEmail(
+      fmt === "html" ? sanitiseHtml(data.body) : textToHtml(data.body),
+      inboxMeta.label,
+    );
 
     // ── BROADCAST branch ────────────────────────────────────────────────────
     // Broadcasts become a single `outbound_campaigns` row + one recipient
