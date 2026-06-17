@@ -274,7 +274,7 @@ async function runBroadcastBatch(opts: BatchOpts) {
   };
 
 
-  // Mailgun probation cap = 100 msgs/hour. 37s spacing ≈ 97/hr.
+  // Foundation 50K plan: 250ms spacing keeps delivery polite (~240 msgs/min).
   const SEND_DELAY_MS = 250;
   const MAX_RETRIES = 3;
   const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
