@@ -315,21 +315,32 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
     // Resolve recipients
     let recipients: Array<{ email: string; name: string | null }> = [];
+    const skipped: Array<{ email: string; reason: string }> = [];
     if (data.mode === "direct") {
-      recipients = (data.recipients ?? []).map((r) => ({
-        email: r.email.toLowerCase(),
-        name: r.name ?? null,
-      }));
+      for (const r of data.recipients ?? []) {
+        const email = r.email.toLowerCase().trim();
+        if (!isValidEmail(email)) {
+          skipped.push({ email: r.email, reason: "Invalid email format" });
+          continue;
+        }
+        recipients.push({ email, name: r.name ?? null });
+      }
     } else {
       if (!data.tiers || data.tiers.length === 0) {
         throw new Error("Pick at least one tier for broadcast");
       }
       const resolved = await resolveTierRecipients(supabaseAdmin, data.tiers);
-      recipients = resolved.map((r) => ({ email: r.email, name: r.name || null }));
+      for (const r of resolved) {
+        if (!isValidEmail(r.email)) {
+          skipped.push({ email: r.email, reason: "Invalid email format" });
+          continue;
+        }
+        recipients.push({ email: r.email, name: r.name || null });
+      }
     }
 
     if (recipients.length === 0) {
-      throw new Error("No recipients matched");
+      throw new Error("No valid recipients matched");
     }
 
     // Dedupe by email
