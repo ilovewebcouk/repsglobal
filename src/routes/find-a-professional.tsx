@@ -449,7 +449,7 @@ function DirectoryPage() {
 
   return (
     <div className="min-h-screen bg-reps-ivory">
-      <PublicHeader variant="solid" />
+      <PublicHeader variant="solid" mobileOpaque />
 
 
       <ResultsSearchBar state={barState} total={visibleTotal} />
