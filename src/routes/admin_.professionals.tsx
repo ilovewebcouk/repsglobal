@@ -647,7 +647,7 @@ function ProRow({ row }: { row: AdminProRow }) {
             <AvatarFallback className="bg-reps-panel-soft text-[11px] text-white/55">{initials}</AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-semibold text-white">{row.name}</div>
+            <NameWithIdTooltip id={row.id} name={row.name} />
             <div className="text-[11px] text-white/50">{row.handle}</div>
           </div>
         </div>
