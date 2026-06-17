@@ -155,6 +155,29 @@ function slaLabel(due?: string | null, status?: string) {
   return `${hrs}h ${String(rem).padStart(2, "0")}m`;
 }
 
+const STATUS_PILL: Record<string, string> = {
+  new: "border-reps-orange/30 bg-reps-orange/15 text-reps-orange",
+  open: "border-sky-400/30 bg-sky-500/15 text-sky-300",
+  pending: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+  solved: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  closed: "border-white/15 bg-white/10 text-white/70",
+  spam: "border-amber-400/30 bg-amber-500/15 text-amber-200",
+};
+
+function StatusPill({ status }: { status: string }) {
+  return (
+    <span
+      className={`inline-flex h-8 items-center rounded-[8px] border px-3 text-[12px] font-semibold capitalize ${
+        STATUS_PILL[status] ?? "border-reps-border bg-white/5 text-white/70"
+      }`}
+    >
+      {status}
+    </span>
+  );
+}
+
+
+
 function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("new");
   const [inbox, setInbox] = useState<InboxFilter>("all");
@@ -977,26 +1000,26 @@ function TicketDrawer({
 
           {ticket ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Select
-                value={ticket.status}
-                onValueChange={(v) => update.mutate({ status: v })}
-              >
-                <SelectTrigger className="h-8 w-[120px] bg-white/5 border-reps-border text-[12px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {/* Agent-set states only. `new` is system-set, auto-promoted
-                      on first view. `closed` is system-set by the 28-day cron.
-                      Both are shown as disabled items so the dropdown still
-                      displays the correct current value. */}
-                  <SelectItem value="new" disabled>New</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="solved">Solved</SelectItem>
-                  <SelectItem value="closed" disabled>Closed</SelectItem>
-                  <SelectItem value="spam" disabled>Spam</SelectItem>
-                </SelectContent>
-              </Select>
+              <StatusPill status={ticket.status} />
+              {ticket.status === "open" || ticket.status === "pending" || ticket.status === "new" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "solved" })}
+                  className="h-8 border-emerald-400/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 text-[12px]"
+                >
+                  Mark solved
+                </Button>
+              ) : ticket.status === "solved" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "open" })}
+                  className="h-8 border-reps-orange/40 bg-reps-orange-soft text-reps-orange hover:bg-reps-orange/20 text-[12px]"
+                >
+                  Reopen
+                </Button>
+              ) : null}
               {ticket.status !== "spam" ? (
                 <Button
                   variant="outline"
