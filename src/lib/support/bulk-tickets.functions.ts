@@ -171,6 +171,8 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
         priority: string;
         assignee_id: string | null;
         resolved_at: string | null;
+        closed_at?: string | null;
+        deleted_at?: string | null;
       }>;
     }) =>
       z
@@ -183,6 +185,8 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
                 priority: z.string(),
                 assignee_id: z.string().uuid().nullable(),
                 resolved_at: z.string().nullable(),
+                closed_at: z.string().nullable().optional(),
+                deleted_at: z.string().nullable().optional(),
               }),
             )
             .min(1)
@@ -204,6 +208,8 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
           priority: row.priority,
           assignee_id: row.assignee_id,
           resolved_at: row.resolved_at,
+          closed_at: row.closed_at ?? null,
+          deleted_at: row.deleted_at ?? null,
         } as never)
         .eq("id", row.id);
       if (!error) restored += 1;
