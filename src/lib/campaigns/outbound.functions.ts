@@ -473,47 +473,108 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       let sent = 0;
       const failures: Array<{ email: string; error: string }> = [];
 
-      for (const r of recipients) {
+      // Mailgun account has hourly + daily caps. Throttle to stay under
+      // limits and back off on 429 ("request limit") / 420 ("recipient
+      // limit"). If the *daily* cap is hit, stop the batch entirely —
+      // further sends today are guaranteed to fail.
+      const SEND_DELAY_MS = 750;
+      const MAX_RETRIES = 3;
+      const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+      function parseRetryAfter(msg: string): number | null {
+        const m = msg.match(/try again after ([^"}\n]+?)(?:["}]|$)/i);
+        if (!m) return null;
+        const when = Date.parse(m[1].trim());
+        if (!Number.isFinite(when)) return null;
+        return Math.max(0, when - Date.now());
+      }
+
+      let dailyLimitHit = false;
+
+      outer: for (const r of recipients) {
         const messageId = buildMessageId(`campaign-${campaign.id}`);
         const recipientHtml = wrapEmail(
           renderInnerHtml(data.body, fmt, r),
           inboxMeta.label,
         );
         const recipientText = renderPlainText(data.body, fmt, r);
-        try {
-          await sendViaMailgun({
-            from: `${inboxMeta.name} <${inboxMeta.email}>`,
-            to: r.name ? `${r.name} <${r.email}>` : r.email,
-            subject: data.subject,
-            text: recipientText,
-            html: recipientHtml,
-            messageId,
-            replyTo: inboxMeta.email,
-            attachments: attachmentPayloads.map((a) => ({
-              filename: a.filename,
-              contentType: a.contentType,
-              data: a.data,
-            })),
-          });
+
+        let attempt = 0;
+        let lastError: string | null = null;
+        while (attempt < MAX_RETRIES) {
+          try {
+            await sendViaMailgun({
+              from: `${inboxMeta.name} <${inboxMeta.email}>`,
+              to: r.name ? `${r.name} <${r.email}>` : r.email,
+              subject: data.subject,
+              text: recipientText,
+              html: recipientHtml,
+              messageId,
+              replyTo: inboxMeta.email,
+              attachments: attachmentPayloads.map((a) => ({
+                filename: a.filename,
+                contentType: a.contentType,
+                data: a.data,
+              })),
+            });
+            await supabaseAdmin
+              .from("outbound_campaign_recipients")
+              .update({
+                status: "sent",
+                mailgun_message_id: messageId,
+                sent_at: new Date().toISOString(),
+              })
+              .eq("campaign_id", campaign.id)
+              .eq("email", r.email);
+            sent += 1;
+            lastError = null;
+            break;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            lastError = msg;
+
+            if (/daily (request )?limit exceeded/i.test(msg)) {
+              dailyLimitHit = true;
+              break;
+            }
+
+            const isThrottle =
+              /\b429\b/.test(msg) ||
+              /\b420\b/.test(msg) ||
+              /request limit exceeded/i.test(msg) ||
+              /recipient limit exceeded/i.test(msg);
+            if (isThrottle && attempt < MAX_RETRIES - 1) {
+              const wait = Math.min(parseRetryAfter(msg) ?? 30_000, 90_000);
+              await sleep(wait + 500);
+              attempt += 1;
+              continue;
+            }
+            break;
+          }
+        }
+
+        if (lastError) {
+          failures.push({ email: r.email, error: lastError });
           await supabaseAdmin
             .from("outbound_campaign_recipients")
-            .update({
-              status: "sent",
-              mailgun_message_id: messageId,
-              sent_at: new Date().toISOString(),
-            })
-            .eq("campaign_id", campaign.id)
-            .eq("email", r.email);
-          sent += 1;
-        } catch (err) {
-          const errorMsg = err instanceof Error ? err.message : String(err);
-          failures.push({ email: r.email, error: errorMsg });
-          await supabaseAdmin
-            .from("outbound_campaign_recipients")
-            .update({ status: "failed", error_message: errorMsg })
+            .update({ status: "failed", error_message: lastError })
             .eq("campaign_id", campaign.id)
             .eq("email", r.email);
         }
+
+        if (dailyLimitHit) break outer;
+        await sleep(SEND_DELAY_MS);
+      }
+
+      if (dailyLimitHit) {
+        await supabaseAdmin
+          .from("outbound_campaign_recipients")
+          .update({
+            status: "failed",
+            error_message: "Skipped: Mailgun daily limit reached",
+          })
+          .eq("campaign_id", campaign.id)
+          .eq("status", "queued");
       }
 
       await supabaseAdmin
