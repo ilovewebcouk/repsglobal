@@ -425,12 +425,7 @@ function Sidebar({
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-        ) : (
-          <Button variant="outline" disabled className="text-foreground">
-            <Sparkles className="h-4 w-4" />
-            AI Assistant · coming soon
-          </Button>
-        )}
+        ) : null}
 
       </div>
     </div>
