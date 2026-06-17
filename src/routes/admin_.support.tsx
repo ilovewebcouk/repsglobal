@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash";
+type StatusFilter = "new" | "open" | "pending" | "solved" | "closed" | "spam" | "trash";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -145,20 +145,19 @@ function snoozedLabel(iso?: string | null) {
 }
 
 function labelFor(
-  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "close" | "restore",
+  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "restore",
 ): string {
   if (action === "resolve") return "Solved";
   if (action === "reopen") return "Reopened";
   if (action === "pending") return "Marked pending";
   if (action === "spam") return "Marked as spam";
   if (action === "not_spam") return "Restored from spam";
-  if (action === "close") return "Closed (archived)";
   return "Restored from Trash";
 }
 
 
 function slaLabel(due?: string | null, status?: string) {
-  if (status === "resolved" || status === "closed") return "Resolved";
+  if (status === "solved" || status === "closed") return "Solved";
   if (!due) return "—";
   const ms = new Date(due).getTime() - Date.now();
   if (ms < 0) return `Overdue ${Math.round(-ms / 60000)}m`;
@@ -170,7 +169,7 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
-  const [tab, setTab] = useState<StatusFilter>("open");
+  const [tab, setTab] = useState<StatusFilter>("new");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
@@ -215,40 +214,48 @@ function AdminSupport() {
     const isSpam = (r: any) => r.status === "spam";
     const isClosed = (r: any) => r.status === "closed";
     const isTrash = (r: any) => !!r.deleted_at;
+    const isNew = (r: any) => r.status === "new";
     const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
     const openRows = active.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
     const pendingRows = active.filter(
-      (r: any) => r.status === "pending" && !isActiveSnoozed(r),
+      (r: any) => r.status === "pending",
     );
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return {
+      new: active.filter(isNew).length,
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: active.filter(isActiveSnoozed).length,
-      resolved: active.filter((r: any) => r.status === "resolved").length,
+      solved: active.filter((r: any) => r.status === "solved").length,
       closed: rows.filter((r: any) => !isTrash(r) && isClosed(r)).length,
       spam: rows.filter((r: any) => !isTrash(r) && isSpam(r)).length,
       trash: rows.filter(isTrash).length,
-      all: active.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
-      unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: active.filter(
+      solvedLast7: rows.filter(
         (r: any) =>
-          r.resolved_at &&
-          new Date(r.resolved_at).toDateString() === new Date().toDateString(),
+          r.status === "solved" &&
+          r.solved_at &&
+          new Date(r.solved_at).getTime() >= sevenDaysAgo,
       ).length,
       byInbox: {
-        all: openRows.length,
-        support: openRows.filter((r: any) => (r.inbox ?? "support") === "support").length,
-        pros: openRows.filter((r: any) => r.inbox === "pros").length,
-        partners: openRows.filter((r: any) => r.inbox === "partners").length,
-        press: openRows.filter((r: any) => r.inbox === "press").length,
+        all: openRows.length + active.filter(isNew).length,
+        support: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => (r.inbox ?? "support") === "support",
+        ).length,
+        pros: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "pros",
+        ).length,
+        partners: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "partners",
+        ).length,
+        press: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "press",
+        ).length,
       } as Record<InboxFilter, number>,
     };
   }, [allCountQuery.data]);
 
-  // Server already scopes "resolved" tab to today via resolved_at filter.
   const tickets = ticketsQuery.data ?? [];
 
   // Clear selection when filters change (selections refer to the visible page)
@@ -350,7 +357,6 @@ function AdminSupport() {
       | "delete"
       | "restore"
       | "purge"
-      | "close"
       | "spam"
       | "not_spam",
     extraPayload?: Record<string, unknown>,
