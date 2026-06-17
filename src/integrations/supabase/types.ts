@@ -1706,11 +1706,17 @@ export type Database = {
           body_text: string
           created_at: string
           created_by: string | null
+          direct_recipients: Json
           failed_count: number
+          format: string
           id: string
           inbox: string
+          last_error: string | null
+          mode: string | null
+          scheduled_at: string | null
           sent_at: string | null
           sent_count: number
+          status: string
           subject: string
           tiers: string[]
           total_recipients: number
@@ -1721,11 +1727,17 @@ export type Database = {
           body_text: string
           created_at?: string
           created_by?: string | null
+          direct_recipients?: Json
           failed_count?: number
+          format?: string
           id?: string
           inbox: string
+          last_error?: string | null
+          mode?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
+          status?: string
           subject: string
           tiers?: string[]
           total_recipients?: number
@@ -1736,11 +1748,17 @@ export type Database = {
           body_text?: string
           created_at?: string
           created_by?: string | null
+          direct_recipients?: Json
           failed_count?: number
+          format?: string
           id?: string
           inbox?: string
+          last_error?: string | null
+          mode?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
+          status?: string
           subject?: string
           tiers?: string[]
           total_recipients?: number

@@ -93,6 +93,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/public/support/contact-form'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksSupportAutoCloseRouteImport } from './routes/api/public/hooks/support-auto-close'
+import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
@@ -548,6 +549,12 @@ const ApiPublicHooksSupportAutoCloseRoute =
     path: '/api/public/hooks/support-auto-close',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSendScheduledCampaignsRoute =
+  ApiPublicHooksSendScheduledCampaignsRouteImport.update({
+    id: '/api/public/hooks/send-scheduled-campaigns',
+    path: '/api/public/hooks/send-scheduled-campaigns',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksLegacyRenewalRoute =
   ApiPublicHooksLegacyRenewalRouteImport.update({
     id: '/api/public/hooks/legacy-renewal',
@@ -791,6 +798,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
@@ -899,6 +907,7 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
@@ -1012,6 +1021,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
@@ -1123,6 +1133,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
@@ -1231,6 +1242,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
@@ -1343,6 +1355,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
@@ -1440,6 +1453,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
+  ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicSupportContactFormRoute: typeof ApiPublicSupportContactFormRoute
@@ -2039,6 +2053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSupportAutoCloseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/send-scheduled-campaigns': {
+      id: '/api/public/hooks/send-scheduled-campaigns'
+      path: '/api/public/hooks/send-scheduled-campaigns'
+      fullPath: '/api/public/hooks/send-scheduled-campaigns'
+      preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/legacy-renewal': {
       id: '/api/public/hooks/legacy-renewal'
       path: '/api/public/hooks/legacy-renewal'
@@ -2452,6 +2473,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
+  ApiPublicHooksSendScheduledCampaignsRoute:
+    ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicHooksSupportAutoCloseRoute: ApiPublicHooksSupportAutoCloseRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicSupportContactFormRoute: ApiPublicSupportContactFormRoute,
