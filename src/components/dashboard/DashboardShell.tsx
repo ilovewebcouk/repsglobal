@@ -32,9 +32,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { DashboardButton } from "@/components/dashboard/ui/button";
-
-
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -429,14 +426,10 @@ function Sidebar({
             </Link>
           </Button>
         ) : (
-          <DashboardButton
-            variant="ghost"
-            disabled
-            className="hover:bg-white/[0.04] hover:text-white hover:border-white/12"
-          >
+          <Button variant="outline" disabled className="text-foreground">
             <Sparkles className="h-4 w-4" />
             AI Assistant · coming soon
-          </DashboardButton>
+          </Button>
         )}
 
       </div>
