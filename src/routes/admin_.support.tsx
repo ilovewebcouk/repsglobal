@@ -582,8 +582,7 @@ function AdminSupport() {
                 <th className="px-3 py-3 font-semibold">From</th>
                 <th className="px-3 py-3 font-semibold">Priority</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">SLA</th>
-                <th className="px-3 py-3 font-semibold">Last activity</th>
+                <th className="px-3 py-3 font-semibold">Received</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
