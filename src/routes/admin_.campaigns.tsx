@@ -39,7 +39,7 @@ function AdminCampaigns() {
         <Button
           size="sm"
           onClick={() => setComposeOpen(true)}
-          className="bg-reps-orange text-black hover:bg-reps-orange/90 h-8"
+          className="bg-reps-orange text-white hover:bg-reps-orange/90 h-8"
         >
           <PencilLine className="size-3.5" />
           New campaign

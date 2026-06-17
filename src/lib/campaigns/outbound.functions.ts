@@ -5,12 +5,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio";
 
-const INBOX_META: Record<Inbox, { email: string; name: string }> = {
-  support: { email: "support@repsuk.org", name: "REPS Support" },
-  pros: { email: "pros@repsuk.org", name: "REPS Pros" },
-  partners: { email: "partners@repsuk.org", name: "REPS Partners" },
-  press: { email: "press@repsuk.org", name: "REPS Press" },
+const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
+  support: { email: "support@repsuk.org", name: "REPS Support", label: "Support" },
+  pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
+  partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
+  press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
 };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(e: string): boolean {
+  return EMAIL_RE.test(e.trim());
+}
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
@@ -232,14 +237,14 @@ async function resolveTierRecipients(
 
   return proSet
     .map((p: any) => {
-      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase();
+      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
         userId: p.id,
         email,
         name: nameMap.get(p.id) ?? p.trading_name ?? "",
       };
     })
-    .filter((r) => r.email);
+    .filter((r) => r.email && isValidEmail(r.email));
 }
 
 
@@ -310,21 +315,32 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
     // Resolve recipients
     let recipients: Array<{ email: string; name: string | null }> = [];
+    const skipped: Array<{ email: string; reason: string }> = [];
     if (data.mode === "direct") {
-      recipients = (data.recipients ?? []).map((r) => ({
-        email: r.email.toLowerCase(),
-        name: r.name ?? null,
-      }));
+      for (const r of data.recipients ?? []) {
+        const email = r.email.toLowerCase().trim();
+        if (!isValidEmail(email)) {
+          skipped.push({ email: r.email, reason: "Invalid email format" });
+          continue;
+        }
+        recipients.push({ email, name: r.name ?? null });
+      }
     } else {
       if (!data.tiers || data.tiers.length === 0) {
         throw new Error("Pick at least one tier for broadcast");
       }
       const resolved = await resolveTierRecipients(supabaseAdmin, data.tiers);
-      recipients = resolved.map((r) => ({ email: r.email, name: r.name || null }));
+      for (const r of resolved) {
+        if (!isValidEmail(r.email)) {
+          skipped.push({ email: r.email, reason: "Invalid email format" });
+          continue;
+        }
+        recipients.push({ email: r.email, name: r.name || null });
+      }
     }
 
     if (recipients.length === 0) {
-      throw new Error("No recipients matched");
+      throw new Error("No valid recipients matched");
     }
 
     // Dedupe by email
@@ -359,7 +375,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }
 
     const inboxMeta = INBOX_META[data.inbox];
-    const html = bodyToHtml(data.body);
+    const html = wrapEmail(data.body, inboxMeta.label);
 
     // ── BROADCAST branch ────────────────────────────────────────────────────
     // Broadcasts become a single `outbound_campaigns` row + one recipient
@@ -457,8 +473,9 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
         sent,
         failed: failures.length,
         total: recipients.length,
-        campaignId: campaign.id,
+        campaignId: campaign.id as string | null,
         failures: failures.slice(0, 10),
+        skipped: skipped.slice(0, 20),
       };
     }
 
@@ -549,22 +566,80 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       sent,
       failed: failures.length,
       total: recipients.length,
-      campaignId: null,
+      campaignId: null as string | null,
       failures: failures.slice(0, 10),
+      skipped: skipped.slice(0, 20),
     };
   });
 
 
-function bodyToHtml(text: string): string {
-  const escape = (s: string) =>
-    s
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+// Inline black REPS wordmark — copied from src/components/brand/RepsWordmark.tsx
+const REPS_WORDMARK_SVG = (height: number, color = "#0F172A") =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 267.34 48.17" height="${height}" fill="${color}" role="img" aria-label="REPS" style="display:block">
+    <path d="M53.86,33.34c7.34-2.81,11.59-8.28,11.59-15.77C65.45,6.55,56.31,0,41.19,0H0v48.17h14.83v-12.82h21.82l12.1,12.82h19.66l-14.54-14.83ZM42.7,23.33H14.83v-10.8h27.79c5.4,0,7.92,1.73,7.92,5.62,0,3.6-2.38,5.18-7.85,5.18Z"/>
+    <polygon points="119.96 12.53 129.68 12.53 129.68 0 129.6 0 119.96 0 73.8 0 73.8 48.17 120.17 48.17 129.68 48.17 129.68 35.64 120.17 35.64 88.7 35.64 88.7 29.38 118.16 29.38 126.8 29.38 126.8 18.72 118.16 18.72 88.7 18.72 88.7 12.53 119.96 12.53"/>
+    <path d="M175.32,0h-40.68v48.17h14.83v-12.46h25.85c14.11,0,22.97-6.91,22.97-17.71S189.29,0,175.32,0ZM176.98,23.4h-27.51v-10.87h27.51c3.96,0,6.48,2.09,6.48,5.4s-2.45,5.47-6.48,5.47Z"/>
+    <path d="M249.05,18.79h-26.28c-3.1,0-4.54-1.01-4.54-3.17s1.44-3.1,4.54-3.1h43.28V0h-42.12c-13.61,0-20.31,4.97-20.31,14.91,0,9.15,6.77,14.47,18.51,14.47h26.07c3.1,0,4.54.94,4.54,3.17s-1.37,3.1-4.39,3.1h-44.72v12.53h44.28c13.39,0,19.44-4.82,19.44-15.41,0-9.15-6.34-13.97-18.29-13.97Z"/>
+  </svg>`;
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function wrapEmail(text: string, inboxLabel: string): string {
   const paragraphs = text
     .split(/\n{2,}/)
-    .map((p) => `<p style="margin:0 0 12px 0">${escape(p).replace(/\n/g, "<br/>")}</p>`)
+    .map(
+      (p) =>
+        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a">${escapeHtml(
+          p,
+        ).replace(/\n/g, "<br/>")}</p>`,
+    )
     .join("\n");
-  return `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#0f172a">${paragraphs}</div>`;
+
+  const year = new Date().getFullYear();
+  const SITE = "https://repsuk.org";
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>REPs</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a;-webkit-text-size-adjust:100%;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">REPs — the global register of exercise professionals.</div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;padding:32px 16px;">
+      <tr><td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr><td style="padding:24px 32px 8px 32px;border-bottom:1px solid #f1f2f4;">
+            ${REPS_WORDMARK_SVG(22)}
+          </td></tr>
+          <tr><td style="padding:28px 32px 8px 32px;">
+            ${paragraphs}
+          </td></tr>
+          <tr><td style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
+            <div style="margin-bottom:12px;">${REPS_WORDMARK_SVG(16)}</div>
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.55;color:#475569;">REPs — the global register of exercise professionals.</p>
+            <p style="margin:0 0 14px 0;font-size:12.5px;line-height:1.55;color:#64748b;">Reply directly to this email — it goes straight to the ${escapeHtml(inboxLabel)} team.</p>
+            <p style="margin:0 0 6px 0;font-size:12px;line-height:1.55;color:#64748b;">
+              <a href="${SITE}" style="color:#64748b;text-decoration:underline;">repsuk.org</a>
+              &nbsp;·&nbsp;
+              <a href="${SITE}/contact" style="color:#64748b;text-decoration:underline;">Contact</a>
+              &nbsp;·&nbsp;
+              <a href="${SITE}/privacy" style="color:#64748b;text-decoration:underline;">Privacy</a>
+              &nbsp;·&nbsp;
+              <a href="${SITE}/terms" style="color:#64748b;text-decoration:underline;">Terms</a>
+            </p>
+            <p style="margin:0;font-size:11.5px;line-height:1.55;color:#94a3b8;">© ${year} REPs. All rights reserved.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
 }

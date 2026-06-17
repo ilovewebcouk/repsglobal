@@ -1,22 +1,43 @@
-Brutal honest opinion: the sidebar is too narrow for the current horizontal lockup. The desktop sidebar is only 232px wide, and the 22px wordmark + divider + padding leaves the tagline with about 45px of usable width. That is why "Exercise Professionals" wraps onto a third line. The "fifty-fifty" feel comes from the wordmark and the tagline fighting over the same limited horizontal space.
+## 1. New Campaign button — white text
+`src/routes/admin_.campaigns.tsx` line 42: `text-black` → `text-white` on the orange button. (Matches every other `bg-reps-orange` CTA on the site.)
 
-Plan: scale the sidebar logo lockup down so the tagline sits cleanly on two lines and the wordmark becomes the dominant element again.
+## 2. Add "Unverified" tier to Broadcast
+`src/components/admin/campaigns/ComposeDialog.tsx`, `TIERS` array (line 58): prepend `{ value: "free", label: "Unverified" }`. The backend (`outbound.functions.ts` → `resolveTierRecipients`) already handles `"free"` — it resolves to "all professionals without any active paid sub", so no server change needed. Default selection stays `["verified"]`.
 
-Changes
-- Edit `src/components/dashboard/DashboardShell.tsx` (the `Sidebar` function is used by both desktop and mobile navigation, so one change fixes both).
-- Update the logo lockup at the top of the sidebar:
-  - Wordmark: `h-[22px]` → `h-[18px]`
-  - Tagline: `text-[10px]` → `text-[9px]`
-  - Line height: add `leading-[1.15]` for tighter two-line stacking
-  - Divider padding: `pl-3` → `pl-2` to reclaim a few pixels
-  - Gap: `gap-3` → `gap-2` to keep the lockup compact
-- Keep the tagline as two explicit lines ("The Register of" / "Exercise Professionals") so the result matches the footer lockup in the screenshot.
+## 3. Branded email footer
+Rewrite `bodyToHtml` in `src/lib/campaigns/outbound.functions.ts` (line 558) so every outbound campaign / 1-to-1 email is wrapped in a proper HTML email shell:
 
-Verification
-- Open the dashboard preview and check the sidebar logo at desktop width. The tagline should now render on exactly two lines and the wordmark should read as the primary mark.
-- Confirm the mobile sheet navigation uses the same lockup and still looks correct at 280px.
-- Run the REPs build compliance audit (`bash knowledge://skill/reps-build-compliance/scripts/audit.sh`) and fix any token/radius violations before finishing.
+- White card on a soft grey page background, 600px max width, Arial/Helvetica stack.
+- Header strip with the **REPs wordmark inlined as SVG in black** (`#0F172A`), copied directly from `RepsWordmark.tsx` (same 4 paths, viewBox 267.34×48.17, height ~22px).
+- Existing message body rendered below.
+- Footer block under a hairline divider containing:
+  - Black REPs wordmark (smaller, ~16px).
+  - One-line tagline: "REPs — the global register of exercise professionals."
+  - Reply-prompt line: "Reply directly to this email — it goes straight to the {Inbox label} team."
+  - Small print row with links to **repsuk.org**, **/contact**, **/privacy**, **/terms** (absolute https://repsuk.org URLs so they work in mail clients).
+  - Year + "© {year} REPs. All rights reserved."
+- All styles inline (no `<style>` / external CSS), table-free flex-safe markup using `<div>` with inline `style`. Keeps Gmail/Outlook-friendly.
 
-Technical notes
-- The lockup is currently inline in the sidebar. We will keep it inline unless, while editing, it becomes clear a small `SidebarLogo` component would make the markup cleaner. Either way, both desktop and mobile instances share the same `Sidebar` function, so they stay in sync.
-- No layout or sidebar width changes are needed, so the main dashboard content area is unaffected.
+`bodyToHtml` becomes `wrapEmail(bodyText, inboxLabel)` and is called from both branches (broadcast + direct) with the resolved inbox label.
+
+## 4. QA the "sent but toast says failed" bug
+
+Likely cause (from reading `sendAdminOutbound`): the recipient set isn't pre-validated. `resolveTierRecipients` lowercases `public_email ?? auth.users.email ?? ""` then filters empty strings — but malformed addresses (e.g. `"name only"`, stray whitespace, missing `@`) make it through and Mailgun rejects them, so `failed_count > 0` even though the rest delivered. The UI then fires `toast.warning("Sent N · failed M")`.
+
+Fix in three small steps, all in `src/lib/campaigns/outbound.functions.ts`:
+
+1. Add a single `isValidEmail(e: string)` helper (same regex used in `ComposeDialog.addManual`). Apply it inside `resolveTierRecipients` and to the `recipients` array in `sendAdminOutbound` BEFORE the dedupe, dropping invalid addresses. Track them in a new `skipped` array so we still report them.
+2. Return shape gains `skipped: Array<{ email: string; reason: string }>` alongside `failures`.
+3. In `ComposeDialog.tsx` `onSuccess`:
+   - If `res.failed === 0` AND `res.skipped.length === 0` → `toast.success(...)` (current behaviour).
+   - If only `skipped > 0` (e.g. malformed addresses but every valid send went out) → `toast.success("Sent to N recipients")` with a `description` line "Skipped K invalid address(es)" — no warning toast.
+   - Only show `toast.warning` when Mailgun genuinely rejected a delivery (`res.failed > 0`), and include the first failure's `error` text in `description` so the admin can see *why*.
+
+This eliminates the false-alarm warning while keeping real failures visible.
+
+## Files touched
+- `src/routes/admin_.campaigns.tsx` (1 className)
+- `src/components/admin/campaigns/ComposeDialog.tsx` (TIERS array, toast logic)
+- `src/lib/campaigns/outbound.functions.ts` (email wrapper, validation, return shape)
+
+No DB migration, no new packages, no changes to `CampaignsList`, the `outbound_campaigns` table or routing.
