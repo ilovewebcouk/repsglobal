@@ -333,7 +333,7 @@ function CampaignDrawer({
     <Sheet open={!!campaignId} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[640px] bg-reps-bg border-l border-reps-border text-white overflow-y-auto"
+        className="w-full sm:max-w-[640px] bg-reps-ink border-l border-reps-border text-white overflow-y-auto"
       >
         <SheetHeader>
           <SheetTitle className="text-white">
