@@ -50,7 +50,7 @@ async function resolveTierRecipients(
       .select("user_id, tier, status")
       .in("tier", paid as any)
       .in("status", ["active", "trialing", "past_due", "unpaid"]);
-    proIds = [...new Set((subs ?? []).map((s: any) => s.user_id))];
+    proIds = [...new Set((subs ?? []).map((s: any) => s.user_id as string))] as string[];
   }
 
   if (wantsFree) {
