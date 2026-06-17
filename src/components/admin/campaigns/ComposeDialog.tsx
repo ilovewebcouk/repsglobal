@@ -75,6 +75,7 @@ export function ComposeDialog({
   const [inbox, setInbox] = useState<Inbox>("support");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [format, setFormat] = useState<"text" | "html">("text");
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [tiers, setTiers] = useState<Tier[]>(["verified"]);
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
