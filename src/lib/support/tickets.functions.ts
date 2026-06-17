@@ -18,7 +18,7 @@ export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "spam" | "all";
+      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "spam" | "trash" | "all";
       inbox?: "support" | "pros" | "partners" | "press" | "all";
       q?: string;
     }) => d ?? {},
@@ -28,13 +28,17 @@ export const listTickets = createServerFn({ method: "POST" })
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by",
+        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by, closed_at, deleted_at, reopened_from_ticket_id",
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
     const nowIso = new Date().toISOString();
-    if (data?.status === "snoozed") {
+
+    if (data?.status === "trash") {
+      q = q.not("deleted_at", "is", null);
+    } else if (data?.status === "snoozed") {
       q = q
+        .is("deleted_at", null)
         .not("snoozed_until", "is", null)
         .gt("snoozed_until", nowIso)
         .neq("status", "spam");
@@ -42,16 +46,21 @@ export const listTickets = createServerFn({ method: "POST" })
       // Server-side "Resolved today" — never silently drop older rows under the 200-row cap.
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
-      q = q.eq("status", "resolved").gte("resolved_at", startOfToday.toISOString());
+      q = q
+        .is("deleted_at", null)
+        .eq("status", "resolved")
+        .gte("resolved_at", startOfToday.toISOString());
+    } else if (data?.status === "closed") {
+      q = q.is("deleted_at", null).eq("status", "closed");
     } else if (data?.status === "spam") {
-      q = q.eq("status", "spam");
+      q = q.is("deleted_at", null).eq("status", "spam");
     } else if (data?.status && data.status !== "all") {
-      q = q.eq("status", data.status);
+      q = q.is("deleted_at", null).eq("status", data.status);
       // Active snoozed tickets are hidden from regular status tabs
       q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
     } else {
-      // "all" tab hides spam — Spam has its own dedicated tab.
-      q = q.neq("status", "spam");
+      // "all" tab hides spam, closed and Trash — each has its own dedicated tab.
+      q = q.is("deleted_at", null).not("status", "in", "(spam,closed)");
     }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
     if (data?.q && data.q.trim().length > 0) {
