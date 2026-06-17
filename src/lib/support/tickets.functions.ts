@@ -659,43 +659,81 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1) Profiles matching by full_name — covers both professionals and clients
-    const { data: nameMatches } = await supabaseAdmin
+    // 1) Profiles matching by full_name OR business_name (the user-editable
+    // settings fields). Note: professionals.trading_name / public_email were
+    // removed — the source of truth is now profiles + auth.users.
+    const { data: nameMatches, error: nameErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name")
-      .ilike("full_name", like)
+      .select("id, full_name, business_name")
+      .or(`full_name.ilike.${like},business_name.ilike.${like}`)
       .limit(20);
+    if (nameErr) throw new Error(nameErr.message);
 
     const idsFromName = (nameMatches ?? []).map((r: any) => r.id);
-
-    // 2) Resolve emails from auth.users for those ids
-    const { data: usersByName } = idsFromName.length
-      ? await supabaseAdmin
-          .schema("auth" as never)
-          .from("users")
-          .select("id, email")
-          .in("id", idsFromName)
-      : { data: [] as any[] };
-
-    // 3) Direct email match from auth.users
-    const { data: usersByEmail } = await supabaseAdmin
-      .schema("auth" as never)
-      .from("users")
-      .select("id, email")
-      .ilike("email", like)
-      .limit(20);
-
-    const allUserIds = Array.from(
-      new Set([
-        ...((usersByName ?? []) as any[]).map((u) => u.id),
-        ...((usersByEmail ?? []) as any[]).map((u) => u.id),
-      ]),
+    const displayNameByNameSearch = new Map<string, string>(
+      (nameMatches ?? []).map((r: any) => [r.id, r.full_name || r.business_name || ""]),
     );
+
+    // 2) Resolve emails for name-matched IDs via the Auth Admin API.
+    // The PostgREST path to auth.users is not always available, so this
+    // lookup is more reliable than supabaseAdmin.schema("auth").from("users").
+    const emailById = new Map<string, string>();
+    if (idsFromName.length > 0) {
+      await Promise.all(
+        idsFromName.map(async (id) => {
+          try {
+            const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
+            if (u?.user?.email) emailById.set(id, u.user.email);
+          } catch (err) {
+            console.error(`searchSupportRecipients getUserById ${id} failed:`, err);
+          }
+        }),
+      );
+    }
+
+    // 3) Direct email match from auth.users (for users typing an email address).
+    // Try PostgREST first; if it fails, fall back to paging auth.admin.listUsers.
+    try {
+      const { data: usersByEmail, error: emailErr } = await supabaseAdmin
+        .schema("auth" as never)
+        .from("users")
+        .select("id, email")
+        .ilike("email", like)
+        .limit(20);
+      if (!emailErr) {
+        for (const u of usersByEmail ?? []) {
+          if (u.email) emailById.set(u.id, u.email);
+        }
+      }
+    } catch (err) {
+      console.error("searchSupportRecipients auth.users email query failed, falling back:", err);
+      // Fallback: page through auth users and collect email matches.
+      let page = 1;
+      for (let i = 0; i < 10; i++) {
+        const { data: pageData, error: pageErr } = await supabaseAdmin.auth.admin.listUsers({
+          page,
+          perPage: 1000,
+        });
+        if (pageErr) {
+          console.error("searchSupportRecipients listUsers fallback error:", pageErr);
+          break;
+        }
+        const users = pageData?.users ?? [];
+        if (users.length === 0) break;
+        for (const u of users) {
+          if (u.email && u.email.toLowerCase().includes(q)) emailById.set(u.id, u.email);
+        }
+        if (users.length < 1000) break;
+        page += 1;
+      }
+    }
+
+    const allUserIds = Array.from(emailById.keys());
 
     // 4) Resolve names + flags
     const [profilesRes, prosRes, clientsRes, subsRes] = allUserIds.length
       ? await Promise.all([
-          supabaseAdmin.from("profiles").select("id, full_name").in("id", allUserIds),
+          supabaseAdmin.from("profiles").select("id, full_name, business_name").in("id", allUserIds),
           supabaseAdmin.from("professionals").select("id, slug").in("id", allUserIds),
           supabaseAdmin.from("clients").select("id").in("id", allUserIds),
           supabaseAdmin
@@ -707,7 +745,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
       : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
     const nameById = new Map<string, string>(
-      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name]),
+      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name || r.business_name]),
     );
     const proById = new Map<string, string | null>(
       ((prosRes.data ?? []) as any[]).map((r) => [r.id, r.slug]),
