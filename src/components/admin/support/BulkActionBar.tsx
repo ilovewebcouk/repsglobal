@@ -121,9 +121,9 @@ export function BulkActionBar({
           </>
         ) : (
           <>
-            <PillButton onClick={onResolve} disabled={isPending} title="Resolve (E)">
+            <PillButton onClick={onResolve} disabled={isPending} title="Solve (E)">
               <Check className="size-3.5 text-emerald-300" />
-              Resolve
+              Solve
             </PillButton>
             <PillButton onClick={onPending} disabled={isPending} title="Mark pending (P)">
               <Clock className="size-3.5 text-reps-orange" />

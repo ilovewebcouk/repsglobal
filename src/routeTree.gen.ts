@@ -92,6 +92,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/public/support/contact-form'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksSupportAutoCloseRouteImport } from './routes/api/public/hooks/support-auto-close'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
@@ -541,6 +542,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSupportAutoCloseRoute =
+  ApiPublicHooksSupportAutoCloseRouteImport.update({
+    id: '/api/public/hooks/support-auto-close',
+    path: '/api/public/hooks/support-auto-close',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksLegacyRenewalRoute =
   ApiPublicHooksLegacyRenewalRouteImport.update({
     id: '/api/public/hooks/legacy-renewal',
@@ -784,6 +791,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -891,6 +899,7 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1003,6 +1012,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1113,6 +1123,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1220,6 +1231,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1331,6 +1343,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1427,6 +1440,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
+  ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicSupportContactFormRoute: typeof ApiPublicSupportContactFormRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -2018,6 +2032,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/support-auto-close': {
+      id: '/api/public/hooks/support-auto-close'
+      path: '/api/public/hooks/support-auto-close'
+      fullPath: '/api/public/hooks/support-auto-close'
+      preLoaderRoute: typeof ApiPublicHooksSupportAutoCloseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/legacy-renewal': {
       id: '/api/public/hooks/legacy-renewal'
       path: '/api/public/hooks/legacy-renewal'
@@ -2431,6 +2452,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
+  ApiPublicHooksSupportAutoCloseRoute: ApiPublicHooksSupportAutoCloseRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicSupportContactFormRoute: ApiPublicSupportContactFormRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
