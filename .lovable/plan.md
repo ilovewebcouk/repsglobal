@@ -1,43 +1,46 @@
-## 1. New Campaign button — white text
-`src/routes/admin_.campaigns.tsx` line 42: `text-black` → `text-white` on the orange button. (Matches every other `bg-reps-orange` CTA on the site.)
+# Fix small text in REPs emails on iPhone
 
-## 2. Add "Unverified" tier to Broadcast
-`src/components/admin/campaigns/ComposeDialog.tsx`, `TIERS` array (line 58): prepend `{ value: "free", label: "Unverified" }`. The backend (`outbound.functions.ts` → `resolveTierRecipients`) already handles `"free"` — it resolves to "all professionals without any active paid sub", so no server change needed. Default selection stays `["verified"]`.
+## Diagnosis
 
-## 3. Branded email footer
-Rewrite `bodyToHtml` in `src/lib/campaigns/outbound.functions.ts` (line 558) so every outbound campaign / 1-to-1 email is wrapped in a proper HTML email shell:
+The wrapper in `src/lib/campaigns/outbound.functions.ts` (`wrapEmail`, lines 810–855) builds a fixed **600px** content table with **32px horizontal padding** and body copy hard-coded to **15px** / footer text at **11.5–13px**. On an iPhone (~390px CSS px) iOS Mail/Gmail render the 600px table and then **shrink-to-fit the viewport**, so everything looks ~65% of intended size — which is exactly what you're seeing.
 
-- White card on a soft grey page background, 600px max width, Arial/Helvetica stack.
-- Header strip with the **REPs wordmark inlined as SVG in black** (`#0F172A`), copied directly from `RepsWordmark.tsx` (same 4 paths, viewBox 267.34×48.17, height ~22px).
-- Existing message body rendered below.
-- Footer block under a hairline divider containing:
-  - Black REPs wordmark (smaller, ~16px).
-  - One-line tagline: "REPs — the global register of exercise professionals."
-  - Reply-prompt line: "Reply directly to this email — it goes straight to the {Inbox label} team."
-  - Small print row with links to **repsuk.org**, **/contact**, **/privacy**, **/terms** (absolute https://repsuk.org URLs so they work in mail clients).
-  - Year + "© {year} REPs. All rights reserved."
-- All styles inline (no `<style>` / external CSS), table-free flex-safe markup using `<div>` with inline `style`. Keeps Gmail/Outlook-friendly.
+There is no `<style>` block and no `@media` query, so we can't override on mobile, and there are no mobile-friendly class hooks on the tables.
 
-`bodyToHtml` becomes `wrapEmail(bodyText, inboxLabel)` and is called from both branches (broadcast + direct) with the resolved inbox label.
+## Fix (single function, presentation-only)
 
-## 4. QA the "sent but toast says failed" bug
+Edit `wrapEmail` and `textToHtml` in `src/lib/campaigns/outbound.functions.ts`:
 
-Likely cause (from reading `sendAdminOutbound`): the recipient set isn't pre-validated. `resolveTierRecipients` lowercases `public_email ?? auth.users.email ?? ""` then filters empty strings — but malformed addresses (e.g. `"name only"`, stray whitespace, missing `@`) make it through and Mailgun rejects them, so `failed_count > 0` even though the rest delivered. The UI then fires `toast.warning("Sent N · failed M")`.
+1. **Add a `<style>` block in `<head>`** with a mobile media query:
+   - `@media only screen and (max-width:600px)` →
+     - `.reps-shell { width:100% !important; padding:16px 8px !important; }`
+     - `.reps-card  { width:100% !important; border-radius:12px !important; }`
+     - `.reps-pad   { padding:22px 18px !important; }`
+     - `.reps-foot  { padding:20px 18px 22px 18px !important; }`
+     - `.reps-body, .reps-body p, .reps-body li { font-size:16px !important; line-height:1.6 !important; }`
+     - `.reps-foot p { font-size:13px !important; line-height:1.6 !important; }`
+   - Also include `img { -ms-interpolation-mode:bicubic; } a { color:#0f172a; }` housekeeping.
 
-Fix in three small steps, all in `src/lib/campaigns/outbound.functions.ts`:
+2. **Tag the existing tables/cells** with the class names above (no visual change on desktop — classes are no-ops without the media query):
+   - Outer table → `class="reps-shell"`
+   - Inner 600px table → `class="reps-card"`
+   - Header padding cell unchanged; main content cell → `class="reps-pad reps-body"`
+   - Footer cell → `class="reps-foot"`
 
-1. Add a single `isValidEmail(e: string)` helper (same regex used in `ComposeDialog.addManual`). Apply it inside `resolveTierRecipients` and to the `recipients` array in `sendAdminOutbound` BEFORE the dedupe, dropping invalid addresses. Track them in a new `skipped` array so we still report them.
-2. Return shape gains `skipped: Array<{ email: string; reason: string }>` alongside `failures`.
-3. In `ComposeDialog.tsx` `onSuccess`:
-   - If `res.failed === 0` AND `res.skipped.length === 0` → `toast.success(...)` (current behaviour).
-   - If only `skipped > 0` (e.g. malformed addresses but every valid send went out) → `toast.success("Sent to N recipients")` with a `description` line "Skipped K invalid address(es)" — no warning toast.
-   - Only show `toast.warning` when Mailgun genuinely rejected a delivery (`res.failed > 0`), and include the first failure's `error` text in `description` so the admin can see *why*.
+3. **Body copy baseline 16px** (industry standard for mobile mail). Bump `textToHtml` `<p>` and `<ul>` inline `font-size` from `15px` → `16px`; bump footer paragraph from `12.5/13px` → `14px` so it survives shrink-to-fit on clients that ignore media queries (Outlook desktop is unaffected because the 600px card is still rendered).
 
-This eliminates the false-alarm warning while keeping real failures visible.
+4. **Add `width="100%"` and `style="width:100%"`** on the outer shell table (already 100%) and set `meta name="format-detection" content="telephone=no,address=no,email=no"` to stop iOS auto-linking turning chunks blue/small.
 
-## Files touched
-- `src/routes/admin_.campaigns.tsx` (1 className)
-- `src/components/admin/campaigns/ComposeDialog.tsx` (TIERS array, toast logic)
-- `src/lib/campaigns/outbound.functions.ts` (email wrapper, validation, return shape)
+5. **Preheader div** keep as-is.
 
-No DB migration, no new packages, no changes to `CampaignsList`, the `outbound_campaigns` table or routing.
+No changes to send logic, recipient resolution, campaign tracking, ticket creation, or HTML-mode sanitiser — purely the wrapper + `textToHtml` font sizes.
+
+## Verification
+
+- Send a test direct email to yourself from `/admin/campaigns` → Compose, open on iPhone Mail and Gmail iOS.
+- Spot-check Outlook desktop (600px card unchanged).
+- Re-screenshot via browser preview at 390×844 of the rendered HTML (we can dump `previewHtml` to a temp route or just inline-preview via the existing Compose preview).
+
+## Out of scope
+
+- HTML-mode user-authored bodies (admin owns those styles).
+- Ticket-thread emails in `src/lib/support/tickets.functions.ts` (separate wrapper — say the word and I'll apply the same treatment in the same pass).

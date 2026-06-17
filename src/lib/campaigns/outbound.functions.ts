@@ -761,11 +761,11 @@ function textToHtml(text: string): string {
         .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
         .join("");
       out.push(
-        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${items}</ul>`,
+        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`,
       );
     } else {
       out.push(
-        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${inlineFormat(
+        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(
           raw.replace(/\n/g, "<br/>"),
         )}</p>`,
       );
@@ -816,27 +816,41 @@ function wrapEmail(innerHtml: string, inboxLabel: string): string {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="format-detection" content="telephone=no,address=no,email=no" />
     <title>REPs</title>
+    <style>
+      img { -ms-interpolation-mode: bicubic; }
+      @media only screen and (max-width:600px) {
+        .reps-shell { width:100% !important; padding:16px 8px !important; }
+        .reps-card  { width:100% !important; border-radius:12px !important; }
+        .reps-head  { padding:20px 18px 6px 18px !important; }
+        .reps-pad   { padding:22px 18px 6px 18px !important; }
+        .reps-foot  { padding:20px 18px 22px 18px !important; }
+        .reps-body, .reps-body p, .reps-body li { font-size:16px !important; line-height:1.6 !important; }
+        .reps-foot p { font-size:14px !important; line-height:1.6 !important; }
+        .reps-foot-meta { font-size:12px !important; }
+      }
+    </style>
   </head>
   <body style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a;-webkit-text-size-adjust:100%;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">REPs — the global register of exercise professionals.</div>
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;padding:32px 16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="reps-shell" style="background:#f4f5f7;padding:32px 16px;">
       <tr><td align="center">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
-          <tr><td style="padding:24px 32px 8px 32px;border-bottom:1px solid #f1f2f4;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="reps-card" style="width:100%;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr><td class="reps-head" style="padding:24px 32px 8px 32px;border-bottom:1px solid #f1f2f4;">
             ${REPS_WORDMARK_SVG(22)}
           </td></tr>
-          <tr><td style="padding:28px 32px 8px 32px;">
+          <tr><td class="reps-pad reps-body" style="padding:28px 32px 8px 32px;">
             ${innerHtml}
           </td></tr>
-          <tr><td style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
+          <tr><td class="reps-foot" style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;"><tr>
               <td style="vertical-align:middle;padding-right:12px;">${REPS_WORDMARK_SVG(18)}</td>
               <td style="vertical-align:middle;border-left:1px solid #cbd5e1;padding-left:12px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;line-height:1.35;color:#475569;letter-spacing:0.02em;text-transform:uppercase;">The Register of<br/>Exercise Professionals</td>
             </tr></table>
-            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.55;color:#475569;">The professional platform for the modern fitness industry.</p>
-            <p style="margin:0 0 14px 0;font-size:12.5px;line-height:1.55;color:#64748b;">Reply directly to this email — it goes straight to the ${escapeHtml(inboxLabel)} team.</p>
-            <p style="margin:0 0 6px 0;font-size:12px;line-height:1.55;color:#64748b;">
+            <p style="margin:0 0 8px 0;font-size:14px;line-height:1.55;color:#475569;">The professional platform for the modern fitness industry.</p>
+            <p style="margin:0 0 14px 0;font-size:14px;line-height:1.55;color:#64748b;">Reply directly to this email — it goes straight to the ${escapeHtml(inboxLabel)} team.</p>
+            <p class="reps-foot-meta" style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:#64748b;">
               <a href="${SITE}" style="color:#64748b;text-decoration:underline;">repsuk.org</a>
               &nbsp;·&nbsp;
               <a href="${SITE}/contact" style="color:#64748b;text-decoration:underline;">Contact</a>
@@ -845,7 +859,7 @@ function wrapEmail(innerHtml: string, inboxLabel: string): string {
               &nbsp;·&nbsp;
               <a href="${SITE}/terms" style="color:#64748b;text-decoration:underline;">Terms</a>
             </p>
-            <p style="margin:0;font-size:11.5px;line-height:1.55;color:#94a3b8;">© ${year} REPs. All rights reserved.</p>
+            <p class="reps-foot-meta" style="margin:0;font-size:12px;line-height:1.55;color:#94a3b8;">© ${year} REPs. All rights reserved.</p>
           </td></tr>
         </table>
       </td></tr>
