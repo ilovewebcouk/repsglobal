@@ -130,17 +130,6 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
-function snoozedLabel(iso?: string | null) {
-  if (!iso) return null;
-  const ms = new Date(iso).getTime() - Date.now();
-  if (ms <= 0) return null;
-  const mins = Math.round(ms / 60000);
-  if (mins < 60) return `Wakes in ${mins}m`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `Wakes in ${hrs}h`;
-  const days = Math.round(hrs / 24);
-  return `Wakes in ${days}d`;
-}
 
 function labelFor(
   action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "restore",
