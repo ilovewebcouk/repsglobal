@@ -856,8 +856,6 @@ function TicketDrawer({
   const draftFn = useServerFn(draftSupportReply);
   const priorFn = useServerFn(listRequesterTickets);
   const markReadFn = useServerFn(markTicketRead);
-  const snoozeFn = useServerFn(snoozeTicket);
-  const unsnoozeFn = useServerFn(unsnoozeTicket);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
