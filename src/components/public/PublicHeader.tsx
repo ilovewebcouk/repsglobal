@@ -141,7 +141,13 @@ function ActiveDot({ show }: { show: boolean }) {
 
 /* ---------------- root ---------------- */
 
-export function PublicHeader({ variant = "transparent" }: { variant?: Variant }) {
+export function PublicHeader({
+  variant = "transparent",
+  mobileOpaque = false,
+}: {
+  variant?: Variant;
+  mobileOpaque?: boolean;
+}) {
   const isSolid = useIsSolid(variant);
   const active = useActive();
   const [mobileOpen, setMobileOpen] = useState(false);
