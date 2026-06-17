@@ -241,10 +241,17 @@ export const updateTicket = createServerFn({ method: "POST" })
     const patch: Record<string, any> = {};
     if (data.status !== undefined) {
       patch.status = data.status;
-      if (data.status === "resolved" || data.status === "closed") {
-        patch.resolved_at = new Date().toISOString();
+      const nowIso = new Date().toISOString();
+      if (data.status === "resolved") {
+        patch.resolved_at = nowIso;
+        patch.closed_at = null;
+      } else if (data.status === "closed") {
+        patch.resolved_at = nowIso;
+        patch.closed_at = nowIso;
       } else {
+        // open / pending / spam — clear terminal-state stamps.
         patch.resolved_at = null;
+        patch.closed_at = null;
       }
     }
     if (data.priority !== undefined) patch.priority = data.priority;
