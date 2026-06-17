@@ -50,11 +50,7 @@ export const listTickets = createServerFn({ method: "POST" })
       // Brand-new untouched tickets — drives the notification badge.
       q = q.is("deleted_at", null).eq("status", "new");
     } else if (data?.status === "open") {
-      // Open tab hides actively-snoozed rows (they wake automatically).
-      q = q
-        .is("deleted_at", null)
-        .eq("status", "open")
-        .or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+      q = q.is("deleted_at", null).eq("status", "open");
     } else if (data?.status === "pending") {
       q = q.is("deleted_at", null).eq("status", "pending");
     } else {
