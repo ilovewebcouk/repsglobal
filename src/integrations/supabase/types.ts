@@ -3126,6 +3126,14 @@ export type Database = {
         Returns: undefined
       }
       run_monthly_credit_refills: { Args: never; Returns: number }
+      search_profiles_by_id_prefix: {
+        Args: { _q: string }
+        Returns: {
+          business_name: string
+          full_name: string
+          id: string
+        }[]
+      }
       seed_bd_member_into_directory: {
         Args: { _bd_member_id: number; _user_id: string }
         Returns: undefined
