@@ -18,7 +18,7 @@ export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "all";
+      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "spam" | "all";
       inbox?: "support" | "pros" | "partners" | "press" | "all";
       q?: string;
     }) => d ?? {},
@@ -34,16 +34,24 @@ export const listTickets = createServerFn({ method: "POST" })
       .limit(200);
     const nowIso = new Date().toISOString();
     if (data?.status === "snoozed") {
-      q = q.not("snoozed_until", "is", null).gt("snoozed_until", nowIso);
+      q = q
+        .not("snoozed_until", "is", null)
+        .gt("snoozed_until", nowIso)
+        .neq("status", "spam");
     } else if (data?.status === "resolved") {
       // Server-side "Resolved today" — never silently drop older rows under the 200-row cap.
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
       q = q.eq("status", "resolved").gte("resolved_at", startOfToday.toISOString());
+    } else if (data?.status === "spam") {
+      q = q.eq("status", "spam");
     } else if (data?.status && data.status !== "all") {
       q = q.eq("status", data.status);
       // Active snoozed tickets are hidden from regular status tabs
       q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+    } else {
+      // "all" tab hides spam — Spam has its own dedicated tab.
+      q = q.neq("status", "spam");
     }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
     if (data?.q && data.q.trim().length > 0) {
@@ -202,7 +210,7 @@ export const updateTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: {
     id: string;
-    status?: "open" | "pending" | "resolved" | "closed";
+    status?: "open" | "pending" | "resolved" | "closed" | "spam";
     priority?: "urgent" | "high" | "normal" | "low";
     assignee_id?: string | null;
     tags?: string[];
@@ -211,7 +219,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        status: z.enum(["open", "pending", "resolved", "closed"]).optional(),
+        status: z.enum(["open", "pending", "resolved", "closed", "spam"]).optional(),
         priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
         assignee_id: z.string().uuid().nullable().optional(),
         tags: z.array(z.string()).optional(),

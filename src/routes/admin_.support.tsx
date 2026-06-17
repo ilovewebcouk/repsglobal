@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "spam" | "all";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -144,10 +144,12 @@ function snoozedLabel(iso?: string | null) {
   return `Wakes in ${days}d`;
 }
 
-function labelFor(action: "resolve" | "reopen" | "pending"): string {
+function labelFor(action: "resolve" | "reopen" | "pending" | "spam" | "not_spam"): string {
   if (action === "resolve") return "Resolved";
   if (action === "reopen") return "Reopened";
-  return "Marked pending";
+  if (action === "pending") return "Marked pending";
+  if (action === "spam") return "Marked as spam";
+  return "Restored from spam";
 }
 
 
@@ -206,21 +208,24 @@ function AdminSupport() {
     const nowMs = Date.now();
     const isActiveSnoozed = (r: any) =>
       r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
-    const openRows = rows.filter(
+    const isSpam = (r: any) => r.status === "spam";
+    const nonSpam = rows.filter((r: any) => !isSpam(r));
+    const openRows = nonSpam.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
-    const pendingRows = rows.filter(
+    const pendingRows = nonSpam.filter(
       (r: any) => r.status === "pending" && !isActiveSnoozed(r),
     );
     return {
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: rows.filter(isActiveSnoozed).length,
-      resolved: rows.filter((r: any) => r.status === "resolved").length,
-      all: rows.length,
+      snoozed: nonSpam.filter(isActiveSnoozed).length,
+      resolved: nonSpam.filter((r: any) => r.status === "resolved").length,
+      spam: rows.filter(isSpam).length,
+      all: nonSpam.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
       unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: rows.filter(
+      resolvedToday: nonSpam.filter(
         (r: any) =>
           r.resolved_at &&
           new Date(r.resolved_at).toDateString() === new Date().toDateString(),
@@ -330,7 +335,7 @@ function AdminSupport() {
   }
 
   async function runBulk(
-    action: "resolve" | "reopen" | "pending" | "delete",
+    action: "resolve" | "reopen" | "pending" | "delete" | "spam" | "not_spam",
     extraPayload?: Record<string, unknown>,
   ) {
     const ids = Array.from(selectedIds);
@@ -438,6 +443,7 @@ function AdminSupport() {
                   ["pending", "Waiting on customer", counts.pending],
                   ["snoozed", "Snoozed", counts.snoozed],
                   ["resolved", "Resolved today", counts.resolvedToday],
+                  ["spam", "Spam", counts.spam],
                   ["all", "All", counts.all],
                 ] as const
               ).map(([v, label, count]) => (
@@ -695,10 +701,12 @@ function AdminSupport() {
       <BulkActionBar
         count={selectedIds.size}
         isPending={bulkPending}
+        spamMode={tab === "spam" ? "not_spam" : "spam"}
         onClear={() => setSelectedIds(new Set())}
         onResolve={() => runBulk("resolve")}
         onReopen={() => runBulk("reopen")}
         onPending={() => runBulk("pending")}
+        onSpam={() => runBulk(tab === "spam" ? "not_spam" : "spam")}
         onDelete={() => {
           setDeleteConfirm("");
           setDeleteOpen(true);
@@ -948,6 +956,7 @@ function TicketDrawer({
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="spam">Spam</SelectItem>
                 </SelectContent>
               </Select>
               <Select
