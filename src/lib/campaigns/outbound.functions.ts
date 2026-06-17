@@ -271,7 +271,7 @@ async function resolveTierRecipients(
   }
 
   // Email: always the auth.users login email.
-  const emailMap = await buildUserEmailMap(supabaseAdmin, proSet.map((p: any) => p.id));
+  const emailMap = await resolveUserEmailsById(supabaseAdmin, proSet.map((p: any) => p.id));
 
   return proSet
     .map((p: any) => {
