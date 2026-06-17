@@ -1198,7 +1198,7 @@ function TicketDrawer({
                   !send.isPending
                 ) {
                   e.preventDefault();
-                  send.mutate();
+                  send.mutate(mode === "reply" ? "pending" : undefined);
                 }
               }}
               placeholder={
