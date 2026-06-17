@@ -335,7 +335,7 @@ function AdminSupport() {
   }
 
   async function runBulk(
-    action: "resolve" | "reopen" | "pending" | "delete",
+    action: "resolve" | "reopen" | "pending" | "delete" | "spam" | "not_spam",
     extraPayload?: Record<string, unknown>,
   ) {
     const ids = Array.from(selectedIds);
