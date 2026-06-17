@@ -292,6 +292,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             .optional(),
           subject: z.string().min(1).max(200),
           body: z.string().min(1).max(50000),
+          format: z.enum(["text", "html"]).optional().default("text"),
           attachments: z
             .array(
               z.object({
