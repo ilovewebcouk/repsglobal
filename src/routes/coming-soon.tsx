@@ -14,6 +14,9 @@ import { WaitlistForm } from "@/components/launch/WaitlistForm";
 import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 
 export const Route = createFileRoute("/coming-soon")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "REPS — Launching 26 June 2026" },
