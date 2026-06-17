@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -479,11 +479,10 @@ function AdminSupport() {
                   ["open", "Needs you", counts.open],
                   ["pending", "Waiting on customer", counts.pending],
                   ["snoozed", "Snoozed", counts.snoozed],
-                  ["resolved", "Resolved today", counts.resolvedToday],
+                  ["resolved", "Solved", counts.resolved],
                   ["closed", "Closed", counts.closed],
                   ["spam", "Spam", counts.spam],
                   ["trash", "Trash", counts.trash],
-                  ["all", "All", counts.all],
                 ] as const
               ).map(([v, label, count]) => (
                 <TabsTrigger
@@ -587,7 +586,7 @@ function AdminSupport() {
 
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
-                      No {tab === "all" ? "" : tab} tickets
+                      No {tab} tickets
                     </div>
                     <div className="mt-1 text-[12px] text-white/45">
                       New emails to support@ / pros@ / partners@ / press@ will land here.
@@ -1006,9 +1005,9 @@ function TicketDrawer({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="pending">Pending — waiting on customer</SelectItem>
+                  <SelectItem value="resolved">Solved — reply reopens it</SelectItem>
+                  <SelectItem value="closed">Closed — archived, reply starts a new ticket</SelectItem>
                   <SelectItem value="spam">Spam</SelectItem>
                 </SelectContent>
               </Select>

@@ -43,13 +43,11 @@ export const listTickets = createServerFn({ method: "POST" })
         .gt("snoozed_until", nowIso)
         .neq("status", "spam");
     } else if (data?.status === "resolved") {
-      // Server-side "Resolved today" — never silently drop older rows under the 200-row cap.
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
+      // "Solved" tab — show every solved ticket newest first, not just today's.
       q = q
         .is("deleted_at", null)
         .eq("status", "resolved")
-        .gte("resolved_at", startOfToday.toISOString());
+        .order("resolved_at", { ascending: false });
     } else if (data?.status === "closed") {
       q = q.is("deleted_at", null).eq("status", "closed");
     } else if (data?.status === "spam") {
