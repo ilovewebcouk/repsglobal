@@ -813,7 +813,6 @@ function ProCard({
   const photoSize = pro.featured ? 144 : 120;
   const mobilePhotoSize = pro.featured ? 96 : 88;
   const priceLabel = formatFromPrice(pro.from_price_pence);
-  const showRating = pro.reviews > 0;
 
 
   return (
