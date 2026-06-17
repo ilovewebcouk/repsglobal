@@ -230,6 +230,28 @@ function ComingSoonPage() {
         </div>
       </section>
 
+      {/* ----- Existing member notice -------------------------------- */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 pb-16 lg:px-10 lg:pb-20">
+          <div className="mx-auto flex max-w-[720px] flex-col items-center gap-3 rounded-[18px] border border-reps-border bg-reps-panel/40 px-6 py-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <div className="font-display text-[15px] font-semibold text-white">
+                Already a member of the previous register?
+              </div>
+              <p className="mt-1 text-[13.5px] leading-relaxed text-white/65">
+                Your existing profile is still available while we migrate to the new platform.
+              </p>
+            </div>
+            <a
+              href="https://legacy.repsuk.org"
+              className="inline-flex shrink-0 items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-4 py-2 text-[13px] font-semibold text-reps-orange transition-colors hover:bg-reps-orange hover:text-white"
+            >
+              Access legacy site
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ----- Minimal footer ---------------------------------------- */}
       <footer>
         <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 pb-10 pt-2 text-[12px] text-white/45 sm:flex-row lg:px-10">
