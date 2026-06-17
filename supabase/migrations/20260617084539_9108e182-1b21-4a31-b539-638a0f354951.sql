@@ -1,0 +1,1 @@
+ALTER TABLE public.support_tickets ALTER COLUMN status SET DEFAULT 'new';
