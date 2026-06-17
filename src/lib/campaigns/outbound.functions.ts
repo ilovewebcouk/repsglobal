@@ -91,7 +91,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     for (const id of emailById.keys()) matchingIds.add(id);
 
     if (q.length >= 2) {
-      const [{ data: profileRows, error: profileErr }, { data: proRows, error: proErr }] = await Promise.all([
+      const [{ data: profileRows, error: profileErr }, { data: proRows, error: proErr }, idRes] = await Promise.all([
         supabaseAdmin
           .from("profiles")
           .select("id")
@@ -100,13 +100,18 @@ export const searchTrainers = createServerFn({ method: "POST" })
         supabaseAdmin
           .from("professionals")
           .select("id")
-          .or(`city.ilike.${like},primary_profession.ilike.${like},id::text.ilike.${like}` as any)
+          .or(`city.ilike.${like},primary_profession.ilike.${like}`)
           .limit(50),
+        /^[0-9a-fA-F-]{4,}$/.test(q)
+          ? supabaseAdmin.rpc("search_profiles_by_id_prefix", { _q: q })
+          : Promise.resolve({ data: [], error: null }),
       ]);
       if (profileErr) throw new Error(profileErr.message);
       if (proErr) throw new Error(proErr.message);
+      if (idRes.error) throw new Error(idRes.error.message);
       for (const r of profileRows ?? []) matchingIds.add(r.id);
       for (const r of proRows ?? []) matchingIds.add(r.id);
+      for (const r of idRes.data ?? []) matchingIds.add(r.id);
     }
 
     let proQuery = supabaseAdmin
