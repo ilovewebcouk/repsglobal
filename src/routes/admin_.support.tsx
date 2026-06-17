@@ -903,18 +903,20 @@ function TicketDrawer({
   });
 
   const send = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (afterStatus?: "pending" | "solved") => {
       if (!ticketId) return;
       if (mode === "reply") {
-        return replyFn({ data: { ticketId, body: draft, afterStatus: "solved" } });
+        return replyFn({ data: { ticketId, body: draft, afterStatus: afterStatus ?? "pending" } });
       }
       return noteFn({ data: { ticketId, body: draft } });
     },
-    onSuccess: () => {
+    onSuccess: (_res, afterStatus) => {
       const wasReply = mode === "reply";
       setDraft("");
       toast.success(
-        wasReply ? "Reply sent · ticket set to Solved" : "Note added",
+        wasReply
+          ? `Reply sent · ticket set to ${afterStatus === "solved" ? "Solved" : "Pending"}`
+          : "Note added",
       );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
