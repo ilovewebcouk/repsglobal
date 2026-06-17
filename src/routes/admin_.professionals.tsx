@@ -111,7 +111,6 @@ const STATUS_LABEL: Record<AdminProRow["status"], string> = {
   pending: "Unverified",
   flagged: "Flagged",
   suspended: "Suspended",
-  unpublished: "Unpublished",
 };
 
 function statusClass(s: AdminProRow["status"]) {
@@ -120,7 +119,6 @@ function statusClass(s: AdminProRow["status"]) {
     case "pending":     return "bg-reps-orange-soft text-reps-orange";
     case "flagged":     return "bg-red-500/15 text-red-400";
     case "suspended":   return "bg-amber-500/15 text-amber-300";
-    case "unpublished": return "bg-white/10 text-white/65";
   }
 }
 

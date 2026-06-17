@@ -11,7 +11,7 @@ export type AdminProRow = {
   professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio';
   planMrrPence: number;
-  status: 'verified' | 'pending' | 'flagged' | 'suspended' | 'unpublished';
+  status: 'verified' | 'pending' | 'flagged' | 'suspended';
   rating: number | null;
   clients: number;
   joined: string;
@@ -207,9 +207,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
         p.is_published === false && p.suspended_at ? 'suspended'
-        : p.is_published === false ? 'unpublished'
-        : p.verification === 'verified' ? 'verified'
-        : p.verification === 'rejected' ? 'flagged'
+        : p.verification === 'verified' && p.is_published ? 'verified'
+        : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
       const name = profile?.full_name ?? 'Unnamed';
       return {
