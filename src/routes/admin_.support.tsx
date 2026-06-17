@@ -860,7 +860,7 @@ function TicketDrawer({
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
-  const [afterSend, setAfterSend] = useState<"pending" | "solved" | "closed">("pending");
+  
 
   // Mark ticket as read when drawer opens
   useEffect(() => {
@@ -900,23 +900,15 @@ function TicketDrawer({
     mutationFn: async () => {
       if (!ticketId) return;
       if (mode === "reply") {
-        return replyFn({ data: { ticketId, body: draft, afterStatus: afterSend } });
+        return replyFn({ data: { ticketId, body: draft, afterStatus: "solved" } });
       }
       return noteFn({ data: { ticketId, body: draft } });
     },
     onSuccess: () => {
       const wasReply = mode === "reply";
-      const after = afterSend;
       setDraft("");
-      setAfterSend("pending");
       toast.success(
-        wasReply
-          ? after === "solved"
-            ? "Reply sent · ticket set to Solved"
-            : after === "closed"
-              ? "Reply sent · ticket set to Closed"
-              : "Reply sent · ticket set to Pending"
-          : "Note added",
+        wasReply ? "Reply sent · ticket set to Solved" : "Note added",
       );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
