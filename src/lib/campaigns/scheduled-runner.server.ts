@@ -333,7 +333,11 @@ async function runBroadcastBatch(opts: BatchOpts) {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         lastError = msg;
-        if (/daily (request )?limit exceeded/i.test(msg)) {
+        if (
+          /daily (request )?limit exceeded/i.test(msg) ||
+          /sending too fast/i.test(msg) ||
+          /account.*(temporarily disabled|on probation)/i.test(msg)
+        ) {
           dailyLimitHit = true;
           break;
         }
