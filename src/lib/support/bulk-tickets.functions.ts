@@ -18,6 +18,8 @@ const BulkAction = z.enum([
   "delete",
   "priority",
   "assign",
+  "spam",
+  "not_spam",
 ]);
 
 /**
