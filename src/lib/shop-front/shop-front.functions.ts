@@ -63,7 +63,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available",
+        "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
