@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
 import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
-import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
+
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
