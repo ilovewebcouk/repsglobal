@@ -934,13 +934,11 @@ function ProCard({
                 pro.town ?? pro.distance
               )}
             </span>
-            {showRating && (
-              <span className="flex items-center gap-1.5">
-                <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-                <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-                <span>({pro.reviews})</span>
-              </span>
-            )}
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+              <span>({pro.reviews})</span>
+            </span>
             <span className="flex items-center gap-1.5">
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
