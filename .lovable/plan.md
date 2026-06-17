@@ -1,27 +1,56 @@
-Replace the homepage "Explore by Specialism" grid with the 6 canonical REPs professions. Content-only change — locked layout and styling stay the same.
+# Add "Mark as spam" to the admin support queue
 
-Changes (`src/routes/index.tsx`)
---------------------------------
-1. Replace the `specialisms` array with the 6 canonical primary professions:
-   - Personal Trainer → `profession: "personal-trainer"` (Dumbbell)
-   - Strength Coach → `profession: "strength-coach"` (Target)
-   - Pilates → `profession: "pilates-instructor"` (Activity)
-   - Nutritionist → `profession: "nutritionist"` (Apple)
-   - Yoga Teacher → `profession: "yoga-teacher"` (Sparkles)
-   - Fitness Instructor → `profession: "fitness-instructor"` (Users)
+Give admins a one-click way to flag junk tickets as spam, hide them from the main "Needs you / Pending" views, and review/undo them from a dedicated Spam tab.
 
-2. Adjust the grid wrapper so 6 tiles sit evenly: `grid-cols-3 lg:grid-cols-6` (instead of `grid-cols-4 lg:grid-cols-8`). Tile size and styling unchanged.
+## UX
 
-3. Rename section H2 from "Specialism" to "Profession" to match the new content taxonomy. Eyebrow and CTA stay as-is.
+1. **Bulk action bar** (`BulkActionBar.tsx`) — add a `Spam` button (ShieldAlert icon, amber) between `Reopen` and `Delete`. Keyboard shortcut `s`.
+2. **Ticket drawer** — add a `Mark as spam` item to the existing status dropdown / action row (same place Resolve / Pending live), so a single ticket can be flagged without selecting it first.
+3. **Saved-views tab row** — add a `Spam` tab after `Resolved today`, with count. Spam tickets are excluded from `open`, `pending`, `snoozed`, `resolved` and `all` counts (treated as a separate bucket like "Trash" in Gmail).
+4. **Restore path** — from the Spam tab, the bulk bar shows `Not spam` (reopens to `open`) instead of `Spam`. Undo toast works the same way as existing bulk actions.
 
-4. Remove now-unused Lucide imports (`Laptop`, `Heart`, `Stethoscope`) from the file's import block.
+## Data model
 
-QA
---
-- Build/typecheck passes.
-- Preview `/` on mobile, tablet, and desktop to confirm the 6 tiles render evenly, hover lift still works, and each tile links to `/find-a-professional?profession=<slug>`.
+Add `'spam'` to the `public.support_status` enum (cleanest — reuses status indexes, filters, RLS, realtime). Migration:
 
-Out of scope
-------------
-- No changes to hero, goal chips, featured pros, or any other homepage section.
-- No restyling of the tile or section chrome.
+```sql
+ALTER TYPE public.support_status ADD VALUE IF NOT EXISTS 'spam';
+```
+
+No new columns, no new policies. Existing admin-only RLS already covers it.
+
+## Server
+
+`src/lib/support/bulk-tickets.functions.ts`
+- Extend `BulkAction` enum with `"spam"` and `"not_spam"`.
+- `spam` → `patch.status = 'spam'; patch.resolved_at = null`.
+- `not_spam` → `patch.status = 'open'; patch.resolved_at = null`.
+- Audit log entry uses `bulk_tickets.spam` / `bulk_tickets.not_spam`. Undo continues to work via `previousStates`.
+
+`src/lib/support/tickets.functions.ts`
+- `updateTicket` already accepts a status patch — extend its allowed status values to include `'spam'` so the single-ticket drawer action reuses it.
+- `listTickets`: when `status` filter is `'open' | 'pending' | 'snoozed' | 'resolved' | 'all'`, exclude rows where `status = 'spam'`. Add explicit `'spam'` filter that returns only spam tickets.
+
+## Route wiring (`src/routes/admin_.support.tsx`)
+
+- Add `spam` to `StatusFilter`.
+- Add a `Spam` `TabsTrigger` with `counts.spam`.
+- Extend `counts` memo: `spam = rows.filter(r => r.status === 'spam').length`; exclude spam rows from `open/pending/snoozed/resolved/all/byInbox` tallies.
+- `runBulk` accepts `'spam' | 'not_spam'`; toast label map gains `Marked as spam` / `Restored from spam`.
+- `BulkActionBar` swaps `Spam` ↔ `Not spam` based on whether `tab === 'spam'`.
+- `labelFor` extended for new actions.
+
+## Files touched
+
+- `supabase/migrations/<new>.sql` — add enum value.
+- `src/lib/support/bulk-tickets.functions.ts` — new actions.
+- `src/lib/support/tickets.functions.ts` — filter spam out of default views; allow `'spam'` in `updateTicket`.
+- `src/components/admin/support/BulkActionBar.tsx` — Spam / Not spam button + shortcut.
+- `src/routes/admin_.support.tsx` — tab, counts, runBulk wiring.
+- Ticket drawer status menu (same route file) — add `Mark as spam` / `Not spam` item.
+
+## Out of scope
+
+- Automatic spam classification / heuristics.
+- Sender-level blocklist (could come later; spam status is per-ticket only).
+- Permanent auto-purge of spam after N days.
