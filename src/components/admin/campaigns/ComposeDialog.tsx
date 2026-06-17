@@ -234,13 +234,60 @@ export function ComposeDialog({
             </Field>
 
             <Field label="Message">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex rounded-[8px] border border-reps-border bg-white/[0.04] p-0.5 text-[12px]">
+                  <button
+                    type="button"
+                    onClick={() => setFormat("text")}
+                    className={`rounded-[6px] px-3 py-1 transition ${
+                      format === "text"
+                        ? "bg-reps-orange text-white"
+                        : "text-white/65 hover:text-white"
+                    }`}
+                  >
+                    Plain text
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormat("html")}
+                    className={`rounded-[6px] px-3 py-1 transition ${
+                      format === "html"
+                        ? "bg-reps-orange text-white"
+                        : "text-white/65 hover:text-white"
+                    }`}
+                  >
+                    HTML
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 text-[11px] text-white/55">
+                  <span className="mr-1 uppercase tracking-[0.06em]">Tags:</span>
+                  {["{{first_name}}", "{{last_name}}", "{{full_name}}", "{{email}}"].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() =>
+                        setBody((b) => (b.endsWith(" ") || b === "" ? b + tag : b + " " + tag))
+                      }
+                      className="rounded-[6px] border border-reps-border bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10.5px] text-white/75 hover:bg-white/[0.08] hover:text-white"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="relative">
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  placeholder="Write your message…"
-                  rows={9}
-                  className="bg-white/[0.04] border-reps-border text-white resize-y pr-12"
+                  placeholder={
+                    format === "html"
+                      ? "<p>Paste or write HTML here…</p>"
+                      : "Write your message…  Use **bold**, blank lines for paragraphs, and `- ` for lists."
+                  }
+                  rows={12}
+                  className={`bg-white/[0.04] border-reps-border text-white resize-y pr-12 ${
+                    format === "html" ? "font-mono text-[12.5px]" : ""
+                  }`}
                 />
                 <DictateButton
                   className="absolute bottom-2 right-2"
@@ -248,6 +295,11 @@ export function ComposeDialog({
                     setBody((b) => (b.trim() ? `${b.trimEnd()} ${t}` : t))
                   }
                 />
+              </div>
+              <div className="mt-1.5 text-[11px] text-white/45">
+                {format === "html"
+                  ? "Paste full HTML emails. <script> and <style> are stripped."
+                  : "Plain text with light markdown: **bold**, blank lines = paragraphs, lines starting with - become bullets."}
               </div>
             </Field>
 
