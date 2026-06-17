@@ -63,7 +63,7 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
     // Snapshot previous state for Undo + audit
     const { data: before, error: bErr } = await supabaseAdmin
       .from("support_tickets")
-      .select("id, status, priority, assignee_id, resolved_at")
+      .select("id, status, priority, assignee_id, resolved_at, closed_at, deleted_at")
       .in("id", data.ids);
     if (bErr) throw new Error(bErr.message);
     const previousStates = (before ?? []) as Array<{
@@ -72,16 +72,23 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       priority: string;
       assignee_id: string | null;
       resolved_at: string | null;
+      closed_at: string | null;
+      deleted_at: string | null;
     }>;
 
     let updated = 0;
 
-    if (data.action === "delete") {
+    if (data.action === "purge") {
+      // Hard delete — only allowed from Trash (deleted_at must be set on every row).
       if (
         typeof data.payload?.confirmCount !== "number" ||
         data.payload.confirmCount !== data.ids.length
       ) {
-        throw new Error("Delete requires typed confirmation of the exact count");
+        throw new Error("Delete forever requires typed confirmation of the exact count");
+      }
+      const nonTrash = previousStates.filter((r) => !r.deleted_at);
+      if (nonTrash.length > 0) {
+        throw new Error("Only tickets already in Trash can be deleted forever.");
       }
       const { error: dErr, count } = await supabaseAdmin
         .from("support_tickets")
@@ -90,22 +97,39 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       if (dErr) throw new Error(dErr.message);
       updated = count ?? 0;
     } else {
+      const nowIso = new Date().toISOString();
       const patch: Record<string, any> = {};
       if (data.action === "resolve") {
         patch.status = "resolved";
-        patch.resolved_at = new Date().toISOString();
+        patch.resolved_at = nowIso;
+        patch.closed_at = null;
       } else if (data.action === "reopen") {
         patch.status = "open";
         patch.resolved_at = null;
+        patch.closed_at = null;
+        patch.deleted_at = null; // reopening from Trash also restores
       } else if (data.action === "pending") {
         patch.status = "pending";
         patch.resolved_at = null;
+        patch.closed_at = null;
+      } else if (data.action === "close") {
+        // Archive — replies start a new linked ticket (handled in mailgun route).
+        patch.status = "closed";
+        patch.resolved_at = nowIso;
+        patch.closed_at = nowIso;
       } else if (data.action === "spam") {
         patch.status = "spam";
         patch.resolved_at = null;
+        patch.closed_at = null;
       } else if (data.action === "not_spam") {
         patch.status = "open";
         patch.resolved_at = null;
+        patch.closed_at = null;
+      } else if (data.action === "delete") {
+        // Soft delete → Trash. Status preserved so Restore brings it back.
+        patch.deleted_at = nowIso;
+      } else if (data.action === "restore") {
+        patch.deleted_at = null;
       } else if (data.action === "priority") {
         if (!data.payload?.priority) throw new Error("Priority required");
         patch.priority = data.payload.priority;
