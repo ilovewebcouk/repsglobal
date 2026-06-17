@@ -814,14 +814,7 @@ function ProCard({
   const mobilePhotoSize = pro.featured ? 96 : 88;
   const priceLabel = formatFromPrice(pro.from_price_pence);
   const showRating = pro.reviews > 0;
-  // "New on REPs" only for the first 60 days after the profile was created,
-  // and only when there are still zero reviews. After that the pill is hidden.
-  const NEW_PILL_WINDOW_MS = 60 * 24 * 60 * 60 * 1000;
-  const isNewPro =
-    !showRating &&
-    pro.live === true &&
-    pro.created_at != null &&
-    Date.now() - Date.parse(pro.created_at) < NEW_PILL_WINDOW_MS;
+
 
   return (
     <article
@@ -927,11 +920,6 @@ function ProCard({
               verification={pro.verification}
               tier={pro.tier}
             />
-            {isNewPro && (
-              <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-700">
-                New on REPs
-              </span>
-            )}
           </div>
           <div className="mt-0.5 hidden text-[12.5px] text-reps-muted-light sm:block">{pro.role}</div>
 

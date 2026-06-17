@@ -36,6 +36,7 @@ export type ShopFrontDTO = {
   city: string | null;
   in_person_available: boolean;
   online_available: boolean;
+  member_since: string | null;
 };
 
 export type ServiceDTO = {
@@ -62,7 +63,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available",
+        "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -110,6 +111,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         city: pro.city,
         in_person_available: !!pro.in_person_available,
         online_available: !!pro.online_available,
+        member_since: pro.member_since ?? null,
       },
       services: (services ?? []) as ServiceDTO[],
     };
@@ -127,7 +129,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("professionals")
         .select(
-          "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available",
+          "id, slug, headline, primary_profession, specialisms, city, in_person_available, online_available, member_since",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -169,6 +171,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           city: pro.city,
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
+          member_since: pro.member_since ?? null,
         }
       : null;
 

@@ -1998,6 +1998,7 @@ export type Database = {
           is_published: boolean
           languages: string[]
           locale: string
+          member_since: string | null
           online_available: boolean
           primary_profession: string | null
           primary_title_slug: string | null
@@ -2044,6 +2045,7 @@ export type Database = {
           is_published?: boolean
           languages?: string[]
           locale?: string
+          member_since?: string | null
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null
@@ -2090,6 +2092,7 @@ export type Database = {
           is_published?: boolean
           languages?: string[]
           locale?: string
+          member_since?: string | null
           online_available?: boolean
           primary_profession?: string | null
           primary_title_slug?: string | null

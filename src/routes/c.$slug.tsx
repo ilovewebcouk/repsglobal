@@ -333,6 +333,13 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     includes: [],
     highlight: s.is_featured || i === 1,
   }));
+  const memberSinceDate = sf.member_since ? new Date(sf.member_since) : null;
+  const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())
+    ? memberSinceDate.getFullYear()
+    : null;
+  const yearsCoaching = memberYear
+    ? Math.max(1, new Date().getFullYear() - memberYear)
+    : base.years;
   return {
     ...base,
     name: sf.full_name ?? base.name,
@@ -342,6 +349,8 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     city: sf.city ?? base.city,
     specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
     tiers: liveTiers.length ? liveTiers : base.tiers,
+    years: yearsCoaching,
+    verifiedSince: memberYear ? String(memberYear) : base.verifiedSince,
   };
 }
 
@@ -618,7 +627,7 @@ function HeroSection({
 
 function TrustStrip({ coach }: { coach: Coach }) {
   const items = [
-    { label: "Years coaching", value: `${coach.years}+`, icon: Calendar },
+    { label: "Years coaching", value: coach.years <= 1 ? `${coach.years}` : `${coach.years}+`, icon: Calendar },
     { label: "Clients trained", value: coach.clients, icon: Users },
     { label: "Verified since", value: coach.verifiedSince, icon: ShieldCheck },
     { label: "Insurance valid", value: coach.insuranceUntil, icon: BadgeCheck },
