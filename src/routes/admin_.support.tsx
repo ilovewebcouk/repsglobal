@@ -343,12 +343,21 @@ function AdminSupport() {
   }
 
   async function runBulk(
-    action: "resolve" | "reopen" | "pending" | "delete" | "spam" | "not_spam",
+    action:
+      | "resolve"
+      | "reopen"
+      | "pending"
+      | "delete"
+      | "restore"
+      | "purge"
+      | "close"
+      | "spam"
+      | "not_spam",
     extraPayload?: Record<string, unknown>,
   ) {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
-    if (action !== "delete" && ids.length > 25) {
+    if (action !== "delete" && action !== "purge" && ids.length > 25) {
       const ok = window.confirm(`Apply "${action}" to ${ids.length} tickets?`);
       if (!ok) return;
     }
@@ -359,8 +368,28 @@ function AdminSupport() {
       });
       setSelectedIds(new Set());
       void qc.invalidateQueries({ queryKey: ["admin", "support"] });
-      if (action === "delete") {
-        toast.success(`Deleted ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      if (action === "purge") {
+        toast.success(`Deleted forever: ${res.updated} ticket${res.updated === 1 ? "" : "s"}`);
+      } else if (action === "delete") {
+        const previousStates = res.previousStates;
+        toast.success(
+          `Moved ${res.updated} ticket${res.updated === 1 ? "" : "s"} to Trash`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await undoFn({ data: { previousStates } });
+                  void qc.invalidateQueries({ queryKey: ["admin", "support"] });
+                  toast.success("Restored");
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Undo failed");
+                }
+              },
+            },
+            duration: 8000,
+          },
+        );
       } else {
         const previousStates = res.previousStates;
         toast.success(
