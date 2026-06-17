@@ -627,7 +627,7 @@ function HeroSection({
 
 function TrustStrip({ coach }: { coach: Coach }) {
   const items = [
-    { label: "Years coaching", value: `${coach.years}+`, icon: Calendar },
+    { label: "Years coaching", value: coach.years <= 1 ? `${coach.years}` : `${coach.years}+`, icon: Calendar },
     { label: "Clients trained", value: coach.clients, icon: Users },
     { label: "Verified since", value: coach.verifiedSince, icon: ShieldCheck },
     { label: "Insurance valid", value: coach.insuranceUntil, icon: BadgeCheck },
