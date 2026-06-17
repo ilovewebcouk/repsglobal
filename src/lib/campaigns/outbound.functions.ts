@@ -237,14 +237,14 @@ async function resolveTierRecipients(
 
   return proSet
     .map((p: any) => {
-      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase();
+      const email = (p.public_email ?? emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
         userId: p.id,
         email,
         name: nameMap.get(p.id) ?? p.trading_name ?? "",
       };
     })
-    .filter((r) => r.email);
+    .filter((r) => r.email && isValidEmail(r.email));
 }
 
 
