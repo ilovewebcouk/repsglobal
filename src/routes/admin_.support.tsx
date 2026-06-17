@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
 import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
-import { SnoozePopover } from "@/components/admin/support/SnoozePopover";
+
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -68,8 +68,6 @@ import {
   addInternalNote,
   getAttachmentUrl,
   markTicketRead,
-  snoozeTicket,
-  unsnoozeTicket,
   listRequesterTickets,
 } from "@/lib/support/tickets.functions";
 import { draftSupportReply } from "@/lib/support/ai-draft.functions";
@@ -132,17 +130,6 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
-function snoozedLabel(iso?: string | null) {
-  if (!iso) return null;
-  const ms = new Date(iso).getTime() - Date.now();
-  if (ms <= 0) return null;
-  const mins = Math.round(ms / 60000);
-  if (mins < 60) return `Wakes in ${mins}m`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `Wakes in ${hrs}h`;
-  const days = Math.round(hrs / 24);
-  return `Wakes in ${days}d`;
-}
 
 function labelFor(
   action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "restore",
@@ -208,17 +195,12 @@ function AdminSupport() {
 
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
-    const nowMs = Date.now();
-    const isActiveSnoozed = (r: any) =>
-      r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
     const isSpam = (r: any) => r.status === "spam";
     const isClosed = (r: any) => r.status === "closed";
     const isTrash = (r: any) => !!r.deleted_at;
     const isNew = (r: any) => r.status === "new";
     const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
-    const openRows = active.filter(
-      (r: any) => r.status === "open" && !isActiveSnoozed(r),
-    );
+    const openRows = active.filter((r: any) => r.status === "open");
     const pendingRows = active.filter(
       (r: any) => r.status === "pending",
     );
@@ -609,7 +591,7 @@ function AdminSupport() {
                   const isSelected = selectedIds.has(t.id);
                   const isCursor = cursorId === t.id;
                   const isUnread = !!t.is_unread;
-                  const snoozeMsg = snoozedLabel(t.snoozed_until);
+                  
                   return (
                   <tr
                     key={t.id}
@@ -650,11 +632,6 @@ function AdminSupport() {
                           {t.subject}
                         </div>
                       </div>
-                      {snoozeMsg ? (
-                        <div className="mt-0.5 text-[11px] text-sky-300/80 inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {snoozeMsg}
-                        </div>
-                      ) : null}
                     </td>
 
                     <td className="px-3 py-3">
@@ -863,8 +840,6 @@ function TicketDrawer({
   const draftFn = useServerFn(draftSupportReply);
   const priorFn = useServerFn(listRequesterTickets);
   const markReadFn = useServerFn(markTicketRead);
-  const snoozeFn = useServerFn(snoozeTicket);
-  const unsnoozeFn = useServerFn(unsnoozeTicket);
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
@@ -1072,31 +1047,6 @@ function TicketDrawer({
                   {INBOX_META[ticket.inbox as Exclude<InboxFilter, "all">]?.label ?? ticket.inbox}
                 </Badge>
               ) : null}
-              <SnoozePopover
-                snoozedUntil={ticket.snoozed_until}
-                onSnooze={async (until) => {
-                  if (!ticketId) return;
-                  try {
-                    await snoozeFn({ data: { id: ticketId, until } });
-                    toast.success("Snoozed");
-                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
-                    onChanged();
-                  } catch (e: any) {
-                    toast.error(e?.message ?? "Could not snooze");
-                  }
-                }}
-                onUnsnooze={async () => {
-                  if (!ticketId) return;
-                  try {
-                    await unsnoozeFn({ data: { id: ticketId } });
-                    toast.success("Woken up");
-                    qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
-                    onChanged();
-                  } catch (e: any) {
-                    toast.error(e?.message ?? "Could not wake");
-                  }
-                }}
-              />
             </div>
           ) : null}
         </SheetHeader>
