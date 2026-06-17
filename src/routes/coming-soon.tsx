@@ -96,6 +96,21 @@ const LAUNCHING = [
 ];
 
 function ComingSoonPage() {
+  const navigate = useNavigate();
+  const { from } = useSearch({ from: "/coming-soon" });
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (cancelled || !data.session) return;
+      const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
+      navigate({ to: target, replace: true });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, from]);
+
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       {/* ----- 1. Hero ----------------------------------------------- */}
