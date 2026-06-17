@@ -36,6 +36,7 @@ export type ShopFrontDTO = {
   city: string | null;
   in_person_available: boolean;
   online_available: boolean;
+  member_since: string | null;
 };
 
 export type ServiceDTO = {
