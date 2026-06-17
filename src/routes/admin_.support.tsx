@@ -55,6 +55,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
   listTickets,
   getTicket,
   replyToTicket,
@@ -123,6 +129,22 @@ function timeAgo(iso?: string | null) {
   const days = Math.round(hrs / 24);
   return `${days}d ago`;
 }
+
+function formatReceived(iso?: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  if (sameDay) return time;
+  const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return `${date} · ${time}`;
+}
+
+
 
 
 function labelFor(
@@ -576,21 +598,20 @@ function AdminSupport() {
                 <th className="px-3 py-3 font-semibold">From</th>
                 <th className="px-3 py-3 font-semibold">Priority</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">SLA</th>
-                <th className="px-3 py-3 font-semibold">Last activity</th>
+                <th className="px-3 py-3 font-semibold">Received</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody>
               {ticketsQuery.isLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-8 text-center text-white/45 text-[12px]">
+                  <td colSpan={8} className="px-5 py-8 text-center text-white/45 text-[12px]">
                     Loading tickets…
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-10 text-center text-white/55">
+                  <td colSpan={8} className="px-5 py-10 text-center text-white/55">
 
                     <Mail className="mx-auto mb-2 h-5 w-5 text-white/35" />
                     <div className="text-[13px] font-medium text-white/75">
@@ -659,14 +680,8 @@ function AdminSupport() {
                       </span>
                     </td>
                     <td className="px-3 py-3 text-white/70 max-w-[200px]">
-                      <div className="text-[12.5px] truncate" title={t.requester_name ?? undefined}>
-                        {t.requester_name ?? "—"}
-                      </div>
-                      <div
-                        className="text-[11px] text-white/45 truncate"
-                        title={t.requester_email}
-                      >
-                        {t.requester_email}
+                      <div className="text-[12.5px] truncate" title={t.requester_email ?? t.requester_name ?? undefined}>
+                        {t.requester_name ?? t.requester_email ?? "—"}
                       </div>
                     </td>
                     <td className="px-3 py-3">
@@ -693,15 +708,9 @@ function AdminSupport() {
                          {t.status}
                        </span>
                      </td>
-                     <td className="px-3 py-3">
-                       <span className="inline-flex items-center gap-1 text-[12px] text-white/65">
-                         <Clock className="h-3.5 w-3.5" />
-                         {slaLabel(t.sla_due_at, t.status)}
-                       </span>
-                     </td>
-                     <td className="px-3 py-3 text-[12px] text-white/55">
-                       {timeAgo(t.last_message_at)}
-                     </td>
+                      <td className="px-3 py-3 text-[12px] text-white/65 whitespace-nowrap">
+                        {formatReceived(t.created_at)}
+                      </td>
                      <td className="px-5 py-3 text-right">
                        <button className="text-[12px] font-semibold text-reps-orange hover:underline">
                          View
@@ -897,18 +906,20 @@ function TicketDrawer({
   });
 
   const send = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (afterStatus?: "pending" | "solved") => {
       if (!ticketId) return;
       if (mode === "reply") {
-        return replyFn({ data: { ticketId, body: draft, afterStatus: "solved" } });
+        return replyFn({ data: { ticketId, body: draft, afterStatus: afterStatus ?? "pending" } });
       }
       return noteFn({ data: { ticketId, body: draft } });
     },
-    onSuccess: () => {
+    onSuccess: (_res, afterStatus) => {
       const wasReply = mode === "reply";
       setDraft("");
       toast.success(
-        wasReply ? "Reply sent · ticket set to Solved" : "Note added",
+        wasReply
+          ? `Reply sent · ticket set to ${afterStatus === "solved" ? "Solved" : "Pending"}`
+          : "Note added",
       );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
@@ -1190,7 +1201,7 @@ function TicketDrawer({
                   !send.isPending
                 ) {
                   e.preventDefault();
-                  send.mutate();
+                  send.mutate(mode === "reply" ? "pending" : undefined);
                 }
               }}
               placeholder={
@@ -1210,27 +1221,49 @@ function TicketDrawer({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="text-[11px] text-white/40">
-              {mode === "reply" ? "⌘+Enter to send · E to solve" : "Internal — never emailed"}
+              {mode === "reply" ? "⌘+Enter to send & pending · E to solve" : "Internal — never emailed"}
             </div>
             {mode === "reply" ? (
-              <Button
-                size="sm"
-                onClick={() => send.mutate()}
-                disabled={!draft.trim() || send.isPending}
-                className="bg-reps-orange hover:bg-reps-orange/90 text-white"
-              >
-                {send.isPending ? (
-                  "Sending…"
-                ) : (
-                  <>
-                    <Send className="h-3.5 w-3.5 mr-1.5" /> Send & solved
-                  </>
-                )}
-              </Button>
+              <div className="inline-flex items-stretch rounded-[10px] overflow-hidden">
+                <Button
+                  size="sm"
+                  onClick={() => send.mutate("pending")}
+                  disabled={!draft.trim() || send.isPending}
+                  className="bg-reps-orange hover:bg-reps-orange/90 text-white rounded-r-none"
+                >
+                  {send.isPending ? (
+                    "Sending…"
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send & pending
+                    </>
+                  )}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      disabled={!draft.trim() || send.isPending}
+                      aria-label="More send options"
+                      className="bg-reps-orange hover:bg-reps-orange/90 text-white rounded-l-none border-l border-white/20 px-2"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44 border-reps-border bg-reps-ink text-white">
+                    <DropdownMenuItem
+                      className="text-[12.5px] text-white focus:bg-reps-panel-soft focus:text-white"
+                      onClick={() => send.mutate("solved")}
+                    >
+                      <Send className="h-3.5 w-3.5 mr-2" /> Send & solved
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <Button
                 size="sm"
-                onClick={() => send.mutate()}
+                onClick={() => send.mutate(undefined)}
                 disabled={!draft.trim() || send.isPending}
                 className="bg-amber-500/30 hover:bg-amber-500/40 text-amber-100"
               >

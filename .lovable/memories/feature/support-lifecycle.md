@@ -20,7 +20,7 @@ Tabs (7, in order): `New · Open · Pending · Solved · Closed · Spam · Trash
 
 Drawer status dropdown (`admin_.support.tsx`): `Open · Pending · Solved` enabled; `New`, `Closed`, `Spam` shown but disabled (system-set). Spam toggles via a separate button. No descriptive helper text — labels speak for themselves.
 
-Reply button stack (`admin_.support.tsx`): split button with **Send & pending** as the primary action (customer-facing reply flips ticket to `pending`), and dropdown options **Send & solved** and **Send & closed**. The `E` keyboard shortcut still sets the ticket to `solved`.
+Reply button stack (`admin_.support.tsx`): split button with **Send & pending** as the primary action (most replies expect a customer response → ticket flips to `pending`), plus a dropdown with **Send & solved** for one-shot final answers. There is NO "Send & closed" — `closed` is reached only via the 28-day auto-close cron. The `E` keyboard shortcut still sets the ticket to `solved` without sending.
 
 Notification badge: `useSupportUnread` / `listSupportNotifications` returns `count(status='new' AND deleted_at IS NULL)`. "Mark all read" promotes every `new` to `open`.
 
