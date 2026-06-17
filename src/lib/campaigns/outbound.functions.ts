@@ -263,6 +263,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       tiers?: Tier[];
       subject: string;
       body: string;
+      format?: "text" | "html";
       // attachments uploaded to support-attachments bucket via signed URL
       attachments?: Array<{
         storagePath: string;
