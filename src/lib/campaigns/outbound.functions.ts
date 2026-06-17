@@ -105,34 +105,46 @@ export const searchTrainers = createServerFn({ method: "POST" })
       for (const s of subs ?? []) tierMap.set(s.user_id, s.tier);
     }
 
-    // Email: always the auth.users login email (the address the user actually controls).
-    const emailMap = await buildUserEmailMap(supabaseAdmin, ids);
+    // Build rows WITHOUT email first so we can filter cheaply.
+    let rows = (pros ?? []).map((p: any) => ({
+      id: p.id,
+      full_name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "Unnamed",
+      trading_name: businessMap.get(p.id) ?? null,
+      email: "" as string,
+      tier: tierMap.get(p.id) ?? ("free" as Tier),
+      profession: p.primary_profession,
+      city: p.city,
+    }));
 
-    let rows = (pros ?? [])
-      .map((p: any) => ({
-        id: p.id,
-        full_name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "Unnamed",
-        trading_name: businessMap.get(p.id) ?? null,
-        email: (emailMap.get(p.id) ?? "").toLowerCase(),
-        tier: tierMap.get(p.id) ?? ("free" as Tier),
-        profession: p.primary_profession,
-        city: p.city,
-      }))
-      .filter((r: any) => r.email);
-
-    // Free-text filter across name / business / email / city
+    // Free-text filter across name / business / city (email not needed for matching).
     if (data.q && data.q.trim().length > 0) {
       const needle = data.q.trim().toLowerCase();
       rows = rows.filter((r) =>
-        [r.full_name, r.trading_name, r.email, r.city]
+        [r.full_name, r.trading_name, r.city]
           .filter(Boolean)
           .some((v: string) => v.toLowerCase().includes(needle)),
       );
     }
+    if (data.tier) rows = rows.filter((r) => r.tier === data.tier);
 
-    const filtered = data.tier ? rows.filter((r) => r.tier === data.tier) : rows;
-    return filtered.slice(0, 20);
+    // Cap to the top 20, THEN look up emails just for those (auth.admin
+    // pagination is too slow to do for every pro on every keystroke).
+    rows = rows.slice(0, 20);
+    if (rows.length === 0) return rows;
+
+    const emails = await Promise.all(
+      rows.map(async (r) => {
+        const { data: u } = await supabaseAdmin.auth.admin.getUserById(r.id);
+        return (u?.user?.email ?? "").toLowerCase();
+      }),
+    );
+    rows = rows
+      .map((r, i) => ({ ...r, email: emails[i] }))
+      .filter((r) => r.email);
+
+    return rows;
   });
+
 
 
 
