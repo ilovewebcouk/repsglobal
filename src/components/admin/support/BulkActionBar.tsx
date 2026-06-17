@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Check, RotateCcw, Clock, Trash2, X, Loader2 } from "lucide-react";
+import { Check, RotateCcw, Clock, Trash2, X, Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
 
 type Props = {
   count: number;
@@ -8,6 +8,9 @@ type Props = {
   onReopen: () => void;
   onPending: () => void;
   onDelete: () => void;
+  onSpam: () => void;
+  /** When true, the spam button becomes "Not spam" (used on the Spam tab). */
+  spamMode?: "spam" | "not_spam";
   isPending: boolean;
 };
 
@@ -22,6 +25,8 @@ export function BulkActionBar({
   onReopen,
   onPending,
   onDelete,
+  onSpam,
+  spamMode = "spam",
   isPending,
 }: Props) {
   useEffect(() => {
@@ -36,10 +41,11 @@ export function BulkActionBar({
       else if (e.key.toLowerCase() === "e") onResolve();
       else if (e.key.toLowerCase() === "r") onReopen();
       else if (e.key.toLowerCase() === "p") onPending();
+      else if (e.key.toLowerCase() === "s") onSpam();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, onClear, onResolve, onReopen, onPending]);
+  }, [count, onClear, onResolve, onReopen, onPending, onSpam]);
 
   if (count === 0) return null;
 
@@ -68,6 +74,18 @@ export function BulkActionBar({
         </PillButton>
 
         <span className="mx-0.5 h-4 w-px bg-white/10" />
+
+        {spamMode === "not_spam" ? (
+          <PillButton onClick={onSpam} disabled={isPending} title="Not spam (S)">
+            <ShieldCheck className="size-3.5 text-emerald-300" />
+            Not spam
+          </PillButton>
+        ) : (
+          <PillButton onClick={onSpam} disabled={isPending} title="Mark as spam (S)">
+            <ShieldAlert className="size-3.5 text-amber-300" />
+            Spam
+          </PillButton>
+        )}
 
         <PillButton onClick={onDelete} disabled={isPending} danger title="Delete">
           <Trash2 className="size-3.5" />
