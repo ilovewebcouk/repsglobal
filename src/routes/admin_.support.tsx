@@ -880,7 +880,7 @@ function TicketDrawer({
       });
   }, [ticketId, markReadFn, onChanged]);
 
-  // 'E' to resolve when the drawer is focused and not typing
+  // 'E' to solve when the drawer is focused and not typing
   useEffect(() => {
     if (!ticketId) return;
     function handler(e: KeyboardEvent) {
@@ -890,7 +890,7 @@ function TicketDrawer({
       if (inField) return;
       if (e.key === "e" || e.key === "E") {
         e.preventDefault();
-        update.mutate({ status: "resolved" });
+        update.mutate({ status: "solved" });
       }
     }
     window.addEventListener("keydown", handler);
@@ -1010,13 +1010,37 @@ function TicketDrawer({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* Agent-set states only. `new` is system-set, auto-promoted
+                      on first view. `closed` is system-set by the 28-day cron.
+                      Both are shown as disabled items so the dropdown still
+                      displays the correct current value. */}
+                  <SelectItem value="new" disabled>New</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="pending">Pending — waiting on customer</SelectItem>
-                  <SelectItem value="resolved">Solved — reply reopens it</SelectItem>
-                  <SelectItem value="closed">Closed — archived, reply starts a new ticket</SelectItem>
-                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="solved">Solved</SelectItem>
+                  <SelectItem value="closed" disabled>Closed</SelectItem>
+                  <SelectItem value="spam" disabled>Spam</SelectItem>
                 </SelectContent>
               </Select>
+              {ticket.status !== "spam" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "spam" })}
+                  className="h-8 border-reps-border bg-white/5 text-white/75 hover:bg-amber-500/15 hover:text-amber-200 hover:border-amber-400/40 text-[12px]"
+                >
+                  Spam
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "open" })}
+                  className="h-8 border-emerald-400/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 text-[12px]"
+                >
+                  Not spam
+                </Button>
+              )}
               <Select
                 value={ticket.priority}
                 onValueChange={(v) => update.mutate({ priority: v })}
@@ -1117,7 +1141,7 @@ function TicketDrawer({
                         <div className="shrink-0 text-right">
                           <span
                             className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
-                              p.status === "resolved" || p.status === "closed"
+                              p.status === "solved" || p.status === "closed"
                                 ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                                 : p.status === "pending"
                                   ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
