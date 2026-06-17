@@ -6,6 +6,7 @@ import { Loader2, Paperclip, Search, Send, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -159,6 +160,9 @@ export function ComposeDialog({
       <DialogContent className="max-w-3xl bg-reps-panel border-reps-border text-white shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-white">Compose outbound email</DialogTitle>
+          <DialogDescription className="text-[12.5px] text-white/55">
+            Search by partial email, name, business name, city or user ID, then send from the selected inbox.
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
@@ -429,7 +433,7 @@ function RecipientPicker({
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search trainers by name, city, email…"
+          placeholder="Search by email, name, business name, city or ID…"
           className="bg-white/[0.04] border-reps-border text-white pl-9"
         />
       </div>
