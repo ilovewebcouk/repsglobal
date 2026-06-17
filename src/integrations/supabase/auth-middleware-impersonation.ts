@@ -1,7 +1,7 @@
-// Drop-in replacement for requireSupabaseAuth that ALSO honours an admin
-// impersonation cookie (`reps_impersonate`). If the real user is a verified
-// admin AND has an active impersonation session whose token matches the
-// cookie AND has not expired, this middleware swaps:
+// Drop-in replacement for requireSupabaseAuth that ALSO honours an active
+// admin impersonation session. If the real user is an admin AND has an
+// active row in admin_impersonation_sessions whose ends_at is in the
+// future, this middleware swaps:
 //
 //   - context.userId            → professional being impersonated
 //   - context.supabase          → service-role client (bypasses RLS so the
@@ -10,23 +10,14 @@
 //   - context.isImpersonating   → true
 //   - context.realUserId        → the real admin's auth uid (for audit)
 //
-// When NOT impersonating, behaviour is identical to requireSupabaseAuth.
+// Impersonation is keyed off the admin's user id only — no client cookie is
+// involved (the previous cookie approach didn't survive the server-fn RPC
+// response in this stack). startImpersonation enforces one active session
+// per admin, so admin_id + ended_at IS NULL uniquely identifies the row.
 import { createMiddleware } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
-
-const COOKIE_NAME = 'reps_impersonate';
-
-function readCookie(header: string | null, name: string): string | null {
-  if (!header) return null;
-  const parts = header.split(';');
-  for (const part of parts) {
-    const [k, ...rest] = part.trim().split('=');
-    if (k === name) return decodeURIComponent(rest.join('='));
-  }
-  return null;
-}
 
 export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
@@ -52,28 +43,14 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
     if (error || !data?.claims?.sub) throw new Error('Unauthorized: Invalid token');
 
     const realUserId = data.claims.sub as string;
-    const impersonationToken = readCookie(request.headers.get('cookie'), COOKIE_NAME);
 
-    // Default: no impersonation — behave like requireSupabaseAuth.
-    if (!impersonationToken) {
-      return next({
-        context: {
-          supabase: userSupabase,
-          userId: realUserId,
-          realUserId,
-          isImpersonating: false as boolean,
-          claims: data.claims,
-        },
-      });
-    }
-
-    // Re-verify admin role from DB (cookie alone never grants impersonation).
+    // Re-verify admin role from DB on every call (cookie / client claim alone
+    // never grants impersonation).
     const { data: isAdmin } = await userSupabase.rpc('has_role', {
       _user_id: realUserId,
       _role: 'admin' as never,
     });
     if (!isAdmin) {
-      // Cookie present but caller is not admin — ignore cookie, behave normally.
       return next({
         context: {
           supabase: userSupabase,
@@ -85,18 +62,19 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
       });
     }
 
-    // Load service-role client and look up the live session row.
+    // Admin: look up an active impersonation session keyed off admin_id.
     const { supabaseAdmin } = await import('./client.server');
     const { data: session } = await supabaseAdmin
       .from('admin_impersonation_sessions')
       .select('professional_id, ends_at, ended_at')
       .eq('admin_id', realUserId)
-      .eq('session_token', impersonationToken)
       .is('ended_at', null)
+      .order('started_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!session || new Date(session.ends_at).getTime() < Date.now()) {
-      // Expired or missing — behave as the real admin (no swap).
+      // No live session — behave as the real admin (no swap).
       return next({
         context: {
           supabase: userSupabase,

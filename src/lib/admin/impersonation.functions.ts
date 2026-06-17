@@ -1,25 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
-import { getRequest, setResponseHeader } from '@tanstack/react-start/server';
+import { getRequest } from '@tanstack/react-start/server';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
-const COOKIE_NAME = 'reps_impersonate';
 const SESSION_MINUTES = 30;
-
-function readCookie(header: string | null, name: string): string | null {
-  if (!header) return null;
-  for (const part of header.split(';')) {
-    const [k, ...rest] = part.trim().split('=');
-    if (k === name) return decodeURIComponent(rest.join('='));
-  }
-  return null;
-}
-
-function buildCookie(value: string | null, maxAgeSeconds: number): string {
-  // Path=/ so it travels with every request. SameSite=Lax keeps the cookie
-  // on top-level navigations within the site. HttpOnly + Secure for safety.
-  const base = `${COOKIE_NAME}=${value ?? ''}; Path=/; HttpOnly; Secure; SameSite=Lax`;
-  return `${base}; Max-Age=${maxAgeSeconds}`;
-}
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data: isAdmin } = await ctx.supabase.rpc('has_role', {
@@ -51,12 +34,15 @@ export const startImpersonation = createServerFn({ method: 'POST' })
       .eq('admin_id', context.userId)
       .is('ended_at', null);
 
-    const token = crypto.randomUUID() + '.' + crypto.randomUUID();
     const endsAt = new Date(Date.now() + SESSION_MINUTES * 60_000).toISOString();
     const request = getRequest();
     const ua = request?.headers.get('user-agent') ?? null;
     const fwd = request?.headers.get('x-forwarded-for') ?? null;
     const ip = fwd ? fwd.split(',')[0].trim() : null;
+
+    // session_token is NOT NULL on the table; fill with a uuid even though
+    // we no longer use it for lookup (kept for audit trail).
+    const token = crypto.randomUUID() + '.' + crypto.randomUUID();
 
     const { error } = await supabaseAdmin
       .from('admin_impersonation_sessions')
@@ -77,8 +63,6 @@ export const startImpersonation = createServerFn({ method: 'POST' })
       _target_id: target.id,
     });
 
-    setResponseHeader('set-cookie', buildCookie(token, SESSION_MINUTES * 60));
-
     return { ok: true, endsAt, slug: target.slug };
   });
 
@@ -87,42 +71,39 @@ export const stopImpersonation = createServerFn({ method: 'POST' })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const request = getRequest();
-    const token = readCookie(request?.headers.get('cookie') ?? null, COOKIE_NAME);
 
-    if (token) {
-      await supabaseAdmin
-        .from('admin_impersonation_sessions')
-        .update({ ended_at: new Date().toISOString(), ended_reason: 'admin_exit' })
-        .eq('admin_id', context.userId)
-        .eq('session_token', token)
-        .is('ended_at', null);
+    await supabaseAdmin
+      .from('admin_impersonation_sessions')
+      .update({ ended_at: new Date().toISOString(), ended_reason: 'admin_exit' })
+      .eq('admin_id', context.userId)
+      .is('ended_at', null);
 
-      await supabaseAdmin.rpc('log_admin_action', {
-        _actor_id: context.userId,
-        _action: 'impersonation.stop',
-      });
-    }
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: 'impersonation.stop',
+    });
 
-    // Clear cookie.
-    setResponseHeader('set-cookie', buildCookie('', 0));
     return { ok: true };
   });
 
 export const getImpersonationStatus = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const request = getRequest();
-    const token = readCookie(request?.headers.get('cookie') ?? null, COOKIE_NAME);
-    if (!token) return { active: false as const };
+    // Only real admins can ever be impersonating. Skip the DB lookup otherwise.
+    const { data: isAdmin } = await context.supabase.rpc('has_role', {
+      _user_id: context.userId,
+      _role: 'admin' as never,
+    });
+    if (!isAdmin) return { active: false as const };
 
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: session } = await supabaseAdmin
       .from('admin_impersonation_sessions')
       .select('professional_id, started_at, ends_at')
       .eq('admin_id', context.userId)
-      .eq('session_token', token)
       .is('ended_at', null)
+      .order('started_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!session || new Date(session.ends_at).getTime() < Date.now()) {
