@@ -139,9 +139,12 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           if (target) ticketId = target.id;
         }
 
-        // 2b) Reply-after-archive guard: closed / spam / Trash do NOT reopen.
-        // Spawn a brand-new ticket linked back via reopened_from_ticket_id
-        // so the conversation history stays intact.
+        // 2b) Reply-after-archive guard:
+        //   - closed / Trash → spawn a brand-new ticket linked back via
+        //     reopened_from_ticket_id so the conversation history stays intact.
+        //   - spam → silently drop. Do NOT spawn a ticket, do NOT auto-reply,
+        //     so we don't keep emailing a confirmed spammer.
+        //   - pending / solved → flip back to open (customer is back).
         let reopenedFromId: string | null = null;
         if (ticketId) {
           const { data: existing } = await supabaseAdmin
@@ -149,11 +152,13 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
             .select("status, deleted_at")
             .eq("id", ticketId)
             .maybeSingle();
+          if (existing && existing.status === "spam") {
+            // Spam parent → drop the inbound entirely.
+            return Response.json({ ok: true, dropped: "spam" });
+          }
           if (
             existing &&
-            (existing.deleted_at !== null ||
-              existing.status === "closed" ||
-              existing.status === "spam")
+            (existing.deleted_at !== null || existing.status === "closed")
           ) {
             reopenedFromId = ticketId;
             ticketId = null;

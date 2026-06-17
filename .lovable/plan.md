@@ -1,99 +1,65 @@
+# Support notifications — QA pass
 
-# Support lifecycle — 5 states, Zendesk-aligned
+Goal: audit every automated email the support system can send, confirm each one fires (or doesn't fire) in the right place, and fix anything off. No new features.
 
-## States
+## What's wired today
 
-| Status | Set by | Means | Auto-transitions |
+Outbound email touchpoints I found:
+
+1. **Contact form → new ticket** (`/api/public/support/contact-form.ts`)
+   - Sends `contact-autoresponse` once on submission. Logs as `is_auto=true`.
+2. **Inbound email → new ticket** (`/api/public/email/inbound/mailgun.ts`)
+   - Sends `contact-autoresponse` **only when `createdNewTicket === true`** (brand-new ticket or reply-after-archive that spawns a new ticket).
+   - Customer replies on existing Open / Pending / Solved tickets → flip status only, **no auto-reply**. ✅ correct.
+   - Skips when sender is on `suppressed_emails`. ✅
+3. **Agent reply from drawer** (`tickets.functions.ts` `replyToTicket`)
+   - Sends `support-reply` template, threads via `In-Reply-To` / `References`, updates status to `pending` / `solved` / `closed` based on the split button.
+4. **Agent-initiated new outbound** (`tickets.functions.ts` `createOutboundTicket`)
+   - Sends `support-outbound`, creates a fresh ticket.
+
+Other lifecycle events that do **not** send anything (intentional or possible gap, to confirm):
+- Ticket moved to Spam / Not spam
+- Ticket auto-closed by 28-day cron
+- Ticket reopened (customer reply on Pending/Solved)
+- Ticket deleted / restored / hard-purged
+
+## QA checklist to run
+
+For each scenario: trigger it, check (a) email actually received, (b) `support_messages` row logged with correct `is_auto` + `direction`, (c) ticket status after, (d) threading (reply lands back on same ticket, not a new one).
+
+| # | Scenario | Expected email | Expected status after |
 |---|---|---|---|
-| **New** | System (inbound email / contact form) | Untouched. Drives notification badge. | First time any agent opens the ticket → `Open`. Cannot be set back to New. |
-| **Open** | System / Agent | Acknowledged, in progress. | Customer reply on `Pending` or `Solved` → flips to `Open`. |
-| **Pending** | Agent | Waiting on customer. | Customer reply → `Open`. |
-| **Solved** | Agent | Agent submitted a solution. | Customer reply → `Open`. After 28 days of no activity → `Closed`. |
-| **Closed** | System only (cron) | Locked, archived. Immutable. | Customer reply → spawns a new linked ticket (`reopened_from_ticket_id`). Never manually set, never re-opened. |
+| 1 | Customer submits contact form | `contact-autoresponse` | `open` (currently — should this be `new`? see below) |
+| 2 | Inbound email to support@ (no prior ticket) | `contact-autoresponse` | `new` |
+| 3 | Inbound reply on `open` ticket | none | `open` |
+| 4 | Inbound reply on `pending` ticket | none | `open` (reopened) |
+| 5 | Inbound reply on `solved` ticket | none | `open` (reopened) |
+| 6 | Inbound reply on `closed` ticket | `contact-autoresponse` (new ticket spawned) | new ticket `new`, old stays `closed` |
+| 7 | Inbound reply on `spam` ticket | none | stays `spam`, no new ticket? — confirm behaviour |
+| 8 | Inbound from suppressed address | none | ticket still created |
+| 9 | Agent **Send & pending** | `support-reply` | `pending` |
+| 10 | Agent **Send & solved** | `support-reply` | `solved` |
+| 11 | Agent **Send & closed** | `support-reply` | `closed` |
+| 12 | Agent **Mark solved** (no reply) | none | `solved` |
+| 13 | Agent **Reopen** | none | `open` |
+| 14 | Agent **Spam** / **Not spam** | none | `spam` / `open` |
+| 15 | Cron auto-close after 28d | none | `closed` |
+| 16 | Agent creates outbound ticket | `support-outbound` | `open` |
 
-## Notifications
+## Known suspects to verify during the pass
 
-- Sidebar badge on "Support" + topbar bell = `count(status = 'new')`.
-- The instant an admin opens a ticket whose status is `new`, server fn flips it to `open` and badge invalidates.
+- **Contact-form status** (line 141): inserts as `status: "open"` instead of `"new"`, so contact-form tickets skip the New tab + badge. Likely a bug given the locked Zendesk lifecycle (new is the default for inbound). Confirm and fix to `"new"`.
+- **Scenario 6 wording**: the auto-reply on a reply-to-closed ticket uses the same `contact-autoresponse` ("we got your message, we'll reply within 24h"). That's fine but worth re-reading the copy in that context.
+- **Scenario 7 (reply to spam ticket)**: current code in inbound handler treats spam the same as closed → spawns a new ticket and auto-replies. That means a spammer keeps getting auto-replies. Probably should skip auto-reply when `reopenedFromId` came from a `spam` parent, or add sender to suppression. Decision needed.
+- **Threading on contact-form auto-reply** (line 198): no `inReplyTo` / `references` set, only `messageId`. The seeded `thread_key` covers it via the subject+sender fallback, but a true `Message-Id` reference would be cleaner. Low priority.
+- **Agent reply when ticket already `closed`**: `replyToTicket` doesn't block sending into a closed ticket. Should it? Today a reply on a closed ticket would re-set status to `pending`/`solved` based on the button. Decision needed (probably allow — agent knows what they're doing).
+- **`support-outbound` thread_key**: line 606 sends with `inReplyTo: null` — confirm the function still writes `thread_key = messageId` afterwards (lines 619+) so customer replies match.
 
-## Tabs (6)
+## Deliverable
 
-`New · Open · Pending · Solved · Closed · Spam`
+I'll work through the 16 scenarios in order, fix any concrete bug as we go (status-on-contact-form, spam reply behaviour, anything else surfaced), and report back with a pass/fail table. No template copy rewrites unless you ask.
 
-Plus `Trash` as a sibling at the end (soft-deleted, 30-day recovery, hard-purge by cron).
+## Two open questions before I start
 
-Drop today's `Needs you`, `Waiting on customer`, `Snoozed`, `Resolved today`, `All`.
-
-Snoozed: kept as a row-level attribute (`snoozed_until`) — snoozed rows hide from `Open` until they wake. No dedicated tab.
-
-## Drawer status dropdown (3 options only)
-
-`Open · Pending · Solved`
-
-- `New` is never selectable (system-set, auto-promotes on first view).
-- `Closed` is never selectable (system-only).
-- `Spam` lives as a separate button next to the dropdown, not inside it (it's a moderation action, not a lifecycle state).
-
-No descriptive helper text. The labels speak for themselves.
-
-## Bulk action bar (bottom pill)
-
-Already correct — keep as-is, just relabel:
-`Open · Pending · Solve · Spam · Trash`
-
-(Drop `Close` — no one closes manually.)
-
-## Auto-close: 28 days
-
-Zendesk's own default. Existing `pg_cron` job at 03:15 UTC stays — just change the window from 14 → 28 in `src/routes/api/public/hooks/support-auto-close.ts`.
-
-## Database changes
-
-```sql
--- 1. Add 'new' to the status enum
-ALTER TYPE support_ticket_status ADD VALUE IF NOT EXISTS 'new' BEFORE 'open';
-
--- 2. Backfill nothing — existing rows stay where they are.
-
--- 3. Default for new inbound tickets
-ALTER TABLE public.support_tickets
-  ALTER COLUMN status SET DEFAULT 'new';
-```
-
-## Code changes
-
-**`src/routes/api/public/email/inbound/mailgun.ts`**
-- New inbound (no thread match) → insert with `status = 'new'` (currently `open`).
-- Reply to `closed` ticket → spawn new ticket with `status = 'new'`, `reopened_from_ticket_id = old.id`. (Already wired — confirm status value.)
-- Reply to `pending` / `solved` ticket → flip to `open` (already wired).
-
-**`src/lib/support/tickets.functions.ts`**
-- `listTickets({ tab })` — add `'new'` filter; redefine `'open'` = `status='open' AND (snoozed_until IS NULL OR snoozed_until <= now())`.
-- New server fn `markTicketViewed(ticketId)` — if `status='new'`, set to `'open'`, stamp `first_viewed_at = now()`, `first_viewed_by = userId`. Idempotent.
-- `getTicketCounts()` — return `{ new, open, pending, solved, closed, spam, trash }`.
-
-**`src/hooks/useSupportUnread.ts`**
-- Already exists. Repoint to `count(status='new' AND deleted_at IS NULL)`.
-
-**`src/routes/admin_.support.tsx`**
-- Tabs: `New · Open · Pending · Solved · Closed · Spam · Trash`. Counts from `getTicketCounts`.
-- KPI strip simplified to 4 cards: `New · Open · Pending · Solved (last 7d)`.
-- Drawer: `Select` with 3 options (`Open · Pending · Solved`), plus a separate `Spam` button.
-- When drawer opens a `new` ticket, call `markTicketViewed` once → optimistic-update local row + invalidate counts.
-
-**`src/components/admin/support/BulkActionBar.tsx`**
-- Remove `Close` button.
-- Per-tab visibility unchanged otherwise.
-
-## Why this is 10/10
-
-- Matches Zendesk exactly, so any agent you hire already knows it.
-- `New` earns its keep by powering the notification badge — not just a triage label.
-- `Closed` is genuinely terminal (system-only), which is what makes it different from `Solved`.
-- Drawer has only the 3 statuses an agent ever picks — zero cognitive load.
-- Auto-close window is the industry default, not a guess.
-- Reply-to-closed always lands somewhere (new linked ticket) — never silently dropped.
-
-## Open question
-
-Notification badge today: where does it live? I'll point `useSupportUnread` at `count(status='new')`. If you also have a topbar bell counting other things (verifications, enquiries), I'll only touch the support count — confirm if you want me to leave the existing hook signature alone or rename it.
+1. **Spam reply behaviour** (scenario 7): silently drop, or auto-suppress the sender and don't reply?
+2. **Reply-to-closed re-engagement** (scenario 6): keep current "treat as new ticket + standard autoresponse", or use a different opener ("This is a continuation of TKT-1234…")?
