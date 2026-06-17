@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "spam" | "all";
+type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash" | "all";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
