@@ -198,7 +198,81 @@ async function runBroadcastBatch(opts: BatchOpts) {
   const { sendViaMailgun, buildMessageId } = await import(
     "@/lib/support/mailgun-send.server"
   );
-  const { wrapAndRender } = await import("./email-templating.server");
+  // Render templates inline (kept minimal — full templating mirrors outbound.functions.ts)
+  const wrapAndRender = (args: {
+    body: string;
+    format: "text" | "html";
+    recipient: { email: string; name: string | null };
+    inboxLabel: string;
+  }) => {
+    const escapeHtml = (s: string) =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    const applyMergeTags = (body: string, r: { email: string; name: string | null }) => {
+      const full = (r.name ?? "").trim();
+      const parts = full.split(/\s+/).filter(Boolean);
+      const first = parts[0] ?? "";
+      const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+      const map: Record<string, string> = {
+        first_name: first || "there",
+        last_name: last,
+        full_name: full,
+        name: full || first || "there",
+        email: r.email,
+      };
+      return body.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_m, key: string) => {
+        const k = String(key).toLowerCase();
+        return k in map ? map[k] : `{{${key}}}`;
+      });
+    };
+    const inlineFormat = (s: string) =>
+      s
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(
+          /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
+          '<a href="$1" style="color:#0f172a;text-decoration:underline;">$1</a>',
+        );
+    const textToHtml = (text: string) => {
+      const escaped = escapeHtml(text);
+      return escaped
+        .split(/\n{2,}/)
+        .map((raw) => {
+          const lines = raw.split(/\n/);
+          const isList = lines.length > 0 && lines.every((l) => /^\s*[-*]\s+/.test(l));
+          if (isList) {
+            const items = lines
+              .map((l) => l.replace(/^\s*[-*]\s+/, ""))
+              .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
+              .join("");
+            return `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`;
+          }
+          return `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(raw.replace(/\n/g, "<br/>"))}</p>`;
+        })
+        .join("\n");
+    };
+    const sanitiseHtml = (h: string) =>
+      h.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "");
+    const personalised = applyMergeTags(args.body, args.recipient);
+    const inner =
+      args.format === "html" ? sanitiseHtml(personalised) : textToHtml(personalised);
+    const text =
+      args.format === "text"
+        ? personalised
+        : personalised
+            .replace(/<br\s*\/?>(\s*)/gi, "\n")
+            .replace(/<\/p>/gi, "\n\n")
+            .replace(/<\/li>/gi, "\n")
+            .replace(/<li[^>]*>/gi, "• ")
+            .replace(/<[^>]+>/g, "")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>REPs</title><style>@media only screen and (max-width:600px){.reps-shell{width:100%!important;padding:16px 8px!important}.reps-card{width:100%!important;border-radius:12px!important}.reps-pad{padding:22px 18px!important}.reps-body,.reps-body p,.reps-body li{font-size:16px!important;line-height:1.6!important}}</style></head><body style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="reps-shell" style="background:#f4f5f7;padding:32px 16px;"><tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="reps-card" style="width:100%;max-width:600px;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;"><tr><td class="reps-pad reps-body" style="padding:28px 32px;">${inner}<p style="margin:24px 0 0 0;font-size:13px;color:#64748b;border-top:1px solid #f1f2f4;padding-top:16px;">Reply directly to this email — it goes straight to the ${escapeHtml(args.inboxLabel)} team.</p></td></tr></table></td></tr></table></body></html>`;
+    return { html, text };
+  };
+
 
   const SEND_DELAY_MS = 750;
   const MAX_RETRIES = 3;
