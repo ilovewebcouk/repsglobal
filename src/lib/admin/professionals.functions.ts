@@ -119,7 +119,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     let query = supabaseAdmin
       .from('professionals')
       .select(
-        'id, slug, city, primary_profession, verification, is_published, created_at, suspended_at, suspension_reason',
+        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason',
         { count: 'exact' }
       );
 
@@ -142,10 +142,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       query = query.or(`slug.ilike.%${data.q}%,city.ilike.%${data.q}%`);
     }
 
-    // We need to over-fetch to sort across joined data. Server orders by
-    // created_at desc as the stable cursor; we re-sort in JS.
+    // Order by member_since desc so the "Joined" slice reflects BD signup
+    // dates for imported pros (created_at is the import event, not signup).
     const { data: pros, count, error } = await query
-      .order('created_at', { ascending: false })
+      .order('member_since', { ascending: false, nullsFirst: false })
       .limit(FETCH_CAP);
     if (error) throw error;
 
@@ -154,27 +154,50 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return { rows: [] as AdminProRow[], total: count ?? 0, page: data.page, pageSize: data.pageSize };
     }
 
-    const [profilesRes, subsRes, reviewsRes, ccRes] = await Promise.all([
-      supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', ids),
-      supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at').in('user_id', ids),
-      supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', ids).eq('status', 'published'),
-      supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', ids).eq('status', 'active'),
+    // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
+    // length limit. A single 400+ UUID list overflows and the request fails
+    // silently, which is what made every row render as "Unnamed".
+    const CHUNK = 150;
+    const chunks: string[][] = [];
+    for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+
+    async function fetchAll<T>(
+      run: (chunk: string[]) => PromiseLike<{ data: T[] | null; error: unknown }>,
+    ): Promise<T[]> {
+      const results = await Promise.all(chunks.map((c) => run(c)));
+      const out: T[] = [];
+      for (const r of results) {
+        if (r.error) throw r.error;
+        if (r.data) out.push(...r.data);
+      }
+      return out;
+    }
+
+    const [profilesData, subsData, reviewsData, ccData] = await Promise.all([
+      fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
+        supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
+      fetchAll<{ user_id: string; tier: string; status: string; created_at: string }>((c) =>
+        supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at').in('user_id', c)),
+      fetchAll<{ professional_id: string; rating: number }>((c) =>
+        supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
+      fetchAll<{ professional_id: string; status: string }>((c) =>
+        supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', c).eq('status', 'active')),
     ]);
 
-    const profileMap = new Map((profilesRes.data ?? []).map(p => [p.id, p]));
+    const profileMap = new Map(profilesData.map((p) => [p.id, p]));
     const subMap = new Map<string, string>();
-    for (const s of subsRes.data ?? []) {
-      if (!['active', 'trialing', 'past_due'].includes(s.status as string)) continue;
-      if (!subMap.has(s.user_id)) subMap.set(s.user_id, s.tier as string);
+    for (const s of subsData) {
+      if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
+      if (!subMap.has(s.user_id)) subMap.set(s.user_id, s.tier);
     }
     const ratingAcc = new Map<string, { sum: number; n: number }>();
-    for (const r of reviewsRes.data ?? []) {
+    for (const r of reviewsData) {
       const cur = ratingAcc.get(r.professional_id) ?? { sum: 0, n: 0 };
-      cur.sum += r.rating as number; cur.n += 1;
+      cur.sum += r.rating; cur.n += 1;
       ratingAcc.set(r.professional_id, cur);
     }
     const clientCount = new Map<string, number>();
-    for (const c of ccRes.data ?? []) {
+    for (const c of ccData) {
       clientCount.set(c.professional_id, (clientCount.get(c.professional_id) ?? 0) + 1);
     }
 
@@ -202,7 +225,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         status,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,
         clients: clientCount.get(p.id) ?? 0,
-        joined: p.created_at,
+        joined: p.member_since ?? p.created_at,
         isPublished: p.is_published ?? false,
         suspendedAt: p.suspended_at ?? null,
         suspensionReason: p.suspension_reason ?? null,
