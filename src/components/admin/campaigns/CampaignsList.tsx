@@ -23,7 +23,7 @@ import {
   sendCampaignNow,
   deleteCampaign,
   unscheduleCampaign,
-} from "@/lib/campaigns/outbound.functions";
+} from "@/lib/campaigns/outbound-extras.functions";
 import type { ComposeInitialDraft } from "./ComposeDialog";
 
 function timeAgo(iso?: string | null) {
