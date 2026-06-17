@@ -1,45 +1,49 @@
-## 1. Fix the missing close (X) on the Filters sheet
+## Root cause
 
-`src/components/ui/sheet.tsx` renders the close button as `text-foreground/60` against a dark `bg-reps-panel` panel, so the X is nearly invisible on `/admin/professionals` (and any other sheet on a dark surface).
+`startImpersonation` sets a `reps_impersonate` HttpOnly cookie via `setResponseHeader('set-cookie', …)` on a server-function RPC response. That Set-Cookie isn't landing in the browser in the current TanStack Start / Worker preview path, so:
 
-Update only the close button styling inside `SheetContent` so it always reads on dark surfaces:
-- `text-foreground/60` → `text-white/65`
-- `hover:bg-foreground/5 hover:text-foreground` → `hover:bg-white/10 hover:text-white`
-- Bump icon from `h-4 w-4` → `h-4 w-4` (keep) and increase hit target padding to `p-1.5` (already there)
+- `getImpersonationStatus()` reads no cookie → returns `{active:false}`
+- `_authenticated/_professional` beforeLoad then falls through to the paid-subscription check on the *admin's own* account (admin also has `professional` + `client` roles but no paid sub) → redirects to `/pricing`
+- `ImpersonationBanner` renders nothing because status is inactive
 
-No other sheet behaviour changes.
+DB confirms the session rows are being created correctly — the only failure is the cookie round-trip.
 
-## 2. Delete the 3 demo Unpublished professionals
+## Fix: drop the cookie, key impersonation off `admin_id`
 
-Hard-delete Bob, Scott Pro, and Scott so the register only contains real signups. One migration (delete cascades from `auth.users`) covering:
+Each admin can only have one active impersonation session at a time (already enforced — `startImpersonation` ends any prior open session for the same `admin_id` before inserting). So we don't need a per-session token in a cookie to identify "which session" — the active row for the authenticated admin *is* the current session.
 
-- `auth.users` rows for the 3 demo emails — `ON DELETE CASCADE` from FKs in `profiles`, `professionals`, `user_roles`, `subscriptions`, `coach_client`, `client_roster`, `verification_submissions`, `professional_locations`, `services`, `shop_fronts`, `enquiries`, `bookings`, etc. handles the rest.
-- Defensive `DELETE FROM public.professionals WHERE id IN (...)` first for any rows missing the cascade.
+### `src/lib/admin/impersonation.functions.ts`
 
-I'll confirm the exact 3 user_ids/emails with a `SELECT` against `professionals` joined to `profiles` filtered to `is_published=false AND suspended_at IS NULL` before running the delete, and list them in the migration description for you to approve.
+- Delete the `readCookie` / `buildCookie` helpers, the `COOKIE_NAME` constant, and all `setResponseHeader('set-cookie', …)` calls.
+- `startImpersonation`: keep the "end prior sessions + insert new row + audit log" logic. Stop generating `session_token`. Stop setting any cookie. Return `{ok, endsAt, slug}` as today.
+- `stopImpersonation`: find the live session by `admin_id = context.userId AND ended_at IS NULL`, mark it ended. No cookie clear.
+- `getImpersonationStatus`: look up the live session by `admin_id = context.userId AND ended_at IS NULL AND ends_at > now()`. Return the same shape as today.
 
-## 3. Retire the "Unpublished" status
+### `src/integrations/supabase/auth-middleware-impersonation.ts`
 
-After the demos are gone, "Unpublished" has no real-world meaning on this platform — every live pro is Verified / Unverified / Flagged / Suspended.
+- Remove the cookie read.
+- After verifying the bearer token and confirming the real user is an admin, look up the live session by `admin_id = realUserId AND ended_at IS NULL AND ends_at > now()`.
+- If found, swap context to the target professional + service-role client (unchanged behaviour from this point). If not found, behave as `requireSupabaseAuth`.
+- Non-admins: unchanged — never look at impersonation.
 
-Code changes (`src/lib/admin/professionals.functions.ts` + `src/routes/admin_.professionals.tsx`):
+### `src/routes/_authenticated/_professional/route.tsx`
 
-- Drop `'unpublished'` from the `AdminProRow.status` union and from the `STATUS_LABEL` / `STATUS_TONE` maps.
-- Status derivation collapses to:
-  ```
-  is_published=false + suspended_at set        → 'suspended'
-  is_published=false + suspended_at null       → 'pending'  (Unverified)
-  verification='verified' + is_published=true  → 'verified'
-  verification='rejected' + is_published=true  → 'flagged'
-  otherwise                                    → 'pending'
-  ```
-- Remove the Unpublished tab/filter from the tab list (and from `statusCounts`).
-- KPI tile count for "Unverified" already covers `verification='pending'` regardless of `is_published`, so no KPI math change needed.
+No code change required. `beforeLoad` already calls `getImpersonationStatus` and short-circuits when `status.active` is true. With the fix above, that branch starts firing again, so admins land on the trainer's dashboard instead of `/pricing`.
 
-No schema migration on `professionals` — `is_published` stays on the row (it's still used by Suspend/Reinstate and by the public directory's visibility filter). We're just removing it as a user-facing *status* in the admin UI.
+### `session_token` column
+
+Leave the column in place for now (NOT NULL constraint? we'll insert `gen_random_uuid()::text` so existing schema constraints stay happy). I'll confirm with a quick read of the table definition during implementation. No migration in scope.
+
+## What this fixes
+
+- `View as → Open their dashboard` lands on `/dashboard` rendered as the target trainer.
+- Orange `ImpersonationBanner` reappears with name, start time, and "ends at" countdown.
+- `Exit view-as` button in the banner still works (calls `stopImpersonation`, which now keys off `admin_id` and clears the active row).
+- 30-minute session expiry still enforced at the DB row level (`ends_at`).
 
 ## Out of scope
 
-- Touching the Suspend/Reinstate flow.
-- Changing the public directory's `is_published=true` filter.
-- Any change to KPI tiles beyond removing the Unpublished bucket.
+- Rewriting the session model (multi-tab admin sessions, etc.).
+- Removing the `session_token` column.
+- Touching the admin redirect logic for non-impersonating admins (still `/admin/professionals`).
+- The "no paid subscription on the admin account" question — admin should keep using View-as rather than holding a real paid sub on their own account.
