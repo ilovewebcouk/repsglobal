@@ -144,12 +144,16 @@ function snoozedLabel(iso?: string | null) {
   return `Wakes in ${days}d`;
 }
 
-function labelFor(action: "resolve" | "reopen" | "pending" | "spam" | "not_spam"): string {
+function labelFor(
+  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "close" | "restore",
+): string {
   if (action === "resolve") return "Resolved";
   if (action === "reopen") return "Reopened";
   if (action === "pending") return "Marked pending";
   if (action === "spam") return "Marked as spam";
-  return "Restored from spam";
+  if (action === "not_spam") return "Restored from spam";
+  if (action === "close") return "Closed (archived)";
+  return "Restored from Trash";
 }
 
 
