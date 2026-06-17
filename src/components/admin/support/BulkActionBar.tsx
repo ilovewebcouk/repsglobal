@@ -8,11 +8,10 @@ import {
   Loader2,
   ShieldAlert,
   ShieldCheck,
-  Archive,
   ArchiveRestore,
 } from "lucide-react";
 
-type Mode = "default" | "resolved" | "closed" | "spam" | "trash";
+type Mode = "default" | "closed" | "spam" | "trash";
 
 type Props = {
   count: number;
@@ -22,7 +21,6 @@ type Props = {
   onPending: () => void;
   onDelete: () => void;
   onSpam: () => void;
-  onClose: () => void;
   onRestore: () => void;
   onPurge: () => void;
   /** Which tab the bar is rendered under — toggles which actions appear. */
@@ -42,7 +40,6 @@ export function BulkActionBar({
   onPending,
   onDelete,
   onSpam,
-  onClose,
   onRestore,
   onPurge,
   mode = "default",
@@ -73,7 +70,6 @@ export function BulkActionBar({
   const isTrash = mode === "trash";
   const isSpam = mode === "spam";
   const isClosed = mode === "closed";
-  const isResolved = mode === "resolved";
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
@@ -110,10 +106,6 @@ export function BulkActionBar({
           </>
         ) : isClosed ? (
           <>
-            <PillButton onClick={onReopen} disabled={isPending} title="Reopen (R)">
-              <RotateCcw className="size-3.5 text-white/70" />
-              Reopen
-            </PillButton>
             <PillButton onClick={onDelete} disabled={isPending} danger title="Move to Trash">
               <Trash2 className="size-3.5" />
               Trash
@@ -133,13 +125,6 @@ export function BulkActionBar({
               <RotateCcw className="size-3.5 text-white/70" />
               Reopen
             </PillButton>
-
-            {isResolved ? (
-              <PillButton onClick={onClose} disabled={isPending} title="Close (archive)">
-                <Archive className="size-3.5 text-white/70" />
-                Close
-              </PillButton>
-            ) : null}
 
             <span className="mx-0.5 h-4 w-px bg-white/10" />
 

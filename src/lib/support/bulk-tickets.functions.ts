@@ -11,25 +11,21 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
   if (!data) throw new Error("Forbidden");
 }
 
+// `close` is intentionally NOT exposed as a bulk action — Closed is system-only,
+// promoted from Solved by the daily auto-close cron.
 const BulkAction = z.enum([
-  "resolve",
-  "reopen",
+  "resolve",  // → status='solved'
+  "reopen",   // → status='open' (also clears Trash)
   "pending",
-  "delete",   // soft-delete → Trash (recoverable)
-  "restore",  // Trash → previous status (status preserved on row)
-  "purge",    // hard-delete from Trash (irreversible, typed-count confirm)
-  "close",    // archive — replies start a new ticket
+  "delete",   // soft-delete → Trash
+  "restore",  // Trash → previous status
+  "purge",    // hard-delete from Trash
   "priority",
   "assign",
   "spam",
   "not_spam",
 ]);
 
-/**
- * Apply a single action to many tickets in one SQL update.
- * Returns the previous row states so the UI can offer Undo (status/priority/assignee only).
- * Writes a single admin_audit_log row per bulk action.
- */
 export const bulkUpdateTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -39,7 +35,7 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       payload?: {
         priority?: "urgent" | "high" | "normal" | "low";
         assigneeId?: string | null;
-        confirmCount?: number; // required for `delete`
+        confirmCount?: number;
       };
     }) =>
       z
@@ -60,10 +56,9 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Snapshot previous state for Undo + audit
     const { data: before, error: bErr } = await supabaseAdmin
       .from("support_tickets")
-      .select("id, status, priority, assignee_id, resolved_at, closed_at, deleted_at")
+      .select("id, status, priority, assignee_id, solved_at, closed_at, deleted_at")
       .in("id", data.ids);
     if (bErr) throw new Error(bErr.message);
     const previousStates = (before ?? []) as Array<{
@@ -71,7 +66,7 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       status: string;
       priority: string;
       assignee_id: string | null;
-      resolved_at: string | null;
+      solved_at: string | null;
       closed_at: string | null;
       deleted_at: string | null;
     }>;
@@ -79,7 +74,6 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
     let updated = 0;
 
     if (data.action === "purge") {
-      // Hard delete — only allowed from Trash (deleted_at must be set on every row).
       if (
         typeof data.payload?.confirmCount !== "number" ||
         data.payload.confirmCount !== data.ids.length
@@ -100,33 +94,27 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       const nowIso = new Date().toISOString();
       const patch: Record<string, any> = {};
       if (data.action === "resolve") {
-        patch.status = "resolved";
-        patch.resolved_at = nowIso;
+        patch.status = "solved";
+        patch.solved_at = nowIso;
         patch.closed_at = null;
       } else if (data.action === "reopen") {
         patch.status = "open";
-        patch.resolved_at = null;
+        patch.solved_at = null;
         patch.closed_at = null;
-        patch.deleted_at = null; // reopening from Trash also restores
+        patch.deleted_at = null;
       } else if (data.action === "pending") {
         patch.status = "pending";
-        patch.resolved_at = null;
+        patch.solved_at = null;
         patch.closed_at = null;
-      } else if (data.action === "close") {
-        // Archive — replies start a new linked ticket (handled in mailgun route).
-        patch.status = "closed";
-        patch.resolved_at = nowIso;
-        patch.closed_at = nowIso;
       } else if (data.action === "spam") {
         patch.status = "spam";
-        patch.resolved_at = null;
+        patch.solved_at = null;
         patch.closed_at = null;
       } else if (data.action === "not_spam") {
         patch.status = "open";
-        patch.resolved_at = null;
+        patch.solved_at = null;
         patch.closed_at = null;
       } else if (data.action === "delete") {
-        // Soft delete → Trash. Status preserved so Restore brings it back.
         patch.deleted_at = nowIso;
       } else if (data.action === "restore") {
         patch.deleted_at = null;
@@ -144,7 +132,6 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       updated = count ?? 0;
     }
 
-    // Single audit row per bulk action
     await supabaseAdmin.rpc("log_admin_action", {
       _actor_id: context.userId,
       _action: `bulk_tickets.${data.action}`,
@@ -153,14 +140,9 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
       _after_state: { ids: data.ids, payload: data.payload ?? null },
     });
 
-
     return { updated, previousStates };
   });
 
-/**
- * Undo a previous bulk action by restoring each ticket's prior status/priority/assignee.
- * Cannot undo `delete`.
- */
 export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -170,7 +152,7 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
         status: string;
         priority: string;
         assignee_id: string | null;
-        resolved_at: string | null;
+        solved_at: string | null;
         closed_at?: string | null;
         deleted_at?: string | null;
       }>;
@@ -184,7 +166,7 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
                 status: z.string(),
                 priority: z.string(),
                 assignee_id: z.string().uuid().nullable(),
-                resolved_at: z.string().nullable(),
+                solved_at: z.string().nullable(),
                 closed_at: z.string().nullable().optional(),
                 deleted_at: z.string().nullable().optional(),
               }),
@@ -198,7 +180,6 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Group by status/priority/assignee tuple to minimise updates
     let restored = 0;
     for (const row of data.previousStates) {
       const { error } = await supabaseAdmin
@@ -207,7 +188,7 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
           status: row.status,
           priority: row.priority,
           assignee_id: row.assignee_id,
-          resolved_at: row.resolved_at,
+          solved_at: row.solved_at,
           closed_at: row.closed_at ?? null,
           deleted_at: row.deleted_at ?? null,
         } as never)
@@ -221,7 +202,6 @@ export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
       _target_table: "support_tickets",
       _after_state: { restored_count: restored },
     });
-
 
     return { restored };
   });
