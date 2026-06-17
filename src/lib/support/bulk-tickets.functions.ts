@@ -15,7 +15,10 @@ const BulkAction = z.enum([
   "resolve",
   "reopen",
   "pending",
-  "delete",
+  "delete",   // soft-delete → Trash (recoverable)
+  "restore",  // Trash → previous status (status preserved on row)
+  "purge",    // hard-delete from Trash (irreversible, typed-count confirm)
+  "close",    // archive — replies start a new ticket
   "priority",
   "assign",
   "spam",
