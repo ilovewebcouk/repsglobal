@@ -49,6 +49,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+function NameWithIdTooltip({ id, name }: { id: string; name: string }) {
+  const [copied, setCopied] = React.useState(false);
+  const onCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopied(true);
+      toast.success("ID copied");
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      toast.error("Couldn't copy ID");
+    }
+  };
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="cursor-copy text-left font-semibold text-white hover:text-reps-orange"
+          title="Click to copy ID"
+        >
+          {name}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="font-mono text-[11px]">
+        {copied ? "Copied!" : id}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 
 import { initialsFromName } from "@/lib/initials";
 import {
