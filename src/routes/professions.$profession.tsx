@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -392,13 +393,13 @@ function ProfessionLanding() {
 
       {/* Breadcrumb */}
       <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-reps-muted-light">
-          <Link to="/" className="hover:text-reps-charcoal">Home</Link>
-          <ChevronRight className="h-3 w-3" />
-          <Link to="/find-a-professional" className="hover:text-reps-charcoal">Find a Professional</Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-reps-charcoal">{meta.plural}</span>
-        </nav>
+        <Breadcrumb
+          items={[
+            { label: "Home", to: "/" },
+            { label: "Find a Professional", to: "/find-a-professional" },
+            { label: meta.plural },
+          ]}
+        />
       </div>
 
       {/* Hero */}
