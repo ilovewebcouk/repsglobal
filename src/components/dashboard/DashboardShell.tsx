@@ -401,7 +401,11 @@ function Sidebar({
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />
         {role === "trainer" && account.isAdmin ? (
-          <Button asChild variant="outline" className="justify-between">
+          <Button
+            asChild
+            variant="outline"
+            className="justify-between text-foreground"
+          >
             <Link to="/admin">
               <span className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
@@ -422,11 +426,12 @@ function Sidebar({
             </Link>
           </Button>
         ) : (
-          <Button variant="outline" disabled>
+          <Button variant="outline" disabled className="text-foreground">
             <Sparkles className="h-4 w-4" />
             AI Assistant · coming soon
           </Button>
         )}
+
       </div>
     </div>
   );
