@@ -531,26 +531,31 @@ export const resendFailedRecipients = createServerFn({ method: "POST" })
       );
     }
 
+    // Cloudflare Workers cap each request's wall-time, so process at most
+    // RESEND_BATCH_LIMIT recipients per call. The client can re-trigger to
+    // continue, and the remaining count is returned in the response.
+    const RESEND_BATCH_LIMIT = 25;
     const { data: failedRows, error: fErr } = await supabaseAdmin
       .from("outbound_campaign_recipients")
       .select("email, name")
       .eq("campaign_id", c.id)
-      .eq("status", "failed");
+      .eq("status", "failed")
+      .limit(RESEND_BATCH_LIMIT);
     if (fErr) throw new Error(fErr.message);
     if (!failedRows || failedRows.length === 0) {
-      return { sent: 0, failed: 0, total: 0, dailyLimitHit: false };
+      return { sent: 0, failed: 0, total: 0, remaining: 0, dailyLimitHit: false };
     }
-
-    await supabaseAdmin
-      .from("outbound_campaign_recipients")
-      .update({ status: "queued", error_message: null })
-      .eq("campaign_id", c.id)
-      .eq("status", "failed");
 
     const recipients = failedRows.map((r: any) => ({
       email: r.email as string,
       name: (r.name ?? null) as string | null,
     }));
+
+    await supabaseAdmin
+      .from("outbound_campaign_recipients")
+      .update({ status: "queued", error_message: null })
+      .eq("campaign_id", c.id)
+      .in("email", recipients.map((r) => r.email));
 
     const attachmentPayloads: Array<{
       filename: string;
@@ -602,6 +607,7 @@ export const resendFailedRecipients = createServerFn({ method: "POST" })
       sent: result.sent,
       failed: result.failed,
       total: recipients.length,
+      remaining: failedCount,
       dailyLimitHit: result.dailyLimitHit,
     };
   });
