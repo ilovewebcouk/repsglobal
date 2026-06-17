@@ -606,5 +606,3 @@ export const resendFailedRecipients = createServerFn({ method: "POST" })
     };
   });
 
-// Re-export so the cron route can pull the runner from one place
-export { runScheduledCampaign } from "./scheduled-runner.server";
