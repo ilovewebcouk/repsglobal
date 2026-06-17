@@ -938,13 +938,18 @@ function ProCard({
                 pro.town ?? pro.distance
               )}
             </span>
-            {showRating && (
+            {showRating ? (
               <span className="flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
                 <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
                 <span>({pro.reviews})</span>
               </span>
-            )}
+            ) : isNew ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-reps-orange/30 bg-reps-orange/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-reps-orange">
+                <Sparkles className="h-3 w-3" />
+                New on REPs
+              </span>
+            ) : null}
             <span className="flex items-center gap-1.5">
               <Laptop className="h-3.5 w-3.5" />
               {pro.mode}
