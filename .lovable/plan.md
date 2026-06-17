@@ -1,36 +1,28 @@
-## Goal
+## QA findings on `/admin/professionals`
 
-"Years coaching" on `/c/$slug` = years since the date on the certificate that **unlocks their primary profession**. "Verified since" still uses `member_since`.
+1. **"Unnamed" + missing avatars (rendering bug, not data).** All 402 professionals show "Unnamed" and the "UN" initials fallback, even for rows whose `profiles.full_name` is populated. Cause: `listAdminProfessionals` over-fetches up to 1000 professionals and then calls `supabase.from('profiles').select(...).in('id', ids)` with all of them in a single request. With ~400+ UUIDs the URL exceeds the edge worker limit and the request fails silently — `profilesRes.data` comes back null, so every row falls through to `'Unnamed'` and `avatarUrl: null`. The same bug silently kills `subscriptions`, `reviews`, and `coach_client` enrichment (Plan / MRR / Rating / Clients all read as `Free` / `—` / `0`).
 
-## Source
+2. **"Joined" column uses REPs import date for BD members.** It currently reads `professionals.created_at`, which is the date we seeded the BD member into REPs (Jun 2026 for everyone). It should use the same `member_since` we backfilled — BD signup date for imported pros, REPs sign-up date for new pros.
 
-`verification_submissions` for the pro, filtered to:
-- `status = 'approved'`, and
-- `derived_title_slug = professionals.primary_title_slug` (the cert that unlocks the profession).
+## Plan
 
-From those, take the earliest by `COALESCE(issue_date, make_date(year, 1, 1))` — `issue_date` is the date on the certificate, `year` is the fallback when only a year was captured.
+### `src/lib/admin/professionals.functions.ts`
 
-```
-coaching_since_year = year(earliest qualifying cert date)
-years_coaching      = max(1, current_year - coaching_since_year)
-```
+1. **Add chunked-`in()` helper.** Run the four enrichment queries (`profiles`, `subscriptions`, `reviews`, `coach_client`) in batches of 200 ids and concatenate results. Keeps URL length under the edge worker limit.
+2. **Treat empty/null enrichment data as an error.** Throw if `profilesRes.error` is set instead of silently producing "Unnamed" rows.
+3. **Select `member_since`** on the `professionals` query, and use it for the `joined` field returned to the UI. Fall back to `created_at` when null (defence in depth — the trigger guarantees it on insert).
+4. **Use `member_since` for the server-side `order(...)`** that drives the FETCH_CAP window so the "Joined desc" sort returns the right slice.
 
-If no approved cert matches `primary_title_slug` (or the pro has no `primary_title_slug` set), fall back to `base.years` so the locked Katie Gibbs mock keeps its hardcoded value.
+### `src/routes/admin_.professionals.tsx`
 
-## Changes
+No change — it already renders `joinedLabel(row.joined)` and `row.name` / `row.avatarUrl`.
 
-1. **`src/lib/shop-front/shop-front.functions.ts`**
-   - Select `primary_title_slug` alongside the other professional columns.
-   - Add a parallel query on `verification_submissions` filtered to `professional_id = pro.id`, `status = 'approved'`, `derived_title_slug = pro.primary_title_slug`, selecting `issue_date, year`, ordered ascending by `COALESCE(issue_date, make_date(year,1,1))`, limit 1.
-   - Add `coaching_since_year: number | null` to `ShopFrontDTO` and populate from that row.
+### No migration needed
 
-2. **`src/routes/c.$slug.tsx` — `mergeLiveIntoCoach`**
-   - Replace the `member_since`-based `yearsCoaching` calc with `sf.coaching_since_year`-driven calc.
-   - Keep `verifiedSince` derived from `member_since` (unchanged).
-   - Fall back to `base.years` when no qualifying approved cert exists.
+`member_since` already exists on `professionals` and was backfilled from `bd_member_seed.legacy_signup_at`.
 
 ## Out of scope
 
-- Editing the mock Katie Gibbs values.
-- Changing the "Verified since" tile or label.
-- Exposing this elsewhere (admin, listing card, /pro/$slug).
+- Adding a separate "REPs since" column.
+- Touching the KPI tiles ("New signups (30d)" still uses created_at — fine, that's the import event).
+- Other admin tables.
