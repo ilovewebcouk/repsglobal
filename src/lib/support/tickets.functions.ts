@@ -669,7 +669,23 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
       .limit(20);
     if (nameErr) throw new Error(nameErr.message);
 
-    const idsFromName = (nameMatches ?? []).map((r: any) => r.id);
+    // 1b) Partial UUID match on profiles.id (e.g. admin pastes "a1b2c3").
+    // PostgREST can't ilike a uuid column, so we use a SECURITY DEFINER rpc.
+    let idMatches: Array<{ id: string; full_name: string | null; business_name: string | null }> = [];
+    if (/^[0-9a-fA-F-]{4,}$/.test(q)) {
+      const { data: idRows, error: idErr } = await supabaseAdmin.rpc(
+        "search_profiles_by_id_prefix",
+        { _q: q },
+      );
+      if (!idErr && Array.isArray(idRows)) idMatches = idRows as any[];
+    }
+
+    const idsFromName = Array.from(
+      new Set([
+        ...(nameMatches ?? []).map((r: any) => r.id as string),
+        ...idMatches.map((r) => r.id),
+      ]),
+    );
 
     // 2) Resolve emails for name-matched IDs via the Auth Admin API.
     // The PostgREST path to auth.users is not always available, so this
