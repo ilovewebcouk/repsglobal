@@ -155,6 +155,26 @@ function slaLabel(due?: string | null, status?: string) {
   return `${hrs}h ${String(rem).padStart(2, "0")}m`;
 }
 
+const STATUS_PILL: Record<string, string> = {
+  new: "border-reps-orange/30 bg-reps-orange/15 text-reps-orange",
+  open: "border-sky-400/30 bg-sky-500/15 text-sky-300",
+  pending: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+  solved: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  closed: "border-white/15 bg-white/10 text-white/70",
+  spam: "border-amber-400/30 bg-amber-500/15 text-amber-200",
+};
+
+function StatusPill({ status }: { status: string }) {
+  return (
+    <span
+      className={`inline-flex h-8 items-center rounded-[8px] border px-3 text-[12px] font-semibold capitalize ${
+        STATUS_PILL[status] ?? "border-reps-border bg-white/5 text-white/70"
+      }`}
+    >
+      {status}
+    </span>
+  );
+
 function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("new");
   const [inbox, setInbox] = useState<InboxFilter>("all");
