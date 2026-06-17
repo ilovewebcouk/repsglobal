@@ -517,13 +517,21 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
         if (tErr || !ticket) throw new Error(tErr?.message ?? "ticket insert failed");
 
         const messageId = buildMessageId(ticket.id);
+        const recipientHtml = wrapEmail(
+          renderInnerHtml(data.body, fmt, { email: r.email, name: r.name }),
+          inboxMeta.label,
+        );
+        const recipientText = renderPlainText(data.body, fmt, {
+          email: r.email,
+          name: r.name,
+        });
 
         await sendViaMailgun({
           from: `${inboxMeta.name} <${inboxMeta.email}>`,
           to: r.name ? `${r.name} <${r.email}>` : r.email,
           subject: data.subject,
-          text: data.body,
-          html,
+          text: recipientText,
+          html: recipientHtml,
           messageId,
           replyTo: inboxMeta.email,
           attachments: attachmentPayloads.map((a) => ({
@@ -541,8 +549,8 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             from_email: inboxMeta.email,
             from_name: inboxMeta.name,
             author_user_id: context.userId,
-            body_text: data.body,
-            body_html: html,
+            body_text: recipientText,
+            body_html: recipientHtml,
             mailgun_message_id: messageId,
           })
           .select("id")
