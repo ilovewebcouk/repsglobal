@@ -956,6 +956,7 @@ function TicketDrawer({
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="spam">Spam</SelectItem>
                 </SelectContent>
               </Select>
               <Select
