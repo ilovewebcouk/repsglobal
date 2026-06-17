@@ -829,7 +829,7 @@ function ProCard({
         pro.featured
           ? "border-reps-orange/40 bg-gradient-to-br from-reps-warm-white via-white to-reps-warm-white shadow-[0_18px_50px_-28px_rgba(234,88,12,0.35)] ring-1 ring-reps-orange/20"
           : highlighted
-            ? "border-reps-orange/60 shadow-[0_24px_60px_-30px_rgba(234,88,12,0.45)] ring-2 ring-reps-orange/40"
+            ? "border-reps-orange/30 shadow-[0_24px_60px_-30px_rgba(15,15,15,0.18)]"
             : "border-reps-stone"
       }`}
     >
