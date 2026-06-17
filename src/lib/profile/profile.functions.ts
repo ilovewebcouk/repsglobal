@@ -8,7 +8,6 @@ const SpecialismEnum = z.enum(
 );
 
 const ProfileInput = z.object({
-  trading_name: z.string().min(2).max(120),
   headline: z.string().max(160).optional().nullable(),
   bio: z.string().max(4000).optional().nullable(),
   specialisms: z.array(SpecialismEnum).max(MAX_SPECIALISMS),
@@ -46,8 +45,16 @@ export const saveMyProfile = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ProfileInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const base = slugify(data.trading_name) || "coach";
-    // Find an unused slug derived from full name (base, base-2, base-3…)
+
+    // Derive slug from profiles.full_name / business_name (single source of truth).
+    const { data: profileRow } = await supabase
+      .from("profiles")
+      .select("full_name, business_name")
+      .eq("id", userId)
+      .maybeSingle();
+    const base = slugify(profileRow?.business_name ?? profileRow?.full_name ?? "coach") || "coach";
+
+    // Find an unused slug derived from the base (base, base-2, base-3…)
     let slug = base;
     for (let i = 2; i < 50; i++) {
       const { data: clash } = await supabase

@@ -98,17 +98,21 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
   if (proIds.length) {
     const { data: pros } = await supabaseAdmin
       .from("professionals")
-      .select("id, trading_name, city")
+      .select("id, city")
       .in("id", proIds);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, business_name")
       .in("id", proIds);
-    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name, business_name: p.business_name }]));
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,
-        { full_name: profileMap.get(p.id) ?? null, trading_name: p.trading_name, city: p.city },
+        {
+          full_name: profileMap.get(p.id)?.full_name ?? null,
+          trading_name: profileMap.get(p.id)?.business_name ?? null,
+          city: p.city,
+        },
       ]),
     );
   }
@@ -482,7 +486,7 @@ export const getReviewWorkspace = createServerFn({ method: "POST" })
     const [proR, profileR, identityR, insuranceR, historyR] = await Promise.all([
       supabaseAdmin
         .from("professionals")
-        .select("id, trading_name, city, primary_profession, primary_title_slug, verification, slug")
+        .select("id, city, primary_profession, primary_title_slug, verification, slug")
         .eq("id", pid)
         .maybeSingle(),
       supabaseAdmin.from("profiles").select("id, full_name, avatar_url").eq("id", pid).maybeSingle(),
