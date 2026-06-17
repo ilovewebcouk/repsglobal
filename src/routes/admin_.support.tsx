@@ -692,15 +692,9 @@ function AdminSupport() {
                          {t.status}
                        </span>
                      </td>
-                     <td className="px-3 py-3">
-                       <span className="inline-flex items-center gap-1 text-[12px] text-white/65">
-                         <Clock className="h-3.5 w-3.5" />
-                         {slaLabel(t.sla_due_at, t.status)}
-                       </span>
-                     </td>
-                     <td className="px-3 py-3 text-[12px] text-white/55">
-                       {timeAgo(t.last_message_at)}
-                     </td>
+                      <td className="px-3 py-3 text-[12px] text-white/65 whitespace-nowrap">
+                        {formatReceived(t.created_at)}
+                      </td>
                      <td className="px-5 py-3 text-right">
                        <button className="text-[12px] font-semibold text-reps-orange hover:underline">
                          View
