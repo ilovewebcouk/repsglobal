@@ -28,7 +28,12 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
-import { getProfessionLabel } from "@/lib/professions";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import {
+  getProfessionLabel,
+  getProfessionPlural,
+  getProfessionSlugFromLabel,
+} from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
 
 /* ------------------------------------------------------------------ */
