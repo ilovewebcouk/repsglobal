@@ -756,12 +756,6 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
         .filter((s) => ["verified", "pro", "studio"].includes(s.tier))
         .map((s) => [s.user_id, s.tier as "verified" | "pro" | "studio"]),
     );
-    const emailById = new Map<string, string>(
-      [
-        ...((usersByName ?? []) as any[]),
-        ...((usersByEmail ?? []) as any[]),
-      ].map((u) => [u.id, u.email]),
-    );
 
     const accountHits: RecipientHit[] = allUserIds
       .map((id) => {
