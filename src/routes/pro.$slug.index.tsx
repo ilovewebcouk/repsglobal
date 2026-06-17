@@ -40,6 +40,7 @@ type Pro = {
   name: string;
   firstName: string;
   role: string;
+  professionSlug?: string | null;
   location: string;
   region: string;
   rating: number;
