@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Paperclip, Search, Send, X } from "lucide-react";
+import { Calendar, FileText, Loader2, Paperclip, Search, Send, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,8 @@ import {
   searchTrainers,
   previewBroadcastCount,
   sendAdminOutbound,
+  saveCampaignDraft,
+  scheduleCampaign,
 } from "@/lib/campaigns/outbound.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
@@ -63,14 +65,31 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: "studio", label: "Studio" },
 ];
 
+export interface ComposeInitialDraft {
+  id?: string;
+  inbox: Inbox;
+  mode: "direct" | "broadcast";
+  subject: string;
+  body: string;
+  format: "text" | "html";
+  recipients?: Recipient[];
+  tiers?: Tier[];
+  attachments?: UploadedAttachment[];
+  scheduledAt?: string | null;
+}
+
 export function ComposeDialog({
   open,
   onOpenChange,
   onSent,
+  initialDraft,
+  onSavedDraft,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSent: () => void;
+  initialDraft?: ComposeInitialDraft | null;
+  onSavedDraft?: () => void;
 }) {
   const [mode, setMode] = useState<"direct" | "broadcast">("direct");
   const [inbox, setInbox] = useState<Inbox>("support");
@@ -81,9 +100,35 @@ export function ComposeDialog({
   const [tiers, setTiers] = useState<Tier[]>(["verified"]);
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [confirming, setConfirming] = useState(false);
+  const [draftId, setDraftId] = useState<string | undefined>(undefined);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState<string>("");
 
   const sendFn = useServerFn(sendAdminOutbound);
   const previewFn = useServerFn(previewBroadcastCount);
+  const saveDraftFn = useServerFn(saveCampaignDraft);
+  const scheduleFn = useServerFn(scheduleCampaign);
+
+  // Load an existing draft when the dialog opens with one
+  useEffect(() => {
+    if (!open) return;
+    if (initialDraft) {
+      setDraftId(initialDraft.id);
+      setMode(initialDraft.mode);
+      setInbox(initialDraft.inbox);
+      setSubject(initialDraft.subject ?? "");
+      setBody(initialDraft.body ?? "");
+      setFormat(initialDraft.format ?? "text");
+      setRecipients(initialDraft.recipients ?? []);
+      setTiers(initialDraft.tiers ?? ["verified"]);
+      setAttachments(initialDraft.attachments ?? []);
+      setScheduledAt(initialDraft.scheduledAt ?? "");
+    } else {
+      setDraftId(undefined);
+    }
+    setConfirming(false);
+    setScheduleOpen(false);
+  }, [open, initialDraft]);
 
   const previewQuery = useQuery({
     queryKey: ["admin", "outbound", "preview", tiers],
@@ -113,7 +158,7 @@ export function ComposeDialog({
         toast.warning(`Sent ${res.sent} · failed ${res.failed}`, {
           description: first
             ? `${first.email}: ${first.error}`.slice(0, 200)
-            : res.failures.map((f) => f.email).join(", ").slice(0, 200),
+            : res.failures.map((f: { email: string }) => f.email).join(", ").slice(0, 200),
         });
       } else {
         toast.success(
@@ -133,6 +178,62 @@ export function ComposeDialog({
     },
   });
 
+  const saveDraftMutation = useMutation({
+    mutationFn: async () => {
+      const res = await saveDraftFn({
+        data: {
+          id: draftId,
+          inbox,
+          mode,
+          subject,
+          body,
+          format,
+          recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name ?? null })) : undefined,
+          tiers: mode === "broadcast" ? tiers : undefined,
+          attachments,
+        },
+      });
+      return res;
+    },
+    onSuccess: (res) => {
+      setDraftId(res.id);
+      toast.success("Draft saved");
+      onSavedDraft?.();
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Save failed");
+    },
+  });
+
+  const scheduleMutation = useMutation({
+    mutationFn: async (whenIso: string) => {
+      // Save first to get an id with the latest content
+      const saved = await saveDraftFn({
+        data: {
+          id: draftId,
+          inbox,
+          mode,
+          subject,
+          body,
+          format,
+          recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name ?? null })) : undefined,
+          tiers: mode === "broadcast" ? tiers : undefined,
+          attachments,
+        },
+      });
+      return scheduleFn({ data: { id: saved.id, scheduledAt: whenIso } });
+    },
+    onSuccess: () => {
+      toast.success("Campaign scheduled");
+      onSavedDraft?.();
+      reset();
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Schedule failed");
+    },
+  });
+
   function reset() {
     setSubject("");
     setBody("");
@@ -140,6 +241,9 @@ export function ComposeDialog({
     setRecipients([]);
     setAttachments([]);
     setConfirming(false);
+    setDraftId(undefined);
+    setScheduleOpen(false);
+    setScheduledAt("");
   }
 
   const canSend = useMemo(() => {
@@ -148,7 +252,14 @@ export function ComposeDialog({
     return tiers.length > 0 && (previewQuery.data?.count ?? 0) > 0;
   }, [subject, body, mode, recipients.length, tiers.length, previewQuery.data?.count]);
 
+  const canSaveDraft = useMemo(() => {
+    return Boolean(subject.trim() || body.trim() || recipients.length > 0);
+  }, [subject, body, recipients.length]);
+
   const broadcastCount = previewQuery.data?.count ?? 0;
+  const busy =
+    sendMutation.isPending || saveDraftMutation.isPending || scheduleMutation.isPending;
+
 
   return (
     <Dialog
@@ -314,25 +425,51 @@ export function ComposeDialog({
           </div>
         </Tabs>
 
-        <div className="mt-2 flex items-center justify-between gap-3 border-t border-reps-border pt-3">
-          <div className="text-[12px] text-white/45">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-reps-border pt-3">
+          <div className="flex-1 min-w-0 text-[12px] text-white/45">
             {mode === "broadcast"
               ? `Logged as one campaign in ${inbox}. Replies become real tickets — no per-recipient noise.`
               : `Logged as a ticket in the ${inbox} inbox.`}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={sendMutation.isPending}
+              disabled={busy}
             >
               Cancel
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => saveDraftMutation.mutate()}
+              disabled={busy || !canSaveDraft}
+              className="border-reps-border bg-white/[0.04] text-white/85 hover:text-white"
+            >
+              {saveDraftMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <FileText className="size-4" />
+                  {draftId ? "Update draft" : "Save draft"}
+                </>
+              )}
+            </Button>
+            {mode === "broadcast" ? (
+              <Button
+                variant="outline"
+                onClick={() => setScheduleOpen((v) => !v)}
+                disabled={busy || !canSend}
+                className="border-reps-border bg-white/[0.04] text-white/85 hover:text-white"
+              >
+                <Calendar className="size-4" />
+                Schedule
+              </Button>
+            ) : null}
             {confirming ? (
               <Button
                 onClick={() => sendMutation.mutate()}
-                disabled={sendMutation.isPending}
+                disabled={busy}
                 className="bg-reps-orange text-white hover:bg-reps-orange/90"
               >
                 {sendMutation.isPending ? (
@@ -351,7 +488,7 @@ export function ComposeDialog({
                   if (mode === "broadcast") setConfirming(true);
                   else sendMutation.mutate();
                 }}
-                disabled={!canSend}
+                disabled={!canSend || busy}
                 className="bg-reps-orange text-white hover:bg-reps-orange/90"
               >
                 <Send className="size-4" />
@@ -360,6 +497,43 @@ export function ComposeDialog({
             )}
           </div>
         </div>
+
+        {scheduleOpen && mode === "broadcast" ? (
+          <div className="mt-3 flex flex-wrap items-end gap-2 rounded-[12px] border border-reps-border bg-white/[0.03] p-3">
+            <div className="flex-1 min-w-[220px]">
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
+                Send at
+              </label>
+              <Input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="bg-white/[0.04] border-reps-border text-white"
+              />
+              <div className="mt-1 text-[11px] text-white/45">
+                Your local time. The cron picks up scheduled campaigns every minute.
+              </div>
+            </div>
+            <Button
+              onClick={() => {
+                const t = scheduledAt ? new Date(scheduledAt).toISOString() : "";
+                if (!t) return toast.error("Pick a send time");
+                scheduleMutation.mutate(t);
+              }}
+              disabled={busy || !scheduledAt}
+              className="bg-reps-orange text-white hover:bg-reps-orange/90"
+            >
+              {scheduleMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <Calendar className="size-4" />
+                  Schedule send
+                </>
+              )}
+            </Button>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

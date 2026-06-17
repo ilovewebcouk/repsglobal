@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
-import { ComposeDialog } from "@/components/admin/campaigns/ComposeDialog";
+import { ComposeDialog, type ComposeInitialDraft } from "@/components/admin/campaigns/ComposeDialog";
 import { CampaignsList } from "@/components/admin/campaigns/CampaignsList";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -27,18 +27,26 @@ export const Route = createFileRoute("/admin_/campaigns")({
 
 function AdminCampaigns() {
   const [composeOpen, setComposeOpen] = useState(false);
+  const [initialDraft, setInitialDraft] = useState<ComposeInitialDraft | null>(null);
   const qc = useQueryClient();
+
+  const refetch = () => {
+    void qc.invalidateQueries({ queryKey: ["admin", "support", "campaigns"] });
+  };
 
   return (
     <DashboardShell
       role="admin"
       active="Campaigns"
       title="Campaigns"
-      subtitle="Broadcast to a tier or send to specific trainers. Replies become real support tickets."
+      subtitle="Broadcast to a tier or send to specific trainers. Save drafts, schedule for later, and resend to failed recipients."
       actions={
         <Button
           size="sm"
-          onClick={() => setComposeOpen(true)}
+          onClick={() => {
+            setInitialDraft(null);
+            setComposeOpen(true);
+          }}
           className="bg-reps-orange text-white hover:bg-reps-orange/90 h-8"
         >
           <PencilLine className="size-3.5" />
@@ -47,15 +55,23 @@ function AdminCampaigns() {
       }
     >
       <PPanel className="mt-2 p-0">
-        <CampaignsList />
+        <CampaignsList
+          onEditDraft={(draft) => {
+            setInitialDraft(draft);
+            setComposeOpen(true);
+          }}
+        />
       </PPanel>
 
       <ComposeDialog
         open={composeOpen}
-        onOpenChange={setComposeOpen}
-        onSent={() => {
-          void qc.invalidateQueries({ queryKey: ["admin", "support", "campaigns"] });
+        onOpenChange={(v) => {
+          setComposeOpen(v);
+          if (!v) setInitialDraft(null);
         }}
+        initialDraft={initialDraft}
+        onSent={refetch}
+        onSavedDraft={refetch}
       />
     </DashboardShell>
   );

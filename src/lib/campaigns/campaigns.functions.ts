@@ -11,19 +11,31 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
   if (!data) throw new Error("Forbidden");
 }
 
+const CAMPAIGN_COLS =
+  "id, inbox, subject, total_recipients, sent_count, failed_count, tiers, created_at, sent_at, created_by, status, mode, format, scheduled_at, last_error";
+
+const listSchema = z
+  .object({
+    status: z.array(z.enum(["draft", "scheduled", "sending", "sent", "failed"])).optional(),
+  })
+  .optional();
+
 export const listCampaigns = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => listSchema.parse(d))
+  .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data, error } = await context.supabase
+    let q = context.supabase
       .from("outbound_campaigns")
-      .select(
-        "id, inbox, subject, total_recipients, sent_count, failed_count, tiers, created_at, sent_at, created_by",
-      )
+      .select(CAMPAIGN_COLS)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(200);
+    if (data?.status && data.status.length > 0) {
+      q = q.in("status", data.status);
+    }
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return rows ?? [];
   });
 
 export const getCampaign = createServerFn({ method: "POST" })
@@ -51,7 +63,6 @@ export const getCampaign = createServerFn({ method: "POST" })
     if (r.error) throw new Error(r.error.message);
     if (!c.data) throw new Error("Campaign not found");
 
-    // Replied count (joined separately so the list view stays cheap)
     const replied = (r.data ?? []).filter((row: any) => row.status === "replied").length;
     return { campaign: c.data, recipients: r.data ?? [], repliedCount: replied };
   });
