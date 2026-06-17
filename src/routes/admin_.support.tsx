@@ -130,6 +130,19 @@ function timeAgo(iso?: string | null) {
   return `${days}d ago`;
 }
 
+function formatReceived(iso?: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  if (sameDay) return time;
+  const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return `${date} · ${time}`;
+
 
 function labelFor(
   action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "restore",
