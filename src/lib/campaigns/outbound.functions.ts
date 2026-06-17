@@ -263,6 +263,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       tiers?: Tier[];
       subject: string;
       body: string;
+      format?: "text" | "html";
       // attachments uploaded to support-attachments bucket via signed URL
       attachments?: Array<{
         storagePath: string;
@@ -291,6 +292,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             .optional(),
           subject: z.string().min(1).max(200),
           body: z.string().min(1).max(50000),
+          format: z.enum(["text", "html"]).optional().default("text"),
           attachments: z
             .array(
               z.object({
@@ -375,7 +377,12 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }
 
     const inboxMeta = INBOX_META[data.inbox];
-    const html = wrapEmail(data.body, inboxMeta.label);
+    const fmt: "text" | "html" = data.format ?? "text";
+    // Template preview (with merge tags intact) for the campaign record.
+    const previewHtml = wrapEmail(
+      fmt === "html" ? sanitiseHtml(data.body) : textToHtml(data.body),
+      inboxMeta.label,
+    );
 
     // ── BROADCAST branch ────────────────────────────────────────────────────
     // Broadcasts become a single `outbound_campaigns` row + one recipient
@@ -389,7 +396,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
           inbox: data.inbox,
           subject: data.subject,
           body_text: data.body,
-          body_html: html,
+          body_html: previewHtml,
           created_by: context.userId,
           total_recipients: recipients.length,
           tiers: data.tiers ?? [],
@@ -424,13 +431,18 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
       for (const r of recipients) {
         const messageId = buildMessageId(`campaign-${campaign.id}`);
+        const recipientHtml = wrapEmail(
+          renderInnerHtml(data.body, fmt, r),
+          inboxMeta.label,
+        );
+        const recipientText = renderPlainText(data.body, fmt, r);
         try {
           await sendViaMailgun({
             from: `${inboxMeta.name} <${inboxMeta.email}>`,
             to: r.name ? `${r.name} <${r.email}>` : r.email,
             subject: data.subject,
-            text: data.body,
-            html,
+            text: recipientText,
+            html: recipientHtml,
             messageId,
             replyTo: inboxMeta.email,
             attachments: attachmentPayloads.map((a) => ({
@@ -505,13 +517,21 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
         if (tErr || !ticket) throw new Error(tErr?.message ?? "ticket insert failed");
 
         const messageId = buildMessageId(ticket.id);
+        const recipientHtml = wrapEmail(
+          renderInnerHtml(data.body, fmt, { email: r.email, name: r.name }),
+          inboxMeta.label,
+        );
+        const recipientText = renderPlainText(data.body, fmt, {
+          email: r.email,
+          name: r.name,
+        });
 
         await sendViaMailgun({
           from: `${inboxMeta.name} <${inboxMeta.email}>`,
           to: r.name ? `${r.name} <${r.email}>` : r.email,
           subject: data.subject,
-          text: data.body,
-          html,
+          text: recipientText,
+          html: recipientHtml,
           messageId,
           replyTo: inboxMeta.email,
           attachments: attachmentPayloads.map((a) => ({
@@ -529,8 +549,8 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             from_email: inboxMeta.email,
             from_name: inboxMeta.name,
             author_user_id: context.userId,
-            body_text: data.body,
-            body_html: html,
+            body_text: recipientText,
+            body_html: recipientHtml,
             mailgun_message_id: messageId,
           })
           .select("id")
@@ -590,17 +610,98 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function wrapEmail(text: string, inboxLabel: string): string {
-  const paragraphs = text
-    .split(/\n{2,}/)
-    .map(
-      (p) =>
-        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a">${escapeHtml(
-          p,
-        ).replace(/\n/g, "<br/>")}</p>`,
-    )
-    .join("\n");
+// Replace {{first_name}}, {{last_name}}, {{full_name}}, {{name}}, {{email}}.
+function applyMergeTags(
+  body: string,
+  recipient: { email: string; name: string | null },
+): string {
+  const full = (recipient.name ?? "").trim();
+  const parts = full.split(/\s+/).filter(Boolean);
+  const first = parts[0] ?? "";
+  const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+  const map: Record<string, string> = {
+    first_name: first || "there",
+    last_name: last,
+    full_name: full,
+    name: full || first || "there",
+    email: recipient.email,
+  };
+  return body.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_m, key: string) => {
+    const k = String(key).toLowerCase();
+    return k in map ? map[k] : `{{${key}}}`;
+  });
+}
 
+function inlineFormat(s: string): string {
+  let out = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  out = out.replace(
+    /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
+    '<a href="$1" style="color:#0f172a;text-decoration:underline;">$1</a>',
+  );
+  return out;
+}
+
+// Plain-text body with light markdown → safe HTML paragraphs/lists.
+function textToHtml(text: string): string {
+  const escaped = escapeHtml(text);
+  const blocks = escaped.split(/\n{2,}/);
+  const out: string[] = [];
+  for (const raw of blocks) {
+    const lines = raw.split(/\n/);
+    const isList = lines.length > 0 && lines.every((l) => /^\s*[-*]\s+/.test(l));
+    if (isList) {
+      const items = lines
+        .map((l) => l.replace(/^\s*[-*]\s+/, ""))
+        .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
+        .join("");
+      out.push(
+        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${items}</ul>`,
+      );
+    } else {
+      out.push(
+        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${inlineFormat(
+          raw.replace(/\n/g, "<br/>"),
+        )}</p>`,
+      );
+    }
+  }
+  return out.join("\n");
+}
+
+// HTML mode: trust admin input but strip <script>/<style>.
+function sanitiseHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "");
+}
+
+function renderInnerHtml(
+  body: string,
+  format: "text" | "html",
+  recipient: { email: string; name: string | null },
+): string {
+  const personalised = applyMergeTags(body, recipient);
+  return format === "html" ? sanitiseHtml(personalised) : textToHtml(personalised);
+}
+
+function renderPlainText(
+  body: string,
+  format: "text" | "html",
+  recipient: { email: string; name: string | null },
+): string {
+  const personalised = applyMergeTags(body, recipient);
+  if (format === "text") return personalised;
+  return personalised
+    .replace(/<br\s*\/?>(\s*)/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function wrapEmail(innerHtml: string, inboxLabel: string): string {
   const year = new Date().getFullYear();
   const SITE = "https://repsuk.org";
 
@@ -620,7 +721,7 @@ function wrapEmail(text: string, inboxLabel: string): string {
             ${REPS_WORDMARK_SVG(22)}
           </td></tr>
           <tr><td style="padding:28px 32px 8px 32px;">
-            ${paragraphs}
+            ${innerHtml}
           </td></tr>
           <tr><td style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;"><tr>
