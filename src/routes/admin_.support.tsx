@@ -650,11 +650,6 @@ function AdminSupport() {
                           {t.subject}
                         </div>
                       </div>
-                      {snoozeMsg ? (
-                        <div className="mt-0.5 text-[11px] text-sky-300/80 inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {snoozeMsg}
-                        </div>
-                      ) : null}
                     </td>
 
                     <td className="px-3 py-3">
