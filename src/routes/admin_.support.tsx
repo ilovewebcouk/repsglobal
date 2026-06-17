@@ -443,6 +443,7 @@ function AdminSupport() {
                   ["pending", "Waiting on customer", counts.pending],
                   ["snoozed", "Snoozed", counts.snoozed],
                   ["resolved", "Resolved today", counts.resolvedToday],
+                  ["spam", "Spam", counts.spam],
                   ["all", "All", counts.all],
                 ] as const
               ).map(([v, label, count]) => (
