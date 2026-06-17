@@ -380,13 +380,8 @@ function Sidebar({
 
   return (
     <div className="flex h-full flex-col bg-reps-midnight">
-      <Link to="/" className="flex items-center gap-2 px-5 pb-6 pt-6">
+      <Link to="/" className="flex items-center justify-center px-5 pb-6 pt-6">
         <RepsWordmark className="h-[18px] text-white" />
-        <span className="border-l border-white/15 pl-2 text-[9px] leading-[1.15] text-white/65">
-          The Register of
-          <br />
-          Exercise Professionals
-        </span>
       </Link>
 
       {role === "admin" ? <AdminBadge /> : null}
