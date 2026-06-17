@@ -37,7 +37,36 @@ export type ShopFrontDTO = {
   in_person_available: boolean;
   online_available: boolean;
   member_since: string | null;
+  coaching_since_year: number | null;
 };
+
+// Helper: earliest year from approved verification submissions whose
+// derived_title_slug matches the pro's primary_title_slug.
+async function fetchCoachingSinceYear(
+  supabaseAdmin: ReturnType<typeof import("@supabase/supabase-js").createClient>,
+  professionalId: string,
+  primaryTitleSlug: string | null,
+): Promise<number | null> {
+  if (!primaryTitleSlug) return null;
+  const { data } = await supabaseAdmin
+    .from("verification_submissions")
+    .select("issue_date, year")
+    .eq("professional_id", professionalId)
+    .eq("status", "approved")
+    .eq("derived_title_slug", primaryTitleSlug);
+  if (!data || data.length === 0) return null;
+  let earliest: number | null = null;
+  for (const row of data as Array<{ issue_date: string | null; year: number | null }>) {
+    let y: number | null = null;
+    if (row.issue_date) {
+      const parsed = new Date(row.issue_date);
+      if (!isNaN(parsed.getTime())) y = parsed.getFullYear();
+    }
+    if (y == null && row.year != null) y = row.year;
+    if (y != null && (earliest == null || y < earliest)) earliest = y;
+  }
+  return earliest;
+}
 
 export type ServiceDTO = {
   id: string;
