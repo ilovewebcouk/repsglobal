@@ -32,7 +32,6 @@ export const listTickets = createServerFn({ method: "POST" })
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
-    const nowIso = new Date().toISOString();
 
     if (data?.status === "trash") {
       q = q.not("deleted_at", "is", null);
