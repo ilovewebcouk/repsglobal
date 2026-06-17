@@ -453,22 +453,25 @@ function AdminSupport() {
       role="admin"
       active="Support"
       title="Support queue"
-      subtitle={`${counts.open} open · ${counts.pending} pending · ${counts.resolvedToday} solved today`}
+      subtitle={`${counts.new} new · ${counts.open} open · ${counts.pending} pending · ${counts.solvedLast7} solved this week`}
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
-          label="Needs you"
+          label="New"
+          value={counts.new}
+          detail={counts.new === 0 ? "Notifications clear" : "Untouched — needs first view"}
+          warn={counts.new > 0}
+        />
+        <Kpi
+          label="Open"
           value={counts.open}
           detail={
-            counts.open === 0
-              ? "Inbox zero"
-              : `${counts.urgent} urgent · ${counts.unread} unread`
+            counts.urgent > 0 ? `${counts.urgent} urgent` : "In progress"
           }
-          warn={counts.urgent > 0 || counts.unread > 0}
+          warn={counts.urgent > 0}
         />
-        <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
-        <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
-        <Kpi label="Solved today" value={counts.resolvedToday} detail="Across all agents" />
+        <Kpi label="Pending" value={counts.pending} detail="Waiting on customer" />
+        <Kpi label="Solved this week" value={counts.solvedLast7} detail="Last 7 days" />
       </div>
 
       <PPanel className="mt-6 p-0">
@@ -482,10 +485,10 @@ function AdminSupport() {
             <TabsList className="bg-transparent p-0 h-auto gap-1 flex-nowrap sm:flex-wrap">
               {(
                 [
-                  ["open", "Needs you", counts.open],
-                  ["pending", "Waiting on customer", counts.pending],
-                  ["snoozed", "Snoozed", counts.snoozed],
-                  ["resolved", "Solved", counts.resolved],
+                  ["new", "New", counts.new],
+                  ["open", "Open", counts.open],
+                  ["pending", "Pending", counts.pending],
+                  ["solved", "Solved", counts.solved],
                   ["closed", "Closed", counts.closed],
                   ["spam", "Spam", counts.spam],
                   ["trash", "Trash", counts.trash],
@@ -684,12 +687,12 @@ function AdminSupport() {
                     <td className="px-3 py-3">
                        <span
                          className={`inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize ${
-                           t.status === "resolved" || t.status === "closed"
+                           t.status === "solved" || t.status === "closed"
                              ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                              : t.status === "pending"
                              ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
-                             : t.status === "snoozed"
-                             ? "border border-white/15 bg-white/10 text-white/70"
+                             : t.status === "new"
+                             ? "border border-sky-400/30 bg-sky-500/15 text-sky-300"
                              : "border border-reps-orange/30 bg-reps-orange/15 text-reps-orange"
                          }`}
                        >
@@ -752,15 +755,12 @@ function AdminSupport() {
               ? "spam"
               : tab === "closed"
                 ? "closed"
-                : tab === "resolved"
-                  ? "resolved"
-                  : "default"
+                : "default"
         }
         onClear={() => setSelectedIds(new Set())}
         onResolve={() => runBulk("resolve")}
         onReopen={() => runBulk("reopen")}
         onPending={() => runBulk("pending")}
-        onClose={() => runBulk("close")}
         onSpam={() => runBulk(tab === "spam" ? "not_spam" : "spam")}
         onRestore={() => runBulk("restore")}
         onPurge={() => {
