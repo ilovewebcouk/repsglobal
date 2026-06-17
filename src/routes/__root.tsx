@@ -135,20 +135,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   beforeLoad: async ({ location }) => {
     // Never gate /lovable/* — these are webhook/cron/preview routes that self-authenticate.
     if (location.pathname.startsWith("/lovable/")) return;
-    // Pre-launch gate: redirect every non-authenticated visitor to /coming-soon.
-    // Authenticated users (admin, demo, real pros) pass through to the real site.
-    // Client-only by design — Supabase sessions live in localStorage and aren't
-    // visible to the server. The root route is `noindex` so SSR'd HTML can leak
-    // to crawlers safely while the gate runs after hydration. Flip
-    // LAUNCH_GATE_ENABLED to false in src/lib/launch.ts at launch.
     if (!LAUNCH_GATE_ENABLED) return;
-    if (typeof window === "undefined") return;
     if (isAllowlistedPath(location.pathname)) return;
 
+    // Server: no access to Supabase session (lives in localStorage). Treat every
+    // SSR request as unauthenticated and serve /coming-soon. Authed users get
+    // forwarded back to their target by the client effect on /coming-soon.
+    if (typeof window === "undefined") {
+      throw redirect({ to: "/coming-soon", search: { from: location.pathname } as never });
+    }
 
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
-      throw redirect({ to: "/coming-soon" });
+      throw redirect({ to: "/coming-soon", search: { from: location.pathname } as never });
     }
   },
 

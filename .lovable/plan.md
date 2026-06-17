@@ -1,46 +1,43 @@
-# Fix small text in REPs emails on iPhone
+## What's actually happening
 
-## Diagnosis
+You're right — sorry for the bad answer. The gate in `src/routes/__root.tsx` runs **client-only**:
 
-The wrapper in `src/lib/campaigns/outbound.functions.ts` (`wrapEmail`, lines 810–855) builds a fixed **600px** content table with **32px horizontal padding** and body copy hard-coded to **15px** / footer text at **11.5–13px**. On an iPhone (~390px CSS px) iOS Mail/Gmail render the 600px table and then **shrink-to-fit the viewport**, so everything looks ~65% of intended size — which is exactly what you're seeing.
+```ts
+if (typeof window === "undefined") return;   // ← SSR skips the gate entirely
+...
+const { data } = await supabase.auth.getSession();
+if (!data.session) throw redirect({ to: "/coming-soon" });
+```
 
-There is no `<style>` block and no `@media` query, so we can't override on mobile, and there are no mobile-friendly class hooks on the tables.
+So when you hit `repsuk.org`:
+1. The server renders the **real homepage** HTML and ships it to the browser.
+2. Only after hydration does the client check `supabase.auth.getSession()` (which reads `localStorage`) and *then* redirect.
+3. If you've ever signed in on that browser, you have a session in `localStorage` and the redirect never fires — you just stay on the homepage.
 
-## Fix (single function, presentation-only)
+That's why you land on `/`, not `/coming-soon`. The redirect is real, but it's too late and too easy to bypass.
 
-Edit `wrapEmail` and `textToHtml` in `src/lib/campaigns/outbound.functions.ts`:
+## Fix
 
-1. **Add a `<style>` block in `<head>`** with a mobile media query:
-   - `@media only screen and (max-width:600px)` →
-     - `.reps-shell { width:100% !important; padding:16px 8px !important; }`
-     - `.reps-card  { width:100% !important; border-radius:12px !important; }`
-     - `.reps-pad   { padding:22px 18px !important; }`
-     - `.reps-foot  { padding:20px 18px 22px 18px !important; }`
-     - `.reps-body, .reps-body p, .reps-body li { font-size:16px !important; line-height:1.6 !important; }`
-     - `.reps-foot p { font-size:13px !important; line-height:1.6 !important; }`
-   - Also include `img { -ms-interpolation-mode:bicubic; } a { color:#0f172a; }` housekeeping.
+Make the gate run on the server too, where there's no `localStorage`. The Supabase session isn't visible during SSR, so the server can't tell who's authenticated — we treat every SSR request as "unknown" and serve coming-soon, then let the client re-route signed-in users back in after hydration.
 
-2. **Tag the existing tables/cells** with the class names above (no visual change on desktop — classes are no-ops without the media query):
-   - Outer table → `class="reps-shell"`
-   - Inner 600px table → `class="reps-card"`
-   - Header padding cell unchanged; main content cell → `class="reps-pad reps-body"`
-   - Footer cell → `class="reps-foot"`
+### Changes (one file: `src/routes/__root.tsx`)
 
-3. **Body copy baseline 16px** (industry standard for mobile mail). Bump `textToHtml` `<p>` and `<ul>` inline `font-size` from `15px` → `16px`; bump footer paragraph from `12.5/13px` → `14px` so it survives shrink-to-fit on clients that ignore media queries (Outlook desktop is unaffected because the 600px card is still rendered).
+1. **Remove the `if (typeof window === "undefined") return;` short-circuit** in `beforeLoad`.
+2. **Server branch:** when running on the server (no `window`), for any non-allowlisted path, `throw redirect({ to: "/coming-soon" })` unconditionally. SSR'd HTML on `repsuk.org/` becomes the coming-soon page — no leaking the real homepage.
+3. **Client branch:** keep the existing `supabase.auth.getSession()` check so authenticated users (you, demo, admins) get bounced from `/coming-soon` to the real route they asked for.
+4. On `/coming-soon` itself, add a tiny client effect: if a session exists, `router.navigate({ to: <original path or "/"> })`. This way an authed user who lands on coming-soon (because SSR sent them there) is auto-forwarded to the real site within a frame, instead of getting stuck.
 
-4. **Add `width="100%"` and `style="width:100%"`** on the outer shell table (already 100%) and set `meta name="format-detection" content="telephone=no,address=no,email=no"` to stop iOS auto-linking turning chunks blue/small.
+### Why this works
 
-5. **Preheader div** keep as-is.
+- **Anonymous visitor on `repsuk.org`** → SSR redirects to `/coming-soon`. They never see the real homepage HTML.
+- **Authenticated visitor on `repsuk.org`** → SSR sends them to `/coming-soon`, then the client effect immediately forwards them to `/`. Tiny flash, but correct gating.
+- **Crawlers / link unfurls** → see `/coming-soon` content, which is what we want pre-launch (root is already `noindex` but this also closes the og:image / preview gap).
+- **One-line revert at launch:** flip `LAUNCH_GATE_ENABLED = false` in `src/lib/launch.ts` exactly as today.
 
-No changes to send logic, recipient resolution, campaign tracking, ticket creation, or HTML-mode sanitiser — purely the wrapper + `textToHtml` font sizes.
+### What I will NOT touch
 
-## Verification
+- `src/lib/launch.ts` — allowlist, launch date, flag stay as-is.
+- Any auth flow, `/auth`, server functions, or the rest of the routing.
+- No DNS / domain changes — this is purely the gate logic.
 
-- Send a test direct email to yourself from `/admin/campaigns` → Compose, open on iPhone Mail and Gmail iOS.
-- Spot-check Outlook desktop (600px card unchanged).
-- Re-screenshot via browser preview at 390×844 of the rendered HTML (we can dump `previewHtml` to a temp route or just inline-preview via the existing Compose preview).
-
-## Out of scope
-
-- HTML-mode user-authored bodies (admin owns those styles).
-- Ticket-thread emails in `src/lib/support/tickets.functions.ts` (separate wrapper — say the word and I'll apply the same treatment in the same pass).
+Want me to implement?

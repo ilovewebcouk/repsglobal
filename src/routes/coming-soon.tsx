@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, ShieldCheck, Globe2, Hammer, BadgeCheck, Store, Workflow, Dumbbell, Brain, TrendingUp } from "lucide-react";
 
 import { HeroOverlay } from "@/components/marketing/HeroOverlay";
@@ -12,6 +14,9 @@ import { WaitlistForm } from "@/components/launch/WaitlistForm";
 import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 
 export const Route = createFileRoute("/coming-soon")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "REPS — Launching 26 June 2026" },
@@ -91,6 +96,21 @@ const LAUNCHING = [
 ];
 
 function ComingSoonPage() {
+  const navigate = useNavigate();
+  const { from } = useSearch({ from: "/coming-soon" });
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (cancelled || !data.session) return;
+      const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
+      navigate({ to: target, replace: true });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, from]);
+
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       {/* ----- 1. Hero ----------------------------------------------- */}
