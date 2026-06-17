@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Auto-close solved tickets that have had no activity for 14 days.
- * - Promotes status `resolved` → `closed`
- * - Stamps `closed_at = now()`
- * Replies to closed tickets spawn a new linked ticket (handled in mailgun route).
+ * Daily maintenance for the support ticket lifecycle:
  *
- * Also hard-purges Trash older than 30 days.
+ *  1. Auto-promote `solved` → `closed` after 28 days of no activity.
+ *     Zendesk's default. Closed is the system-only terminal state — a
+ *     customer reply to a closed ticket spawns a new linked ticket
+ *     (handled in the mailgun inbound route) and cannot reopen the original.
  *
- * Called by pg_cron daily; protected by the Supabase anon key in the apikey header.
+ *  2. Hard-purge tickets sitting in Trash (`deleted_at IS NOT NULL`) for >30 days.
+ *
+ * Called by pg_cron daily (03:15 UTC). Protected by the Supabase
+ * publishable key in the `apikey` header.
  */
 export const Route = createFileRoute("/api/public/hooks/support-auto-close")({
   server: {
@@ -24,20 +27,18 @@ export const Route = createFileRoute("/api/public/hooks/support-auto-close")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const now = Date.now();
-        const closeCutoff = new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString();
+        const closeCutoff = new Date(now - 28 * 24 * 60 * 60 * 1000).toISOString();
         const purgeCutoff = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
         const nowIso = new Date(now).toISOString();
 
-        // Auto-close: solved tickets with no activity for 14 days.
         const { data: closed, error: cErr } = await supabaseAdmin
           .from("support_tickets")
           .update({ status: "closed", closed_at: nowIso } as never, { count: "exact" })
-          .eq("status", "resolved")
+          .eq("status", "solved")
           .is("deleted_at", null)
           .lt("last_message_at", closeCutoff)
           .select("id");
 
-        // Hard-purge Trash older than 30 days.
         const { data: purged, error: pErr } = await supabaseAdmin
           .from("support_tickets")
           .delete({ count: "exact" })

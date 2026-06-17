@@ -18,7 +18,7 @@ export const listTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      status?: "open" | "pending" | "resolved" | "closed" | "snoozed" | "spam" | "trash" | "all";
+      status?: "new" | "open" | "pending" | "solved" | "closed" | "spam" | "trash" | "all";
       inbox?: "support" | "pros" | "partners" | "press" | "all";
       q?: string;
     }) => d ?? {},
@@ -28,7 +28,7 @@ export const listTickets = createServerFn({ method: "POST" })
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, resolved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by, closed_at, deleted_at, reopened_from_ticket_id",
+        "id, ticket_number, subject, status, priority, source, inbox, requester_email, requester_name, assignee_id, sla_due_at, first_response_at, solved_at, last_message_at, created_at, tags, is_unread, snoozed_until, last_opened_at, last_opened_by, closed_at, deleted_at, reopened_from_ticket_id, first_viewed_at, first_viewed_by",
       )
       .order("last_message_at", { ascending: false })
       .limit(200);
@@ -36,29 +36,31 @@ export const listTickets = createServerFn({ method: "POST" })
 
     if (data?.status === "trash") {
       q = q.not("deleted_at", "is", null);
-    } else if (data?.status === "snoozed") {
+    } else if (data?.status === "solved") {
+      // Solved tab — every solved ticket newest first.
       q = q
         .is("deleted_at", null)
-        .not("snoozed_until", "is", null)
-        .gt("snoozed_until", nowIso)
-        .neq("status", "spam");
-    } else if (data?.status === "resolved") {
-      // "Solved" tab — show every solved ticket newest first, not just today's.
-      q = q
-        .is("deleted_at", null)
-        .eq("status", "resolved")
-        .order("resolved_at", { ascending: false });
+        .eq("status", "solved")
+        .order("solved_at", { ascending: false });
     } else if (data?.status === "closed") {
       q = q.is("deleted_at", null).eq("status", "closed");
     } else if (data?.status === "spam") {
       q = q.is("deleted_at", null).eq("status", "spam");
-    } else if (data?.status && data.status !== "all") {
-      q = q.is("deleted_at", null).eq("status", data.status);
-      // Active snoozed tickets are hidden from regular status tabs
-      q = q.or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+    } else if (data?.status === "new") {
+      // Brand-new untouched tickets — drives the notification badge.
+      q = q.is("deleted_at", null).eq("status", "new");
+    } else if (data?.status === "open") {
+      // Open tab hides actively-snoozed rows (they wake automatically).
+      q = q
+        .is("deleted_at", null)
+        .eq("status", "open")
+        .or(`snoozed_until.is.null,snoozed_until.lte.${nowIso}`);
+    } else if (data?.status === "pending") {
+      q = q.is("deleted_at", null).eq("status", "pending");
     } else {
-      // "all" tab hides spam, closed and Trash — each has its own dedicated tab.
-      q = q.is("deleted_at", null).neq("status", "spam").neq("status", "closed");
+      // "all" — used for client-side count aggregation. Hides Trash only;
+      // every lifecycle bucket has its own tab.
+      q = q.is("deleted_at", null);
     }
     if (data?.inbox && data.inbox !== "all") q = q.eq("inbox", data.inbox);
     if (data?.q && data.q.trim().length > 0) {
@@ -145,7 +147,7 @@ export const listRequesterTickets = createServerFn({ method: "POST" })
     let q = context.supabase
       .from("support_tickets")
       .select(
-        "id, ticket_number, subject, status, priority, created_at, resolved_at, last_message_at",
+        "id, ticket_number, subject, status, priority, created_at, solved_at, last_message_at",
       )
       .eq("requester_email", data.email.toLowerCase())
       .order("last_message_at", { ascending: false })
@@ -167,16 +169,16 @@ export const listSupportNotifications = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context);
 
-    // Single source of truth: tickets currently flagged unread and in an
-    // actionable state. The same `is_unread` flag drives the orange dot in
-    // the queue, so opening a ticket clears it from the bell automatically.
+    // Bell + sidebar badge = count of `New` tickets (untouched inbound).
+    // The moment an admin opens one, the drawer flips it to Open and it
+    // disappears from the badge automatically.
     const { data, error } = await context.supabase
       .from("support_tickets")
       .select(
         "id, ticket_number, subject, requester_name, requester_email, last_message_at, created_at",
       )
-      .eq("is_unread", true)
-      .in("status", ["open", "pending"])
+      .eq("status", "new")
+      .is("deleted_at", null)
       .order("last_message_at", { ascending: false })
       .limit(20);
 
@@ -195,15 +197,23 @@ export const listSupportNotifications = createServerFn({ method: "POST" })
     };
   });
 
-// Mark every currently-unread ticket as read (bell "Mark all read" action).
+// Bell "Mark all read" — promote every New ticket to Open in one shot.
 export const markAllSupportRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    const nowIso = new Date().toISOString();
     const { error } = await context.supabase
       .from("support_tickets")
-      .update({ is_unread: false } as never)
-      .eq("is_unread", true);
+      .update({
+        status: "open",
+        is_unread: false,
+        first_viewed_at: nowIso,
+        first_viewed_by: context.userId,
+      } as never)
+      .eq("status", "new")
+      .is("deleted_at", null)
+      .is("first_viewed_at", null);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -215,9 +225,14 @@ export const markAllSupportRead = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 export const updateTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  // Drawer dropdown is restricted to Open / Pending / Solved.
+  // `new` is system-set (auto-promoted on first view).
+  // `closed` is system-set (auto-promoted by cron after 28d).
+  // `spam` is set via the separate Spam moderation button (still allowed here
+  // for bulk ops and the drawer's spam button).
   .inputValidator((d: {
     id: string;
-    status?: "open" | "pending" | "resolved" | "closed" | "spam";
+    status?: "open" | "pending" | "solved" | "spam";
     priority?: "urgent" | "high" | "normal" | "low";
     assignee_id?: string | null;
     tags?: string[];
@@ -226,7 +241,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        status: z.enum(["open", "pending", "resolved", "closed", "spam"]).optional(),
+        status: z.enum(["open", "pending", "solved", "spam"]).optional(),
         priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
         assignee_id: z.string().uuid().nullable().optional(),
         tags: z.array(z.string()).optional(),
@@ -240,15 +255,12 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.status !== undefined) {
       patch.status = data.status;
       const nowIso = new Date().toISOString();
-      if (data.status === "resolved") {
-        patch.resolved_at = nowIso;
+      if (data.status === "solved") {
+        patch.solved_at = nowIso;
         patch.closed_at = null;
-      } else if (data.status === "closed") {
-        patch.resolved_at = nowIso;
-        patch.closed_at = nowIso;
       } else {
         // open / pending / spam — clear terminal-state stamps.
-        patch.resolved_at = null;
+        patch.solved_at = null;
         patch.closed_at = null;
       }
     }
@@ -263,7 +275,6 @@ export const updateTicket = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
-
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -409,9 +420,13 @@ export const replyToTicket = createServerFn({ method: "POST" })
     if (data.closeAfter) {
       await context.supabase
         .from("support_tickets")
-        .update({ status: "resolved", resolved_at: new Date().toISOString() })
+        .update({ status: "solved", solved_at: new Date().toISOString() })
         .eq("id", ticket.id);
-    } else if (ticket.status !== "pending" && ticket.status !== "resolved" && ticket.status !== "closed") {
+    } else if (
+      ticket.status !== "pending" &&
+      ticket.status !== "solved" &&
+      ticket.status !== "closed"
+    ) {
       // Zendesk-style: a customer-facing reply flips the ticket to pending
       // (waiting on customer) so it falls out of "Needs you" automatically.
       await context.supabase
@@ -431,13 +446,33 @@ export const markTicketRead = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const nowIso = new Date().toISOString();
+
+    // If this is the first time anyone has opened the ticket, promote
+    // status `new` → `open` and stamp the first-view metadata. This is the
+    // mechanism that drops the notification badge.
+    const { data: row } = await context.supabase
+      .from("support_tickets")
+      .select("status, first_viewed_at")
+      .eq("id", data.id)
+      .maybeSingle();
+
+    const patch: Record<string, any> = {
+      is_unread: false,
+      last_opened_at: nowIso,
+      last_opened_by: context.userId,
+    };
+    if (row && row.status === "new") {
+      patch.status = "open";
+    }
+    if (row && !row.first_viewed_at) {
+      patch.first_viewed_at = nowIso;
+      patch.first_viewed_by = context.userId;
+    }
+
     const { error } = await context.supabase
       .from("support_tickets")
-      .update({
-        is_unread: false,
-        last_opened_at: new Date().toISOString(),
-        last_opened_by: context.userId,
-      } as never)
+      .update(patch as never)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

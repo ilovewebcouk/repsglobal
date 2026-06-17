@@ -2529,6 +2529,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           first_response_at: string | null
+          first_viewed_at: string | null
+          first_viewed_by: string | null
           id: string
           inbox: string
           is_unread: boolean
@@ -2540,9 +2542,9 @@ export type Database = {
           requester_email: string
           requester_name: string | null
           requester_user_id: string | null
-          resolved_at: string | null
           sla_due_at: string | null
           snoozed_until: string | null
+          solved_at: string | null
           source: Database["public"]["Enums"]["support_source"]
           status: Database["public"]["Enums"]["support_status"]
           subject: string
@@ -2557,6 +2559,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           first_response_at?: string | null
+          first_viewed_at?: string | null
+          first_viewed_by?: string | null
           id?: string
           inbox?: string
           is_unread?: boolean
@@ -2568,9 +2572,9 @@ export type Database = {
           requester_email: string
           requester_name?: string | null
           requester_user_id?: string | null
-          resolved_at?: string | null
           sla_due_at?: string | null
           snoozed_until?: string | null
+          solved_at?: string | null
           source?: Database["public"]["Enums"]["support_source"]
           status?: Database["public"]["Enums"]["support_status"]
           subject: string
@@ -2585,6 +2589,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           first_response_at?: string | null
+          first_viewed_at?: string | null
+          first_viewed_by?: string | null
           id?: string
           inbox?: string
           is_unread?: boolean
@@ -2596,9 +2602,9 @@ export type Database = {
           requester_email?: string
           requester_name?: string | null
           requester_user_id?: string | null
-          resolved_at?: string | null
           sla_due_at?: string | null
           snoozed_until?: string | null
+          solved_at?: string | null
           source?: Database["public"]["Enums"]["support_source"]
           status?: Database["public"]["Enums"]["support_status"]
           subject?: string
@@ -3212,7 +3218,7 @@ export type Database = {
       support_msg_direction: "inbound" | "outbound" | "internal_note"
       support_priority: "urgent" | "high" | "normal" | "low"
       support_source: "email" | "web" | "admin" | "api" | "contact_form"
-      support_status: "open" | "pending" | "resolved" | "closed" | "spam"
+      support_status: "new" | "open" | "pending" | "solved" | "closed" | "spam"
       verification_state: "pending" | "verified" | "unverified" | "expired"
       verification_status: "pending" | "verified" | "rejected" | "suspended"
       verification_submission_status:
@@ -3419,7 +3425,7 @@ export const Constants = {
       support_msg_direction: ["inbound", "outbound", "internal_note"],
       support_priority: ["urgent", "high", "normal", "low"],
       support_source: ["email", "web", "admin", "api", "contact_form"],
-      support_status: ["open", "pending", "resolved", "closed", "spam"],
+      support_status: ["new", "open", "pending", "solved", "closed", "spam"],
       verification_state: ["pending", "verified", "unverified", "expired"],
       verification_status: ["pending", "verified", "rejected", "suspended"],
       verification_submission_status: [

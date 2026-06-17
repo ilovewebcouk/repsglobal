@@ -102,7 +102,7 @@ export const Route = createFileRoute("/admin_/support")({
   component: AdminSupport,
 });
 
-type StatusFilter = "open" | "pending" | "snoozed" | "resolved" | "closed" | "spam" | "trash";
+type StatusFilter = "new" | "open" | "pending" | "solved" | "closed" | "spam" | "trash";
 type InboxFilter = "all" | "support" | "pros" | "partners" | "press";
 type Priority = "urgent" | "high" | "normal" | "low";
 
@@ -145,20 +145,19 @@ function snoozedLabel(iso?: string | null) {
 }
 
 function labelFor(
-  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "close" | "restore",
+  action: "resolve" | "reopen" | "pending" | "spam" | "not_spam" | "restore",
 ): string {
   if (action === "resolve") return "Solved";
   if (action === "reopen") return "Reopened";
   if (action === "pending") return "Marked pending";
   if (action === "spam") return "Marked as spam";
   if (action === "not_spam") return "Restored from spam";
-  if (action === "close") return "Closed (archived)";
   return "Restored from Trash";
 }
 
 
 function slaLabel(due?: string | null, status?: string) {
-  if (status === "resolved" || status === "closed") return "Resolved";
+  if (status === "solved" || status === "closed") return "Solved";
   if (!due) return "—";
   const ms = new Date(due).getTime() - Date.now();
   if (ms < 0) return `Overdue ${Math.round(-ms / 60000)}m`;
@@ -170,7 +169,7 @@ function slaLabel(due?: string | null, status?: string) {
 }
 
 function AdminSupport() {
-  const [tab, setTab] = useState<StatusFilter>("open");
+  const [tab, setTab] = useState<StatusFilter>("new");
   const [inbox, setInbox] = useState<InboxFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
@@ -215,40 +214,48 @@ function AdminSupport() {
     const isSpam = (r: any) => r.status === "spam";
     const isClosed = (r: any) => r.status === "closed";
     const isTrash = (r: any) => !!r.deleted_at;
+    const isNew = (r: any) => r.status === "new";
     const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
     const openRows = active.filter(
       (r: any) => r.status === "open" && !isActiveSnoozed(r),
     );
     const pendingRows = active.filter(
-      (r: any) => r.status === "pending" && !isActiveSnoozed(r),
+      (r: any) => r.status === "pending",
     );
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return {
+      new: active.filter(isNew).length,
       open: openRows.length,
       pending: pendingRows.length,
-      snoozed: active.filter(isActiveSnoozed).length,
-      resolved: active.filter((r: any) => r.status === "resolved").length,
+      solved: active.filter((r: any) => r.status === "solved").length,
       closed: rows.filter((r: any) => !isTrash(r) && isClosed(r)).length,
       spam: rows.filter((r: any) => !isTrash(r) && isSpam(r)).length,
       trash: rows.filter(isTrash).length,
-      all: active.length,
       urgent: openRows.filter((r: any) => r.priority === "urgent").length,
-      unread: openRows.filter((r: any) => r.is_unread).length,
-      resolvedToday: active.filter(
+      solvedLast7: rows.filter(
         (r: any) =>
-          r.resolved_at &&
-          new Date(r.resolved_at).toDateString() === new Date().toDateString(),
+          r.status === "solved" &&
+          r.solved_at &&
+          new Date(r.solved_at).getTime() >= sevenDaysAgo,
       ).length,
       byInbox: {
-        all: openRows.length,
-        support: openRows.filter((r: any) => (r.inbox ?? "support") === "support").length,
-        pros: openRows.filter((r: any) => r.inbox === "pros").length,
-        partners: openRows.filter((r: any) => r.inbox === "partners").length,
-        press: openRows.filter((r: any) => r.inbox === "press").length,
+        all: openRows.length + active.filter(isNew).length,
+        support: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => (r.inbox ?? "support") === "support",
+        ).length,
+        pros: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "pros",
+        ).length,
+        partners: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "partners",
+        ).length,
+        press: [...openRows, ...active.filter(isNew)].filter(
+          (r: any) => r.inbox === "press",
+        ).length,
       } as Record<InboxFilter, number>,
     };
   }, [allCountQuery.data]);
 
-  // Server already scopes "resolved" tab to today via resolved_at filter.
   const tickets = ticketsQuery.data ?? [];
 
   // Clear selection when filters change (selections refer to the visible page)
@@ -350,7 +357,6 @@ function AdminSupport() {
       | "delete"
       | "restore"
       | "purge"
-      | "close"
       | "spam"
       | "not_spam",
     extraPayload?: Record<string, unknown>,
@@ -447,22 +453,25 @@ function AdminSupport() {
       role="admin"
       active="Support"
       title="Support queue"
-      subtitle={`${counts.open} open · ${counts.pending} pending · ${counts.resolvedToday} solved today`}
+      subtitle={`${counts.new} new · ${counts.open} open · ${counts.pending} pending · ${counts.solvedLast7} solved this week`}
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi
-          label="Needs you"
+          label="New"
+          value={counts.new}
+          detail={counts.new === 0 ? "Notifications clear" : "Untouched — needs first view"}
+          warn={counts.new > 0}
+        />
+        <Kpi
+          label="Open"
           value={counts.open}
           detail={
-            counts.open === 0
-              ? "Inbox zero"
-              : `${counts.urgent} urgent · ${counts.unread} unread`
+            counts.urgent > 0 ? `${counts.urgent} urgent` : "In progress"
           }
-          warn={counts.urgent > 0 || counts.unread > 0}
+          warn={counts.urgent > 0}
         />
-        <Kpi label="Pending reply" value={counts.pending} detail="Waiting on customer" />
-        <Kpi label="Snoozed" value={counts.snoozed} detail="Wakes automatically" />
-        <Kpi label="Solved today" value={counts.resolvedToday} detail="Across all agents" />
+        <Kpi label="Pending" value={counts.pending} detail="Waiting on customer" />
+        <Kpi label="Solved this week" value={counts.solvedLast7} detail="Last 7 days" />
       </div>
 
       <PPanel className="mt-6 p-0">
@@ -476,10 +485,10 @@ function AdminSupport() {
             <TabsList className="bg-transparent p-0 h-auto gap-1 flex-nowrap sm:flex-wrap">
               {(
                 [
-                  ["open", "Needs you", counts.open],
-                  ["pending", "Waiting on customer", counts.pending],
-                  ["snoozed", "Snoozed", counts.snoozed],
-                  ["resolved", "Solved", counts.resolved],
+                  ["new", "New", counts.new],
+                  ["open", "Open", counts.open],
+                  ["pending", "Pending", counts.pending],
+                  ["solved", "Solved", counts.solved],
                   ["closed", "Closed", counts.closed],
                   ["spam", "Spam", counts.spam],
                   ["trash", "Trash", counts.trash],
@@ -678,12 +687,12 @@ function AdminSupport() {
                     <td className="px-3 py-3">
                        <span
                          className={`inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize ${
-                           t.status === "resolved" || t.status === "closed"
+                           t.status === "solved" || t.status === "closed"
                              ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                              : t.status === "pending"
                              ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"
-                             : t.status === "snoozed"
-                             ? "border border-white/15 bg-white/10 text-white/70"
+                             : t.status === "new"
+                             ? "border border-sky-400/30 bg-sky-500/15 text-sky-300"
                              : "border border-reps-orange/30 bg-reps-orange/15 text-reps-orange"
                          }`}
                        >
@@ -746,15 +755,12 @@ function AdminSupport() {
               ? "spam"
               : tab === "closed"
                 ? "closed"
-                : tab === "resolved"
-                  ? "resolved"
-                  : "default"
+                : "default"
         }
         onClear={() => setSelectedIds(new Set())}
         onResolve={() => runBulk("resolve")}
         onReopen={() => runBulk("reopen")}
         onPending={() => runBulk("pending")}
-        onClose={() => runBulk("close")}
         onSpam={() => runBulk(tab === "spam" ? "not_spam" : "spam")}
         onRestore={() => runBulk("restore")}
         onPurge={() => {
@@ -874,7 +880,7 @@ function TicketDrawer({
       });
   }, [ticketId, markReadFn, onChanged]);
 
-  // 'E' to resolve when the drawer is focused and not typing
+  // 'E' to solve when the drawer is focused and not typing
   useEffect(() => {
     if (!ticketId) return;
     function handler(e: KeyboardEvent) {
@@ -884,7 +890,7 @@ function TicketDrawer({
       if (inField) return;
       if (e.key === "e" || e.key === "E") {
         e.preventDefault();
-        update.mutate({ status: "resolved" });
+        update.mutate({ status: "solved" });
       }
     }
     window.addEventListener("keydown", handler);
@@ -1004,13 +1010,37 @@ function TicketDrawer({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* Agent-set states only. `new` is system-set, auto-promoted
+                      on first view. `closed` is system-set by the 28-day cron.
+                      Both are shown as disabled items so the dropdown still
+                      displays the correct current value. */}
+                  <SelectItem value="new" disabled>New</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="pending">Pending — waiting on customer</SelectItem>
-                  <SelectItem value="resolved">Solved — reply reopens it</SelectItem>
-                  <SelectItem value="closed">Closed — archived, reply starts a new ticket</SelectItem>
-                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="solved">Solved</SelectItem>
+                  <SelectItem value="closed" disabled>Closed</SelectItem>
+                  <SelectItem value="spam" disabled>Spam</SelectItem>
                 </SelectContent>
               </Select>
+              {ticket.status !== "spam" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "spam" })}
+                  className="h-8 border-reps-border bg-white/5 text-white/75 hover:bg-amber-500/15 hover:text-amber-200 hover:border-amber-400/40 text-[12px]"
+                >
+                  Spam
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update.mutate({ status: "open" })}
+                  className="h-8 border-emerald-400/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 text-[12px]"
+                >
+                  Not spam
+                </Button>
+              )}
               <Select
                 value={ticket.priority}
                 onValueChange={(v) => update.mutate({ priority: v })}
@@ -1111,7 +1141,7 @@ function TicketDrawer({
                         <div className="shrink-0 text-right">
                           <span
                             className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
-                              p.status === "resolved" || p.status === "closed"
+                              p.status === "solved" || p.status === "closed"
                                 ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                                 : p.status === "pending"
                                   ? "border border-amber-400/30 bg-amber-500/15 text-amber-300"

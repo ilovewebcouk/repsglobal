@@ -129,7 +129,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
             .select("id, subject")
             .eq("requester_email", senderEmail)
             .eq("inbox", inbox)
-            .in("status", ["open", "pending"])
+            .in("status", ["new", "open", "pending", "solved"])
             .gte("last_message_at", since)
             .order("last_message_at", { ascending: false })
             .limit(5);
@@ -139,8 +139,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           if (target) ticketId = target.id;
         }
 
-        // 2b) Reply-after-archive guard: if the matched ticket is closed,
-        // marked as spam, or soft-deleted (in Trash), we DO NOT reopen it.
+        // 2b) Reply-after-archive guard: closed / spam / Trash do NOT reopen.
         // Spawn a brand-new ticket linked back via reopened_from_ticket_id
         // so the conversation history stays intact.
         let reopenedFromId: string | null = null;
@@ -158,10 +157,19 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           ) {
             reopenedFromId = ticketId;
             ticketId = null;
+          } else if (
+            existing &&
+            (existing.status === "pending" || existing.status === "solved")
+          ) {
+            // Customer reply on Pending or Solved → flip to Open.
+            await supabaseAdmin
+              .from("support_tickets")
+              .update({ status: "open", solved_at: null } as never)
+              .eq("id", ticketId);
           }
         }
 
-        // 3) Otherwise create a new ticket
+        // 3) Otherwise create a new ticket (defaults to status='new' via DB default)
         let createdNewTicket = false;
         let newTicketNumber: string | null = null;
         if (!ticketId) {
@@ -173,7 +181,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
               requester_name: senderName,
               priority: "normal",
               source: "email",
-              status: "open",
+              status: "new",
               inbox,
               tags: campaignTags ?? [],
               sla_due_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
