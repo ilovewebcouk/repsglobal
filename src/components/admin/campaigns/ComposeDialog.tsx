@@ -29,9 +29,11 @@ import {
   searchTrainers,
   previewBroadcastCount,
   sendAdminOutbound,
+} from "@/lib/campaigns/outbound.functions";
+import {
   saveCampaignDraft,
   scheduleCampaign,
-} from "@/lib/campaigns/outbound.functions";
+} from "@/lib/campaigns/outbound-extras.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio";
