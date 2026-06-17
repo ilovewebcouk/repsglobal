@@ -210,7 +210,7 @@ export const updateTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: {
     id: string;
-    status?: "open" | "pending" | "resolved" | "closed";
+    status?: "open" | "pending" | "resolved" | "closed" | "spam";
     priority?: "urgent" | "high" | "normal" | "low";
     assignee_id?: string | null;
     tags?: string[];
@@ -219,7 +219,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        status: z.enum(["open", "pending", "resolved", "closed"]).optional(),
+        status: z.enum(["open", "pending", "resolved", "closed", "spam"]).optional(),
         priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
         assignee_id: z.string().uuid().nullable().optional(),
         tags: z.array(z.string()).optional(),
