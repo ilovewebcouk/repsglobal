@@ -5,12 +5,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio";
 
-const INBOX_META: Record<Inbox, { email: string; name: string }> = {
-  support: { email: "support@repsuk.org", name: "REPS Support" },
-  pros: { email: "pros@repsuk.org", name: "REPS Pros" },
-  partners: { email: "partners@repsuk.org", name: "REPS Partners" },
-  press: { email: "press@repsuk.org", name: "REPS Press" },
+const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
+  support: { email: "support@repsuk.org", name: "REPS Support", label: "Support" },
+  pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
+  partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
+  press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
 };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(e: string): boolean {
+  return EMAIL_RE.test(e.trim());
+}
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
