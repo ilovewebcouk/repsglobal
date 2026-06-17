@@ -920,11 +920,6 @@ function ProCard({
               verification={pro.verification}
               tier={pro.tier}
             />
-            {isNewPro && (
-              <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-emerald-700">
-                New on REPs
-              </span>
-            )}
           </div>
           <div className="mt-0.5 hidden text-[12.5px] text-reps-muted-light sm:block">{pro.role}</div>
 
