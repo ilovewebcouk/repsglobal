@@ -174,6 +174,9 @@ function StatusPill({ status }: { status: string }) {
       {status}
     </span>
   );
+}
+
+
 
 function AdminSupport() {
   const [tab, setTab] = useState<StatusFilter>("new");
