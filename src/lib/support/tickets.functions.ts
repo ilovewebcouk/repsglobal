@@ -302,12 +302,12 @@ export const addInternalNote = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 export const replyToTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { ticketId: string; body: string; closeAfter?: boolean }) =>
+  .inputValidator((d: { ticketId: string; body: string; afterStatus?: "pending" | "solved" | "closed" }) =>
     z
       .object({
         ticketId: z.string().uuid(),
         body: z.string().min(1).max(20000),
-        closeAfter: z.boolean().optional(),
+        afterStatus: z.enum(["pending", "solved", "closed"]).optional(),
       })
       .parse(d),
   )
@@ -417,26 +417,28 @@ export const replyToTicket = createServerFn({ method: "POST" })
         .eq("id", ticket.id);
     }
 
-    if (data.closeAfter) {
+    const afterStatus = data.afterStatus ?? "pending";
+    const nowIso = new Date().toISOString();
+    if (afterStatus === "solved") {
       await context.supabase
         .from("support_tickets")
-        .update({ status: "solved", solved_at: new Date().toISOString() })
+        .update({ status: "solved", solved_at: nowIso, closed_at: null })
         .eq("id", ticket.id);
-    } else if (
-      ticket.status !== "pending" &&
-      ticket.status !== "solved" &&
-      ticket.status !== "closed"
-    ) {
-      // Zendesk-style: a customer-facing reply flips the ticket to pending
-      // (waiting on customer) so it falls out of "Needs you" automatically.
+    } else if (afterStatus === "closed") {
       await context.supabase
         .from("support_tickets")
-        .update({ status: "pending" })
+        .update({ status: "closed", closed_at: nowIso })
+        .eq("id", ticket.id);
+    } else {
+      await context.supabase
+        .from("support_tickets")
+        .update({ status: "pending", solved_at: null, closed_at: null })
         .eq("id", ticket.id);
     }
 
     return { ok: true, messageId };
   });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mark ticket as read (admin opened it)

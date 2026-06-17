@@ -868,7 +868,7 @@ function TicketDrawer({
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
-  const [closeAfter, setCloseAfter] = useState(false);
+  const [afterSend, setAfterSend] = useState<"pending" | "solved" | "closed">("pending");
 
   // Mark ticket as read when drawer opens
   useEffect(() => {
@@ -898,8 +898,6 @@ function TicketDrawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
 
-
-
   const q = useQuery({
     queryKey: ["admin", "support", "ticket", ticketId],
     queryFn: () => getFn({ data: { id: ticketId! } }),
@@ -910,20 +908,22 @@ function TicketDrawer({
     mutationFn: async () => {
       if (!ticketId) return;
       if (mode === "reply") {
-        return replyFn({ data: { ticketId, body: draft, closeAfter } });
+        return replyFn({ data: { ticketId, body: draft, afterStatus: afterSend } });
       }
       return noteFn({ data: { ticketId, body: draft } });
     },
     onSuccess: () => {
       const wasReply = mode === "reply";
+      const after = afterSend;
       setDraft("");
-      const wasClose = closeAfter;
-      setCloseAfter(false);
+      setAfterSend("pending");
       toast.success(
         wasReply
-          ? wasClose
+          ? after === "solved"
             ? "Reply sent · ticket set to Solved"
-            : "Reply sent · ticket set to Pending"
+            : after === "closed"
+              ? "Reply sent · ticket set to Closed"
+              : "Reply sent · ticket set to Pending"
           : "Note added",
       );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
@@ -1251,24 +1251,24 @@ function TicketDrawer({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="text-[11px] text-white/40">
-              {mode === "reply" ? "⌘+Enter to send · E to resolve" : "Internal — never emailed"}
+              {mode === "reply" ? "⌘+Enter to send · E to solve" : "Internal — never emailed"}
             </div>
             {mode === "reply" ? (
               <div className="inline-flex rounded-[10px] overflow-hidden shadow-sm">
                 <Button
                   size="sm"
                   onClick={() => {
-                    setCloseAfter(false);
+                    setAfterSend("pending");
                     send.mutate();
                   }}
                   disabled={!draft.trim() || send.isPending}
                   className="rounded-r-none bg-reps-orange hover:bg-reps-orange/90 text-white"
                 >
-                  {send.isPending && !closeAfter ? (
+                  {send.isPending ? (
                     "Sending…"
                   ) : (
                     <>
-                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send reply
+                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send & pending
                     </>
                   )}
                 </Button>
@@ -1286,13 +1286,21 @@ function TicketDrawer({
                   <DropdownMenuContent align="end" className="bg-reps-panel border-reps-border text-white">
                     <DropdownMenuItem
                       onClick={() => {
-                        setCloseAfter(true);
-                        // Defer so state lands before mutate reads it
+                        setAfterSend("solved");
                         setTimeout(() => send.mutate(), 0);
                       }}
                       className="text-[13px] focus:bg-white/5"
                     >
-                      <Send className="h-3.5 w-3.5 mr-2" /> Send & resolve
+                      <Send className="h-3.5 w-3.5 mr-2" /> Send & solved
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setAfterSend("closed");
+                        setTimeout(() => send.mutate(), 0);
+                      }}
+                      className="text-[13px] focus:bg-white/5"
+                    >
+                      <Send className="h-3.5 w-3.5 mr-2" /> Send & closed
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
