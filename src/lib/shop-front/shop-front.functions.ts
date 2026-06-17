@@ -43,7 +43,7 @@ export type ShopFrontDTO = {
 // Helper: earliest year from approved verification submissions whose
 // derived_title_slug matches the pro's primary_title_slug.
 async function fetchCoachingSinceYear(
-  supabaseAdmin: ReturnType<typeof import("@supabase/supabase-js").createClient>,
+  supabaseAdmin: { from: (t: string) => any },
   professionalId: string,
   primaryTitleSlug: string | null,
 ): Promise<number | null> {
