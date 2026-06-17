@@ -46,12 +46,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -866,7 +860,7 @@ function TicketDrawer({
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
-  const [afterSend, setAfterSend] = useState<"pending" | "solved" | "closed">("pending");
+  
 
   // Mark ticket as read when drawer opens
   useEffect(() => {
@@ -906,23 +900,15 @@ function TicketDrawer({
     mutationFn: async () => {
       if (!ticketId) return;
       if (mode === "reply") {
-        return replyFn({ data: { ticketId, body: draft, afterStatus: afterSend } });
+        return replyFn({ data: { ticketId, body: draft, afterStatus: "solved" } });
       }
       return noteFn({ data: { ticketId, body: draft } });
     },
     onSuccess: () => {
       const wasReply = mode === "reply";
-      const after = afterSend;
       setDraft("");
-      setAfterSend("pending");
       toast.success(
-        wasReply
-          ? after === "solved"
-            ? "Reply sent · ticket set to Solved"
-            : after === "closed"
-              ? "Reply sent · ticket set to Closed"
-              : "Reply sent · ticket set to Pending"
-          : "Note added",
+        wasReply ? "Reply sent · ticket set to Solved" : "Note added",
       );
       qc.invalidateQueries({ queryKey: ["admin", "support", "ticket", ticketId] });
       onChanged();
@@ -1227,57 +1213,20 @@ function TicketDrawer({
               {mode === "reply" ? "⌘+Enter to send · E to solve" : "Internal — never emailed"}
             </div>
             {mode === "reply" ? (
-              <div className="inline-flex rounded-[10px] overflow-hidden shadow-sm">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setAfterSend("pending");
-                    send.mutate();
-                  }}
-                  disabled={!draft.trim() || send.isPending}
-                  className="rounded-r-none bg-reps-orange hover:bg-reps-orange/90 text-white"
-                >
-                  {send.isPending ? (
-                    "Sending…"
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5 mr-1.5" /> Send & pending
-                    </>
-                  )}
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="sm"
-                      disabled={!draft.trim() || send.isPending}
-                      className="rounded-l-none border-l border-white/15 bg-reps-orange hover:bg-reps-orange/90 text-white px-2"
-                      aria-label="More send options"
-                    >
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-reps-panel border-reps-border text-white">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setAfterSend("solved");
-                        setTimeout(() => send.mutate(), 0);
-                      }}
-                      className="text-[13px] focus:bg-white/5"
-                    >
-                      <Send className="h-3.5 w-3.5 mr-2" /> Send & solved
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setAfterSend("closed");
-                        setTimeout(() => send.mutate(), 0);
-                      }}
-                      className="text-[13px] focus:bg-white/5"
-                    >
-                      <Send className="h-3.5 w-3.5 mr-2" /> Send & closed
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <Button
+                size="sm"
+                onClick={() => send.mutate()}
+                disabled={!draft.trim() || send.isPending}
+                className="bg-reps-orange hover:bg-reps-orange/90 text-white"
+              >
+                {send.isPending ? (
+                  "Sending…"
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5 mr-1.5" /> Send & solved
+                  </>
+                )}
+              </Button>
             ) : (
               <Button
                 size="sm"
