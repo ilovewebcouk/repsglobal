@@ -98,6 +98,7 @@ export function ComposeDialog({
           mode,
           subject,
           body,
+          format,
           recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name })) : undefined,
           tiers: mode === "broadcast" ? tiers : undefined,
           attachments,
