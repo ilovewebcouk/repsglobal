@@ -957,7 +957,7 @@ function TicketDrawer({
     <Sheet open={!!ticketId} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[640px] border-l border-reps-border bg-reps-panel/95 text-white p-0 flex flex-col"
+        className="w-full sm:max-w-[640px] border-l border-reps-border bg-reps-panel/95 text-white p-0 flex flex-col [&>button]:text-white/70 [&>button]:hover:text-white [&>button]:hover:bg-white/10"
       >
         <SheetHeader className="px-6 py-4 border-b border-reps-border">
           <div>
