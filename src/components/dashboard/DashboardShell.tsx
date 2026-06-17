@@ -32,6 +32,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { DashboardButton } from "@/components/dashboard/ui/button";
+
+
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
