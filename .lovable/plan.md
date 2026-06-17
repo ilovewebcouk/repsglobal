@@ -1,39 +1,27 @@
-## Goal
-Rebuild the mobile (≤ md) results header on `/find-a-professional` to match the chosen "Modern professional" direction. Desktop layout stays untouched.
+Replace the homepage "Explore by Specialism" grid with the 6 canonical REPs professions. Content-only change — locked layout and styling stay the same.
 
-## Target structure (mobile only)
-Stacked, in this order, edge-to-edge inside the existing dark chrome:
+Changes (`src/routes/index.tsx`)
+--------------------------------
+1. Replace the `specialisms` array with the 6 canonical primary professions:
+   - Personal Trainer → `profession: "personal-trainer"` (Dumbbell)
+   - Strength Coach → `profession: "strength-coach"` (Target)
+   - Pilates → `profession: "pilates-instructor"` (Activity)
+   - Nutritionist → `profession: "nutritionist"` (Apple)
+   - Yoga Teacher → `profession: "yoga-teacher"` (Sparkles)
+   - Fitness Instructor → `profession: "fitness-instructor"` (Users)
 
-1. **Dark search block** (`bg-reps-bg-deep`, p-4 pb-6)
-   - Two stacked inputs (full-width, dark `bg-zinc-800/reps-panel`, rounded-12, 44px tap target)
-   - Row 1: search term — magnifier icon left
-   - Row 2: location — pin icon left
-   - Brand orange focus ring (not teal — swap `#00A88F` → existing `--reps-orange` token)
-2. **Filters / Sort split bar** (white-on-dark inverted: keep dark bg with `border-t border-white/10`)
-   - Two equal-width buttons separated by a 1px vertical divider
-   - "Filters" with sliders icon + count badge when active
-   - "Sort: Nearest" with sort icon (label reflects current sort)
-3. **Active filter chips row** — horizontal scroll, orange-tinted pills with `×`, includes Verified-only when on
-4. **Result count strip** — `text-[11px] uppercase tracking-wider` "{N} results found" + subtle separator
+2. Adjust the grid wrapper so 6 tiles sit evenly: `grid-cols-3 lg:grid-cols-6` (instead of `grid-cols-4 lg:grid-cols-8`). Tile size and styling unchanged.
 
-## Scope
-- Only `/find-a-professional` mobile breakpoint (`md:hidden` block; existing `md:` layout untouched)
-- Reuse existing handlers, URL state, sort options, Verified toggle, filter sheet — purely a presentational restructure
-- Tokens only — map prototype's teal `#00A88F` to brand orange; use `reps-panel`, `reps-border`, `reps-bg-deep` from `src/styles.css`
-- Radii per system: input 12px, pill full, buttons 10px
-- Use shadcn primitives: `Input`, `Button`, `Badge`, `Separator`, `ScrollArea` for chip rail
+3. Rename section H2 from "Specialism" to "Profession" to match the new content taxonomy. Eyebrow and CTA stay as-is.
 
-## Files to touch
-- `src/routes/find-a-professional.tsx` — render new `<ResultsHeaderMobile />` inside the existing mobile branch; keep desktop branch as-is
-- `src/components/directory/ResultsSearchBar.tsx` — extract/add mobile variant OR
-- New: `src/components/directory/ResultsHeaderMobile.tsx` (preferred — keeps the desktop component clean)
+4. Remove now-unused Lucide imports (`Laptop`, `Heart`, `Stethoscope`) from the file's import block.
 
-## Out of scope
-- Desktop header
-- Result cards
-- Filter sheet contents
-- Any business logic / data wiring
+QA
+--
+- Build/typecheck passes.
+- Preview `/` on mobile, tablet, and desktop to confirm the 6 tiles render evenly, hover lift still works, and each tile links to `/find-a-professional?profession=<slug>`.
 
-## Verification
-- Screenshot at 375×812 after build
-- Confirm: 3-stack collapse → 1 search block + 1 split bar + 1 chip row + 1 count strip; Verified chip appears when `?verified=1`; Sort label updates with URL sort param
+Out of scope
+------------
+- No changes to hero, goal chips, featured pros, or any other homepage section.
+- No restyling of the tile or section chrome.

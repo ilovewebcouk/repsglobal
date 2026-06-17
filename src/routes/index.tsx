@@ -13,8 +13,6 @@ import {
   ChevronRight,
   Dumbbell,
   Globe,
-  Heart,
-  Laptop,
   MapPin,
   MessageCircle,
   Quote,
@@ -22,7 +20,6 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Stethoscope,
   Target,
   Users,
 } from "lucide-react";
@@ -102,13 +99,11 @@ type SpecialismSearch = {
 
 const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSearch }[] = [
   { icon: Dumbbell, label: "Personal Trainer", search: { page: 1, sort: "nearest", profession: "personal-trainer" } },
+  { icon: Target, label: "Strength Coach", search: { page: 1, sort: "nearest", profession: "strength-coach" } },
   { icon: Activity, label: "Pilates", search: { page: 1, sort: "nearest", profession: "pilates-instructor" } },
   { icon: Apple, label: "Nutritionist", search: { page: 1, sort: "nearest", profession: "nutritionist" } },
-  { icon: Target, label: "Strength Coach", search: { page: 1, sort: "nearest", profession: "strength-coach" } },
-  { icon: Heart, label: "Pre & Postnatal", search: { page: 1, sort: "nearest", specialism: "pre-post-natal" } },
-  { icon: Stethoscope, label: "Rehab Specialist", search: { page: 1, sort: "nearest", specialism: "rehab-injury" } },
-  { icon: Users, label: "Sports Coach", search: { page: 1, sort: "nearest", specialism: "sports-performance" } },
-  { icon: Laptop, label: "Online Coaching", search: { page: 1, sort: "nearest", mode: "online" } },
+  { icon: Sparkles, label: "Yoga Teacher", search: { page: 1, sort: "nearest", profession: "yoga-teacher" } },
+  { icon: Users, label: "Fitness Instructor", search: { page: 1, sort: "nearest", profession: "fitness-instructor" } },
 ];
 
 const featuredPros = [
@@ -325,7 +320,7 @@ function HomeV2() {
           <div className="grid items-center gap-10 lg:grid-cols-[260px_1fr]">
             <div>
               <div className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Explore by</div>
-              <h2 className="mt-1 font-display text-[34px] font-bold leading-tight text-reps-charcoal">Specialism</h2>
+              <h2 className="mt-1 font-display text-[34px] font-bold leading-tight text-reps-charcoal">Profession</h2>
               <p className="mt-2 max-w-[220px] text-[14px] text-reps-muted-light">
                 Find the right expert for your goals.
               </p>
@@ -337,7 +332,7 @@ function HomeV2() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 lg:grid-cols-8">
+            <div className="grid grid-cols-3 gap-4 lg:grid-cols-6">
               {specialisms.map((sp) => (
                 <Link
                   key={sp.label}
