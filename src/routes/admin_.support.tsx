@@ -195,17 +195,12 @@ function AdminSupport() {
 
   const counts = useMemo(() => {
     const rows = allCountQuery.data ?? [];
-    const nowMs = Date.now();
-    const isActiveSnoozed = (r: any) =>
-      r.snoozed_until && new Date(r.snoozed_until).getTime() > nowMs;
     const isSpam = (r: any) => r.status === "spam";
     const isClosed = (r: any) => r.status === "closed";
     const isTrash = (r: any) => !!r.deleted_at;
     const isNew = (r: any) => r.status === "new";
     const active = rows.filter((r: any) => !isSpam(r) && !isClosed(r) && !isTrash(r));
-    const openRows = active.filter(
-      (r: any) => r.status === "open" && !isActiveSnoozed(r),
-    );
+    const openRows = active.filter((r: any) => r.status === "open");
     const pendingRows = active.filter(
       (r: any) => r.status === "pending",
     );
