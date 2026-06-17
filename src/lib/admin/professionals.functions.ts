@@ -225,7 +225,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         status,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,
         clients: clientCount.get(p.id) ?? 0,
-        joined: p.created_at,
+        joined: p.member_since ?? p.created_at,
         isPublished: p.is_published ?? false,
         suspendedAt: p.suspended_at ?? null,
         suspensionReason: p.suspension_reason ?? null,
