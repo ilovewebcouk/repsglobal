@@ -318,6 +318,13 @@ function LocationLanding() {
       getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
     staleTime: 60_000,
   });
+  const { data: onlineCountResult } = useQuery({
+    queryKey: ["city-online-count", loc.slug],
+    queryFn: () => getCityOnlineCount({ data: { city: loc.name } }),
+    staleTime: 60_000,
+  });
+  const onlineCount = onlineCountResult?.count ?? null;
+  const onlineCountLabel = onlineCount && onlineCount > 0 ? onlineCount.toLocaleString() : "—";
   const cityCount = liveCounts
     ? Object.values(liveCounts).reduce((a, b) => a + b, 0)
     : null;
