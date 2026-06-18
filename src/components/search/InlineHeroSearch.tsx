@@ -93,6 +93,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
   const {
     variant,
     className,
+    style,
     buttonClassName,
     buttonLabel = "Search",
     showDivider = false,
