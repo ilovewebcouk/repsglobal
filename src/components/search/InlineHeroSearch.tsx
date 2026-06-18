@@ -265,7 +265,10 @@ function WhatField(props: {
     placeholder,
   } = props;
 
-  const ranked: RankedEntry[] = React.useMemo(() => searchTaxonomy(query), [query]);
+  const ranked: RankedEntry[] = React.useMemo(
+    () => searchTaxonomy(query, { profession: lockedProfession ?? null }),
+    [query, lockedProfession],
+  );
 
   const popular = React.useMemo(() => {
     const all = getPopularEntries();
