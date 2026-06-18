@@ -249,10 +249,11 @@ export const resolveViewerPostcode = createServerFn({ method: "POST" })
       throw new Error("That doesn't look like a valid UK postcode.");
     }
     const r = await lookupPostcode(pc);
+    const { town, region } = deriveDisplay(r);
     return {
       postcode_outward: r.outcode,
-      town: deriveTown(r),
-      region: r.region,
+      town,
+      region,
       latitude: r.latitude,
       longitude: r.longitude,
     };
@@ -270,10 +271,11 @@ export const resolveViewerLatLng = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<PublicOrigin | null> => {
     const r = await reverseLookup(data.latitude, data.longitude);
     if (!r) return null;
+    const { town, region } = deriveDisplay(r);
     return {
       postcode_outward: r.outcode,
-      town: deriveTown(r),
-      region: r.region,
+      town,
+      region,
       latitude: r.latitude,
       longitude: r.longitude,
     };
