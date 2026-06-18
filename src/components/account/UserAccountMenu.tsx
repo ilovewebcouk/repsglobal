@@ -121,7 +121,12 @@ export function UserAccountMenu({
             className,
           )}
         >
-          <UserAvatar name={user.name} avatarUrl={avatarUrl} size="md" />
+          <UserAvatar
+            name={user.name}
+            avatarUrl={avatarUrl}
+            size="md"
+            className="size-10 rounded-[10px]"
+          />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
