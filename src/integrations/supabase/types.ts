@@ -2007,7 +2007,6 @@ export type Database = {
           cover_url: string | null
           created_at: string
           dbs_valid_until: string | null
-          from_price_pennies: number | null
           headline: string | null
           hourly_rate_pence: number | null
           id: string
@@ -2022,7 +2021,6 @@ export type Database = {
           locale: string
           member_since: string | null
           online_available: boolean
-          price_currency: string
           primary_profession: string | null
           primary_title_slug: string | null
           quality_score: number
@@ -2039,12 +2037,10 @@ export type Database = {
           suspension_reason: string | null
           timezone: string
           updated_at: string
-          value_prop: string | null
           verification: Database["public"]["Enums"]["verification_status"]
           verification_grace_until: string | null
           verification_status: Database["public"]["Enums"]["verification_state"]
           website: string | null
-          years_experience: number | null
         }
         Insert: {
           bd_seed_thin?: boolean
@@ -2056,7 +2052,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           dbs_valid_until?: string | null
-          from_price_pennies?: number | null
           headline?: string | null
           hourly_rate_pence?: number | null
           id: string
@@ -2071,7 +2066,6 @@ export type Database = {
           locale?: string
           member_since?: string | null
           online_available?: boolean
-          price_currency?: string
           primary_profession?: string | null
           primary_title_slug?: string | null
           quality_score?: number
@@ -2088,12 +2082,10 @@ export type Database = {
           suspension_reason?: string | null
           timezone?: string
           updated_at?: string
-          value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
           website?: string | null
-          years_experience?: number | null
         }
         Update: {
           bd_seed_thin?: boolean
@@ -2105,7 +2097,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           dbs_valid_until?: string | null
-          from_price_pennies?: number | null
           headline?: string | null
           hourly_rate_pence?: number | null
           id?: string
@@ -2120,7 +2111,6 @@ export type Database = {
           locale?: string
           member_since?: string | null
           online_available?: boolean
-          price_currency?: string
           primary_profession?: string | null
           primary_title_slug?: string | null
           quality_score?: number
@@ -2137,12 +2127,10 @@ export type Database = {
           suspension_reason?: string | null
           timezone?: string
           updated_at?: string
-          value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
           website?: string | null
-          years_experience?: number | null
         }
         Relationships: []
       }
