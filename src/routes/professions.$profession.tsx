@@ -78,6 +78,9 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
     image: r.avatar_url ?? fallbackImg,
+    identityStatus: r.identity_status,
+    verification: r.verification,
+    tier: r.tier,
   };
 }
 
