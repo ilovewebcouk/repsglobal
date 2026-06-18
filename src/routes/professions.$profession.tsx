@@ -547,7 +547,7 @@ function ProfessionLanding() {
             to="/find-a-professional"
             className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
           >
-            See all {meta.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
+            See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
