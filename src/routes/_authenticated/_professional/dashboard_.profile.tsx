@@ -63,7 +63,6 @@ import {
 import {
   MAX_SPECIALISMS,
   getSpecialismLabel,
-  isSpecialismValidForProfession,
   type SpecialismSlug,
 } from "@/lib/specialisms";
 import { SpecialismsPicker } from "@/components/profile/SpecialismsPicker";
