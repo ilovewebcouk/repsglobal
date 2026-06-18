@@ -278,6 +278,7 @@ export function ResultsSearchBar({
         <div className="flex flex-wrap items-center gap-2">
           <WhatChip
             label={whatLabel}
+            profession={state.profession}
             onPick={(entry) =>
               patch({
                 profession: entry?.route.profession,
