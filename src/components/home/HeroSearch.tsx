@@ -11,9 +11,8 @@ export function HomeHeroSearch() {
       variant="dark"
       showDivider
       className="animate-rise-in mt-8 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-reps-ink/60 p-2 backdrop-blur-md sm:flex-row sm:items-stretch sm:gap-0 sm:p-1.5"
+      style={{ animationDelay: "320ms" }}
       buttonLabel="Find your coach"
-      // Inline animation delay preserves the existing rise-in stagger.
-      // (className handles the rest of the original styling.)
     />
   );
 }
