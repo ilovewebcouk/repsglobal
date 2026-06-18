@@ -187,6 +187,7 @@ async function fetchFeaturedPool(
         primary_profession: p.primary_profession,
         specialisms: Array.isArray(p.specialisms) ? p.specialisms : [],
         city: p.city,
+        town: townById.get(p.id) ?? null,
         headline: p.headline,
         in_person_available: p.in_person_available,
         online_available: p.online_available,
