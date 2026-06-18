@@ -28,6 +28,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCityAvgRating, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { FEATURED_MIN_CARDS } from "@/lib/directory/featured.config";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
