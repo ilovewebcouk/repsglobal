@@ -88,8 +88,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "nutritionist", label: "Nutritionists", count: 39 },
       { slug: "online-coach", label: "Online Coaches", count: 44 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 52 },
-
     ],
+
   },
   manchester: {
     slug: "manchester",
@@ -106,8 +106,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "nutritionist", label: "Nutritionists", count: 14 },
       { slug: "online-coach", label: "Online Coaches", count: 13 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 16 },
-
     ],
+
   },
   birmingham: {
     slug: "birmingham",
@@ -124,8 +124,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "nutritionist", label: "Nutritionists", count: 9 },
       { slug: "online-coach", label: "Online Coaches", count: 12 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 12 },
-
     ],
+
   },
   edinburgh: {
     slug: "edinburgh",
@@ -142,8 +142,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "nutritionist", label: "Nutritionists", count: 5 },
       { slug: "online-coach", label: "Online Coaches", count: 7 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 9 },
-
     ],
+
   },
 };
 
@@ -161,14 +161,14 @@ function getLocation(slug: string): LocationMeta {
       count: 32,
       areas: ["Town Centre", "Surrounding Areas"],
       professions: [
-      { slug: "personal-trainer", label: "Personal Trainers", count: 18 },
-      { slug: "pilates-instructor", label: "Pilates Instructors", count: 6 },
-      { slug: "strength-coach", label: "Strength Coaches", count: 3 },
-      { slug: "nutritionist", label: "Nutritionists", count: 2 },
-      { slug: "online-coach", label: "Online Coaches", count: 3 },
-      { slug: "yoga-teacher", label: "Yoga Teachers", count: 2 },
-
+        { slug: "personal-trainer", label: "Personal Trainers", count: 18 },
+        { slug: "pilates-instructor", label: "Pilates Instructors", count: 6 },
+        { slug: "strength-coach", label: "Strength Coaches", count: 3 },
+        { slug: "nutritionist", label: "Nutritionists", count: 2 },
+        { slug: "online-coach", label: "Online Coaches", count: 3 },
+        { slug: "yoga-teacher", label: "Yoga Teachers", count: 2 },
       ],
+
     }
   );
 }
