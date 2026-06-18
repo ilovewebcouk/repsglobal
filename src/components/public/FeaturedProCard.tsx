@@ -177,7 +177,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
         <Link
           to="/pro/$slug"
           params={{ slug }}
-          className="mt-4 inline-flex h-10 w-full items-center justify-center gap-1 rounded-[10px] border border-reps-stone bg-transparent text-[13px] font-semibold text-reps-charcoal shadow-none transition group-hover:border-reps-orange group-hover:bg-reps-orange group-hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange focus-visible:ring-offset-2"
+          className="mt-auto inline-flex h-10 w-full items-center justify-center gap-1 rounded-[10px] border border-reps-stone bg-transparent text-[13px] font-semibold text-reps-charcoal shadow-none transition group-hover:border-reps-orange group-hover:bg-reps-orange group-hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange focus-visible:ring-offset-2"
         >
           View profile
           <ChevronRight className="h-3.5 w-3.5" />
