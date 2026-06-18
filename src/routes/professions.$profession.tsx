@@ -78,7 +78,6 @@ type ProfessionMeta = {
   qualifications: string[];
   specialisms: string[];
   avgRate: string;
-  count: number;
   related: { slug: string; label: string }[];
 };
 
