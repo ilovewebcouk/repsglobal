@@ -304,6 +304,14 @@ function LocationLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
+  const professionSlugs = loc.professions.map((p) => p.slug);
+  const { data: liveCounts } = useQuery({
+    queryKey: ["city-profession-counts", loc.slug, professionSlugs.join(",")],
+    queryFn: () =>
+      getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
       <PublicHeader variant="solid" />
