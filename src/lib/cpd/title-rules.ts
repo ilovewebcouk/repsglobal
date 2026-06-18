@@ -17,7 +17,13 @@
  */
 
 import { TITLES, type TitleSlug } from "./titles-catalog";
-import type { SpecialismSlug } from "@/lib/specialisms";
+import type { LegacySpecialismSlug } from "@/lib/specialisms";
+
+// Title rules emit "legacy" generic specialism slugs (e.g. "strength",
+// "pre-post-natal"). The verification approval flow maps these to a
+// profession-scoped slug via `mapLegacySpecialism()` before writing them
+// to `professionals.specialisms`.
+type SpecialismSlug = LegacySpecialismSlug;
 
 /* -------------------------------------------------------------------------- */
 /* Inputs                                                                      */
