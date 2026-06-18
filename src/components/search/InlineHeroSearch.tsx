@@ -264,18 +264,6 @@ function WhatField(props: {
     hideClear,
     placeholder,
   } = props;
-  const {
-    variant,
-    open,
-    setOpen,
-    query,
-    setQuery,
-    selected: _selected,
-    setSelected,
-    label,
-    lockedProfession,
-    placeholder,
-  } = props;
 
   const ranked: RankedEntry[] = React.useMemo(() => searchTaxonomy(query), [query]);
 
