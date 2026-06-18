@@ -111,7 +111,13 @@ type ProRow = {
 async function fetchFeaturedPool(
   scope: FeaturedScope,
   value: string | undefined,
-): Promise<{ pool: FeaturedProRow[]; paidCount: number; backfillUsed: boolean }> {
+): Promise<{
+  pool: FeaturedProRow[];
+  paidCount: number;
+  backfillUsed: boolean;
+  eligibleCount: number;
+  belowThresholdCount: number;
+}> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   let qb = supabaseAdmin
@@ -129,12 +135,14 @@ async function fetchFeaturedPool(
     .limit(500);
 
   if (error || !prosRaw || prosRaw.length === 0) {
-    return { pool: [], paidCount: 0, backfillUsed: false };
+    return { pool: [], paidCount: 0, backfillUsed: false, eligibleCount: 0, belowThresholdCount: 0 };
   }
 
   const pros = prosRaw as ProRow[];
   const ids = pros.filter((p) => p.slug).map((p) => p.id);
-  if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
+  if (ids.length === 0) {
+    return { pool: [], paidCount: 0, backfillUsed: false, eligibleCount: 0, belowThresholdCount: 0 };
+  }
 
   const [profilesRes, subsRes, reviewsRes] = await Promise.all([
     supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
@@ -195,20 +203,40 @@ async function fetchFeaturedPool(
       };
     });
 
-  const paidPool = enriched.filter((p) => p.is_paid);
+  // Hard eligibility — every featured pro must clear ALL of these gates.
+  // No exceptions, no backfill bypass. If we can't fill the rail, we hide it.
+  const isEligible = (p: FeaturedProRow) =>
+    Boolean(p.avatar_url) &&
+    p.identity_status === "approved" &&
+    Boolean(p.headline && p.headline.trim().length > 0) &&
+    (p.specialisms?.length ?? 0) >= 1 &&
+    (pros.find((x) => x.id === p.id)?.quality_score ?? 0) >= FEATURED_MIN_QUALITY_RAW;
+
+  const eligible = enriched.filter(isEligible);
+  const belowThreshold = enriched.length - eligible.length;
+
+  const paidPool = eligible.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;
 
   if (usePaidOnly) {
-    return { pool: paidPool, paidCount: paidPool.length, backfillUsed: false };
+    return {
+      pool: paidPool,
+      paidCount: paidPool.length,
+      backfillUsed: false,
+      eligibleCount: eligible.length,
+      belowThresholdCount: belowThreshold,
+    };
   }
 
-  // Backfill: paid pros first (still get priority), then anyone published with
-  // an avatar — backfill keeps the rail full while we grow the paid base.
-  const backfill = enriched.filter((p) => !p.is_paid && p.avatar_url);
+  // Backfill draws from the SAME eligible pool — just non-paid pros.
+  // They still have a real headshot, are identity-verified, and pass quality.
+  const backfill = eligible.filter((p) => !p.is_paid);
   return {
     pool: [...paidPool, ...backfill],
     paidCount: paidPool.length,
     backfillUsed: true,
+    eligibleCount: eligible.length,
+    belowThresholdCount: belowThreshold,
   };
 }
 
