@@ -338,11 +338,11 @@ function HomeV2() {
           </div>
 
           <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
-            {featuredPros.map((p) => (
+            {featuredCards.map((p) => (
               <Link
                 key={p.name}
                 to="/pro/$slug"
-                params={{ slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
+                params={{ slug: p.slug ?? p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
                 className="group block w-[78%] shrink-0 snap-center overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5 sm:w-auto"
               >
                 <div className="relative aspect-[4/5] overflow-hidden">
