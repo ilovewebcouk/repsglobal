@@ -1,12 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import * as React from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { requireRole } from "@/lib/route-gates";
-import { AlertTriangle, Globe2, Star } from "lucide-react";
+import { AlertTriangle, Globe2, RefreshCcw, Sparkles, Star } from "lucide-react";
+
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getDirectoryHealth } from "@/lib/directory/featured.functions";
 
 export const Route = createFileRoute("/admin_/directory")({
   ssr: false,
-  beforeLoad: requireRole(['admin']),
+  beforeLoad: requireRole(["admin"]),
   head: () => ({
     meta: [
       { title: "Directory health — REPS Admin" },
@@ -18,20 +24,62 @@ export const Route = createFileRoute("/admin_/directory")({
   component: AdminDirectory,
 });
 
+const PROFESSION_LABELS: Record<string, string> = {
+  "personal-trainer": "Personal Trainer",
+  "pilates-instructor": "Pilates",
+  "strength-coach": "S&C Coach",
+  "nutritionist": "Nutritionist",
+  "online-coach": "Online Coach",
+  "yoga-teacher": "Yoga",
+  "group-exercise-instructor": "Group Ex",
+  "fitness-instructor": "Fitness Instructor",
+};
+
 function AdminDirectory() {
+  const qc = useQueryClient();
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["admin-directory-health"],
+    queryFn: () => getDirectoryHealth(),
+    staleTime: 60_000,
+  });
+
+  const subtitle = data
+    ? `${data.kpis.live_listings.toLocaleString()} live listings${
+        data.kpis.completeness_pct != null ? ` · ${data.kpis.completeness_pct}% completeness average` : ""
+      }`
+    : "Loading…";
+
+  const kpis = data
+    ? [
+        { label: "Live listings", value: data.kpis.live_listings.toLocaleString(), delta: "Currently published" },
+        {
+          label: "Completeness",
+          value: data.kpis.completeness_pct != null ? `${data.kpis.completeness_pct}%` : "—",
+          delta: "Avg quality score (max 100)",
+        },
+        {
+          label: "Broken links",
+          value: data.kpis.broken_links == null ? "—" : data.kpis.broken_links.toLocaleString(),
+          delta: "Crawler ships in a later release",
+        },
+        {
+          label: "Featured slots",
+          value: `${data.kpis.featured_slots.filled} / ${data.kpis.featured_slots.capacity}`,
+          delta: data.backfill_active
+            ? `Backfill active · ${data.paid_total} paid pro${data.paid_total === 1 ? "" : "s"} live`
+            : `${data.paid_total} paid pros in rotation`,
+        },
+      ]
+    : Array.from({ length: 4 }).map(() => ({ label: "—", value: "—", delta: "" }));
+
   return (
-    <DashboardShell role="admin" active="Directory" title="Directory health" subtitle="2,418 live listings · 87% completeness average">
+    <DashboardShell role="admin" active="Directory" title="Directory health" subtitle={subtitle}>
       <div className="grid gap-4 md:grid-cols-4">
-        {[
-          { label: "Live listings", value: "2,418", delta: "+62 this week" },
-          { label: "Completeness", value: "87%", delta: "+3.2% vs last month" },
-          { label: "Broken links", value: "14", delta: "−6 this week", tone: "warn" },
-          { label: "Featured slots", value: "12 / 12", delta: "Next rotation Mon" },
-        ].map((k) => (
+        {kpis.map((k) => (
           <PCard key={k.label}>
             <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/45">{k.label}</div>
             <div className="mt-2 font-display text-[28px] font-bold text-white">{k.value}</div>
-            <div className={`mt-1 text-[12px] ${k.tone === "warn" ? "text-rose-400" : "text-reps-green"}`}>{k.delta}</div>
+            <div className="mt-1 text-[12px] text-white/55">{k.delta}</div>
           </PCard>
         ))}
       </div>
@@ -40,91 +88,143 @@ function AdminDirectory() {
         <PPanel className="p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-[16px] font-semibold text-white">Listings needing attention</h2>
-            <button className="text-[12px] font-semibold text-reps-orange hover:underline">View all</button>
+            <Link
+              to="/admin/professionals"
+              className="text-[12px] font-semibold text-reps-orange hover:underline"
+            >
+              View all
+            </Link>
           </div>
-          <table className="mt-4 w-full text-[13px]">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
-                <th className="py-2 font-semibold">Professional</th>
-                <th className="py-2 font-semibold">Issue</th>
-                <th className="py-2 font-semibold">Completeness</th>
-                <th className="py-2 font-semibold">Last edit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { n: "Aaron Mitchell", i: "Missing services pricing", c: 64, l: "8d ago" },
-                { n: "Bethany Ngozi", i: "Broken Instagram link", c: 78, l: "3d ago" },
-                { n: "Connor Davies", i: "No profile photo", c: 52, l: "21d ago" },
-                { n: "Diya Kapoor", i: "Qualifications unverified", c: 71, l: "1d ago" },
-                { n: "Ewan MacLeod", i: "Empty about section", c: 58, l: "14d ago" },
-                { n: "Freya Lockhart", i: "Studio address invalid", c: 69, l: "6d ago" },
-              ].map((r) => (
-                <tr key={r.n} className="border-t border-reps-border/60 text-white/80">
-                  <td className="py-3 font-semibold text-white">{r.n}</td>
-                  <td className="py-3 text-white/65">{r.i}</td>
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-reps-ink">
-                        <div className="h-full rounded-full bg-reps-orange" style={{ width: `${r.c}%` }} />
-                      </div>
-                      <span className="text-[12px] text-white/55">{r.c}%</span>
-                    </div>
-                  </td>
-                  <td className="py-3 text-white/55">{r.l}</td>
+          {isPending ? (
+            <p className="mt-4 text-[13px] text-white/55">Loading directory health…</p>
+          ) : isError || !data ? (
+            <p className="mt-4 text-[13px] text-rose-300">Couldn't load directory health.</p>
+          ) : data.needs_attention.length === 0 ? (
+            <p className="mt-4 text-[13px] text-white/55">No incomplete profiles — every published pro is in good shape.</p>
+          ) : (
+            <table className="mt-4 w-full text-[13px]">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
+                  <th className="py-2 font-semibold">Professional</th>
+                  <th className="py-2 font-semibold">Issue</th>
+                  <th className="py-2 font-semibold">Completeness</th>
+                  <th className="py-2 font-semibold">Last edit</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.needs_attention.map((r) => (
+                  <tr key={r.id} className="border-t border-reps-border/60 text-white/80">
+                    <td className="py-3 font-semibold text-white">
+                      {r.slug ? (
+                        <Link to="/pro/$slug" params={{ slug: r.slug }} className="hover:text-reps-orange">
+                          {r.name}
+                        </Link>
+                      ) : (
+                        r.name
+                      )}
+                    </td>
+                    <td className="py-3 text-white/65">{r.issue}</td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-reps-ink">
+                          <div className="h-full rounded-full bg-reps-orange" style={{ width: `${r.completeness_pct}%` }} />
+                        </div>
+                        <span className="text-[12px] text-white/55">{r.completeness_pct}%</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-white/55">{r.last_edit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </PPanel>
 
         <div className="space-y-6">
           <PPanel className="p-6">
-            <div className="flex items-center gap-2 text-white">
-              <Star className="h-4 w-4 text-reps-orange" />
-              <h2 className="font-display text-[16px] font-semibold">Featured rotation</h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white">
+                <Star className="h-4 w-4 text-reps-orange" />
+                <h2 className="font-display text-[16px] font-semibold">Featured rotation</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => qc.invalidateQueries({ queryKey: ["admin-directory-health"] })}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/70 hover:text-white"
+                aria-label="Refresh featured rotation"
+              >
+                <RefreshCcw className="h-3 w-3" />
+                Refresh
+              </button>
             </div>
-            <ul className="mt-4 space-y-3 text-[13px]">
-              {[
-                "James Carter — Personal Trainer · London",
-                "Sophie Williams — Pilates · Manchester",
-                "Marcus Reid — S&C Coach · Bristol",
-                "Priya Shah — Nutritionist · Leeds",
-              ].map((p) => (
-                <li key={p} className="flex items-center justify-between rounded-[10px] border border-reps-border bg-reps-ink px-3 py-2 text-white/80">
-                  {p}
-                  <button className="text-[11px] font-semibold text-reps-orange hover:underline">Demote</button>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-1 text-[11px] text-white/45">
+              Auto-rotated daily.{" "}
+              {data?.backfill_active
+                ? "Avatar-backfill on until 6+ paid pros are live."
+                : "Paid pros only (Verified / Pro / Studio)."}
+            </p>
+            {data && data.featured_rotation.length > 0 ? (
+              <ul className="mt-4 space-y-2 text-[13px]">
+                {data.featured_rotation.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-2 rounded-[10px] border border-reps-border bg-reps-ink px-3 py-2 text-white/80"
+                  >
+                    <Link to="/pro/$slug" params={{ slug: p.slug }} className="truncate hover:text-reps-orange">
+                      <span className="font-semibold text-white">{p.name}</span>
+                      <span className="ml-1 text-white/55">
+                        — {PROFESSION_LABELS[p.role] ?? p.role}
+                        {p.city ? ` · ${p.city}` : ""}
+                      </span>
+                    </Link>
+                    {p.is_paid ? (
+                      <Badge className="rounded-full border border-reps-orange/40 bg-reps-orange/15 px-2 py-0 text-[10px] font-semibold uppercase tracking-wider text-reps-orange">
+                        {p.tier}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="rounded-full border-white/15 px-2 py-0 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                        Backfill
+                      </Badge>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 text-[13px] text-white/55">No featured pros yet.</p>
+            )}
           </PPanel>
+
           <PCard>
             <div className="flex items-center gap-2 text-white">
               <Globe2 className="h-4 w-4 text-reps-orange" />
               <h3 className="font-display text-[14px] font-semibold">Geographic coverage</h3>
             </div>
-            <ul className="mt-3 space-y-2 text-[13px] text-white/75">
-              {[
-                ["London", 412], ["Manchester", 188], ["Birmingham", 142], ["Leeds", 96], ["Bristol", 84],
-              ].map(([city, n]) => (
-                <li key={city as string} className="flex items-center justify-between">
-                  <span>{city}</span>
-                  <span className="font-semibold text-white">{n}</span>
-                </li>
-              ))}
-            </ul>
+            {data && data.geographic_coverage.length > 0 ? (
+              <ul className="mt-3 space-y-2 text-[13px] text-white/75">
+                {data.geographic_coverage.map((c) => (
+                  <li key={c.city} className="flex items-center justify-between">
+                    <span>{c.city}</span>
+                    <span className="font-semibold text-white">{c.count}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-[12px] text-white/55">No city data yet.</p>
+            )}
           </PCard>
-          <PCard className="border-rose-500/30 bg-rose-500/[0.04]">
-            <div className="flex items-center gap-2 text-rose-300">
-              <AlertTriangle className="h-4 w-4" />
+
+          <PCard className="border-white/10 bg-white/[0.02]">
+            <div className="flex items-center gap-2 text-white/70">
+              <AlertTriangle className="h-4 w-4 text-white/55" />
               <h3 className="font-display text-[14px] font-semibold">Crawl alerts</h3>
             </div>
-            <p className="mt-2 text-[12px] text-white/70">
-              14 outbound links failed in the last sweep. Re-run scan or open the broken-links queue to triage.
+            <p className="mt-2 text-[12px] text-white/55">
+              Link crawler ships in a later release. This panel will surface outbound-link failures once it goes live.
             </p>
-            <button className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover">
+            <Button disabled className="mt-3 h-9 rounded-[10px] bg-white/5 text-[12px] font-semibold text-white/40 hover:bg-white/5">
+              <Sparkles className="mr-1.5 h-3 w-3" />
               Re-run crawl
-            </button>
+            </Button>
           </PCard>
         </div>
       </div>

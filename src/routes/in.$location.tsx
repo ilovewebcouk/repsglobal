@@ -27,6 +27,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCityAvgRating, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -53,6 +54,26 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
     city: r.location?.town ?? r.city ?? "",
     rating: 5.0,
     reviews: 0,
+    mode,
+    tags: (r.specialisms ?? []).slice(0, 2),
+    image: r.avatar_url ?? fallbackImg,
+  };
+}
+
+function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+  const mode: FeaturedPro["mode"] =
+    r.in_person_available && r.online_available
+      ? "In-person & Online"
+      : r.online_available
+        ? "Online"
+        : "In-person";
+  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  return {
+    name: r.full_name,
+    role,
+    city: r.city ?? "",
+    rating: r.rating_avg ?? 5.0,
+    reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
     image: r.avatar_url ?? fallbackImg,
@@ -337,14 +358,14 @@ function LocationLanding() {
   const relatedCities = Object.values(LOCATIONS).filter((c) => c.slug !== loc.slug);
 
   const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
-  const { data: liveResult } = useQuery({
-    queryKey: ["directory-featured", loc.slug],
-    queryFn: () => searchProfessionals({ data: { city: loc.name, limit: 4 } }),
-    staleTime: 60_000,
+  const { data: featuredResult } = useQuery({
+    queryKey: ["city-featured", loc.slug],
+    queryFn: () => getFeaturedPros({ data: { scope: "city", value: loc.name, limit: 4 } }),
+    staleTime: 60 * 60_000,
   });
-  const livePros = liveResult?.rows ?? [];
+  const livePros = featuredResult?.pros ?? [];
   const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
+    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
   const professionSlugs = loc.professions.map((p) => p.slug);

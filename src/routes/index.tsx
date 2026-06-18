@@ -1,7 +1,8 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { heroAvatarsQueryOptions, type HeroAvatar } from "@/lib/directory/hero.functions";
+import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import {
   Activity,
   Apple,
@@ -107,12 +108,9 @@ const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSea
   { icon: Users, label: "Fitness Instructor", search: { page: 1, sort: "nearest", profession: "fitness-instructor" } },
 ];
 
-const featuredPros = [
-  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
-  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
-  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
-  { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true as const },
-];
+// Static fallback in case the rail query fails — REPLACED at runtime by
+// `featuredCards` derived from `getFeaturedPros`. See HomeV2.
+
 
 const outcomes = [
   {
@@ -148,10 +146,74 @@ const trustPillars = [
   { icon: Globe, title: "Global Community", body: "120+ countries. One global standard for exercise professionals." },
 ];
 
+const PROFESSION_LABEL_HOME: Record<string, string> = {
+  "personal-trainer": "Personal Trainer",
+  "pilates-instructor": "Pilates Instructor",
+  "strength-coach": "Strength Coach",
+  "nutritionist": "Nutritionist",
+  "online-coach": "Online Coach",
+  "yoga-teacher": "Yoga Teacher",
+  "group-exercise-instructor": "Group Exercise Instructor",
+  "fitness-instructor": "Fitness Instructor",
+};
+
+type HomeFeaturedCard = {
+  name: string;
+  role: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  mode: string;
+  image: string;
+  online?: boolean;
+  slug?: string;
+};
+
+const FALLBACK_FEATURED: HomeFeaturedCard[] = [
+  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
+  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
+  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
+  { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true },
+];
+
+const FALLBACK_IMGS = [proJames, proSophie, proDaniel, proLaura];
+
+function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard {
+  const mode =
+    r.in_person_available && r.online_available
+      ? "In-person & Online"
+      : r.online_available
+        ? "Online"
+        : "In-person";
+  const role = r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Professional") : "Professional";
+  return {
+    name: r.full_name,
+    role,
+    location: r.city ?? (r.online_available ? "Online" : "—"),
+    rating: r.rating_avg ?? 5.0,
+    reviews: r.review_count,
+    mode,
+    image: r.avatar_url ?? fallbackImg,
+    online: !r.in_person_available && Boolean(r.online_available),
+    slug: r.slug,
+  };
+}
+
 function HomeV2() {
+  const { data: featuredResult } = useQuery({
+    queryKey: ["home-featured-rail"],
+    queryFn: () => getFeaturedPros({ data: { scope: "global", limit: 4 } }),
+    staleTime: 60 * 60_000, // rotation only changes once per day
+  });
+  const liveFeatured = featuredResult?.pros ?? [];
+  const featuredCards: HomeFeaturedCard[] = liveFeatured.length
+    ? liveFeatured.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
+    : FALLBACK_FEATURED;
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="transparent" />
+
 
 
 
@@ -259,6 +321,7 @@ function HomeV2() {
             <div className="flex items-center gap-4">
               <Link
                 to="/find-a-professional"
+                search={{ featured: true }}
                 className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
               >
                 View all
@@ -275,11 +338,11 @@ function HomeV2() {
           </div>
 
           <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
-            {featuredPros.map((p) => (
+            {featuredCards.map((p) => (
               <Link
                 key={p.name}
                 to="/pro/$slug"
-                params={{ slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
+                params={{ slug: p.slug ?? p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
                 className="group block w-[78%] shrink-0 snap-center overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5 sm:w-auto"
               >
                 <div className="relative aspect-[4/5] overflow-hidden">
