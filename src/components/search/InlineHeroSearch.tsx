@@ -180,7 +180,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
       : "inline-flex h-[44px] items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark";
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={className} style={style}>
       <WhatField
         variant={variant}
         open={whatOpen}
