@@ -452,7 +452,7 @@ function ProfessionLanding() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <BadgeCheck className="h-3 w-3 text-reps-orange" />
-              {meta.count.toLocaleString()} REPS-verified {meta.plural.toLowerCase()}
+              {verifiedCountLabel} REPS-verified {meta.plural.toLowerCase()}
             </span>
             <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
               Find a verified <span className="text-reps-orange">{meta.title}</span>
