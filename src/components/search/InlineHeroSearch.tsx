@@ -248,8 +248,22 @@ function WhatField(props: {
   setSelected: (s: SelectedWhat) => void;
   label: string | null;
   lockedProfession?: string;
+  hideClear?: boolean;
   placeholder: string;
 }) {
+  const {
+    variant,
+    open,
+    setOpen,
+    query,
+    setQuery,
+    selected: _selected,
+    setSelected,
+    label,
+    lockedProfession,
+    hideClear,
+    placeholder,
+  } = props;
   const {
     variant,
     open,
