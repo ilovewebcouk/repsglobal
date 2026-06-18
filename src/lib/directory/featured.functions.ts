@@ -245,12 +245,13 @@ export type GetFeaturedProsResult = {
   paid_count: number;
   pool_size: number;
   backfill_used: boolean;
+  eligible_count: number;
 };
 
 export const getFeaturedPros = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => FeaturedInputSchema.parse(raw ?? {}))
   .handler(async ({ data }): Promise<GetFeaturedProsResult> => {
-    const { pool, paidCount, backfillUsed } = await fetchFeaturedPool(
+    const { pool, paidCount, backfillUsed, eligibleCount } = await fetchFeaturedPool(
       data.scope,
       data.value,
     );
@@ -263,6 +264,7 @@ export const getFeaturedPros = createServerFn({ method: "GET" })
       paid_count: paidCount,
       pool_size: pool.length,
       backfill_used: backfillUsed,
+      eligible_count: eligibleCount,
     };
   });
 
