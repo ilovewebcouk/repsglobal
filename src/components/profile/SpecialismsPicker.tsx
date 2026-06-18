@@ -1,22 +1,54 @@
 import * as React from "react";
-import { MAX_SPECIALISMS, SPECIALISMS, type SpecialismSlug } from "@/lib/specialisms";
+import {
+  MAX_SPECIALISMS,
+  getSpecialismsForProfession,
+} from "@/lib/specialisms";
+import type { ProfessionSlug } from "@/lib/professions";
 
 /**
- * Shared specialisms chip picker.
- * Used by both the Public Profile editor (section 05) and the new
+ * Shared profession-scoped specialisms chip picker.
+ *
+ * Each profession unlocks its own catalogue. Pass `profession` so the
+ * picker only renders relevant specialisms; when null, shows an empty
+ * state asking the user to set their profession first.
+ *
+ * Used by both the Public Profile editor (section 05) and the
  * Services page (`/dashboard/services`) so they stay in sync.
  */
 export function SpecialismsPicker({
   values,
   onChange,
+  profession,
   max = MAX_SPECIALISMS,
 }: {
-  values: SpecialismSlug[];
-  onChange: (next: SpecialismSlug[]) => void;
+  values: string[];
+  onChange: (next: string[]) => void;
+  profession: ProfessionSlug | null;
   max?: number;
 }) {
+  const options = React.useMemo(
+    () => getSpecialismsForProfession(profession),
+    [profession],
+  );
   const atMax = values.length >= max;
-  const toggle = (slug: SpecialismSlug) => {
+
+  if (!profession) {
+    return (
+      <div className="rounded-[12px] border border-dashed border-reps-border bg-reps-ink/40 p-4 text-[12px] text-white/55">
+        Set your profession above to unlock specialisms.
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className="rounded-[12px] border border-dashed border-reps-border bg-reps-ink/40 p-4 text-[12px] text-white/55">
+        No specialisms available for this profession yet.
+      </div>
+    );
+  }
+
+  const toggle = (slug: string) => {
     if (values.includes(slug)) {
       onChange(values.filter((v) => v !== slug));
       return;
@@ -24,10 +56,11 @@ export function SpecialismsPicker({
     if (atMax) return;
     onChange([...values, slug]);
   };
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-2">
-        {SPECIALISMS.map((s) => {
+        {options.map((s) => {
           const active = values.includes(s.slug);
           const disabled = !active && atMax;
           return (

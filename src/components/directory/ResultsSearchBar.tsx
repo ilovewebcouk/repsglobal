@@ -79,8 +79,12 @@ import {
   getPopularEntries,
   searchTaxonomy,
 } from "@/lib/search/taxonomy";
-import { PROFESSIONS, getProfessionLabel } from "@/lib/professions";
-import { SPECIALISMS, getSpecialismLabel } from "@/lib/specialisms";
+import { PROFESSIONS, getProfessionLabel, type ProfessionSlug } from "@/lib/professions";
+import {
+  ALL_SPECIALISMS,
+  getSpecialismLabel,
+  isSpecialismValidForProfession,
+} from "@/lib/specialisms";
 import { VENUES } from "@/components/marketing/VenueWordmarks";
 import {
   loadPlacesLibrary,
@@ -131,6 +135,23 @@ export function ResultsSearchBar({
           const isViewOnly = Object.keys(p).length === 1 && "view" in p;
           const next = { ...prev, ...p } as Record<string, unknown>;
           if (!isViewOnly) next.page = 1;
+          // When the profession changes, drop a now-invalid specialism so we
+          // don't end up with mismatched filters in the URL.
+          if ("profession" in p) {
+            const nextProf =
+              typeof p.profession === "string" ? p.profession : null;
+            const nextSpec =
+              typeof next.specialism === "string" ? next.specialism : null;
+            if (
+              nextSpec &&
+              !isSpecialismValidForProfession(
+                nextSpec,
+                nextProf as ProfessionSlug | null,
+              )
+            ) {
+              delete next.specialism;
+            }
+          }
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
@@ -186,6 +207,7 @@ export function ResultsSearchBar({
             <WhatChip
               variant="mobile-input"
               label={whatLabel}
+              profession={state.profession}
               onPick={(entry) =>
                 patch({
                   profession: entry?.route.profession,
@@ -256,6 +278,7 @@ export function ResultsSearchBar({
         <div className="flex flex-wrap items-center gap-2">
           <WhatChip
             label={whatLabel}
+            profession={state.profession}
             onPick={(entry) =>
               patch({
                 profession: entry?.route.profession,
@@ -365,18 +388,20 @@ function WhatChip({
   onFreeText,
   onClear,
   variant = "chip",
+  profession,
 }: {
   label: string | null;
   onPick: (entry: SearchEntry) => void;
   onFreeText: (text: string) => void;
   onClear: () => void;
   variant?: "chip" | "mobile-input";
+  profession?: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const ranked: RankedEntry[] = React.useMemo(
-    () => searchTaxonomy(query),
-    [query],
+    () => searchTaxonomy(query, { profession: profession ?? null }),
+    [query, profession],
   );
   const popular = React.useMemo(() => getPopularEntries(), []);
 
@@ -1372,7 +1397,7 @@ function whatToLabel(state: ResultsBarState): string | null {
     return p?.label ?? state.profession;
   }
   if (state.specialism) {
-    const s = SPECIALISMS.find((x) => x.slug === state.specialism);
+    const s = ALL_SPECIALISMS.find((x) => x.slug === state.specialism);
     return s?.label ?? state.specialism;
   }
   if (state.q) return `"${state.q}"`;

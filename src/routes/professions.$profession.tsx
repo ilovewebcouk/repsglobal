@@ -29,6 +29,11 @@ import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import {
+  getSpecialismsForProfession,
+  type Specialism,
+} from "@/lib/specialisms";
+import { isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
 const PROFESSION_ROLE_LABEL: Record<string, string> = {
   "personal-trainer": "Personal Trainer",
@@ -387,6 +392,32 @@ function ProfessionLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
+  // Profession-scoped specialism chips. If a pro picks specialisms on their
+  // profile, those are the ones we feature here. Falls back to the static
+  // taxonomy when no live pros have published yet.
+  const professionSlug: ProfessionSlug | null = isProfessionSlug(meta.slug)
+    ? meta.slug
+    : null;
+  const liveSpecialismCounts = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of livePros) {
+      for (const s of r.specialisms ?? []) {
+        counts.set(s, (counts.get(s) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [livePros]);
+  const specialismChips: Specialism[] = React.useMemo(() => {
+    if (!professionSlug) return [];
+    const catalogue = getSpecialismsForProfession(professionSlug);
+    const ranked = [...catalogue].sort(
+      (a, b) =>
+        (liveSpecialismCounts.get(b.slug) ?? 0) -
+        (liveSpecialismCounts.get(a.slug) ?? 0),
+    );
+    return ranked.slice(0, 8);
+  }, [professionSlug, liveSpecialismCounts]);
+
 
 
 
@@ -476,15 +507,26 @@ function ProfessionLanding() {
             Popular {meta.title.toLowerCase()} specialisms
           </div>
           <div className="flex flex-wrap gap-2">
-            {meta.specialisms.map((s) => (
+            {specialismChips.map((s) => (
               <Link
-                key={s}
+                key={s.slug}
                 to="/find-a-professional"
+                search={{
+                  profession: meta.slug,
+                  specialism: s.slug,
+                  page: 1,
+                  sort: "recommended",
+                }}
                 className="rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
               >
-                {s}
+                {s.label}
               </Link>
             ))}
+            {specialismChips.length === 0 ? (
+              <span className="text-[12px] text-reps-muted-light">
+                Specialisms unlock once verified {meta.plural.toLowerCase()} pick them on their profile.
+              </span>
+            ) : null}
           </div>
         </div>
       </section>

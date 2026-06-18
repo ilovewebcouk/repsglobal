@@ -5,6 +5,7 @@ import { PROFESSION_SLUGS, type ProfessionSlug } from "@/lib/professions";
 import {
   SPECIALISM_SLUGS,
   MAX_SPECIALISMS,
+  isSpecialismValidForProfession,
   type SpecialismSlug,
 } from "@/lib/specialisms";
 import { MAX_LANGUAGES } from "@/lib/languages";
@@ -248,12 +249,20 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       slug = `${base}-${i}`;
     }
 
+    // Drop any specialism that isn't valid for the chosen profession.
+    // The DB trigger only enforces the global allow-list; we enforce the
+    // per-profession pairing in app code.
+    const nextProfession = cleaned.primary_profession ?? null;
+    const filteredSpecs = (cleaned.specialisms ?? []).filter((s) =>
+      isSpecialismValidForProfession(s, nextProfession),
+    );
+
     const upsertPayload = {
       id: userId,
       slug,
       headline: cleaned.headline ?? null,
-      primary_profession: cleaned.primary_profession ?? null,
-      specialisms: cleaned.specialisms ?? [],
+      primary_profession: nextProfession,
+      specialisms: filteredSpecs,
       in_person_available: inPerson,
       online_available: online,
       city: cleaned.city ?? null,

@@ -138,7 +138,11 @@ function ServicesPage() {
             {isLoading ? (
               <div className="h-32 animate-pulse rounded-[16px] bg-reps-panel-soft" />
             ) : (
-              <SpecialismsPicker values={specialisms} onChange={setSpecialisms} />
+              <SpecialismsPicker
+                values={specialisms}
+                profession={data?.primary_profession ?? null}
+                onChange={setSpecialisms}
+              />
             )}
           </PPanel>
 

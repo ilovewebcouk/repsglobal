@@ -61,11 +61,11 @@ import {
   type ProfessionSlug,
 } from "@/lib/professions";
 import {
-  SPECIALISMS,
   MAX_SPECIALISMS,
   getSpecialismLabel,
   type SpecialismSlug,
 } from "@/lib/specialisms";
+import { SpecialismsPicker } from "@/components/profile/SpecialismsPicker";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -466,57 +466,9 @@ function DeliveryModePicker({
   );
 }
 
-function SpecialismPicker({
-  values,
-  onChange,
-}: {
-  values: SpecialismSlug[];
-  onChange: (next: SpecialismSlug[]) => void;
-}) {
-  const atMax = values.length >= MAX_SPECIALISMS;
-  const toggle = (slug: SpecialismSlug) => {
-    if (values.includes(slug)) {
-      onChange(values.filter((v) => v !== slug));
-      return;
-    }
-    if (atMax) return;
-    onChange([...values, slug]);
-  };
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
-        {SPECIALISMS.map((s) => {
-          const active = values.includes(s.slug);
-          const disabled = !active && atMax;
-          return (
-            <button
-              key={s.slug}
-              type="button"
-              onClick={() => toggle(s.slug)}
-              disabled={disabled}
-              aria-pressed={active}
-              className={
-                "h-9 rounded-full border px-3.5 text-[12px] font-semibold transition-colors " +
-                (active
-                  ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                  : disabled
-                    ? "border-reps-border bg-reps-ink text-white/30"
-                    : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
-              }
-            >
-              {active ? <span className="mr-1.5">✓</span> : null}
-              {s.label}
-            </button>
-          );
-        })}
-      </div>
-      <p className="text-[11px] text-white/45">
-        {values.length} / {MAX_SPECIALISMS} selected
-        {atMax ? " · max reached" : ""}
-      </p>
-    </div>
-  );
-}
+// SpecialismPicker is now the shared `SpecialismsPicker` from
+// `@/components/profile/SpecialismsPicker` (profession-scoped).
+
 
 /* ============================================================
    Upload helpers (client-side, RLS-scoped to user folder)
@@ -1442,12 +1394,15 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Specialisms"
-                subtitle={`What clients should hire you for — pick up to ${MAX_SPECIALISMS}.`}
+                subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
                 step="05"
               />
-              <SpecialismPicker
+              <SpecialismsPicker
                 values={form.specialisms}
-                onChange={(v) => set("specialisms", v)}
+                profession={form.primary_profession || null}
+                onChange={(v) =>
+                  set("specialisms", v as SpecialismSlug[])
+                }
               />
             </Card>
 
