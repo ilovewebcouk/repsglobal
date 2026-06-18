@@ -95,6 +95,7 @@ type ProRow = {
   in_person_available: boolean | null;
   online_available: boolean | null;
   identity_status: string | null;
+  verification: string | null;
   quality_score: number | null;
 };
 
