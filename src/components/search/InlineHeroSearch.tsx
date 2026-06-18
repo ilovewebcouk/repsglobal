@@ -72,6 +72,8 @@ export type InlineHeroSearchProps = {
   variant: Variant;
   /** Outer `<form>` className — caller owns the visual shell. */
   className?: string;
+  /** Inline style passthrough for the outer `<form>` (e.g. animationDelay). */
+  style?: React.CSSProperties;
   /** Optional submit-button overrides. */
   buttonClassName?: string;
   buttonLabel?: string;
