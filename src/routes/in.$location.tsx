@@ -401,27 +401,18 @@ function LocationLanding() {
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
                   Popular gyms
                 </div>
-                <ul className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap gap-1.5">
                   {popularGyms.map((g) => (
-                    <li key={g.id}>
-                      <Link
-                        to="/gyms/$slug"
-                        params={{ slug: g.slug }}
-                        className="group flex items-center justify-between gap-3 rounded-[10px] bg-reps-ivory px-3 py-2 text-left transition-colors hover:bg-reps-warm-white"
-                      >
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-reps-charcoal group-hover:text-reps-orange">
-                            {g.name}
-                          </span>
-                          {g.area ? (
-                            <span className="block truncate text-[11px] text-reps-muted-light">{g.area}</span>
-                          ) : null}
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-reps-muted-light group-hover:text-reps-orange" />
-                      </Link>
-                    </li>
+                    <Link
+                      key={g.id}
+                      to="/gyms/$slug"
+                      params={{ slug: g.slug }}
+                      className="rounded-full bg-reps-ivory px-2.5 py-1 text-[12px] font-medium text-reps-charcoal transition-colors hover:text-reps-orange"
+                    >
+                      {g.name}
+                    </Link>
                   ))}
-                </ul>
+                </div>
               </div>
             ) : null}
           </aside>
