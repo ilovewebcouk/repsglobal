@@ -373,3 +373,20 @@ export const getCityProfessionCounts = createServerFn({ method: "GET" })
 
     return Object.fromEntries(results);
   });
+
+const CityOnlineSchema = z.object({
+  city: z.string().trim().min(1).max(120),
+});
+
+export const getCityOnlineCount = createServerFn({ method: "GET" })
+  .inputValidator((raw: unknown) => CityOnlineSchema.parse(raw))
+  .handler(async ({ data }): Promise<{ count: number }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("professionals")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("online_available", true)
+      .ilike("city", `%${data.city}%`);
+    return { count: count ?? 0 };
+  });
