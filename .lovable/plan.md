@@ -1,24 +1,59 @@
-## Plan
+## Wire `/in/$location` "Browse by profession" to real directory + live counts
 
-1. **Make `/in/:location` location truly locked**
-   - Treat the city page value as fixed search context, not a selectable/default location.
-   - The search should always submit with that page city, e.g. `/in/manchester` searches Manchester.
+**Goal:** On `/in/edinburgh` (and every other `/in/*` city page) each profession box should:
+1. Link to the directory pre-filtered by that city **and** profession.
+2. Show a real count of REPs professionals matching `city + profession`, not the hand-coded number.
 
-2. **Update `InlineHeroSearch` behaviour for locked city mode**
-   - When `lockedCity` is present, the location control will display that city only.
-   - Remove/disable the ability to untick it, switch to current location, type another city, or enter a postcode from city landing pages.
-   - Prevent geo-location or previously picked location from overriding the page city.
+### 1. New server function — `getCityProfessionCounts`
+Add to `src/lib/directory/search.functions.ts` (or a new `city-counts.functions.ts` colocated):
 
-3. **Keep other pages unchanged**
-   - Homepage and profession pages can still use editable location/current-location behaviour.
-   - Only `/in/:location` pages get the locked location behaviour.
+```ts
+export const getCityProfessionCounts = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ city: z.string().trim().max(120) }).parse)
+  .handler(async ({ data }) => {
+    // For each profession slug in PROFESSIONS_FOR_CITY_PAGE,
+    // run a HEAD count query on `professionals` with
+    //   .ilike("city", `%${data.city}%`)
+    //   .eq("primary_profession", slug)
+    //   .eq("verification","verified") OR same filter set used by directory default
+    // Return Record<professionSlug, number>.
+  });
+```
 
-4. **Submission rules**
-   - Searching from `/in/manchester` always sends `city=Manchester` / Manchester slug context.
-   - It should not submit `sort=nearest` based on viewer location while locked to a city page.
+Profession list mirrors what each city currently shows:
+`personal-trainer`, `pilates-instructor`, `strength-coach`, `nutritionist`, `online-coach`
+(falls back to whatever `loc.professions` already declares — same slugs).
 
-## Technical scope
+Counts use the same visibility filter the public directory uses (verified / published profile) so the number you see on the box matches the number of results on the directory page.
 
-- Edit `src/components/search/InlineHeroSearch.tsx` to make `lockedCity` a hard lock for the location UI and submit logic.
-- Confirm `src/routes/in.$location.tsx` passes `lockedCity={loc.name}` to the hero search.
-- No database or design changes.
+### 2. Wire counts in `src/routes/in.$location.tsx`
+- Add `useQuery({ queryKey: ["city-profession-counts", loc.slug], queryFn: () => getCityProfessionCounts({ data: { city: loc.name } }) })`.
+- For each `loc.professions[i]`, prefer `counts[p.slug]` when loaded; while loading show a small skeleton dash (`—`) instead of the stale hand-coded number. No layout shift.
+- Hand-coded `count` in the `LOCATIONS` map becomes a fallback only (kept for SSR/no-JS).
+
+### 3. Link the boxes to the directory (not the profession landing)
+Change each card from:
+
+```tsx
+<Link to="/professions/$profession" params={{ profession: p.slug }}>
+```
+
+to:
+
+```tsx
+<Link
+  to="/find-a-professional"
+  search={{ city: loc.name, profession: p.slug }}
+>
+```
+
+This matches the existing `validateSearch` on `/find-a-professional` (it already accepts `city` and `profession`), so `/find-a-professional?city=Edinburgh&profession=personal-trainer` lands on a filtered, scoped results page — the same one users get from the hero search.
+
+### 4. Out of scope (this pass)
+- Top "X verified professionals" hero number on `/in/$location` — already shown as `loc.count`; we can wire that to `sum(counts)` in a follow-up if you want, but flag it first so we don't change hero copy silently.
+- `/professions/$profession` page itself is unchanged.
+- No DB migration. No design changes. No new components.
+
+### Files touched
+- `src/lib/directory/search.functions.ts` — add `getCityProfessionCounts`.
+- `src/routes/in.$location.tsx` — `useQuery` for counts; swap `<Link>` target to `/find-a-professional` with `search`.
