@@ -26,7 +26,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
-import { searchProfessionals, getCityProfessionCounts, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
   "personal-trainer": "Personal Trainer",
@@ -318,6 +318,13 @@ function LocationLanding() {
       getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
     staleTime: 60_000,
   });
+  const { data: onlineCountResult } = useQuery({
+    queryKey: ["city-online-count", loc.slug],
+    queryFn: () => getCityOnlineCount({ data: { city: loc.name } }),
+    staleTime: 60_000,
+  });
+  const onlineCount = onlineCountResult?.count ?? null;
+  const onlineCountLabel = onlineCount && onlineCount > 0 ? onlineCount.toLocaleString() : "—";
   const cityCount = liveCounts
     ? Object.values(liveCounts).reduce((a, b) => a + b, 0)
     : null;
@@ -380,7 +387,7 @@ function LocationLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Online options</dt>
-                <dd className="font-semibold text-reps-charcoal">{cityCount ? Math.round(cityCount * 0.6) : "—"}</dd>
+                <dd className="font-semibold text-reps-charcoal">{onlineCountLabel}</dd>
               </div>
             </dl>
             <div className="mt-5 border-t border-reps-stone pt-4">
