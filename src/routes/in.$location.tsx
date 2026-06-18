@@ -75,10 +75,14 @@ function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   // no monograms, no stock photos on the featured rail.
   return {
     name: r.full_name,
+    valueProp: r.value_prop,
     role,
     city: r.city ?? "",
     rating: r.rating_avg ?? 0,
     reviews: r.review_count,
+    yearsExperience: r.years_experience,
+    fromPrice: r.from_price_pennies ? r.from_price_pennies / 100 : null,
+    priceCurrency: r.price_currency,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
     image: r.avatar_url ?? "",
@@ -531,13 +535,13 @@ function LocationLanding() {
                 Featured in {loc.name}
               </h2>
               <p className="mt-1 text-[14px] text-reps-muted-light">
-                REPS-verified professionals accepting new clients near you.
+                Hand-picked, verified and accepting new clients.
               </p>
             </div>
             <Link
               to="/find-a-professional"
               search={{ city: loc.name, featured: true }}
-              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-charcoal hover:text-reps-orange sm:inline-flex"
             >
               See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
             </Link>

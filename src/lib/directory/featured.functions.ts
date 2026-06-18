@@ -52,6 +52,13 @@ export type FeaturedProRow = {
   review_count: number;
   tier: "studio" | "pro" | "verified" | "free";
   identity_status: string | null;
+  /** Short value-prop line (60-90 char) shown as card subtitle. */
+  value_prop: string | null;
+  /** Starting price in pennies/cents. */
+  from_price_pennies: number | null;
+  price_currency: string | null;
+  /** Years of experience — proof when reviews = 0. */
+  years_experience: number | null;
   /** True when this pro is part of the paid pool (vs avatar-backfill). */
   is_paid: boolean;
 };
@@ -106,6 +113,10 @@ type ProRow = {
   online_available: boolean | null;
   identity_status: string | null;
   quality_score: number | null;
+  value_prop: string | null;
+  from_price_pennies: number | null;
+  price_currency: string | null;
+  years_experience: number | null;
 };
 
 async function fetchFeaturedPool(
@@ -123,7 +134,7 @@ async function fetchFeaturedPool(
   let qb = supabaseAdmin
     .from("professionals")
     .select(
-      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, quality_score",
+      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, quality_score, value_prop, from_price_pennies, price_currency, years_experience",
     )
     .eq("is_published", true);
 
@@ -199,6 +210,10 @@ async function fetchFeaturedPool(
         review_count: agg?.count ?? 0,
         tier,
         identity_status: p.identity_status,
+        value_prop: p.value_prop,
+        from_price_pennies: p.from_price_pennies,
+        price_currency: p.price_currency,
+        years_experience: p.years_experience,
         is_paid: tier !== "free",
       };
     });
@@ -212,8 +227,21 @@ async function fetchFeaturedPool(
     (p.specialisms?.length ?? 0) >= 1 &&
     (pros.find((x) => x.id === p.id)?.quality_score ?? 0) >= FEATURED_MIN_QUALITY_RAW;
 
-  const eligible = enriched.filter(isEligible);
-  const belowThreshold = enriched.length - eligible.length;
+  const eligibleAll = enriched.filter(isEligible);
+  const belowThreshold = enriched.length - eligibleAll.length;
+
+  // Avatar de-dup — reject any pro whose avatar_url already appears earlier in
+  // the rail. Stops near-identical / shared headshots from sitting side-by-side
+  // (e.g. seed pros sharing /demo-avatars/pro-james.jpg). Highest-quality wins
+  // because `pros` is ordered by quality_score desc upstream.
+  const seenAvatar = new Set<string>();
+  const eligible = eligibleAll.filter((p) => {
+    const key = (p.avatar_url ?? "").trim().toLowerCase();
+    if (!key) return false;
+    if (seenAvatar.has(key)) return false;
+    seenAvatar.add(key);
+    return true;
+  });
 
   const paidPool = eligible.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;

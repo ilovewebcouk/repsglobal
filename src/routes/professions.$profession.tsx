@@ -81,10 +81,14 @@ function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   // Eligibility gates guarantee avatar_url is non-null on the featured rail.
   return {
     name: r.full_name,
+    valueProp: r.value_prop,
     role,
     city: r.city ?? "",
     rating: r.rating_avg ?? 0,
     reviews: r.review_count,
+    yearsExperience: r.years_experience,
+    fromPrice: r.from_price_pennies ? r.from_price_pennies / 100 : null,
+    priceCurrency: r.price_currency,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
     image: r.avatar_url ?? "",
@@ -564,13 +568,13 @@ function ProfessionLanding() {
                 Featured {meta.plural.toLowerCase()}
               </h2>
               <p className="mt-1 text-[14px] text-reps-muted-light">
-                Hand-picked, REPS-verified and accepting new clients.
+                Hand-picked, verified and accepting new clients.
               </p>
             </div>
             <Link
               to="/find-a-professional"
               search={{ profession: meta.slug, featured: true }}
-              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-charcoal hover:text-reps-orange sm:inline-flex"
             >
               See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
