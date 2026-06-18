@@ -535,13 +535,13 @@ function LocationLanding() {
                 Featured in {loc.name}
               </h2>
               <p className="mt-1 text-[14px] text-reps-muted-light">
-                REPS-verified professionals accepting new clients near you.
+                Hand-picked, verified and accepting new clients.
               </p>
             </div>
             <Link
               to="/find-a-professional"
               search={{ city: loc.name, featured: true }}
-              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-charcoal hover:text-reps-orange sm:inline-flex"
             >
               See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
