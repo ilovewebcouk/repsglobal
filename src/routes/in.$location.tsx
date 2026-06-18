@@ -370,7 +370,7 @@ function LocationLanding() {
             <dl className="mt-4 space-y-3 text-[13px]">
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Verified pros</dt>
-                <dd className="font-semibold text-reps-charcoal">{loc.count.toLocaleString()}</dd>
+                <dd className="font-semibold text-reps-charcoal">{cityCountLabel}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Avg. rating</dt>
@@ -380,7 +380,7 @@ function LocationLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Online options</dt>
-                <dd className="font-semibold text-reps-charcoal">{Math.round(loc.count * 0.6)}</dd>
+                <dd className="font-semibold text-reps-charcoal">{cityCount ? Math.round(cityCount * 0.6) : "—"}</dd>
               </div>
             </dl>
             <div className="mt-5 border-t border-reps-stone pt-4">
