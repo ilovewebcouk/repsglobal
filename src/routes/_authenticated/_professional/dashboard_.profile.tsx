@@ -1395,12 +1395,15 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Specialisms"
-                subtitle={`What clients should hire you for — pick up to ${MAX_SPECIALISMS}.`}
+                subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
                 step="05"
               />
-              <SpecialismPicker
+              <SpecialismsPicker
                 values={form.specialisms}
-                onChange={(v) => set("specialisms", v)}
+                profession={form.primary_profession || null}
+                onChange={(v) =>
+                  set("specialisms", v as SpecialismSlug[])
+                }
               />
             </Card>
 
