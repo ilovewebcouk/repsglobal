@@ -387,7 +387,7 @@ function LocationLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Online options</dt>
-                <dd className="font-semibold text-reps-charcoal">{cityCount ? Math.round(cityCount * 0.6) : "—"}</dd>
+                <dd className="font-semibold text-reps-charcoal">{onlineCountLabel}</dd>
               </div>
             </dl>
             <div className="mt-5 border-t border-reps-stone pt-4">
