@@ -103,18 +103,45 @@ const LAUNCHING = [
 function ComingSoonPage() {
   const navigate = useNavigate();
   const { from } = useSearch({ from: "/coming-soon" });
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const goToTarget = () => {
+    const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
+    navigate({ to: target, replace: true });
+  };
 
   useEffect(() => {
+    if (hasPreviewUnlock()) {
+      goToTarget();
+      return;
+    }
     let cancelled = false;
     void supabase.auth.getSession().then(({ data }) => {
       if (cancelled || !data.session) return;
-      const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
-      navigate({ to: target, replace: true });
+      goToTarget();
     });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, from]);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.trim() === PREVIEW_UNLOCK_CODE) {
+      try {
+        window.localStorage.setItem(PREVIEW_STORAGE_KEY, PREVIEW_UNLOCK_CODE);
+      } catch {
+        /* ignore */
+      }
+      setUnlockOpen(false);
+      goToTarget();
+    } else {
+      setError("Incorrect code");
+    }
+  };
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
