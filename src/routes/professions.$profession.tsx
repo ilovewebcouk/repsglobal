@@ -388,6 +388,13 @@ function ProfessionLanding() {
     queryFn: () => searchProfessionals({ data: { profession: meta.slug, limit: 4 } }),
     staleTime: 60_000,
   });
+  const { data: countResult } = useQuery({
+    queryKey: ["profession-verified-count", meta.slug],
+    queryFn: () => getVerifiedProCount({ data: { profession: meta.slug } }),
+    staleTime: 5 * 60_000,
+  });
+  const verifiedCount = countResult?.count ?? null;
+  const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = liveResult?.rows ?? [];
   const featured: FeaturedPro[] = livePros.length
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
