@@ -1,43 +1,56 @@
-## What's actually happening
+# Hero search upgrade — `/professions/$profession` + `/in/$location`
 
-You're right — sorry for the bad answer. The gate in `src/routes/__root.tsx` runs **client-only**:
+Goal: make both hero search boxes actually work (taxonomy combobox + Google Places + geolocate + correct submit URL), without changing the visual frame of either locked page.
 
-```ts
-if (typeof window === "undefined") return;   // ← SSR skips the gate entirely
-...
-const { data } = await supabase.auth.getSession();
-if (!data.session) throw redirect({ to: "/coming-soon" });
-```
+## Approach
 
-So when you hit `repsuk.org`:
-1. The server renders the **real homepage** HTML and ships it to the browser.
-2. Only after hydration does the client check `supabase.auth.getSession()` (which reads `localStorage`) and *then* redirect.
-3. If you've ever signed in on that browser, you have a session in `localStorage` and the redirect never fires — you just stay on the homepage.
+Extract a small reusable controller from `HomeHeroSearch` and render it inside each page's existing form shell. The shell (border, radius, padding, background, button position) stays exactly as-is — only the two input controls and the submit button's behaviour change.
 
-That's why you land on `/`, not `/coming-soon`. The redirect is real, but it's too late and too easy to bypass.
+### New shared component
 
-## Fix
+`src/components/search/InlineHeroSearch.tsx`
 
-Make the gate run on the server too, where there's no `localStorage`. The Supabase session isn't visible during SSR, so the server can't tell who's authenticated — we treat every SSR request as "unknown" and serve coming-soon, then let the client re-route signed-in users back in after hydration.
+Props:
+- `variant: "light" | "dark"` — controls trigger text/icon colors (city page is light/ivory; profession page may differ — verified per page).
+- `lockedProfession?: ProfessionSlug` — when set, the "What" field is pre-selected to that profession and the popover hides the Professions group (specialisms/mode only).
+- `defaultCity?: string` — when set, the "Where" field shows that city as a pre-filled `mode: "city"` selection; user can clear or replace via Places/geolocate.
+- `className?: string` — passed to the outer `<form>` so each page keeps its own grid/radius/background.
 
-### Changes (one file: `src/routes/__root.tsx`)
+Internals: lifts the `WhatField` + `WhereField` logic out of `HomeHeroSearch.tsx` so all three call sites share one implementation. `HomeHeroSearch` becomes a thin wrapper that renders `InlineHeroSearch` with the homepage's dark glass shell and no locks.
 
-1. **Remove the `if (typeof window === "undefined") return;` short-circuit** in `beforeLoad`.
-2. **Server branch:** when running on the server (no `window`), for any non-allowlisted path, `throw redirect({ to: "/coming-soon" })` unconditionally. SSR'd HTML on `repsuk.org/` becomes the coming-soon page — no leaking the real homepage.
-3. **Client branch:** keep the existing `supabase.auth.getSession()` check so authenticated users (you, demo, admins) get bounced from `/coming-soon` to the real route they asked for.
-4. On `/coming-soon` itself, add a tiny client effect: if a session exists, `router.navigate({ to: <original path or "/"> })`. This way an authed user who lands on coming-soon (because SSR sent them there) is auto-forwarded to the real site within a frame, instead of getting stuck.
+Submit behaviour matches `HomeHeroSearch` today:
+- profession (locked or picked) → `?profession=<slug>`
+- specialism/mode → `?specialism=<slug>`
+- free text fallback → `?q=<text>`
+- resolved origin → `?sort=nearest`; else city label → `?city=<text>`
+- navigates to `/find-a-professional`
 
-### Why this works
+### Page wiring
 
-- **Anonymous visitor on `repsuk.org`** → SSR redirects to `/coming-soon`. They never see the real homepage HTML.
-- **Authenticated visitor on `repsuk.org`** → SSR sends them to `/coming-soon`, then the client effect immediately forwards them to `/`. Tiny flash, but correct gating.
-- **Crawlers / link unfurls** → see `/coming-soon` content, which is what we want pre-launch (root is already `noindex` but this also closes the og:image / preview gap).
-- **One-line revert at launch:** flip `LAUNCH_GATE_ENABLED = false` in `src/lib/launch.ts` exactly as today.
+**`src/routes/professions/$profession.tsx`** — replace the existing two-input form body (`<input>` + `<input>` + submit) with `<InlineHeroSearch variant=... lockedProfession={profession.slug} />`. Keep the form's outer wrapper classes untouched so the visual frame is identical.
 
-### What I will NOT touch
+**`src/routes/in.$location.tsx` (lines 339–362)** — replace the form body the same way: `<InlineHeroSearch variant="light" defaultCity={loc.name} />`. Keep the `rounded-[18px] border border-reps-stone bg-reps-warm-white` shell. The current bug (a `<Link>` that ignores typed input) is fixed because `InlineHeroSearch` owns its own real submit handler.
 
-- `src/lib/launch.ts` — allowlist, launch date, flag stay as-is.
-- Any auth flow, `/auth`, server functions, or the rest of the routing.
-- No DNS / domain changes — this is purely the gate logic.
+### Light variant (city page)
 
-Want me to implement?
+The popover content already uses the light theme (`bg-reps-warm-white`, charcoal text), so it works on the city page out of the box. The triggers need:
+- icon color: `text-reps-muted-light` instead of `text-white/60`
+- placeholder color: `text-reps-muted-light` instead of `text-white/50`
+- selected label: `text-reps-charcoal` instead of `text-white`
+- hover bg: `hover:bg-reps-ivory` instead of `hover:bg-white/5`
+
+These are gated on `variant`. No other style changes.
+
+## Out of scope (explicit)
+
+- No visual change to either locked page's hero (radius, padding, border, background, grid stay the same).
+- Homepage `HomeHeroSearch` keeps identical look and behaviour — only its internals move into the shared component.
+- No taxonomy/synonym/Places library changes.
+- No new routes, no new search params beyond what `HomeHeroSearch` already emits.
+
+## Verification
+
+- Build passes.
+- `/` hero unchanged visually and functionally.
+- `/professions/personal-trainer`: "What" combobox opens with specialisms/mode only (profession is locked); picking "Fat Loss" + a Places result → navigates to `/find-a-professional?profession=personal-trainer&specialism=fat-loss&sort=nearest`.
+- `/in/london`: "Where" shows "London" pre-filled; typing "Pilates" in "What" and submitting → `/find-a-professional?specialism=pilates&city=London` (or `sort=nearest` if user re-resolves the location).
