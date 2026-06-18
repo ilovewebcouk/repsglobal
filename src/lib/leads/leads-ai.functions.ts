@@ -1,7 +1,7 @@
 // Phase 2.0 Leads AI layer — score, draft reply, suggest next actions.
 // All calls are server-side via Lovable AI Gateway. Never exposes LOVABLE_API_KEY.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
@@ -59,7 +59,7 @@ export type LeadAiResult = {
 };
 
 export const scoreLead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ScoreSchema.parse(d))
   .handler(async ({ data, context }): Promise<LeadAiResult> => {
     const userId = context.userId;
@@ -143,7 +143,7 @@ const DraftSchema = z.object({
 export type DraftReply = { subject: string; body: string };
 
 export const draftLeadReply = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => DraftSchema.parse(d))
   .handler(async ({ data, context }): Promise<DraftReply> => {
     const userId = context.userId;
@@ -196,7 +196,7 @@ Return STRICT JSON:
 /* -------------------- Forecast 30d revenue -------------------- */
 
 export const forecastRevenue = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(
     async ({
       context,

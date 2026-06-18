@@ -1,7 +1,7 @@
 // Phase 2.0 Leads pipeline — CRUD + stage/value/follow-up + activity log + KPIs.
 // All server-side; trainer-scoped via supabaseAdmin + manual user_id filter.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 export const LEAD_STAGES = [
@@ -65,7 +65,7 @@ export type LeadDTO = {
 /* -------------------- List leads -------------------- */
 
 export const listLeads = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<LeadDTO[]> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -159,7 +159,7 @@ export const listLeads = createServerFn({ method: "GET" })
 const ConvertLeadSchema = z.object({ enquiryId: z.string().uuid() });
 
 export const convertLeadToClient = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ConvertLeadSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ clientId: string }> => {
     const { supabase } = context;
@@ -181,7 +181,7 @@ const UpdateLeadSchema = z.object({
 });
 
 export const updateLead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => UpdateLeadSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -227,7 +227,7 @@ const BulkStageSchema = z.object({
 });
 
 export const bulkSetStage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => BulkStageSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -254,7 +254,7 @@ const CreateLeadSchema = z.object({
 });
 
 export const createLead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => CreateLeadSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -289,7 +289,7 @@ export const createLead = createServerFn({ method: "POST" })
 /* -------------------- Backfill AI scores -------------------- */
 
 export const backfillLeadScores = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ scored: number; skipped: number }> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -340,7 +340,7 @@ export type LeadKpis = {
 };
 
 export const getLeadKpis = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<LeadKpis> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -476,7 +476,7 @@ export type LeadActivityDTO = {
 };
 
 export const listLeadActivity = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ enquiryId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<LeadActivityDTO[]> => {
     const userId = context.userId;
@@ -505,7 +505,7 @@ const AddLeadNoteSchema = z.object({
 });
 
 export const addLeadNote = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => AddLeadNoteSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -536,7 +536,7 @@ export const addLeadNote = createServerFn({ method: "POST" })
 const SendSignupLinkSchema = z.object({ enquiryId: z.string().uuid() });
 
 export const sendLeadSignupLink = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => SendSignupLinkSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ acceptUrl: string; expiresAt: string }> => {
     const userId = context.userId;

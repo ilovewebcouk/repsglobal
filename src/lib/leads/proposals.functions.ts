@@ -1,7 +1,7 @@
 // Phase 2.0 — Lead proposals (Pro tier).
 // Draft/send/accept/decline/withdraw structured proposals against a lead.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 const CADENCE_LABEL_FOR_EMAIL: Record<string, string> = {
@@ -147,7 +147,7 @@ function normaliseBody(input: z.infer<typeof ProposalBodySchema>): ProposalBody 
 /* -------------------- List -------------------- */
 
 export const listProposals = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ enquiryId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<ProposalDTO[]> => {
     const userId = context.userId;
@@ -179,7 +179,7 @@ const CreateSchema = z.object({
 });
 
 export const createProposal = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => CreateSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -244,7 +244,7 @@ const UpdateSchema = z.object({
 });
 
 export const updateProposal = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => UpdateSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;

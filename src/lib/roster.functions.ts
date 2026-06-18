@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 
@@ -74,7 +74,7 @@ async function assertProfessional(
 // Add a single roster entry
 // ============================================================================
 export const addRosterClient = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) =>
     z
       .object({
@@ -114,7 +114,7 @@ export const addRosterClient = createServerFn({ method: "POST" })
 // CSV import — supports preview (dry-run) and commit
 // ============================================================================
 export const importRosterCSV = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) =>
     z
       .object({
@@ -350,7 +350,7 @@ async function ensureInviteSentInternal(opts: {
 // Triggers
 // ============================================================================
 export const confirmRosterClient = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) => z.object({ rosterId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -374,7 +374,7 @@ export const confirmRosterClient = createServerFn({ method: "POST" })
   });
 
 export const assignProgrammeToClient = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) =>
     z
       .object({
@@ -425,7 +425,7 @@ export const assignProgrammeToClient = createServerFn({ method: "POST" })
 
 // Stubbed: wired to schema, not exposed to UI/webhooks yet.
 export const markFirstPaymentReceived = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) =>
     z
       .object({
@@ -457,7 +457,7 @@ export const markFirstPaymentReceived = createServerFn({ method: "POST" })
 // Resend (manual) — rate-limited (1/hour per row, 10/day per coach)
 // ============================================================================
 export const resendInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) => z.object({ rosterId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -496,7 +496,7 @@ export const resendInvite = createServerFn({ method: "POST" })
 // List the coach's roster
 // ============================================================================
 export const listRoster = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase

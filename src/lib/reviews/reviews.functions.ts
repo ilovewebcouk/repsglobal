@@ -2,7 +2,7 @@
 // public read of published reviews. RLS allows only auth.uid()=client_user_id
 // to insert; pros can SELECT/UPDATE their own; public reads when status='published'.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 export type ReviewDTO = {
@@ -29,7 +29,7 @@ const SubmitSchema = z.object({
 });
 
 export const submitReview = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => SubmitSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -75,7 +75,7 @@ export const submitReview = createServerFn({ method: "POST" })
   });
 
 export const listMyReviews = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<ReviewDTO[]> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
@@ -96,7 +96,7 @@ const RespondSchema = z.object({
 });
 
 export const respondToReview = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => RespondSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

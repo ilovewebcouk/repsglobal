@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 const identityInput = z.object({
   doc_type: z.enum(["passport", "driving_licence", "national_id"]),
@@ -14,7 +14,7 @@ const identityInput = z.object({
 });
 
 export const saveIdentity = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => identityInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -40,7 +40,7 @@ export const saveIdentity = createServerFn({ method: "POST" })
   });
 
 export const myIdentity = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
@@ -55,7 +55,7 @@ export const myIdentity = createServerFn({ method: "GET" })
   });
 
 export const getIdentityForPro = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ professional_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -86,7 +86,7 @@ const IDENTITY_STATUSES = [
  * pending checks, and historical decisions in one place.
  */
 export const listIdentityChecks = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -129,7 +129,7 @@ export const listIdentityChecks = createServerFn({ method: "POST" })
  * reason into admin_note for the audit trail.
  */
 export const adminOverrideIdentity = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({

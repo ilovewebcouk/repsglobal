@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -50,7 +50,7 @@ export type SettingsBundle = {
 /* -------------------------------------------------------------------------- */
 
 export const getMySettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<SettingsBundle> => {
     const { supabase, userId, claims } = context;
     const email = (claims.email as string | undefined) ?? null;
@@ -156,7 +156,7 @@ const AccountInput = z.object({
 });
 
 export const updateMyAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => AccountInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -209,7 +209,7 @@ const NotificationsInput = z.object({
 });
 
 export const updateMyNotificationPrefs = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => NotificationsInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -233,7 +233,7 @@ export const updateMyNotificationPrefs = createServerFn({ method: "POST" })
 /* -------------------------------------------------------------------------- */
 
 export const updateMyListingPaused = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ paused: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -251,7 +251,7 @@ export const updateMyListingPaused = createServerFn({ method: "POST" })
 /* -------------------------------------------------------------------------- */
 
 export const exportMyData = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
 
@@ -293,7 +293,7 @@ export const exportMyData = createServerFn({ method: "GET" })
 /* -------------------------------------------------------------------------- */
 
 export const deleteMyAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z.object({ confirm_email: z.string().email(), confirm_phrase: z.string() }).parse(d),
   )
@@ -358,7 +358,7 @@ export type SessionRow = {
 };
 
 export const listMySessions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ sessions: SessionRow[]; current_session_id: string | null }> => {
     const { userId, claims } = context;
     const currentSessionId = (claims["session_id"] as string | undefined) ?? null;
@@ -384,7 +384,7 @@ export const listMySessions = createServerFn({ method: "GET" })
 
 
 export const revokeMySession = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d) => z.object({ session_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
@@ -498,7 +498,7 @@ async function geolocateIps(ips: string[]): Promise<Map<string, string>> {
 }
 
 export const listMyActivity = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ events: ActivityEvent[] }> => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
