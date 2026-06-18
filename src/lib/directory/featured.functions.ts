@@ -126,7 +126,7 @@ async function fetchFeaturedPool(
   const ids = pros.filter((p) => p.slug).map((p) => p.id);
   if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
 
-  const [profilesRes, subsRes, reviewsRes] = await Promise.all([
+  const [profilesRes, subsRes, reviewsRes, locsRes] = await Promise.all([
     supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
     supabaseAdmin
       .from("subscriptions")
@@ -138,7 +138,20 @@ async function fetchFeaturedPool(
       .select("professional_id, rating, status")
       .in("professional_id", ids)
       .eq("status", "published"),
+    supabaseAdmin
+      .from("professional_locations")
+      .select("professional_id, town")
+      .in("professional_id", ids)
+      .eq("is_primary", true),
   ]);
+
+  const townById = new Map<string, string | null>();
+  for (const l of locsRes.data ?? []) {
+    if (!townById.has(l.professional_id)) {
+      townById.set(l.professional_id, l.town ?? null);
+    }
+  }
+
 
   const profileById = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
 
