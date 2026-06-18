@@ -35,17 +35,8 @@ import {
   getSpecialismsForProfession,
   type Specialism,
 } from "@/lib/specialisms";
-import { isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
+import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
-const PROFESSION_ROLE_LABEL: Record<string, string> = {
-  "personal-trainer": "Personal Trainer",
-  "pilates-instructor": "Pilates Instructor",
-  "strength-coach": "Strength Coach",
-  "nutritionist": "Nutritionist",
-  "online-coach": "Online Coach",
-  "yoga-teacher": "Yoga Teacher",
-  "group-exercise-instructor": "Group Exercise Instructor",
-};
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
   const mode: FeaturedPro["mode"] =
