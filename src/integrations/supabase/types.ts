@@ -1925,6 +1925,7 @@ export type Database = {
         Row: {
           country_code: string
           created_at: string
+          district: string | null
           id: string
           is_primary: boolean
           is_public: boolean
@@ -1943,6 +1944,7 @@ export type Database = {
         Insert: {
           country_code?: string
           created_at?: string
+          district?: string | null
           id?: string
           is_primary?: boolean
           is_public?: boolean
@@ -1961,6 +1963,7 @@ export type Database = {
         Update: {
           country_code?: string
           created_at?: string
+          district?: string | null
           id?: string
           is_primary?: boolean
           is_public?: boolean

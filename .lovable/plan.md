@@ -1,65 +1,58 @@
-## Bug
+## Problem
 
-On `/find-a-professional`, clicking the **What are you looking for?** chip, typing "fat loss" and pressing **Enter** does nothing useful — Fat Loss is highlighted in the dropdown, but the URL ends up with no `specialism` (and even drops the existing `city`). The list never narrows to fat-loss pros.
+`deriveTown()` in `src/lib/profile/location.functions.ts` picks the Travel-to-Work Area (TTWA) as the public town name. For anywhere inside the M25 that returns **"London"**, for Greater Manchester it returns **"Manchester"**, etc. — far too broad for a directory where a client searching by postcode expects to see trainers in *their* neighbourhood, not 8 million other people's.
 
-## Root cause
+For WC2H 0JG the underlying postcodes.io payload actually contains the granular name the user wants — `admin_ward = "Holborn and Covent Garden"` — we're just not using it.
 
-`patch()` in `src/components/directory/ResultsSearchBar.tsx` (the URL-writer used by the chip) runs this guard on every profession-related change:
+## Approach
 
-```ts
-if ("profession" in p) {
-  const nextProf = typeof p.profession === "string" ? p.profession : null;
-  const nextSpec = typeof next.specialism === "string" ? next.specialism : null;
-  if (nextSpec && !isSpecialismValidForProfession(nextSpec, nextProf)) {
-    delete next.specialism;
-  }
-}
+Use `admin_ward` (district/neighbourhood) as the primary display name **inside large metros**, and keep TTWA as the city qualifier. Everywhere else, keep today's behaviour (TTWA = town).
+
+### Display rule
+
+| Metro postcode? | Public display | Example |
+|---|---|---|
+| Yes (TTWA ∈ big-city list) | `{admin_ward}, {ttwa}` | "Holborn and Covent Garden, London" |
+| No | `{ttwa}` (current) | "Lowestoft", "Brighton" |
+
+Big-city TTWA list (initial): London, Manchester, Birmingham, Leeds, Liverpool, Glasgow, Edinburgh, Bristol, Sheffield, Newcastle, Cardiff, Nottingham.
+
+### Storage
+
+Add two columns to `professional_locations`:
+- `district text` — the ward name (e.g. "Holborn and Covent Garden")
+- `region text` — the wider metro name when applicable (e.g. "London"); otherwise null
+
+`town` keeps its current meaning (TTWA) so nothing existing breaks. New writes populate `district` + `region`; old rows fall back to `town` until the trainer re-saves their postcode.
+
+A one-off backfill server function (admin-only) can re-resolve every existing primary location via postcodes.io and fill `district`/`region` in place — no user action required.
+
+### Code changes
+
+1. `src/lib/profile/location.functions.ts`
+   - Extend `PostcodesIoResult` with `admin_ward`.
+   - New helper `deriveDisplay(r)` → `{ district, region, town }` using the rule above.
+   - Update `saveMyPostcode`, `resolveViewerPostcode`, `getMyPrimaryLocation`, `setMyLocationFromCoords` to write/return the new fields.
+   - Drop the `professionals.city = town` back-compat mirror in favour of `district ?? town`.
+
+2. `src/components/profile/...` (public profile location chip) + dashboard location card
+   - Render `district ? \`${district}, ${region}\` : town`.
+
+3. City/directory pages already covered by the locked `/in/$location` design — no visual change there; this only affects the per-profile chip.
+
+4. Search/filter: out of scope for this plan. (Future: ward-level search pages — flag if you want it included.)
+
+### Migration
+
+```sql
+ALTER TABLE public.professional_locations
+  ADD COLUMN IF NOT EXISTS district text,
+  ADD COLUMN IF NOT EXISTS region   text;
 ```
+No new GRANT/RLS needed — inherits existing policies.
 
-`WhatChip.onPick` for a generic specialism like **Fat Loss** calls:
+## Questions before I build
 
-```ts
-patch({ profession: undefined, specialism: "fat-loss", q: undefined })
-```
-
-So:
-
-1. `"profession" in p` is `true` (the key exists, value is `undefined`).
-2. `nextProf` becomes `null`.
-3. `isSpecialismValidForProfession("fat-loss", null)` returns `false` (guard returns `false` whenever profession is null).
-4. `next.specialism` is deleted → the URL loses the only meaningful filter the user just chose.
-
-The guard was meant to protect against switching to a different profession that doesn't own the current specialism — not against clearing profession or selecting a profession-agnostic specialism.
-
-## Fix (one file)
-
-`src/components/directory/ResultsSearchBar.tsx` — tighten the guard so it only runs when profession is being set to an actual non-empty value:
-
-```ts
-// Only validate when switching TO a defined profession. Clearing profession
-// (or picking a profession-agnostic specialism like "fat-loss") must NOT
-// wipe the specialism the user just chose.
-if ("profession" in p && typeof p.profession === "string" && p.profession) {
-  const nextSpec = typeof next.specialism === "string" ? next.specialism : null;
-  if (nextSpec && !isSpecialismValidForProfession(nextSpec, p.profession as ProfessionSlug)) {
-    delete next.specialism;
-  }
-}
-```
-
-After the fix, pressing **Enter** on the highlighted "Fat Loss" item navigates to `?city=London&specialism=fat-loss` and the result list narrows correctly. The free-text "Search for …" fallback (`q=…`) already works the same way through the same patch path and is unaffected.
-
-## Out of scope
-
-- The hero search on `/`, `/in/$city`, `/professions/$profession` — uses `InlineHeroSearch`, different code path, not affected by this bug.
-- Adding live-as-you-type filtering of the result list. The current behaviour (chip opens a dropdown → pick / Enter → URL updates → list refetches) stays; only the Enter case is fixed.
-- Any change to `isSpecialismValidForProfession` or the legacy-slug map.
-
-## Verification
-
-After the edit:
-1. Load `/find-a-professional?city=London`.
-2. Click the chip, type "fat loss", press Enter.
-3. URL becomes `…?city=London&specialism=fat-loss` and the list shows pros tagged Fat Loss.
-4. Repeat with "yoga" → URL gets `profession=yoga-teacher`.
-5. Repeat with a nonsense string → free-text item selects, URL gets `q=…`.
+1. Confirm the big-city TTWA list above, or do you want me to derive it differently (e.g. show ward whenever TTWA population > X)?
+2. Should the backfill run automatically for every existing primary location now, or only when each trainer next edits their postcode?
+3. Anything to change on the public chip wording — `"Holborn and Covent Garden, London"` vs `"Holborn and Covent Garden · London"` vs just `"Holborn and Covent Garden"` with London hidden?

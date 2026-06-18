@@ -39,6 +39,7 @@ type PostcodesIoResult = {
   postcode: string;
   outcode: string;
   admin_district: string | null;
+  admin_ward: string | null;
   region: string | null;
   longitude: number;
   latitude: number;
@@ -47,20 +48,66 @@ type PostcodesIoResult = {
   parish: string | null;
 };
 
+// TTWAs broad enough that the ward/neighbourhood reads better as the primary
+// label, with the city kept as the secondary qualifier. Case-insensitive.
+const BIG_CITY_TTWAS = new Set([
+  "london",
+  "manchester",
+  "birmingham",
+  "leeds",
+  "liverpool",
+  "glasgow",
+  "edinburgh",
+  "bristol",
+  "sheffield",
+  "newcastle",
+  "newcastle upon tyne",
+  "cardiff",
+  "nottingham",
+]);
+
+function stripParenthetical(v: string | null | undefined): string | null {
+  if (!v) return null;
+  return v.replace(/\s*\(.+\)\s*$/, "").trim() || null;
+}
+
 /**
- * Pick the most recognisable place name for a postcode.
+ * Pick a recognisable, appropriately granular place name pair for a postcode.
  *
- * postcodes.io's `post_town` field is always null on the free tier, so we
- * fall back to the Travel-to-Work Area (which maps cleanly: NR32 → Lowestoft,
- * SW1A → London, M1 → Manchester, EH1 → Edinburgh). `bua` and `admin_district`
- * are last-ditch fallbacks; `admin_district` is council-level ("East Suffolk")
- * which we want to avoid showing publicly.
+ * - In big-city TTWAs (London, Manchester, …) we surface the admin_ward as
+ *   `town` ("Holborn and Covent Garden") and keep the TTWA city as `region`
+ *   ("London"). "London" alone is too broad to be useful to a client
+ *   searching by postcode.
+ * - Outside big metros, we keep the previous behaviour: TTWA as `town`
+ *   ("Brighton", "Lowestoft") and postcodes.io's `region` as `region`
+ *   ("South East").
+ *
+ * `district` always carries the raw admin_ward when available.
  */
-function deriveTown(r: PostcodesIoResult): string | null {
-  const raw = r.ttwa ?? r.bua ?? r.parish ?? r.admin_district;
-  if (!raw) return null;
-  // bua values like "Leeds (Leeds)" — strip the parenthetical suffix.
-  return raw.replace(/\s*\(.+\)\s*$/, "").trim() || null;
+function deriveDisplay(r: PostcodesIoResult): {
+  town: string | null;
+  region: string | null;
+  district: string | null;
+} {
+  const ward = stripParenthetical(r.admin_ward);
+  const ttwa = stripParenthetical(r.ttwa);
+  const isBigCity = !!ttwa && BIG_CITY_TTWAS.has(ttwa.toLowerCase());
+
+  if (isBigCity && ward) {
+    return { town: ward, region: ttwa, district: ward };
+  }
+
+  const fallbackTown =
+    ttwa ??
+    stripParenthetical(r.bua) ??
+    stripParenthetical(r.parish) ??
+    stripParenthetical(r.admin_district);
+
+  return {
+    town: fallbackTown,
+    region: stripParenthetical(r.region),
+    district: ward,
+  };
 }
 
 async function lookupPostcode(pc: string): Promise<PostcodesIoResult> {
@@ -135,7 +182,7 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
       throw new Error("That doesn't look like a valid UK postcode.");
     }
     const r = await lookupPostcode(pc);
-    const town = deriveTown(r);
+    const { town, region, district } = deriveDisplay(r);
 
     // Does the pro already have a primary row?
     const { data: existing } = await supabase
@@ -152,7 +199,8 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
       postcode: r.postcode,
       postcode_outward: r.outcode,
       town,
-      region: r.region,
+      region,
+      district,
       country_code: "GB",
       latitude: r.latitude,
       longitude: r.longitude,
@@ -183,7 +231,7 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
     return {
       postcode_outward: r.outcode,
       town,
-      region: r.region,
+      region,
     };
   });
 
@@ -201,10 +249,11 @@ export const resolveViewerPostcode = createServerFn({ method: "POST" })
       throw new Error("That doesn't look like a valid UK postcode.");
     }
     const r = await lookupPostcode(pc);
+    const { town, region } = deriveDisplay(r);
     return {
       postcode_outward: r.outcode,
-      town: deriveTown(r),
-      region: r.region,
+      town,
+      region,
       latitude: r.latitude,
       longitude: r.longitude,
     };
@@ -222,11 +271,68 @@ export const resolveViewerLatLng = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<PublicOrigin | null> => {
     const r = await reverseLookup(data.latitude, data.longitude);
     if (!r) return null;
+    const { town, region } = deriveDisplay(r);
     return {
       postcode_outward: r.outcode,
-      town: deriveTown(r),
-      region: r.region,
+      town,
+      region,
       latitude: r.latitude,
       longitude: r.longitude,
     };
+  });
+
+/* -------------------------------------------------------------------------- */
+/* Admin: re-derive town/region/district for all existing primary locations    */
+/* -------------------------------------------------------------------------- */
+
+export const backfillPrimaryLocations = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    // Authorise: admin only.
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("professional_locations")
+      .select("id, professional_id, postcode")
+      .eq("is_primary", true)
+      .not("postcode", "is", null);
+    if (error) throw error;
+
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const row of rows ?? []) {
+      const pc = normalisePostcode(row.postcode ?? "");
+      if (!UK_POSTCODE_RE.test(pc)) {
+        skipped += 1;
+        continue;
+      }
+      try {
+        const r = await lookupPostcode(pc);
+        const { town, region, district } = deriveDisplay(r);
+        const { error: updErr } = await supabaseAdmin
+          .from("professional_locations")
+          .update({ town, region, district })
+          .eq("id", row.id);
+        if (updErr) throw updErr;
+        await supabaseAdmin
+          .from("professionals")
+          .update({ city: town })
+          .eq("id", row.professional_id);
+        updated += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+
+    return { updated, skipped, failed, total: rows?.length ?? 0 };
   });
