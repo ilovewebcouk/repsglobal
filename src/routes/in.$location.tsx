@@ -87,6 +87,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "strength-coach", label: "Strength Coaches", count: 47 },
       { slug: "nutritionist", label: "Nutritionists", count: 39 },
       { slug: "online-coach", label: "Online Coaches", count: 44 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 52 },
+
     ],
   },
   manchester: {
@@ -103,6 +105,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "strength-coach", label: "Strength Coaches", count: 19 },
       { slug: "nutritionist", label: "Nutritionists", count: 14 },
       { slug: "online-coach", label: "Online Coaches", count: 13 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 16 },
+
     ],
   },
   birmingham: {
@@ -119,6 +123,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "strength-coach", label: "Strength Coaches", count: 14 },
       { slug: "nutritionist", label: "Nutritionists", count: 9 },
       { slug: "online-coach", label: "Online Coaches", count: 12 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 12 },
+
     ],
   },
   edinburgh: {
@@ -135,6 +141,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "strength-coach", label: "Strength Coaches", count: 8 },
       { slug: "nutritionist", label: "Nutritionists", count: 5 },
       { slug: "online-coach", label: "Online Coaches", count: 7 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 9 },
+
     ],
   },
 };
@@ -153,11 +161,13 @@ function getLocation(slug: string): LocationMeta {
       count: 32,
       areas: ["Town Centre", "Surrounding Areas"],
       professions: [
-        { slug: "personal-trainer", label: "Personal Trainers", count: 18 },
-        { slug: "pilates-instructor", label: "Pilates Instructors", count: 6 },
-        { slug: "strength-coach", label: "Strength Coaches", count: 3 },
-        { slug: "nutritionist", label: "Nutritionists", count: 2 },
-        { slug: "online-coach", label: "Online Coaches", count: 3 },
+      { slug: "personal-trainer", label: "Personal Trainers", count: 18 },
+      { slug: "pilates-instructor", label: "Pilates Instructors", count: 6 },
+      { slug: "strength-coach", label: "Strength Coaches", count: 3 },
+      { slug: "nutritionist", label: "Nutritionists", count: 2 },
+      { slug: "online-coach", label: "Online Coaches", count: 3 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 2 },
+
       ],
     }
   );
@@ -394,7 +404,7 @@ function LocationLanding() {
           <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
             Browse {loc.name} by profession
           </h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {loc.professions.map((p) => {
               const liveCount = liveCounts?.[p.slug];
               const displayCount = liveCount ?? p.count;
