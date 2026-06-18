@@ -26,7 +26,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
-import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCityAvgRating, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -364,6 +364,11 @@ function LocationLanding() {
     queryFn: () => getCityPopularGyms({ data: { city: loc.name, limit: 6 } }),
     staleTime: 5 * 60_000,
   });
+  const { data: avgRatingResult } = useQuery({
+    queryKey: ["city-avg-rating", loc.slug],
+    queryFn: () => getCityAvgRating({ data: { city: loc.name } }),
+    staleTime: 5 * 60_000,
+  });
   const onlineCount = onlineCountResult?.count ?? null;
   const onlineCountLabel = onlineCount && onlineCount > 0 ? onlineCount.toLocaleString() : "—";
   const cityCount = liveCounts
@@ -423,7 +428,15 @@ function LocationLanding() {
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Avg. rating</dt>
                 <dd className="flex items-center gap-1 font-semibold text-reps-charcoal">
-                  <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" /> 4.9 / 5
+                  {avgRatingResult?.avg != null ? (
+                    <>
+                      <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+                      {avgRatingResult.avg.toFixed(1)} / 5
+                      <span className="ml-1 text-[11px] font-normal text-reps-muted-light">({avgRatingResult.count})</span>
+                    </>
+                  ) : (
+                    <span className="text-reps-muted-light">—</span>
+                  )}
                 </dd>
               </div>
               <div className="flex items-center justify-between">

@@ -390,3 +390,28 @@ export const getCityOnlineCount = createServerFn({ method: "GET" })
       .ilike("city", `%${data.city}%`);
     return { count: count ?? 0 };
   });
+
+const CityAvgRatingSchema = z.object({ city: z.string().min(1).max(120) });
+
+export const getCityAvgRating = createServerFn({ method: "GET" })
+  .inputValidator((raw: unknown) => CityAvgRatingSchema.parse(raw))
+  .handler(async ({ data }): Promise<{ avg: number | null; count: number }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("id")
+      .eq("is_published", true)
+      .ilike("city", `%${data.city}%`);
+    const ids = (pros ?? []).map((p) => p.id);
+    if (ids.length === 0) return { avg: null, count: 0 };
+    const { data: reviews } = await supabaseAdmin
+      .from("reviews")
+      .select("rating")
+      .eq("status", "published")
+      .in("professional_id", ids);
+    const rows = reviews ?? [];
+    if (rows.length === 0) return { avg: null, count: 0 };
+    const avg = rows.reduce((s, r) => s + (r.rating ?? 0), 0) / rows.length;
+    return { avg: Math.round(avg * 10) / 10, count: rows.length };
+  });
+

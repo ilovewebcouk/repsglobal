@@ -1,32 +1,53 @@
-# City pages QA: add missing cities + fix stale hero location
+# Wire "Avg. rating" to real reviews per city
 
-## Bug 1 — Glasgow and Bristol missing from LOCATIONS
+The "at a glance" sidebar currently hardcodes `4.9 / 5` on every city page. Wire it to the real published-review average for professionals in that city, with a graceful empty state.
 
-`src/routes/in.$location.tsx` only defines 4 entries in `LOCATIONS` (London, Manchester, Birmingham, Edinburgh). Glasgow and Bristol fall through to the generic fallback (region "", placeholder counts, generic blurb).
+## 1. New server function
 
-**Fix:** Add `glasgow` and `bristol` entries to `LOCATIONS` with the same shape as the existing four — `slug`, `name`, `region`, `blurb`, `count`, `areas`, `professions[]`. Use realistic district names (Glasgow: City Centre, Merchant City, West End, Finnieston, Southside, Shawlands; Bristol: City Centre, Clifton, Redland, Bedminster, Stokes Croft, Harbourside) and counts in proportion to the existing tier (Glasgow ≈ 69, Bristol ≈ 58 per the `CITIES` table on `/professions/$profession`).
-
-## Bug 2 — Hero search field stuck on "London" across all city pages
-
-`src/components/search/InlineHeroSearch.tsx` initialises `where` from `lockedCity` only inside the `useState(() => …)` initializer (line 131), which runs once per component mount. When the user navigates between `/in/london` → `/in/glasgow` → `/in/bristol`, TanStack reuses the same `InlineHeroSearch` instance, so `where.label` stays as whatever the very first visited city was — usually London. The existing effect at line 144 explicitly bails out when `lockedCity` is truthy, so it never resyncs.
-
-**Fix:** Add a small effect that resets `where` whenever `lockedCity` changes:
+Add `getCityAvgRating` to `src/lib/directory/search.functions.ts`, matching the existing `getCityOnlineCount` shape:
 
 ```ts
-React.useEffect(() => {
-  if (!lockedCity) return;
-  setWhere({ mode: "city", label: lockedCity });
-}, [lockedCity]);
+const CityAvgRatingSchema = z.object({ city: z.string().min(1) });
+
+export const getCityAvgRating = createServerFn({ method: "GET" })
+  .inputValidator((raw: unknown) => CityAvgRatingSchema.parse(raw))
+  .handler(async ({ data }): Promise<{ avg: number | null; count: number }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // 1. Pro IDs in this city
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("id")
+      .eq("is_published", true)
+      .ilike("city", `%${data.city}%`);
+    const ids = (pros ?? []).map(p => p.id);
+    if (ids.length === 0) return { avg: null, count: 0 };
+    // 2. Published reviews for those pros
+    const { data: reviews } = await supabaseAdmin
+      .from("reviews")
+      .select("rating")
+      .eq("status", "published")
+      .in("professional_id", ids);
+    const rows = reviews ?? [];
+    if (rows.length === 0) return { avg: null, count: 0 };
+    const avg = rows.reduce((s, r) => s + (r.rating ?? 0), 0) / rows.length;
+    return { avg: Math.round(avg * 10) / 10, count: rows.length };
+  });
 ```
 
-Leave the existing origin-sync effect alone (it already returns early when `lockedCity` is set).
+## 2. Wire into city page
 
-## QA after build
+In `src/routes/in.$location.tsx`:
 
-After both fixes, the `/in/glasgow`, `/in/bristol`, `/in/manchester`, `/in/birmingham`, `/in/edinburgh` hero search "Where" field must read the correct city, and the page metadata/blurb/areas must match.
+- Import `getCityAvgRating`.
+- Add a `useQuery` keyed `["city-avg-rating", loc.slug]`, `staleTime: 5 * 60_000`.
+- Replace the hardcoded `4.9 / 5` block at line ~424 with:
+  - When `avg === null` (no reviews yet): render `—` (no star), muted.
+  - When `avg !== null`: render `<Star /> {avg.toFixed(1)} / 5` (existing markup) plus a small muted `({count})` suffix.
+
+The DB currently has 0 published reviews, so every city will read `—` until reviews land — that's the intended honest empty state.
 
 ## Out of scope
 
-- Adding more cities beyond Glasgow and Bristol.
-- Wiring real Supabase-backed counts into the static `LOCATIONS` table (Phase 1 static numbers remain).
-- Touching `/find-a-professional` results, `CITIES` on profession pages, or `TOP_LOCATIONS` in nav.
+- Backfilling demo review data.
+- Surfacing per-professional avg ratings elsewhere.
+- Caching beyond the 5-minute `staleTime`.
