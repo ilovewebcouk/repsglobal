@@ -113,6 +113,10 @@ type ProRow = {
   online_available: boolean | null;
   identity_status: string | null;
   quality_score: number | null;
+  value_prop: string | null;
+  from_price_pennies: number | null;
+  price_currency: string | null;
+  years_experience: number | null;
 };
 
 async function fetchFeaturedPool(
