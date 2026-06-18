@@ -39,6 +39,7 @@ type PostcodesIoResult = {
   postcode: string;
   outcode: string;
   admin_district: string | null;
+  admin_ward: string | null;
   region: string | null;
   longitude: number;
   latitude: number;
@@ -47,20 +48,66 @@ type PostcodesIoResult = {
   parish: string | null;
 };
 
+// TTWAs broad enough that the ward/neighbourhood reads better as the primary
+// label, with the city kept as the secondary qualifier. Case-insensitive.
+const BIG_CITY_TTWAS = new Set([
+  "london",
+  "manchester",
+  "birmingham",
+  "leeds",
+  "liverpool",
+  "glasgow",
+  "edinburgh",
+  "bristol",
+  "sheffield",
+  "newcastle",
+  "newcastle upon tyne",
+  "cardiff",
+  "nottingham",
+]);
+
+function stripParenthetical(v: string | null | undefined): string | null {
+  if (!v) return null;
+  return v.replace(/\s*\(.+\)\s*$/, "").trim() || null;
+}
+
 /**
- * Pick the most recognisable place name for a postcode.
+ * Pick a recognisable, appropriately granular place name pair for a postcode.
  *
- * postcodes.io's `post_town` field is always null on the free tier, so we
- * fall back to the Travel-to-Work Area (which maps cleanly: NR32 → Lowestoft,
- * SW1A → London, M1 → Manchester, EH1 → Edinburgh). `bua` and `admin_district`
- * are last-ditch fallbacks; `admin_district` is council-level ("East Suffolk")
- * which we want to avoid showing publicly.
+ * - In big-city TTWAs (London, Manchester, …) we surface the admin_ward as
+ *   `town` ("Holborn and Covent Garden") and keep the TTWA city as `region`
+ *   ("London"). "London" alone is too broad to be useful to a client
+ *   searching by postcode.
+ * - Outside big metros, we keep the previous behaviour: TTWA as `town`
+ *   ("Brighton", "Lowestoft") and postcodes.io's `region` as `region`
+ *   ("South East").
+ *
+ * `district` always carries the raw admin_ward when available.
  */
-function deriveTown(r: PostcodesIoResult): string | null {
-  const raw = r.ttwa ?? r.bua ?? r.parish ?? r.admin_district;
-  if (!raw) return null;
-  // bua values like "Leeds (Leeds)" — strip the parenthetical suffix.
-  return raw.replace(/\s*\(.+\)\s*$/, "").trim() || null;
+function deriveDisplay(r: PostcodesIoResult): {
+  town: string | null;
+  region: string | null;
+  district: string | null;
+} {
+  const ward = stripParenthetical(r.admin_ward);
+  const ttwa = stripParenthetical(r.ttwa);
+  const isBigCity = !!ttwa && BIG_CITY_TTWAS.has(ttwa.toLowerCase());
+
+  if (isBigCity && ward) {
+    return { town: ward, region: ttwa, district: ward };
+  }
+
+  const fallbackTown =
+    ttwa ??
+    stripParenthetical(r.bua) ??
+    stripParenthetical(r.parish) ??
+    stripParenthetical(r.admin_district);
+
+  return {
+    town: fallbackTown,
+    region: stripParenthetical(r.region),
+    district: ward,
+  };
 }
 
 async function lookupPostcode(pc: string): Promise<PostcodesIoResult> {
