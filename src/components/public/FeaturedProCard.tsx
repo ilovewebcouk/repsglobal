@@ -73,7 +73,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {pro.city}</span>
           <span className="flex items-center gap-1"><Laptop className="h-3 w-3" /> {pro.mode}</span>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1">
+        <div className="mt-3 mb-3 flex flex-wrap gap-1">
           {pro.tags.slice(0, 2).map((t) => (
             <span key={t} className="rounded-full bg-reps-ivory px-2 py-0.5 text-[10.5px] font-medium text-reps-charcoal">{t}</span>
           ))}
