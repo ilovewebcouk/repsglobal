@@ -1,110 +1,65 @@
-# Featured Pro Card v2 — world-class pass
+# Featured card v3 — mirror the directory result card
 
-Goal: lift the rail from "directory tile" to "marketplace hero card" — the same bar as Airbnb, Resy, Booksy, Treatwell. Pricing + rating become first-class signals. Featured rail enforces visual diversity.
+Goal: The Featured rail card should read as a card-shaped version of the horizontal directory listing the user screenshotted. Same data shape, same pills, same icons, same orange CTA — just stacked into a portrait card.
 
-## 1. Data model (migration)
-
-Add to `public.professionals`:
-
-| Column | Type | Notes |
-| --- | --- | --- |
-| `from_price_pennies` | `integer` | Nullable. Starting session price in pence. Source-of-truth for "from £X". |
-| `price_currency` | `text` default `'GBP'` | Future-proofing for global. |
-| `years_experience` | `smallint` | Nullable. Used as proof when reviews = 0. |
-| `value_prop` | `text` | Nullable, ~60 char. One-line replacement for "Personal Trainer" (e.g. "Strength coach for women returning post-baby"). |
-
-Rating already lives via `reviews` table — confirm `rating_avg` + `rating_count` are computed (add trigger / view if missing). No new columns needed.
-
-Backfill seed pros (`demo-verified@…`, James Wilson, Katie Gibbs, Hannah Thompson, Daniel Hughes) with realistic price + value_prop in the same migration.
-
-## 2. Featured eligibility — additional rule
-
-Update `src/lib/directory/featured.functions.ts`:
-
-- Existing gates (avatar, identity_approved, quality≥60, headline, ≥1 specialism) — keep.
-- **New: avatar de-dup.** Reject a candidate if its `avatar_url` perceptual hash (or, pragmatically, exact URL match) is already in the rail. Phase 1: exact URL dedupe is enough — James + Daniel sharing a generated face is the obvious failure mode. Long term: pHash.
-- **New: require `value_prop`** when `quality_score < 75` (forces good copy on weaker pros).
-
-## 3. Card rebuild (`src/components/public/FeaturedProCard.tsx`)
-
-Final anatomy, top→bottom:
+## Visual spec (matches directory result card)
 
 ```
-┌───────────────────────────────┐
-│  ┌─────────────────────────┐  │  18px radius card, warm ivory bg
-│  │                         │  │
-│  │      4:5 headshot       │  │  object-cover object-top
-│  │                         │  │  hover: scale-[1.03]
-│  │ [Verified]      [Save]  │  │  top row, glass pills
-│  │                         │  │
-│  │           ★ 4.9 (128)   │  │  bottom-left glass pill
-│  └─────────────────────────┘  │  (hidden when reviews = 0; falls back
-│                                │   to "5 yrs experience" pill)
-│  Hannah Thompson               │  18px font-display bold
-│  Strength coach for women      │  14px charcoal, 2-line clamp
-│  returning post-baby           │
-│                                │
-│  📍 Clerkenwell  ·  From £65   │  13px muted, single row
-│                                │
-│  Pre/post-natal   Rehab        │  outlined chips, sentence case, max 2
-│                                │
-│  ┌─────────────────────────┐  │
-│  │  View profile        →  │  │  h-10, GHOST (border + charcoal text)
-│  └─────────────────────────┘  │  hover: fills brand orange
-└───────────────────────────────┘
+┌────────────────────────────┐
+│  [4:5 headshot]    [Save]  │  ← Save = white circle, charcoal bookmark,
+│                            │     hover→orange border+icon (same as directory)
+├────────────────────────────┤
+│ Hannah Thompson            │  18px display bold
+│ [REPS VERIFIED] [PRO]      │  same pills as directory (green + orange)
+│ Personal Trainer           │  12.5px muted (role only)
+│ 📍 Clerkenwell  ★ 4.9 (128)│  12.5px row, MapPin + Star(orange)
+│ 💻 In-person & Online      │  Laptop icon + mode
+│ Support for every stage…   │  13px clamp-2 blurb (valueProp)
+│ [Pre/post-natal] [Rehab]   │  ivory chips, max 2 + "+N"
+│ ┌────────────────────────┐ │
+│ │      View profile      │ │  SOLID orange button (rounded-[10px])
+│ └────────────────────────┘ │
+└────────────────────────────┘
 ```
 
-Key changes vs current:
+## Changes to `src/components/public/FeaturedProCard.tsx`
 
-| Element | Current | v2 |
-| --- | --- | --- |
-| Subtitle | "Personal Trainer" hardcoded | `value_prop`, fallback to title |
-| Proof | nothing when reviews=0 | rating overlay on photo, OR `{years} yrs experience` pill |
-| Price | none | `From £{from_price}` in location row |
-| Mode pill | "Hybrid" right-aligned in location row | **removed** — clients don't parse it; moved into profile page |
-| Tags | kebab-case, 1–2 rows, unequal heights | sentence case, hard-capped at 2, single row, `+N` overflow |
-| CTA | solid orange full-width | ghost outline, fills orange on hover |
-| Card heights | variable (1 vs 2 tag rows) | **equal** via `flex flex-col` + `mt-auto` on CTA block |
+**Remove**
+- `fromPrice` / `priceCurrency` rendering (data props stay on the type so callers don't break, but nothing renders).
+- Photo overlay scrims, overlaid Verified pill, glass rating pill (these don't exist on the directory card).
+- Ghost/white CTA. Drop the `ChevronRight` import.
 
-Locked tokens (per `mem://design/source-of-truth` + reps-build-compliance):
-- Card radius 18px, button 10px, input 12px
-- No button shadow
-- Brand orange via `bg-brand-orange` / `text-brand-orange` tokens
-- Verified pill stays emerald (status-only accent, per `mem://design/status-colors`)
+**Add / change**
+- Save button: move off the photo into top-right of the photo area but restyle to match directory exactly — `rounded-full border border-reps-stone bg-white p-2 text-reps-muted-light hover:border-reps-orange hover:text-reps-orange`. No black glass, no orange fill.
+- Below the photo, replicate the directory body block in order:
+  1. Name (18px bold) + `VerificationPill` (REPS Verified) + tier pill (Pro/Studio) — import `VerificationPill` from `@/components/directory/VerificationPill` so it's pixel-identical.
+  2. Role line (12.5px muted) — always the generic role ("Personal Trainer"), not the value prop, to match directory.
+  3. Meta row (12.5px, flex-wrap, gap-x-3.5): `MapPin city`, `Star(orange) rating (reviews)` or `years experience` fallback when reviews=0, `Laptop mode`.
+  4. Blurb: `valueProp` clamped to 2 lines at 13px (the directory's `pro.blurb`).
+  5. Tag chips: ivory pills `rounded-full border border-reps-stone bg-reps-ivory px-2 py-0.5 text-[11px]` (directory style), max 2 + "+N".
+- CTA: solid orange, same classes as directory desktop CTA — `rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-reps-orange-dark`, `mt-auto w-full` for equal heights.
 
-## 4. Rail header polish
+**Props**
+- Add optional `tier?: "verified" | "pro" | "studio" | null` so the Pro/Studio pill can render. Default `"verified"`.
+- Add optional `identityStatus` / `verification` if `VerificationPill` requires them — match the directory call site.
 
-In `in.$location.tsx` and `professions.$profession.tsx`:
+## Data wiring
 
-- "See all →" → neutral charcoal with chevron, not orange (stops competing with CTAs).
-- Subtitle copy: "Hand-picked, verified and accepting new clients." (drop "REPS-" — see core memory: no UK qualifier, brand is "REPs" everywhere else).
+`fetchFeaturedPool` already selects tier, verification, identity_status — verify and pass them through `FeaturedProRow` → mappers in `src/routes/in.$location.tsx` and `src/routes/professions.$profession.tsx`. No DB migration; price columns stay but are unused by this card.
 
-## 5. Out of scope
+## Eligibility (unchanged from v2)
 
-- Homepage Featured rail (locked).
-- Save/bookmark wiring (icon only, no DB).
-- pHash dedupe (exact-URL only for now).
-- Rating computation pipeline if `rating_avg` doesn't already exist — flag and ask before adding.
-- Any change to result-card or profile-card components.
+Keep current gates — avatar, identity_approved, quality≥60, headline, ≥1 specialism, avatar de-dup, value_prop required under quality 75. Don't tighten further this pass; Katie Gibbs will just get her `value_prop` filled in by a separate backfill if she's still missing one.
 
-## 6. Files touched
+## Out of scope
 
-- `supabase/migrations/<new>.sql` — columns + seed backfill
-- `src/lib/directory/featured.functions.ts` — dedupe rule, select new columns
-- `src/components/public/FeaturedProCard.tsx` — full rebuild
-- `src/routes/in.$location.tsx` — header polish
-- `src/routes/professions.$profession.tsx` — header polish
+- Database migration.
+- Homepage rail (locked).
+- Save/bookmark wiring (visual only, as today).
+- Directory page changes.
 
-## 7. Verification
+## Verification
 
-1. `/in/london`, `/in/leeds`, `/professions/personal-trainer` — 4 cards, equal height, no two same face, rating OR years on every card, price on every card.
-2. `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0.
-3. Typecheck clean.
-4. Screenshot before/after for the user.
-
-## Technical notes
-
-- Migration must include GRANTs (none new — columns on existing table, but verify policies still pass).
-- `value_prop` lives on `professionals`; pro can edit later from dashboard (out of scope here — show a TODO comment).
-- Rating overlay uses `bg-black/55 backdrop-blur-sm` glass pill, white text, `★` in brand orange (NOT yellow — per audit rule).
-- Equal-height enforcement: card is `flex flex-col`; the meta+CTA block uses `mt-auto`; tags row has fixed `min-h-[28px]`.
+- Open `/professions/personal-trainer` and `/in/london` — featured cards should look like portrait clones of the result rows below: same pills, same icons, same orange button, no price anywhere.
+- 4 cards equal height.
+- Audit script exits 0.
