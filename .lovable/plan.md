@@ -1,19 +1,26 @@
-Make every FeaturedProCard the same height within its grid row and push the "View Profile" button to the bottom so all buttons line up horizontally, regardless of varying name length, location text, or tag count.
+## Summary
+Two small layout fixes for `FeaturedProCard`.
 
-### What to change
+## Changes
 
-1. **`src/components/public/FeaturedProCard.tsx`**
-   - Add `flex flex-col` to the `<article>` root so the card becomes a flex container.
-   - Wrap the text content block (name, role, rating, city/mode, tags) in a wrapper with `flex-1` so it expands to fill available vertical space.
-   - Keep the "View Profile" `<Link>` as the last child so it naturally sits at the bottom.
+### 1. Shorten the "In-person & Online" label so the city/mode row stops wrapping
+In `src/components/public/FeaturedProCard.tsx`:
+- Add a tiny display helper that maps the `mode` string to a compact form:  
+  `"In-person & Online"` → `"Hybrid"`  
+  `"In-person"` → `"In-person"` (unchanged)  
+  `"Online"` → `"Online"` (unchanged)
+- Render the compact label in the card. The underlying `FeaturedPro.mode` type and all data-conversion functions stay exactly as-is — this is purely a presentational alias.
 
-2. **Parent grids** (e.g. `src/routes/professions.$profession.tsx`, `src/routes/in.$location.tsx`, `src/routes/about.tsx`)
-   - Ensure the card receives `h-full` (or the grid uses `items-stretch`) so each grid cell stretches to the tallest card in the row.
+### 2. Show every specialty pill instead of capping at 2
+In the same file:
+- Remove `.slice(0, 2)` from the tag mapping so all of `pro.tags` renders.
+- Keep the existing `flex-wrap gap-1` styling; extra pills will simply wrap to a new line inside the card.
 
-### Why this works
+## Why
+- Daniel Hughes’ card wraps because “Covent Garden” + “In-person & Online” is too wide for the row. “Hybrid” is short enough to fit on one line with every city name.
+- Katie Gibbs (and others) have 3+ specialties but only 2 were visible because of the hard slice.
 
-Cards currently have no vertical stretching: content with longer text (e.g. Daniel Hughes’ two-line location) pushes its own button lower, while shorter cards leave whitespace above the button. By giving the card `flex flex-col` and the middle content `flex-1`, the button is forced to the bottom edge on every card, and the parent grid makes all cards in a row match the tallest one.
-
-### Verification
-
-Screenshot `/professions/personal-trainer` after the change and confirm all four "View Profile" buttons share the same baseline.
+## Verification
+Screenshot `/professions/personal-trainer` after the change and confirm:
+1. Daniel Hughes’ city + mode row is a single line.
+2. Katie Gibbs shows 3 pills instead of 2.
