@@ -329,7 +329,7 @@ function WhatField(props: {
         <button type="button" className={triggerBase}>
           <Search className={cn("h-4 w-4 shrink-0", iconClass)} aria-hidden />
           <span className={labelTextClass}>{label ?? placeholder}</span>
-          {label ? (
+          {label && !hideClear ? (
             <span
               role="button"
               aria-label="Clear"
