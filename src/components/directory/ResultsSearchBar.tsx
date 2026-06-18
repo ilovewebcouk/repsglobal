@@ -369,18 +369,20 @@ function WhatChip({
   onFreeText,
   onClear,
   variant = "chip",
+  profession,
 }: {
   label: string | null;
   onPick: (entry: SearchEntry) => void;
   onFreeText: (text: string) => void;
   onClear: () => void;
   variant?: "chip" | "mobile-input";
+  profession?: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const ranked: RankedEntry[] = React.useMemo(
-    () => searchTaxonomy(query),
-    [query],
+    () => searchTaxonomy(query, { profession: profession ?? null }),
+    [query, profession],
   );
   const popular = React.useMemo(() => getPopularEntries(), []);
 
