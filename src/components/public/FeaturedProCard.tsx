@@ -34,7 +34,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   return (
     <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
       <div className="relative">
-        <img src={pro.image} alt={pro.name} className="h-44 w-full object-cover" loading="lazy" />
+        <img src={pro.image} alt={pro.name} className="aspect-[4/5] w-full object-cover object-top" loading="lazy" />
         <div className="absolute left-3 top-3">
           <VerificationPill
             identityStatus={identityStatus}
