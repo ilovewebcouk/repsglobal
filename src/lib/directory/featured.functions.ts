@@ -197,6 +197,7 @@ async function fetchFeaturedPool(
         review_count: agg?.count ?? 0,
         tier,
         identity_status: p.identity_status,
+        verification: p.verification,
         is_paid: tier !== "free",
       };
     });
