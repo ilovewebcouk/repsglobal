@@ -75,10 +75,14 @@ function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   // no monograms, no stock photos on the featured rail.
   return {
     name: r.full_name,
+    valueProp: r.value_prop,
     role,
     city: r.city ?? "",
     rating: r.rating_avg ?? 0,
     reviews: r.review_count,
+    yearsExperience: r.years_experience,
+    fromPrice: r.from_price_pennies ? r.from_price_pennies / 100 : null,
+    priceCurrency: r.price_currency,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
     image: r.avatar_url ?? "",
