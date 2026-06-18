@@ -129,6 +129,9 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
 
   const [whereOpen, setWhereOpen] = React.useState(false);
   const [where, setWhere] = React.useState<SelectedWhere>(() => {
+    if (lockedCity) {
+      return { mode: "city", label: lockedCity };
+    }
     if (origin) {
       return { mode: "origin", label: origin.town ?? origin.postcode_outward };
     }
@@ -139,10 +142,11 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
   });
 
   React.useEffect(() => {
+    if (lockedCity) return;
     if (origin) {
       setWhere({ mode: "origin", label: origin.town ?? origin.postcode_outward });
     }
-  }, [origin?.postcode_outward, origin?.town]);
+  }, [origin?.postcode_outward, origin?.town, lockedCity]);
 
   const whatLabel = React.useMemo(() => {
     if (!what) return null;
