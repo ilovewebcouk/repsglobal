@@ -60,7 +60,6 @@ function citySlug(city: string | null | undefined): string | null {
 
 function GymPlaceholderPage() {
   const gym = Route.useLoaderData();
-  const router = useRouter();
   const cSlug = citySlug(gym.city);
   const knownCitySlugs = new Set(["london", "manchester", "birmingham", "edinburgh"]);
   const canLinkCity = cSlug && knownCitySlugs.has(cSlug);
