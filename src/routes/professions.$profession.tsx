@@ -35,17 +35,8 @@ import {
   getSpecialismsForProfession,
   type Specialism,
 } from "@/lib/specialisms";
-import { isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
+import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
-const PROFESSION_ROLE_LABEL: Record<string, string> = {
-  "personal-trainer": "Personal Trainer",
-  "pilates-instructor": "Pilates Instructor",
-  "strength-coach": "Strength Coach",
-  "nutritionist": "Nutritionist",
-  "online-coach": "Online Coach",
-  "yoga-teacher": "Yoga Teacher",
-  "group-exercise-instructor": "Group Exercise Instructor",
-};
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
   const mode: FeaturedPro["mode"] =
@@ -54,7 +45,7 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   return {
     name: r.full_name ?? "REPs Professional",
     role,
@@ -74,7 +65,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   return {
     name: r.full_name,
     role,

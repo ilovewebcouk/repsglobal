@@ -29,16 +29,8 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCityAvgRating, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
+import { getProfessionLabel } from "@/lib/professions";
 
-const PROFESSION_LABEL: Record<string, string> = {
-  "personal-trainer": "Personal Trainer",
-  "pilates-instructor": "Pilates Instructor",
-  "strength-coach": "Strength Coach",
-  "nutritionist": "Nutritionist",
-  "online-coach": "Online Coach",
-  "yoga-teacher": "Yoga Teacher",
-  "group-exercise-instructor": "Group Exercise Instructor",
-};
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
   const mode: FeaturedPro["mode"] =
@@ -47,7 +39,7 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   return {
     name: r.full_name ?? "REPs Professional",
     role,
@@ -67,7 +59,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   return {
     name: r.full_name,
     role,
