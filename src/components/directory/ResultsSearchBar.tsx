@@ -207,6 +207,7 @@ export function ResultsSearchBar({
             <WhatChip
               variant="mobile-input"
               label={whatLabel}
+              profession={state.profession}
               onPick={(entry) =>
                 patch({
                   profession: entry?.route.profession,
