@@ -40,6 +40,7 @@ export type FeaturedProRow = {
   review_count: number;
   tier: "studio" | "pro" | "verified" | "free";
   identity_status: string | null;
+  verification: string | null;
   /** Primary-location town (e.g. "Shoreditch"); falls back to `city` on the client. */
   town: string | null;
   /** True when this pro is part of the paid pool (vs avatar-backfill). */
