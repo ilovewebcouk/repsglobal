@@ -108,7 +108,21 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
 
   const [whatOpen, setWhatOpen] = React.useState(false);
   const [whatQuery, setWhatQuery] = React.useState("");
-  const [what, setWhat] = React.useState<SelectedWhat>(null);
+  const [what, setWhat] = React.useState<SelectedWhat>(() => {
+    if (lockedProfession) {
+      const entry = SEARCH_ENTRIES.find(
+        (e) => e.kind === "profession" && e.slug === lockedProfession,
+      );
+      if (entry) return { mode: "entry", entry };
+    }
+    return null;
+  });
+
+  const isLockedSelection =
+    Boolean(lockedProfession) &&
+    what?.mode === "entry" &&
+    what.entry.kind === "profession" &&
+    what.entry.slug === lockedProfession;
 
   const [whereOpen, setWhereOpen] = React.useState(false);
   const [where, setWhere] = React.useState<SelectedWhere>(() => {
