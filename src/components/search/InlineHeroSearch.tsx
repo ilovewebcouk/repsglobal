@@ -83,6 +83,8 @@ export type InlineHeroSearchProps = {
   lockedProfession?: string;
   /** When set and no viewer origin, pre-fills the Where field. */
   defaultCity?: string;
+  /** When set, pins Where to this city (takes priority over viewer origin). User can still change it. */
+  lockedCity?: string;
   /** Placeholder for the What trigger. */
   whatPlaceholder?: string;
   /** Placeholder for the Where trigger. */
