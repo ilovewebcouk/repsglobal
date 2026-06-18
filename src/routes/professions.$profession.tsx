@@ -400,7 +400,6 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
   const { data: featuredResult } = useQuery({
     queryKey: ["profession-featured", meta.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
@@ -414,9 +413,8 @@ function ProfessionLanding() {
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map(featuredRowToFeaturedPro);
+  const showFeatured = featured.length >= FEATURED_MIN_CARDS;
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
   // profile, those are the ones we feature here. Falls back to the static
