@@ -60,6 +60,26 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
   };
 }
 
+function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+  const mode: FeaturedPro["mode"] =
+    r.in_person_available && r.online_available
+      ? "In-person & Online"
+      : r.online_available
+        ? "Online"
+        : "In-person";
+  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  return {
+    name: r.full_name,
+    role,
+    city: r.city ?? "",
+    rating: r.rating_avg ?? 5.0,
+    reviews: r.review_count,
+    mode,
+    tags: (r.specialisms ?? []).slice(0, 2),
+    image: r.avatar_url ?? fallbackImg,
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /* Location catalogue (Phase 1 static)                                 */
 /* ------------------------------------------------------------------ */
