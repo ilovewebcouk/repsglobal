@@ -324,6 +324,11 @@ function LocationLanding() {
     queryFn: () => getCityOnlineCount({ data: { city: loc.name } }),
     staleTime: 60_000,
   });
+  const { data: popularGyms } = useQuery({
+    queryKey: ["city-popular-gyms", loc.slug],
+    queryFn: () => getCityPopularGyms({ data: { city: loc.name, limit: 6 } }),
+    staleTime: 5 * 60_000,
+  });
   const onlineCount = onlineCountResult?.count ?? null;
   const onlineCountLabel = onlineCount && onlineCount > 0 ? onlineCount.toLocaleString() : "—";
   const cityCount = liveCounts
