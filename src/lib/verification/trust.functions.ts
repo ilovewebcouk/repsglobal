@@ -7,7 +7,7 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { TITLES } from "@/lib/cpd/titles-catalog";
 
 export type TrustState = {
@@ -32,7 +32,7 @@ export type TrustState = {
 };
 
 export const getTrustState = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<TrustState> => {
     const { supabase, userId } = context;
 

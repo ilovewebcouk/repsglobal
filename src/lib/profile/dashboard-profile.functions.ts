@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { PROFESSION_SLUGS, type ProfessionSlug } from "@/lib/professions";
 import {
   SPECIALISM_SLUGS,
@@ -53,7 +53,7 @@ export type DashboardProfile = {
 /* -------------------------------------------------------------------------- */
 
 export const getMyDashboardProfile = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<DashboardProfile> => {
     const { supabase, userId } = context;
 
@@ -195,7 +195,7 @@ function slugify(name: string) {
 }
 
 export const updateMyDashboardProfile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => UpdateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -307,7 +307,7 @@ async function signOneYearUrl(path: string): Promise<string> {
 }
 
 export const updateMyAvatar = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({ path: z.string().min(1).max(500).nullable() })
