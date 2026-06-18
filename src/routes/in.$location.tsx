@@ -338,7 +338,7 @@ function LocationLanding() {
 
             <InlineHeroSearch
               variant="light"
-              defaultCity={loc.name}
+              lockedCity={loc.name}
               whatPlaceholder="Specialism (e.g. fat loss, Pilates)"
               wherePlaceholder="City, town or postcode"
               className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]"
