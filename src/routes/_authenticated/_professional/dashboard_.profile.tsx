@@ -61,11 +61,12 @@ import {
   type ProfessionSlug,
 } from "@/lib/professions";
 import {
-  SPECIALISMS,
   MAX_SPECIALISMS,
   getSpecialismLabel,
+  isSpecialismValidForProfession,
   type SpecialismSlug,
 } from "@/lib/specialisms";
+import { SpecialismsPicker } from "@/components/profile/SpecialismsPicker";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
