@@ -98,8 +98,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       "Browse REPS-verified fitness professionals across Manchester city centre, Salford, Didsbury, Altrincham and the wider region.",
     count: 164,
     areas: ["City Centre", "Salford", "Didsbury", "Altrincham", "Chorlton", "Trafford", "Stockport"],
-
     professions: [
+
       { slug: "personal-trainer", label: "Personal Trainers", count: 92 },
       { slug: "pilates-instructor", label: "Pilates Instructors", count: 26 },
       { slug: "strength-coach", label: "Strength Coaches", count: 19 },
