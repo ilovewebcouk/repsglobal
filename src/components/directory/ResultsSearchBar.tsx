@@ -135,6 +135,23 @@ export function ResultsSearchBar({
           const isViewOnly = Object.keys(p).length === 1 && "view" in p;
           const next = { ...prev, ...p } as Record<string, unknown>;
           if (!isViewOnly) next.page = 1;
+          // When the profession changes, drop a now-invalid specialism so we
+          // don't end up with mismatched filters in the URL.
+          if ("profession" in p) {
+            const nextProf =
+              typeof p.profession === "string" ? p.profession : null;
+            const nextSpec =
+              typeof next.specialism === "string" ? next.specialism : null;
+            if (
+              nextSpec &&
+              !isSpecialismValidForProfession(
+                nextSpec,
+                nextProf as ProfessionSlug | null,
+              )
+            ) {
+              delete next.specialism;
+            }
+          }
           // Strip falsy/default values so URLs stay clean.
           for (const k of Object.keys(next)) {
             const v = next[k];
