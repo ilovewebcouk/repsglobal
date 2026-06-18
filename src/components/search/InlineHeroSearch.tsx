@@ -186,10 +186,10 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
       search.q = whatQuery.trim();
     }
 
-    if (origin) {
-      search.sort = "nearest";
-    } else if (where?.mode === "city") {
+    if (where?.mode === "city") {
       search.city = where.label;
+    } else if (where?.mode === "origin" || origin) {
+      search.sort = "nearest";
     }
 
     navigate({ to: "/find-a-professional", search });
