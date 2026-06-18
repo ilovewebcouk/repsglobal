@@ -5,12 +5,12 @@ import {
   ChevronRight,
   MapPin,
   Navigation,
-  Search,
   ShieldCheck,
   Star,
   Trophy,
   Users,
 } from "lucide-react";
+import { InlineHeroSearch } from "@/components/search/InlineHeroSearch";
 
 import {
   Accordion,
@@ -336,30 +336,13 @@ function LocationLanding() {
               {loc.blurb}
             </p>
 
-            <form className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <Search className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  placeholder="Specialism (e.g. fat loss, Pilates)"
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                />
-              </label>
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <MapPin className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  defaultValue={loc.name}
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                />
-              </label>
-              <Link
-                to="/find-a-professional"
-                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-              >
-                Search
-              </Link>
-            </form>
+            <InlineHeroSearch
+              variant="light"
+              defaultCity={loc.name}
+              whatPlaceholder="Specialism (e.g. fat loss, Pilates)"
+              wherePlaceholder="City, town or postcode"
+              className="mt-6 grid gap-2 rounded-[18px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]"
+            />
           </div>
 
           {/* At a glance */}

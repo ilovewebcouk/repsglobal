@@ -1,18 +1,17 @@
 import * as React from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import {
   BadgeCheck,
   ChevronRight,
   MapPin,
-  Search,
   ShieldCheck,
   Star,
   Trophy,
   UserRound,
   Users,
 } from "lucide-react";
+import { InlineHeroSearch } from "@/components/search/InlineHeroSearch";
 
 import {
   Accordion,
@@ -388,33 +387,8 @@ function ProfessionLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
-  const navigate = useNavigate();
-  const { origin } = useViewerOrigin();
-  const [specialism, setSpecialism] = React.useState("");
-  const [city, setCity] = React.useState(origin?.town ?? "");
-  React.useEffect(() => {
-    if (origin?.town) setCity((c) => c || origin.town!);
-  }, [origin?.town]);
 
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const search: {
-      profession: string;
-      q?: string;
-      city?: string;
-      page: number;
-      sort: "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
-    } = { profession: meta.slug, page: 1, sort: "recommended" };
-    const q = specialism.trim();
-    const c = city.trim();
-    if (q) search.q = q;
-    if (c) {
-      search.city = c;
-    } else if (origin) {
-      search.sort = "nearest";
-    }
-    navigate({ to: "/find-a-professional", search });
-  };
+
 
 
 
@@ -449,36 +423,13 @@ function ProfessionLanding() {
             </p>
 
             {/* Inline search */}
-            <form onSubmit={handleHeroSearch} className="mt-6 grid gap-2 rounded-[22px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <Search className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  value={specialism}
-                  onChange={(e) => setSpecialism(e.target.value)}
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  placeholder="e.g. Strength training, Fat loss"
-                  aria-label={`Specialism or service for ${meta.title}`}
-                />
-              </label>
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <MapPin className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="City, town or postcode"
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  aria-label="Location"
-                />
-              </label>
-              <button
-                type="submit"
-                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-              >
-                Search
-              </button>
-            </form>
+            <InlineHeroSearch
+              variant="light"
+              lockedProfession={meta.slug}
+              whatPlaceholder={`Specialism for ${meta.title.toLowerCase()} (e.g. fat loss)`}
+              wherePlaceholder="City, town or postcode"
+              className="mt-6 grid gap-2 rounded-[22px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]"
+            />
 
           </div>
 
