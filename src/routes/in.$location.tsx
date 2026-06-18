@@ -115,8 +115,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
     blurb:
       "Connect with REPS-verified personal trainers, coaches and nutritionists across Birmingham and the surrounding West Midlands.",
     count: 128,
-
     areas: ["City Centre", "Edgbaston", "Jewellery Quarter", "Solihull", "Sutton Coldfield"],
+
     professions: [
       { slug: "personal-trainer", label: "Personal Trainers", count: 72 },
       { slug: "pilates-instructor", label: "Pilates Instructors", count: 21 },
@@ -133,8 +133,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
     blurb:
       "Find REPS-verified fitness professionals across Edinburgh — Leith, New Town, Stockbridge, Morningside and beyond.",
     count: 74,
-
     areas: ["New Town", "Leith", "Stockbridge", "Morningside", "Bruntsfield"],
+
     professions: [
       { slug: "personal-trainer", label: "Personal Trainers", count: 41 },
       { slug: "pilates-instructor", label: "Pilates Instructors", count: 13 },
@@ -149,8 +149,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
 function getLocation(slug: string): LocationMeta {
   return (
     LOCATIONS[slug] ?? {
-
       slug,
+
       name: slug
         .split("-")
         .map((s) => s[0]?.toUpperCase() + s.slice(1))
