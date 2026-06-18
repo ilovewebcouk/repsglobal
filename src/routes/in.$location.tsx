@@ -396,18 +396,34 @@ function LocationLanding() {
                 <dd className="font-semibold text-reps-charcoal">{onlineCountLabel}</dd>
               </div>
             </dl>
-            <div className="mt-5 border-t border-reps-stone pt-4">
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                Popular areas
+            {popularGyms && popularGyms.length > 0 ? (
+              <div className="mt-5 border-t border-reps-stone pt-4">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                  Popular gyms
+                </div>
+                <ul className="flex flex-col gap-1.5">
+                  {popularGyms.map((g) => (
+                    <li key={g.id}>
+                      <Link
+                        to="/gyms/$slug"
+                        params={{ slug: g.slug }}
+                        className="group flex items-center justify-between gap-3 rounded-[10px] bg-reps-ivory px-3 py-2 text-left transition-colors hover:bg-reps-warm-white"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[13px] font-semibold text-reps-charcoal group-hover:text-reps-orange">
+                            {g.name}
+                          </span>
+                          {g.area ? (
+                            <span className="block truncate text-[11px] text-reps-muted-light">{g.area}</span>
+                          ) : null}
+                        </span>
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-reps-muted-light group-hover:text-reps-orange" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {loc.areas.slice(0, 6).map((a) => (
-                  <span key={a} className="rounded-full bg-reps-ivory px-2.5 py-1 text-[12px] font-medium text-reps-charcoal">
-                    {a}
-                  </span>
-                ))}
-              </div>
-            </div>
+            ) : null}
           </aside>
         </div>
       </section>
