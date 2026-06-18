@@ -81,7 +81,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
         <Link
           to="/pro/$slug"
           params={{ slug }}
-          className="mt-auto inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange pt-4 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+          className="mt-auto inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
         >
           View Profile
         </Link>
