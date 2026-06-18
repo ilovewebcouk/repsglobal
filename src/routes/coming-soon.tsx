@@ -307,7 +307,22 @@ function ComingSoonPage() {
       {/* ----- Minimal footer ---------------------------------------- */}
       <footer>
         <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 pb-10 pt-2 text-[12px] text-white/45 sm:flex-row lg:px-10">
-          <span>© REPS {new Date().getFullYear()}</span>
+          <span>
+            <button
+              type="button"
+              onClick={() => {
+                setCode("");
+                setError(null);
+                setUnlockOpen(true);
+              }}
+              className="cursor-default text-inherit transition-colors hover:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+              aria-label="Preview access"
+              title=""
+            >
+              ©
+            </button>{" "}
+            REPS {new Date().getFullYear()}
+          </span>
           <a
             href="mailto:press@repsuk.org"
             className="transition-colors hover:text-white/70"
@@ -316,6 +331,43 @@ function ComingSoonPage() {
           </a>
         </div>
       </footer>
+
+      <Dialog open={unlockOpen} onOpenChange={setUnlockOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Preview access</DialogTitle>
+            <DialogDescription>
+              Enter the access code to browse the full site before launch.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="preview-code">Access code</Label>
+              <Input
+                id="preview-code"
+                type="password"
+                autoFocus
+                autoComplete="off"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setError(null);
+                }}
+                aria-invalid={error ? true : undefined}
+              />
+              {error ? (
+                <p className="text-[12.5px] text-destructive">{error}</p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setUnlockOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Unlock</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
