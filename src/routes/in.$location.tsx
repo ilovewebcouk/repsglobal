@@ -26,7 +26,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
-import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { searchProfessionals, getCityProfessionCounts, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
   "personal-trainer": "Personal Trainer",
@@ -304,6 +304,14 @@ function LocationLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
+  const professionSlugs = loc.professions.map((p) => p.slug);
+  const { data: liveCounts } = useQuery({
+    queryKey: ["city-profession-counts", loc.slug, professionSlugs.join(",")],
+    queryFn: () =>
+      getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
       <PublicHeader variant="solid" />
@@ -387,20 +395,26 @@ function LocationLanding() {
             Browse {loc.name} by profession
           </h2>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {loc.professions.map((p) => (
-              <Link
-                key={p.slug}
-                to="/professions/$profession"
-                params={{ profession: p.slug }}
-                className="group flex flex-col rounded-[16px] border border-reps-stone bg-reps-ivory p-4 transition-colors hover:border-reps-orange"
-              >
-                <span className="text-[14px] font-semibold text-reps-charcoal group-hover:text-reps-orange">{p.label}</span>
-                <span className="mt-1 text-[12px] text-reps-muted-light">{p.count} in {loc.name}</span>
-                <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
-                  View <ChevronRight className="h-3 w-3" />
-                </span>
-              </Link>
-            ))}
+            {loc.professions.map((p) => {
+              const liveCount = liveCounts?.[p.slug];
+              const displayCount = liveCount ?? p.count;
+              return (
+                <Link
+                  key={p.slug}
+                  to="/find-a-professional"
+                  search={{ city: loc.name, profession: p.slug }}
+                  className="group flex flex-col rounded-[16px] border border-reps-stone bg-reps-ivory p-4 transition-colors hover:border-reps-orange"
+                >
+                  <span className="text-[14px] font-semibold text-reps-charcoal group-hover:text-reps-orange">{p.label}</span>
+                  <span className="mt-1 text-[12px] text-reps-muted-light">
+                    {liveCount == null ? "—" : displayCount} in {loc.name}
+                  </span>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
+                    View <ChevronRight className="h-3 w-3" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
