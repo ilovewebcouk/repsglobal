@@ -29,6 +29,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
   getSpecialismsForProfession,
   type Specialism,
@@ -77,7 +78,6 @@ type ProfessionMeta = {
   qualifications: string[];
   specialisms: string[];
   avgRate: string;
-  count: number;
   related: { slug: string; label: string }[];
 };
 
@@ -100,7 +100,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "1:1 In-Person",
     ],
     avgRate: "£45 – £85 / hour",
-    count: 1284,
     related: [
       { slug: "strength-coach", label: "Strength Coach" },
       { slug: "nutritionist", label: "Nutritionist" },
@@ -125,7 +124,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Studio Sessions",
     ],
     avgRate: "£35 – £70 / hour",
-    count: 412,
     related: [
       { slug: "yoga-teacher", label: "Yoga Teacher" },
       { slug: "personal-trainer", label: "Personal Trainer" },
@@ -150,7 +148,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Body Composition",
     ],
     avgRate: "£60 – £120 / session",
-    count: 326,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "online-coach", label: "Online Coach" },
@@ -175,7 +172,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Competition Prep",
     ],
     avgRate: "£55 – £95 / hour",
-    count: 198,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "online-coach", label: "Online Coach" },
@@ -200,7 +196,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Nutrition Support",
     ],
     avgRate: "£99 – £249 / month",
-    count: 873,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "nutritionist", label: "Nutritionist" },
@@ -229,7 +224,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Online Classes",
     ],
     avgRate: "£35 – £75 / class",
-    count: 412,
     related: [
       { slug: "pilates-instructor", label: "Pilates Instructor" },
       { slug: "personal-trainer", label: "Personal Trainer" },
@@ -277,7 +271,7 @@ export const Route = createFileRoute("/professions/$profession")({
         { title: `${meta.plural} — REPS-Verified | REPS` },
         {
           name: "description",
-          content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPS.`,
+          content: `${meta.blurb} Browse REPS-verified ${meta.plural.toLowerCase()}.`,
         },
         { property: "og:title", content: `${meta.plural} — REPS` },
         { property: "og:description", content: meta.blurb },
@@ -387,6 +381,13 @@ function ProfessionLanding() {
     queryFn: () => searchProfessionals({ data: { profession: meta.slug, limit: 4 } }),
     staleTime: 60_000,
   });
+  const { data: countResult } = useQuery({
+    queryKey: ["profession-verified-count", meta.slug],
+    queryFn: () => getVerifiedProCount({ data: { profession: meta.slug } }),
+    staleTime: 5 * 60_000,
+  });
+  const verifiedCount = countResult?.count ?? null;
+  const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = liveResult?.rows ?? [];
   const featured: FeaturedPro[] = livePros.length
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
@@ -444,7 +445,7 @@ function ProfessionLanding() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-muted-light">
               <BadgeCheck className="h-3 w-3 text-reps-orange" />
-              {meta.count.toLocaleString()} REPS-verified {meta.plural.toLowerCase()}
+              {verifiedCountLabel} REPS-verified {meta.plural.toLowerCase()}
             </span>
             <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.05] text-reps-charcoal lg:text-[56px]">
               Find a verified <span className="text-reps-orange">{meta.title}</span>
@@ -474,7 +475,7 @@ function ProfessionLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Verified pros</dt>
-                <dd className="font-semibold text-reps-charcoal">{meta.count.toLocaleString()}</dd>
+                <dd className="font-semibold text-reps-charcoal">{verifiedCountLabel}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Avg. rating</dt>
@@ -546,7 +547,7 @@ function ProfessionLanding() {
             to="/find-a-professional"
             className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
           >
-            See all {meta.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
+            See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 

@@ -1,75 +1,29 @@
-## What's actually wrong
+# Live verified-pro count per profession page
 
-Katie's PureGym Great Yarmouth is not deleted — it's hidden by an **impersonation bug**. `getMyGyms` and every other "my…" server fn uses the plain `requireSupabaseAuth` middleware, which leaves `context.userId` as the admin's id while impersonating. So queries like `professional_gyms.eq("professional_id", context.userId)` ask for the admin's gyms, not Katie's, and return empty.
+Currently the "Verified pros" number in the at-a-glance card on `/professions/$profession` is a hardcoded `count` per profession in `PROFESSIONS` (e.g. `1284`, `412`, `326`, …). Wire it to the real count from the database so every page shows its own live number.
 
-Only a tiny handful of fns (verification trust, dashboard-profile, avatar-ai, location) have been switched to `requireSupabaseAuthWithImpersonation`. The rest of the dashboard surface is silently lying about every impersonated pro.
+## What
 
-## Scope of the bug (QA sweep results)
+- On `/professions/personal-trainer`, `/pilates-instructor`, `/nutritionist`, `/strength-coach`, `/online-coach`, `/yoga-teacher`, `/group-exercise-instructor`, the "Verified pros" row in the right-hand "At a glance" card reads the live count of verified professionals for that profession instead of a static number.
+- "Verified" matches the existing directory rule: `professionals.verification = 'verified'` AND `identity_status = 'approved'`, filtered by `primary_profession = <slug>`.
+- If the live count is `0` (early days), fall back to a dash `—` rather than rendering "0" — avoids a thin-looking page.
 
-Files with handlers that read/write rows keyed on `context.userId` as the pro id and currently use the wrong middleware:
+## How (technical)
 
-```
-src/lib/gyms.functions.ts                    9 handlers
-src/lib/settings/settings.functions.ts       9 handlers
-src/lib/cpd/titles.functions.ts              3 handlers (qualifications)
-src/lib/verification/identity.functions.ts   5 handlers (ID docs)
-src/lib/reviews/reviews.functions.ts         3 handlers
-src/lib/enquiries/enquiries.functions.ts     3 handlers
-src/lib/leads/leads.functions.ts            10 handlers
-src/lib/leads/proposals.functions.ts         3 handlers
-src/lib/leads/leads-ai.functions.ts          3 handlers
-src/lib/roster.functions.ts                  7+ handlers (clients)
-src/lib/programmes/waitlist.functions.ts     2 handlers
-src/lib/invites.functions.ts                 2 handlers (client invites)
-src/lib/support/tickets.functions.ts        14 handlers
-src/lib/support/ai-draft.functions.ts        1 handler
-src/lib/support/bulk-tickets.functions.ts    2 handlers
-```
+1. **New server fn** `getVerifiedProCount` in `src/lib/directory/search.functions.ts` (or a new `src/lib/directory/counts.functions.ts`):
+   - Public (no auth middleware), uses the server publishable Supabase client (same pattern as other public reads).
+   - Input: `{ profession: string }` validated against `PROFESSION_SLUGS`.
+   - Query: `supabase.from('professionals').select('id', { count: 'exact', head: true }).eq('primary_profession', data.profession).eq('verification', 'verified').eq('identity_status', 'approved')`.
+   - Returns `{ count: number }`.
 
-**Keep on plain `requireSupabaseAuth`** (must always act as the real admin, never as the impersonated pro):
+2. **Loader wiring** in `src/routes/professions.$profession.tsx`:
+   - Add a `queryOptions` for `['profession-verified-count', slug]` calling the new server fn with a 5-minute `staleTime`.
+   - In the route `loader`, `ensureQueryData` it alongside any existing loader work.
+   - In the component, read with `useSuspenseQuery` (or `useQuery` if the route currently has no loader) and render `count.toLocaleString()` in the `<dd>` at line 477, with a `—` fallback when `count === 0`.
 
-```
-src/lib/admin-audit-list.functions.ts        admin audit reader
-src/lib/payments/admin.functions.ts          admin payment ops
-src/lib/billing/billing.functions.ts         own subscription / Stripe customer
-src/lib/credits/credits.functions.ts         own wallet spend
-src/lib/payments/connect.functions.ts        own Stripe Connect onboarding
-```
-
-These are tied to the actor's auth identity (Stripe customer id, wallet, admin role). Swapping them would silently mutate Katie's billing while admin is impersonating — that's a worse bug.
-
-## Plan
-
-### Phase 1 — fix the gym issue (the original report)
-
-`src/lib/gyms.functions.ts`: replace `requireSupabaseAuth` import + every `.middleware([requireSupabaseAuth])` with `requireSupabaseAuthWithImpersonation` for all 9 handlers (getMyGyms, addMyGym, removeMyGym, reorderMyGyms, and the 5 staff/admin-claim handlers that scope by `professional_id = context.userId`).
-
-### Phase 2 — sweep the rest of the dashboard
-
-For each file in the "scope" list above, swap the middleware on every handler whose body uses `context.userId` as `professional_id` (or equivalent owner column on rows the pro owns: `pro_titles`, `identity_documents`, `professional_locations`, `reviews.professional_id`, `enquiries.professional_id`, `client_roster.professional_id`, `client_invites.professional_id`, `support_tickets.user_id` when the ticket is owned by the impersonated pro, etc.).
-
-Leave handlers alone where `context.userId` is the actor's own auth identity unrelated to the impersonated pro (e.g. an admin sending a support reply *as themselves*).
-
-### Phase 3 — verification
-
-For each subsystem, while impersonating Katie:
-1. Dashboard profile → PureGym Great Yarmouth shows under "Trains at".
-2. Qualifications/CPD → her real CPD titles appear.
-3. Identity verification → her uploaded ID docs and status appear.
-4. Leads / enquiries / proposals → her real pipeline appears, not the admin's.
-5. Roster / clients / invites → her clients appear.
-6. Reviews → her reviews appear.
-7. Programmes waitlist → her waitlist appears.
-8. Support tickets → her tickets appear (not the admin's).
-
-Then stop impersonation and confirm the admin's own dashboard is unchanged. Confirm billing/credits/connect still target the admin (Phase 1+2 deliberately don't touch those).
-
-### Phase 4 — guardrail (small follow-up, optional)
-
-Add a one-line ESLint rule or a `rg` pre-commit check that flags new `*.functions.ts` files importing `requireSupabaseAuth` without an explicit `// reason: ...` comment, so future fns default to the impersonation-safe middleware.
+3. **Cleanup**: remove the hardcoded `count` field from each entry in the `PROFESSIONS` constant and from the `ProfessionMeta` type — it is no longer the source of truth.
 
 ## Out of scope
 
-- Public `/pro/$slug` "Trains at" still hardcodes three placeholder London gyms — separate fix, tracked from the previous turn.
-- No DB changes, no migrations.
-- Public profile / read-only public routes aren't affected (they use a publishable/admin client, not the user's auth context).
+- The "Avg. rating" (`4.9 / 5`) and "Typical rate" stay static for now — user only asked about the number they selected.
+- No change to the city pages, homepage stats, or any other count surfaces.
