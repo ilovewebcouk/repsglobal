@@ -108,8 +108,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 16 },
     ],
   },
-
   birmingham: {
+
     slug: "birmingham",
     name: "Birmingham",
     region: "West Midlands",
