@@ -87,7 +87,7 @@ export const listAdminAuditLog = createServerFn({ method: "POST" })
       target_id: r.target_id,
       target_name: r.target_id ? targetNameById.get(r.target_id) ?? null : null,
       reason: r.reason,
-      before_state: r.before_state,
-      after_state: r.after_state,
+      before_state: r.before_state == null ? null : JSON.stringify(r.before_state),
+      after_state: r.after_state == null ? null : JSON.stringify(r.after_state),
     }));
   });
