@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, ShieldCheck, Globe2, Hammer, BadgeCheck, Store, Workflow, Dumbbell, Brain, TrendingUp } from "lucide-react";
 
@@ -10,6 +10,11 @@ import { SectionHeading } from "@/components/marketing/SectionHeading";
 
 import { CountdownGrid } from "@/components/launch/CountdownGrid";
 import { WaitlistForm } from "@/components/launch/WaitlistForm";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PREVIEW_UNLOCK_CODE, PREVIEW_STORAGE_KEY, hasPreviewUnlock } from "@/lib/launch";
 
 import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 
