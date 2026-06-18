@@ -52,6 +52,13 @@ export type FeaturedProRow = {
   review_count: number;
   tier: "studio" | "pro" | "verified" | "free";
   identity_status: string | null;
+  /** Short value-prop line (60-90 char) shown as card subtitle. */
+  value_prop: string | null;
+  /** Starting price in pennies/cents. */
+  from_price_pennies: number | null;
+  price_currency: string | null;
+  /** Years of experience — proof when reviews = 0. */
+  years_experience: number | null;
   /** True when this pro is part of the paid pool (vs avatar-backfill). */
   is_paid: boolean;
 };
