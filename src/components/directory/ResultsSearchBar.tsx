@@ -137,16 +137,17 @@ export function ResultsSearchBar({
           if (!isViewOnly) next.page = 1;
           // When the profession changes, drop a now-invalid specialism so we
           // don't end up with mismatched filters in the URL.
-          if ("profession" in p) {
-            const nextProf =
-              typeof p.profession === "string" ? p.profession : null;
+          // Only validate when switching TO a defined profession. Clearing
+          // profession (or picking a profession-agnostic specialism like
+          // "fat-loss") must NOT wipe the specialism the user just chose.
+          if ("profession" in p && typeof p.profession === "string" && p.profession) {
             const nextSpec =
               typeof next.specialism === "string" ? next.specialism : null;
             if (
               nextSpec &&
               !isSpecialismValidForProfession(
                 nextSpec,
-                nextProf as ProfessionSlug | null,
+                p.profession as ProfessionSlug,
               )
             ) {
               delete next.specialism;
