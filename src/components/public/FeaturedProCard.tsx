@@ -41,6 +41,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
             verification={verification}
             tier={tier}
             compact
+            variant="onImage"
           />
         </div>
 
