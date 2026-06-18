@@ -35,17 +35,25 @@ export function ImpersonationBanner() {
           <span className="opacity-80"> · started {fmtTime(data.startedAt)} · expires {fmtTime(data.endsAt)}</span>
         </span>
       </div>
-      <button
-        type="button"
-        onClick={async () => {
-          await stopFn();
-          await qc.invalidateQueries();
-          navigate({ to: '/admin/professionals' });
-        }}
-        className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
-      >
-        <X className="h-3.5 w-3.5" /> Exit view
-      </button>
+      <div className="flex items-center gap-2">
+        <Link
+          to="/dashboard"
+          className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
+        >
+          <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+        </Link>
+        <button
+          type="button"
+          onClick={async () => {
+            await stopFn();
+            await qc.invalidateQueries();
+            navigate({ to: '/admin/professionals' });
+          }}
+          className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
+        >
+          <X className="h-3.5 w-3.5" /> Exit view
+        </button>
+      </div>
     </div>
   );
 }
