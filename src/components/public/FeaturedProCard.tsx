@@ -39,7 +39,6 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
           <VerificationPill
             identityStatus={identityStatus}
             verification={verification}
-            tier={tier}
             compact
             variant="onImage"
           />

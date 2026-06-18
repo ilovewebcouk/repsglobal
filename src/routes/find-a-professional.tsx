@@ -893,7 +893,6 @@ function ProCard({
                 <VerificationPill
                   identityStatus={pro.identity_status}
                   verification={pro.verification}
-                  tier={pro.tier}
                   compact
                 />
               </div>
@@ -923,7 +922,6 @@ function ProCard({
             <VerificationPill
               identityStatus={pro.identity_status}
               verification={pro.verification}
-              tier={pro.tier}
             />
           </div>
           <div className="mt-0.5 hidden text-[12.5px] text-reps-muted-light sm:block">{pro.role}</div>
