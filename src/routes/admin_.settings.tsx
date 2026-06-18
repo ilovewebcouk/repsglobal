@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { backfillPrimaryLocations } from "@/lib/profile/location.functions";
+import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.functions";
+import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin_/settings")({
@@ -106,37 +108,125 @@ function AdminSettings() {
       </div>
 
 
-      <PPanel className="mt-6 p-6">
-        <h2 className="font-display text-[16px] font-semibold text-white">Recent audit log</h2>
-        <table className="mt-4 w-full text-[13px]">
+      <AuditLogPanel />
+    </DashboardShell>
+  );
+}
+
+function AuditLogPanel() {
+  const run = useServerFn(listAdminAuditLog);
+  const [rows, setRows] = useState<AuditLogRow[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    setBusy(true);
+    setErr(null);
+    try {
+      const r = await run({ data: { limit: 200 } });
+      setRows(r);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed to load audit log");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <PPanel className="mt-6 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-[16px] font-semibold text-white">Audit log</h2>
+          <p className="mt-1 text-[12px] text-white/55">
+            Every privileged admin action recorded across the platform — most recent first.
+          </p>
+        </div>
+        <Button size="sm" variant="outline" onClick={load} disabled={busy}>
+          {busy ? "Loading…" : "Refresh"}
+        </Button>
+      </div>
+
+      {err ? <p className="mt-4 text-[12px] text-red-300">{err}</p> : null}
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-[13px]">
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-white/45">
               <th className="py-2 font-semibold">When</th>
               <th className="py-2 font-semibold">Actor</th>
               <th className="py-2 font-semibold">Action</th>
               <th className="py-2 font-semibold">Target</th>
+              <th className="py-2 font-semibold">Reason / details</th>
             </tr>
           </thead>
           <tbody>
-            {[
-              ["Today 14:02", "James Admin", "Approved verification", "Aaron Mitchell"],
-              ["Today 11:47", "Emma R.", "Toggled feature flag", "Public review responses → On"],
-              ["Yesterday", "Tom B.", "Refunded payment", "INV-2024-0918 · £180"],
-              ["Yesterday", "James Admin", "Suspended account", "spammer-acct-2241"],
-              ["2d ago", "System", "Crawl completed", "2,418 listings scanned"],
-            ].map((r, i) => (
-              <tr key={i} className="border-t border-reps-border/60 text-white/80">
-                <td className="py-3 text-white/55">{r[0]}</td>
-                <td className="py-3 font-semibold text-white">{r[1]}</td>
-                <td className="py-3 text-white/70">{r[2]}</td>
-                <td className="py-3 text-white/65">{r[3]}</td>
-              </tr>
-            ))}
+            {rows == null ? (
+              <tr><td colSpan={5} className="py-6 text-center text-white/55">Loading…</td></tr>
+            ) : rows.length === 0 ? (
+              <tr><td colSpan={5} className="py-6 text-center text-white/55">No admin actions yet.</td></tr>
+            ) : rows.map((r) => {
+              const details = r.reason ?? formatStateDelta(r.before_state, r.after_state);
+              const target = r.target_name
+                ? `${r.target_name}${r.target_table ? ` · ${r.target_table}` : ""}`
+                : r.target_table
+                  ? `${r.target_table}${r.target_id ? ` · ${r.target_id.slice(0, 8)}…` : ""}`
+                  : "—";
+              return (
+                <tr key={r.id} className="border-t border-reps-border/60 align-top text-white/80">
+                  <td className="py-3 pr-4 text-white/55 whitespace-nowrap">
+                    <TimeAgo iso={r.created_at} />
+                  </td>
+                  <td className="py-3 pr-4 font-semibold text-white whitespace-nowrap">
+                    {r.actor_name ?? r.actor_email ?? (r.actor_id ? `${r.actor_id.slice(0, 8)}…` : "System")}
+                    {r.actor_email && r.actor_name ? (
+                      <div className="text-[11px] font-normal text-white/45">{r.actor_email}</div>
+                    ) : null}
+                  </td>
+                  <td className="py-3 pr-4 text-white/80 whitespace-nowrap font-mono text-[12px]">{r.action}</td>
+                  <td className="py-3 pr-4 text-white/65">{target}</td>
+                  <td className="py-3 text-white/55 text-[12px]">{details ?? "—"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </PPanel>
-    </DashboardShell>
+      </div>
+    </PPanel>
   );
+}
+
+function formatStateDelta(before: string | null, after: string | null): string | null {
+  if (!before && !after) return null;
+  const b = before ? safeParse(before) : null;
+  const a = after ? safeParse(after) : null;
+  if (b && a && typeof b === "object" && typeof a === "object") {
+    const keys = new Set([...Object.keys(b), ...Object.keys(a)]);
+    const parts: string[] = [];
+    for (const k of keys) {
+      const bv = (b as Record<string, unknown>)[k];
+      const av = (a as Record<string, unknown>)[k];
+      if (JSON.stringify(bv) !== JSON.stringify(av)) {
+        parts.push(`${k}: ${fmt(bv)} → ${fmt(av)}`);
+      }
+    }
+    if (parts.length) return parts.join(" · ");
+  }
+  return after ?? before;
+}
+
+function safeParse(s: string): unknown {
+  try { return JSON.parse(s); } catch { return null; }
+}
+
+function fmt(v: unknown): string {
+  if (v === null || v === undefined) return "∅";
+  if (typeof v === "string") return v.length > 40 ? `${v.slice(0, 40)}…` : v;
+  return JSON.stringify(v);
 }
 
 function Row({ label, value }: { label: string; value: string }) {
