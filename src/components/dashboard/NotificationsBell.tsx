@@ -42,7 +42,7 @@ export function NotificationsBell() {
           variant="outline"
           size="icon"
           aria-label={unread > 0 ? `Notifications (${unread} new)` : "Notifications"}
-          className="relative border-reps-border bg-reps-panel text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
+          className="relative h-10 w-10 rounded-[10px] border-reps-border bg-reps-panel text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
         >
           <Bell className="h-4 w-4" />
           {unread > 0 ? (
