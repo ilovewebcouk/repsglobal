@@ -361,16 +361,14 @@ function LocationLanding() {
   const loc = getLocation(location);
   const relatedCities = Object.values(LOCATIONS).filter((c) => c.slug !== loc.slug);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
   const { data: featuredResult } = useQuery({
     queryKey: ["city-featured", loc.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "city", value: loc.name, limit: 4 } }),
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map(featuredRowToFeaturedPro);
+  const showFeatured = featured.length >= FEATURED_MIN_CARDS;
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({
