@@ -79,8 +79,12 @@ import {
   getPopularEntries,
   searchTaxonomy,
 } from "@/lib/search/taxonomy";
-import { PROFESSIONS, getProfessionLabel } from "@/lib/professions";
-import { SPECIALISMS, getSpecialismLabel } from "@/lib/specialisms";
+import { PROFESSIONS, getProfessionLabel, type ProfessionSlug } from "@/lib/professions";
+import {
+  ALL_SPECIALISMS,
+  getSpecialismLabel,
+  isSpecialismValidForProfession,
+} from "@/lib/specialisms";
 import { VENUES } from "@/components/marketing/VenueWordmarks";
 import {
   loadPlacesLibrary,
