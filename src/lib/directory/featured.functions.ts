@@ -40,6 +40,8 @@ export type FeaturedProRow = {
   review_count: number;
   tier: "studio" | "pro" | "verified" | "free";
   identity_status: string | null;
+  /** Primary-location town (e.g. "Shoreditch"); falls back to `city` on the client. */
+  town: string | null;
   /** True when this pro is part of the paid pool (vs avatar-backfill). */
   is_paid: boolean;
 };
@@ -124,7 +126,7 @@ async function fetchFeaturedPool(
   const ids = pros.filter((p) => p.slug).map((p) => p.id);
   if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
 
-  const [profilesRes, subsRes, reviewsRes] = await Promise.all([
+  const [profilesRes, subsRes, reviewsRes, locsRes] = await Promise.all([
     supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
     supabaseAdmin
       .from("subscriptions")
@@ -136,7 +138,20 @@ async function fetchFeaturedPool(
       .select("professional_id, rating, status")
       .in("professional_id", ids)
       .eq("status", "published"),
+    supabaseAdmin
+      .from("professional_locations")
+      .select("professional_id, town")
+      .in("professional_id", ids)
+      .eq("is_primary", true),
   ]);
+
+  const townById = new Map<string, string | null>();
+  for (const l of locsRes.data ?? []) {
+    if (!townById.has(l.professional_id)) {
+      townById.set(l.professional_id, l.town ?? null);
+    }
+  }
+
 
   const profileById = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
 
@@ -172,6 +187,7 @@ async function fetchFeaturedPool(
         primary_profession: p.primary_profession,
         specialisms: Array.isArray(p.specialisms) ? p.specialisms : [],
         city: p.city,
+        town: townById.get(p.id) ?? null,
         headline: p.headline,
         in_person_available: p.in_person_available,
         online_available: p.online_available,

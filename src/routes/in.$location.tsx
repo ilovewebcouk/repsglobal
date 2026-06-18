@@ -63,7 +63,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
   return {
     name: r.full_name,
     role,
-    city: r.city ?? "",
+    city: r.town ?? r.city ?? "",
     rating: r.rating_avg ?? 5.0,
     reviews: r.review_count,
     mode,

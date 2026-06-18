@@ -1,23 +1,37 @@
 ### Problem
-The role label under each Featured card on `/in/$location` and `/professions/$profession` falls back to "Professional" because the local `PROFESSION_LABEL` / `PROFESSION_ROLE_LABEL` maps in each route are stale. They include legacy slugs (`online-coach`, `group-exercise-instructor`) and miss the canonical ones in `src/lib/professions.ts` — notably `fitness-instructor` and `group-fitness-instructor`. Any pro whose `primary_profession` is one of those (or any future slug) renders as the generic "Professional".
+On `/in/$location` and `/professions/$profession`, the search-results cards show the pro's primary-location **town** (e.g. "Shoreditch") via `r.location?.town ?? r.city`, but the **Featured rail** only shows `r.city`. Same pro can appear in both rails with different locations.
 
 ### Fix
-Use the single source of truth — `getProfessionLabel` from `src/lib/professions.ts` — instead of the local maps.
+Add primary-location town to the Featured server response, then prefer it on the client.
 
-1. **`src/routes/in.$location.tsx`**
-   - Import `getProfessionLabel` from `@/lib/professions`.
-   - Delete the local `PROFESSION_LABEL` constant (lines 33-41).
-   - In `rowToFeaturedPro` and `featuredRowToFeaturedPro`, replace the `role` line with:
-     `const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";`
-     (Personal Trainer is the safest default for the city directory; "Professional" only appears if the slug is genuinely unknown — which it won't be once the canonical map is used.)
+1. **`src/lib/directory/featured.functions.ts`**
+   - Extend `FeaturedProRow` with `town: string | null`.
+   - Inside `fetchFeaturedPool`, after the existing `Promise.all` for profiles/subs/reviews, fetch primary locations:
+     ```ts
+     supabaseAdmin
+       .from("professional_locations")
+       .select("professional_id, town")
+       .in("professional_id", ids)
+       .eq("is_primary", true)
+     ```
+   - Build `townById = new Map<string, string | null>()` and set `town: townById.get(p.id) ?? null` on each enriched row.
+   - No change to ordering, backfill, or shuffle logic.
 
-2. **`src/routes/professions.$profession.tsx`**
-   - Same swap: import `getProfessionLabel`, delete local `PROFESSION_ROLE_LABEL` (lines 40-48), and use `getProfessionLabel(r.primary_profession) ?? meta.label` so the fallback is the current profession page's own label (e.g. "Fitness Instructor" on `/professions/fitness-instructor`).
+2. **`src/routes/in.$location.tsx`** — in `featuredRowToFeaturedPro`, change:
+   ```ts
+   city: r.city ?? "",
+   ```
+   to:
+   ```ts
+   city: r.town ?? r.city ?? "",
+   ```
+
+3. **`src/routes/professions.$profession.tsx`** — same one-line swap in its `featuredRowToFeaturedPro` (or wherever it maps `FeaturedProRow → FeaturedPro`).
 
 ### Out of scope
-- No card UI changes (no monogram, no "New on REPs", no quality-score gate, no Verified-badge logic) — explicitly per your message.
-- No backend changes.
-- Backfill rules in `featured.functions.ts` stay as-is.
+- No UI changes to `FeaturedProCard`.
+- No change to `getDirectoryHealth` admin rotation (still shows `city`; admin uses canonical city on purpose).
+- No change to home-rail consumers — they'll just start preferring town automatically once they swap (separate request if wanted).
 
 ### Verification
-Reload `/in/london` and `/professions/fitness-instructor`; every Featured card should show a real role (Personal Trainer, Fitness Instructor, etc.) instead of "Professional".
+Reload `/in/london` — the same pro should now show the same neighbourhood (e.g. "Shoreditch") in both the Featured rail and the results grid below.
