@@ -445,7 +445,7 @@ function LocationLanding() {
             to="/find-a-professional"
             className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
           >
-            See all {loc.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
+            See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
