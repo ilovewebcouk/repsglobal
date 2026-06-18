@@ -233,6 +233,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
         setSelected={setWhere}
         label={whereLabel}
         placeholder={wherePlaceholder}
+        locked={Boolean(lockedCity)}
       />
 
       <button type="submit" className={buttonClassName ?? defaultButtonClass}>
