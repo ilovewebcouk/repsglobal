@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import { LAUNCH_GATE_ENABLED, isAllowlistedPath } from "@/lib/launch";
+import { LAUNCH_GATE_ENABLED, isAllowlistedPath, hasPreviewUnlock } from "@/lib/launch";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -139,11 +139,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     if (isAllowlistedPath(location.pathname)) return;
 
     // Server: no access to Supabase session (lives in localStorage). Treat every
-    // SSR request as unauthenticated and serve /coming-soon. Authed users get
-    // forwarded back to their target by the client effect on /coming-soon.
+    // SSR request as unauthenticated and serve /coming-soon. Authed users (and
+    // preview-unlock holders) get forwarded back to their target by the client
+    // effect on /coming-soon.
     if (typeof window === "undefined") {
       throw redirect({ to: "/coming-soon", search: { from: location.pathname } as never });
     }
+
+    if (hasPreviewUnlock()) return;
 
     const { data } = await supabase.auth.getSession();
     if (!data.session) {

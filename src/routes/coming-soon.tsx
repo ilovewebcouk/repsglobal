@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, ShieldCheck, Globe2, Hammer, BadgeCheck, Store, Workflow, Dumbbell, Brain, TrendingUp } from "lucide-react";
 
@@ -10,6 +10,11 @@ import { SectionHeading } from "@/components/marketing/SectionHeading";
 
 import { CountdownGrid } from "@/components/launch/CountdownGrid";
 import { WaitlistForm } from "@/components/launch/WaitlistForm";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PREVIEW_UNLOCK_CODE, PREVIEW_STORAGE_KEY, hasPreviewUnlock } from "@/lib/launch";
 
 import heroAsset from "@/assets/about/about-hero.jpg.asset.json";
 
@@ -98,18 +103,45 @@ const LAUNCHING = [
 function ComingSoonPage() {
   const navigate = useNavigate();
   const { from } = useSearch({ from: "/coming-soon" });
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const goToTarget = () => {
+    const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
+    navigate({ to: target, replace: true });
+  };
 
   useEffect(() => {
+    if (hasPreviewUnlock()) {
+      goToTarget();
+      return;
+    }
     let cancelled = false;
     void supabase.auth.getSession().then(({ data }) => {
       if (cancelled || !data.session) return;
-      const target = from && from.startsWith("/") && from !== "/coming-soon" ? from : "/";
-      navigate({ to: target, replace: true });
+      goToTarget();
     });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, from]);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.trim() === PREVIEW_UNLOCK_CODE) {
+      try {
+        window.localStorage.setItem(PREVIEW_STORAGE_KEY, PREVIEW_UNLOCK_CODE);
+      } catch {
+        /* ignore */
+      }
+      setUnlockOpen(false);
+      goToTarget();
+    } else {
+      setError("Incorrect code");
+    }
+  };
 
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
@@ -275,7 +307,22 @@ function ComingSoonPage() {
       {/* ----- Minimal footer ---------------------------------------- */}
       <footer>
         <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 pb-10 pt-2 text-[12px] text-white/45 sm:flex-row lg:px-10">
-          <span>© REPS {new Date().getFullYear()}</span>
+          <span>
+            <button
+              type="button"
+              onClick={() => {
+                setCode("");
+                setError(null);
+                setUnlockOpen(true);
+              }}
+              className="cursor-default text-inherit transition-colors hover:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+              aria-label="Preview access"
+              title=""
+            >
+              ©
+            </button>{" "}
+            REPS {new Date().getFullYear()}
+          </span>
           <a
             href="mailto:press@repsuk.org"
             className="transition-colors hover:text-white/70"
@@ -284,6 +331,43 @@ function ComingSoonPage() {
           </a>
         </div>
       </footer>
+
+      <Dialog open={unlockOpen} onOpenChange={setUnlockOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Preview access</DialogTitle>
+            <DialogDescription>
+              Enter the access code to browse the full site before launch.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="preview-code">Access code</Label>
+              <Input
+                id="preview-code"
+                type="password"
+                autoFocus
+                autoComplete="off"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setError(null);
+                }}
+                aria-invalid={error ? true : undefined}
+              />
+              {error ? (
+                <p className="text-[12.5px] text-destructive">{error}</p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setUnlockOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Unlock</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
