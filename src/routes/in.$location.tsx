@@ -318,6 +318,10 @@ function LocationLanding() {
       getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
     staleTime: 60_000,
   });
+  const cityCount = liveCounts
+    ? Object.values(liveCounts).reduce((a, b) => a + b, 0)
+    : null;
+  const cityCountLabel = cityCount && cityCount > 0 ? cityCount.toLocaleString() : "—";
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
