@@ -11,6 +11,7 @@ const SearchSchema = z.object({
   online: z.boolean().optional(),
   in_person: z.boolean().optional(),
   verified: z.boolean().optional(),
+  featured: z.boolean().optional(),
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
@@ -118,6 +119,14 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (data.in_person === true) qb = qb.eq("in_person_available", true);
     if (data.verified === true) {
       qb = qb.eq("verification", "verified").eq("identity_status", "approved");
+    }
+    if (data.featured === true) {
+      const { getFeaturedProIds } = await import("./featured.functions");
+      const { ids: featuredIds } = await getFeaturedProIds();
+      if (featuredIds.length === 0) {
+        return { rows: [], total: 0, page, pageSize };
+      }
+      qb = qb.in("id", featuredIds);
     }
     if (data.q) {
       const term = data.q.replace(/[%_]/g, "\\$&");
