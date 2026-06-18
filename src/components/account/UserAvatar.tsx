@@ -9,11 +9,6 @@ const SIZES = {
   lg: "size-11 text-[14px] rounded-[10px]",
 } as const;
 
-const RADII = {
-  sm: "rounded-[6px]",
-  md: "rounded-[8px]",
-  lg: "rounded-[10px]",
-} as const;
 
 export type UserAvatarSize = keyof typeof SIZES;
 
