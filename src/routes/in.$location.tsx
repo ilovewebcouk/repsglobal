@@ -395,20 +395,26 @@ function LocationLanding() {
             Browse {loc.name} by profession
           </h2>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {loc.professions.map((p) => (
-              <Link
-                key={p.slug}
-                to="/professions/$profession"
-                params={{ profession: p.slug }}
-                className="group flex flex-col rounded-[16px] border border-reps-stone bg-reps-ivory p-4 transition-colors hover:border-reps-orange"
-              >
-                <span className="text-[14px] font-semibold text-reps-charcoal group-hover:text-reps-orange">{p.label}</span>
-                <span className="mt-1 text-[12px] text-reps-muted-light">{p.count} in {loc.name}</span>
-                <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
-                  View <ChevronRight className="h-3 w-3" />
-                </span>
-              </Link>
-            ))}
+            {loc.professions.map((p) => {
+              const liveCount = liveCounts?.[p.slug];
+              const displayCount = liveCount ?? p.count;
+              return (
+                <Link
+                  key={p.slug}
+                  to="/find-a-professional"
+                  search={{ city: loc.name, profession: p.slug }}
+                  className="group flex flex-col rounded-[16px] border border-reps-stone bg-reps-ivory p-4 transition-colors hover:border-reps-orange"
+                >
+                  <span className="text-[14px] font-semibold text-reps-charcoal group-hover:text-reps-orange">{p.label}</span>
+                  <span className="mt-1 text-[12px] text-reps-muted-light">
+                    {liveCount == null ? "—" : displayCount} in {loc.name}
+                  </span>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange">
+                    View <ChevronRight className="h-3 w-3" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
