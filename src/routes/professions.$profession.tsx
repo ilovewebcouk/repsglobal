@@ -278,7 +278,7 @@ export const Route = createFileRoute("/professions/$profession")({
         { title: `${meta.plural} — REPS-Verified | REPS` },
         {
           name: "description",
-          content: `${meta.blurb} Browse ${meta.count.toLocaleString()} verified ${meta.plural.toLowerCase()} on REPS.`,
+          content: `${meta.blurb} Browse REPS-verified ${meta.plural.toLowerCase()}.`,
         },
         { property: "og:title", content: `${meta.plural} — REPS` },
         { property: "og:description", content: meta.blurb },
