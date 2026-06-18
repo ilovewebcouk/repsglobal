@@ -210,6 +210,10 @@ async function fetchFeaturedPool(
         review_count: agg?.count ?? 0,
         tier,
         identity_status: p.identity_status,
+        value_prop: p.value_prop,
+        from_price_pennies: p.from_price_pennies,
+        price_currency: p.price_currency,
+        years_experience: p.years_experience,
         is_paid: tier !== "free",
       };
     });
