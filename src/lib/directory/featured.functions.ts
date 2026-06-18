@@ -14,7 +14,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { FEATURED_PAID_THRESHOLD } from "./featured.config";
+import {
+  FEATURED_MIN_QUALITY,
+  FEATURED_PAID_THRESHOLD,
+} from "./featured.config";
+
+/**
+ * Quality score is roughly capped at ~135 (sum of bonuses in
+ * compute_pro_quality_score). 100 reads as "good enough" for display, so the
+ * UI-facing `FEATURED_MIN_QUALITY` (0-100) is mapped onto the raw score with
+ * the same /100 scale used in admin.
+ */
+const QUALITY_SCORE_DISPLAY_MAX = 100;
+const FEATURED_MIN_QUALITY_RAW = FEATURED_MIN_QUALITY; // raw and display share scale
 
 const FeaturedScope = z.enum(["global", "city", "profession"]);
 
@@ -99,7 +111,13 @@ type ProRow = {
 async function fetchFeaturedPool(
   scope: FeaturedScope,
   value: string | undefined,
-): Promise<{ pool: FeaturedProRow[]; paidCount: number; backfillUsed: boolean }> {
+): Promise<{
+  pool: FeaturedProRow[];
+  paidCount: number;
+  backfillUsed: boolean;
+  eligibleCount: number;
+  belowThresholdCount: number;
+}> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   let qb = supabaseAdmin
@@ -117,12 +135,14 @@ async function fetchFeaturedPool(
     .limit(500);
 
   if (error || !prosRaw || prosRaw.length === 0) {
-    return { pool: [], paidCount: 0, backfillUsed: false };
+    return { pool: [], paidCount: 0, backfillUsed: false, eligibleCount: 0, belowThresholdCount: 0 };
   }
 
   const pros = prosRaw as ProRow[];
   const ids = pros.filter((p) => p.slug).map((p) => p.id);
-  if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
+  if (ids.length === 0) {
+    return { pool: [], paidCount: 0, backfillUsed: false, eligibleCount: 0, belowThresholdCount: 0 };
+  }
 
   const [profilesRes, subsRes, reviewsRes] = await Promise.all([
     supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
@@ -183,20 +203,40 @@ async function fetchFeaturedPool(
       };
     });
 
-  const paidPool = enriched.filter((p) => p.is_paid);
+  // Hard eligibility — every featured pro must clear ALL of these gates.
+  // No exceptions, no backfill bypass. If we can't fill the rail, we hide it.
+  const isEligible = (p: FeaturedProRow) =>
+    Boolean(p.avatar_url) &&
+    p.identity_status === "approved" &&
+    Boolean(p.headline && p.headline.trim().length > 0) &&
+    (p.specialisms?.length ?? 0) >= 1 &&
+    (pros.find((x) => x.id === p.id)?.quality_score ?? 0) >= FEATURED_MIN_QUALITY_RAW;
+
+  const eligible = enriched.filter(isEligible);
+  const belowThreshold = enriched.length - eligible.length;
+
+  const paidPool = eligible.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;
 
   if (usePaidOnly) {
-    return { pool: paidPool, paidCount: paidPool.length, backfillUsed: false };
+    return {
+      pool: paidPool,
+      paidCount: paidPool.length,
+      backfillUsed: false,
+      eligibleCount: eligible.length,
+      belowThresholdCount: belowThreshold,
+    };
   }
 
-  // Backfill: paid pros first (still get priority), then anyone published with
-  // an avatar — backfill keeps the rail full while we grow the paid base.
-  const backfill = enriched.filter((p) => !p.is_paid && p.avatar_url);
+  // Backfill draws from the SAME eligible pool — just non-paid pros.
+  // They still have a real headshot, are identity-verified, and pass quality.
+  const backfill = eligible.filter((p) => !p.is_paid);
   return {
     pool: [...paidPool, ...backfill],
     paidCount: paidPool.length,
     backfillUsed: true,
+    eligibleCount: eligible.length,
+    belowThresholdCount: belowThreshold,
   };
 }
 
@@ -205,12 +245,13 @@ export type GetFeaturedProsResult = {
   paid_count: number;
   pool_size: number;
   backfill_used: boolean;
+  eligible_count: number;
 };
 
 export const getFeaturedPros = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => FeaturedInputSchema.parse(raw ?? {}))
   .handler(async ({ data }): Promise<GetFeaturedProsResult> => {
-    const { pool, paidCount, backfillUsed } = await fetchFeaturedPool(
+    const { pool, paidCount, backfillUsed, eligibleCount } = await fetchFeaturedPool(
       data.scope,
       data.value,
     );
@@ -223,6 +264,7 @@ export const getFeaturedPros = createServerFn({ method: "GET" })
       paid_count: paidCount,
       pool_size: pool.length,
       backfill_used: backfillUsed,
+      eligible_count: eligibleCount,
     };
   });
 
@@ -277,6 +319,10 @@ export type DirectoryHealth = {
   }>;
   backfill_active: boolean;
   paid_total: number;
+  /** Pros that pass every featured-rail eligibility gate globally. */
+  eligible_total: number;
+  /** Published pros that miss at least one gate (no photo / unverified / thin / low quality). */
+  below_threshold_total: number;
 };
 
 // Quality score is roughly capped at ~135 (sum of all bonuses in
@@ -433,7 +479,10 @@ export const getDirectoryHealth = createServerFn({ method: "GET" })
       .slice(0, 8);
 
     // Featured rotation — today's global rotation
-    const { pool } = await fetchFeaturedPool("global", undefined);
+    const { pool, eligibleCount, belowThresholdCount } = await fetchFeaturedPool(
+      "global",
+      undefined,
+    );
     const rotation = dailyShuffle(pool, "global:").slice(0, 8);
     const paidTotal = pool.filter((p) => p.is_paid).length;
 
@@ -460,5 +509,7 @@ export const getDirectoryHealth = createServerFn({ method: "GET" })
       })),
       backfill_active: paidTotal <= FEATURED_PAID_THRESHOLD,
       paid_total: paidTotal,
+      eligible_total: eligibleCount,
+      below_threshold_total: belowThresholdCount,
     };
   });

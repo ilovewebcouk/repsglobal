@@ -163,6 +163,23 @@ function AdminDirectory() {
                 ? "Avatar-backfill on until 6+ paid pros are live."
                 : "Paid pros only (Verified / Pro / Studio)."}
             </p>
+            {data ? (
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="rounded-[8px] border border-reps-border bg-reps-ink px-3 py-2">
+                  <div className="text-white/45">Eligible globally</div>
+                  <div className="mt-0.5 font-display text-[18px] font-bold text-white">
+                    {data.eligible_total}
+                  </div>
+                </div>
+                <div className="rounded-[8px] border border-reps-border bg-reps-ink px-3 py-2">
+                  <div className="text-white/45">Below threshold</div>
+                  <div className="mt-0.5 font-display text-[18px] font-bold text-white">
+                    {data.below_threshold_total}
+                  </div>
+                  <div className="text-white/45">no photo / unverified / thin</div>
+                </div>
+              </div>
+            ) : null}
             {data && data.featured_rotation.length > 0 ? (
               <ul className="mt-4 space-y-2 text-[13px]">
                 {data.featured_rotation.map((p) => (

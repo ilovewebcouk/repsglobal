@@ -28,6 +28,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCityAvgRating, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { FEATURED_MIN_CARDS } from "@/lib/directory/featured.config";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -60,23 +61,27 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
   };
 }
 
-function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   const mode: FeaturedPro["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = r.primary_profession
+    ? (PROFESSION_LABEL[r.primary_profession] ?? (r.specialisms?.[0] ?? "Professional"))
+    : (r.specialisms?.[0] ?? "Professional");
+  // Eligibility gates in fetchFeaturedPool guarantee avatar_url is non-null —
+  // no monograms, no stock photos on the featured rail.
   return {
     name: r.full_name,
     role,
     city: r.city ?? "",
-    rating: r.rating_avg ?? 5.0,
+    rating: r.rating_avg ?? 0,
     reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? "",
   };
 }
 
@@ -357,16 +362,14 @@ function LocationLanding() {
   const loc = getLocation(location);
   const relatedCities = Object.values(LOCATIONS).filter((c) => c.slug !== loc.slug);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
   const { data: featuredResult } = useQuery({
     queryKey: ["city-featured", loc.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "city", value: loc.name, limit: 4 } }),
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map(featuredRowToFeaturedPro);
+  const showFeatured = featured.length >= FEATURED_MIN_CARDS;
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({
@@ -519,31 +522,33 @@ function LocationLanding() {
         </div>
       </section>
 
-      {/* Featured */}
-      <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-              Featured in {loc.name}
-            </h2>
-            <p className="mt-1 text-[14px] text-reps-muted-light">
-              REPS-verified professionals accepting new clients near you.
-            </p>
+      {/* Featured — hidden when fewer than FEATURED_MIN_CARDS eligible pros */}
+      {showFeatured ? (
+        <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+                Featured in {loc.name}
+              </h2>
+              <p className="mt-1 text-[14px] text-reps-muted-light">
+                REPS-verified professionals accepting new clients near you.
+              </p>
+            </div>
+            <Link
+              to="/find-a-professional"
+              search={{ city: loc.name, featured: true }}
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+            >
+              See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-          <Link
-            to="/find-a-professional"
-            search={{ city: loc.name, featured: true }}
-            className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
-          >
-            See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p) => (
-            <FeaturedProCard key={p.name} pro={p} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => (
+              <FeaturedProCard key={p.name} pro={p} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Areas */}
       <section className="bg-reps-warm-white py-12">

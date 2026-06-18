@@ -30,6 +30,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { FEATURED_MIN_CARDS } from "@/lib/directory/featured.config";
 import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
   getSpecialismsForProfession,
@@ -67,23 +68,26 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
   };
 }
 
-function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   const mode: FeaturedPro["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = r.primary_profession
+    ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? (r.specialisms?.[0] ?? "Professional"))
+    : (r.specialisms?.[0] ?? "Professional");
+  // Eligibility gates guarantee avatar_url is non-null on the featured rail.
   return {
     name: r.full_name,
     role,
     city: r.city ?? "",
-    rating: r.rating_avg ?? 5.0,
+    rating: r.rating_avg ?? 0,
     reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? "",
   };
 }
 
@@ -396,7 +400,6 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
   const { data: featuredResult } = useQuery({
     queryKey: ["profession-featured", meta.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
@@ -410,9 +413,8 @@ function ProfessionLanding() {
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map(featuredRowToFeaturedPro);
+  const showFeatured = featured.length >= FEATURED_MIN_CARDS;
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
   // profile, those are the ones we feature here. Falls back to the static
@@ -553,32 +555,34 @@ function ProfessionLanding() {
         </div>
       </section>
 
-      {/* Featured pros */}
-      <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-              Featured {meta.plural.toLowerCase()}
-            </h2>
-            <p className="mt-1 text-[14px] text-reps-muted-light">
-              Hand-picked, REPS-verified and accepting new clients.
-            </p>
+      {/* Featured pros — hidden when fewer than FEATURED_MIN_CARDS eligible */}
+      {showFeatured ? (
+        <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+                Featured {meta.plural.toLowerCase()}
+              </h2>
+              <p className="mt-1 text-[14px] text-reps-muted-light">
+                Hand-picked, REPS-verified and accepting new clients.
+              </p>
+            </div>
+            <Link
+              to="/find-a-professional"
+              search={{ profession: meta.slug, featured: true }}
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+            >
+              See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-          <Link
-            to="/find-a-professional"
-            search={{ profession: meta.slug, featured: true }}
-            className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
-          >
-            See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p, i) => (
-            <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p, i) => (
+              <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Cities */}
       <section className="bg-reps-warm-white py-14">
