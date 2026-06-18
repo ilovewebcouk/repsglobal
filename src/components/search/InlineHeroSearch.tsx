@@ -233,6 +233,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
         setSelected={setWhere}
         label={whereLabel}
         placeholder={wherePlaceholder}
+        locked={Boolean(lockedCity)}
       />
 
       <button type="submit" className={buttonClassName ?? defaultButtonClass}>
@@ -455,8 +456,9 @@ function WhereField(props: {
   setSelected: (s: SelectedWhere) => void;
   label: string | null;
   placeholder: string;
+  locked?: boolean;
 }) {
-  const { variant, open, setOpen, selected: _selected, setSelected, label, placeholder } = props;
+  const { variant, open, setOpen, selected: _selected, setSelected, label, placeholder, locked } = props;
   const { runPostcode, runGeolocate, setManual, busy } = useResolveViewerLocation({
     onResolved: (o) => {
       setSelected({ mode: "origin", label: o.town ?? o.postcode_outward });
@@ -567,6 +569,15 @@ function WhereField(props: {
     variant === "dark"
       ? "inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
       : "inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-reps-muted-light transition-colors hover:bg-reps-ink/5 hover:text-reps-charcoal";
+
+  if (locked) {
+    return (
+      <div className={cn(triggerBase, "cursor-default")} aria-label="Location locked to city page">
+        <MapPin className={cn("h-4 w-4 shrink-0", iconClass)} aria-hidden />
+        <span className={labelTextClass}>{label ?? placeholder}</span>
+      </div>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
