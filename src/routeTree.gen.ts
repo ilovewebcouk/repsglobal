@@ -51,6 +51,7 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
+import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
 import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
 import { Route as FeaturesOperationsRouteImport } from './routes/features.operations'
@@ -328,6 +329,11 @@ const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
 const InLocationRoute = InLocationRouteImport.update({
   id: '/in/$location',
   path: '/in/$location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GymsSlugRoute = GymsSlugRouteImport.update({
+  id: '/gyms/$slug',
+  path: '/gyms/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesVisibilityRoute = FeaturesVisibilityRouteImport.update({
@@ -769,6 +775,7 @@ export interface FileRoutesByFullPath {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -879,6 +886,7 @@ export interface FileRoutesByTo {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -991,6 +999,7 @@ export interface FileRoutesById {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -1104,6 +1113,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/gyms/$slug'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1214,6 +1224,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/gyms/$slug'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1325,6 +1336,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/gyms/$slug'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -1438,6 +1450,7 @@ export interface RootRouteChildren {
   FeaturesOperationsRoute: typeof FeaturesOperationsRoute
   FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
+  GymsSlugRoute: typeof GymsSlugRoute
   InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
@@ -1757,6 +1770,13 @@ declare module '@tanstack/react-router' {
       path: '/in/$location'
       fullPath: '/in/$location'
       preLoaderRoute: typeof InLocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gyms/$slug': {
+      id: '/gyms/$slug'
+      path: '/gyms/$slug'
+      fullPath: '/gyms/$slug'
+      preLoaderRoute: typeof GymsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/visibility': {
@@ -2458,6 +2478,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesOperationsRoute: FeaturesOperationsRoute,
   FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
+  GymsSlugRoute: GymsSlugRoute,
   InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,

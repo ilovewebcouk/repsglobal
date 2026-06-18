@@ -1,26 +1,52 @@
-# Wire "Online options" to real online-pro count per city
+# Popular gyms on city pages
 
-On `/in/$location`, the "Online options" row in the right-hand "At a glance" card is currently a rough estimate (`cityCount * 0.6`). Replace it with a real count of professionals in that city who have **Online available** turned on in their profile.
+Replace the static "Popular areas" chip block in the city-page sidebar (`/in/$location`) with a live "Popular gyms" list driven by the `gyms` table. Each chip becomes a link to a gym page we'll wire up properly in a later phase.
 
-## What
+## What changes
 
-- "Online options" reads the live count of pros where `city ilike '%<loc.name>%'` AND `online_available = true` AND `is_published = true`.
-- Matches the same filtering used by the existing per-profession city counts (`getCityProfessionCounts`) so the numbers stay consistent.
-- Falls back to `—` when the count is 0 or still loading.
+**Sidebar block on `/in/$location`**
+- Heading: "Popular areas" → "Popular gyms"
+- Show up to 6 gyms in that city
+- Each chip = gym name + small area subtitle (e.g. "Barry's — Canary Wharf")
+- Click → `/gyms/$slug` (typed link, route file created in this pass as a lightweight placeholder so the link is valid today)
+- If fewer than 6 gyms exist for the city, show what we have; if zero, hide the block entirely (no empty state)
 
-## How (technical)
+**"All areas of {city}" section further down the page**
+- Out of scope for this pass — leaves the existing curated `loc.areas` chip list as-is, so we don't lose the area pills the SEO copy refers to. We can revisit if you'd like to replace that too.
 
-1. **New server fn** `getCityOnlineCount` in `src/lib/directory/search.functions.ts`, alongside `getCityProfessionCounts`:
-   - Public (no auth middleware), uses the same `supabaseAdmin` pattern already in that file.
-   - Input: `{ city: string }` (zod-validated).
-   - Query: `supabase.from('professionals').select('id', { count: 'exact', head: true }).eq('is_published', true).eq('online_available', true).ilike('city', '%<city>%')`.
-   - Returns `{ count: number }`.
+## How gyms are picked
 
-2. **Wire it in `src/routes/in.$location.tsx`**:
-   - Add a sibling `useQuery` keyed `['city-online-count', loc.slug]` with `staleTime: 60_000`.
-   - Compute `onlineCountLabel = count && count > 0 ? count.toLocaleString() : "—"`.
-   - Replace `{cityCount ? Math.round(cityCount * 0.6) : "—"}` in the "Online options" `<dd>` with `{onlineCountLabel}`.
+New public server function `getCityPopularGyms({ city, limit: 6 })` in `src/lib/directory/gyms.functions.ts`:
+
+- `supabase.from('gyms').select('id, slug, name, chain_name, area').ilike('city', city).in('status', ['active','approved']).order('name').limit(6)`
+- Ordering: by number of trainers who list the gym DESC, then name ASC. Implemented with a small RPC or a two-step query (fetch gym ids + counts from `professional_gyms`, then hydrate). Falls back to alphabetical when no pros are linked yet (current state for most gyms).
+- Uses the **server publishable client** (`SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`) — read-only, no auth, narrow column projection. Public-route safe (no `requireSupabaseAuth`).
+- Wired into the route via `useQuery` keyed `['city-popular-gyms', loc.slug]`, `staleTime: 5 * 60_000`.
+
+## Placeholder gym route
+
+`src/routes/gyms.$slug.tsx` — tiny SSR-safe page so today's chips don't 404:
+
+- Loads `name`, `city`, `area`, `chain_name` from `gyms` via a public server fn
+- Renders a minimal "Coming soon" panel with the gym name, area, city, and a CTA back to `/in/<city-slug>`
+- Sets `head()` title + description from the gym record
+- Returns `notFound()` when the slug doesn't match an active gym
+
+When we build the real gym page in a later phase, we replace the body of this route — the URL and link wiring stay the same.
+
+## Files touched
+
+- **new** `src/lib/directory/gyms.functions.ts` — `getCityPopularGyms`, `getGymBySlug`
+- **edit** `src/routes/in.$location.tsx` — swap the sidebar block; add the query; hide if empty
+- **new** `src/routes/gyms.$slug.tsx` — placeholder gym page so links resolve
 
 ## Out of scope
 
-- The "Verified pros" total (`cityCountLabel`) and "Avg. rating" stay as they are — the user asked specifically about the Online options number.
+- Replacing the "All areas of {city}" section
+- A real gym profile page (services, trainers at this gym, photos, claim flow)
+- A `/gyms` index/landing page
+- Surfacing gym data inside trainer profiles (you mentioned this as future — confirmed not in this pass)
+
+## Open question
+
+Right now most gyms have 0 linked trainers, so "popular" effectively means alphabetical. Happy with that as the temporary ranking, or would you rather curate a manual `featured` flag on `gyms` (small migration) so editorial choice wins until trainer-gym links fill in?
