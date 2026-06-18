@@ -481,15 +481,26 @@ function ProfessionLanding() {
             Popular {meta.title.toLowerCase()} specialisms
           </div>
           <div className="flex flex-wrap gap-2">
-            {meta.specialisms.map((s) => (
+            {specialismChips.map((s) => (
               <Link
-                key={s}
+                key={s.slug}
                 to="/find-a-professional"
+                search={{
+                  profession: meta.slug,
+                  specialism: s.slug,
+                  page: 1,
+                  sort: "recommended",
+                }}
                 className="rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
               >
-                {s}
+                {s.label}
               </Link>
             ))}
+            {specialismChips.length === 0 ? (
+              <span className="text-[12px] text-reps-muted-light">
+                Specialisms unlock once verified {meta.plural.toLowerCase()} pick them on their profile.
+              </span>
+            ) : null}
           </div>
         </div>
       </section>
