@@ -1,17 +1,32 @@
-# Revert "Popular gyms" to pill style
+# City pages QA: add missing cities + fix stale hero location
 
-In the city-page hero sidebar (`/in/$location`), the "Popular gyms" block is currently rendering as a vertical stacked list. That broke the hero composition — it should be wrapping pills, matching the old "Popular areas" treatment.
+## Bug 1 — Glasgow and Bristol missing from LOCATIONS
 
-## Change
+`src/routes/in.$location.tsx` only defines 4 entries in `LOCATIONS` (London, Manchester, Birmingham, Edinburgh). Glasgow and Bristol fall through to the generic fallback (region "", placeholder counts, generic blurb).
 
-In `src/routes/in.$location.tsx`, replace the `<ul>`/`<li>` stacked layout with the original `flex flex-wrap gap-1.5` pill row:
+**Fix:** Add `glasgow` and `bristol` entries to `LOCATIONS` with the same shape as the existing four — `slug`, `name`, `region`, `blurb`, `count`, `areas`, `professions[]`. Use realistic district names (Glasgow: City Centre, Merchant City, West End, Finnieston, Southside, Shawlands; Bristol: City Centre, Clifton, Redland, Bedminster, Stokes Croft, Harbourside) and counts in proportion to the existing tier (Glasgow ≈ 69, Bristol ≈ 58 per the `CITIES` table on `/professions/$profession`).
 
-- Each gym = a single pill (`Link` to `/gyms/$slug`).
-- Pill label = gym name only (no area subtitle, no chevron — keeps the hero compact).
-- Pill style mirrors the previous areas chip: `rounded-full bg-reps-ivory px-2.5 py-1 text-[12px] font-medium text-reps-charcoal hover:text-reps-orange`.
-- Block still hides when there are zero gyms.
+## Bug 2 — Hero search field stuck on "London" across all city pages
+
+`src/components/search/InlineHeroSearch.tsx` initialises `where` from `lockedCity` only inside the `useState(() => …)` initializer (line 131), which runs once per component mount. When the user navigates between `/in/london` → `/in/glasgow` → `/in/bristol`, TanStack reuses the same `InlineHeroSearch` instance, so `where.label` stays as whatever the very first visited city was — usually London. The existing effect at line 144 explicitly bails out when `lockedCity` is truthy, so it never resyncs.
+
+**Fix:** Add a small effect that resets `where` whenever `lockedCity` changes:
+
+```ts
+React.useEffect(() => {
+  if (!lockedCity) return;
+  setWhere({ mode: "city", label: lockedCity });
+}, [lockedCity]);
+```
+
+Leave the existing origin-sync effect alone (it already returns early when `lockedCity` is set).
+
+## QA after build
+
+After both fixes, the `/in/glasgow`, `/in/bristol`, `/in/manchester`, `/in/birmingham`, `/in/edinburgh` hero search "Where" field must read the correct city, and the page metadata/blurb/areas must match.
 
 ## Out of scope
 
-- The gyms server function, the data wiring, and the placeholder `/gyms/$slug` route stay exactly as they are.
-- No changes to "All areas of {city}" further down the page.
+- Adding more cities beyond Glasgow and Bristol.
+- Wiring real Supabase-backed counts into the static `LOCATIONS` table (Phase 1 static numbers remain).
+- Touching `/find-a-professional` results, `CITIES` on profession pages, or `TOP_LOCATIONS` in nav.

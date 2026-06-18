@@ -142,7 +142,42 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 9 },
     ],
   },
+  glasgow: {
+    slug: "glasgow",
+    name: "Glasgow",
+    region: "Greater Glasgow",
+    blurb:
+      "Find REPS-verified personal trainers, Pilates instructors, nutritionists and coaches across Glasgow — from the City Centre and Merchant City to the West End, Finnieston and Southside.",
+    count: 69,
+    areas: ["City Centre", "Merchant City", "West End", "Finnieston", "Southside", "Shawlands", "Partick", "Dennistoun"],
+    professions: [
+      { slug: "personal-trainer", label: "Personal Trainers", count: 38 },
+      { slug: "pilates-instructor", label: "Pilates Instructors", count: 12 },
+      { slug: "strength-coach", label: "Strength Coaches", count: 8 },
+      { slug: "nutritionist", label: "Nutritionists", count: 5 },
+      { slug: "online-coach", label: "Online Coaches", count: 6 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 8 },
+    ],
+  },
+  bristol: {
+    slug: "bristol",
+    name: "Bristol",
+    region: "South West",
+    blurb:
+      "Browse REPS-verified fitness professionals across Bristol — Clifton, Redland, Bedminster, Stokes Croft, Harbourside and the wider city.",
+    count: 58,
+    areas: ["City Centre", "Clifton", "Redland", "Bedminster", "Stokes Croft", "Harbourside", "Southville", "Montpelier"],
+    professions: [
+      { slug: "personal-trainer", label: "Personal Trainers", count: 32 },
+      { slug: "pilates-instructor", label: "Pilates Instructors", count: 10 },
+      { slug: "strength-coach", label: "Strength Coaches", count: 6 },
+      { slug: "nutritionist", label: "Nutritionists", count: 4 },
+      { slug: "online-coach", label: "Online Coaches", count: 6 },
+      { slug: "yoga-teacher", label: "Yoga Teachers", count: 7 },
+    ],
+  },
 };
+
 
 function getLocation(slug: string): LocationMeta {
   return (
