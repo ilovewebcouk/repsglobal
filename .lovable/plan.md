@@ -1,59 +1,65 @@
-## Wire `/in/$location` "Browse by profession" to real directory + live counts
+## Bug
 
-**Goal:** On `/in/edinburgh` (and every other `/in/*` city page) each profession box should:
-1. Link to the directory pre-filtered by that city **and** profession.
-2. Show a real count of REPs professionals matching `city + profession`, not the hand-coded number.
+On `/find-a-professional`, clicking the **What are you looking for?** chip, typing "fat loss" and pressing **Enter** does nothing useful — Fat Loss is highlighted in the dropdown, but the URL ends up with no `specialism` (and even drops the existing `city`). The list never narrows to fat-loss pros.
 
-### 1. New server function — `getCityProfessionCounts`
-Add to `src/lib/directory/search.functions.ts` (or a new `city-counts.functions.ts` colocated):
+## Root cause
+
+`patch()` in `src/components/directory/ResultsSearchBar.tsx` (the URL-writer used by the chip) runs this guard on every profession-related change:
 
 ```ts
-export const getCityProfessionCounts = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ city: z.string().trim().max(120) }).parse)
-  .handler(async ({ data }) => {
-    // For each profession slug in PROFESSIONS_FOR_CITY_PAGE,
-    // run a HEAD count query on `professionals` with
-    //   .ilike("city", `%${data.city}%`)
-    //   .eq("primary_profession", slug)
-    //   .eq("verification","verified") OR same filter set used by directory default
-    // Return Record<professionSlug, number>.
-  });
+if ("profession" in p) {
+  const nextProf = typeof p.profession === "string" ? p.profession : null;
+  const nextSpec = typeof next.specialism === "string" ? next.specialism : null;
+  if (nextSpec && !isSpecialismValidForProfession(nextSpec, nextProf)) {
+    delete next.specialism;
+  }
+}
 ```
 
-Profession list mirrors what each city currently shows:
-`personal-trainer`, `pilates-instructor`, `strength-coach`, `nutritionist`, `online-coach`
-(falls back to whatever `loc.professions` already declares — same slugs).
+`WhatChip.onPick` for a generic specialism like **Fat Loss** calls:
 
-Counts use the same visibility filter the public directory uses (verified / published profile) so the number you see on the box matches the number of results on the directory page.
-
-### 2. Wire counts in `src/routes/in.$location.tsx`
-- Add `useQuery({ queryKey: ["city-profession-counts", loc.slug], queryFn: () => getCityProfessionCounts({ data: { city: loc.name } }) })`.
-- For each `loc.professions[i]`, prefer `counts[p.slug]` when loaded; while loading show a small skeleton dash (`—`) instead of the stale hand-coded number. No layout shift.
-- Hand-coded `count` in the `LOCATIONS` map becomes a fallback only (kept for SSR/no-JS).
-
-### 3. Link the boxes to the directory (not the profession landing)
-Change each card from:
-
-```tsx
-<Link to="/professions/$profession" params={{ profession: p.slug }}>
+```ts
+patch({ profession: undefined, specialism: "fat-loss", q: undefined })
 ```
 
-to:
+So:
 
-```tsx
-<Link
-  to="/find-a-professional"
-  search={{ city: loc.name, profession: p.slug }}
->
+1. `"profession" in p` is `true` (the key exists, value is `undefined`).
+2. `nextProf` becomes `null`.
+3. `isSpecialismValidForProfession("fat-loss", null)` returns `false` (guard returns `false` whenever profession is null).
+4. `next.specialism` is deleted → the URL loses the only meaningful filter the user just chose.
+
+The guard was meant to protect against switching to a different profession that doesn't own the current specialism — not against clearing profession or selecting a profession-agnostic specialism.
+
+## Fix (one file)
+
+`src/components/directory/ResultsSearchBar.tsx` — tighten the guard so it only runs when profession is being set to an actual non-empty value:
+
+```ts
+// Only validate when switching TO a defined profession. Clearing profession
+// (or picking a profession-agnostic specialism like "fat-loss") must NOT
+// wipe the specialism the user just chose.
+if ("profession" in p && typeof p.profession === "string" && p.profession) {
+  const nextSpec = typeof next.specialism === "string" ? next.specialism : null;
+  if (nextSpec && !isSpecialismValidForProfession(nextSpec, p.profession as ProfessionSlug)) {
+    delete next.specialism;
+  }
+}
 ```
 
-This matches the existing `validateSearch` on `/find-a-professional` (it already accepts `city` and `profession`), so `/find-a-professional?city=Edinburgh&profession=personal-trainer` lands on a filtered, scoped results page — the same one users get from the hero search.
+After the fix, pressing **Enter** on the highlighted "Fat Loss" item navigates to `?city=London&specialism=fat-loss` and the result list narrows correctly. The free-text "Search for …" fallback (`q=…`) already works the same way through the same patch path and is unaffected.
 
-### 4. Out of scope (this pass)
-- Top "X verified professionals" hero number on `/in/$location` — already shown as `loc.count`; we can wire that to `sum(counts)` in a follow-up if you want, but flag it first so we don't change hero copy silently.
-- `/professions/$profession` page itself is unchanged.
-- No DB migration. No design changes. No new components.
+## Out of scope
 
-### Files touched
-- `src/lib/directory/search.functions.ts` — add `getCityProfessionCounts`.
-- `src/routes/in.$location.tsx` — `useQuery` for counts; swap `<Link>` target to `/find-a-professional` with `search`.
+- The hero search on `/`, `/in/$city`, `/professions/$profession` — uses `InlineHeroSearch`, different code path, not affected by this bug.
+- Adding live-as-you-type filtering of the result list. The current behaviour (chip opens a dropdown → pick / Enter → URL updates → list refetches) stays; only the Enter case is fixed.
+- Any change to `isSpecialismValidForProfession` or the legacy-slug map.
+
+## Verification
+
+After the edit:
+1. Load `/find-a-professional?city=London`.
+2. Click the chip, type "fat loss", press Enter.
+3. URL becomes `…?city=London&specialism=fat-loss` and the list shows pros tagged Fat Loss.
+4. Repeat with "yoga" → URL gets `profession=yoga-teacher`.
+5. Repeat with a nonsense string → free-text item selects, URL gets `q=…`.
