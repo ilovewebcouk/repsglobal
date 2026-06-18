@@ -342,3 +342,34 @@ export const searchProfessionals = createServerFn({ method: "GET" })
 
     return { rows: decorated, total, page, pageSize };
   });
+
+/* ------------------------------------------------------------------ */
+/* City × profession counts (for /in/$location profession boxes)      */
+/* ------------------------------------------------------------------ */
+
+const CityCountsSchema = z.object({
+  city: z.string().trim().min(1).max(120),
+  professions: z.array(z.string().trim().min(1).max(60)).min(1).max(20),
+});
+
+export type CityProfessionCounts = Record<string, number>;
+
+export const getCityProfessionCounts = createServerFn({ method: "GET" })
+  .inputValidator((raw: unknown) => CityCountsSchema.parse(raw))
+  .handler(async ({ data }): Promise<CityProfessionCounts> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const results = await Promise.all(
+      data.professions.map(async (slug) => {
+        const { count } = await supabaseAdmin
+          .from("professionals")
+          .select("id", { count: "exact", head: true })
+          .eq("is_published", true)
+          .eq("primary_profession", slug)
+          .ilike("city", `%${data.city}%`);
+        return [slug, count ?? 0] as const;
+      }),
+    );
+
+    return Object.fromEntries(results);
+  });
