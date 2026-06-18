@@ -29,6 +29,11 @@ import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import {
+  getSpecialismsForProfession,
+  type Specialism,
+} from "@/lib/specialisms";
+import { isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
 const PROFESSION_ROLE_LABEL: Record<string, string> = {
   "personal-trainer": "Personal Trainer",
