@@ -108,7 +108,21 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
 
   const [whatOpen, setWhatOpen] = React.useState(false);
   const [whatQuery, setWhatQuery] = React.useState("");
-  const [what, setWhat] = React.useState<SelectedWhat>(null);
+  const [what, setWhat] = React.useState<SelectedWhat>(() => {
+    if (lockedProfession) {
+      const entry = SEARCH_ENTRIES.find(
+        (e) => e.kind === "profession" && e.slug === lockedProfession,
+      );
+      if (entry) return { mode: "entry", entry };
+    }
+    return null;
+  });
+
+  const isLockedSelection =
+    Boolean(lockedProfession) &&
+    what?.mode === "entry" &&
+    what.entry.kind === "profession" &&
+    what.entry.slug === lockedProfession;
 
   const [whereOpen, setWhereOpen] = React.useState(false);
   const [where, setWhere] = React.useState<SelectedWhere>(() => {
@@ -191,6 +205,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
         setSelected={setWhat}
         label={whatLabel}
         lockedProfession={lockedProfession}
+        hideClear={isLockedSelection}
         placeholder={
           whatPlaceholder ??
           (lockedProfession
@@ -233,6 +248,7 @@ function WhatField(props: {
   setSelected: (s: SelectedWhat) => void;
   label: string | null;
   lockedProfession?: string;
+  hideClear?: boolean;
   placeholder: string;
 }) {
   const {
@@ -245,6 +261,7 @@ function WhatField(props: {
     setSelected,
     label,
     lockedProfession,
+    hideClear,
     placeholder,
   } = props;
 
@@ -312,7 +329,7 @@ function WhatField(props: {
         <button type="button" className={triggerBase}>
           <Search className={cn("h-4 w-4 shrink-0", iconClass)} aria-hidden />
           <span className={labelTextClass}>{label ?? placeholder}</span>
-          {label ? (
+          {label && !hideClear ? (
             <span
               role="button"
               aria-label="Clear"
