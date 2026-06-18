@@ -456,8 +456,9 @@ function WhereField(props: {
   setSelected: (s: SelectedWhere) => void;
   label: string | null;
   placeholder: string;
+  locked?: boolean;
 }) {
-  const { variant, open, setOpen, selected: _selected, setSelected, label, placeholder } = props;
+  const { variant, open, setOpen, selected: _selected, setSelected, label, placeholder, locked } = props;
   const { runPostcode, runGeolocate, setManual, busy } = useResolveViewerLocation({
     onResolved: (o) => {
       setSelected({ mode: "origin", label: o.town ?? o.postcode_outward });
