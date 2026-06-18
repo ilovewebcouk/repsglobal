@@ -3,7 +3,7 @@
 // their own. We use supabaseAdmin so we can resolve professional_id from the
 // public slug atomically without leaking the lookup as a separate query.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 const SubmitSchema = z.object({
@@ -156,7 +156,7 @@ export type EnquiryDTO = {
 };
 
 export const listMyEnquiries = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<EnquiryDTO[]> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -210,7 +210,7 @@ const UpdateStatusSchema = z.object({
 });
 
 export const updateEnquiryStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => UpdateStatusSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -244,7 +244,7 @@ export type EnquiryStats = {
 };
 
 export const getEnquiryStats = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<EnquiryStats> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

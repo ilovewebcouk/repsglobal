@@ -10,7 +10,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 /* ----------------------------- shapes ----------------------------- */
 
@@ -130,7 +130,7 @@ export const searchGyms = createServerFn({ method: "POST" })
 /* ----------------------------- my gyms ----------------------------- */
 
 export const getMyGyms = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<ProGym[]> => {
     const { data, error } = await context.supabase
       .from("professional_gyms")
@@ -148,7 +148,7 @@ export const getMyGyms = createServerFn({ method: "POST" })
 const addInput = z.object({ gym_id: z.string().uuid() });
 
 export const addMyGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => addInput.parse(d))
   .handler(async ({ data, context }) => {
     // Find lowest free position 0..2.
@@ -185,7 +185,7 @@ export const addMyGym = createServerFn({ method: "POST" })
 const removeInput = z.object({ id: z.string().uuid() });
 
 export const removeMyGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => removeInput.parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
@@ -216,7 +216,7 @@ function slugify(s: string) {
 }
 
 export const requestNewGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => requestInput.parse(d))
   .handler(async ({ data, context }) => {
     const base = slugify(`${data.name}-${data.area || data.city}`);
@@ -324,7 +324,7 @@ export const getGymDensity = createServerFn({ method: "POST" })
 /* ----------------------------- admin ----------------------------- */
 
 export const adminListGyms = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -363,7 +363,7 @@ const adminUpdateInput = z.object({
 });
 
 export const adminUpdateGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => adminUpdateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { data: roleOk } = await context.supabase.rpc("has_role", {
@@ -382,7 +382,7 @@ export const adminUpdateGym = createServerFn({ method: "POST" })
 const importInput = z.object({ placeId: z.string().min(5).max(200) });
 
 export const importGoogleGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => importInput.parse(d))
   .handler(async ({ data, context }) => {
     // Rate limit: max 10 Google imports per pro per hour.
@@ -496,7 +496,7 @@ const promoteInput = z.object({
 });
 
 export const adminPromoteGym = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => promoteInput.parse(d))
   .handler(async ({ data, context }) => {
     const { data: roleOk } = await context.supabase.rpc("has_role", {
@@ -522,7 +522,7 @@ export const adminPromoteGym = createServerFn({ method: "POST" })
 /* ----------------------------- admin: geocode backfill ----------------------------- */
 
 export const adminGeocodeBackfill = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data: roleOk } = await context.supabase.rpc("has_role", {
       _user_id: context.userId, _role: "admin",

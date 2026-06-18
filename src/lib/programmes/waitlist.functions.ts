@@ -1,7 +1,7 @@
 // Phase 2.2 stub: capture wait-list interest for the Programme Generator.
 // Public insert allowed via RLS; pros can read their own rows.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 const JoinSchema = z.object({
@@ -10,7 +10,7 @@ const JoinSchema = z.object({
 });
 
 export const joinProgrammeWaitlist = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => JoinSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -24,7 +24,7 @@ export const joinProgrammeWaitlist = createServerFn({ method: "POST" })
   });
 
 export const isOnProgrammeWaitlist = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ joined: boolean }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin

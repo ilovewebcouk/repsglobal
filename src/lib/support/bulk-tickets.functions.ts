@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
@@ -27,7 +27,7 @@ const BulkAction = z.enum([
 ]);
 
 export const bulkUpdateTickets = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       ids: string[];
@@ -144,7 +144,7 @@ export const bulkUpdateTickets = createServerFn({ method: "POST" })
   });
 
 export const undoBulkUpdateTickets = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       previousStates: Array<{

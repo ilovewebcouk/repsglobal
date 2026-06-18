@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
@@ -15,7 +15,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 // List
 // ─────────────────────────────────────────────────────────────────────────────
 export const listTickets = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       status?: "new" | "open" | "pending" | "solved" | "closed" | "spam" | "trash" | "all";
@@ -74,7 +74,7 @@ export const listTickets = createServerFn({ method: "POST" })
 // Get ticket + messages
 // ─────────────────────────────────────────────────────────────────────────────
 export const getTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -102,7 +102,7 @@ export const getTicket = createServerFn({ method: "POST" })
 // Signed URL for a single attachment (admin-only, short TTL).
 // ─────────────────────────────────────────────────────────────────────────────
 export const getAttachmentUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { attachmentId: string }) =>
     z.object({ attachmentId: z.string().uuid() }).parse(d),
   )
@@ -128,7 +128,7 @@ export const getAttachmentUrl = createServerFn({ method: "POST" })
 // Previous tickets from the same requester (for drawer context panel)
 // ─────────────────────────────────────────────────────────────────────────────
 export const listRequesterTickets = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { email: string; excludeId?: string }) =>
     z
       .object({
@@ -160,7 +160,7 @@ export const listRequesterTickets = createServerFn({ method: "POST" })
 // Returns the latest tickets + latest inbound messages.
 // ─────────────────────────────────────────────────────────────────────────────
 export const listSupportNotifications = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     await assertAdmin(context);
 
@@ -194,7 +194,7 @@ export const listSupportNotifications = createServerFn({ method: "POST" })
 
 // Bell "Mark all read" — promote every New ticket to Open in one shot.
 export const markAllSupportRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const nowIso = new Date().toISOString();
@@ -219,7 +219,7 @@ export const markAllSupportRead = createServerFn({ method: "POST" })
 // Update ticket (status, priority, assignee, tags)
 // ─────────────────────────────────────────────────────────────────────────────
 export const updateTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   // Drawer dropdown is restricted to Open / Pending / Solved.
   // `new` is system-set (auto-promoted on first view).
   // `closed` is system-set (auto-promoted by cron after 28d).
@@ -276,7 +276,7 @@ export const updateTicket = createServerFn({ method: "POST" })
 // Internal note (no email sent)
 // ─────────────────────────────────────────────────────────────────────────────
 export const addInternalNote = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string; body: string }) =>
     z.object({ ticketId: z.string().uuid(), body: z.string().min(1).max(10000) }).parse(d),
   )
@@ -296,7 +296,7 @@ export const addInternalNote = createServerFn({ method: "POST" })
 // Reply (sends real email via Mailgun, stores outbound message)
 // ─────────────────────────────────────────────────────────────────────────────
 export const replyToTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string; body: string; afterStatus?: "pending" | "solved" | "closed" }) =>
     z
       .object({
@@ -439,7 +439,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
 // Mark ticket as read (admin opened it)
 // ─────────────────────────────────────────────────────────────────────────────
 export const markTicketRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -479,7 +479,7 @@ export const markTicketRead = createServerFn({ method: "POST" })
 // Snooze / unsnooze
 // ─────────────────────────────────────────────────────────────────────────────
 export const snoozeTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string; until: string }) =>
     z
       .object({ id: z.string().uuid(), until: z.string().datetime() })
@@ -499,7 +499,7 @@ export const snoozeTicket = createServerFn({ method: "POST" })
   });
 
 export const unsnoozeTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -517,7 +517,7 @@ export const unsnoozeTicket = createServerFn({ method: "POST" })
 // message, and sets thread_key so the customer's reply lands back here.
 // ─────────────────────────────────────────────────────────────────────────────
 export const createOutboundTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       to: string;
@@ -648,7 +648,7 @@ export type RecipientHit = {
 };
 
 export const searchSupportRecipients = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { q: string }) =>
     z.object({ q: z.string().trim().min(2).max(80) }).parse(d),
   )

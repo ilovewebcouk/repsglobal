@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // Professional creates a new client invite (returns shareable link).
 export const createClientInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) =>
     z
       .object({
@@ -94,7 +94,7 @@ export const lookupInvite = createServerFn({ method: "GET" })
 
 // Authenticated: link the signed-in user to the invite.
 export const acceptInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((input) => z.object({ token: z.string().min(8).max(128) }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;

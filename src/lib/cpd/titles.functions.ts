@@ -14,7 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { TITLES, isTitleSlug, type TitleSlug } from "./titles-catalog";
 import { deriveTitlesForSubmission, type RulesOutput } from "./title-rules";
 
@@ -39,7 +39,7 @@ export type UnlockedTitlesResult = {
 };
 
 export const myUnlockedTitles = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<UnlockedTitlesResult> => {
     const { supabase, userId } = context;
 
@@ -108,7 +108,7 @@ const setPrimaryInput = z.object({
 });
 
 export const setPrimaryTitle = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => setPrimaryInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -166,7 +166,7 @@ const previewInput = z.object({
 });
 
 export const previewSubmissionTitle = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => previewInput.parse(d))
   .handler(async ({ data, context }): Promise<RulesOutput> => {
     const { supabase, userId } = context;
