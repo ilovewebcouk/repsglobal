@@ -392,6 +392,32 @@ function ProfessionLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
+  // Profession-scoped specialism chips. If a pro picks specialisms on their
+  // profile, those are the ones we feature here. Falls back to the static
+  // taxonomy when no live pros have published yet.
+  const professionSlug: ProfessionSlug | null = isProfessionSlug(meta.slug)
+    ? meta.slug
+    : null;
+  const liveSpecialismCounts = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of livePros) {
+      for (const s of r.specialisms ?? []) {
+        counts.set(s, (counts.get(s) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [livePros]);
+  const specialismChips: Specialism[] = React.useMemo(() => {
+    if (!professionSlug) return [];
+    const catalogue = getSpecialismsForProfession(professionSlug);
+    const ranked = [...catalogue].sort(
+      (a, b) =>
+        (liveSpecialismCounts.get(b.slug) ?? 0) -
+        (liveSpecialismCounts.get(a.slug) ?? 0),
+    );
+    return ranked.slice(0, 8);
+  }, [professionSlug, liveSpecialismCounts]);
+
 
 
 
