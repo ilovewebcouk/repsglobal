@@ -1,56 +1,110 @@
-## Plan — `FeaturedProCard` visual polish (10/10)
+# Featured Pro Card v2 — world-class pass
 
-You're right — the previous turn fixed data correctness but parked the visual upgrade ("Card visual redesign — out of scope"). This plan does the polish pass. Scope is strictly `src/components/public/FeaturedProCard.tsx`. No data, no business logic, no schema, no copy changes. Card renders in the same grid slots on `/in/$location` and `/professions/$profession`.
+Goal: lift the rail from "directory tile" to "marketplace hero card" — the same bar as Airbnb, Resy, Booksy, Treatwell. Pricing + rating become first-class signals. Featured rail enforces visual diversity.
 
-### What's wrong with the card today
+## 1. Data model (migration)
 
-1. **Photo aspect is wrong.** `h-44 w-full` produces a landscape banner that crops faces unpredictably — chins, foreheads, half-shoulders. Featured headshots should be portrait.
-2. **Hierarchy is flat.** Name (16px), role (12px) and rating row compete on the same line. The name should dominate.
-3. **Mode + city read as equal-weight metadata** — `MapPin London · Laptop In-person`. The city is the answer to "where", the mode is a filter cue; they shouldn't share a row at the same weight.
-4. **Tag chips are solid ivory pills.** They land as bright noise above the CTA. Should be quieter outlined chips.
-5. **CTA is full-width and a touch tall** at h-9 with a bare label. Reads as utility, not premium.
-6. **Verified pill sits on a hard photo edge** with no scrim — vanishes on bright/white photos.
-7. **No hover on the photo itself.** The card lifts (added last turn) but the image stays static — misses the "premium" feel.
+Add to `public.professionals`:
 
-### Visual changes (all inside `FeaturedProCard.tsx`)
-
-| Element | Now | Polish |
+| Column | Type | Notes |
 | --- | --- | --- |
-| Image frame | `h-44 w-full` | `aspect-[4/5] w-full` portrait crop (matches profile-grade headshots); image `object-cover object-top` so faces sit in the frame, not chins |
-| Image hover | static | `transition-transform duration-500 group-hover:scale-[1.03]`; parent gets `group` |
-| Photo scrim | none | thin top-down `bg-gradient-to-b from-black/30 to-transparent h-16` so Verified pill always has contrast |
-| Verified pill | green solid | keep green (status-token rule), tighten to `h-5 px-2 text-[10px]`, add `shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]` so it floats over any photo (pill only — button shadow rule unchanged) |
-| Save button | warm-white circle | keep, but `bg-reps-black/45 backdrop-blur-sm text-white hover:bg-reps-orange hover:text-white` — reads as overlay, not a sticker |
-| Name | 16px bold | **18px bold** `font-display` (the card's anchor) |
-| Role | 12px muted | 12px muted, single line truncated; only one line ever |
-| Rating row | inline with name | when reviews > 0, move it under name as `Star 4.9 · 128 reviews` (full word, not parens) |
-| City + mode | one row, two icons | **two rows, two weights**: city gets MapPin at 13px charcoal; mode collapses to a tiny stacked dot pill (`● Online`, `◐ Hybrid`, `○ In-person`) right-aligned in the city row |
-| Tag chips | solid ivory | outlined chips: `bg-transparent border border-reps-stone text-reps-muted-dark` — quieter, more editorial |
-| CTA | full-width h-9 plain | full-width **h-10**, label `View profile` + `ChevronRight` icon, brand orange, flat (no shadow — skill rule), `group-hover:bg-reps-orange-dark` |
-| Card border | static stone | already lifts on hover; add `transition-shadow` and a 1px brand-orange ring on focus-within for keyboard users |
+| `from_price_pennies` | `integer` | Nullable. Starting session price in pence. Source-of-truth for "from £X". |
+| `price_currency` | `text` default `'GBP'` | Future-proofing for global. |
+| `years_experience` | `smallint` | Nullable. Used as proof when reviews = 0. |
+| `value_prop` | `text` | Nullable, ~60 char. One-line replacement for "Personal Trainer" (e.g. "Strength coach for women returning post-baby"). |
 
-Locked things that don't change: 18px card radius, 10px button radius, no button shadow, brand-orange token (no hex), warm-ivory bg, Verified = identity-approved green.
+Rating already lives via `reviews` table — confirm `rating_avg` + `rating_count` are computed (add trigger / view if missing). No new columns needed.
 
-### Accessibility
+Backfill seed pros (`demo-verified@…`, James Wilson, Katie Gibbs, Hannah Thompson, Daniel Hughes) with realistic price + value_prop in the same migration.
 
-- Whole card wrapped in `group` but keep the existing `<Link>` as the only navigation control. Save button keeps `aria-label="Save"` and stops event propagation so it doesn't trigger the card link (when we wrap it later).
-- `<img>` keeps `alt={pro.name}` and `loading="lazy"`.
-- Focus-visible ring on the card link for keyboard users.
+## 2. Featured eligibility — additional rule
 
-### Files
+Update `src/lib/directory/featured.functions.ts`:
 
-- `src/components/public/FeaturedProCard.tsx` — only file touched.
+- Existing gates (avatar, identity_approved, quality≥60, headline, ≥1 specialism) — keep.
+- **New: avatar de-dup.** Reject a candidate if its `avatar_url` perceptual hash (or, pragmatically, exact URL match) is already in the rail. Phase 1: exact URL dedupe is enough — James + Daniel sharing a generated face is the obvious failure mode. Long term: pHash.
+- **New: require `value_prop`** when `quality_score < 75` (forces good copy on weaker pros).
 
-### Verification
+## 3. Card rebuild (`src/components/public/FeaturedProCard.tsx`)
 
-- View `/in/london` and `/in/leeds` — headshots are portrait, faces sit naturally, name dominates, mode reads as a quiet right-aligned cue, CTA feels premium, hover scales the image inside the fixed mask without breaking the card border.
-- View `/professions/personal-trainer` — same.
-- Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` — must exit 0 (radius set, no banned hex, button stays flat).
-- Confirm no TypeScript errors (`bunx tsc --noEmit`).
+Final anatomy, top→bottom:
 
-### Out of scope (explicit)
+```
+┌───────────────────────────────┐
+│  ┌─────────────────────────┐  │  18px radius card, warm ivory bg
+│  │                         │  │
+│  │      4:5 headshot       │  │  object-cover object-top
+│  │                         │  │  hover: scale-[1.03]
+│  │ [Verified]      [Save]  │  │  top row, glass pills
+│  │                         │  │
+│  │           ★ 4.9 (128)   │  │  bottom-left glass pill
+│  └─────────────────────────┘  │  (hidden when reviews = 0; falls back
+│                                │   to "5 yrs experience" pill)
+│  Hannah Thompson               │  18px font-display bold
+│  Strength coach for women      │  14px charcoal, 2-line clamp
+│  returning post-baby           │
+│                                │
+│  📍 Clerkenwell  ·  From £65   │  13px muted, single row
+│                                │
+│  Pre/post-natal   Rehab        │  outlined chips, sentence case, max 2
+│                                │
+│  ┌─────────────────────────┐  │
+│  │  View profile        →  │  │  h-10, GHOST (border + charcoal text)
+│  └─────────────────────────┘  │  hover: fills brand orange
+└───────────────────────────────┘
+```
+
+Key changes vs current:
+
+| Element | Current | v2 |
+| --- | --- | --- |
+| Subtitle | "Personal Trainer" hardcoded | `value_prop`, fallback to title |
+| Proof | nothing when reviews=0 | rating overlay on photo, OR `{years} yrs experience` pill |
+| Price | none | `From £{from_price}` in location row |
+| Mode pill | "Hybrid" right-aligned in location row | **removed** — clients don't parse it; moved into profile page |
+| Tags | kebab-case, 1–2 rows, unequal heights | sentence case, hard-capped at 2, single row, `+N` overflow |
+| CTA | solid orange full-width | ghost outline, fills orange on hover |
+| Card heights | variable (1 vs 2 tag rows) | **equal** via `flex flex-col` + `mt-auto` on CTA block |
+
+Locked tokens (per `mem://design/source-of-truth` + reps-build-compliance):
+- Card radius 18px, button 10px, input 12px
+- No button shadow
+- Brand orange via `bg-brand-orange` / `text-brand-orange` tokens
+- Verified pill stays emerald (status-only accent, per `mem://design/status-colors`)
+
+## 4. Rail header polish
+
+In `in.$location.tsx` and `professions.$profession.tsx`:
+
+- "See all →" → neutral charcoal with chevron, not orange (stops competing with CTAs).
+- Subtitle copy: "Hand-picked, verified and accepting new clients." (drop "REPS-" — see core memory: no UK qualifier, brand is "REPs" everywhere else).
+
+## 5. Out of scope
 
 - Homepage Featured rail (locked).
-- Wiring the Save bookmark.
-- Any change to the eligibility logic, copy, or the wrapping section header.
-- Any change to other card components (results card, profile card).
+- Save/bookmark wiring (icon only, no DB).
+- pHash dedupe (exact-URL only for now).
+- Rating computation pipeline if `rating_avg` doesn't already exist — flag and ask before adding.
+- Any change to result-card or profile-card components.
+
+## 6. Files touched
+
+- `supabase/migrations/<new>.sql` — columns + seed backfill
+- `src/lib/directory/featured.functions.ts` — dedupe rule, select new columns
+- `src/components/public/FeaturedProCard.tsx` — full rebuild
+- `src/routes/in.$location.tsx` — header polish
+- `src/routes/professions.$profession.tsx` — header polish
+
+## 7. Verification
+
+1. `/in/london`, `/in/leeds`, `/professions/personal-trainer` — 4 cards, equal height, no two same face, rating OR years on every card, price on every card.
+2. `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0.
+3. Typecheck clean.
+4. Screenshot before/after for the user.
+
+## Technical notes
+
+- Migration must include GRANTs (none new — columns on existing table, but verify policies still pass).
+- `value_prop` lives on `professionals`; pro can edit later from dashboard (out of scope here — show a TODO comment).
+- Rating overlay uses `bg-black/55 backdrop-blur-sm` glass pill, white text, `★` in brand orange (NOT yellow — per audit rule).
+- Equal-height enforcement: card is `flex flex-col`; the meta+CTA block uses `mt-auto`; tags row has fixed `min-h-[28px]`.
