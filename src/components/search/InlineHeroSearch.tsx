@@ -83,6 +83,8 @@ export type InlineHeroSearchProps = {
   lockedProfession?: string;
   /** When set and no viewer origin, pre-fills the Where field. */
   defaultCity?: string;
+  /** When set, pins Where to this city (takes priority over viewer origin). User can still change it. */
+  lockedCity?: string;
   /** Placeholder for the What trigger. */
   whatPlaceholder?: string;
   /** Placeholder for the Where trigger. */
@@ -99,6 +101,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
     showDivider = false,
     lockedProfession,
     defaultCity,
+    lockedCity,
     whatPlaceholder,
     wherePlaceholder = "City or postcode",
   } = props;
@@ -126,6 +129,9 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
 
   const [whereOpen, setWhereOpen] = React.useState(false);
   const [where, setWhere] = React.useState<SelectedWhere>(() => {
+    if (lockedCity) {
+      return { mode: "city", label: lockedCity };
+    }
     if (origin) {
       return { mode: "origin", label: origin.town ?? origin.postcode_outward };
     }
@@ -136,10 +142,11 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
   });
 
   React.useEffect(() => {
+    if (lockedCity) return;
     if (origin) {
       setWhere({ mode: "origin", label: origin.town ?? origin.postcode_outward });
     }
-  }, [origin?.postcode_outward, origin?.town]);
+  }, [origin?.postcode_outward, origin?.town, lockedCity]);
 
   const whatLabel = React.useMemo(() => {
     if (!what) return null;
@@ -179,10 +186,10 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
       search.q = whatQuery.trim();
     }
 
-    if (origin) {
-      search.sort = "nearest";
-    } else if (where?.mode === "city") {
+    if (where?.mode === "city") {
       search.city = where.label;
+    } else if (where?.mode === "origin" || origin) {
+      search.sort = "nearest";
     }
 
     navigate({ to: "/find-a-professional", search });
