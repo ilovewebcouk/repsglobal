@@ -168,7 +168,13 @@ export const reviewVerification = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { TITLES } = await import("@/lib/cpd/titles-catalog");
     const { deriveTitlesForSubmission } = await import("@/lib/cpd/title-rules");
-    const { SPECIALISM_SLUGS, MAX_SPECIALISMS } = await import("@/lib/specialisms");
+    const {
+      SPECIALISM_SLUGS,
+      MAX_SPECIALISMS,
+      mapLegacySpecialism,
+      isSpecialismValidForProfession,
+    } = await import("@/lib/specialisms");
+    const { isProfessionSlug } = await import("@/lib/professions");
 
     const { data: sub, error: subErr } = await supabaseAdmin
       .from("verification_submissions")
