@@ -182,7 +182,7 @@ export const Route = createFileRoute("/in/$location")({
         { title: `Personal Trainers & Coaches in ${loc.name} | REPS` },
         {
           name: "description",
-          content: `${loc.blurb} ${loc.count.toLocaleString()} verified professionals in ${loc.name}.`,
+          content: `${loc.blurb} REPS-verified professionals in ${loc.name}.`,
         },
         { property: "og:title", content: `REPS-Verified Professionals in ${loc.name}` },
         { property: "og:description", content: loc.blurb },
