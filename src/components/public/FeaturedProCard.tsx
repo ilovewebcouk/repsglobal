@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, Bookmark, Laptop, MapPin, Star } from "lucide-react";
+import { Bookmark, Laptop, MapPin, Star } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { VerificationPill } from "@/components/directory/VerificationPill";
 
 export type FeaturedPro = {
   name: string;
@@ -12,6 +13,10 @@ export type FeaturedPro = {
   mode: "In-person" | "Online" | "In-person & Online";
   tags: string[];
   image: string;
+  /** Identity/verification + tier — feeds the shared VerificationPill. */
+  identityStatus?: string | null;
+  verification?: string | null;
+  tier?: "studio" | "pro" | "verified" | "free" | null;
 };
 
 /**
@@ -21,13 +26,24 @@ export type FeaturedPro = {
  */
 export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   const slug = pro.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  // Static demo entries pre-date the pill wiring — default them to verified
+  // so the locked demo grid still renders an emerald REPs Verified pill.
+  const identityStatus = pro.identityStatus ?? "approved";
+  const verification = pro.verification ?? "verified";
+  const tier = pro.tier ?? "verified";
   return (
     <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
       <div className="relative">
         <img src={pro.image} alt={pro.name} className="h-44 w-full object-cover" loading="lazy" />
-        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-          <BadgeCheck className="h-3 w-3" /> Verified
-        </span>
+        <div className="absolute left-3 top-3">
+          <VerificationPill
+            identityStatus={identityStatus}
+            verification={verification}
+            tier={tier}
+            compact
+          />
+        </div>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <button

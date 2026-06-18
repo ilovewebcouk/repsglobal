@@ -40,6 +40,7 @@ export type FeaturedProRow = {
   review_count: number;
   tier: "studio" | "pro" | "verified" | "free";
   identity_status: string | null;
+  verification: string | null;
   /** Primary-location town (e.g. "Shoreditch"); falls back to `city` on the client. */
   town: string | null;
   /** True when this pro is part of the paid pool (vs avatar-backfill). */
@@ -95,6 +96,7 @@ type ProRow = {
   in_person_available: boolean | null;
   online_available: boolean | null;
   identity_status: string | null;
+  verification: string | null;
   quality_score: number | null;
 };
 
@@ -107,7 +109,7 @@ async function fetchFeaturedPool(
   let qb = supabaseAdmin
     .from("professionals")
     .select(
-      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, quality_score",
+      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true);
 
@@ -195,6 +197,7 @@ async function fetchFeaturedPool(
         review_count: agg?.count ?? 0,
         tier,
         identity_status: p.identity_status,
+        verification: p.verification,
         is_paid: tier !== "free",
       };
     });
