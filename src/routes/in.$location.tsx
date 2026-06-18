@@ -182,7 +182,7 @@ export const Route = createFileRoute("/in/$location")({
         { title: `Personal Trainers & Coaches in ${loc.name} | REPS` },
         {
           name: "description",
-          content: `${loc.blurb} ${loc.count.toLocaleString()} verified professionals in ${loc.name}.`,
+          content: `${loc.blurb} REPS-verified professionals in ${loc.name}.`,
         },
         { property: "og:title", content: `REPS-Verified Professionals in ${loc.name}` },
         { property: "og:description", content: loc.blurb },
@@ -318,6 +318,10 @@ function LocationLanding() {
       getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
     staleTime: 60_000,
   });
+  const cityCount = liveCounts
+    ? Object.values(liveCounts).reduce((a, b) => a + b, 0)
+    : null;
+  const cityCountLabel = cityCount && cityCount > 0 ? cityCount.toLocaleString() : "—";
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
@@ -366,7 +370,7 @@ function LocationLanding() {
             <dl className="mt-4 space-y-3 text-[13px]">
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Verified pros</dt>
-                <dd className="font-semibold text-reps-charcoal">{loc.count.toLocaleString()}</dd>
+                <dd className="font-semibold text-reps-charcoal">{cityCountLabel}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Avg. rating</dt>
@@ -376,7 +380,7 @@ function LocationLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Online options</dt>
-                <dd className="font-semibold text-reps-charcoal">{Math.round(loc.count * 0.6)}</dd>
+                <dd className="font-semibold text-reps-charcoal">{cityCount ? Math.round(cityCount * 0.6) : "—"}</dd>
               </div>
             </dl>
             <div className="mt-5 border-t border-reps-stone pt-4">
@@ -441,7 +445,7 @@ function LocationLanding() {
             to="/find-a-professional"
             className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
           >
-            See all {loc.count.toLocaleString()} <ChevronRight className="h-3.5 w-3.5" />
+            See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
