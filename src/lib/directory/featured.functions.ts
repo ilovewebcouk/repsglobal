@@ -14,7 +14,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { FEATURED_PAID_THRESHOLD } from "./featured.config";
+import {
+  FEATURED_MIN_QUALITY,
+  FEATURED_PAID_THRESHOLD,
+} from "./featured.config";
+
+/**
+ * Quality score is roughly capped at ~135 (sum of bonuses in
+ * compute_pro_quality_score). 100 reads as "good enough" for display, so the
+ * UI-facing `FEATURED_MIN_QUALITY` (0-100) is mapped onto the raw score with
+ * the same /100 scale used in admin.
+ */
+const QUALITY_SCORE_DISPLAY_MAX = 100;
+const FEATURED_MIN_QUALITY_RAW = FEATURED_MIN_QUALITY; // raw and display share scale
 
 const FeaturedScope = z.enum(["global", "city", "profession"]);
 
