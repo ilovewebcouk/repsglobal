@@ -15,8 +15,8 @@ export type AuditLogRow = {
   target_id: string | null;
   target_name: string | null;
   reason: string | null;
-  before_state: Record<string, unknown> | null;
-  after_state: Record<string, unknown> | null;
+  before_state: string | null;
+  after_state: string | null;
 };
 
 export const listAdminAuditLog = createServerFn({ method: "POST" })
