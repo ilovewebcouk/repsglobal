@@ -1,18 +1,17 @@
 import * as React from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useViewerOrigin } from "@/lib/useViewerOrigin";
 import {
   BadgeCheck,
   ChevronRight,
   MapPin,
-  Search,
   ShieldCheck,
   Star,
   Trophy,
   UserRound,
   Users,
 } from "lucide-react";
+import { InlineHeroSearch } from "@/components/search/InlineHeroSearch";
 
 import {
   Accordion,
