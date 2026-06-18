@@ -1376,7 +1376,7 @@ function whatToLabel(state: ResultsBarState): string | null {
     return p?.label ?? state.profession;
   }
   if (state.specialism) {
-    const s = SPECIALISMS.find((x) => x.slug === state.specialism);
+    const s = ALL_SPECIALISMS.find((x) => x.slug === state.specialism);
     return s?.label ?? state.specialism;
   }
   if (state.q) return `"${state.q}"`;
