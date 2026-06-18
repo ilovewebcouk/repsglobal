@@ -5,12 +5,12 @@ import {
   ChevronRight,
   MapPin,
   Navigation,
-  Search,
   ShieldCheck,
   Star,
   Trophy,
   Users,
 } from "lucide-react";
+import { InlineHeroSearch } from "@/components/search/InlineHeroSearch";
 
 import {
   Accordion,
