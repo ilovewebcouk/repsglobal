@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -93,7 +93,7 @@ async function reverseLookup(lat: number, lng: number): Promise<PostcodesIoResul
 /* -------------------------------------------------------------------------- */
 
 export const getMyPrimaryLocation = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<PrimaryLocation | null> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
@@ -126,7 +126,7 @@ const SavePostcodeInput = z.object({
 });
 
 export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => SavePostcodeInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;

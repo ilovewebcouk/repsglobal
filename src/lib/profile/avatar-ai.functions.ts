@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -98,7 +98,7 @@ const VALIDATION_SCHEMA = `{
 }`;
 
 export const validateAvatar = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z.object({ path: z.string().min(1).max(500) }).parse(d),
   )
@@ -219,7 +219,7 @@ export const validateAvatar = createServerFn({ method: "POST" })
 /* -------------------------------------------------------------------------- */
 
 export const commitAvatar = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -390,7 +390,7 @@ async function generateOnce(
 }
 
 export const regenerateAvatar = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({
