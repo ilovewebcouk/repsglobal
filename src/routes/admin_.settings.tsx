@@ -100,8 +100,11 @@ function AdminSettings() {
               ))}
             </ul>
           </PCard>
+
+          <MaintenanceCard />
         </div>
       </div>
+
 
       <PPanel className="mt-6 p-6">
         <h2 className="font-display text-[16px] font-semibold text-white">Recent audit log</h2>
