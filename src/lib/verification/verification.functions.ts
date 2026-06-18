@@ -290,22 +290,41 @@ export const reviewVerification = createServerFn({ method: "POST" })
       }
 
       // Auto-add any newly derived specialisms to the pro's selection,
-      // up to MAX_SPECIALISMS. We don't remove existing picks.
-      const derivedSpecs = rules.specialisms.map((s) => s.slug);
-      if (derivedSpecs.length > 0) {
+      // up to MAX_SPECIALISMS. Title rules emit "legacy" generic slugs
+      // (e.g. "strength") — map them to the new profession-scoped slug
+      // (e.g. "powerlifting" for a strength coach) before merging.
+      const derivedLegacy = rules.specialisms.map((s) => s.slug);
+      if (derivedLegacy.length > 0) {
         const { data: proSpec } = await supabaseAdmin
           .from("professionals")
-          .select("specialisms")
+          .select("specialisms, primary_profession")
           .eq("id", sub.professional_id)
           .maybeSingle();
-        const existing = ((proSpec as { specialisms?: string[] | null } | null)?.specialisms ?? [])
-          .filter((s) => (SPECIALISM_SLUGS as string[]).includes(s));
+        const row = proSpec as
+          | { specialisms?: string[] | null; primary_profession?: string | null }
+          | null;
+        const proProfRaw = row?.primary_profession ?? null;
+        const proProf = isProfessionSlug(proProfRaw) ? proProfRaw : null;
+
+        const existing = (row?.specialisms ?? [])
+          .filter((s) => (SPECIALISM_SLUGS as string[]).includes(s))
+          .filter((s) => isSpecialismValidForProfession(s, proProf));
+
+        const derivedMapped = proProf
+          ? (derivedLegacy
+              .map((legacy) => mapLegacySpecialism(legacy, proProf))
+              .filter((s): s is string => Boolean(s)))
+          : [];
+
         const merged = [...existing];
-        for (const s of derivedSpecs) {
+        for (const s of derivedMapped) {
           if (merged.length >= MAX_SPECIALISMS) break;
           if (!merged.includes(s)) merged.push(s);
         }
-        if (merged.length !== existing.length) {
+        if (
+          merged.length !== existing.length ||
+          merged.some((s, i) => s !== existing[i])
+        ) {
           await supabaseAdmin
             .from("professionals")
             .update({ specialisms: merged } as never)
