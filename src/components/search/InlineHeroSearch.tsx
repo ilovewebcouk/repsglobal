@@ -142,6 +142,11 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
   });
 
   React.useEffect(() => {
+    if (!lockedCity) return;
+    setWhere({ mode: "city", label: lockedCity });
+  }, [lockedCity]);
+
+  React.useEffect(() => {
     if (lockedCity) return;
     if (origin) {
       setWhere({ mode: "origin", label: origin.town ?? origin.postcode_outward });
