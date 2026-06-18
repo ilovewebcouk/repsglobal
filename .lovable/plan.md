@@ -1,24 +1,24 @@
-## Problem
+## Plan
 
-On `/in/london` (and every `/in/$location` page) the Where field shows the viewer's geo-located/picked city instead of "London". On submit it also routes to `/find-a-professional?sort=nearest` with no `city=` param, so the search doesn't honour the page context. That's confusing — landing on a city page should mean "search this city" by default.
+1. **Make `/in/:location` location truly locked**
+   - Treat the city page value as fixed search context, not a selectable/default location.
+   - The search should always submit with that page city, e.g. `/in/manchester` searches Manchester.
 
-## Fix
+2. **Update `InlineHeroSearch` behaviour for locked city mode**
+   - When `lockedCity` is present, the location control will display that city only.
+   - Remove/disable the ability to untick it, switch to current location, type another city, or enter a postcode from city landing pages.
+   - Prevent geo-location or previously picked location from overriding the page city.
 
-Introduce a `lockedCity` prop on `InlineHeroSearch` that mirrors how `lockedProfession` works today: it pins the Where field to the page's city and takes priority over viewer origin (but the user can still change it via the dropdown).
+3. **Keep other pages unchanged**
+   - Homepage and profession pages can still use editable location/current-location behaviour.
+   - Only `/in/:location` pages get the locked location behaviour.
 
-### `src/components/search/InlineHeroSearch.tsx`
+4. **Submission rules**
+   - Searching from `/in/manchester` always sends `city=Manchester` / Manchester slug context.
+   - It should not submit `sort=nearest` based on viewer location while locked to a city page.
 
-- Add `lockedCity?: string` to `InlineHeroSearchProps` (alongside `defaultCity`).
-- Initial `where` state: if `lockedCity` is set → `{ mode: "city", label: lockedCity }`; else origin; else `defaultCity`; else null.
-- Update the origin-syncing `useEffect` to no-op when `lockedCity` is set (so geo doesn't overwrite the page's city after mount).
-- In `handleSubmit`: change the order so an explicit `where.mode === "city"` always emits `search.city`. Origin-derived `sort = "nearest"` only applies when `where.mode === "origin"`. So if the user is on `/in/london` they search London; if they then change Where to their own town via the dropdown, that wins; if they clear Where, fall back to origin behaviour.
+## Technical scope
 
-### `src/routes/in.$location.tsx`
-
-- Replace `defaultCity={loc.name}` with `lockedCity={loc.name}` on the `InlineHeroSearch` at line 339.
-
-## Out of scope
-
-- `/professions/$profession` keeps its current behaviour (no city context to lock).
-- `defaultCity` stays as the non-locking pre-fill for the homepage hero.
-- No visual/chrome changes — same field, same placeholder, same shell.
+- Edit `src/components/search/InlineHeroSearch.tsx` to make `lockedCity` a hard lock for the location UI and submit logic.
+- Confirm `src/routes/in.$location.tsx` passes `lockedCity={loc.name}` to the hero search.
+- No database or design changes.
