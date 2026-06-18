@@ -32,7 +32,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   const verification = pro.verification ?? "verified";
   const tier = pro.tier ?? "verified";
   return (
-    <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
+    <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
       <div className="relative">
         <img src={pro.image} alt={pro.name} className="aspect-square w-full object-cover object-top" loading="lazy" />
         <div className="absolute left-3 top-3">
@@ -57,7 +57,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
           <TooltipContent side="left" className="bg-reps-black text-white">Save</TooltipContent>
         </Tooltip>
       </div>
-      <div className="p-4">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
@@ -81,7 +81,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
         <Link
           to="/pro/$slug"
           params={{ slug }}
-          className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
+          className="mt-auto inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
         >
           View Profile
         </Link>
