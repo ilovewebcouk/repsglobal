@@ -568,13 +568,13 @@ function ProfessionLanding() {
                 Featured {meta.plural.toLowerCase()}
               </h2>
               <p className="mt-1 text-[14px] text-reps-muted-light">
-                Hand-picked, REPS-verified and accepting new clients.
+                Hand-picked, verified and accepting new clients.
               </p>
             </div>
             <Link
               to="/find-a-professional"
               search={{ profession: meta.slug, featured: true }}
-              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-charcoal hover:text-reps-orange sm:inline-flex"
             >
               See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
