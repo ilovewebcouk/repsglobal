@@ -11,18 +11,21 @@ export type FeaturedPro = {
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
   tags: string[];
+  /** Required: every featured pro must have a real headshot. No monograms, no stock. */
   image: string;
 };
 
 /**
  * Shared featured-professional card used by /professions/$profession
  * and /in/$location. Locked vertical layout: image-top, Verified pill,
- * Save tooltip, rating row, city + mode row, two tag chips, full-width CTA.
+ * Save tooltip, rating row (only when reviews > 0), city + mode row,
+ * two tag chips, full-width CTA.
  */
 export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   const slug = pro.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const hasReviews = pro.reviews > 0;
   return (
-    <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
+    <article className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition hover:-translate-y-0.5 hover:border-reps-orange">
       <div className="relative">
         <img src={pro.image} alt={pro.name} className="h-44 w-full object-cover" loading="lazy" />
         <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-reps-green/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -46,11 +49,13 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
             <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
             <p className="text-[12px] text-reps-muted-light">{pro.role}</p>
           </div>
-          <div className="flex shrink-0 items-center gap-1 text-[12px]">
-            <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-            <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-            <span className="text-reps-muted-light">({pro.reviews})</span>
-          </div>
+          {hasReviews ? (
+            <div className="flex shrink-0 items-center gap-1 text-[12px]">
+              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
+              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
+              <span className="text-reps-muted-light">({pro.reviews})</span>
+            </div>
+          ) : null}
         </div>
         <div className="mt-2 flex items-center gap-3 text-[11.5px] text-reps-muted-light">
           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {pro.city}</span>
