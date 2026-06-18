@@ -29,6 +29,7 @@ import proJames from "@/assets/pro-james.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
   getSpecialismsForProfession,
