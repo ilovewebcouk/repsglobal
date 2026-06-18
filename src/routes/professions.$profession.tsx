@@ -388,33 +388,8 @@ function ProfessionLanding() {
     ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
-  const navigate = useNavigate();
-  const { origin } = useViewerOrigin();
-  const [specialism, setSpecialism] = React.useState("");
-  const [city, setCity] = React.useState(origin?.town ?? "");
-  React.useEffect(() => {
-    if (origin?.town) setCity((c) => c || origin.town!);
-  }, [origin?.town]);
 
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const search: {
-      profession: string;
-      q?: string;
-      city?: string;
-      page: number;
-      sort: "recommended" | "nearest" | "rating" | "most_reviewed" | "newest";
-    } = { profession: meta.slug, page: 1, sort: "recommended" };
-    const q = specialism.trim();
-    const c = city.trim();
-    if (q) search.q = q;
-    if (c) {
-      search.city = c;
-    } else if (origin) {
-      search.sort = "nearest";
-    }
-    navigate({ to: "/find-a-professional", search });
-  };
+
 
 
 
