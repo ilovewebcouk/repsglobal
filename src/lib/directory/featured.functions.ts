@@ -108,7 +108,7 @@ async function fetchFeaturedPool(
   let qb = supabaseAdmin
     .from("professionals")
     .select(
-      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, quality_score",
+      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true);
 
