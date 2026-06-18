@@ -95,8 +95,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
     name: "Manchester",
     region: "Greater Manchester",
     blurb:
-
       "Browse REPS-verified fitness professionals across Manchester city centre, Salford, Didsbury, Altrincham and the wider region.",
+
     count: 164,
     areas: ["City Centre", "Salford", "Didsbury", "Altrincham", "Chorlton", "Trafford", "Stockport"],
     professions: [
