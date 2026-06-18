@@ -397,10 +397,10 @@ function ProfessionLanding() {
   const meta = getProfession(profession);
 
   const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
-  const { data: liveResult } = useQuery({
-    queryKey: ["directory-featured-profession", meta.slug],
-    queryFn: () => searchProfessionals({ data: { profession: meta.slug, limit: 4 } }),
-    staleTime: 60_000,
+  const { data: featuredResult } = useQuery({
+    queryKey: ["profession-featured", meta.slug],
+    queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
+    staleTime: 60 * 60_000,
   });
   const { data: countResult } = useQuery({
     queryKey: ["profession-verified-count", meta.slug],
@@ -409,9 +409,9 @@ function ProfessionLanding() {
   });
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
-  const livePros = liveResult?.rows ?? [];
+  const livePros = featuredResult?.pros ?? [];
   const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => rowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
+    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
