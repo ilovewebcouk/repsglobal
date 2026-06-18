@@ -319,6 +319,10 @@ export type DirectoryHealth = {
   }>;
   backfill_active: boolean;
   paid_total: number;
+  /** Pros that pass every featured-rail eligibility gate globally. */
+  eligible_total: number;
+  /** Published pros that miss at least one gate (no photo / unverified / thin / low quality). */
+  below_threshold_total: number;
 };
 
 // Quality score is roughly capped at ~135 (sum of all bonuses in
