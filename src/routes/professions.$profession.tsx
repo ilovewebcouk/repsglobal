@@ -424,36 +424,13 @@ function ProfessionLanding() {
             </p>
 
             {/* Inline search */}
-            <form onSubmit={handleHeroSearch} className="mt-6 grid gap-2 rounded-[22px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]">
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <Search className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  value={specialism}
-                  onChange={(e) => setSpecialism(e.target.value)}
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  placeholder="e.g. Strength training, Fat loss"
-                  aria-label={`Specialism or service for ${meta.title}`}
-                />
-              </label>
-              <label className="flex items-center gap-2 rounded-[12px] bg-reps-ivory px-3 py-2.5">
-                <MapPin className="h-4 w-4 text-reps-muted-light" />
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="City, town or postcode"
-                  className="w-full bg-transparent text-[14px] text-reps-charcoal placeholder:text-reps-muted-light focus:outline-none"
-                  aria-label="Location"
-                />
-              </label>
-              <button
-                type="submit"
-                className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-              >
-                Search
-              </button>
-            </form>
+            <InlineHeroSearch
+              variant="light"
+              lockedProfession={meta.slug}
+              whatPlaceholder={`Specialism for ${meta.title.toLowerCase()} (e.g. fat loss)`}
+              wherePlaceholder="City, town or postcode"
+              className="mt-6 grid gap-2 rounded-[22px] border border-reps-stone bg-reps-warm-white p-2 sm:grid-cols-[1fr_1fr_auto]"
+            />
 
           </div>
 
