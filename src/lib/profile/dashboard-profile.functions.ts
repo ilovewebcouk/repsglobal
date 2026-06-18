@@ -5,6 +5,7 @@ import { PROFESSION_SLUGS, type ProfessionSlug } from "@/lib/professions";
 import {
   SPECIALISM_SLUGS,
   MAX_SPECIALISMS,
+  isSpecialismValidForProfession,
   type SpecialismSlug,
 } from "@/lib/specialisms";
 import { MAX_LANGUAGES } from "@/lib/languages";
