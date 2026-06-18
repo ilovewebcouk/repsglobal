@@ -482,7 +482,7 @@ function ProfessionLanding() {
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Verified pros</dt>
-                <dd className="font-semibold text-reps-charcoal">{meta.count.toLocaleString()}</dd>
+                <dd className="font-semibold text-reps-charcoal">{verifiedCountLabel}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-reps-muted-light">Avg. rating</dt>
