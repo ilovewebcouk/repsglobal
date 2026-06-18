@@ -84,10 +84,14 @@ function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
     fromPrice: r.from_price_pennies ? r.from_price_pennies / 100 : null,
     priceCurrency: r.price_currency,
     mode,
-    tags: (r.specialisms ?? []).slice(0, 2),
+    tags: (r.specialisms ?? []).slice(0, 3),
     image: r.avatar_url ?? "",
+    identityStatus: r.identity_status,
+    verification: r.identity_status === "approved" ? "verified" : null,
+    tier: r.tier,
   };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Location catalogue (Phase 1 static)                                 */
