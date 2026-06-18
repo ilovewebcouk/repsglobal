@@ -101,6 +101,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
     showDivider = false,
     lockedProfession,
     defaultCity,
+    lockedCity,
     whatPlaceholder,
     wherePlaceholder = "City or postcode",
   } = props;
