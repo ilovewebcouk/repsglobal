@@ -280,3 +280,59 @@ export const resolveViewerLatLng = createServerFn({ method: "POST" })
       longitude: r.longitude,
     };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Admin: re-derive town/region/district for all existing primary locations    */
+/* -------------------------------------------------------------------------- */
+
+export const backfillPrimaryLocations = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    // Authorise: admin only.
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("professional_locations")
+      .select("id, professional_id, postcode")
+      .eq("is_primary", true)
+      .not("postcode", "is", null);
+    if (error) throw error;
+
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const row of rows ?? []) {
+      const pc = normalisePostcode(row.postcode ?? "");
+      if (!UK_POSTCODE_RE.test(pc)) {
+        skipped += 1;
+        continue;
+      }
+      try {
+        const r = await lookupPostcode(pc);
+        const { town, region, district } = deriveDisplay(r);
+        const { error: updErr } = await supabaseAdmin
+          .from("professional_locations")
+          .update({ town, region, district })
+          .eq("id", row.id);
+        if (updErr) throw updErr;
+        await supabaseAdmin
+          .from("professionals")
+          .update({ city: town })
+          .eq("id", row.professional_id);
+        updated += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+
+    return { updated, skipped, failed, total: rows?.length ?? 0 };
+  });
