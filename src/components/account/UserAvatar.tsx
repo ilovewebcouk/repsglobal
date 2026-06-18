@@ -42,8 +42,12 @@ export function UserAvatar({
         className,
       )}
     >
-      {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className={radius} /> : null}
-      <AvatarFallback className={cn(radius, "bg-reps-panel-soft text-white/40")}>
+      {/* Inner radius is intentionally `rounded-none` — the Avatar root has
+          `overflow-hidden` + the size/className radius, so the parent already
+          clips. Setting an inner radius creates a visible gap between the
+          parent border and the image/fallback corners. */}
+      {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-none" /> : null}
+      <AvatarFallback className={cn("rounded-none bg-reps-panel-soft text-white/40")}>
         {initialsFromName(name)}
       </AvatarFallback>
     </Avatar>
