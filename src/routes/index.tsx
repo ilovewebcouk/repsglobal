@@ -321,6 +321,7 @@ function HomeV2() {
             <div className="flex items-center gap-4">
               <Link
                 to="/find-a-professional"
+                search={{ featured: true }}
                 className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
               >
                 View all
