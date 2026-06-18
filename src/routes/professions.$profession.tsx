@@ -30,6 +30,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { FEATURED_MIN_CARDS } from "@/lib/directory/featured.config";
 import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
   getSpecialismsForProfession,
