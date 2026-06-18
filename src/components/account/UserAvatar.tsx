@@ -33,7 +33,7 @@ export function UserAvatar({
   className,
   ring,
 }: UserAvatarProps) {
-  const radius = RADII[size];
+  
   return (
     <Avatar
       className={cn(
