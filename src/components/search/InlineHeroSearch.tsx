@@ -205,6 +205,7 @@ export function InlineHeroSearch(props: InlineHeroSearchProps) {
         setSelected={setWhat}
         label={whatLabel}
         lockedProfession={lockedProfession}
+        hideClear={isLockedSelection}
         placeholder={
           whatPlaceholder ??
           (lockedProfession
