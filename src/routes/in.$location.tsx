@@ -532,6 +532,7 @@ function LocationLanding() {
           </div>
           <Link
             to="/find-a-professional"
+            search={{ city: loc.name, featured: true }}
             className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
           >
             See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
