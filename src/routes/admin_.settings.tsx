@@ -150,3 +150,44 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function MaintenanceCard() {
+  const run = useServerFn(backfillPrimaryLocations);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ updated: number; skipped: number; failed: number; total: number } | null>(null);
+
+  async function onBackfill() {
+    setBusy(true);
+    try {
+      const r = await run();
+      setResult(r);
+      toast.success(`Re-derived ${r.updated} of ${r.total} primary locations.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Backfill failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <PCard>
+      <h3 className="font-display text-[14px] font-semibold text-white">Maintenance</h3>
+      <p className="mt-2 text-[12px] text-white/55">
+        Re-resolve every primary postcode through postcodes.io and refresh town / region / district to the latest display rules (e.g. "Holborn and Covent Garden, London" instead of just "London").
+      </p>
+      <Button
+        size="sm"
+        onClick={onBackfill}
+        disabled={busy}
+        className="mt-3"
+      >
+        {busy ? "Re-deriving…" : "Re-derive primary locations"}
+      </Button>
+      {result ? (
+        <p className="mt-2 text-[12px] text-white/65">
+          Updated {result.updated} · Skipped {result.skipped} · Failed {result.failed} · Total {result.total}
+        </p>
+      ) : null}
+    </PCard>
+  );
+}
