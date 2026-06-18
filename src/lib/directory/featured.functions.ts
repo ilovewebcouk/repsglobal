@@ -479,7 +479,10 @@ export const getDirectoryHealth = createServerFn({ method: "GET" })
       .slice(0, 8);
 
     // Featured rotation — today's global rotation
-    const { pool } = await fetchFeaturedPool("global", undefined);
+    const { pool, eligibleCount, belowThresholdCount } = await fetchFeaturedPool(
+      "global",
+      undefined,
+    );
     const rotation = dailyShuffle(pool, "global:").slice(0, 8);
     const paidTotal = pool.filter((p) => p.is_paid).length;
 
@@ -506,5 +509,7 @@ export const getDirectoryHealth = createServerFn({ method: "GET" })
       })),
       backfill_active: paidTotal <= FEATURED_PAID_THRESHOLD,
       paid_total: paidTotal,
+      eligible_total: eligibleCount,
+      below_threshold_total: belowThresholdCount,
     };
   });
