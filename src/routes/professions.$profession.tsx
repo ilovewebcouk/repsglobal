@@ -555,32 +555,34 @@ function ProfessionLanding() {
         </div>
       </section>
 
-      {/* Featured pros */}
-      <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
-              Featured {meta.plural.toLowerCase()}
-            </h2>
-            <p className="mt-1 text-[14px] text-reps-muted-light">
-              Hand-picked, REPS-verified and accepting new clients.
-            </p>
+      {/* Featured pros — hidden when fewer than FEATURED_MIN_CARDS eligible */}
+      {showFeatured ? (
+        <section className="mx-auto max-w-[1320px] px-6 py-14 lg:px-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="font-display text-[26px] font-bold leading-tight text-reps-charcoal lg:text-[32px]">
+                Featured {meta.plural.toLowerCase()}
+              </h2>
+              <p className="mt-1 text-[14px] text-reps-muted-light">
+                Hand-picked, REPS-verified and accepting new clients.
+              </p>
+            </div>
+            <Link
+              to="/find-a-professional"
+              search={{ profession: meta.slug, featured: true }}
+              className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
+            >
+              See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-          <Link
-            to="/find-a-professional"
-            search={{ profession: meta.slug, featured: true }}
-            className="hidden items-center gap-1.5 text-[13px] font-semibold text-reps-orange hover:text-reps-orange-dark sm:inline-flex"
-          >
-            See all {verifiedCountLabel} <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p, i) => (
-            <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p, i) => (
+              <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Cities */}
       <section className="bg-reps-warm-white py-14">
