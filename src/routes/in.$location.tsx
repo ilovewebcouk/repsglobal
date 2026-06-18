@@ -89,8 +89,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "online-coach", label: "Online Coaches", count: 44 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 52 },
     ],
-
   },
+
   manchester: {
     slug: "manchester",
     name: "Manchester",
@@ -107,8 +107,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "online-coach", label: "Online Coaches", count: 13 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 16 },
     ],
-
   },
+
   birmingham: {
     slug: "birmingham",
     name: "Birmingham",
@@ -125,8 +125,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "online-coach", label: "Online Coaches", count: 12 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 12 },
     ],
-
   },
+
   edinburgh: {
     slug: "edinburgh",
     name: "Edinburgh",
@@ -143,8 +143,8 @@ const LOCATIONS: Record<string, LocationMeta> = {
       { slug: "online-coach", label: "Online Coaches", count: 7 },
       { slug: "yoga-teacher", label: "Yoga Teachers", count: 9 },
     ],
-
   },
+
 };
 
 function getLocation(slug: string): LocationMeta {
@@ -168,8 +168,8 @@ function getLocation(slug: string): LocationMeta {
         { slug: "online-coach", label: "Online Coaches", count: 3 },
         { slug: "yoga-teacher", label: "Yoga Teachers", count: 2 },
       ],
-
     }
+
   );
 }
 
