@@ -101,7 +101,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "1:1 In-Person",
     ],
     avgRate: "£45 – £85 / hour",
-    count: 1284,
     related: [
       { slug: "strength-coach", label: "Strength Coach" },
       { slug: "nutritionist", label: "Nutritionist" },
@@ -126,7 +125,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Studio Sessions",
     ],
     avgRate: "£35 – £70 / hour",
-    count: 412,
     related: [
       { slug: "yoga-teacher", label: "Yoga Teacher" },
       { slug: "personal-trainer", label: "Personal Trainer" },
@@ -151,7 +149,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Body Composition",
     ],
     avgRate: "£60 – £120 / session",
-    count: 326,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "online-coach", label: "Online Coach" },
@@ -176,7 +173,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Competition Prep",
     ],
     avgRate: "£55 – £95 / hour",
-    count: 198,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "online-coach", label: "Online Coach" },
@@ -201,7 +197,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Nutrition Support",
     ],
     avgRate: "£99 – £249 / month",
-    count: 873,
     related: [
       { slug: "personal-trainer", label: "Personal Trainer" },
       { slug: "nutritionist", label: "Nutritionist" },
@@ -230,7 +225,6 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Online Classes",
     ],
     avgRate: "£35 – £75 / class",
-    count: 412,
     related: [
       { slug: "pilates-instructor", label: "Pilates Instructor" },
       { slug: "personal-trainer", label: "Personal Trainer" },
