@@ -60,23 +60,27 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
   };
 }
 
-function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   const mode: FeaturedPro["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = r.primary_profession
+    ? (PROFESSION_LABEL[r.primary_profession] ?? (r.specialisms?.[0] ?? "Professional"))
+    : (r.specialisms?.[0] ?? "Professional");
+  // Eligibility gates in fetchFeaturedPool guarantee avatar_url is non-null —
+  // no monograms, no stock photos on the featured rail.
   return {
     name: r.full_name,
     role,
     city: r.city ?? "",
-    rating: r.rating_avg ?? 5.0,
+    rating: r.rating_avg ?? 0,
     reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []).slice(0, 2),
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? "",
   };
 }
 
