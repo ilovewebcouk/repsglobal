@@ -45,7 +45,7 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_ROLE_LABEL[r.primary_profession] ?? "Professional") : "Professional";
+  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   return {
     name: r.full_name ?? "REPs Professional",
     role,
