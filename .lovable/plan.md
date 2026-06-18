@@ -1,8 +1,20 @@
-Add an `onImage` variant to `VerificationPill` that mirrors the homepage style (`bg-reps-green/15 ring-1 ring-reps-green/30 text-reps-green` with `BadgeCheck`), and pass `variant="onImage"` from `FeaturedProCard`. Directory cards keep the existing emerald default.
+## Fix Featured card image framing
 
-### Files
-1. `src/components/directory/VerificationPill.tsx` — add `variant?: "default" | "onImage"`; when `onImage`, render verified pill with `bg-reps-green/15 ring-1 ring-reps-green/30 text-reps-green` and `BadgeCheck` icon. Unverified/tier branches unchanged.
-2. `src/components/public/FeaturedProCard.tsx` — pass `variant="onImage"`.
+Match the directory card pattern so faces are never cropped.
+
+### Change
+
+**`src/components/public/FeaturedProCard.tsx`** — the `<img>`:
+
+- Before: `h-44 w-full object-cover` (wide banner, no object-position — heads get sliced)
+- After: `aspect-square w-full object-cover object-top` (square headshot tile, top-anchored like directory cards)
+
+No other changes. Pill, Save button, copy block, CTA all stay identical.
+
+### Why
+
+Directory cards already use square + `object-top` so faces center naturally. FeaturedProCard was the only outlier using a landscape banner crop, which is what's clipping foreheads on `/in/london` and `/professions/personal-trainer`.
 
 ### Verification
-Reload `/in/london` — Featured card pill matches the homepage rail's green verified pill.
+
+Screenshot `/professions/personal-trainer` and `/in/london` at desktop + mobile after the change — confirm no face is cropped on any of the 6 demo featured pros.
