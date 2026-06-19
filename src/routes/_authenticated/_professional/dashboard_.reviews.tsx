@@ -128,19 +128,31 @@ function ReviewsPage() {
 
   const [replyOpen, setReplyOpen] = React.useState<string | null>(null);
   const [replyText, setReplyText] = React.useState("");
+  const [editingId, setEditingId] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<"all" | "5" | "4" | "awaiting">("all");
   const [search, setSearch] = React.useState("");
 
   const respond = useMutation({
     mutationFn: (vars: { id: string; response: string }) => respondToReview({ data: vars }),
-    onSuccess: () => {
-      toast.success("Reply published");
+    onSuccess: (_d, vars) => {
+      toast.success(editingId === vars.id ? "Reply updated" : "Reply published");
       setReplyOpen(null);
+      setEditingId(null);
       setReplyText("");
       qc.invalidateQueries({ queryKey: ["my-reviews"] });
       qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't publish reply"),
+  });
+
+  const deleteReply = useMutation({
+    mutationFn: (id: string) => deleteReviewResponse({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Reply deleted");
+      qc.invalidateQueries({ queryKey: ["my-reviews"] });
+      qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't delete reply"),
   });
 
   const thank = useMutation({
