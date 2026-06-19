@@ -1,12 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
+import {
+  AVATAR_SYSTEM_PROMPT,
+  AVATAR_VALIDATION_SCHEMA,
+  decideAvatar,
+  type AvatarRejectCategory,
+  type FaceBox,
+  type RawAvatarValidation,
+} from "@/lib/avatar/validate.shared";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
 /* -------------------------------------------------------------------------- */
 
-export type FaceBox = { x: number; y: number; width: number; height: number };
+export type { FaceBox } from "@/lib/avatar/validate.shared";
 
 export type AvatarValidation =
   | {
@@ -17,15 +25,7 @@ export type AvatarValidation =
   | {
       ok: false;
       reason: string;
-      category:
-        | "logo"
-        | "illustration"
-        | "group"
-        | "full_body"
-        | "face_obscured"
-        | "low_quality"
-        | "not_a_person"
-        | "other";
+      category: AvatarRejectCategory;
     };
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
@@ -72,30 +72,10 @@ async function signOneYearUrl(path: string): Promise<string> {
 
 /* -------------------------------------------------------------------------- */
 /* Validate avatar (vision)                                                    */
+/*                                                                             */
+/* Prompt + schema + decision come from src/lib/avatar/validate.shared so the  */
+/* dashboard and the BD backfill apply the SAME rule.                          */
 /* -------------------------------------------------------------------------- */
-
-const SYSTEM_PROMPT = `You are a strict gatekeeper for professional headshots on a verified fitness-professional directory.
-
-REJECT the image unless ALL of these are true:
-- It is a real photograph (not an illustration, drawing, 3D render, AI-generated cartoon, logo, icon, or text/wordmark).
-- It shows exactly ONE human being.
-- The face is clearly visible, roughly front-facing, well-lit, in focus.
-- It is a head-and-shoulders or similar portrait — NOT a full-body, distant, or group shot.
-- The face is not heavily obscured (e.g. both sunglasses AND a hat covering the face = reject; mask covering most of face = reject).
-
-If you reject, set isHeadshot=false and pick the single best matching category and a short, user-facing reason in plain English (1 sentence, no jargon, no markdown).
-
-If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image. The faceBox MUST enclose the WHOLE HEAD — from the top of the hair (NOT the eyebrows) down to the chin, and from the left ear to the right ear. Always include any hair above the forehead. NEVER return a box that only covers the lower face, mouth, or chin. Quality score 1-5 reflects sharpness, lighting, and framing.
-
-Return ONLY valid JSON matching the schema. No prose.`;
-
-const VALIDATION_SCHEMA = `{
-  "isHeadshot": boolean,
-  "rejectionReason": string | null,
-  "rejectionCategory": "logo" | "illustration" | "group" | "full_body" | "face_obscured" | "low_quality" | "not_a_person" | "other" | null,
-  "faceBox": { "x": number, "y": number, "width": number, "height": number } | null,
-  "qualityScore": 1 | 2 | 3 | 4 | 5
-}`;
 
 export const validateAvatar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
@@ -122,7 +102,10 @@ export const validateAvatar = createServerFn({ method: "POST" })
         model: "google/gemini-3-flash-preview",
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: `${SYSTEM_PROMPT}\n\nSchema:\n${VALIDATION_SCHEMA}` },
+          {
+            role: "system",
+            content: `${AVATAR_SYSTEM_PROMPT}\n\nSchema:\n${AVATAR_VALIDATION_SCHEMA}`,
+          },
           {
             role: "user",
             content: [
@@ -142,68 +125,29 @@ export const validateAvatar = createServerFn({ method: "POST" })
       choices?: Array<{ message?: { content?: string } }>;
     };
     const raw = body.choices?.[0]?.message?.content ?? "";
-    let parsed: {
-      isHeadshot?: boolean;
-      rejectionReason?: string | null;
-      rejectionCategory?: AvatarValidation extends { ok: false } ? string : string;
-      faceBox?: FaceBox | null;
-      qualityScore?: number;
-    };
+    let parsed: RawAvatarValidation;
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw) as RawAvatarValidation;
     } catch {
       throw new Error("AI returned invalid JSON.");
     }
 
-    if (!parsed.isHeadshot) {
+    const decision = decideAvatar(parsed);
+
+    if (!decision.ok) {
       // Clean up the uploaded temp file on rejection.
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin.storage.from("avatars").remove([data.path]);
-      const cat = (parsed.rejectionCategory ?? "other") as
-        | "logo"
-        | "illustration"
-        | "group"
-        | "full_body"
-        | "face_obscured"
-        | "low_quality"
-        | "not_a_person"
-        | "other";
-      return {
-        ok: false,
-        reason:
-          parsed.rejectionReason?.toString().trim() ||
-          "This image doesn't look like a professional headshot.",
-        category: cat,
-      };
-    }
-
-    const box = parsed.faceBox;
-    if (
-      !box ||
-      typeof box.x !== "number" ||
-      typeof box.y !== "number" ||
-      typeof box.width !== "number" ||
-      typeof box.height !== "number"
-    ) {
-      // Accept but no usable box — fall back to centered square (handled client side).
-      return {
-        ok: true,
-        faceBox: { x: 0.15, y: 0.1, width: 0.7, height: 0.8 },
-        qualityScore: (parsed.qualityScore as 1 | 2 | 3 | 4 | 5) ?? 3,
-      };
+      return { ok: false, reason: decision.reason, category: decision.category };
     }
 
     return {
       ok: true,
-      faceBox: {
-        x: Math.max(0, Math.min(1, box.x)),
-        y: Math.max(0, Math.min(1, box.y)),
-        width: Math.max(0.05, Math.min(1, box.width)),
-        height: Math.max(0.05, Math.min(1, box.height)),
-      },
-      qualityScore: (parsed.qualityScore as 1 | 2 | 3 | 4 | 5) ?? 3,
+      faceBox: decision.faceBox,
+      qualityScore: decision.qualityScore,
     };
   });
+
 
 /* -------------------------------------------------------------------------- */
 /* Process avatar — REMOVED                                                    */
