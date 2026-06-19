@@ -137,128 +137,121 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     }
 
     // Set of user_ids already covered by a live Stripe sub — don't double-count
-    // them as "scheduled Verified" if they also appear in legacy_stripe_link.
+    // them as "scheduled Verified" if they also appear in bd_member_seed.
     const liveUserIds = new Set(live.map((s) => s.user_id));
 
-    // 2. Verified scheduled members (migrated, no live Stripe sub yet).
-    //    Source: legacy_stripe_link.next_due_at (primary), bd_member_seed.bd_next_due_date (fallback).
-    const { data: legacyLinks } = await supabaseAdmin
-      .from("legacy_stripe_link")
-      .select("bd_member_id, email, next_due_at, is_lifetime, last_paid_amount_pence, eligible_for_legacy_price")
-      .eq("is_lifetime", false);
+    const preLaunch = now < LAUNCH_AT_UTC;
 
+    // 2. V7 cohort-driven Verified pipeline. Source of truth =
+    //    bd_member_seed.migration_cohort_override. Locked spec lives in
+    //    docs/10_phase2_migration_dry_run_v7_approved.md.
     const { data: bdSeeds } = await supabaseAdmin
       .from("bd_member_seed")
-      .select("bd_member_id, email, bd_next_due_date, claim_status, claimed_user_id");
+      .select(
+        "bd_member_id, email, first_name, last_name, bd_next_due_date, claimed_user_id, migration_cohort_override",
+      );
 
-    const bdSeedByMember = new Map<number, any>();
-    for (const row of (bdSeeds ?? []) as any[]) {
-      bdSeedByMember.set(row.bd_member_id, row);
-    }
-
-    // Honour-window price helper. Year 1 = last_paid_amount_pence when
-    // eligible_for_legacy_price; otherwise £99. bd_seed fallbacks default to £99.
-    function nextDuePence(row: {
-      last_paid_amount_pence?: number | null;
-      eligible_for_legacy_price?: boolean | null;
-    }): number {
-      if (row.eligible_for_legacy_price && row.last_paid_amount_pence && row.last_paid_amount_pence > 0) {
-        return row.last_paid_amount_pence;
-      }
-      return TIER_PRICE_PENCE.verified;
-    }
-
-    // Build the scheduled list. Each row is one upcoming payment.
-    type ScheduledRow = {
+    type Cohort = "honour_window" | "anomaly_launch_charge" | "future_due";
+    type CohortRow = {
       memberId: number;
       email: string;
-      dueAt: Date;
-      source: "legacy_link" | "bd_seed";
-      userId: string | null;
-      firstDuePence: number;   // year-1 amount (honour or £99)
-      isHonour: boolean;       // first payment is honour-priced; future renewals revert to £99
+      name: string;
+      cohort: Cohort;
+      claimedUserId: string | null;
+      bdNextDue: Date | null;
     };
-    const scheduled: ScheduledRow[] = [];
-    const legacyMemberIds = new Set<number>();
 
-    for (const link of (legacyLinks ?? []) as any[]) {
-      legacyMemberIds.add(link.bd_member_id);
-      if (!link.next_due_at) continue;
-      const seed = bdSeedByMember.get(link.bd_member_id);
-      const claimedUserId: string | null = seed?.claimed_user_id ?? null;
-      if (claimedUserId && liveUserIds.has(claimedUserId)) continue;
-      const firstDuePence = nextDuePence(link);
-      scheduled.push({
-        memberId: link.bd_member_id,
-        email: link.email,
-        dueAt: new Date(link.next_due_at),
-        source: "legacy_link",
-        userId: claimedUserId,
-        firstDuePence,
-        isHonour: firstDuePence !== TIER_PRICE_PENCE.verified,
-      });
-    }
-
-    let bdFallbackCount = 0;
+    const cohortRows: CohortRow[] = [];
     for (const seed of (bdSeeds ?? []) as any[]) {
-      if (legacyMemberIds.has(seed.bd_member_id)) continue;
-      if (!seed.bd_next_due_date) continue;
+      const c = seed.migration_cohort_override as Cohort | null;
+      if (c !== "honour_window" && c !== "anomaly_launch_charge" && c !== "future_due") continue;
       const claimedUserId: string | null = seed.claimed_user_id ?? null;
+      // If already on a live Stripe sub, that sub is the source of truth — skip.
       if (claimedUserId && liveUserIds.has(claimedUserId)) continue;
-      scheduled.push({
+      const nm = `${seed.first_name ?? ""} ${seed.last_name ?? ""}`.trim();
+      cohortRows.push({
         memberId: seed.bd_member_id,
-        email: seed.email,
-        dueAt: new Date(seed.bd_next_due_date as string),
-        source: "bd_seed",
-        userId: claimedUserId,
-        firstDuePence: TIER_PRICE_PENCE.verified,
-        isHonour: false,
+        email: String(seed.email ?? ""),
+        name: nm || String(seed.email ?? "Verified member"),
+        cohort: c,
+        claimedUserId,
+        bdNextDue: seed.bd_next_due_date ? new Date(seed.bd_next_due_date as string) : null,
       });
-      bdFallbackCount += 1;
     }
 
-    const verifiedScheduledCount = scheduled.length;
+    const cohortHonour = cohortRows.filter((r) => r.cohort === "honour_window").length;
+    const cohortAnomaly = cohortRows.filter((r) => r.cohort === "anomaly_launch_charge").length;
+    const cohortFutureDue = cohortRows.filter((r) => r.cohort === "future_due").length;
+    const verifiedScheduledCount = cohortRows.length;
     // ARR = steady-state run-rate at £99/member (honour window is year-1 only).
     const scheduledArr = verifiedScheduledCount * TIER_PRICE_PENCE.verified;
 
-    // 3. Upcoming payments (14d): live sub renewals + scheduled Verified due.
+    // 3. Upcoming payments.
+    //    Pre-launch: launch-day V7 charges (6 × £34 + 1 × £99 = £303).
+    //    Post-launch: live Stripe renewals in the next 14 days only.
     let upcomingPence = 0;
     let upcomingCount = 0;
-    const upcomingLive: Array<{ userId: string; tier: Tier; dueAt: Date; amountPence: number }> = [];
-    const upcomingScheduled: Array<{ email: string; userId: string | null; dueAt: Date; amountPence: number }> = [];
-    for (const s of live) {
-      if (!s.current_period_end) continue;
-      const due = new Date(s.current_period_end);
-      if (due >= now && due <= in14d) {
-        upcomingPence += paymentPence(s.tier);
-        upcomingCount += 1;
-        upcomingLive.push({ userId: s.user_id, tier: s.tier as Tier, dueAt: due, amountPence: paymentPence(s.tier) });
+    const upcomingLive: Array<{
+      userId: string;
+      tier: Tier;
+      dueAt: Date;
+      amountPence: number;
+    }> = [];
+    const upcomingCohort: Array<{
+      email: string;
+      name: string;
+      userId: string | null;
+      dueAt: Date;
+      amountPence: number;
+      cohort: "honour_window" | "anomaly_launch_charge";
+    }> = [];
+
+    if (!preLaunch) {
+      for (const s of live) {
+        if (!s.current_period_end) continue;
+        const due = new Date(s.current_period_end);
+        if (due >= now && due <= in14d) {
+          upcomingPence += paymentPence(s.tier);
+          upcomingCount += 1;
+          upcomingLive.push({
+            userId: s.user_id,
+            tier: s.tier as Tier,
+            dueAt: due,
+            amountPence: paymentPence(s.tier),
+          });
+        }
       }
-    }
-    for (const r of scheduled) {
-      if (r.dueAt >= now && r.dueAt <= in14d) {
-        upcomingPence += r.firstDuePence;
+    } else {
+      for (const r of cohortRows) {
+        if (r.cohort === "future_due") continue;
+        const amount =
+          r.cohort === "honour_window" ? LEGACY_HONOUR_PENCE : TIER_PRICE_PENCE.verified;
+        upcomingPence += amount;
         upcomingCount += 1;
-        upcomingScheduled.push({ email: r.email, userId: r.userId, dueAt: r.dueAt, amountPence: r.firstDuePence });
+        upcomingCohort.push({
+          email: r.email,
+          name: r.name,
+          userId: r.claimedUserId,
+          dueAt: LAUNCH_AT_UTC,
+          amountPence: amount,
+          cohort: r.cohort,
+        });
       }
     }
 
-
-    // 4. Lifetime members (excluded from forecast but kept in Verified count).
-    const lifetimeMembers = ((legacyLinks ?? []) as any[]).length
-      ? (await supabaseAdmin
-          .from("legacy_stripe_link")
-          .select("bd_member_id", { count: "exact", head: true })
-          .eq("is_lifetime", true)
-          .then((r) => r.count ?? 0))
-      : 0;
+    // 4. Lifetime members (kept in Verified count, excluded from forecast).
+    const { count: lifetimeCount } = await supabaseAdmin
+      .from("legacy_stripe_link")
+      .select("bd_member_id", { count: "exact", head: true })
+      .eq("is_lifetime", true);
+    const lifetimeMembers = lifetimeCount ?? 0;
 
     const verifiedActive = tierMap.verified.active + tierMap.verified.trialing;
 
     // 5. Resolve names for upcoming + past-due lists.
     const userIdsForNames = new Set<string>();
     for (const it of upcomingLive) userIdsForNames.add(it.userId);
-    for (const it of upcomingScheduled) if (it.userId) userIdsForNames.add(it.userId);
+    for (const it of upcomingCohort) if (it.userId) userIdsForNames.add(it.userId);
     for (const s of pastDue) userIdsForNames.add(s.user_id);
 
     const profileMap = new Map<string, { full_name: string | null }>();
@@ -274,17 +267,13 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     const pastDueUserIds = pastDue.map((s) => s.user_id);
     const userEmailMap = new Map<string, string | null>();
     if (pastDueUserIds.length > 0) {
-      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
       for (const u of authUsers?.users ?? []) {
         if (pastDueUserIds.includes(u.id)) userEmailMap.set(u.id, u.email ?? null);
       }
-    }
-
-    // Names for unclaimed scheduled rows (from bd_member_seed)
-    const seedNameByEmail = new Map<string, string>();
-    for (const seed of (bdSeeds ?? []) as any[]) {
-      const nm = `${seed.first_name ?? ""} ${seed.last_name ?? ""}`.trim();
-      if (nm && seed.email) seedNameByEmail.set(String(seed.email).toLowerCase(), nm);
     }
 
     const upcomingItems: PaymentListItem[] = [
@@ -295,20 +284,28 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         dueAt: it.dueAt.toISOString(),
         amountPence: it.amountPence,
         source: "stripe" as const,
+        cohort: null,
       })),
-      ...upcomingScheduled.map((it) => {
+      ...upcomingCohort.map((it) => {
         const fromProfile = it.userId ? profileMap.get(it.userId)?.full_name : null;
-        const fromSeed = it.email ? seedNameByEmail.get(it.email.toLowerCase()) : null;
         return {
-          name: fromProfile || fromSeed || it.email || "Verified member",
-          email: it.email ?? null,
+          name: fromProfile || it.name,
+          email: it.email || null,
           tier: "verified" as Tier,
           dueAt: it.dueAt.toISOString(),
           amountPence: it.amountPence,
           source: "scheduled" as const,
+          cohort: it.cohort,
         };
       }),
-    ].sort((a, b) => (a.dueAt ?? "").localeCompare(b.dueAt ?? ""));
+    ].sort((a, b) => {
+      // honour_window first, then anomaly, then by dueAt
+      const order = (c: string | null | undefined) =>
+        c === "honour_window" ? 0 : c === "anomaly_launch_charge" ? 1 : 2;
+      const d = order(a.cohort) - order(b.cohort);
+      if (d !== 0) return d;
+      return (a.dueAt ?? "").localeCompare(b.dueAt ?? "");
+    });
 
     const pastDueItems: PastDueItem[] = pastDue.map((s) => ({
       name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
@@ -324,9 +321,10 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       { label: "Studio", count: tierMap.studio.active + tierMap.studio.trialing, tone: "studio" as const },
     ].filter((d) => d.count > 0);
 
-
     return {
       env,
+      preLaunch,
+      launchAt: LAUNCH_AT_UTC.toISOString(),
       forecastArrPence: activeArr + scheduledArr,
       activeArrPence: activeArr,
       scheduledArrPence: scheduledArr,
@@ -347,11 +345,13 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         nonGbpExcluded: 0,
         lifetimeMembers,
         activeSubsTotal: live.length,
-        legacyLinkScheduled: ((legacyLinks ?? []) as any[]).filter((l) => l.next_due_at).length,
-        bdSeedFallbackScheduled: bdFallbackCount,
+        cohortHonour,
+        cohortAnomaly,
+        cohortFutureDue,
       },
     };
   });
+
 
 // ============================================================================
 // getRevenueForecast — 24-month projected cash flow + summary tiles
