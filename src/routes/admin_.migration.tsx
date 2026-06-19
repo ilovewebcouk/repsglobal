@@ -34,6 +34,7 @@ import {
   type BdSeedBatchResult,
 } from "@/lib/admin/bd-seed.functions";
 import Papa from "papaparse";
+import { BdRecropPanel } from "@/components/admin/BdRecropPanel";
 
 
 export const Route = createFileRoute("/admin_/migration")({
