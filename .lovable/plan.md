@@ -1,100 +1,53 @@
-## Root cause
+## Goal
+Remove the 10 fake `subscriptions` rows that have no Stripe IDs, so `/admin/memberships` only counts real Stripe-backed customers as "live". Demo professionals stay on the public directory — only their fake subscription rows are removed.
 
-The Upcoming Payments card is sourcing from the wrong place. It reads `legacy_stripe_link.next_due_at` (BD's historical anniversary dates) and shows anyone due in the next 14 days. That ignores the locked V7 cohort decisions in `docs/10_phase2_migration_dry_run_v7_approved.md`.
+## Rows being deleted (10 total)
 
-Per V7, on launch day (26 Jun 2026, 00:00 BST) exactly **7 charges** total **£303**:
+All have `stripe_subscription_id IS NULL` AND `stripe_customer_id IS NULL`.
 
-| Cohort | Members | Per | Subtotal |
-|---|---:|---:|---:|
-| honour_window | 6 (Rich Mcwatt, Callum Wolvey, Jane Walker, Rebecca White, Chris Read, Parnita Senjit) | £34 | £204 |
-| anomaly_launch_charge | 1 (Raheela Khalid) | £99 | £99 |
-| future_due | 383 | £0 | £0 |
+**Verified · active (1)**
+- Katie Gibbs — `cruz.pt+kate@icloud.com` — sub id `eaaea836-ea14-47ee-ab68-225ac7a60aab`
 
-`future_due` members are **not** charged at launch. Their renewals happen post-launch on their Stripe anniversaries.
+**Pro · active (9)**
+- Orphan stub — user `9e73a22f-898c-4d88-a114-3173a8c22dd7` (no auth email, no profile) — sub id `ffb575eb-1c01-4740-915a-5e8895125444`
+- 8 demo seeds from `admin_seed_demo_pros()`:
+  - Priya Sharma, Daniel Hughes, Emily Carter, Marcus Lee, Hannah Thompson, James Wilson, Sophie Taylor, Liam Roberts (all `*@demo.repsuk.org`)
 
-Two distinct problems:
+## Rows kept (the only real Stripe subs)
 
-- **(A) Data.** `bd_member_seed.migration_cohort_override` only has 4 rows set. V7 specifies 390. The approved dry-run was never written back.
-- **(B) UI.** The Upcoming card is using BD historical dates instead of the V7 cohort + launch-day model.
+3 Pro · trialing rows with live `stripe_subscription_id`:
+- `sub_1ThB2XAP31Yc4cJjcCqZ55l3` (user `e19670ef…`)
+- `sub_1Ti0uWAP31Yc4cJjpLaVsazn` (user `24bd1c60…`)
+- `sub_1TjwoJAP31Yc4cJjxum3ZI38` — Heather Long (`kate_pt+pro@icloud.com`)
 
-Both must be fixed for the card to match reality.
+## Steps
 
-## Fix
+1. **DB delete** (via `supabase--insert`, single statement):
+   ```sql
+   DELETE FROM public.subscriptions
+   WHERE status IN ('active','trialing')
+     AND stripe_subscription_id IS NULL
+     AND stripe_customer_id IS NULL;
+   ```
+   Expected: 10 rows deleted, 3 rows remain.
 
-### Step 1 — Backfill cohort decisions from V7 CSV (migration)
+2. **Patch `admin_seed_demo_pros()`** so re-running it doesn't re-insert the fake Pro subscriptions. Remove the `INSERT INTO public.subscriptions … 'pro' … 'active'` block from `_seed_one_demo_pro` (migration, function replacement only — no schema change). Demo pros still get profile + location + identity-approved + published, just no fake sub.
 
-Single migration `update_bd_cohorts_from_v7.sql` that:
+3. **Re-run dashboard QA** and confirm in chat:
+   - Live subs count = 3 (all Pro trialing)
+   - Forecast ARR "live" portion = 3 × £708 = **£2,124** (was £2,931)
+   - Forecast ARR "awaiting Stripe setup" portion unchanged at £38,610 (V7 cohort untouched)
+   - **New Forecast ARR total = £40,734** (was £41,541)
+   - Verified tier card "live" = 0; "scheduled" = 390 (unchanged)
+   - Pro tier card "live" = 3 trialing; "scheduled" unchanged
+   - Studio tier card unchanged (waitlist only)
+   - Upcoming payments: 3 trialing renewals on 11/13/19 Jul 2026 at £59 each (plus any V7 launch-day rows already in scope)
+   - Recurring income forecast: Jul 2026 bucket gains 3 × £59 = £177; no other change
+   - Diagnostics: `lifetimeMembers = 0`; total active subs = 3
 
-1. Reads the 390-row V7 list and applies, per `bd_member_id`:
-   - `UPDATE public.bd_member_seed SET migration_cohort_override = <final_cohort>, migration_cohort_reason = <reason>` where currently null/stale.
-2. Preserves the 4 existing overrides (they already match V7).
-3. No deletes, no other column changes, no Stripe calls.
-
-The full list is embedded in the migration as a `VALUES (...)` CTE generated from `/mnt/documents/bd_migration_dry_run_v7.csv` so the migration is self-contained and reproducible.
-
-### Step 2 — Rewrite Upcoming Payments as a launch-day card
-
-Confined to `src/lib/admin/memberships.functions.ts` + small relabel in `src/routes/admin_.memberships.tsx`. No Stripe calls. No public-route changes. No schema changes.
-
-**Pre-launch (now → 26 Jun 2026):**
-
-The card retitles to **"Launch-day charges (26 Jun)"** and sources from `bd_member_seed.migration_cohort_override`:
-
-- `honour_window` rows → £34
-- `anomaly_launch_charge` rows → £99
-- everything else → excluded
-- Headline = `count × price` summed: **£303 across 7 members**
-- Scrollable list = the 7 names + £34/£99 + cohort badge
-
-**Post-launch (≥ 26 Jun 2026):**
-
-Card retitles back to **"Upcoming payments (next 14 days)"** and uses Stripe-tracked subscription `current_period_end` (via `subscriptions` table once migration has populated it). Until then it shows an empty state — no fabricated rows from BD historical dates.
-
-### Step 3 — Forecast chart
-
-`projectVerifiedRenewals` is updated to mirror the same cohort-driven model:
-
-- Year 1 cash on honour-window members = £34 on launch day, then £99 on subsequent anniversaries.
-- Anomaly-launch-charge = £99 on launch + £99 annually.
-- future_due = £99 on their BD-anniversary date if that date is post-launch, then £99 annually.
-- ARR KPI stays at steady-state £99/member (run-rate).
-
-### Step 4 — Past Due card
-
-Same fix: only show rows that were genuinely past due based on Stripe `subscriptions.status = 'past_due'`. Pre-launch this is an empty state. Stop deriving "past due" from BD historical dates.
-
-## Removed wrong logic
-
-- Drop the `last_paid_amount_pence`-based pricing I added in the last pass. Honour price is the constant £34 (`verified_legacy_annual` in Stripe), not whatever pence is stamped on the row.
-- Drop the `eligible_for_legacy_price + access_expires_at >= LEGACY_HONOUR_CUTOFF` check from the dashboard. That's the right rule for the Stripe linking flow but **not** for "what gets charged on launch day". V7 cohort overrides ARE the dashboard's source of truth.
-
-## After the fix
-
-Pre-launch the card shows:
-
-> **Launch-day charges — 26 Jun**
-> **£303 across 7 members**
-> · Rich Mcwatt — £34 — honour
-> · Callum Wolvey — £34 — honour
-> · Jane Walker — £34 — honour
-> · Rebecca White — £34 — honour
-> · Chris Read — £34 — honour
-> · Parnita Senjit — £34 — honour
-> · Raheela Khalid — £99 — anomaly
-
-Forecast chart shows £303 cash on 26 Jun, then real anniversary renewals from there. Past Due card is an empty state until launch + 1 day.
-
-Post-launch the card auto-switches to the "next 14 days" view driven by real Stripe subscription period ends.
+4. **No Stripe writes.** No public-page changes. No code changes to `getMembershipMetrics` / `getRevenueForecast` (the existing filters already produce the right answer once the stubs are gone). No changes to V7 cohort, `bd_member_seed`, or `legacy_stripe_link`.
 
 ## Out of scope
-
-- No Stripe API calls. The launch-day linking flow (`stripe-linking.functions.ts`) is unchanged.
-- No edits to `/admin/payments`, `/admin/stripe`, checkout, public routes, or the Live/Sandbox env badge.
-- No edits to `legacy_stripe_link` (it stays as historical evidence).
-- No content/copy work outside the two card titles and labels noted above.
-
-## Files touched
-
-- **New migration** — `update_bd_cohorts_from_v7.sql` (backfill 390 cohort overrides).
-- `src/lib/admin/memberships.functions.ts` — switch Upcoming + Past Due + Forecast to cohort-driven model; remove `last_paid_amount_pence` logic; add launch-day vs post-launch branching.
-- `src/routes/admin_.memberships.tsx` — relabel card titles pre/post launch; show cohort badge per row.
+- Caption copy on the dashboard tiles (separate decision, deferred).
+- Re-seeding demo professionals' subscriptions in any form.
+- Touching the 3 real Stripe trialing rows.
