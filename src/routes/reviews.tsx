@@ -619,12 +619,18 @@ function ReviewCard({
           params={{ slug: r.proSlug }}
           className="group flex items-center gap-2.5"
         >
-          <img
-            src={r.proImage}
-            alt={r.proName}
-            className="h-9 w-9 rounded-[12px] object-cover"
-            loading="lazy"
-          />
+          {r.proImage ? (
+            <img
+              src={r.proImage}
+              alt={r.proName}
+              className="h-9 w-9 rounded-[12px] object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-reps-ink text-[10.5px] font-bold text-white/80">
+              {r.proName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+            </span>
+          )}
           <div>
             <div className="text-[13px] font-semibold text-white group-hover:text-reps-orange">
               {r.proName}
