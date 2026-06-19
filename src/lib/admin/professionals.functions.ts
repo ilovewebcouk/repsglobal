@@ -257,7 +257,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         suspensionReason: p.suspension_reason ?? null,
         verification: p.verification as string,
         email: null,
-        lifetimeValuePence: subDetail ? computeLifetimeValue(tier, subDetail.createdAt) : null,
+        lifetimeValuePence: ltvMap.get(p.id) ?? 0,
         renewalDate: subDetail?.currentPeriodEnd ?? null,
       };
     });
