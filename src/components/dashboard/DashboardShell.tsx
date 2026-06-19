@@ -376,6 +376,7 @@ function Sidebar({
   member?: DashboardShellMember;
 }) {
   const account = useAccountMenu();
+  const id = useEffectiveIdentity();
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
