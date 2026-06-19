@@ -337,7 +337,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       email: userEmailMap.get(s.user_id) ?? null,
       tier: s.tier as Tier,
       status: s.status,
-      amountPence: paymentPence(s.tier),
+      amountPence: paymentPenceFor(s.tier, s.billing_period),
     }));
 
     const distribution = [
@@ -373,6 +373,13 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         cohortHonour,
         cohortAnomaly,
         cohortFutureDue,
+        orphanedSubsLive: orphanSubs.filter((s) => LIVE_STATUSES.has(s.status)).length,
+        orphanedSubsList: orphanSubs.map((s) => ({
+          stripe_subscription_id: s.stripe_subscription_id,
+          tier: s.tier,
+          status: s.status,
+          billing_period: s.billing_period,
+        })),
       },
     };
   });
