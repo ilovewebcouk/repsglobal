@@ -254,7 +254,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       ltvMap.set(p.user_id, (ltvMap.get(p.user_id) ?? 0) + net);
     }
 
-    let rows: AdminProRow[] = (pros ?? []).map(p => {
+    let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
       const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
       const ra = ratingAcc.get(p.id);
