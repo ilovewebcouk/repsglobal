@@ -280,6 +280,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         case 'mrr':     return (a.planMrrPence - b.planMrrPence) * dir;
         case 'rating':  return ((a.rating ?? -1) - (b.rating ?? -1)) * dir;
         case 'clients': return (a.clients - b.clients) * dir;
+        case 'lifetimeValue':  return ((a.lifetimeValuePence ?? -1) - (b.lifetimeValuePence ?? -1)) * dir;
+        case 'renewalDate':    return ((a.renewalDate ? new Date(a.renewalDate).getTime() : 0) - (b.renewalDate ? new Date(b.renewalDate).getTime() : 0)) * dir;
         case 'joined':
         default:        return (new Date(a.joined).getTime() - new Date(b.joined).getTime()) * dir;
       }
