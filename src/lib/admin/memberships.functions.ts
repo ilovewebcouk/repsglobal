@@ -434,7 +434,7 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
     // 2. Project scheduled Verified payments (legacy_stripe_link + bd_seed fallback).
     const { data: legacyLinks } = await supabaseAdmin
       .from("legacy_stripe_link")
-      .select("bd_member_id, next_due_at, is_lifetime")
+      .select("bd_member_id, next_due_at, is_lifetime, last_paid_amount_pence, eligible_for_legacy_price")
       .eq("is_lifetime", false);
 
     const { data: bdSeeds } = await supabaseAdmin
@@ -451,11 +451,22 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
     for (const r of (bdSeeds ?? []) as any[]) bdSeedByMember.set(r.bd_member_id, r);
     const legacyMemberIds = new Set<number>();
 
-    function projectVerifiedRenewals(firstDue: Date, claimedUserId: string | null) {
+    // First scheduled payment honours the year-1 legacy price (e.g. £34); every
+    // subsequent annual renewal reverts to the standard Verified price (£99).
+    function projectVerifiedRenewals(
+      firstDue: Date,
+      claimedUserId: string | null,
+      firstDuePence: number,
+    ) {
       if (claimedUserId && liveUserIds.has(claimedUserId)) return;
       let due = new Date(firstDue);
+      let isFirst = true;
       while (due <= horizonEnd) {
-        if (due >= now) applyPayment(due, TIER_PRICE_PENCE.verified, "verified");
+        if (due >= now) {
+          const amount = isFirst ? firstDuePence : TIER_PRICE_PENCE.verified;
+          applyPayment(due, amount, "verified");
+        }
+        isFirst = false;
         const d = new Date(due);
         d.setUTCFullYear(d.getUTCFullYear() + 1);
         due = d;
@@ -467,12 +478,20 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       legacyMemberIds.add(link.bd_member_id);
       if (!link.next_due_at) continue;
       const seed = bdSeedByMember.get(link.bd_member_id);
-      projectVerifiedRenewals(new Date(link.next_due_at), seed?.claimed_user_id ?? null);
+      const firstDuePence =
+        link.eligible_for_legacy_price && link.last_paid_amount_pence && link.last_paid_amount_pence > 0
+          ? link.last_paid_amount_pence
+          : TIER_PRICE_PENCE.verified;
+      projectVerifiedRenewals(new Date(link.next_due_at), seed?.claimed_user_id ?? null, firstDuePence);
     }
     for (const seed of (bdSeeds ?? []) as any[]) {
       if (legacyMemberIds.has(seed.bd_member_id)) continue;
       if (!seed.bd_next_due_date) continue;
-      projectVerifiedRenewals(new Date(seed.bd_next_due_date as string), seed.claimed_user_id ?? null);
+      projectVerifiedRenewals(
+        new Date(seed.bd_next_due_date as string),
+        seed.claimed_user_id ?? null,
+        TIER_PRICE_PENCE.verified,
+      );
     }
 
     const months = monthKeys.map((k) => buckets.get(k)!);
