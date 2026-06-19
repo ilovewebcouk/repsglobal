@@ -593,6 +593,25 @@ function StripeLinkingPanel() {
     onError: (e) => setLog(`Renewal pass failed: ${(e as Error).message}`),
   });
 
+  const launchPass = useMutation({
+    mutationFn: () => renewFn({ data: { environment: env, limit: 500 } }),
+    onSuccess: (res) => {
+      setLog(
+        `LAUNCH RUN (${env}): processed ${res.processed}, charged ${res.charged}, awaiting payment method ${res.awaiting_payment_method}, errors ${res.errors}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+      setLaunchDialogOpen(false);
+      setLaunchConfirmText("");
+    },
+    onError: (e) => {
+      setLog(`LAUNCH RUN failed: ${(e as Error).message}`);
+      setLaunchDialogOpen(false);
+      setLaunchConfirmText("");
+    },
+  });
+
+
+
   const resetPass = useMutation({
     mutationFn: () => resetFn(),
     onSuccess: (res) => {
