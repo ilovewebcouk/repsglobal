@@ -371,11 +371,17 @@ function ReviewsPage() {
             heading="This week's stand-out reviews."
             lede="Three reviews from across the register, chosen for the detail and context they give a future client — not the score."
           />
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {EDITOR_PICKS.map((r) => (
-              <ReviewCard key={r.id} review={r} variant="pick" />
-            ))}
-          </div>
+          {EDITOR_PICKS.length === 0 ? (
+            <div className="mt-12 rounded-[18px] border border-dashed border-reps-border bg-reps-panel/40 p-10 text-center text-[14px] text-white/65">
+              Editor's picks appear here once verified-booking reviews start landing.
+            </div>
+          ) : (
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+              {EDITOR_PICKS.map((r) => (
+                <ReviewCard key={r.id} review={r} variant="pick" />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -446,20 +452,28 @@ function ReviewsPage() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            {REVIEWS.map((r) => (
-              <ReviewCard key={r.id} review={r} />
-            ))}
-          </div>
+          {REVIEWS.length === 0 ? (
+            <div className="mt-10 rounded-[18px] border border-dashed border-reps-border bg-reps-panel/40 p-10 text-center text-[14px] text-white/65">
+              The feed is empty for now — verified-booking reviews will appear here as clients leave them.
+            </div>
+          ) : (
+            <>
+              <div className="mt-10 grid gap-5 lg:grid-cols-2">
+                {REVIEWS.map((r) => (
+                  <ReviewCard key={r.id} review={r} />
+                ))}
+              </div>
 
-          <div className="mt-10 flex items-center justify-center">
-            <button
-              type="button"
-              className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel px-6 text-[14px] font-semibold text-white/80 shadow-none hover:border-reps-orange/40 hover:text-white"
-            >
-              Load more reviews
-            </button>
-          </div>
+              <div className="mt-10 flex items-center justify-center">
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel px-6 text-[14px] font-semibold text-white/80 shadow-none hover:border-reps-orange/40 hover:text-white"
+                >
+                  Load more reviews
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
