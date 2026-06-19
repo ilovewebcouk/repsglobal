@@ -1,82 +1,61 @@
-# Unify the avatar pipeline
+# Raise avatar face-area threshold to 0.15 and re-run BD batch
 
-One validator, one threshold, one outcome. Whatever the dashboard rejects, the BD backfill rejects too — and when something fails, the card falls back to a monogram tile exactly like the dashboard does.
+## Goal
 
-## The root cause (so we don't repeat it)
+Bring the BD-imported avatars in line with the visual bar set by Matt, Jemma, and Jen on the Featured rail. Photos where the face is less than ~15% of the frame area (Nerin's Gold's-Gym selfie, full-body shots, wide environmental shots) get rejected and fall back to monogram tiles.
 
-There are two validator modules today with two different prompts and two different acceptance bars:
+## Changes
 
-- `src/lib/profile/avatar-ai.functions.ts` — used by `/dashboard/profile`. Stricter prompt ("must be a clear, frontal portrait"), and the dashboard UI rejects when `faceCoverage` is too small or `qualityScore < 3`.
-- `src/lib/admin/bd-recrop.functions.ts` — built last turn for the BD backfill. Looser prompt (accepts "any human"), no `faceCoverage` floor, no `qualityScore` floor.
+### 1. Bump the threshold
 
-That's why Scott's full-body shot, Nerin's selfie-in-front-of-Gold's-Gym, and Matt's wide gym shot all passed BD ingest but would fail the dashboard validator if a pro tried to upload the same file today.
+`src/lib/avatar/validate.shared.ts`:
+- `MIN_FACE_AREA` from `0.06` → `0.15`
+- Update the JSDoc comment so the next person reading it knows why (matches the visual bar of accepted Featured-rail cards; 0.06 was a triage default).
 
-## The fix — one validator, called from both paths
+This automatically applies to **both** pipelines (dashboard upload + BD backfill) — that's the whole point of the unified validator from the previous turn.
 
-### 1. Promote the dashboard validator to the canonical rule
+### 2. Reset every BD recrop decision
 
-Move `validateAvatar` + its threshold constants out of `src/lib/profile/avatar-ai.functions.ts` and into a single shared module: `src/lib/avatar/validate.functions.ts`. Both the dashboard and the BD backfill import from here. No more divergent prompts.
+All 124 BD-seeded "ok" photos were previously decided under the 0.06 floor. To get a clean re-evaluation under 0.15, reset them to `pending` so the existing admin batch tool re-processes the lot.
 
-The shared module exports:
+Single migration:
+```sql
+UPDATE public.bd_member_seed
+SET recrop_status = 'pending',
+    recrop_reason = NULL,
+    recropped_at  = NULL
+WHERE profile_photo_status = 'ok'
+  AND profile_photo_storage_path IS NOT NULL;
+```
 
-- `validateAvatarBytes(bytes, mime)` — Gemini call, returns `{ isHeadshot, faceBox, qualityScore, rejectReason }`.
-- `MIN_FACE_COVERAGE = 0.18` and `MIN_QUALITY = 3` — the same numbers the dashboard already enforces.
-- `decideAvatar(result)` — pure function returning `{ verdict: 'accept' | 'reject', reason?: string }`. Both code paths call this so the decision is identical.
+No schema changes — `recrop_status`, `recrop_reason`, `recropped_at` already exist.
 
-### 2. Delete the duplicate validator in the BD recrop file
+### 3. Re-run the batch from the admin UI
 
-`src/lib/admin/bd-recrop.functions.ts` stops defining its own `validateBdAvatarBytes` and calls the shared `validateAvatarBytes` + `decideAvatar`. Same prompt, same thresholds.
+No new code needed. After the migration runs:
+1. Go to `/admin/migration`.
+2. **BD avatar re-crop** panel → **Run batch (25)** to sanity-check.
+3. Then **Run batch (100)** to clear the rest.
+4. Live log shows accept/reject reasons per row.
+5. Final stats appear in the panel header (`recropped`, `rejected`, `pending`).
 
-### 3. BD recrop panel behaviour (already wired, just retuned)
+Rejected rows: `profiles.avatar_url` cleared → card renders the `Monogram` initials tile automatically. No further action.
 
-`/admin/migration` → "BD avatar re-crop" → "Run batch":
+## What to expect
 
-- For each of the 124 `recrop_status='pending'` rows:
-  1. Download the raw `bd-seeds/{uid}/seed-{bdId}.{ext}` source.
-  2. Call the shared validator.
-  3. `accept` → crop face-centred 1024² JPEG, upload to `avatars/{uid}/avatar-bdrecrop-…jpg`, update `profiles.avatar_url`, mark `recrop_status='ok'`.
-  4. `reject` → **clear** `profiles.avatar_url` (set to `NULL`), record `recrop_status='rejected'` with the reason ("face too small", "not a frontal portrait", "quality too low", etc.).
+Of the 124:
+- **~60–70 accept** (clean head-and-shoulders portraits — Matt, Jemma, Jen style).
+- **~50–60 reject** (Nerin's selfie, Scott's full-body, wide gym shots, distant action shots, anything where the face is less than ~15% of the frame area).
+- Reject count is an estimate. Gemini's bounding boxes have ±20% noise — the true cut-off in the wild is somewhere between 0.12 and 0.18 of "true" face area. If the split comes back wildly different from this, that's the cause, not a bug — we tune from there.
 
-### 4. Monogram fallback (already exists, just gets triggered)
+## Verification
 
-`FeaturedProCard`, the profile header, and every other card already render `<Monogram name={fullName} />` when `avatar_url` is null. When we clear Scott's `avatar_url`, his card automatically flips to an "SL" tile in the same warm-ivory palette as the rest of the directory.
+After the batch:
+1. Re-load `/in/london` — Nerin should now show a monogram tile.
+2. Spot-check `/professions/personal-trainer` and the city rails for any remaining "small face" cards.
+3. `/admin/professionals` — filter to BD seeds with `recrop_status = 'rejected'` to triage the list before launch (option to manually approve, or leave as monogram).
 
-### 5. Admin queue for the rejects
+## Out of scope
 
-Add a "Photos needing re-upload" section to `/admin/professionals` that lists every pro with `recrop_status='rejected'`. Columns: name, slug, reject reason, link to source image, "Email re-upload prompt" button. This is the list to chase down before launch.
-
-## What you'll see after running
-
-| Pro | Source photo | Result |
-|---|---|---|
-| Matt Jessup | Tight upper-body in blue polo | ✅ Cropped headshot |
-| Rita Ibolya Molnar | Studio portrait, white shirt | ✅ Cropped headshot |
-| **Scott Laidler** | Full-body, grey wall | ❌ Cleared → "SL" monogram tile |
-| Nerin Govender | Selfie outside Gold's Gym | ❌ Cleared → "NG" monogram tile |
-| ~60-80 others | Tight headshots | ✅ Cropped headshot |
-| ~30-45 others | Wide / full-body / selfie | ❌ Cleared → monogram tile |
-
-Estimated breakdown: ~80 accepts, ~45 rejects out of 124. Numbers confirmed once it actually runs.
-
-## Files touched
-
-- **New:** `src/lib/avatar/validate.functions.ts` — single shared validator + thresholds + `decideAvatar`.
-- **Edit:** `src/lib/profile/avatar-ai.functions.ts` — re-export from the shared module; dashboard upload calls the shared `decideAvatar`.
-- **Edit:** `src/lib/admin/bd-recrop.functions.ts` — drop its private validator, call the shared one. `rejectBdRecrop` already clears `avatar_url` — no change needed.
-- **Edit:** `src/components/admin/BdRecropPanel.tsx` — pass the shared `decideAvatar` result through the existing accept/reject branches; show reject reasons in the live log.
-- **Edit:** `src/routes/admin_.professionals.tsx` — add a "Photos needing re-upload" filtered section reading `bd_member_seed.recrop_status = 'rejected'` joined to `profiles`.
-- **No migration needed** — `recrop_status`, `recrop_reason`, `recropped_at` columns already exist on `bd_member_seed`.
-
-## Operational steps
-
-1. Implement the unification (above).
-2. Click **Run batch (25)** on `/admin/migration` once to sanity-check the first 25 rows and confirm accept/reject split looks right.
-3. Click **Run batch (100)** to clear the remainder.
-4. Spot-check `/in/london`, `/professions/personal-trainer`, and a couple of profile pages.
-5. Triage the reject list at `/admin/professionals` → "Photos needing re-upload" before public launch.
-
-## Technical notes
-
-- The shared `validateAvatarBytes` runs inside a `createServerFn` so the Gemini API key never reaches the browser — same boundary as today.
-- `decideAvatar` is a pure function (no I/O) so it can be unit-tested and reused on the client for the dashboard upload preview as well.
-- Reject reasons get stored verbatim in `recrop_reason` so the admin queue shows *why* each photo failed without a re-run.
+- **Background/composition rules** (gym storefronts, distracting backgrounds). The 0.15 floor will catch most of these incidentally because they tend to correlate with small-face framing, but it's not an explicit rule. If you want a real background check, that's a separate change.
+- **Dashboard re-validation of non-BD avatars.** Only BD-imported photos are being re-checked; pros who uploaded through the dashboard already passed the (now-stricter) validator on upload, and re-running them mid-flight would surprise live users. New uploads from this point onward use 0.15 automatically.
