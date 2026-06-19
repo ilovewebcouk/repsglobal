@@ -21,6 +21,7 @@ export type AvatarRejectCategory =
   | "face_obscured"
   | "low_quality"
   | "not_a_person"
+  | "distracting_background"
   | "other";
 
 export type RawAvatarValidation = {
@@ -77,6 +78,11 @@ REJECT the image unless ALL of these are true:
 - The face is clearly visible, roughly front-facing, well-lit, in focus.
 - It is a head-and-shoulders or similar portrait — NOT a full-body, distant, or group shot.
 - The face is not heavily obscured (e.g. both sunglasses AND a hat covering the face = reject; mask covering most of face = reject).
+- The background is not visually distracting. REJECT (category "distracting_background") if any of the following dominate the frame behind or beside the person:
+  - Large, legible commercial signage, storefronts, branded gym facades, or shop names (e.g. "GOLD'S GYM", "PUREGYM" visible behind the subject).
+  - Busy text, posters, banners, billboards, or screens with readable words.
+  - A cluttered scene that competes with the face for attention (crowds, traffic, dense merchandise, busy street).
+  A clean gym floor, plain wall, neutral outdoor setting, or softly blurred background is FINE — only reject when the background pulls the eye away from the person.
 
 If you reject, set isHeadshot=false and pick the single best matching category and a short, user-facing reason in plain English (1 sentence, no jargon, no markdown).
 
@@ -87,7 +93,7 @@ Return ONLY valid JSON matching the schema. No prose.`;
 export const AVATAR_VALIDATION_SCHEMA = `{
   "isHeadshot": boolean,
   "rejectionReason": string | null,
-  "rejectionCategory": "logo" | "illustration" | "group" | "full_body" | "face_obscured" | "low_quality" | "not_a_person" | "other" | null,
+  "rejectionCategory": "logo" | "illustration" | "group" | "full_body" | "face_obscured" | "low_quality" | "not_a_person" | "distracting_background" | "other" | null,
   "faceBox": { "x": number, "y": number, "width": number, "height": number } | null,
   "qualityScore": 1 | 2 | 3 | 4 | 5
 }`;
@@ -105,6 +111,7 @@ function clampCategory(c: unknown): AvatarRejectCategory {
     "face_obscured",
     "low_quality",
     "not_a_person",
+    "distracting_background",
     "other",
   ];
   const s = String(c ?? "").toLowerCase();
