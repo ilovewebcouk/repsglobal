@@ -496,9 +496,11 @@ async function assertAdmin(supabase: any, userId: string) {
 
 export type AdminReviewKpis = {
   avg_rating: number;
+  pending: number;
+  approved_30d: number;
+  removed_30d: number;
+  suspect: number;
   reviews_30d: number;
-  flagged: number;
-  auto_approved_pct: number;
   distribution: Array<{ stars: number; count: number; pct: number }>;
 };
 
@@ -510,28 +512,32 @@ export const adminReviewKpis = createServerFn({ method: "GET" })
 
     const { data: rows } = await supabaseAdmin
       .from("reviews")
-      .select("rating, status, source, created_at, flag_reason")
+      .select("rating, status, moderation_status, ai_verdict, moderated_at, created_at")
       .limit(20000);
     const all = (rows ?? []) as Array<{
       rating: number;
       status: string;
-      source: string | null;
+      moderation_status: string;
+      ai_verdict: string | null;
+      moderated_at: string | null;
       created_at: string;
-      flag_reason: string | null;
     }>;
-    const published = all.filter((r) => r.status === "published");
-    const avg = published.length
-      ? published.reduce((s, r) => s + r.rating, 0) / published.length
+    const approved = all.filter((r) => r.moderation_status === "approved");
+    const avg = approved.length
+      ? approved.reduce((s, r) => s + r.rating, 0) / approved.length
       : 0;
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const recent = all.filter((r) => new Date(r.created_at).getTime() >= cutoff);
-    const flagged = all.filter((r) => r.status === "flagged" || r.flag_reason).length;
-    const autoApproved = recent.filter(
-      (r) => r.status === "published" && !r.flag_reason,
+    const pending = all.filter((r) => r.moderation_status === "pending").length;
+    const approved30 = all.filter(
+      (r) => r.moderation_status === "approved" && r.moderated_at && new Date(r.moderated_at).getTime() >= cutoff,
     ).length;
-    const autoPct = recent.length
-      ? Math.round((autoApproved / recent.length) * 100)
-      : 0;
+    const removed30 = all.filter(
+      (r) => r.moderation_status === "removed" && r.moderated_at && new Date(r.moderated_at).getTime() >= cutoff,
+    ).length;
+    const suspect = all.filter(
+      (r) => r.moderation_status === "pending" && r.ai_verdict === "suspect",
+    ).length;
 
     const distribution = [5, 4, 3, 2, 1].map((stars) => {
       const c = recent.filter((r) => r.rating === stars).length;
@@ -540,52 +546,67 @@ export const adminReviewKpis = createServerFn({ method: "GET" })
 
     return {
       avg_rating: Math.round(avg * 100) / 100,
+      pending,
+      approved_30d: approved30,
+      removed_30d: removed30,
+      suspect,
       reviews_30d: recent.length,
-      flagged,
-      auto_approved_pct: autoPct,
       distribution,
     };
   });
 
-export type AdminFlaggedReview = {
+export type AiFlagCheck = { hit: boolean; reason: string };
+export type AiFlags = {
+  profanity: AiFlagCheck;
+  promo: AiFlagCheck;
+  pii: AiFlagCheck;
+  fake_signals: AiFlagCheck;
+  dedupe: AiFlagCheck;
+};
+
+export type AdminReviewRow = {
   id: string;
   professional_id: string;
   professional_name: string | null;
   professional_slug: string | null;
   client_name: string;
+  client_email: string | null;
+  submitter_ip: string | null;
   rating: number;
   title: string | null;
   body: string;
-  flag_reason: string | null;
-  flagged_at: string | null;
+  moderation_status: "pending" | "approved" | "removed";
+  ai_verdict: "clean" | "warning" | "suspect" | null;
+  ai_flags: AiFlags | null;
+  ai_checked_at: string | null;
   created_at: string;
+  moderated_at: string | null;
 };
 
-export const adminListFlagged = createServerFn({ method: "GET" })
+const TabSchema = z
+  .object({ tab: z.enum(["pending", "approved", "removed", "all"]).default("pending") })
+  .default({ tab: "pending" });
+
+export const adminListReviews = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
-  .handler(async ({ context }): Promise<AdminFlaggedReview[]> => {
+  .inputValidator((d: unknown) => TabSchema.parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<AdminReviewRow[]> => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error } = await supabaseAdmin
+
+    let q = supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_name, rating, title, body, flag_reason, flagged_at, created_at, status",
+        "id, professional_id, client_name, client_email, submitter_ip, rating, title, body, moderation_status, ai_verdict, ai_flags, ai_checked_at, created_at, moderated_at",
       )
-      .or("status.eq.flagged,flag_reason.not.is.null")
-      .order("flagged_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
       .limit(200);
+    if (data.tab !== "all") {
+      q = q.eq("moderation_status", data.tab);
+    }
+    const { data: rows, error } = await q;
     if (error) throw error;
-    const list = (rows ?? []) as Array<{
-      id: string;
-      professional_id: string;
-      client_name: string;
-      rating: number;
-      title: string | null;
-      body: string;
-      flag_reason: string | null;
-      flagged_at: string | null;
-      created_at: string;
-    }>;
+    const list = (rows ?? []) as any[];
     if (list.length === 0) return [];
 
     const proIds = Array.from(new Set(list.map((r) => r.professional_id)));
@@ -604,30 +625,51 @@ export const adminListFlagged = createServerFn({ method: "GET" })
       professional_name: nameById.get(r.professional_id) ?? null,
       professional_slug: slugById.get(r.professional_id) ?? null,
       client_name: r.client_name,
+      client_email: r.client_email,
+      submitter_ip: r.submitter_ip,
       rating: r.rating,
       title: r.title,
       body: r.body,
-      flag_reason: r.flag_reason,
-      flagged_at: r.flagged_at,
+      moderation_status: r.moderation_status,
+      ai_verdict: r.ai_verdict,
+      ai_flags: r.ai_flags,
+      ai_checked_at: r.ai_checked_at,
       created_at: r.created_at,
+      moderated_at: r.moderated_at,
     }));
   });
 
+const ModerateSchema = z.object({
+  id: z.string().uuid(),
+  action: z.enum(["approve", "remove"]),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const adminModerateReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => ModerateSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase.rpc("admin_moderate_review", {
+      _review_id: data.id,
+      _action: data.action,
+      _note: data.note ?? null,
+    } as never);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// Back-compat exports so older imports keep building.
 export const adminApproveReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => IdSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("reviews")
-      .update({
-        status: "published",
-        flag_reason: null,
-        flagged_at: null,
-        published_at: new Date().toISOString(),
-      })
-      .eq("id", data.id);
+    const { error } = await context.supabase.rpc("admin_moderate_review", {
+      _review_id: data.id,
+      _action: "approve",
+      _note: null,
+    } as never);
     if (error) throw error;
     return { ok: true };
   });
@@ -637,11 +679,102 @@ export const adminRemoveReview = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => IdSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("reviews")
-      .update({ status: "hidden" })
-      .eq("id", data.id);
+    const { error } = await context.supabase.rpc("admin_moderate_review", {
+      _review_id: data.id,
+      _action: "remove",
+      _note: null,
+    } as never);
     if (error) throw error;
     return { ok: true };
+  });
+
+// =====================================================================
+// Notifications (sidebar badge + bell feed)
+// =====================================================================
+
+export type ReviewNotificationItem = {
+  key: string;
+  notificationId: string;
+  reviewId: string;
+  professionalName: string | null;
+  clientName: string;
+  rating: number;
+  preview: string;
+  createdAt: string;
+};
+
+export const listMyReviewNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .handler(async ({ context }): Promise<{ items: ReviewNotificationItem[] }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: notifs, error } = await supabaseAdmin
+      .from("review_notifications")
+      .select("id, review_id, created_at")
+      .eq("recipient_user_id", context.userId)
+      .is("read_at", null)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (error) throw error;
+    const list = (notifs ?? []) as Array<{ id: string; review_id: string; created_at: string }>;
+    if (list.length === 0) return { items: [] };
+
+    const reviewIds = list.map((n) => n.review_id);
+    const { data: reviews } = await supabaseAdmin
+      .from("reviews")
+      .select("id, professional_id, client_name, rating, body")
+      .in("id", reviewIds);
+    const reviewMap = new Map((reviews ?? []).map((r: any) => [r.id, r]));
+    const proIds = Array.from(new Set((reviews ?? []).map((r: any) => r.professional_id)));
+    const { data: profs } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, display_name")
+      .in("id", proIds);
+    const nameById = new Map(
+      (profs ?? []).map((p: any) => [p.id, p.display_name || p.full_name || null]),
+    );
+
+    return {
+      items: list
+        .map((n) => {
+          const r = reviewMap.get(n.review_id) as any;
+          if (!r) return null;
+          return {
+            key: `rn:${n.id}`,
+            notificationId: n.id,
+            reviewId: n.review_id,
+            professionalName: nameById.get(r.professional_id) ?? null,
+            clientName: r.client_name,
+            rating: r.rating,
+            preview: (r.body ?? "").slice(0, 120),
+            createdAt: n.created_at,
+          } as ReviewNotificationItem;
+        })
+        .filter((x): x is ReviewNotificationItem => !!x),
+    };
+  });
+
+export const markAllReviewNotificationsRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .handler(async ({ context }) => {
+    const { error } = await context.supabase
+      .from("review_notifications")
+      .update({ read_at: new Date().toISOString() } as never)
+      .eq("recipient_user_id", context.userId)
+      .is("read_at", null);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// Back-compat: old admin route imports adminListFlagged. Map to pending tab.
+export type AdminFlaggedReview = AdminReviewRow & {
+  flag_reason: string | null;
+  flagged_at: string | null;
+};
+
+export const adminListFlagged = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .handler(async ({ context }): Promise<AdminFlaggedReview[]> => {
+    await assertAdmin(context.supabase, context.userId);
+    const rows = await adminListReviews({ data: { tab: "pending" } });
+    return rows.map((r) => ({ ...r, flag_reason: null, flagged_at: null }));
   });
