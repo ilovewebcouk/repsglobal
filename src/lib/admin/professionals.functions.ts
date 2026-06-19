@@ -150,7 +150,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     // Order by member_since desc so the "Joined" slice reflects BD signup
     // dates for imported pros (created_at is the import event, not signup).
-    const { data: pros, count, error } = await query
+    const { data: pros, error } = await query
       .order('member_since', { ascending: false, nullsFirst: false })
       .limit(FETCH_CAP);
     if (error) throw error;
