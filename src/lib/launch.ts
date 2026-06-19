@@ -11,6 +11,20 @@
  */
 export const LAUNCH_AT_UTC = new Date("2026-06-25T23:00:00.000Z");
 
+/**
+ * BD CSV import timestamp.
+ *
+ * Legacy honour cutoff: a BD member only qualifies for the £34 → £99
+ * Subscription Schedule if their original BD `next_due_at` is on or after
+ * this date. Anyone whose access had already lapsed before the CSV was
+ * imported is considered long-overdue and goes straight to £99/yr at launch
+ * with no honour year.
+ *
+ * Set to the actual BD CSV import instant: 14 Jun 2026 17:24:51 UTC
+ * (verified from `bd_member_seed.created_at`).
+ */
+export const LEGACY_HONOUR_CUTOFF = new Date("2026-06-14T17:24:51.000Z");
+
 export const LAUNCH_GATE_ENABLED = true;
 
 /**
