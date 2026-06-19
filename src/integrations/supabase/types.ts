@@ -175,6 +175,9 @@ export type Database = {
           profile_photo_status: Database["public"]["Enums"]["bd_member_photo_status"]
           profile_photo_storage_path: string | null
           quote: string | null
+          recrop_reason: string | null
+          recrop_status: string
+          recropped_at: string | null
           service_areas: string | null
           services_text: string | null
           tiktok: string | null
@@ -216,6 +219,9 @@ export type Database = {
           profile_photo_status?: Database["public"]["Enums"]["bd_member_photo_status"]
           profile_photo_storage_path?: string | null
           quote?: string | null
+          recrop_reason?: string | null
+          recrop_status?: string
+          recropped_at?: string | null
           service_areas?: string | null
           services_text?: string | null
           tiktok?: string | null
@@ -257,6 +263,9 @@ export type Database = {
           profile_photo_status?: Database["public"]["Enums"]["bd_member_photo_status"]
           profile_photo_storage_path?: string | null
           quote?: string | null
+          recrop_reason?: string | null
+          recrop_status?: string
+          recropped_at?: string | null
           service_areas?: string | null
           services_text?: string | null
           tiktok?: string | null
