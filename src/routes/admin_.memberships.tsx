@@ -128,51 +128,66 @@ function EnvBadge({ env }: { env?: "live" | "sandbox" }) {
   );
 }
 
-function KpiRow({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
+function KpiRow({
+  data,
+  forecast,
+  loading,
+}: {
+  data?: MembershipMetrics;
+  forecast?: RevenueForecast;
+  loading: boolean;
+}) {
+  const totalMembers = data
+    ? (data.verifiedActive ?? 0) +
+      (data.verifiedScheduled ?? 0) +
+      (data.tiers.find((t) => t.tier === "pro")?.active ?? 0) +
+      (data.tiers.find((t) => t.tier === "pro")?.trialing ?? 0) +
+      (data.tiers.find((t) => t.tier === "studio")?.active ?? 0) +
+      (data.tiers.find((t) => t.tier === "studio")?.trialing ?? 0)
+    : 0;
+  const trialingNow = data
+    ? data.tiers.reduce((s, t) => s + (t.trialing ?? 0), 0)
+    : 0;
+
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <KpiCard
+        label="Monthly revenue"
+        value={loading ? null : gbp(forecast?.currentMonthPence ?? 0)}
+        sub="Projected for current month"
+      />
+      <KpiCard
+        label="Total members"
+        value={loading ? null : totalMembers.toLocaleString()}
+        sub={
+          loading || !data
+            ? "—"
+            : `Verified · Pro · Studio${
+                (data.verifiedScheduled ?? 0) > 0
+                  ? ` (incl. ${data.verifiedScheduled} scheduled)`
+                  : ""
+              }`
+        }
+      />
       <KpiCard
         label="Forecast ARR"
         value={loading ? null : gbp(data?.forecastArrPence ?? 0)}
         sub={
           loading || !data
             ? "—"
-            : `${gbp(data.activeArrPence)} live · ${gbp(data.scheduledArrPence)} awaiting Stripe setup`
-        }
-      />
-
-      <KpiCard
-        label="Upcoming payments"
-        value={loading ? null : gbp(data?.upcoming14dPence ?? 0)}
-        sub={
-          loading || !data
-            ? "—"
-            : `${data.upcoming14dCount} member${data.upcoming14dCount === 1 ? "" : "s"} · next 14 days`
+            : `${gbp(data.activeArrPence)} live · ${gbp(data.scheduledArrPence)} scheduled`
         }
       />
       <KpiCard
-        label="Verified members"
-        value={loading ? null : String((data?.verifiedActive ?? 0) + (data?.verifiedScheduled ?? 0))}
-        sub={
-          loading || !data
-            ? "—"
-            : (data.verifiedScheduled ?? 0) > 0
-              ? `Includes ${data.verifiedScheduled} awaiting Stripe setup`
-              : "All on live Stripe subscriptions"
-        }
-      />
-
-      <KpiCard
-        label="Past due"
-        value={loading ? null : String(data?.pastDueCount ?? 0)}
+        label="Trialing now"
+        value={loading ? null : trialingNow.toLocaleString()}
         sub={
           loading
             ? "—"
-            : (data?.pastDueCount ?? 0) === 0
-              ? "All members up to date"
-              : "Requires follow-up"
+            : trialingNow === 0
+              ? "No active trials"
+              : "Convert at trial end"
         }
-        tone={(data?.pastDueCount ?? 0) > 0 ? "warn" : "neutral"}
       />
     </div>
   );
@@ -210,29 +225,77 @@ function KpiCard({
 
 // ---------------------------------------------------------------- Tier cards
 
+function TierCardRow({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
+  const verifiedCount =
+    (data?.verifiedActive ?? 0) + (data?.verifiedScheduled ?? 0);
+  const proCount =
+    (data?.tiers.find((t) => t.tier === "pro")?.active ?? 0) +
+    (data?.tiers.find((t) => t.tier === "pro")?.trialing ?? 0);
+  const studioCount =
+    (data?.tiers.find((t) => t.tier === "studio")?.active ?? 0) +
+    (data?.tiers.find((t) => t.tier === "studio")?.trialing ?? 0);
+  const total = verifiedCount + proCount + studioCount;
+  const proTrialing = data?.tiers.find((t) => t.tier === "pro")?.trialing ?? 0;
+
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <TierCard
+        title="Verified"
+        price="£99/year"
+        icon={<BadgeCheck className="h-4 w-4 text-reps-orange" />}
+        count={verifiedCount}
+        total={total}
+        barClass="bg-reps-orange"
+        footnote={
+          (data?.verifiedScheduled ?? 0) > 0
+            ? `Includes ${data!.verifiedScheduled} awaiting Stripe setup`
+            : undefined
+        }
+        loading={loading}
+      />
+      <TierCard
+        title="Pro"
+        price="£59/month · Founding"
+        icon={<Crown className="h-4 w-4 text-reps-orange" />}
+        count={proCount}
+        total={total}
+        barClass="bg-reps-orange"
+        footnote={proTrialing > 0 ? `${proTrialing} trialing` : undefined}
+        loading={loading}
+      />
+      <TierCard
+        title="Studio"
+        price="£149/month"
+        icon={<Users className="h-4 w-4 text-reps-orange" />}
+        count={studioCount}
+        total={total}
+        barClass="bg-emerald-400"
+        loading={loading}
+      />
+    </div>
+  );
+}
+
 function TierCard({
   title,
   price,
   icon,
-  active,
-  trialing,
+  count,
+  total,
+  barClass,
   footnote,
   loading,
 }: {
-  tier: string;
   title: string;
   price: string;
   icon: React.ReactNode;
-  active: number;
-  trialing?: number;
+  count: number;
+  total: number;
+  barClass: string;
   footnote?: string;
   loading: boolean;
 }) {
-  const total = active + (trialing ?? 0);
-  const splitBits: string[] = [];
-  splitBits.push(`${active} active`);
-  if (typeof trialing === "number" && trialing > 0) splitBits.push(`${trialing} trialing`);
-
+  const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <PPanel className="p-6">
       <div className="flex items-start justify-between">
@@ -246,62 +309,35 @@ function TierCard({
         {loading ? (
           <Skeleton className="h-7 w-12 bg-white/5" />
         ) : (
-          <span className="font-display text-[22px] font-bold text-white">
-            {total.toLocaleString()}
+          <span className="font-display text-[28px] font-bold text-white">
+            {count.toLocaleString()}
           </span>
         )}
       </div>
-      <div className="mt-4 text-[12px] text-white/70">
-        {loading ? <Skeleton className="h-4 w-32 bg-white/5" /> : splitBits.join(" · ")}
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-reps-ink">
+        {!loading && total > 0 && (
+          <div
+            className={"h-full " + barClass}
+            style={{ width: `${pct}%` }}
+          />
+        )}
+      </div>
+      <div className="mt-2 text-[11px] text-white/55">
+        {loading ? (
+          <Skeleton className="h-3 w-20 bg-white/5" />
+        ) : total === 0 ? (
+          "No members yet"
+        ) : (
+          `${pct.toFixed(1)}% of total`
+        )}
       </div>
       {!loading && footnote && (
-        <div className="mt-1 text-[11px] text-white/45">{footnote}</div>
+        <div className="mt-2 text-[11px] text-white/45">{footnote}</div>
       )}
     </PPanel>
   );
 }
 
-
-// ---------------------------------------------------------------- Distribution strip
-
-function DistributionStrip({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
-  if (loading || !data || data.distribution.length === 0) return null;
-  const total = data.distribution.reduce((s, d) => s + d.count, 0);
-  if (total === 0) return null;
-  const toneClass = (tone: string) =>
-    tone === "verified"
-      ? "bg-reps-orange"
-      : tone === "pro"
-        ? "bg-white/55"
-        : "bg-emerald-400";
-
-
-  return (
-    <PCard className="mt-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-[12px] text-white/55">Plan distribution</div>
-        <div className="text-[11px] text-white/45">{total.toLocaleString()} members</div>
-      </div>
-      <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-reps-ink">
-        {data.distribution.map((d) => (
-          <div
-            key={d.label}
-            className={"h-full " + toneClass(d.tone)}
-            style={{ width: `${(d.count / total) * 100}%` }}
-          />
-        ))}
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/60">
-        {data.distribution.map((d) => (
-          <span key={d.label} className="flex items-center gap-1.5">
-            <span className={"h-2 w-2 rounded-full " + toneClass(d.tone)} />
-            {d.label} · {d.count.toLocaleString()}
-          </span>
-        ))}
-      </div>
-    </PCard>
-  );
-}
 
 // ---------------------------------------------------------------- Forecast chart
 
