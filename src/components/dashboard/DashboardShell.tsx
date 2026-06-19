@@ -52,6 +52,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 
 
 import { useAccountMenu } from "@/hooks/use-account-menu";
+import { useEffectiveIdentity } from "@/hooks/use-effective-identity";
 import { initialsFromName } from "@/lib/initials";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
