@@ -1,12 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
+import {
+  AVATAR_SYSTEM_PROMPT,
+  AVATAR_VALIDATION_SCHEMA,
+  decideAvatar,
+  type AvatarRejectCategory,
+  type FaceBox,
+  type RawAvatarValidation,
+} from "@/lib/avatar/validate.shared";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
 /* -------------------------------------------------------------------------- */
 
-export type FaceBox = { x: number; y: number; width: number; height: number };
+export type { FaceBox } from "@/lib/avatar/validate.shared";
 
 export type AvatarValidation =
   | {
@@ -17,15 +25,7 @@ export type AvatarValidation =
   | {
       ok: false;
       reason: string;
-      category:
-        | "logo"
-        | "illustration"
-        | "group"
-        | "full_body"
-        | "face_obscured"
-        | "low_quality"
-        | "not_a_person"
-        | "other";
+      category: AvatarRejectCategory;
     };
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
