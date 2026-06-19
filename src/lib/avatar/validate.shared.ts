@@ -21,6 +21,7 @@ export type AvatarRejectCategory =
   | "face_obscured"
   | "low_quality"
   | "not_a_person"
+  | "distracting_background"
   | "other";
 
 export type RawAvatarValidation = {
