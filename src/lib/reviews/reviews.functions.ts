@@ -409,7 +409,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
     const { data: id, error } = await supabaseAdmin.rpc("submit_review_by_token", {
       _token: data.token,
       _rating: data.rating,
-      _title: data.title ?? null,
+      _title: (data.title ?? "") as string,
       _body: data.body,
       _client_name: data.client_name,
     });
