@@ -9,12 +9,19 @@
 // Never display a monthly equivalent for Verified in the UI.
 
 export type Tier = "verified" | "pro" | "studio";
+export type BillingPeriod = "monthly" | "annual";
 export type BillingEnv = "sandbox" | "live";
 
 export const TIER_PRICE_PENCE: Record<Tier, number> = {
   verified: 9900,
   pro: 5900,
   studio: 14900,
+};
+
+/** Annual price in pence for tiers sold annually (Pro Founding annual = £590). */
+export const TIER_ANNUAL_PRICE_PENCE: Partial<Record<Tier, number>> = {
+  verified: 9900,
+  pro: 59000,
 };
 
 export const TIER_CADENCE_MONTHS: Record<Tier, number> = {
@@ -37,12 +44,40 @@ export function paymentPence(tier: string): number {
   return 0;
 }
 
+/** Period-aware single-payment amount (in pence). Annual Pro = £590, not £59. */
+export function paymentPenceFor(tier: string, period: BillingPeriod | null | undefined): number {
+  if (tier === "verified") return TIER_PRICE_PENCE.verified;
+  if (tier === "pro") {
+    return period === "annual" ? TIER_ANNUAL_PRICE_PENCE.pro! : TIER_PRICE_PENCE.pro;
+  }
+  if (tier === "studio") return TIER_PRICE_PENCE.studio;
+  return 0;
+}
+
 /** Annual run-rate (in pence) contributed by one active subscription of `tier`. */
 export function annualPence(tier: string): number {
   if (tier === "verified") return TIER_PRICE_PENCE.verified;
   if (tier === "pro") return TIER_PRICE_PENCE.pro * 12;
   if (tier === "studio") return TIER_PRICE_PENCE.studio * 12;
   return 0;
+}
+
+/** Period-aware annual run-rate. Annual rows use their annual price; monthly = ×12. */
+export function annualPenceFor(tier: string, period: BillingPeriod | null | undefined): number {
+  if (tier === "verified") return TIER_PRICE_PENCE.verified;
+  if (tier === "pro") {
+    return period === "annual" ? TIER_ANNUAL_PRICE_PENCE.pro! : TIER_PRICE_PENCE.pro * 12;
+  }
+  if (tier === "studio") return TIER_PRICE_PENCE.studio * 12;
+  return 0;
+}
+
+/** Months between consecutive renewals, given the tier and billing period. */
+export function cadenceMonthsFor(tier: string, period: BillingPeriod | null | undefined): number {
+  if (tier === "verified") return 12;
+  if (tier === "pro") return period === "annual" ? 12 : 1;
+  if (tier === "studio") return 1;
+  return 12;
 }
 
 export function isPaidTier(t: string): t is Tier {
