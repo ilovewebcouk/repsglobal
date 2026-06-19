@@ -6,7 +6,7 @@ export type AdminProRow = {
   name: string;
   handle: string;
   avatarUrl: string | null;
-  location: string | null;
+  
   profession: string | null;
   professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio';
@@ -255,7 +255,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         name,
         handle: p.slug ? `@${p.slug}` : '—',
         avatarUrl: profile?.avatar_url ?? null,
-        location: p.city ?? null,
+        
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
         plan: tier,
@@ -280,8 +280,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const q = data.q.toLowerCase();
       rows = rows.filter(r =>
         r.name.toLowerCase().includes(q) ||
-        r.handle.toLowerCase().includes(q) ||
-        (r.location ?? '').toLowerCase().includes(q),
+        r.handle.toLowerCase().includes(q),
       );
     }
 

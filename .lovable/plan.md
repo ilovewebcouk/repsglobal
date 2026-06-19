@@ -1,23 +1,16 @@
-## Why the column is empty today
+## Goal
+Remove the Location column from `/admin/professionals` because it is no longer needed.
 
-The `Lifetime value` column is already wired end-to-end on `/admin/professionals`. It sums `legacy_stripe_payments.amount_pence - refunded_amount_pence` per `user_id`. The data is in the table — 952 charges totalling £62,024.47 across 363 pros — but the query filters `status = 'succeeded'` and the imported CSV uses `'Paid'` / `'Refunded'`. So every row computes £0 and renders as `—`.
+## Changes
 
-## Change
+### 1. `src/routes/admin_.professionals.tsx`
+- Delete the `<th>Location</th>` header cell.
+- Delete the `<td>{row.location ?? "—"}</td>` body cell inside `ProRow`.
+- Reduce `colSpan={10}` to `colSpan={9}` on the loading and empty-state rows.
 
-One line in `src/lib/admin/professionals.functions.ts` (the `paymentsData` fetch):
+### 2. `src/lib/admin/professionals.functions.ts`
+- Remove `location: string | null` from the `AdminProRow` type.
+- Remove `location: p.city ?? null` from the mapped row object.
+- Remove the location term from the free-text post-join filter so searches only match name/handle.
 
-- Replace `.eq('status', 'succeeded')` with `.eq('status', 'Paid')`.
-
-`Paid` rows already carry their own `refunded_amount_pence` for partial refunds, so the existing net calculation (`amount_pence - refunded_amount_pence`) stays correct. The 3 standalone `Refunded` rows are excluded (they're the refund-side ledger entries for fully-refunded charges, not separate payments).
-
-## Out of scope
-
-- No schema change.
-- No change to BD next-due dates, cohort overrides, or the launch-day runner.
-- No new Stripe writes.
-
-## Expected result
-
-- LTV column populates for the 363 BD pros with payment history.
-- Sortable "Lifetime value" header continues to work.
-- Pros with zero imported payments still show `—`.
+No other UI, logic, or database changes.
