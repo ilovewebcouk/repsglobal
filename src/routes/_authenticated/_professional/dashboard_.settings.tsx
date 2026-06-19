@@ -22,6 +22,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PaymentsSettingsTab } from "@/components/dashboard/PaymentsSettingsTab";
+import { SubscriptionHistoryPanel } from "@/components/dashboard/SubscriptionHistoryPanel";
 import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -489,63 +490,67 @@ function BillingTab({ data }: { data: SettingsBundle }) {
     : null;
 
   return (
-    <PPanel>
-      <PanelHeader title="Billing" subtitle="Your REPs membership, card and invoices." />
+    <div className="space-y-5">
+      <PPanel>
+        <PanelHeader title="Billing" subtitle="Your REPs membership, card, invoices and payment history." />
 
-      <Row label="Membership plan">
-        <div className="flex flex-col items-start justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-4 py-3 sm:flex-row sm:items-center">
-          <div>
-            <div className="flex items-center gap-2 text-[14px] font-semibold text-white">
-              {tierLabel}
-              {sub.is_founding ? (
-                <span className="rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-reps-orange">
-                  Founding
-                </span>
-              ) : null}
+        <Row label="Membership plan">
+          <div className="flex flex-col items-start justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-4 py-3 sm:flex-row sm:items-center">
+            <div>
+              <div className="flex items-center gap-2 text-[14px] font-semibold text-white">
+                {tierLabel}
+                {sub.is_founding ? (
+                  <span className="rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-reps-orange">
+                    Founding
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-0.5 text-[12.5px] text-white/60">
+                {priceLabel}
+                {renews ? (
+                  <> · {sub.cancel_at_period_end ? "ends" : "renews"} {renews}</>
+                ) : null}
+                {sub.status !== "active" && sub.status !== "trialing" && sub.tier !== "free" ? (
+                  <span className="ml-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
+                    {sub.status}
+                  </span>
+                ) : null}
+              </div>
             </div>
-            <div className="mt-0.5 text-[12.5px] text-white/60">
-              {priceLabel}
-              {renews ? (
-                <> · {sub.cancel_at_period_end ? "ends" : "renews"} {renews}</>
-              ) : null}
-              {sub.status !== "active" && sub.status !== "trialing" && sub.tier !== "free" ? (
-                <span className="ml-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
-                  {sub.status}
-                </span>
-              ) : null}
-            </div>
+            <Link
+              to="/pricing"
+              className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:text-white"
+            >
+              Change plan
+            </Link>
           </div>
-          <Link
-            to="/pricing"
-            className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:text-white"
-          >
-            Change plan
-          </Link>
-        </div>
-      </Row>
-
-      <Row
-        label="Card & invoices"
-        hint="Update your card, view receipts, or cancel — all in our secure billing portal."
-      >
-        <ManageBillingButton
-          label="Open billing portal"
-          variant="ghost"
-          className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white"
-        />
-      </Row>
-
-      {sub.tier !== "free" ? null : (
-        <Row label="Get listed">
-          <Link
-            to="/pricing"
-            className="inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
-          >
-            See plans
-          </Link>
         </Row>
-      )}
-    </PPanel>
+
+        <Row
+          label="Card & invoices"
+          hint="Update your card, view receipts, or cancel — all in our secure billing portal."
+        >
+          <ManageBillingButton
+            label="Open billing portal"
+            variant="ghost"
+            className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white"
+          />
+        </Row>
+
+        {sub.tier !== "free" ? null : (
+          <Row label="Get listed">
+            <Link
+              to="/pricing"
+              className="inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+            >
+              See plans
+            </Link>
+          </Row>
+        )}
+      </PPanel>
+
+      <SubscriptionHistoryPanel />
+    </div>
   );
 }
 

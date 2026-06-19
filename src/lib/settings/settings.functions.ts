@@ -52,8 +52,15 @@ export type SettingsBundle = {
 export const getMySettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<SettingsBundle> => {
-    const { supabase, userId, claims } = context;
-    const email = (claims.email as string | undefined) ?? null;
+    const { supabase, userId, claims, isImpersonating } = context;
+    // JWT email belongs to the admin during impersonation — look up the
+    // impersonated user's real email via the Auth admin API instead.
+    let email = (claims.email as string | undefined) ?? null;
+    if (isImpersonating) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(userId);
+      email = u?.user?.email ?? null;
+    }
 
     const [{ data: profile }, { data: pro }, { data: prefs }, { data: sub }] =
       await Promise.all([

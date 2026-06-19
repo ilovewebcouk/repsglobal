@@ -52,6 +52,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 
 
 import { useAccountMenu } from "@/hooks/use-account-menu";
+import { useEffectiveIdentity } from "@/hooks/use-effective-identity";
 import { initialsFromName } from "@/lib/initials";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -283,16 +284,18 @@ function NavSection({
 }
 
 function MemberCard({ member }: { member?: DashboardShellMember }) {
-  const account = useAccountMenu();
-  // Prefer the real signed-in user; fall back to the prop (mock previews).
-  const name = account.user?.name ?? member?.name ?? "REPS Member";
-  const email = account.user?.email ?? null;
-  const avatarUrl = account.avatarUrl ?? member?.avatarUrl ?? null;
+  // Honour admin impersonation: chrome reflects the user the admin is
+  // "viewing as", not the signed-in admin.
+  const id = useEffectiveIdentity();
+  const name = id.name ?? member?.name ?? "REPS Member";
+  const email = id.email;
+  const avatarUrl = id.avatarUrl ?? member?.avatarUrl ?? null;
   const headline = email ?? member?.headline ?? "Professional";
-  const tierLabel = account.user
-    ? account.roleLabel
-    : member?.tierLabel ?? null;
+  const tierLabel = id.tierLabel ?? member?.tierLabel ?? null;
   const initials = initialsFromName(name);
+  const tierBadgeClass = id.isImpersonating
+    ? "mt-1 border-reps-orange-border bg-reps-orange/20 text-reps-orange hover:bg-reps-orange/20"
+    : "mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft";
   return (
     <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
       <Avatar className="size-10 rounded-[10px]">
@@ -303,9 +306,7 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
         <div className="truncate text-[13px] font-semibold text-white">{name}</div>
         <div className="truncate text-[11px] text-white/55">{headline}</div>
         {tierLabel ? (
-          <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft">
-            {tierLabel}
-          </Badge>
+          <Badge className={tierBadgeClass}>{tierLabel}</Badge>
         ) : null}
       </div>
     </div>
@@ -375,6 +376,7 @@ function Sidebar({
   member?: DashboardShellMember;
 }) {
   const account = useAccountMenu();
+  const id = useEffectiveIdentity();
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
@@ -395,7 +397,7 @@ function Sidebar({
 
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />
-        {role === "trainer" && account.isAdmin ? (
+        {role === "trainer" && account.isAdmin && !id.isImpersonating ? (
           <Button
             asChild
             variant="outline"
@@ -410,7 +412,7 @@ function Sidebar({
             </Link>
           </Button>
         ) : null}
-        {role === "trainer" && tier === "verified" ? (
+        {role === "trainer" && tier === "verified" && !id.isImpersonating ? (
           <Button asChild className="justify-between">
             <Link to="/pricing">
               <span className="flex items-center gap-2">
@@ -421,6 +423,7 @@ function Sidebar({
             </Link>
           </Button>
         ) : null}
+
 
       </div>
     </div>
