@@ -460,18 +460,37 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
 
 
     // 1. Project active/trialing Stripe subs forward.
+    //    Orphans (subs whose user_id is no longer in `profiles`) are excluded.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("tier, status, current_period_end, environment")
+      .select("user_id, tier, status, current_period_end, environment, billing_period")
       .eq("environment", env);
 
-    for (const s of (subsRaw ?? []) as any[]) {
+    const subsAll = (subsRaw ?? []) as Array<{
+      user_id: string;
+      tier: string;
+      status: string;
+      current_period_end: string | null;
+      billing_period: BillingPeriod | null;
+    }>;
+    const forecastUserIds = Array.from(new Set(subsAll.map((s) => s.user_id)));
+    const validForecastUsers = new Set<string>();
+    if (forecastUserIds.length > 0) {
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .in("id", forecastUserIds);
+      for (const p of (existing ?? []) as Array<{ id: string }>) validForecastUsers.add(p.id);
+    }
+    const subsLinked = subsAll.filter((s) => validForecastUsers.has(s.user_id));
+
+    for (const s of subsLinked) {
       if (!LIVE_STATUSES.has(s.status)) continue;
       if (!isPaidTier(s.tier)) continue;
       if (!s.current_period_end) continue;
       const tier = s.tier as Tier;
-      const cadence = TIER_CADENCE_MONTHS[tier];
-      const amount = paymentPence(tier);
+      const cadence = cadenceMonthsFor(tier, s.billing_period);
+      const amount = paymentPenceFor(tier, s.billing_period);
       let due = new Date(s.current_period_end);
       // Walk forward through the 24-month horizon.
       while (due <= horizonEnd) {
@@ -494,7 +513,7 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       .select("bd_member_id, bd_next_due_date, claimed_user_id, migration_cohort_override");
 
     const liveUserIds = new Set<string>(
-      ((subsRaw ?? []) as any[])
+      subsLinked
         .filter((s) => LIVE_STATUSES.has(s.status))
         .map((s) => s.user_id),
     );
