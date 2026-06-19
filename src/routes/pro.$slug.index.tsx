@@ -71,7 +71,6 @@ type Pro = {
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
-const PROS: Record<string, Pro> = {
 // Static demo fixtures retired — every /pro/$slug now resolves against the
 // DB. Unknown slugs return 404.
 const PROS: Record<string, Pro> = {};
