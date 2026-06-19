@@ -1,6 +1,6 @@
 ---
 name: Dashboard UI kit
-description: Dark-first primitives (Dialog, Button, Input, Textarea, Select, Card, Badge, Empty, Tooltip, AlertDialog, Toaster) for all `/_authenticated/` routes. Replaces shadcn light-theme defaults. ESLint-enforced.
+description: Dark-first primitives (Dialog, Button, Input, Textarea, Select, Card, Badge, Empty, Tooltip, AlertDialog, Toaster) for all `/_authenticated/` routes. Replaces shadcn light-theme defaults. ESLint-enforced. Sidebar shell uses shadcn Sidebar primitive (collapsible="icon", sidebar-04 pattern) via `DashboardSidebar` + `DashboardShell` — collapse state persisted via shadcn `sidebar_state` cookie, ⌘/Ctrl+B toggles.
 type: design
 ---
 # Dashboard UI kit
