@@ -1,57 +1,23 @@
+## Why the column is empty today
 
-## Goal
+The `Lifetime value` column is already wired end-to-end on `/admin/professionals`. It sums `legacy_stripe_payments.amount_pence - refunded_amount_pence` per `user_id`. The data is in the table — 952 charges totalling £62,024.47 across 363 pros — but the query filters `status = 'succeeded'` and the imported CSV uses `'Paid'` / `'Refunded'`. So every row computes £0 and renders as `—`.
 
-Add an explicit, hard-to-misfire **Execute launch-day billing run** button to `/admin/migration`, separate from the existing "Renew due" CTA. It triggers the already-approved v7 logic, but only after multiple safeguards pass.
+## Change
 
-## Where it lands
+One line in `src/lib/admin/professionals.functions.ts` (the `paymentsData` fetch):
 
-`src/routes/admin_.migration.tsx` → `StripeLinkingPanel`. New dedicated row above the existing stats grid, visually separated from the day-to-day "Renew due" button so it can't be hit by reflex.
+- Replace `.eq('status', 'succeeded')` with `.eq('status', 'Paid')`.
 
-## Behaviour
+`Paid` rows already carry their own `refunded_amount_pence` for partial refunds, so the existing net calculation (`amount_pence - refunded_amount_pence`) stays correct. The 3 standalone `Refunded` rows are excluded (they're the refund-side ledger entries for fully-refunded charges, not separate payments).
 
-The new button calls the existing `runLegacyRenewalBatch` server function — no new billing logic. All v7 cohort rules already live in `src/lib/admin/stripe-linking.functions.ts` (overrides, honour window, anomaly £99, no £34 recurring, pre-launch guard via `LAUNCH_AT_UTC`).
+## Out of scope
 
-Client-side safeguards before the call fires:
+- No schema change.
+- No change to BD next-due dates, cohort overrides, or the launch-day runner.
+- No new Stripe writes.
 
-1. **Environment must be Live.** If the env selector is "Sandbox", the button is disabled with helper text.
-2. **Date/time gate.** Disabled until `now >= 26 June 2026, 00:00 BST` (23:00 UTC, 25 June). Shows a countdown label while locked.
-3. **Typed confirmation.** Opens a shadcn `AlertDialog` summarising the locked v7 expectation:
-   - honour_window = 6 × £34 = £204
-   - anomaly_launch_charge = 1 × £99 = £99
-   - **Launch-day total = £303**
-   - No long-overdue cohort, no lifetime cohort, no renewable £34 subs.
-   Admin must type `LAUNCH` to enable the confirm button.
-4. **Admin-role check.** Reuses existing admin guard on the page; no extra server work needed.
+## Expected result
 
-Server-side safeguard already exists: `_runLegacyRenewalBatch` throws if called before `LAUNCH_AT_UTC`, so even a bypassed UI cannot fire early.
-
-After execution, the result is rendered into the existing `log` area and the stats grid is invalidated, same pattern as `renewPass`.
-
-## Visual
-
-A boxed panel inside `StripeLinkingPanel`, above the stats grid:
-
-```text
-┌─ Launch-day billing run ──────────────────────────────────┐
-│  Locked v7 plan: honour 6 × £34 + anomaly 1 × £99 = £303  │
-│  Available from: 26 Jun 2026, 00:00 BST                   │
-│  Environment:    Live (required)                          │
-│                                                           │
-│  [ Execute launch-day billing run ]   status / countdown  │
-└───────────────────────────────────────────────────────────┘
-```
-
-Uses brand orange for the CTA; disabled state is muted. No changes to existing "Renew due" button or daily cron — those stay as the steady-state path after launch.
-
-## Out of scope (call out, don't build)
-
-- No change to `runLegacyRenewalBatch` logic or cohort rules.
-- No change to the daily 03:00 UTC cron.
-- No new server function, no new DB column.
-- No e-mail sends added.
-
-## Files touched
-
-- `src/routes/admin_.migration.tsx` — extend `StripeLinkingPanel` with the new panel, dialog, gate state, and mutation handler (reuses `renewFn`).
-
-That's the only file.
+- LTV column populates for the 363 BD pros with payment history.
+- Sortable "Lifetime value" header continues to work.
+- Pros with zero imported payments still show `—`.
