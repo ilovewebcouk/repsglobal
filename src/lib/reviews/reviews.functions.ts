@@ -13,12 +13,10 @@ export type ReviewDTO = {
   title: string | null;
   body: string;
   status: "pending" | "published" | "hidden" | "flagged";
-  response: string | null;
-  responded_at: string | null;
-  response_edited_at: string | null;
   published_at: string | null;
   created_at: string;
 };
+
 
 const SubmitSchema = z.object({
   slug: z.string().min(1).max(120),
