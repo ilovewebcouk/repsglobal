@@ -662,8 +662,15 @@ function StripeLinkingPanel() {
     renewPass.isPending ||
     resetPass.isPending ||
     csvImport.isPending ||
+    launchPass.isPending ||
     isFetching;
 
+  const launchUnlocked = now.getTime() >= LAUNCH_AT_UTC.getTime();
+  const launchEnvOk = env === "live";
+  const launchConfirmOk = launchConfirmText.trim().toUpperCase() === "LAUNCH";
+  const launchCountdown = launchUnlocked
+    ? null
+    : formatCountdown(LAUNCH_AT_UTC.getTime() - now.getTime());
 
   return (
     <PPanel className="mt-6">
