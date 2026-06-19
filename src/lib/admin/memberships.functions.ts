@@ -1,7 +1,18 @@
 // Admin server fns for /admin/memberships.
 // Read-only — local synced database state only. No Stripe API calls.
+//
+// SOURCE OF TRUTH for pre-launch billing forecasts and the launch-day
+// charges card: `bd_member_seed.migration_cohort_override` (the locked V7
+// dry-run in docs/10_phase2_migration_dry_run_v7_approved.md). On launch
+// day exactly 7 charges happen: 6 × £34 (honour_window) + 1 × £99
+// (anomaly_launch_charge) = £303. `future_due` members (383) are NOT
+// charged at launch — they renew on their Stripe anniversary post-launch.
+//
+// After launch this file's "upcoming" + "past due" cards switch to
+// reading real Stripe `subscriptions` state.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { LAUNCH_AT_UTC } from "@/lib/launch";
 import {
   type Tier,
   type BillingEnv,
@@ -16,6 +27,10 @@ import {
   daysFromNow,
   isPaidTier,
 } from "./billing-metrics";
+
+/** Year-1 honour price = £34. Matches Stripe price `verified_legacy_annual`. */
+const LEGACY_HONOUR_PENCE = 3400;
+
 
 async function requireAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
