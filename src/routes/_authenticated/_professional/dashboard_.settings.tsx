@@ -22,6 +22,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PaymentsSettingsTab } from "@/components/dashboard/PaymentsSettingsTab";
+import { SubscriptionHistoryPanel } from "@/components/dashboard/SubscriptionHistoryPanel";
 import { CreditsPanel } from "@/components/dashboard/CreditsPanel";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
