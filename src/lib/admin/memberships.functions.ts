@@ -184,18 +184,22 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // 3. Upcoming payments (14d): live sub renewals + scheduled Verified due.
     let upcomingPence = 0;
     let upcomingCount = 0;
+    const upcomingLive: Array<{ userId: string; tier: Tier; dueAt: Date; amountPence: number }> = [];
+    const upcomingScheduled: Array<{ email: string; userId: string | null; dueAt: Date; amountPence: number }> = [];
     for (const s of live) {
       if (!s.current_period_end) continue;
       const due = new Date(s.current_period_end);
       if (due >= now && due <= in14d) {
         upcomingPence += paymentPence(s.tier);
         upcomingCount += 1;
+        upcomingLive.push({ userId: s.user_id, tier: s.tier as Tier, dueAt: due, amountPence: paymentPence(s.tier) });
       }
     }
     for (const r of scheduled) {
       if (r.dueAt >= now && r.dueAt <= in14d) {
         upcomingPence += TIER_PRICE_PENCE.verified;
         upcomingCount += 1;
+        upcomingScheduled.push({ email: r.email, userId: r.userId, dueAt: r.dueAt, amountPence: TIER_PRICE_PENCE.verified });
       }
     }
 
@@ -209,7 +213,69 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       : 0;
 
     const verifiedActive = tierMap.verified.active + tierMap.verified.trialing;
-    const verifiedTotal = verifiedActive + verifiedScheduledCount + lifetimeMembers;
+
+    // 5. Resolve names for upcoming + past-due lists.
+    const userIdsForNames = new Set<string>();
+    for (const it of upcomingLive) userIdsForNames.add(it.userId);
+    for (const it of upcomingScheduled) if (it.userId) userIdsForNames.add(it.userId);
+    for (const s of pastDue) userIdsForNames.add(s.user_id);
+
+    const profileMap = new Map<string, { full_name: string | null }>();
+    if (userIdsForNames.size > 0) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", Array.from(userIdsForNames));
+      for (const p of (profs ?? []) as any[]) profileMap.set(p.id, { full_name: p.full_name });
+    }
+
+    // Emails (for past-due lookup if name missing)
+    const pastDueUserIds = pastDue.map((s) => s.user_id);
+    const userEmailMap = new Map<string, string | null>();
+    if (pastDueUserIds.length > 0) {
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      for (const u of authUsers?.users ?? []) {
+        if (pastDueUserIds.includes(u.id)) userEmailMap.set(u.id, u.email ?? null);
+      }
+    }
+
+    // Names for unclaimed scheduled rows (from bd_member_seed)
+    const seedNameByEmail = new Map<string, string>();
+    for (const seed of (bdSeeds ?? []) as any[]) {
+      const nm = `${seed.first_name ?? ""} ${seed.last_name ?? ""}`.trim();
+      if (nm && seed.email) seedNameByEmail.set(String(seed.email).toLowerCase(), nm);
+    }
+
+    const upcomingItems: PaymentListItem[] = [
+      ...upcomingLive.map((it) => ({
+        name: profileMap.get(it.userId)?.full_name ?? "Member",
+        email: null,
+        tier: it.tier,
+        dueAt: it.dueAt.toISOString(),
+        amountPence: it.amountPence,
+        source: "stripe" as const,
+      })),
+      ...upcomingScheduled.map((it) => {
+        const fromProfile = it.userId ? profileMap.get(it.userId)?.full_name : null;
+        const fromSeed = it.email ? seedNameByEmail.get(it.email.toLowerCase()) : null;
+        return {
+          name: fromProfile || fromSeed || it.email || "Verified member",
+          email: it.email ?? null,
+          tier: "verified" as Tier,
+          dueAt: it.dueAt.toISOString(),
+          amountPence: it.amountPence,
+          source: "scheduled" as const,
+        };
+      }),
+    ].sort((a, b) => (a.dueAt ?? "").localeCompare(b.dueAt ?? ""));
+
+    const pastDueItems: PastDueItem[] = pastDue.map((s) => ({
+      name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
+      email: userEmailMap.get(s.user_id) ?? null,
+      tier: s.tier as Tier,
+      status: s.status,
+      amountPence: paymentPence(s.tier),
+    }));
 
     const distribution = [
       { label: "Verified", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
@@ -225,9 +291,11 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       scheduledArrPence: scheduledArr,
       upcoming14dPence: upcomingPence,
       upcoming14dCount: upcomingCount,
+      upcomingItems,
       verifiedActive,
       verifiedScheduled: verifiedScheduledCount,
       pastDueCount: pastDue.length,
+      pastDueItems,
       tiers: [
         { tier: "verified", ...tierMap.verified, scheduled: verifiedScheduledCount },
         { tier: "pro", ...tierMap.pro, scheduled: 0 },
@@ -235,7 +303,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       ],
       distribution,
       diagnostics: {
-        nonGbpExcluded: 0, // subscriptions table has no currency column; all GBP by spec
+        nonGbpExcluded: 0,
         lifetimeMembers,
         activeSubsTotal: live.length,
         legacyLinkScheduled: ((legacyLinks ?? []) as any[]).filter((l) => l.next_due_at).length,
