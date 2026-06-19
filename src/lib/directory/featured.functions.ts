@@ -179,7 +179,7 @@ async function fetchFeaturedPool(
   // passed the AI headshot QA (`avatar_qa_status = 'approved'`). Unapproved
   // photos (selfies, gym shots, full-body, missing AI check) are hidden from
   // featured rails so the directory only surfaces real headshots.
-  const enriched: FeaturedProRow[] = pros
+  const enriched: FeaturedProRow[] = (pros
     .filter((p) => p.slug)
     .map((p) => {
       const prof = profileById.get(p.id);
