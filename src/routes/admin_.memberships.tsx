@@ -87,8 +87,12 @@ function AdminMembershipsPage() {
           title="Verified"
           price="£99/year"
           icon={<BadgeCheck className="h-4 w-4 text-reps-orange" />}
-          active={metricsQ.data?.verifiedActive ?? 0}
-          scheduled={metricsQ.data?.verifiedScheduled ?? 0}
+          active={(metricsQ.data?.verifiedActive ?? 0) + (metricsQ.data?.verifiedScheduled ?? 0)}
+          footnote={
+            (metricsQ.data?.verifiedScheduled ?? 0) > 0
+              ? `Includes ${metricsQ.data!.verifiedScheduled} awaiting Stripe setup`
+              : undefined
+          }
           loading={metricsQ.isLoading}
         />
         <TierCard
@@ -108,6 +112,7 @@ function AdminMembershipsPage() {
           active={metricsQ.data?.tiers.find((t) => t.tier === "studio")?.active ?? 0}
           loading={metricsQ.isLoading}
         />
+
       </div>
 
       <DistributionStrip data={metricsQ.data} loading={metricsQ.isLoading} />
@@ -141,9 +146,10 @@ function KpiRow({ data, loading }: { data?: MembershipMetrics; loading: boolean 
         sub={
           loading || !data
             ? "—"
-            : `${gbp(data.activeArrPence)} active · ${gbp(data.scheduledArrPence)} scheduled`
+            : `${gbp(data.activeArrPence)} live · ${gbp(data.scheduledArrPence)} awaiting Stripe setup`
         }
       />
+
       <KpiCard
         label="Upcoming payments"
         value={loading ? null : gbp(data?.upcoming14dPence ?? 0)}
@@ -159,9 +165,12 @@ function KpiRow({ data, loading }: { data?: MembershipMetrics; loading: boolean 
         sub={
           loading || !data
             ? "—"
-            : `${data.verifiedActive} active · ${data.verifiedScheduled} scheduled`
+            : (data.verifiedScheduled ?? 0) > 0
+              ? `Includes ${data.verifiedScheduled} awaiting Stripe setup`
+              : "All on live Stripe subscriptions"
         }
       />
+
       <KpiCard
         label="Past due"
         value={loading ? null : String(data?.pastDueCount ?? 0)}
@@ -216,7 +225,7 @@ function TierCard({
   icon,
   active,
   trialing,
-  scheduled,
+  footnote,
   loading,
 }: {
   tier: string;
@@ -225,14 +234,13 @@ function TierCard({
   icon: React.ReactNode;
   active: number;
   trialing?: number;
-  scheduled?: number;
+  footnote?: string;
   loading: boolean;
 }) {
-  const total = active + (trialing ?? 0) + (scheduled ?? 0);
+  const total = active + (trialing ?? 0);
   const splitBits: string[] = [];
   splitBits.push(`${active} active`);
   if (typeof trialing === "number" && trialing > 0) splitBits.push(`${trialing} trialing`);
-  if (typeof scheduled === "number" && scheduled > 0) splitBits.push(`${scheduled} scheduled`);
 
   return (
     <PPanel className="p-6">
@@ -255,9 +263,13 @@ function TierCard({
       <div className="mt-4 text-[12px] text-white/70">
         {loading ? <Skeleton className="h-4 w-32 bg-white/5" /> : splitBits.join(" · ")}
       </div>
+      {!loading && footnote && (
+        <div className="mt-1 text-[11px] text-white/45">{footnote}</div>
+      )}
     </PPanel>
   );
 }
+
 
 // ---------------------------------------------------------------- Distribution strip
 
@@ -268,11 +280,10 @@ function DistributionStrip({ data, loading }: { data?: MembershipMetrics; loadin
   const toneClass = (tone: string) =>
     tone === "verified"
       ? "bg-reps-orange"
-      : tone === "scheduled"
-        ? "bg-reps-orange/40"
-        : tone === "pro"
-          ? "bg-white/55"
-          : "bg-emerald-400";
+      : tone === "pro"
+        ? "bg-white/55"
+        : "bg-emerald-400";
+
 
   return (
     <PCard className="mt-4">
@@ -317,10 +328,10 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
         verified: m.verifiedPence / 100,
         pro: m.proPence / 100,
         studio: m.studioPence / 100,
-        scheduled: m.scheduledPence / 100,
       })),
     [data],
   );
+
 
   return (
     <PPanel className="mt-6">
@@ -330,8 +341,9 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
             Recurring income forecast
           </h2>
           <p className="text-[12px] text-white/55">
-            Projected membership income based on active subscriptions and scheduled renewals.
+            Projected cash due each month from all Verified, Pro and Studio memberships.
           </p>
+
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <ForecastTile label="Year 1" value={loading ? null : gbp(data?.yearOneTotalPence ?? 0)} />
@@ -386,22 +398,23 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
                         <div className="mb-1.5 text-[11px] uppercase tracking-wide text-white/55">
                           {label}
                         </div>
-                        <div className="flex w-48 flex-col gap-1 text-[12px]">
+                        <div className="flex w-52 flex-col gap-1 text-[12px]">
                           <div className="flex items-center justify-between gap-3">
-                            <span className="text-white/70">Projected</span>
+                            <span className="text-white/70">Total</span>
                             <span className="font-semibold text-white">
                               £{Number(p.total).toLocaleString("en-GB", { maximumFractionDigits: 0 })}
                             </span>
                           </div>
-                          {p.verified > 0 && <Row label="Verified" v={p.verified} />}
-                          {p.pro > 0 && <Row label="Pro" v={p.pro} />}
-                          {p.studio > 0 && <Row label="Studio" v={p.studio} />}
-                          {p.scheduled > 0 && <Row label="Scheduled" v={p.scheduled} />}
+                          <div className="my-1 h-px bg-white/10" />
+                          <Row label="Verified" v={p.verified} dotClass="bg-reps-orange" />
+                          <Row label="Pro" v={p.pro} dotClass="bg-white/55" />
+                          <Row label="Studio" v={p.studio} dotClass="bg-emerald-400" />
                         </div>
                       </div>
                     );
                   }}
                 />
+
                 <Line
                   type="monotone"
                   dataKey="total"
@@ -419,14 +432,18 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
   );
 }
 
-function Row({ label, v }: { label: string; v: number }) {
+function Row({ label, v, dotClass }: { label: string; v: number; dotClass?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-white/55">
-      <span>{label}</span>
-      <span>£{v.toLocaleString("en-GB", { maximumFractionDigits: 0 })}</span>
+    <div className="flex items-center justify-between gap-3 text-white/70">
+      <span className="flex items-center gap-2">
+        {dotClass && <span className={"h-2 w-2 rounded-full " + dotClass} />}
+        {label}
+      </span>
+      <span className="text-white/85">£{v.toLocaleString("en-GB", { maximumFractionDigits: 0 })}</span>
     </div>
   );
 }
+
 
 function ForecastTile({ label, value }: { label: string; value: string | null }) {
   return (
@@ -504,7 +521,6 @@ function MonthlyForecastTable({
                 <TableHead className="text-right text-white/55">Verified</TableHead>
                 <TableHead className="text-right text-white/55">Pro</TableHead>
                 <TableHead className="text-right text-white/55">Studio</TableHead>
-                <TableHead className="text-right text-white/55">Scheduled</TableHead>
                 <TableHead className="text-right text-white/55">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -522,9 +538,6 @@ function MonthlyForecastTable({
                     <TableCell className="text-right text-white/80">
                       {r.m.studioPence ? gbp(r.m.studioPence) : "—"}
                     </TableCell>
-                    <TableCell className="text-right text-white/80">
-                      {r.m.scheduledPence ? gbp(r.m.scheduledPence) : "—"}
-                    </TableCell>
                     <TableCell className="text-right font-semibold text-white">
                       {r.m.totalPence ? gbp(r.m.totalPence) : "—"}
                     </TableCell>
@@ -537,7 +550,7 @@ function MonthlyForecastTable({
                     <TableCell className="text-[12px] font-semibold uppercase tracking-wide text-white/55">
                       {r.label} subtotal
                     </TableCell>
-                    <TableCell colSpan={4} />
+                    <TableCell colSpan={3} />
                     <TableCell className="text-right font-bold text-white">
                       {r.totalPence ? gbp(r.totalPence) : "—"}
                     </TableCell>
@@ -546,6 +559,7 @@ function MonthlyForecastTable({
               )}
             </TableBody>
           </Table>
+
         )}
       </div>
     </PPanel>
@@ -578,7 +592,8 @@ function UpcomingPaymentsPanel({
             <EmptyHeader>
               <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
               <EmptyDescription>
-                Renewals and scheduled Verified payments will list here as they approach.
+                Renewals and Verified annual payments will list here as they approach.
+
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
