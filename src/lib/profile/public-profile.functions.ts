@@ -129,10 +129,20 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, avatar_url")
+        .select("id, full_name, avatar_url, avatar_qa_status")
         .in("id", ids);
       profileById = new Map(
-        (profs ?? []).map((p) => [p.id, { full_name: p.full_name, avatar_url: p.avatar_url }]),
+        (profs ?? []).map((p) => [
+          p.id,
+          {
+            full_name: p.full_name,
+            // Same headshot QA gate as the public profile + featured cards.
+            avatar_url:
+              (p as { avatar_qa_status?: string | null }).avatar_qa_status === "approved"
+                ? p.avatar_url
+                : null,
+          },
+        ]),
       );
     }
 
@@ -146,5 +156,6 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
       avatar_url: profileById.get(r.id)?.avatar_url ?? null,
       location: locMap.get(r.id) ?? null,
     }));
+
   },
 );
