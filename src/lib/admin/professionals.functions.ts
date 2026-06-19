@@ -23,6 +23,8 @@ export type AdminProRow = {
   lifetimeValuePence: number | null;
   renewalDate: string | null;
   renewalDateSource: 'stripe' | 'bd' | null;
+  isTrial: boolean;
+  trialDaysLeft: number | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -225,12 +227,12 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     const profileMap = new Map(profilesData.map((p) => [p.id, p]));
     const subMap = new Map<string, string>();
-    const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null }>();
+    const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null; status: string }>();
     for (const s of subsData) {
       if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
       if (!subMap.has(s.user_id)) {
         subMap.set(s.user_id, s.tier);
-        subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end });
+        subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end, status: s.status });
       }
     }
     const ratingAcc = new Map<string, { sum: number; n: number }>();
@@ -288,6 +290,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
         renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
         renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
+        isTrial: subDetail?.status === 'trialing',
+        trialDaysLeft: subDetail?.status === 'trialing' && subDetail.currentPeriodEnd
+          ? Math.max(0, Math.ceil((new Date(subDetail.currentPeriodEnd).getTime() - Date.now()) / 86400000))
+          : null,
       };
     });
 

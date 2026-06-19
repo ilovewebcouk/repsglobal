@@ -736,9 +736,15 @@ function ProRow({ row }: { row: AdminProRow }) {
         ) : <span className="text-white/45">—</span>}
       </td>
       <td className="px-3 py-3">
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.plan)}`}>
-          {PLAN_LABEL[row.plan]}
-        </span>
+        {row.isTrial ? (
+          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
+            Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+          </span>
+        ) : (
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.plan)}`}>
+            {PLAN_LABEL[row.plan]}
+          </span>
+        )}
       </td>
       <td className="px-3 py-3">
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
