@@ -224,9 +224,9 @@ function ReviewsPage() {
                     { k: "all" as const, label: "All" },
                     { k: "5" as const, label: "5★" },
                     { k: "4" as const, label: "4★" },
-                    { k: "awaiting" as const, label: "Awaiting reply" },
                   ]
                 ).map((c) => (
+
                   <button
                     key={c.k}
                     type="button"
