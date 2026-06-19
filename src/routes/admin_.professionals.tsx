@@ -921,3 +921,73 @@ function SuspendDialog({
     </Dialog>
   );
 }
+
+function ConfirmDialog({
+  open, onOpenChange, title, description, confirmLabel, confirmTone, pending, onConfirm, requireTypedConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmTone: "amber" | "red";
+  pending: boolean;
+  onConfirm: (reason: string | undefined) => void;
+  requireTypedConfirm?: string;
+}) {
+  const [reason, setReason] = React.useState("");
+  const [typed, setTyped] = React.useState("");
+  React.useEffect(() => { if (!open) { setReason(""); setTyped(""); } }, [open]);
+
+  const typedOk = !requireTypedConfirm || typed.trim() === requireTypedConfirm;
+  const toneClass = confirmTone === "red"
+    ? "bg-red-500 text-white hover:bg-red-400"
+    : "bg-amber-500 text-black hover:bg-amber-400";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">{title}</DialogTitle>
+          <DialogDescription className="text-white/55">{description}</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 py-2 text-left">
+          <div>
+            <Label htmlFor="confirm-reason" className="text-white/75">Internal reason (optional)</Label>
+            <Textarea
+              id="confirm-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="e.g. Cancellation requested via support ticket #1234."
+              className="mt-1 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+            />
+          </div>
+          {requireTypedConfirm ? (
+            <div>
+              <Label htmlFor="confirm-phrase" className="text-white/75">
+                Type <span className="font-mono text-reps-orange">{requireTypedConfirm}</span> to confirm
+              </Label>
+              <Input
+                id="confirm-phrase"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+              />
+            </div>
+          ) : null}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button
+            disabled={pending || !typedOk}
+            onClick={() => onConfirm(reason.trim() || undefined)}
+            className={toneClass}
+          >
+            {pending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Working…</> : confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
