@@ -2320,52 +2320,133 @@ export type Database = {
           },
         ]
       }
+      review_requests: {
+        Row: {
+          client_email: string
+          client_name: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          opened_at: string | null
+          professional_id: string
+          sent_at: string
+          service_label: string | null
+          status: string
+          submitted_at: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          client_email: string
+          client_name?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          opened_at?: string | null
+          professional_id: string
+          sent_at?: string
+          service_label?: string | null
+          status?: string
+          submitted_at?: string | null
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          opened_at?: string | null
+          professional_id?: string
+          sent_at?: string
+          service_label?: string | null
+          status?: string
+          submitted_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
+          bd_review_id: number | null
           body: string
+          client_email: string | null
           client_name: string
           client_user_id: string | null
           created_at: string
+          flag_reason: string | null
+          flagged_at: string | null
           id: string
           professional_id: string
           published_at: string | null
           rating: number
           responded_at: string | null
           response: string | null
+          service_label: string | null
           source: string
           status: string
+          thanked_at: string | null
           title: string | null
           updated_at: string
         }
         Insert: {
+          bd_review_id?: number | null
           body: string
+          client_email?: string | null
           client_name: string
           client_user_id?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged_at?: string | null
           id?: string
           professional_id: string
           published_at?: string | null
           rating: number
           responded_at?: string | null
           response?: string | null
+          service_label?: string | null
           source?: string
           status?: string
+          thanked_at?: string | null
           title?: string | null
           updated_at?: string
         }
         Update: {
+          bd_review_id?: number | null
           body?: string
+          client_email?: string | null
           client_name?: string
           client_user_id?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged_at?: string | null
           id?: string
           professional_id?: string
           published_at?: string | null
           rating?: number
           responded_at?: string | null
           response?: string | null
+          service_label?: string | null
           source?: string
           status?: string
+          thanked_at?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -3044,6 +3125,29 @@ export type Database = {
       }
     }
     Views: {
+      professional_review_stats: {
+        Row: {
+          avg_rating: number | null
+          professional_id: string | null
+          review_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       v_identity_review_queue: {
         Row: {
           display_name: string | null
@@ -3199,6 +3303,20 @@ export type Database = {
           qualification: string
         }[]
       }
+      get_review_request_by_token: {
+        Args: { _token: string }
+        Returns: {
+          client_email: string
+          client_name: string
+          expires_at: string
+          id: string
+          professional_id: string
+          professional_name: string
+          professional_slug: string
+          service_label: string
+          status: string
+        }[]
+      }
       grant_credit_topup: {
         Args: {
           _credits: number
@@ -3251,6 +3369,10 @@ export type Database = {
         }
         Returns: string
       }
+      mark_review_request_opened: {
+        Args: { _token: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -3295,6 +3417,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      submit_review_by_token: {
+        Args: {
+          _body: string
+          _client_name: string
+          _rating: number
+          _title: string
+          _token: string
+        }
+        Returns: string
       }
       support_run_maintenance: {
         Args: never

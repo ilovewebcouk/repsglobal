@@ -1,0 +1,1 @@
+ALTER VIEW public.professional_review_stats SET (security_invoker = true);

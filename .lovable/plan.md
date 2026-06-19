@@ -1,79 +1,114 @@
-## Scope
+# Reviews module — Verified tier, admin moderation, public rating, BD backfill
 
-Data-source fixes only. No card redesign, no `/admin/payments` UI changes, no public pages, no checkout, no BD migration billing execution, no Stripe write actions (no customers/subscriptions/invoices/schedules/items/charges created or modified in Stripe). Card redesign is deferred to a follow-up pass once numbers are trustworthy.
+Scope: Verified-tier professional reviews dashboard, admin moderation page, directory rating display wiring, and a one-off backfill of the uploaded BD CSV. Pro/Studio variants stay out of scope.
 
-Brutal-truth pre-amble (recorded so the redesign pass doesn't repeat the mistake): of the four KPIs in the proposed mock, only "Total members" is computable today. "MRR vs last month", "Foundation→Pro conversion %" and "Monthly churn %" all need a historical snapshot table that doesn't exist, and "Foundation" isn't a tier you sell. The redesign pass will use Monthly revenue / Total members / Forecast ARR / Trialing now until snapshots accrue.
+## 1. Data model (one migration)
 
----
+Existing `reviews` already has id, professional_id, client_user_id, client_name, rating, title, body, source, status, response, responded_at, published_at, created_at, updated_at. We add:
 
-## 1. Environment integrity (Stripe livemode → DB environment)
+- `reviews.flag_reason TEXT NULL` + `reviews.flagged_at TIMESTAMPTZ NULL` — admin flagged queue + Flag action.
+- `reviews.thanked_at TIMESTAMPTZ NULL` — Thank button.
+- `reviews.service_label TEXT NULL` — free-text service name (used by BD backfill + request-review email).
+- `reviews.client_email CITEXT NULL` — captured from BD `review_email` and from request-link submissions.
+- `reviews.bd_review_id INT NULL UNIQUE` — idempotency key for BD CSV import.
+- New table **`review_requests`**: `id uuid pk`, `professional_id uuid → professionals`, `client_email citext`, `client_name text`, `service_label text null`, `token text unique` (32-byte hex), `status text` ('sent'|'opened'|'submitted'|'expired'), `sent_at`, `opened_at`, `submitted_at`, `expires_at` (90 days), `created_at`. RLS: pro can SELECT/INSERT/UPDATE own rows; service_role full; public token lookup via SECURITY DEFINER RPC. GRANTs to `authenticated` + `service_role`.
+- Indexes: `reviews(professional_id, status, created_at desc)`, `reviews(flagged_at)`, `review_requests(professional_id, created_at desc)`, `review_requests(token)`.
+- View `professional_review_stats`: `professional_id`, `review_count`, `avg_rating` (only `status='published'`).
 
-**File:** `src/routes/api/public/payments/webhook.ts`
+## 2. Verified-tier dashboard (`/dashboard/reviews`)
 
-- Derive `env` strictly from `event.livemode`: `event.livemode === true → 'live'`, `event.livemode === false → 'sandbox'`.
-- The `?env=` URL parameter is now used only to pick which webhook secret to verify against. If `event.livemode` and `?env=` disagree after signature verification, log a `webhook_env_mismatch` warning row with `{ event_id, livemode, url_env }` and use `event.livemode` as the source of truth for any DB write (never silently write the wrong env).
-- All `subscriptions` writes inside the webhook (`customer.subscription.*`, invoice handlers that touch `subscriptions`) write `environment` from this derived value.
+- Move `src/routes/_authenticated/_professional/_pro/dashboard_.reviews.tsx` → `src/routes/_authenticated/_professional/dashboard_.reviews.tsx` so Verified/Pro/Studio all see it.
+- Remove `/dashboard/reviews` from `UPGRADE_BY_PATH` in `_pro/route.tsx`.
+- Add "Reviews" item to the Verified-tier sidebar nav.
+- Wire live data (drop static `REVIEWS`/`BREAKDOWN`/`FLAGGED`/`KPIS`): overall rating, last 30d, response rate, awaiting reply, flagged.
+- Reply/Thank/Flag wired to new server fns (Reply already exists).
+- "Request a review" promoted to primary (top-right); dialog → name + email + optional service → `createReviewRequest` → enqueues `review-request` email via `sendTransactionalEmailServer`. Email links to `/r/$token`.
+- "Sent requests" panel: last 20 `review_requests` with status pills.
 
-**One-off data correction (via `supabase--insert`, no Stripe call):**
-- `UPDATE public.subscriptions SET environment='sandbox', updated_at=now() WHERE stripe_subscription_id='sub_1ThB2X…'` (the confirmed test-mode row).
-- Re-verify with a SELECT: only `livemode=true` subs remain `environment='live'`.
+Locked mock-up layout stays pixel-identical — only data sources change.
 
----
+## 3. Admin moderation (`/admin/reviews`)
 
-## 2. Billing-period integrity (annual vs monthly)
+Rewrite `src/routes/admin_.reviews.tsx` with live data; keep locked layout (4 KPI tiles + flagged list + rating distribution + trust system panel).
 
-**Schema (migration):**
-- Add `billing_period text` to `public.subscriptions` with CHECK in (`'monthly'`,`'annual'`), nullable for now.
-- Backfill: for each live row, derive from Stripe subscription metadata already stored (`billing_period` on `sub.metadata`) — `sub_1Ti0uW…` → `annual`, `sub_1TjwoJ…` → `annual`, `sub_1ThB2X…` → `monthly` (and the row is sandbox anyway).
-- No default. New rows must set it explicitly.
+- KPIs: avg platform rating (weighted), reviews 30d, flagged count, auto-approved % (last 30d).
+- Flagged list: rows where `status='flagged'` OR `flag_reason IS NOT NULL`. Approve → status=published, clears flag. Remove → status=hidden. Both via admin server fns gated by `requireSupabaseAuth` + `has_role('admin')`.
+- Rating distribution over last 30d.
 
-**Webhook:** when writing/updating a subscription row, set `billing_period` from `subscription.metadata.billing_period` (fallback: derive from the price's `recurring.interval`).
+## 4. Public review submission `/r/$token`
 
-**Forecast math:** `src/lib/admin/billing-metrics.ts` gets period-aware helpers used everywhere downstream:
-- `paymentPenceFor(tier, period)` — Pro+annual = `CHECKOUT_OFFERS.pro.annual.display` (£590), Pro+monthly = £59, Verified+annual = £99, Studio+monthly = £149.
-- `annualPenceFor(tier, period)` — annual rows = the annual price as-is; monthly rows = `monthlyPence × 12`.
-- `cadenceMonthsFor(tier, period)` — annual = 12, monthly = 1.
+No-auth route:
+- `getReviewRequest({ token })` validates + stamps `opened_at`.
+- Form (rating 1–5, title, body, name pre-filled) using shadcn primitives.
+- `submitReviewByToken({ token, rating, title, body })` inserts `reviews` with `source='request_link'`, `client_user_id=null`, `status='published'`, copies `client_email` from the request, stamps `review_requests.submitted_at`.
 
-**Consumers:** `src/lib/admin/memberships.functions.ts` — both `getMembershipMetrics` and `getRevenueForecast` select `billing_period` and use the new helpers for: live Forecast ARR, post-launch upcoming payments, past-due totals, and the 24-month recurring income chart. V7-cohort logic untouched.
+Existing authenticated `submitReview` stays for logged-in clients.
 
----
+## 5. Public profile + directory card rating wiring
 
-## 3. Orphan exclusion (deleted auth users)
+- Update `pro.$slug.index.tsx` and directory card builders to read `(count, average)` from `professional_review_stats` instead of hardcoded `0.0 (0)`.
+- `FeaturedProCard` shape unchanged; we pass real numbers. Count=0 keeps the existing "0.0 (0)" state.
+- Directory list query (`src/lib/directory/...`) LEFT JOINs the stats view.
 
-In `getMembershipMetrics` and `getRevenueForecast`:
-- After loading live `subscriptions`, fetch the matching set of `auth.users.id`s via `supabaseAdmin.auth.admin.listUsers` (or a single targeted query) and build a `Set<string>` of valid `user_id`s.
-- Partition `subsRaw` into `subsLinked` (user_id present) and `subsOrphan` (user_id missing).
-- ALL KPIs, tier counts, ARR, recurring chart, and Upcoming Payments use `subsLinked` only.
-- Add to `MembershipMetrics.diagnostics`: `orphanedSubsLive: number`, `orphanedSubsList: Array<{ stripe_subscription_id, tier, status, billing_period }>` (no PII, just IDs) — surfaced later in a Stripe/Payments diagnostics tile.
-- Do not delete orphaned rows in this pass. Do not cancel in Stripe.
+## 6. BD CSV backfill (one-off) — CORRECTED
 
----
+CSV `member_reviews_19-06.csv` has 161 rows. **Key correction:** the trainer column is `user_id` (44 distinct BD trainers), NOT `member_id` (which is 0 across all rows — ignored). `review_name`/`review_email` are the reviewer (client), not the trainer.
 
-## Out of scope this pass
+Join chain:
+```
+member_reviews.user_id (CSV)
+  → bd_member_seed.bd_member_id
+  → bd_migration.rep_user_id        (status = 'seeded')
+  → professionals.user_id → professionals.id
+```
 
-- `/admin/memberships` card visual redesign (KPI tiles, tier-card progress bars, "Payments in next 14 days" rename).
-- `/admin/payments` UI.
-- Public pages, checkout, BD migration billing execution.
-- Stripe write actions of any kind.
-- Snapshot table for MoM deltas (separate pass, prerequisite for churn % and MRR delta).
+Script `scripts/backfill-bd-reviews.ts` (run with service-role):
 
----
+1. For each CSV row where `review_status='2'` (approved):
+   - Resolve `user_id` to a `professional_id` via the join chain above. Unmapped → log + skip (BD trainer not yet migrated/seeded).
+   - Strip HTML (`<[^>]+>`) and decode entities (`&#39;` `&quot;` `&amp;` `&lt;` `&gt;`) from `review_description`.
+   - Insert into `reviews`:
+     - `professional_id` = resolved
+     - `client_name` = `review_name`
+     - `client_email` = `review_email`
+     - `title` = `review_title`
+     - `body` = stripped description
+     - `rating` = clamp(`rating_overall`, 1, 5)
+     - `published_at` = `created_at` = parsed `review_added` (YYYYMMDDHHMMSS)
+     - `bd_review_id` = `review_id` (idempotency)
+     - `source='bd_import'`, `status='published'`
+2. `ON CONFLICT (bd_review_id) DO NOTHING`.
+3. Run via `bun run scripts/backfill-bd-reviews.ts /mnt/user-uploads/member_reviews_19-06.csv`. Output report: imported / skipped-duplicate / skipped-status / skipped-unmapped (with the unresolved `user_id` list).
 
-## Verification report (returned after build)
+Same script handles future BD exports automatically.
 
-1. SELECT confirms 0 sandbox/test-mode subs counted in live metrics.
-2. Table of all current `subscriptions` rows: `tier, status, environment, billing_period, forecast_cadence_months, forecast_payment_pence`.
-3. Annual Pro subs forecast annually (£590 once per year, not £59 × 12).
-4. Orphaned subs excluded from `/admin/memberships` aggregates; surfaced via `diagnostics.orphanedSubsLive`.
-5. Recalculated Forecast ARR (live + V7 future) — expected ≈ £39,790 (2 linked annual Pro × £590 + 383 V7 future × £99 + 7 V7 honour × £99 anniversary).
-6. Recalculated 24-month recurring chart totals.
-7. Recalculated Pro trialing count = 2 (was 3).
-8. Confirmation: no Stripe API write calls were issued; only DB reads + one DB UPDATE for the misclassified row.
+## 7. Email template
 
----
+New `src/lib/email-templates/review-request.tsx`:
+- Subject: `"{{proName}} asked for your review on REPS"`
+- Body: short paragraph + big CTA → `https://repsuk.org/r/{{token}}`
+- Registered in `src/lib/email-templates/registry.ts`.
 
-## Technical notes
+## 8. Execution
 
-- Migration touches schema (`ALTER TABLE public.subscriptions ADD COLUMN billing_period text CHECK …`). The one-off `environment` correction goes through `supabase--insert`, not a migration.
-- `auth.users` lookup happens server-side inside the admin server functions (already use `supabaseAdmin` and gate on `has_role(_, 'admin')`); no new RLS or grants needed.
-- Webhook signature verification flow is unchanged — only the post-verification `env` derivation changes.
+Large fan-out (admin rewrite, dashboard rewrite, public form, backfill script, directory rewiring) goes to parallel background subagents with tight prompts + file paths. Migration + route move + sidebar nav update I do directly so the foundation lands first.
+
+## Technical / file-by-file
+
+- **Migration** — `reviews` ALTERs, `review_requests` CREATE + GRANTs + RLS, `professional_review_stats` view, indexes.
+- **Move**: `_pro/dashboard_.reviews.tsx` → `_professional/dashboard_.reviews.tsx`.
+- **Edit**: `_pro/route.tsx` (drop `/dashboard/reviews` from `UPGRADE_BY_PATH`).
+- **Edit**: Verified sidebar nav config (add Reviews).
+- **Rewrite**: `src/routes/admin_.reviews.tsx`.
+- **Extend**: `src/lib/reviews/reviews.functions.ts` — add `flagReview`, `thankReview`, `createReviewRequest`, `listMyReviewRequests`, `getReviewRequest`, `submitReviewByToken`, `adminListFlagged`, `adminApproveReview`, `adminRemoveReview`, `adminReviewKpis`.
+- **New**: `src/routes/r.$token.tsx`.
+- **New**: `src/lib/email-templates/review-request.tsx` + registry update.
+- **Edit**: `FeaturedProCard` consumers + directory list query.
+- **New**: `scripts/backfill-bd-reviews.ts`.
+
+## Out of scope
+
+- Pro/Studio review module redesign.
+- Real auto-moderation (profanity/promo); flagged queue stays manual; trust-system panel keeps static labels.
+- Editing the locked `/c/$slug` shop-front to surface reviews.
+- New-review email notifications.
