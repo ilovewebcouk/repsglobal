@@ -48,3 +48,23 @@ Members imported from BD start with **12 months of grace** at the Verified tier.
 ## Out of scope here
 
 The migration script itself, the Connect onboarding flow, the auto-downgrade job, and any UI surfacing of grace-period countdowns. Those are Phase 2.1+ deliverables.
+
+## 8. Launch-day cron behaviour (26 June 2026)
+
+Locked 19 Jun 2026. The `legacy-renewal` cron is a no-op until launch; at
+`2026-06-26T00:00 BST` (`LAUNCH_AT_UTC`) it runs daily and applies these
+rules per `legacy_stripe_link` row (`migration_status = 'ready'`, with a
+`stripe_customer_id`, `access_expires_at <= now()`):
+
+| Member state | Charged today | Subscription created |
+|---|---|---|
+| `eligible_for_legacy_price = true` AND `access_expires_at >= 2026-06-14T17:24:51Z` (CSV import) | £34 | Subscription Schedule: £34/yr for year 1, auto-step to £99/yr from year 2 |
+| Long-overdue: `access_expires_at < 2026-06-14T17:24:51Z` (last paid before CSV import) | £99 | Plain £99/yr Verified subscription |
+| No payment method on file | £0 charge | Same schedule/sub created with `send_invoice`, 30 days to pay |
+| Lifetime members (not in `legacy_stripe_link`) | £0 | None — kept Verified, never billed |
+
+The CSV import cutoff is stored as `LEGACY_HONOUR_CUTOFF` in
+`src/lib/launch.ts` and derived from the actual `bd_member_seed.created_at`
+timestamp. Brand-new sign-ups after launch are unaffected: they use the
+standard `/pricing` → Stripe Checkout flow (Verified £99/yr or Pro £59/mo
+Founding) defined in `src/lib/billing.ts`.
