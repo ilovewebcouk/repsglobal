@@ -5,10 +5,12 @@ import { toast } from "sonner";
 import {
   ArrowUpRight,
   Flag,
+  Pencil,
   Reply,
   Search,
   Star,
   ThumbsUp,
+  Trash2,
   Mail,
   CheckCircle2,
   Clock,
@@ -30,9 +32,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   createReviewRequest,
+  deleteReviewResponse,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
