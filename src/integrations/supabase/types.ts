@@ -167,6 +167,10 @@ export type Database = {
           legacy_signup_at: string | null
           linkedin: string | null
           lon: number | null
+          migration_canonical_stripe_customer_id: string | null
+          migration_cohort_override: string | null
+          migration_cohort_reason: string | null
+          migration_review_resolved: boolean
           notes: string | null
           phone_raw: string | null
           profile_photo_reject_category: string | null
@@ -211,6 +215,10 @@ export type Database = {
           legacy_signup_at?: string | null
           linkedin?: string | null
           lon?: number | null
+          migration_canonical_stripe_customer_id?: string | null
+          migration_cohort_override?: string | null
+          migration_cohort_reason?: string | null
+          migration_review_resolved?: boolean
           notes?: string | null
           phone_raw?: string | null
           profile_photo_reject_category?: string | null
@@ -255,6 +263,10 @@ export type Database = {
           legacy_signup_at?: string | null
           linkedin?: string | null
           lon?: number | null
+          migration_canonical_stripe_customer_id?: string | null
+          migration_cohort_override?: string | null
+          migration_cohort_reason?: string | null
+          migration_review_resolved?: boolean
           notes?: string | null
           phone_raw?: string | null
           profile_photo_reject_category?: string | null
