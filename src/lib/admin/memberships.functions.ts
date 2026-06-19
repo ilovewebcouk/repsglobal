@@ -118,15 +118,31 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // 1. Active/trialing subscriptions in the current env, paid tiers only.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("user_id, tier, status, current_period_end, environment")
+      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id")
       .eq("environment", env);
 
-    const subs = (subsRaw ?? []) as Array<{
+    const allSubs = (subsRaw ?? []) as Array<{
       user_id: string;
       tier: string;
       status: string;
       current_period_end: string | null;
+      billing_period: BillingPeriod | null;
+      stripe_subscription_id: string | null;
     }>;
+
+    // Orphan exclusion: any sub whose user_id no longer exists in auth.users
+    // is excluded from every KPI/forecast and surfaced via diagnostics only.
+    const allUserIds = Array.from(new Set(allSubs.map((s) => s.user_id)));
+    const validUserIds = new Set<string>();
+    if (allUserIds.length > 0) {
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .in("id", allUserIds);
+      for (const p of (existing ?? []) as Array<{ id: string }>) validUserIds.add(p.id);
+    }
+    const orphanSubs = allSubs.filter((s) => !validUserIds.has(s.user_id));
+    const subs = allSubs.filter((s) => validUserIds.has(s.user_id));
 
     const live = subs.filter((s) => LIVE_STATUSES.has(s.status) && isPaidTier(s.tier));
     const pastDue = subs.filter((s) => PAST_DUE_STATUSES.has(s.status));
@@ -139,7 +155,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     };
     for (const s of live) {
       const t = s.tier as Tier;
-      activeArr += annualPence(t);
+      activeArr += annualPenceFor(t, s.billing_period);
       if (s.status === "trialing") tierMap[t].trialing += 1;
       else tierMap[t].active += 1;
     }
