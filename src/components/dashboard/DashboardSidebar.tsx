@@ -7,6 +7,7 @@ import {
   Briefcase,
   Building2,
   Calendar as CalendarIcon,
+  ChevronRight,
   ClipboardList,
   CreditCard,
   Dumbbell,
@@ -28,6 +29,12 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import {
   Sidebar,
