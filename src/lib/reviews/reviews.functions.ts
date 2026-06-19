@@ -70,7 +70,7 @@ export const submitReview = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
     await fanOutReviewNotifications(supabaseAdmin, row.id, pro.id);
-    void runReviewModerationFireAndForget(row.id);
+    await runReviewModerationSafely(row.id);
     return { id: row.id };
   });
 
