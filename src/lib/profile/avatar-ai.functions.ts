@@ -234,11 +234,18 @@ export const commitAvatar = createServerFn({ method: "POST" })
       throw new Error("Forbidden: path is not in your folder.");
     }
     const url = await signOneYearUrl(data.path);
+    const isAi = data.isAiGenerated ?? false;
     const { error } = await supabase
       .from("profiles")
       .update({
         avatar_url: url,
-        avatar_is_ai_generated: data.isAiGenerated ?? false,
+        avatar_is_ai_generated: isAi,
+        // Both paths went through AI validation:
+        //   - real uploads via validateAvatar (headshot classifier + face box crop)
+        //   - AI portraits via regenerateAvatar (editorial portrait + identity verifier)
+        // So in both cases the avatar is safe to surface on public featured cards.
+        avatar_qa_status: "approved",
+        avatar_qa_source: isAi ? "ai_generated" : "ai_upload",
       })
       .eq("id", userId);
     if (error) throw error;
