@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   BadgeCheck,
@@ -28,6 +29,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
+import { listPublicReviewsBySlug, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import {
   getProfessionLabel,
@@ -35,6 +37,19 @@ import {
   getProfessionSlugFromLabel,
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+
+function formatReviewWhen(iso: string): string {
+  const then = new Date(iso).getTime();
+  const days = Math.max(0, Math.floor((Date.now() - then) / 86_400_000));
+  if (days < 1) return "today";
+  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
+  const years = Math.floor(days / 365);
+  return `${years} year${years === 1 ? "" : "s"} ago`;
+}
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
