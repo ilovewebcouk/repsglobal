@@ -318,7 +318,7 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
     const url = data.path ? await signOneYearUrl(data.path) : null;
     // Removing the photo also clears its QA approval — the next upload must
     // re-pass the AI headshot check before it can appear on featured cards.
-    const patch: Record<string, unknown> = url
+    const patch = url
       ? { avatar_url: url }
       : {
           avatar_url: null,
