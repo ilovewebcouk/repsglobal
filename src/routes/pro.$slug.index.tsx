@@ -72,107 +72,23 @@ type Pro = {
 };
 
 const PROS: Record<string, Pro> = {
-  "james-carter": {
-    slug: "james-carter",
-    name: "James Carter",
-    firstName: "James",
-    role: "Personal Trainer",
-    location: "London",
-    region: "Greater London",
-    rating: 5.0,
-    reviews: 128,
-    modes: ["In-person", "Online"],
-    blurb: "Helping busy professionals build strength, move better and perform at their best.",
-    image: proJames,
-    years: 8,
-    clients: "100+",
-    bio: [
-      "I'm a REPS Verified Personal Trainer with over 8 years of experience helping clients achieve real, lasting results. My approach is tailored, supportive and evidence-based, focusing on strength, performance and long-term wellbeing.",
-      "Whether you're just starting out or looking to take your training to the next level, I'll create a plan that fits your goals, lifestyle and schedule.",
-    ],
-    specialisms: [
-      "Strength Training",
-      "Weight Loss",
-      "Muscle Gain",
-      "Functional Fitness",
-      "Lifestyle Coaching",
-      "Posture & Mobility",
-      "Performance Training",
-    ],
-    services: [
-      {
-        title: "Personal Training",
-        desc: "1-to-1 in-person sessions tailored to your goals.",
-        price: "From £60",
-        unit: "per session",
-        image: heroCoaching,
-        icon: Users,
-      },
-      {
-        title: "Online Coaching",
-        desc: "Custom plans, check-ins and ongoing support.",
-        price: "From £120",
-        unit: "per month",
-        image: proDaniel,
-        icon: Laptop,
-      },
-      {
-        title: "Nutrition Plan",
-        desc: "Personalised nutrition plans to fuel results.",
-        price: "From £40",
-        unit: "one-off plan",
-        image: proSophie,
-        icon: Award,
-      },
-    ],
-    qualifications: [
-      {
-        badge: "REPS",
-        title: "REPS Level 3 Personal Trainer",
-        issuer: "The Register of Exercise Professionals",
-        id: "REP1234567",
-        issued: "May 2023",
-      },
-      {
-        badge: "YMCA",
-        title: "Level 3 Diploma in Personal Training",
-        issuer: "YMCA Awards",
-        id: "600/1234/8",
-        issued: "May 2021",
-      },
-    ],
-    faqs: [
-      {
-        q: "Do you offer online coaching?",
-        a: "Yes! I offer fully personalised online coaching with custom training plans, check-ins, and ongoing support to keep you accountable and on track.",
-        open: true,
-      },
-      { q: "Where do sessions take place?", a: "" },
-      { q: "How do I get started?", a: "" },
-      { q: "What should I expect in my first session?", a: "" },
-      { q: "Do you offer nutrition guidance?", a: "" },
-    ],
-  },
-};
+// Static demo fixtures retired — every /pro/$slug now resolves against the
+// DB. Unknown slugs return 404.
+const PROS: Record<string, Pro> = {};
 
-const REVIEW_AVATARS = [proSophie, proDaniel, proLaura];
-const REVIEWS = [
+const DEFAULT_SERVICES: Pro["services"] = [
   {
-    name: "Sophie L.",
-    when: "2 weeks ago",
-    body: "James has completely changed the way I train. His programmes are challenging but achievable and I've never felt stronger!",
-  },
-  {
-    name: "Michael R.",
-    when: "1 month ago",
-    body: "Great coach and even better person. Really takes the time to understand your goals and builds a plan that actually works.",
-  },
-  {
-    name: "Emily T.",
-    when: "2 months ago",
-    body: "I've seen more progress in 3 months with James than I did in a year training on my own. Highly recommend!",
+    title: "1-to-1 session",
+    desc: "Personalised coaching tailored to your goals.",
+    price: "Enquire for pricing",
+    unit: "per session",
+    image: heroCoaching,
+    icon: Users,
   },
 ];
+
+// REVIEW_AVATARS removed — reviews now render with initials tiles only.
+const REVIEWS: { name: string; when: string; body: string }[] = [];
 
 const STATS = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
@@ -207,7 +123,6 @@ const RATING_DIST = [
 type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
 
 function proFromDb(row: NonNullable<DbPro>): Pro {
-  const template = PROS["james-carter"];
   const professionLabel =
     getProfessionLabel(row.primary_profession) ?? "REPS Verified Professional";
   return {
@@ -225,7 +140,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       ...(row.online_available ? (["Online"] as const) : []),
     ] as Pro["modes"],
     blurb: row.headline ?? "",
-    image: row.avatar_url || proJames,
+    image: row.avatar_url || "",
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
@@ -243,7 +158,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
             icon: Users,
           },
         ]
-      : template.services,
+      : DEFAULT_SERVICES,
     qualifications: [],
     faqs: [],
   };
@@ -251,14 +166,15 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
 
 export const Route = createFileRoute("/pro/$slug/")({
   loader: async ({ params }) => {
-    if (PROS[params.slug]) return { source: "fixture" as const, db: null };
     const db = await getPublicProfileBySlug({ data: { slug: params.slug } });
-    return { source: db ? ("db" as const) : ("fallback" as const), db };
+    if (!db) throw notFound();
+    return { db };
   },
-  head: ({ params, loaderData }) => {
-    const fixture = PROS[params.slug];
-    const dbPro = loaderData?.db ? proFromDb(loaderData.db) : null;
-    const pro = fixture ?? dbPro ?? PROS["james-carter"];
+  head: ({ loaderData }) => {
+    const pro = loaderData?.db ? proFromDb(loaderData.db) : null;
+    if (!pro) {
+      return { meta: [{ title: "Professional not found — REPS" }] };
+    }
     const title = `${pro.name} — ${pro.role} | REPS`;
     const description = `${pro.name}, REPS Verified ${pro.role}${pro.location ? ` in ${pro.location}` : ""}. ${pro.blurb}`;
     return {
@@ -272,13 +188,33 @@ export const Route = createFileRoute("/pro/$slug/")({
       links: [{ rel: "canonical", href: `/pro/${pro.slug}` }],
     };
   },
+  notFoundComponent: () => (
+    <div className="min-h-screen bg-reps-ivory">
+      <PublicHeader variant="solid" />
+      <div className="mx-auto max-w-[720px] px-6 py-24 text-center">
+        <h1 className="font-display text-[28px] font-bold text-reps-charcoal">
+          Professional not found
+        </h1>
+        <p className="mt-3 text-[14px] text-reps-muted-light">
+          We couldn't find this profile on REPS. They may have removed their listing.
+        </p>
+        <Link
+          to="/find-a-professional"
+          className="mt-6 inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-5 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
+        >
+          Browse verified professionals
+        </Link>
+      </div>
+      <PublicFooter />
+    </div>
+  ),
   component: ProProfilePage,
 });
 
 function ProProfilePage() {
-  const { slug } = Route.useParams();
   const { db } = Route.useLoaderData();
-  const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
+  const pro = proFromDb(db!);
+  const slug = pro.slug;
 
   return (
     <div className="min-h-screen bg-reps-ivory">
