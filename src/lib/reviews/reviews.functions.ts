@@ -317,20 +317,21 @@ export const createReviewRequest = createServerFn({ method: "POST" })
 
     const reviewUrl = `https://repsuk.org/r/${row.token}`;
     try {
-      const [{ render }, { template }, { sendViaMailgun }] = await Promise.all([
+      const [{ render }, React, { template }, { sendViaMailgun }] = await Promise.all([
         import("@react-email/render"),
+        import("react"),
         import("@/lib/email-templates/review-request"),
         import("@/lib/email/mailgun.server"),
       ]);
-      const Component = template.component as React.ComponentType<any>;
       const props = {
         proName,
         reviewUrl,
         serviceLabel: data.service_label,
         clientName: data.client_name,
       };
-      const html = await render(Component(props));
-      const text = await render(Component(props), { plainText: true });
+      const element = React.createElement(template.component as React.ComponentType<any>, props);
+      const html = await render(element);
+      const text = await render(element, { plainText: true });
       const subject =
         typeof template.subject === "function"
           ? template.subject(props)
