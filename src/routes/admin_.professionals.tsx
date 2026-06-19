@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowUp,
   CheckCircle2,
+  CreditCard,
   Eye,
   ExternalLink,
   Filter,
@@ -15,6 +16,7 @@ import {
   Plus,
   ShieldCheck,
   Star,
+  Trash2,
   TrendingUp,
   Users,
   X,
@@ -91,6 +93,8 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
+  cancelProfessionalSubscription,
+  deleteProfessional,
   type AdminProRow,
   type AdminProTab,
   type AdminProSort,
@@ -636,8 +640,12 @@ function ProRow({ row }: { row: AdminProRow }) {
   const startFn = useServerFn(startImpersonation);
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
+  const cancelSubFn = useServerFn(cancelProfessionalSubscription);
+  const deleteFn = useServerFn(deleteProfessional);
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
+  const [cancelOpen, setCancelOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   async function handleViewAs() {
     if (busy) return;
@@ -671,6 +679,34 @@ function ProRow({ row }: { row: AdminProRow }) {
       setSuspendOpen(false);
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelSubM = useMutation({
+    mutationFn: (reason?: string) =>
+      cancelSubFn({ data: { professional_id: row.id, reason } }),
+    onSuccess: (res: { cancelled: number }) => {
+      toast.success(
+        res.cancelled > 0
+          ? `Cancelled ${res.cancelled} subscription${res.cancelled === 1 ? "" : "s"} for ${row.name}`
+          : `No active Stripe subscription found for ${row.name}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
+      setCancelOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to cancel subscription"),
+  });
+
+  const deleteM = useMutation({
+    mutationFn: (reason?: string) =>
+      deleteFn({ data: { professional_id: row.id, reason } }),
+    onSuccess: () => {
+      toast.success(`${row.name} deleted`);
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
+      setDeleteOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to delete member"),
   });
 
   const initials = initialsFromName(row.name);
@@ -786,6 +822,23 @@ function ProRow({ row }: { row: AdminProRow }) {
             >
               <Flag className="h-4 w-4" /> {isFlagged ? "Clear flag" : "Mark as flagged"}
             </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-reps-border" />
+            <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              Billing & account
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={(e) => { e.preventDefault(); setCancelOpen(true); }}
+              className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
+            >
+              <CreditCard className="h-4 w-4" /> Cancel subscription…
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => { e.preventDefault(); setDeleteOpen(true); }}
+              className="cursor-pointer rounded-[6px] text-red-400 focus:bg-red-500/10 focus:text-red-300"
+            >
+              <Trash2 className="h-4 w-4" /> Delete member…
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -795,6 +848,29 @@ function ProRow({ row }: { row: AdminProRow }) {
           name={row.name}
           pending={suspendM.isPending}
           onConfirm={(reason) => suspendM.mutate({ suspended: true, reason })}
+        />
+
+        <ConfirmDialog
+          open={cancelOpen}
+          onOpenChange={setCancelOpen}
+          title={`Cancel subscription for ${row.name}?`}
+          description="This cancels any active Stripe subscription immediately and marks their local subscription as canceled. Their account stays active — use Delete member to remove them entirely."
+          confirmLabel="Cancel subscription"
+          confirmTone="amber"
+          pending={cancelSubM.isPending}
+          onConfirm={(reason) => cancelSubM.mutate(reason)}
+        />
+
+        <ConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={`Delete ${row.name}?`}
+          description="This cancels any active Stripe subscription, then permanently deletes their account, profile, and all associated data. This cannot be undone."
+          confirmLabel="Delete member"
+          confirmTone="red"
+          requireTypedConfirm="DELETE"
+          pending={deleteM.isPending}
+          onConfirm={(reason) => deleteM.mutate(reason)}
         />
       </td>
     </tr>
@@ -839,6 +915,76 @@ function SuspendDialog({
             className="bg-amber-500 text-black hover:bg-amber-400"
           >
             {pending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Suspending…</> : "Suspend & notify"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ConfirmDialog({
+  open, onOpenChange, title, description, confirmLabel, confirmTone, pending, onConfirm, requireTypedConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmTone: "amber" | "red";
+  pending: boolean;
+  onConfirm: (reason: string | undefined) => void;
+  requireTypedConfirm?: string;
+}) {
+  const [reason, setReason] = React.useState("");
+  const [typed, setTyped] = React.useState("");
+  React.useEffect(() => { if (!open) { setReason(""); setTyped(""); } }, [open]);
+
+  const typedOk = !requireTypedConfirm || typed.trim() === requireTypedConfirm;
+  const toneClass = confirmTone === "red"
+    ? "bg-red-500 text-white hover:bg-red-400"
+    : "bg-amber-500 text-black hover:bg-amber-400";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">{title}</DialogTitle>
+          <DialogDescription className="text-white/55">{description}</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 py-2 text-left">
+          <div>
+            <Label htmlFor="confirm-reason" className="text-white/75">Internal reason (optional)</Label>
+            <Textarea
+              id="confirm-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="e.g. Cancellation requested via support ticket #1234."
+              className="mt-1 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+            />
+          </div>
+          {requireTypedConfirm ? (
+            <div>
+              <Label htmlFor="confirm-phrase" className="text-white/75">
+                Type <span className="font-mono text-reps-orange">{requireTypedConfirm}</span> to confirm
+              </Label>
+              <Input
+                id="confirm-phrase"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
+              />
+            </div>
+          ) : null}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button
+            disabled={pending || !typedOk}
+            onClick={() => onConfirm(reason.trim() || undefined)}
+            className={toneClass}
+          >
+            {pending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Working…</> : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
