@@ -317,20 +317,34 @@ export const createReviewRequest = createServerFn({ method: "POST" })
 
     const reviewUrl = `https://repsuk.org/r/${row.token}`;
     try {
-      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-      await sendTransactionalEmailServer({
+      const [{ render }, { template }, { sendViaMailgun }] = await Promise.all([
+        import("@react-email/render"),
+        import("@/lib/email-templates/review-request"),
+        import("@/lib/email/mailgun.server"),
+      ]);
+      const Component = template.component as React.ComponentType<any>;
+      const props = {
+        proName,
+        reviewUrl,
+        serviceLabel: data.service_label,
+        clientName: data.client_name,
+      };
+      const html = await render(Component(props));
+      const text = await render(Component(props), { plainText: true });
+      const subject =
+        typeof template.subject === "function"
+          ? template.subject(props)
+          : template.subject;
+      await sendViaMailgun({
+        to: data.client_email,
+        subject,
+        html,
+        text,
         templateName: "review-request",
-        recipientEmail: data.client_email,
         idempotencyKey: `review-request:${row.id}`,
-        templateData: {
-          proName,
-          reviewUrl,
-          serviceLabel: data.service_label,
-          clientName: data.client_name,
-        },
       });
     } catch (e) {
-      console.error("[createReviewRequest] email enqueue failed", e);
+      console.error("[createReviewRequest] review-request email failed", e);
     }
 
     return { id: row.id, token: row.token };
