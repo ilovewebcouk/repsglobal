@@ -115,7 +115,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_user_id, client_name, rating, title, body, status, response, responded_at, response_edited_at, published_at, created_at",
+        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
       )
       .eq("professional_id", context.userId)
       .order("created_at", { ascending: false })
@@ -124,135 +124,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     return (data ?? []) as ReviewDTO[];
   });
 
-const RespondSchema = z.object({
-  id: z.string().uuid(),
-  response: z.string().trim().min(1).max(1000),
-});
 
-export const respondToReview = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => RespondSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Load existing reply state so we can detect "first publish" for the email.
-    const { data: before } = await supabaseAdmin
-      .from("reviews")
-      .select("response, response_notified_at, professional_id, client_user_id, client_email, rating")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!before || before.professional_id !== context.userId) {
-      throw new Error("Review not found");
-    }
-    const wasUnreplied = before.response === null;
-
-    const { error } = await supabaseAdmin.rpc("upsert_pro_review_response", {
-      _review_id: data.id,
-      _response: data.response,
-    } as never);
-    if (error) throw error;
-
-    // First publish only — fire reviewer notification email (best-effort).
-    if (wasUnreplied && !before.response_notified_at) {
-      void sendReviewReplyEmailFireAndForget({
-        reviewId: data.id,
-        proUserId: context.userId,
-        reviewerEmail: before.client_email ?? null,
-        reviewerUserId: before.client_user_id ?? null,
-        rating: before.rating ?? 5,
-        replyText: data.response,
-      });
-    }
-
-    return { ok: true };
-  });
-
-const DeleteSchema = z.object({ id: z.string().uuid() });
-
-export const deleteReviewResponse = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => DeleteSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Defensive: confirm ownership before the RPC (RPC also checks).
-    const { data: row } = await supabaseAdmin
-      .from("reviews")
-      .select("professional_id")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!row || row.professional_id !== context.userId) {
-      throw new Error("Review not found");
-    }
-    const { error } = await supabaseAdmin.rpc("clear_pro_review_response", {
-      _review_id: data.id,
-    } as never);
-    if (error) throw error;
-    return { ok: true };
-  });
-
-async function sendReviewReplyEmailFireAndForget(args: {
-  reviewId: string;
-  proUserId: string;
-  reviewerEmail: string | null;
-  reviewerUserId: string | null;
-  rating: number;
-  replyText: string;
-}) {
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Resolve reviewer email — prefer the value stored on the review itself.
-    let to = args.reviewerEmail?.toLowerCase() ?? null;
-    if (!to && args.reviewerUserId) {
-      const { data: u } = await supabaseAdmin.auth.admin.getUserById(args.reviewerUserId);
-      to = u?.user?.email?.toLowerCase() ?? null;
-    }
-    if (!to) return; // No email on file — skip silently.
-
-    // Resolve pro display name + slug for the template.
-    const [{ data: profile }, { data: proRow }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("full_name, display_name").eq("id", args.proUserId).maybeSingle(),
-      supabaseAdmin.from("professionals").select("slug").eq("id", args.proUserId).maybeSingle(),
-    ]);
-    const proName = profile?.display_name || profile?.full_name || "Your trainer";
-    const proSlug = proRow?.slug ?? "";
-
-    const [{ render }, React, { template }, { sendViaMailgun }] = await Promise.all([
-      import("@react-email/render"),
-      import("react"),
-      import("@/lib/email-templates/review-reply"),
-      import("@/lib/email/mailgun.server"),
-    ]);
-    const props = {
-      proName,
-      proSlug,
-      reviewRating: args.rating,
-      replyText: args.replyText,
-    };
-    const element = React.createElement(template.component as React.ComponentType<any>, props);
-    const html = await render(element);
-    const text = await render(element, { plainText: true });
-    const subject =
-      typeof template.subject === "function" ? template.subject(props) : template.subject;
-
-    const result = await sendViaMailgun({
-      to,
-      subject,
-      html,
-      text,
-      templateName: "review-reply",
-      idempotencyKey: `review-reply:${args.reviewId}`,
-    });
-    if (result.ok) {
-      await supabaseAdmin
-        .from("reviews")
-        .update({ response_notified_at: new Date().toISOString() })
-        .eq("id", args.reviewId);
-    }
-  } catch (e) {
-    console.error("[reviews] review-reply email failed", e);
-  }
-}
 
 export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
