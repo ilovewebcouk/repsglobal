@@ -235,13 +235,14 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         if (!s.current_period_end) continue;
         const due = new Date(s.current_period_end);
         if (due >= now && due <= in14d) {
-          upcomingPence += paymentPence(s.tier);
+          const amt = paymentPenceFor(s.tier, s.billing_period);
+          upcomingPence += amt;
           upcomingCount += 1;
           upcomingLive.push({
             userId: s.user_id,
             tier: s.tier as Tier,
             dueAt: due,
-            amountPence: paymentPence(s.tier),
+            amountPence: amt,
           });
         }
       }
