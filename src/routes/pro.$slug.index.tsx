@@ -807,10 +807,6 @@ function ProProfilePage() {
                       ))
                     : REVIEWS.map((r, i) => (
 
-                          </div>
-                        </div>
-                      ))
-                    : REVIEWS.map((r, i) => (
                         <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
                           <img
                             src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}
