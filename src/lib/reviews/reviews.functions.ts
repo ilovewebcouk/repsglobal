@@ -167,6 +167,7 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
         )
         .eq("professional_id", pro.id)
         .eq("status", "published")
+        .eq("moderation_status", "approved")
         .order("published_at", { ascending: false })
         .limit(50);
 
@@ -457,14 +458,26 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SubmitByTokenSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getRequestIP, getRequestHeader } = await import("@tanstack/react-start/server");
+    let ip: string | null = null;
+    let ua: string | null = null;
+    try {
+      ip = getRequestIP({ xForwardedFor: true }) ?? null;
+      ua = getRequestHeader("user-agent") ?? null;
+    } catch {
+      // server-only utilities — best effort
+    }
     const { data: id, error } = await supabaseAdmin.rpc("submit_review_by_token", {
       _token: data.token,
       _rating: data.rating,
       _title: (data.title ?? "") as string,
       _body: data.body,
       _client_name: data.client_name,
-    });
+      _ip: ip,
+      _user_agent: ua,
+    } as never);
     if (error) throw error;
+    void runReviewModerationFireAndForget(id as string);
     return { id: id as string };
   });
 
