@@ -149,6 +149,7 @@ export type Database = {
           address1: string | null
           address2: string | null
           bd_member_id: number
+          bd_next_due_date: string | null
           city: string | null
           claim_status: Database["public"]["Enums"]["bd_member_claim_status"]
           claimed_user_id: string | null
@@ -197,6 +198,7 @@ export type Database = {
           address1?: string | null
           address2?: string | null
           bd_member_id: number
+          bd_next_due_date?: string | null
           city?: string | null
           claim_status?: Database["public"]["Enums"]["bd_member_claim_status"]
           claimed_user_id?: string | null
@@ -245,6 +247,7 @@ export type Database = {
           address1?: string | null
           address2?: string | null
           bd_member_id?: number
+          bd_next_due_date?: string | null
           city?: string | null
           claim_status?: Database["public"]["Enums"]["bd_member_claim_status"]
           claimed_user_id?: string | null
