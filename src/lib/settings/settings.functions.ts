@@ -275,7 +275,12 @@ export const exportMyData = createServerFn({ method: "GET" })
         .select("*")
         .eq("user_id", userId),
       supabase.from("enquiries").select("*").eq("professional_id", userId),
-      supabase.from("reviews").select("*").eq("professional_id", userId),
+      supabase
+        .from("reviews")
+        .select(
+          "id, professional_id, client_user_id, client_name, rating, title, body, source, status, moderation_status, response, responded_at, published_at, created_at, updated_at, service_label, ai_verdict, ai_checked_at"
+        )
+        .eq("professional_id", userId),
       supabase
         .from("verification_submissions")
         .select("*")

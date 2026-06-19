@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Mail } from "lucide-react";
+import { Bell, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -17,23 +18,66 @@ function timeAgo(iso: string) {
   return `${days}d ago`;
 }
 
+type FeedItem =
+  | {
+      kind: "support";
+      key: string;
+      title: string;
+      preview: string;
+      ticketNumber: string | null;
+      createdAt: string;
+    }
+  | {
+      kind: "review";
+      key: string;
+      title: string;
+      preview: string;
+      createdAt: string;
+      rating: number;
+    };
+
 export function NotificationsBell() {
-  // `items` is already only the unread tickets (server-filtered by is_unread).
-  // We snapshot it on open so the list doesn't reshuffle while the user reads it.
-  const { items, unread, markAllRead, isLoading } = useSupportUnread();
+  const support = useSupportUnread();
+  const reviews = useReviewsUnread();
   const [open, setOpen] = React.useState(false);
-  const [snapshot, setSnapshot] = React.useState<typeof items | null>(null);
-  const visible = open && snapshot ? snapshot : items;
+
+  const combined = React.useMemo<FeedItem[]>(() => {
+    const supportItems: FeedItem[] = support.items.map((i) => ({
+      kind: "support",
+      key: i.key,
+      title: i.title,
+      preview: i.preview,
+      ticketNumber: i.ticketNumber,
+      createdAt: i.createdAt,
+    }));
+    const reviewItems: FeedItem[] = reviews.items.map((i) => ({
+      kind: "review",
+      key: i.key,
+      title: `${i.rating}★ review for ${i.professionalName ?? "a pro"}`,
+      preview: `${i.clientName}: "${i.preview}"`,
+      createdAt: i.createdAt,
+      rating: i.rating,
+    }));
+    return [...reviewItems, ...supportItems].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [support.items, reviews.items]);
+
+  const unread = combined.length;
+  const [snapshot, setSnapshot] = React.useState<FeedItem[] | null>(null);
+  const visible = open && snapshot ? snapshot : combined;
+  const isLoading = support.isLoading || reviews.isLoading;
 
   const handleOpenChange = (next: boolean) => {
-    if (next) {
-      setSnapshot(items);
-    } else {
-      setSnapshot(null);
-    }
+    if (next) setSnapshot(combined);
+    else setSnapshot(null);
     setOpen(next);
   };
 
+  const markAll = async () => {
+    await Promise.all([support.markAllRead(), reviews.markAllRead()]);
+    setSnapshot([]);
+  };
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -63,17 +107,14 @@ export function NotificationsBell() {
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div>
             <p className="text-[13px] font-semibold text-white">Notifications</p>
-            <p className="text-[11px] text-white/55">Support tickets and inbound emails</p>
+            <p className="text-[11px] text-white/55">Reviews, support tickets, and inbound emails</p>
           </div>
           {visible.length > 0 ? (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-2 text-[11px] text-white/70 hover:text-white"
-              onClick={() => {
-                void markAllRead();
-                setSnapshot([]);
-              }}
+              onClick={() => void markAll()}
             >
               Mark all read
             </Button>
@@ -92,12 +133,22 @@ export function NotificationsBell() {
               {visible.map((item) => (
                 <li key={item.key}>
                   <Link
-                    to="/admin/support"
+                    to={item.kind === "review" ? "/admin/reviews" : "/admin/support"}
                     onClick={() => setOpen(false)}
                     className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
                   >
-                    <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-reps-orange/15 text-reps-orange">
-                      <Mail className="h-3.5 w-3.5" />
+                    <div
+                      className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${
+                        item.kind === "review"
+                          ? "bg-amber-500/15 text-amber-300"
+                          : "bg-reps-orange/15 text-reps-orange"
+                      }`}
+                    >
+                      {item.kind === "review" ? (
+                        <Star className="h-3.5 w-3.5" />
+                      ) : (
+                        <Mail className="h-3.5 w-3.5" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
@@ -111,7 +162,7 @@ export function NotificationsBell() {
                       <p className="mt-0.5 truncate text-[11.5px] text-white/55">
                         {item.preview}
                       </p>
-                      {item.ticketNumber ? (
+                      {item.kind === "support" && item.ticketNumber ? (
                         <p className="mt-0.5 text-[10px] uppercase tracking-wide text-white/40">
                           {item.ticketNumber}
                         </p>
@@ -129,13 +180,20 @@ export function NotificationsBell() {
         </div>
 
         <Separator className="bg-reps-border" />
-        <div className="px-4 py-2">
+        <div className="grid grid-cols-2 gap-1 px-4 py-2">
+          <Link
+            to="/admin/reviews"
+            onClick={() => setOpen(false)}
+            className="block rounded-[8px] py-1.5 text-center text-[12px] font-medium text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
+          >
+            Reviews queue
+          </Link>
           <Link
             to="/admin/support"
             onClick={() => setOpen(false)}
             className="block rounded-[8px] py-1.5 text-center text-[12px] font-medium text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
           >
-            Open support queue
+            Support queue
           </Link>
         </div>
       </PopoverContent>

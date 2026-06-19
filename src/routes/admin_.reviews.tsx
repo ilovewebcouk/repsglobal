@@ -2,16 +2,51 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, Flag, MessageSquare, Star, ThumbsUp } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Flag,
+  MessageSquare,
+  ShieldAlert,
+  Sparkles,
+  Star,
+  Trash2,
+} from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  adminApproveReview,
-  adminListFlagged,
-  adminRemoveReview,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useReviewsUnread } from "@/hooks/useReviewsUnread";
+import {
+  adminListReviews,
+  adminModerateReview,
   adminReviewKpis,
+  type AdminReviewRow,
+  type AiFlags,
 } from "@/lib/reviews/reviews.functions";
 
 export const Route = createFileRoute("/admin_/reviews")({
@@ -19,6 +54,8 @@ export const Route = createFileRoute("/admin_/reviews")({
   beforeLoad: requireRole(["admin"]),
   component: AdminReviewsPage,
 });
+
+type Tab = "pending" | "approved" | "removed" | "all";
 
 function Stars({ n }: { n: number }) {
   return (
@@ -54,45 +91,91 @@ function initials(name: string): string {
   );
 }
 
+function VerdictPill({ verdict, flags }: { verdict: AdminReviewRow["ai_verdict"]; flags: AiFlags | null }) {
+  if (!verdict) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/45">
+        <Sparkles className="h-3 w-3" /> AI: pending
+      </span>
+    );
+  }
+  const tone =
+    verdict === "clean"
+      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+      : verdict === "warning"
+        ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+        : "border-red-500/30 bg-red-500/15 text-red-300";
+  const flagList = flags ? Object.entries(flags).filter(([, v]) => v?.hit) : [];
+  const label = verdict === "clean" ? "AI: clean" : verdict === "warning" ? "AI: warning" : "AI: suspect";
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone}`}
+          >
+            <Sparkles className="h-3 w-3" /> {label}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[260px] text-[11px]">
+          {flagList.length === 0 ? (
+            <p>No issues detected.</p>
+          ) : (
+            <ul className="space-y-1">
+              {flagList.map(([key, v]) => (
+                <li key={key}>
+                  <span className="font-semibold capitalize">{key.replace("_", " ")}:</span>{" "}
+                  {v.reason}
+                </li>
+              ))}
+            </ul>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function AdminReviewsPage() {
   const qc = useQueryClient();
+  const [tab, setTab] = React.useState<Tab>("pending");
+  const { markAllRead } = useReviewsUnread();
+
+  // Mark notifications as read when admin views the page.
+  React.useEffect(() => {
+    void markAllRead();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: kpis } = useQuery({
-    queryKey: ["admin-review-kpis"],
+    queryKey: ["admin", "reviews", "kpis"],
     queryFn: () => adminReviewKpis(),
     staleTime: 30_000,
   });
-  const { data: flagged = [] } = useQuery({
-    queryKey: ["admin-flagged-reviews"],
-    queryFn: () => adminListFlagged(),
+
+  const { data: rows = [] } = useQuery({
+    queryKey: ["admin", "reviews", "queue", tab],
+    queryFn: () => adminListReviews({ data: { tab } }),
     staleTime: 15_000,
   });
 
-  const approve = useMutation({
-    mutationFn: (id: string) => adminApproveReview({ data: { id } }),
-    onSuccess: () => {
-      toast.success("Review approved");
-      qc.invalidateQueries({ queryKey: ["admin-flagged-reviews"] });
-      qc.invalidateQueries({ queryKey: ["admin-review-kpis"] });
+  const moderate = useMutation({
+    mutationFn: (vars: { id: string; action: "approve" | "remove" }) =>
+      adminModerateReview({ data: vars }),
+    onSuccess: (_d, vars) => {
+      toast.success(vars.action === "approve" ? "Review approved" : "Review removed");
+      qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      qc.invalidateQueries({ queryKey: ["reviews", "notifications"] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't approve"),
-  });
-
-  const remove = useMutation({
-    mutationFn: (id: string) => adminRemoveReview({ data: { id } }),
-    onSuccess: () => {
-      toast.success("Review removed");
-      qc.invalidateQueries({ queryKey: ["admin-flagged-reviews"] });
-      qc.invalidateQueries({ queryKey: ["admin-review-kpis"] });
-    },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't remove"),
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't update review"),
   });
 
   const KPIS = [
-    { label: "Avg. platform rating", value: kpis ? kpis.avg_rating.toFixed(2) : "—", icon: Star },
-    { label: "Reviews (30d)", value: kpis ? kpis.reviews_30d.toLocaleString() : "—", icon: MessageSquare },
-    { label: "Flagged", value: kpis ? String(kpis.flagged) : "—", icon: Flag },
-    { label: "Auto-approved", value: kpis ? `${kpis.auto_approved_pct}%` : "—", icon: ThumbsUp },
+    { label: "Pending", value: kpis?.pending ?? "—", icon: ShieldAlert },
+    { label: "Approved (30d)", value: kpis?.approved_30d ?? "—", icon: CheckCircle2 },
+    { label: "Removed (30d)", value: kpis?.removed_30d ?? "—", icon: Trash2 },
+    { label: "Suspect", value: kpis?.suspect ?? "—", icon: Flag },
   ];
 
   const DIST = kpis?.distribution ?? [
@@ -108,7 +191,7 @@ function AdminReviewsPage() {
       role="admin"
       active="Reviews"
       title="Reviews moderation"
-      subtitle="Approve, remove, and escalate reviews flagged by professionals or the trust system."
+      subtitle="Every review goes through admin approval. AI pre-screens for profanity, promo, PII, fake signals and duplicate submissions — you make the final call."
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
@@ -116,7 +199,9 @@ function AdminReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[12px] text-white/55">{k.label}</div>
-                <div className="mt-1 font-display text-[26px] font-bold text-white">{k.value}</div>
+                <div className="mt-1 font-display text-[26px] font-bold text-white">
+                  {k.value}
+                </div>
               </div>
               <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
                 <k.icon className="h-4 w-4" />
@@ -130,73 +215,120 @@ function AdminReviewsPage() {
         <PPanel className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
             <div>
-              <h2 className="font-display text-[16px] font-bold text-white">Flagged for review</h2>
+              <h2 className="font-display text-[16px] font-bold text-white">Moderation queue</h2>
               <p className="text-[12px] text-white/55">
-                {flagged.length} item{flagged.length === 1 ? "" : "s"} awaiting moderation
+                {rows.length} item{rows.length === 1 ? "" : "s"} · {tab}
               </p>
             </div>
+            <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
+              <TabsList className="h-8 bg-reps-ink/60">
+                <TabsTrigger value="pending" className="h-7 text-[11px]">Pending</TabsTrigger>
+                <TabsTrigger value="approved" className="h-7 text-[11px]">Approved</TabsTrigger>
+                <TabsTrigger value="removed" className="h-7 text-[11px]">Removed</TabsTrigger>
+                <TabsTrigger value="all" className="h-7 text-[11px]">All</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
-          {flagged.length === 0 ? (
+
+          {rows.length === 0 ? (
             <div className="px-5 py-12 text-center">
-              <p className="text-[14px] font-semibold text-white">No flagged reviews</p>
-              <p className="mt-1 text-[12px] text-white/55">When pros or the trust system flag a review, it appears here.</p>
+              <p className="text-[14px] font-semibold text-white">Queue is clear</p>
+              <p className="mt-1 text-[12px] text-white/55">
+                When new reviews come in they'll appear here for approval.
+              </p>
             </div>
           ) : (
             <ul className="divide-y divide-reps-border">
-              {flagged.map((f) => (
-                <li key={f.id} className="px-5 py-4">
+              {rows.map((r) => (
+                <li key={r.id} className="px-5 py-4">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-[12px] font-semibold text-reps-orange">
-                      {initials(f.professional_name ?? "?")}
+                      {initials(r.professional_name ?? "?")}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        {f.professional_slug ? (
+                        {r.professional_slug ? (
                           <Link
                             to="/pro/$slug"
-                            params={{ slug: f.professional_slug }}
+                            params={{ slug: r.professional_slug }}
                             className="font-semibold text-white hover:text-reps-orange"
                           >
-                            {f.professional_name ?? "Professional"}
+                            {r.professional_name ?? "Professional"}
                           </Link>
                         ) : (
-                          <span className="font-semibold text-white">{f.professional_name ?? "Professional"}</span>
+                          <span className="font-semibold text-white">
+                            {r.professional_name ?? "Professional"}
+                          </span>
                         )}
-                        <Stars n={f.rating} />
-                        <span className="text-[11px] text-white/45">
-                          · {f.client_name} · {timeAgo(f.flagged_at ?? f.created_at)}
-                        </span>
+                        <Stars n={r.rating} />
+                        <VerdictPill verdict={r.ai_verdict} flags={r.ai_flags} />
+                        <Badge className="border-reps-border bg-white/5 text-[10px] capitalize text-white/55">
+                          {r.moderation_status}
+                        </Badge>
                       </div>
-                      {f.title && <p className="mt-1 text-[13px] font-semibold text-white/90">{f.title}</p>}
-                      <p className="mt-1 text-[13px] text-white/75">"{f.body}"</p>
-                      {f.flag_reason && (
-                        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-400">
-                          <AlertTriangle className="h-3 w-3" /> {f.flag_reason}
+                      <p className="mt-1 text-[11px] text-white/45">
+                        {r.client_name} · {r.client_email ?? "no email"} ·{" "}
+                        {r.submitter_ip ?? "no ip"} · {timeAgo(r.created_at)}
+                      </p>
+                      {r.title && (
+                        <p className="mt-1 text-[13px] font-semibold text-white/90">{r.title}</p>
+                      )}
+                      <p className="mt-1 text-[13px] text-white/75">"{r.body}"</p>
+                      {r.ai_flags && r.ai_verdict !== "clean" && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {Object.entries(r.ai_flags)
+                            .filter(([, v]) => v?.hit)
+                            .map(([key, v]) => (
+                              <span
+                                key={key}
+                                className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                <span className="capitalize">{key.replace("_", " ")}</span>: {v.reason}
+                              </span>
+                            ))}
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={() => approve.mutate(f.id)}
-                        disabled={approve.isPending}
-                        className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover disabled:opacity-50"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm("Remove this review? Clients won't see it on the public profile.")) {
-                            remove.mutate(f.id);
-                          }
-                        }}
-                        disabled={remove.isPending}
-                        className="h-8 rounded-[10px] border border-reps-border px-3 text-[12px] font-semibold text-white/75 disabled:opacity-50"
-                      >
-                        Remove
-                      </button>
-                    </div>
+                    {r.moderation_status === "pending" ? (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => moderate.mutate({ id: r.id, action: "approve" })}
+                          disabled={moderate.isPending}
+                          className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover"
+                        >
+                          Approve
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 rounded-[10px] border-reps-border px-3 text-[12px] font-semibold text-white/75"
+                            >
+                              Remove
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove this review?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                It won't be shown on the public profile and the pro will see it as removed.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => moderate.mutate({ id: r.id, action: "remove" })}
+                              >
+                                Remove review
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    ) : null}
                   </div>
                 </li>
               ))}
@@ -230,16 +362,26 @@ function AdminReviewsPage() {
             <h3 className="font-display text-[15px] font-bold text-white">Trust system</h3>
             <ul className="mt-3 space-y-2 text-[12px] text-white/70">
               <li className="flex justify-between">
-                <span>Pro-flagged queue</span>
+                <span>Admin approval required</span>
                 <span className="font-semibold text-emerald-300">Live</span>
               </li>
               <li className="flex justify-between">
-                <span>Auto-publish</span>
-                <span className="font-semibold text-white">Request links</span>
+                <span>AI profanity / promo / PII scan</span>
+                <span className="font-semibold text-emerald-300">Live</span>
               </li>
               <li className="flex justify-between">
-                <span>Profanity / promo filter</span>
-                <span className="font-semibold text-white/50">Planned</span>
+                <span>IP + email dedupe signals</span>
+                <span className="font-semibold text-emerald-300">Live</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Bell + sidebar notifications</span>
+                <span className="font-semibold text-emerald-300">Live</span>
+              </li>
+              <li className="flex items-center justify-between gap-2 text-white/55">
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="h-3 w-3" /> AI never auto-rejects
+                </span>
+                <span className="font-semibold">By design</span>
               </li>
             </ul>
           </PCard>

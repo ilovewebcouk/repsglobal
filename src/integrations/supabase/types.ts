@@ -2320,6 +2320,41 @@ export type Database = {
           },
         ]
       }
+      review_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_role: string
+          recipient_user_id: string
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_role: string
+          recipient_user_id: string
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_role?: string
+          recipient_user_id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_notifications_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_requests: {
         Row: {
           client_email: string
@@ -2385,6 +2420,10 @@ export type Database = {
       }
       reviews: {
         Row: {
+          admin_notified_at: string | null
+          ai_checked_at: string | null
+          ai_flags: Json
+          ai_verdict: string | null
           bd_review_id: number | null
           body: string
           client_email: string | null
@@ -2394,6 +2433,11 @@ export type Database = {
           flag_reason: string | null
           flagged_at: string | null
           id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_note: string | null
+          moderation_status: string
+          pro_notified_at: string | null
           professional_id: string
           published_at: string | null
           rating: number
@@ -2402,11 +2446,17 @@ export type Database = {
           service_label: string | null
           source: string
           status: string
+          submitter_ip: unknown
+          submitter_user_agent: string | null
           thanked_at: string | null
           title: string | null
           updated_at: string
         }
         Insert: {
+          admin_notified_at?: string | null
+          ai_checked_at?: string | null
+          ai_flags?: Json
+          ai_verdict?: string | null
           bd_review_id?: number | null
           body: string
           client_email?: string | null
@@ -2416,6 +2466,11 @@ export type Database = {
           flag_reason?: string | null
           flagged_at?: string | null
           id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_note?: string | null
+          moderation_status?: string
+          pro_notified_at?: string | null
           professional_id: string
           published_at?: string | null
           rating: number
@@ -2424,11 +2479,17 @@ export type Database = {
           service_label?: string | null
           source?: string
           status?: string
+          submitter_ip?: unknown
+          submitter_user_agent?: string | null
           thanked_at?: string | null
           title?: string | null
           updated_at?: string
         }
         Update: {
+          admin_notified_at?: string | null
+          ai_checked_at?: string | null
+          ai_flags?: Json
+          ai_verdict?: string | null
           bd_review_id?: number | null
           body?: string
           client_email?: string | null
@@ -2438,6 +2499,11 @@ export type Database = {
           flag_reason?: string | null
           flagged_at?: string | null
           id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_note?: string | null
+          moderation_status?: string
+          pro_notified_at?: string | null
           professional_id?: string
           published_at?: string | null
           rating?: number
@@ -2446,6 +2512,8 @@ export type Database = {
           service_label?: string | null
           source?: string
           status?: string
+          submitter_ip?: unknown
+          submitter_user_agent?: string | null
           thanked_at?: string | null
           title?: string | null
           updated_at?: string
@@ -3237,6 +3305,10 @@ export type Database = {
         Returns: string
       }
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
+      admin_moderate_review: {
+        Args: { _action: string; _note?: string; _review_id: string }
+        Returns: undefined
+      }
       admin_seed_all_bd_members: {
         Args: { _limit?: number }
         Returns: {
@@ -3422,9 +3494,11 @@ export type Database = {
         Args: {
           _body: string
           _client_name: string
+          _ip?: string
           _rating: number
           _title: string
           _token: string
+          _user_agent?: string
         }
         Returns: string
       }

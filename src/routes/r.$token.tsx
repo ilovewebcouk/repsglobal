@@ -54,7 +54,7 @@ function ReviewByTokenPage() {
           client_name: name.trim(),
         },
       }),
-    onSuccess: () => toast.success("Thanks — your review is published"),
+    onSuccess: () => toast.success("Thanks — your review has been received"),
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Couldn't submit review"),
   });
@@ -131,15 +131,16 @@ function ReviewByTokenPage() {
         <div className="flex items-center gap-2 text-emerald-700">
           <ShieldCheck className="h-5 w-5" />
           <span className="text-[12px] font-semibold uppercase tracking-wider">
-            Published
+            Received
           </span>
         </div>
         <h1 className="mt-3 font-display text-[26px] font-bold text-reps-charcoal">
           Thanks for your review
         </h1>
         <p className="mt-3 text-[14px] text-reps-muted-light">
-          Your review for <strong>{data.professional_name}</strong> is now live
-          on REPS. We appreciate you taking the time.
+          Your review for <strong>{data.professional_name}</strong> has been
+          received. Every review on REPS is checked by our team before it
+          appears on the public profile — usually within 24 hours.
         </p>
         {data.professional_slug && (
           <Link
@@ -250,7 +251,7 @@ function ReviewByTokenPage() {
             required
           />
           <p className="mt-1 text-[11px] text-reps-muted-light">
-            {body.trim().length}/2000 — published publicly on the REPS profile.
+            {body.trim().length}/2000 — checked by REPS before it appears on the profile.
           </p>
         </div>
 
