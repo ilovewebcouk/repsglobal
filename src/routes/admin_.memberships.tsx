@@ -79,6 +79,7 @@ function AdminMembershipsPage() {
       title="Memberships"
       subtitle="Recurring income, renewals, and projected cash from REPs memberships."
     >
+      <EnvBadge env={metricsQ.data?.env} />
       <KpiRow data={metricsQ.data} loading={metricsQ.isLoading} />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -136,6 +137,25 @@ function AdminMembershipsPage() {
 }
 
 // ---------------------------------------------------------------- KPI row
+
+function EnvBadge({ env }: { env?: "live" | "sandbox" }) {
+  if (!env) return null;
+  const isLive = env === "live";
+  return (
+    <div className="mb-4">
+      <span
+        className={
+          isLive
+            ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-300"
+            : "inline-flex items-center gap-1.5 rounded-full border border-reps-orange/40 bg-reps-orange/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-reps-orange"
+        }
+      >
+        <span className={isLive ? "h-1.5 w-1.5 rounded-full bg-emerald-400" : "h-1.5 w-1.5 rounded-full bg-reps-orange"} />
+        {isLive ? "Live" : "Sandbox"}
+      </span>
+    </div>
+  );
+}
 
 function KpiRow({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
   return (

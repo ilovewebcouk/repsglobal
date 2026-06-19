@@ -49,10 +49,10 @@ export function isPaidTier(t: string): t is Tier {
   return t === "verified" || t === "pro" || t === "studio";
 }
 
-/** Server-side billing env selector. Defaults to sandbox; never mixes envs. */
+/** Server-side billing env selector. Defaults to live; sandbox is opt-in via BILLING_ENV=sandbox. */
 export function currentBillingEnv(): BillingEnv {
   const v = (process.env.BILLING_ENV ?? "").toLowerCase();
-  return v === "live" ? "live" : "sandbox";
+  return v === "sandbox" ? "sandbox" : "live";
 }
 
 // -- Europe/London date helpers -------------------------------------------------

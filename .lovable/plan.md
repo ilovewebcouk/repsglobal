@@ -1,46 +1,43 @@
-## Goal
+## Problem
 
-Fold migrated Brilliant Directory members into the Verified tier everywhere on `/admin/memberships`, and make the forecast chart tooltip show Total + per-tier breakdown only (Verified, Pro, Studio).
+`/admin/memberships` is reading **sandbox** subscriptions, not your live Stripe account. That's why Heather Long (live, trialing Pro) doesn't appear, and why the Pro card shows "8 active · 0 trialing".
 
-BD members are Verified — full stop. They just don't have a live Stripe subscription yet. The app treats their renewals as scheduled Verified payments.
+Root cause: `currentBillingEnv()` in `src/lib/admin/billing-metrics.ts` defaults to `"sandbox"` unless a `BILLING_ENV=live` env var is set. That env var isn't set in this project, so every query on the page is filtered to `environment = 'sandbox'`.
 
-## Changes (UI + server shape only — no Stripe calls, no migration logic, no public routes)
+Real subscription counts in the database:
 
-### 1. `src/lib/admin/memberships.functions.ts` — `getRevenueForecast()`
-- Remove the separate `scheduled` series from the returned monthly buckets.
-- For each month, add legacy/BD Verified renewals into the `verified` bucket instead of a `scheduled` bucket.
-- Keep `total = verified + pro + studio`.
-- Return shape per month: `{ month, total, verified, pro, studio }` (drop `scheduled`).
+| environment | tier | status | count |
+|---|---|---|---|
+| live | verified | active | 1 |
+| live | pro | active | 1 |
+| live | pro | trialing | 3 |
+| sandbox | pro | active | 8 |
 
-### 2. `src/lib/admin/memberships.functions.ts` — `getMembershipMetrics()`
-- Tier card for Verified: collapse "Active" + "Scheduled" into a single Verified count (still allowed to show a small secondary line like "incl. N awaiting Stripe setup" inside the Verified card only — but no separate tier, no separate KPI, no "BD" label anywhere).
-- Remove any "Verified pending billing" framing from KPIs.
+## Fix
 
-### 3. `src/routes/admin_.memberships.tsx` — chart
-- Remove the `scheduled` Line / Area from the Recharts chart.
-- Keep three tier lines: Verified, Pro, Studio (+ existing Total line if present).
-- Custom dark tooltip rows, in this exact order:
-  1. **Total** (projected cash due that month) — bold, white
-  2. Verified — orange dot
-  3. Pro — tier colour
-  4. Studio — tier colour
-- No "Scheduled" row. No "BD" row. No "Projected vs Scheduled" split.
+1. **Flip the default in `currentBillingEnv()`** from `"sandbox"` to `"live"`. Sandbox becomes opt-in (`BILLING_ENV=sandbox`), live is the default for the admin dashboards. This is the safe default for a production Stripe account.
 
-### 4. `src/routes/admin_.memberships.tsx` — monthly forecast table
-- Drop any Scheduled column.
-- Columns: Month · Verified · Pro · Studio · Total (+ existing quarterly subtotal rows).
+2. **Add a small env badge to the page header** on `/admin/memberships` so it's always visible which environment the numbers reflect. Shown as a subtle pill next to the page title:
+   - `Live` — emerald status token, only shown when env is live (the normal case).
+   - `Sandbox` — orange/amber pill, only shown when env is sandbox (to make accidental sandbox views obvious).
 
-### 5. Copy sweep on the page
-- Remove the words "Scheduled", "BD", "Brilliant Directory", "migrated", "legacy" from any user-visible label on `/admin/memberships`.
-- Verified tier card may keep one subtle secondary line: "Includes N members awaiting Stripe setup" (internal-only language, no BD branding).
+3. **No other changes** to the query logic, KPI cards, tier cards, forecast chart, upcoming/past-due panels, or activity feed. They already compute correctly once the right env is selected.
+
+## After the fix, the page will show
+
+- Verified card: 1 active
+- Pro card: 1 active · 3 trialing  (Heather Long + 2 others)
+- Studio card: 0
+- Upcoming payments / Past due / forecast: recalculated from live data
+- A small "Live" badge in the page header
 
 ## Out of scope
-- No changes to `/admin/payments`, `/admin/stripe`, public routes, checkout, or BD migration logic.
-- No Stripe API calls on page load. No Stripe writes.
-- `legacy_stripe_link` / `bd_member_seed` tables stay as-is — only the aggregation/labelling on this page changes.
 
-## Verification after build
-- Hover the forecast chart → tooltip shows Total + Verified + Pro + Studio only.
-- Verified count = active Stripe Verified + legacy Verified (one number).
-- No occurrence of "Scheduled" / "BD" / "Brilliant Directory" on `/admin/memberships`.
-- No new Stripe calls in network tab on page load.
+- No changes to `/admin/payments`, `/admin/stripe`, public routes, checkout, or BD migration logic.
+- No Stripe API calls; still read-only against the local synced tables.
+- No data migration. Existing sandbox rows stay where they are and remain accessible by setting `BILLING_ENV=sandbox` if ever needed.
+
+## Files touched
+
+- `src/lib/admin/billing-metrics.ts` — flip default in `currentBillingEnv()`.
+- `src/routes/admin_.memberships.tsx` — add env badge to the header row.
