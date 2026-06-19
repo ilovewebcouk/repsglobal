@@ -681,6 +681,34 @@ function ProRow({ row }: { row: AdminProRow }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const cancelSubM = useMutation({
+    mutationFn: (reason?: string) =>
+      cancelSubFn({ data: { professional_id: row.id, reason } }),
+    onSuccess: (res: { cancelled: number }) => {
+      toast.success(
+        res.cancelled > 0
+          ? `Cancelled ${res.cancelled} subscription${res.cancelled === 1 ? "" : "s"} for ${row.name}`
+          : `No active Stripe subscription found for ${row.name}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
+      setCancelOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to cancel subscription"),
+  });
+
+  const deleteM = useMutation({
+    mutationFn: (reason?: string) =>
+      deleteFn({ data: { professional_id: row.id, reason } }),
+    onSuccess: () => {
+      toast.success(`${row.name} deleted`);
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
+      setDeleteOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to delete member"),
+  });
+
   const initials = initialsFromName(row.name);
   const isSuspended = row.status === "suspended";
   const isFlagged = row.status === "flagged";
