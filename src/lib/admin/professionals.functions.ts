@@ -63,31 +63,36 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const since30 = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
     const since60 = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString();
-    const sinceRating = new Date(Date.now() - 365 * 24 * 60 * 60_000).toISOString();
 
     // KPI counts only include professionals whose underlying auth user is
     // email-confirmed (i.e. actually signed up — invited-but-unaccepted
     // shells from `generateLink({ type: 'invite' })` are excluded).
-    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, ratingRows] = await Promise.all([
-      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: true }),
+    // "Active" = confirmed signed-up members, regardless of publish status,
+    // so the Verified subtext "N of M" shares the same denominator.
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes] = await Promise.all([
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
-      supabaseAdmin.from('reviews').select('rating').eq('status', 'published').gte('created_at', sinceRating),
+      supabaseAdmin
+        .from('subscriptions')
+        .select('user_id, tier, status')
+        .in('status', ['active', 'trialing'])
+        .neq('tier', 'free'),
     ]);
 
     const activeCount = (activeRes.data as number | null) ?? 0;
     const verifiedCount = (verifiedRes.data as number | null) ?? 0;
     const signups = (signups30Res.data as number | null) ?? 0;
     const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
-    const ratings = (ratingRows.data ?? []).map(r => r.rating as number).filter(Boolean);
-    const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
+    const paidCount = new Set(((paidRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id)).size;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
 
     return {
       activeCount, verifiedCount,
       verifiedPct: activeCount ? (verifiedCount / activeCount) * 100 : 0,
-      avgRating, newSignups30: signups, newSignupsDeltaPct: wow,
+      paidCount,
+      newSignups30: signups, newSignupsDeltaPct: wow,
     };
   });
 
