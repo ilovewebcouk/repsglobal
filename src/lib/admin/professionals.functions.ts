@@ -290,6 +290,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
         renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
         renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
+        isTrial: subDetail?.status === 'trialing',
+        trialDaysLeft: subDetail?.status === 'trialing' && subDetail.currentPeriodEnd
+          ? Math.max(0, Math.ceil((new Date(subDetail.currentPeriodEnd).getTime() - Date.now()) / 86400000))
+          : null,
       };
     });
 
