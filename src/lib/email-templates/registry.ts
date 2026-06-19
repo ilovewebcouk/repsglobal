@@ -32,6 +32,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'professional-suspended': professionalSuspended,
   'professional-reinstated': professionalReinstated,
   'review-request': reviewRequest,
-  'review-reply': reviewReply,
 }
+
 
