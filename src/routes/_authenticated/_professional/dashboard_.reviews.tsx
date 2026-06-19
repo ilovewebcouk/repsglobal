@@ -40,6 +40,7 @@ import {
   respondToReview,
   thankReview,
   type ReviewDTO,
+  type ReviewRequestRow,
 } from "@/lib/reviews/reviews.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/reviews")({
@@ -409,7 +410,7 @@ function ReviewsPage() {
               </div>
             ) : (
               <ul className="divide-y divide-reps-border/60">
-                {requests.map((r) => (
+                {requests.map((r: ReviewRequestRow) => (
                   <li key={r.id} className="flex items-center justify-between px-5 py-3">
                     <div className="min-w-0">
                       <p className="truncate text-[13px] font-semibold text-white">
