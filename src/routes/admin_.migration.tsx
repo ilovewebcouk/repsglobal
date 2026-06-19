@@ -557,6 +557,14 @@ function StripeLinkingPanel() {
   const csvFn = useServerFn(linkLegacyFromStripeCsv);
   const [env, setEnv] = useState<"sandbox" | "live">("live");
   const [log, setLog] = useState<string | null>(null);
+  const [launchDialogOpen, setLaunchDialogOpen] = useState(false);
+  const [launchConfirmText, setLaunchConfirmText] = useState("");
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery<LegacyLinkingStats>({
     queryKey: ["admin", "legacy-stripe-link", "stats"],
