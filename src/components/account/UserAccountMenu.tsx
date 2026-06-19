@@ -95,6 +95,9 @@ export function UserAccountMenu({
 }) {
   const { user, role, tier, isAdmin, isProfessional, roleLabel, avatarUrl, signOut } =
     useAccountMenu();
+  // While impersonating, the chrome avatar reflects the user being viewed.
+  // The dropdown contents still belong to the real admin.
+  const effective = useEffectiveIdentity();
 
   if (!user) return null;
 
@@ -123,8 +126,8 @@ export function UserAccountMenu({
           )}
         >
           <UserAvatar
-            name={user.name}
-            avatarUrl={avatarUrl}
+            name={effective.name}
+            avatarUrl={effective.avatarUrl}
             size="md"
             className="size-10 rounded-[10px]"
           />
