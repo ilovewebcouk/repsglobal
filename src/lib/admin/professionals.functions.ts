@@ -22,6 +22,7 @@ export type AdminProRow = {
   email: string | null;
   lifetimeValuePence: number | null;
   renewalDate: string | null;
+  renewalDateSource: 'stripe' | 'bd' | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
