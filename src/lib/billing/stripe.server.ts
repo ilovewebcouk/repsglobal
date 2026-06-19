@@ -92,7 +92,7 @@ export function getCheckoutOrigin(): string {
 export async function verifyWebhook(
   req: Request,
   env: StripeEnv,
-): Promise<{ type: string; data: { object: unknown }; id: string }> {
+): Promise<{ type: string; data: { object: unknown }; id: string; livemode: boolean }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret =
@@ -129,6 +129,11 @@ export async function verifyWebhook(
   const expected = Buffer.from(new Uint8Array(signed)).toString("hex");
   if (!v1.includes(expected)) throw new Error("Invalid webhook signature");
 
-  const parsed = JSON.parse(body) as { type: string; data: { object: unknown }; id: string };
-  return parsed;
+  const parsed = JSON.parse(body) as {
+    type: string;
+    data: { object: unknown };
+    id: string;
+    livemode?: boolean;
+  };
+  return { ...parsed, livemode: parsed.livemode === true };
 }

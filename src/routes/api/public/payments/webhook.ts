@@ -333,15 +333,30 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             headers: { ...CORS, "Content-Type": "application/json" },
           });
         }
-        const env: StripeEnv = rawEnv;
+        // The URL ?env= picks which webhook secret to verify against. The
+        // canonical source of truth for which Stripe environment the event
+        // belongs to is `event.livemode` (livemode:true -> 'live',
+        // livemode:false -> 'sandbox'). If the two disagree after signature
+        // verification, log a warning and trust livemode for any DB write.
+        const urlEnv: StripeEnv = rawEnv;
 
-        let event: { id: string; type: string; data: { object: unknown } };
+        let event: { id: string; type: string; data: { object: unknown }; livemode: boolean };
         try {
-          event = await verifyWebhook(request, env);
+          event = await verifyWebhook(request, urlEnv);
         } catch (err) {
           const message = err instanceof Error ? err.message : "Invalid signature";
           console.error("[payments-webhook] signature verification failed:", message);
           return new Response(`Webhook Error: ${message}`, { status: 400, headers: CORS });
+        }
+
+        const env: StripeEnv = event.livemode ? "live" : "sandbox";
+        if (env !== urlEnv) {
+          console.warn("[payments-webhook] webhook_env_mismatch", {
+            event_id: event.id,
+            livemode: event.livemode,
+            url_env: urlEnv,
+            resolved_env: env,
+          });
         }
 
         let rowId: string | null;

@@ -15,11 +15,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { LAUNCH_AT_UTC } from "@/lib/launch";
 import {
   type Tier,
+  type BillingPeriod,
   type BillingEnv,
-  TIER_CADENCE_MONTHS,
   TIER_PRICE_PENCE,
-  annualPence,
-  paymentPence,
+  annualPenceFor,
+  paymentPenceFor,
+  cadenceMonthsFor,
   currentBillingEnv,
   londonMonthKey,
   addMonths,
@@ -87,12 +88,19 @@ export type MembershipMetrics = {
   tiers: TierBreakdown[];
   distribution: { label: string; count: number; tone: "verified" | "scheduled" | "pro" | "studio" }[];
   diagnostics: {
-    nonGbpExcluded: number;
+    nonGbpExcluded: 0;
     lifetimeMembers: number;
     activeSubsTotal: number;
     cohortHonour: number;
     cohortAnomaly: number;
     cohortFutureDue: number;
+    orphanedSubsLive: number;
+    orphanedSubsList: Array<{
+      stripe_subscription_id: string | null;
+      tier: string;
+      status: string;
+      billing_period: BillingPeriod | null;
+    }>;
   };
 };
 
@@ -110,15 +118,31 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // 1. Active/trialing subscriptions in the current env, paid tiers only.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("user_id, tier, status, current_period_end, environment")
+      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id")
       .eq("environment", env);
 
-    const subs = (subsRaw ?? []) as Array<{
+    const allSubs = (subsRaw ?? []) as Array<{
       user_id: string;
       tier: string;
       status: string;
       current_period_end: string | null;
+      billing_period: BillingPeriod | null;
+      stripe_subscription_id: string | null;
     }>;
+
+    // Orphan exclusion: any sub whose user_id no longer exists in auth.users
+    // is excluded from every KPI/forecast and surfaced via diagnostics only.
+    const allUserIds = Array.from(new Set(allSubs.map((s) => s.user_id)));
+    const validUserIds = new Set<string>();
+    if (allUserIds.length > 0) {
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .in("id", allUserIds);
+      for (const p of (existing ?? []) as Array<{ id: string }>) validUserIds.add(p.id);
+    }
+    const orphanSubs = allSubs.filter((s) => !validUserIds.has(s.user_id));
+    const subs = allSubs.filter((s) => validUserIds.has(s.user_id));
 
     const live = subs.filter((s) => LIVE_STATUSES.has(s.status) && isPaidTier(s.tier));
     const pastDue = subs.filter((s) => PAST_DUE_STATUSES.has(s.status));
@@ -131,7 +155,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     };
     for (const s of live) {
       const t = s.tier as Tier;
-      activeArr += annualPence(t);
+      activeArr += annualPenceFor(t, s.billing_period);
       if (s.status === "trialing") tierMap[t].trialing += 1;
       else tierMap[t].active += 1;
     }
@@ -211,13 +235,14 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         if (!s.current_period_end) continue;
         const due = new Date(s.current_period_end);
         if (due >= now && due <= in14d) {
-          upcomingPence += paymentPence(s.tier);
+          const amt = paymentPenceFor(s.tier, s.billing_period);
+          upcomingPence += amt;
           upcomingCount += 1;
           upcomingLive.push({
             userId: s.user_id,
             tier: s.tier as Tier,
             dueAt: due,
-            amountPence: paymentPence(s.tier),
+            amountPence: amt,
           });
         }
       }
@@ -312,7 +337,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       email: userEmailMap.get(s.user_id) ?? null,
       tier: s.tier as Tier,
       status: s.status,
-      amountPence: paymentPence(s.tier),
+      amountPence: paymentPenceFor(s.tier, s.billing_period),
     }));
 
     const distribution = [
@@ -348,6 +373,13 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         cohortHonour,
         cohortAnomaly,
         cohortFutureDue,
+        orphanedSubsLive: orphanSubs.filter((s) => LIVE_STATUSES.has(s.status)).length,
+        orphanedSubsList: orphanSubs.map((s) => ({
+          stripe_subscription_id: s.stripe_subscription_id,
+          tier: s.tier,
+          status: s.status,
+          billing_period: s.billing_period,
+        })),
       },
     };
   });
@@ -428,18 +460,37 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
 
 
     // 1. Project active/trialing Stripe subs forward.
+    //    Orphans (subs whose user_id is no longer in `profiles`) are excluded.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("tier, status, current_period_end, environment")
+      .select("user_id, tier, status, current_period_end, environment, billing_period")
       .eq("environment", env);
 
-    for (const s of (subsRaw ?? []) as any[]) {
+    const subsAll = (subsRaw ?? []) as Array<{
+      user_id: string;
+      tier: string;
+      status: string;
+      current_period_end: string | null;
+      billing_period: BillingPeriod | null;
+    }>;
+    const forecastUserIds = Array.from(new Set(subsAll.map((s) => s.user_id)));
+    const validForecastUsers = new Set<string>();
+    if (forecastUserIds.length > 0) {
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .in("id", forecastUserIds);
+      for (const p of (existing ?? []) as Array<{ id: string }>) validForecastUsers.add(p.id);
+    }
+    const subsLinked = subsAll.filter((s) => validForecastUsers.has(s.user_id));
+
+    for (const s of subsLinked) {
       if (!LIVE_STATUSES.has(s.status)) continue;
       if (!isPaidTier(s.tier)) continue;
       if (!s.current_period_end) continue;
       const tier = s.tier as Tier;
-      const cadence = TIER_CADENCE_MONTHS[tier];
-      const amount = paymentPence(tier);
+      const cadence = cadenceMonthsFor(tier, s.billing_period);
+      const amount = paymentPenceFor(tier, s.billing_period);
       let due = new Date(s.current_period_end);
       // Walk forward through the 24-month horizon.
       while (due <= horizonEnd) {
@@ -462,7 +513,7 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       .select("bd_member_id, bd_next_due_date, claimed_user_id, migration_cohort_override");
 
     const liveUserIds = new Set<string>(
-      ((subsRaw ?? []) as any[])
+      subsLinked
         .filter((s) => LIVE_STATUSES.has(s.status))
         .map((s) => s.user_id),
     );
