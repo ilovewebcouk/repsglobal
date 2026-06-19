@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 
 
@@ -269,6 +270,8 @@ function NavSection({
                   <EnquiriesUnreadBadge />
                 ) : item.label === "Support" && item.to === "/admin/support" ? (
                   <SupportUnreadBadge />
+                ) : item.label === "Reviews" && (item.to === "/admin/reviews" || item.to === "/dashboard/reviews") ? (
+                  <ReviewsUnreadBadge />
                 ) : item.badge ? (
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
                     {item.badge}
@@ -351,6 +354,17 @@ function EnquiriesUnreadBadge() {
 
 function SupportUnreadBadge() {
   const { unread } = useSupportUnread();
+  if (!unread) return null;
+  return (
+    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
+      {unread > 99 ? "99+" : unread}
+    </span>
+  );
+}
+
+function ReviewsUnreadBadge() {
+  const { user } = useSessionUser();
+  const { unread } = useReviewsUnread({ enabled: !!user });
   if (!unread) return null;
   return (
     <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-reps-orange px-1.5 text-[10px] font-semibold text-white">
