@@ -50,6 +50,7 @@ export async function sendViaMailgun(args: SendViaMailgunArgs): Promise<{ ok: bo
     subject: args.subject,
     html: args.html,
     "o:tag": args.templateName,
+    "o:tracking-clicks": "no",
     "v:idempotency_key": args.idempotencyKey,
   });
   if (args.text) body.set("text", args.text);
