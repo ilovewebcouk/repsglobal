@@ -63,7 +63,7 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "account", label: "Account", icon: User },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "billing", label: "Billing", icon: CreditCard },
-  { key: "payments", label: "Payments", icon: Wallet },
+  { key: "payments", label: "Stripe", icon: Wallet },
   { key: "credits", label: "AI credits", icon: Sparkles },
   { key: "security", label: "Security", icon: Lock },
   { key: "activity", label: "Activity", icon: Activity },

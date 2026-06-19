@@ -63,7 +63,7 @@ function AdminPaymentsPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Payments"
+      active="Stripe"
       title="Payments"
       subtitle="REPs subscription revenue and Stripe Connect marketplace activity — two lenses, never blended."
       actions={

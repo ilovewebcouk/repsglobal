@@ -67,7 +67,7 @@ function ConnectSection() {
     return (
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4">
-          <h2 className="text-[14px] font-semibold text-white">Payments</h2>
+          <h2 className="text-[14px] font-semibold text-white">Stripe</h2>
           <p className="mt-0.5 text-[12px] text-white/55">
             Connect your Stripe account to take bookings and payments through REPs.
           </p>
@@ -109,7 +109,7 @@ function ConnectSection() {
   return (
     <PPanel>
       <div className="border-b border-reps-border px-5 py-4">
-        <h2 className="text-[14px] font-semibold text-white">Payments</h2>
+        <h2 className="text-[14px] font-semibold text-white">Stripe</h2>
         <p className="mt-0.5 text-[12px] text-white/55">
           Connect your Stripe account. Money lands directly in your Stripe account — REPs takes £0.
         </p>

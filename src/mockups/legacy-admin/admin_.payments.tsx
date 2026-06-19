@@ -48,7 +48,7 @@ function AdminPaymentsPage() {
   const max = Math.max(...REVENUE);
   return (
     <DashboardShell role="admin"
-      active="Payments"
+      active="Stripe"
       title="Payments"
       subtitle="Platform-wide payouts, take rate, and transaction health."
       actions={
