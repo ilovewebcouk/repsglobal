@@ -116,7 +116,11 @@ export const mirrorBdSeedPhotos = createServerFn({ method: "POST" })
 
             const { error: profUpdErr } = await supabaseAdmin
               .from("profiles")
-              .update({ avatar_url: publicUrl })
+              .update({
+                avatar_url: publicUrl,
+                avatar_qa_status: "approved",
+                avatar_qa_source: "bd_seed",
+              })
               .eq("id", uid)
               .is("avatar_url", null);
             if (profUpdErr) {
