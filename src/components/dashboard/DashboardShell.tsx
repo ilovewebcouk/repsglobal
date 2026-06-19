@@ -88,7 +88,7 @@ export type TrainerActive =
   | "Enquiries"
   | "Edit Profile"
   | "Verification"
-  | "Payments"
+  | "Stripe"
   | "Business Tools"
   | "Settings";
 
@@ -100,7 +100,7 @@ export type AdminActive =
   | "Directory"
   | "Gyms"
   | "Reviews"
-  | "Payments"
+  | "Stripe"
   | "CPD"
   | "Migration"
   | "Support"
@@ -184,7 +184,7 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
   {
     title: "Money & Admin",
     items: [
-      { icon: CreditCard, label: "Payments", to: "/dashboard/payments" },
+      { icon: CreditCard, label: "Stripe", to: "/dashboard/payments" },
       { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
@@ -212,7 +212,7 @@ const ADMIN_NAV: NavGroup<AdminActive>[] = [
       { icon: Target, label: "Directory", to: "/admin/directory" },
       { icon: Building2, label: "Gyms", to: "/admin/gyms" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
-      { icon: CreditCard, label: "Payments", to: "/admin/payments" },
+      { icon: CreditCard, label: "Stripe", to: "/admin/payments" },
       { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
     ],
   },
