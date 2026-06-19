@@ -42,6 +42,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
+import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
@@ -100,13 +101,13 @@ import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } fr
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
+import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
 import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from './routes/_authenticated/_professional/dashboard_.enquiries'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
 import { Route as AuthenticatedProfessionalCheckoutCreditsRouteImport } from './routes/_authenticated/_professional/checkout_.credits'
 import { Route as ApiPublicEmailInboundMailgunRouteImport } from './routes/api/public/email/inbound/mailgun'
-import { Route as AuthenticatedProfessionalProDashboardReviewsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalProDashboardReportsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.reports'
 import { Route as AuthenticatedProfessionalProDashboardProgramsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.programs'
 import { Route as AuthenticatedProfessionalProDashboardPaymentsRouteImport } from './routes/_authenticated/_professional/_pro/dashboard_.payments'
@@ -284,6 +285,11 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
   path: '/resources/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RTokenRoute = RTokenRouteImport.update({
+  id: '/r/$token',
+  path: '/r/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfessionsProfessionRoute = ProfessionsProfessionRouteImport.update({
@@ -591,6 +597,12 @@ const AuthenticatedProfessionalDashboardServicesRoute =
     path: '/dashboard/services',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardReviewsRoute =
+  AuthenticatedProfessionalDashboardReviewsRouteImport.update({
+    id: '/dashboard_/reviews',
+    path: '/dashboard/reviews',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardProfileRoute =
   AuthenticatedProfessionalDashboardProfileRouteImport.update({
     id: '/dashboard_/profile',
@@ -626,12 +638,6 @@ const ApiPublicEmailInboundMailgunRoute =
     id: '/api/public/email/inbound/mailgun',
     path: '/api/public/email/inbound/mailgun',
     getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedProfessionalProDashboardReviewsRoute =
-  AuthenticatedProfessionalProDashboardReviewsRouteImport.update({
-    id: '/dashboard_/reviews',
-    path: '/dashboard/reviews',
-    getParentRoute: () => AuthenticatedProfessionalProRouteRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardReportsRoute =
   AuthenticatedProfessionalProDashboardReportsRouteImport.update({
@@ -785,6 +791,7 @@ export interface FileRoutesByFullPath {
   '/portal/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -800,6 +807,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -825,7 +833,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
   '/dashboard/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/dashboard/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
-  '/dashboard/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
@@ -895,6 +902,7 @@ export interface FileRoutesByTo {
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -910,6 +918,7 @@ export interface FileRoutesByTo {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -935,7 +944,6 @@ export interface FileRoutesByTo {
   '/dashboard/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
   '/dashboard/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/dashboard/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
-  '/dashboard/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
@@ -1009,6 +1017,7 @@ export interface FileRoutesById {
   '/portal_/today': typeof PortalTodayRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
+  '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
@@ -1025,6 +1034,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
+  '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -1050,7 +1060,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/_pro/dashboard_/payments': typeof AuthenticatedProfessionalProDashboardPaymentsRoute
   '/_authenticated/_professional/_pro/dashboard_/programs': typeof AuthenticatedProfessionalProDashboardProgramsRoute
   '/_authenticated/_professional/_pro/dashboard_/reports': typeof AuthenticatedProfessionalProDashboardReportsRoute
-  '/_authenticated/_professional/_pro/dashboard_/reviews': typeof AuthenticatedProfessionalProDashboardReviewsRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/_authenticated/_professional/_pro/dashboard_/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
 }
@@ -1123,6 +1132,7 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/pro/$slug'
     | '/professions/$profession'
+    | '/r/$token'
     | '/resources/$slug'
     | '/resources/'
     | '/dashboard'
@@ -1138,6 +1148,7 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
     | '/dashboard/profile'
+    | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
@@ -1163,7 +1174,6 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/programs'
     | '/dashboard/reports'
-    | '/dashboard/reviews'
     | '/api/public/email/inbound/mailgun'
     | '/dashboard/clients/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -1233,6 +1243,7 @@ export interface FileRouteTypes {
     | '/portal/programme'
     | '/portal/today'
     | '/professions/$profession'
+    | '/r/$token'
     | '/resources/$slug'
     | '/resources'
     | '/dashboard'
@@ -1248,6 +1259,7 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
     | '/dashboard/profile'
+    | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
@@ -1273,7 +1285,6 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/programs'
     | '/dashboard/reports'
-    | '/dashboard/reviews'
     | '/api/public/email/inbound/mailgun'
     | '/dashboard/clients/$slug'
   id:
@@ -1346,6 +1357,7 @@ export interface FileRouteTypes {
     | '/portal_/today'
     | '/pro/$slug'
     | '/professions/$profession'
+    | '/r/$token'
     | '/resources/$slug'
     | '/resources/'
     | '/_authenticated/_professional/_pro'
@@ -1362,6 +1374,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/enquiries'
     | '/_authenticated/_professional/dashboard_/profile'
+    | '/_authenticated/_professional/dashboard_/reviews'
     | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
@@ -1387,7 +1400,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/_pro/dashboard_/payments'
     | '/_authenticated/_professional/_pro/dashboard_/programs'
     | '/_authenticated/_professional/_pro/dashboard_/reports'
-    | '/_authenticated/_professional/_pro/dashboard_/reviews'
     | '/api/public/email/inbound/mailgun'
     | '/_authenticated/_professional/_pro/dashboard_/clients/$slug'
   fileRoutesById: FileRoutesById
@@ -1460,6 +1472,7 @@ export interface RootRouteChildren {
   PortalTodayRoute: typeof PortalTodayRoute
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
+  RTokenRoute: typeof RTokenRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
@@ -1707,6 +1720,13 @@ declare module '@tanstack/react-router' {
       path: '/resources/$slug'
       fullPath: '/resources/$slug'
       preLoaderRoute: typeof ResourcesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r/$token': {
+      id: '/r/$token'
+      path: '/r/$token'
+      fullPath: '/r/$token'
+      preLoaderRoute: typeof RTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/professions/$profession': {
@@ -2115,6 +2135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardServicesRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/reviews': {
+      id: '/_authenticated/_professional/dashboard_/reviews'
+      path: '/dashboard/reviews'
+      fullPath: '/dashboard/reviews'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardReviewsRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/profile': {
       id: '/_authenticated/_professional/dashboard_/profile'
       path: '/dashboard/profile'
@@ -2156,13 +2183,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/email/inbound/mailgun'
       preLoaderRoute: typeof ApiPublicEmailInboundMailgunRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/_professional/_pro/dashboard_/reviews': {
-      id: '/_authenticated/_professional/_pro/dashboard_/reviews'
-      path: '/dashboard/reviews'
-      fullPath: '/dashboard/reviews'
-      preLoaderRoute: typeof AuthenticatedProfessionalProDashboardReviewsRouteImport
-      parentRoute: typeof AuthenticatedProfessionalProRouteRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/reports': {
       id: '/_authenticated/_professional/_pro/dashboard_/reports'
@@ -2294,7 +2314,6 @@ interface AuthenticatedProfessionalProRouteRouteChildren {
   AuthenticatedProfessionalProDashboardPaymentsRoute: typeof AuthenticatedProfessionalProDashboardPaymentsRoute
   AuthenticatedProfessionalProDashboardProgramsRoute: typeof AuthenticatedProfessionalProDashboardProgramsRoute
   AuthenticatedProfessionalProDashboardReportsRoute: typeof AuthenticatedProfessionalProDashboardReportsRoute
-  AuthenticatedProfessionalProDashboardReviewsRoute: typeof AuthenticatedProfessionalProDashboardReviewsRoute
 }
 
 const AuthenticatedProfessionalProRouteRouteChildren: AuthenticatedProfessionalProRouteRouteChildren =
@@ -2325,8 +2344,6 @@ const AuthenticatedProfessionalProRouteRouteChildren: AuthenticatedProfessionalP
       AuthenticatedProfessionalProDashboardProgramsRoute,
     AuthenticatedProfessionalProDashboardReportsRoute:
       AuthenticatedProfessionalProDashboardReportsRoute,
-    AuthenticatedProfessionalProDashboardReviewsRoute:
-      AuthenticatedProfessionalProDashboardReviewsRoute,
   }
 
 const AuthenticatedProfessionalProRouteRouteWithChildren =
@@ -2356,6 +2373,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardEnquiriesRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
+  AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
@@ -2376,6 +2394,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardEnquiriesRoute,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
+    AuthenticatedProfessionalDashboardReviewsRoute:
+      AuthenticatedProfessionalDashboardReviewsRoute,
     AuthenticatedProfessionalDashboardServicesRoute:
       AuthenticatedProfessionalDashboardServicesRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
@@ -2488,6 +2508,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalTodayRoute: PortalTodayRoute,
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
+  RTokenRoute: RTokenRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
@@ -2507,13 +2528,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
