@@ -210,9 +210,10 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // ARR = steady-state run-rate at £99/member (honour window is year-1 only).
     const scheduledArr = verifiedScheduledCount * TIER_PRICE_PENCE.verified;
 
-    // 3. Upcoming payments.
-    //    Pre-launch: launch-day V7 charges (6 × £34 + 1 × £99 = £303).
-    //    Post-launch: live Stripe renewals in the next 14 days only.
+    // 3. Upcoming payments — unified rolling 14-day window of every expected
+    //    charge: Stripe renewals (active) + trial conversions (trialing subs
+    //    whose trial ends in the window) + V7 cohort (honour_window /
+    //    anomaly_launch_charge) if LAUNCH_AT_UTC falls in the window.
     let upcomingPence = 0;
     let upcomingCount = 0;
     const upcomingLive: Array<{
@@ -230,23 +231,22 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       cohort: "honour_window" | "anomaly_launch_charge";
     }> = [];
 
-    if (!preLaunch) {
-      for (const s of live) {
-        if (!s.current_period_end) continue;
-        const due = new Date(s.current_period_end);
-        if (due >= now && due <= in14d) {
-          const amt = paymentPenceFor(s.tier, s.billing_period);
-          upcomingPence += amt;
-          upcomingCount += 1;
-          upcomingLive.push({
-            userId: s.user_id,
-            tier: s.tier as Tier,
-            dueAt: due,
-            amountPence: amt,
-          });
-        }
+    for (const s of live) {
+      if (!s.current_period_end) continue;
+      const due = new Date(s.current_period_end);
+      if (due >= now && due <= in14d) {
+        const amt = paymentPenceFor(s.tier, s.billing_period);
+        upcomingPence += amt;
+        upcomingCount += 1;
+        upcomingLive.push({
+          userId: s.user_id,
+          tier: s.tier as Tier,
+          dueAt: due,
+          amountPence: amt,
+        });
       }
-    } else {
+    }
+    if (LAUNCH_AT_UTC >= now && LAUNCH_AT_UTC <= in14d) {
       for (const r of cohortRows) {
         if (r.cohort === "future_due") continue;
         const amount =
