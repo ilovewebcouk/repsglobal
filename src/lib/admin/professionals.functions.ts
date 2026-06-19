@@ -426,7 +426,7 @@ export const cancelProfessionalSubscription = createServerFn({ method: 'POST' })
     // Mark local subscription rows as canceled so the dashboard reflects state immediately.
     await supabaseAdmin
       .from('subscriptions')
-      .update({ status: 'canceled' as never, canceled_at: new Date().toISOString() })
+      .update({ status: 'canceled', canceled_at: new Date().toISOString() } as never)
       .eq('user_id', data.professional_id);
 
     await supabaseAdmin.rpc('log_admin_action', {
