@@ -285,7 +285,7 @@ export const runLegacyRenewalBatch = createServerFn({ method: "POST" })
 export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Promise<LegacyRenewalResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { createStripeClient, resolvePriceByLookupKey } = await import("@/lib/billing/stripe.server");
-  const { LAUNCH_AT_UTC } = await import("@/lib/launch");
+  const { LAUNCH_AT_UTC, LEGACY_HONOUR_CUTOFF } = await import("@/lib/launch");
   const { VERIFIED_LEGACY_PRICE_LOOKUP } = await import("@/lib/billing");
   const stripe = createStripeClient(env);
 
