@@ -331,7 +331,12 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         ...r,
         specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
         full_name: prof?.full_name ?? null,
-        avatar_url: prof?.avatar_url ?? null,
+        // Only surface the avatar in directory cards once it's passed AI
+        // headshot QA; otherwise fall back to the monogram on the client.
+        avatar_url:
+          (prof as { avatar_qa_status?: string | null } | undefined)?.avatar_qa_status === "approved"
+            ? (prof?.avatar_url ?? null)
+            : null,
         tier: tierById.get(r.id) ?? "free",
         from_price_pence: priceById.get(r.id) ?? null,
         review_count: agg?.count ?? 0,
