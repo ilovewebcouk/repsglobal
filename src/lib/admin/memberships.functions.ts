@@ -451,15 +451,15 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       }
     }
 
-    // 2. Project scheduled Verified payments (legacy_stripe_link + bd_seed fallback).
-    const { data: legacyLinks } = await supabaseAdmin
-      .from("legacy_stripe_link")
-      .select("bd_member_id, next_due_at, is_lifetime, last_paid_amount_pence, eligible_for_legacy_price")
-      .eq("is_lifetime", false);
-
+    // 2. Project V7 cohort members.
+    //    honour_window  → £34 at LAUNCH_AT_UTC, then £99 annually.
+    //    anomaly_launch → £99 at LAUNCH_AT_UTC, then £99 annually.
+    //    future_due     → £99 at bd_next_due_date if ≥ LAUNCH_AT_UTC,
+    //                     else rolled forward 1 year at a time until ≥ launch,
+    //                     then £99 annually.
     const { data: bdSeeds } = await supabaseAdmin
       .from("bd_member_seed")
-      .select("bd_member_id, bd_next_due_date, claimed_user_id");
+      .select("bd_member_id, bd_next_due_date, claimed_user_id, migration_cohort_override");
 
     const liveUserIds = new Set<string>(
       ((subsRaw ?? []) as any[])
@@ -467,24 +467,12 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
         .map((s) => s.user_id),
     );
 
-    const bdSeedByMember = new Map<number, any>();
-    for (const r of (bdSeeds ?? []) as any[]) bdSeedByMember.set(r.bd_member_id, r);
-    const legacyMemberIds = new Set<number>();
-
-    // First scheduled payment honours the year-1 legacy price (e.g. £34); every
-    // subsequent annual renewal reverts to the standard Verified price (£99).
-    function projectVerifiedRenewals(
-      firstDue: Date,
-      claimedUserId: string | null,
-      firstDuePence: number,
-    ) {
-      if (claimedUserId && liveUserIds.has(claimedUserId)) return;
+    function projectAnnual(firstDue: Date, firstAmount: number) {
       let due = new Date(firstDue);
       let isFirst = true;
       while (due <= horizonEnd) {
         if (due >= now) {
-          const amount = isFirst ? firstDuePence : TIER_PRICE_PENCE.verified;
-          applyPayment(due, amount, "verified");
+          applyPayment(due, isFirst ? firstAmount : TIER_PRICE_PENCE.verified, "verified");
         }
         isFirst = false;
         const d = new Date(due);
@@ -493,26 +481,34 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       }
     }
 
-
-    for (const link of (legacyLinks ?? []) as any[]) {
-      legacyMemberIds.add(link.bd_member_id);
-      if (!link.next_due_at) continue;
-      const seed = bdSeedByMember.get(link.bd_member_id);
-      const firstDuePence =
-        link.eligible_for_legacy_price && link.last_paid_amount_pence && link.last_paid_amount_pence > 0
-          ? link.last_paid_amount_pence
-          : TIER_PRICE_PENCE.verified;
-      projectVerifiedRenewals(new Date(link.next_due_at), seed?.claimed_user_id ?? null, firstDuePence);
-    }
     for (const seed of (bdSeeds ?? []) as any[]) {
-      if (legacyMemberIds.has(seed.bd_member_id)) continue;
-      if (!seed.bd_next_due_date) continue;
-      projectVerifiedRenewals(
-        new Date(seed.bd_next_due_date as string),
-        seed.claimed_user_id ?? null,
-        TIER_PRICE_PENCE.verified,
-      );
+      const cohort = seed.migration_cohort_override as string | null;
+      if (
+        cohort !== "honour_window" &&
+        cohort !== "anomaly_launch_charge" &&
+        cohort !== "future_due"
+      )
+        continue;
+      const claimedUserId: string | null = seed.claimed_user_id ?? null;
+      if (claimedUserId && liveUserIds.has(claimedUserId)) continue;
+
+      if (cohort === "honour_window") {
+        projectAnnual(LAUNCH_AT_UTC, LEGACY_HONOUR_PENCE);
+      } else if (cohort === "anomaly_launch_charge") {
+        projectAnnual(LAUNCH_AT_UTC, TIER_PRICE_PENCE.verified);
+      } else {
+        // future_due — anchor on bd_next_due_date, roll forward until on/after launch.
+        if (!seed.bd_next_due_date) continue;
+        let due = new Date(seed.bd_next_due_date as string);
+        while (due < LAUNCH_AT_UTC) {
+          const d = new Date(due);
+          d.setUTCFullYear(d.getUTCFullYear() + 1);
+          due = d;
+        }
+        projectAnnual(due, TIER_PRICE_PENCE.verified);
+      }
     }
+
 
     const months = monthKeys.map((k) => buckets.get(k)!);
 
