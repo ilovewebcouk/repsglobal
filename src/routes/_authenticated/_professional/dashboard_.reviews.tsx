@@ -40,6 +40,7 @@ import {
   respondToReview,
   thankReview,
   type ReviewDTO,
+  type ReviewRequestRow,
 } from "@/lib/reviews/reviews.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/reviews")({
