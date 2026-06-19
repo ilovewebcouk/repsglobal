@@ -206,9 +206,13 @@ function HomeV2() {
     staleTime: 60 * 60_000, // rotation only changes once per day
   });
   const liveFeatured = featuredResult?.pros ?? [];
-  const featuredCards: HomeFeaturedCard[] = liveFeatured.length
-    ? liveFeatured.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
+  // Keep the locked demo cards until we have a FULL row of live pros with
+  // approved AI-cropped headshots.
+  const liveWithApprovedPhoto = liveFeatured.filter((r) => r.avatar_url);
+  const featuredCards: HomeFeaturedCard[] = liveWithApprovedPhoto.length >= 4
+    ? liveWithApprovedPhoto.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
     : FALLBACK_FEATURED;
+
 
   return (
     <div className="min-h-screen bg-reps-ivory">
