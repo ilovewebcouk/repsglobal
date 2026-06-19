@@ -175,17 +175,23 @@ async function fetchFeaturedPool(
     reviewAggById.set(r.professional_id, prev);
   }
 
+  // A pro is only eligible for a featured headshot card if their avatar has
+  // passed the AI headshot QA (`avatar_qa_status = 'approved'`). Unapproved
+  // photos (selfies, gym shots, full-body, missing AI check) are hidden from
+  // featured rails so the directory only surfaces real headshots.
   const enriched: FeaturedProRow[] = pros
     .filter((p) => p.slug)
     .map((p) => {
       const prof = profileById.get(p.id);
       const tier = tierById.get(p.id) ?? "free";
       const agg = reviewAggById.get(p.id);
+      const qaApproved =
+        (prof as { avatar_qa_status?: string | null } | undefined)?.avatar_qa_status === "approved";
       return {
         id: p.id,
         slug: p.slug as string,
         full_name: prof?.full_name ?? "REPs Professional",
-        avatar_url: prof?.avatar_url ?? null,
+        avatar_url: qaApproved ? (prof?.avatar_url ?? null) : null,
         primary_profession: p.primary_profession,
         specialisms: Array.isArray(p.specialisms) ? p.specialisms : [],
         city: p.city,
@@ -200,7 +206,9 @@ async function fetchFeaturedPool(
         verification: p.verification,
         is_paid: tier !== "free",
       };
-    });
+    })
+    // Featured cards are headshot-led — drop anyone without an approved photo.
+    .filter((p) => p.avatar_url);
 
   const paidPool = enriched.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;
@@ -209,9 +217,10 @@ async function fetchFeaturedPool(
     return { pool: paidPool, paidCount: paidPool.length, backfillUsed: false };
   }
 
-  // Backfill: paid pros first (still get priority), then anyone published with
-  // an avatar — backfill keeps the rail full while we grow the paid base.
-  const backfill = enriched.filter((p) => !p.is_paid && p.avatar_url);
+  // Backfill: paid pros first (still get priority), then any published pro
+  // whose avatar passed AI headshot QA — keeps the rail full while we grow
+  // the paid base, without showing unverified selfies.
+  const backfill = enriched.filter((p) => !p.is_paid);
   return {
     pool: [...paidPool, ...backfill],
     paidCount: paidPool.length,
