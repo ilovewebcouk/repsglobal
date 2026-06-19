@@ -208,7 +208,7 @@ async function fetchFeaturedPool(
       };
     })
     // Featured cards are headshot-led — drop anyone without an approved photo.
-    .filter((p) => p.avatar_url);
+    .filter((p) => p.avatar_url)) as FeaturedProRow[];
 
   const paidPool = enriched.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;
