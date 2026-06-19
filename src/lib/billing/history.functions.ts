@@ -1,8 +1,13 @@
 // Member-facing payment history (read-only). Pulls the imported Stripe
 // charge history for the signed-in user — matches on user_id OR email,
 // so users whose CSV row wasn't auto-linked still see their payments.
+//
+// Honours admin impersonation: when an admin is "viewing as" a
+// professional, we resolve the IMPERSONATED user's id + email and scope
+// the query to them. Without this, the service-role client used during
+// impersonation would bypass RLS and return every payment in the table.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 export type LegacyPaymentRow = {
   charge_id: string;
@@ -24,13 +29,26 @@ export type LegacyHistoryResult = {
 };
 
 export const getMyLegacyPaymentHistory = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<LegacyHistoryResult> => {
-    const { supabase, userId, claims } = context;
-    const email = (claims?.email as string | undefined)?.toLowerCase() ?? null;
+    const { userId, claims, isImpersonating } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // RLS already scopes rows to (user_id = auth.uid() OR lower(email) = auth.jwt email)
-    const { data: rows, error } = await supabase
+    // Resolve the effective email for the user we're scoping to. When
+    // impersonating, the JWT email belongs to the admin — we need the
+    // target professional's email instead.
+    let email: string | null = isImpersonating
+      ? null
+      : ((claims?.email as string | undefined)?.toLowerCase() ?? null);
+
+    if (isImpersonating) {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(userId);
+      email = u?.user?.email?.toLowerCase() ?? null;
+    }
+
+    // Always scope explicitly by user_id OR email — never rely on RLS,
+    // because the impersonation middleware swaps in a service-role client.
+    let query = supabaseAdmin
       .from("legacy_stripe_payments")
       .select(
         "charge_id, paid_at, amount_pence, currency, status, description, card_last4, card_brand, refunded_amount_pence",
@@ -38,16 +56,20 @@ export const getMyLegacyPaymentHistory = createServerFn({ method: "GET" })
       .order("paid_at", { ascending: false })
       .limit(100);
 
+    if (email) {
+      query = query.or(`user_id.eq.${userId},email.ilike.${email}`);
+    } else {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
 
-    // Pull next-due / lifetime from legacy_stripe_link (admin-only RLS, so use
-    // a service-role lookup keyed by this user's email).
     let next_due_at: string | null = null;
     let next_due_amount_pence: number | null = null;
     let is_lifetime = false;
 
     if (email) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: link } = await supabaseAdmin
         .from("legacy_stripe_link")
         .select("next_due_at, last_paid_amount_pence, is_lifetime")
@@ -60,6 +82,5 @@ export const getMyLegacyPaymentHistory = createServerFn({ method: "GET" })
       }
     }
 
-    void userId;
     return { rows: rows ?? [], next_due_at, next_due_amount_pence, is_lifetime };
   });
