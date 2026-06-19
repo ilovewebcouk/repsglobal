@@ -228,6 +228,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
       const name = profile?.full_name ?? 'Unnamed';
+      const subDetail = subDetailMap.get(p.id);
       return {
         id: p.id,
         name,
@@ -247,6 +248,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         suspensionReason: p.suspension_reason ?? null,
         verification: p.verification as string,
         email: null,
+        lifetimeValuePence: subDetail ? computeLifetimeValue(tier, subDetail.createdAt) : null,
+        renewalDate: subDetail?.currentPeriodEnd ?? null,
       };
     });
 
