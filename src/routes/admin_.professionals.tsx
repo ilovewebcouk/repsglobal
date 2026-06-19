@@ -120,8 +120,8 @@ const SORT_OPTIONS: { value: AdminProSort; label: string; defaultDir: SortDir }[
   { value: "name", label: "Name", defaultDir: "asc" },
   { value: "plan", label: "Plan value", defaultDir: "desc" },
   { value: "mrr", label: "Plan MRR", defaultDir: "desc" },
-  { value: "rating", label: "Rating", defaultDir: "desc" },
-  { value: "clients", label: "Clients", defaultDir: "desc" },
+  { value: "lifetimeValue", label: "Lifetime value", defaultDir: "desc" },
+  { value: "renewalDate", label: "Renewal date", defaultDir: "desc" },
 ];
 
 const PROFESSION_OPTIONS = [
