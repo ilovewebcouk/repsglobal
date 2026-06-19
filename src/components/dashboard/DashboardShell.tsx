@@ -284,16 +284,18 @@ function NavSection({
 }
 
 function MemberCard({ member }: { member?: DashboardShellMember }) {
-  const account = useAccountMenu();
-  // Prefer the real signed-in user; fall back to the prop (mock previews).
-  const name = account.user?.name ?? member?.name ?? "REPS Member";
-  const email = account.user?.email ?? null;
-  const avatarUrl = account.avatarUrl ?? member?.avatarUrl ?? null;
+  // Honour admin impersonation: chrome reflects the user the admin is
+  // "viewing as", not the signed-in admin.
+  const id = useEffectiveIdentity();
+  const name = id.name ?? member?.name ?? "REPS Member";
+  const email = id.email;
+  const avatarUrl = id.avatarUrl ?? member?.avatarUrl ?? null;
   const headline = email ?? member?.headline ?? "Professional";
-  const tierLabel = account.user
-    ? account.roleLabel
-    : member?.tierLabel ?? null;
+  const tierLabel = id.tierLabel ?? member?.tierLabel ?? null;
   const initials = initialsFromName(name);
+  const tierBadgeClass = id.isImpersonating
+    ? "mt-1 border-reps-orange-border bg-reps-orange/20 text-reps-orange hover:bg-reps-orange/20"
+    : "mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft";
   return (
     <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3">
       <Avatar className="size-10 rounded-[10px]">
@@ -304,9 +306,7 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
         <div className="truncate text-[13px] font-semibold text-white">{name}</div>
         <div className="truncate text-[11px] text-white/55">{headline}</div>
         {tierLabel ? (
-          <Badge className="mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft">
-            {tierLabel}
-          </Badge>
+          <Badge className={tierBadgeClass}>{tierLabel}</Badge>
         ) : null}
       </div>
     </div>
