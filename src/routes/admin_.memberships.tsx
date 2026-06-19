@@ -79,6 +79,7 @@ function AdminMembershipsPage() {
       title="Memberships"
       subtitle="Recurring income, renewals, and projected cash from REPs memberships."
     >
+      <EnvBadge env={metricsQ.data?.env} />
       <KpiRow data={metricsQ.data} loading={metricsQ.isLoading} />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
