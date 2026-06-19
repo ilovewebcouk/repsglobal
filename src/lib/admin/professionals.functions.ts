@@ -155,10 +155,23 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       .limit(FETCH_CAP);
     if (error) throw error;
 
-    const ids = (pros ?? []).map(p => p.id);
-    if (ids.length === 0) {
-      return { rows: [] as AdminProRow[], total: count ?? 0, page: data.page, pageSize: data.pageSize };
+    const allIds = (pros ?? []).map(p => p.id);
+    if (allIds.length === 0) {
+      return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
+
+    // Filter to professionals whose auth user is email-confirmed (actually
+    // signed up). Invited-but-unaccepted shells from `generateLink({ type:
+    // 'invite' })` are hidden — they are not members yet.
+    const { data: confirmedRows, error: confirmedErr } = await supabaseAdmin
+      .rpc('get_confirmed_professional_ids', { _ids: allIds });
+    if (confirmedErr) throw confirmedErr;
+    const confirmedSet = new Set(((confirmedRows ?? []) as string[]).map(String));
+    const ids = allIds.filter(id => confirmedSet.has(id));
+    if (ids.length === 0) {
+      return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
+    }
+    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
