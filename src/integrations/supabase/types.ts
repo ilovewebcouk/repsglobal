@@ -1549,10 +1549,14 @@ export type Database = {
           current_price_id: string | null
           eligible_for_legacy_price: boolean
           email: string
+          is_lifetime: boolean
           last_attempt_at: string | null
+          last_paid_amount_pence: number | null
+          last_paid_at: string | null
           legacy_kind: string
           link_status: string
           migration_status: string
+          next_due_at: string | null
           notes: string | null
           stripe_customer_id: string | null
           stripe_schedule_id: string | null
@@ -1566,10 +1570,14 @@ export type Database = {
           current_price_id?: string | null
           eligible_for_legacy_price?: boolean
           email: string
+          is_lifetime?: boolean
           last_attempt_at?: string | null
+          last_paid_amount_pence?: number | null
+          last_paid_at?: string | null
           legacy_kind?: string
           link_status?: string
           migration_status?: string
+          next_due_at?: string | null
           notes?: string | null
           stripe_customer_id?: string | null
           stripe_schedule_id?: string | null
@@ -1583,10 +1591,14 @@ export type Database = {
           current_price_id?: string | null
           eligible_for_legacy_price?: boolean
           email?: string
+          is_lifetime?: boolean
           last_attempt_at?: string | null
+          last_paid_amount_pence?: number | null
+          last_paid_at?: string | null
           legacy_kind?: string
           link_status?: string
           migration_status?: string
+          next_due_at?: string | null
           notes?: string | null
           stripe_customer_id?: string | null
           stripe_schedule_id?: string | null
@@ -1602,6 +1614,66 @@ export type Database = {
             referencedColumns: ["bd_member_id"]
           },
         ]
+      }
+      legacy_stripe_payments: {
+        Row: {
+          amount_pence: number
+          card_brand: string | null
+          card_last4: string | null
+          charge_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          email: string
+          import_batch_id: string | null
+          imported_at: string
+          paid_at: string
+          refunded_amount_pence: number
+          refunded_at: string | null
+          status: string
+          stripe_customer_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_pence: number
+          card_brand?: string | null
+          card_last4?: string | null
+          charge_id: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          email: string
+          import_batch_id?: string | null
+          imported_at?: string
+          paid_at: string
+          refunded_amount_pence?: number
+          refunded_at?: string | null
+          status: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_pence?: number
+          card_brand?: string | null
+          card_last4?: string | null
+          charge_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          email?: string
+          import_batch_id?: string | null
+          imported_at?: string
+          paid_at?: string
+          refunded_amount_pence?: number
+          refunded_at?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {
