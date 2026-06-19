@@ -2149,6 +2149,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_is_ai_generated: boolean
+          avatar_qa_source: string | null
+          avatar_qa_status: string
           avatar_url: string | null
           business_name: string | null
           created_at: string
@@ -2159,6 +2161,8 @@ export type Database = {
         }
         Insert: {
           avatar_is_ai_generated?: boolean
+          avatar_qa_source?: string | null
+          avatar_qa_status?: string
           avatar_url?: string | null
           business_name?: string | null
           created_at?: string
@@ -2169,6 +2173,8 @@ export type Database = {
         }
         Update: {
           avatar_is_ai_generated?: boolean
+          avatar_qa_source?: string | null
+          avatar_qa_status?: string
           avatar_url?: string | null
           business_name?: string | null
           created_at?: string
