@@ -1,78 +1,80 @@
-
 ## Goal
 
-Every new review goes into an admin approval queue. AI runs a pre-screen for promo/profanity/PII/fake-signals and surfaces warnings (it never auto-rejects). Reviewer IP + email are captured so AI can flag dodgy patterns (same IP / same email across pros, burst submissions). Admin + the affected pro get notified on submit, and the admin sidebar gets a "Reviews" badge that mirrors the Support unread pattern.
+Pro can reply once to any approved review, edit/delete that reply, the reply renders on `/pro/$slug`, and the reviewer is emailed when the reply is first published.
 
-## Database (one migration)
+## What's already done (don't re-build)
 
-`reviews` — keep existing rows, add columns:
-- `moderation_status` text default `'pending'` — `pending | approved | removed`
-- `ai_verdict` text — `clean | warning | suspect`
-- `ai_flags` jsonb — `{ profanity, promo, pii, fake_signals, dedupe }` with per-check `{ hit: bool, reason: string }`
-- `ai_checked_at` timestamptz
-- `submitter_ip` inet (server-captured, never exposed publicly)
-- `submitter_user_agent` text
-- `admin_notified_at`, `pro_notified_at` timestamptz
-- `moderated_by` uuid, `moderated_at` timestamptz, `moderation_note` text
+- `reviews.response` + `reviews.responded_at` columns exist.
+- `respondToReview` server fn writes them (called from `/dashboard/reviews`).
+- KPI "Awaiting reply" + response-rate counters work.
+- `listPublicReviewsBySlug` already selects `response, responded_at`.
 
-Backfill existing rows: `moderation_status='approved'`, `ai_verdict='clean'` so nothing in the wild disappears.
+## 1. Database (one migration)
 
-Public-facing read changes:
-- `listPublicReviewsBySlug` and any public/profile queries filter `moderation_status='approved'`.
-- Old `status='published'` stays as the publish-state field; `moderation_status` is the new gate. Public views require BOTH `status='published'` AND `moderation_status='approved'`.
+`reviews` — add:
+- `response_edited_at timestamptz`
+- `response_notified_at timestamptz` — idempotency anchor for the email
 
-New table `review_notifications` (drives the sidebar badge, same shape as support):
-- `id`, `review_id`, `recipient_user_id`, `recipient_role` (`admin | professional`), `read_at`, `created_at`
-- RLS: recipient can read/update their own rows; service_role full; admin can read all via `has_role`.
-- GRANTs per project rules.
+Tighten the pro-update RLS policy on `reviews` so a pro can update only `response` (+ implicit `responded_at`/`response_edited_at` stamped by the RPC), and only on rows where `professional_id = auth.uid()` AND `moderation_status = 'approved'`.
 
-RPC updates:
-- `submit_review_by_token(token, rating, title, body, client_name, client_email, ip, user_agent)` — sets `moderation_status='pending'`, `status='pending'` (not published), inserts notification rows for admin(s) + the pro, returns the new review id.
-- New `admin_moderate_review(review_id, action, note)` where action is `approve | remove`. Approve sets `status='published'`, `moderation_status='approved'`, `published_at=now()`. Remove sets `moderation_status='removed'`, `status='removed'`. Both mark moderator + close notifications.
+New RPC `upsert_pro_review_response(_review_id uuid, _response text)`:
+- SECURITY DEFINER, asserts caller owns the review and review is approved.
+- Length 1–1000 chars.
+- First call: sets `response`, `responded_at = now()`.
+- Subsequent: sets `response`, `response_edited_at = now()`.
 
-## AI pre-screen (server function)
+New RPC `clear_pro_review_response(_review_id uuid)`:
+- Same ownership/approval check. Nulls all four columns (`response`, `responded_at`, `response_edited_at`, `response_notified_at`).
 
-`src/lib/reviews/moderate.functions.ts` — `runReviewModeration(reviewId)`:
-- Loads the review + last 90 days of reviews from the same `submitter_ip`, `client_email`, and `professional_id`.
-- Calls Lovable AI (`google/gemini-3-flash-preview`) with structured `Output.object` schema returning the five flag groups.
-- Heuristic checks layered on top of AI (cheap + deterministic):
-  - Profanity: regex word list
-  - Promo: URL/`@handle`/phone/discount-code regex
-  - PII: email/phone/postcode regex in `body`
-  - Fake/bot: rating-vs-sentiment mismatch (AI), duplicate body hash vs last 90d
-  - Dedupe: same IP across ≥2 pros in 7d, same email across ≥3 pros in 30d, ≥3 reviews from same IP in 24h
-- Writes `ai_verdict`, `ai_flags`, `ai_checked_at`. Never changes `moderation_status` — admin always decides.
+## 2. Pro dashboard (`/dashboard/reviews`)
 
-Trigger: invoked from `submit_review_by_token` flow (server function fires it after RPC insert, fire-and-forget so the reviewer's "thanks" page isn't blocked).
+Replace the current "show Reply button only when `!r.response`" branch with three states:
 
-## Token submission flow (`/r/$token`)
+- No reply: existing `Reply` button + inline Textarea (cap at 1000 chars, show counter).
+- Reply exists, not editing: show the reply in the existing "Your reply" panel, plus `Edit` and `Delete` buttons (Delete behind a shadcn `AlertDialog` confirm).
+- Editing: same Textarea pre-filled with current reply + `Save` / `Cancel`.
 
-- Server function that backs the form now captures `getRequestIP()` + `user-agent` and passes them to the RPC.
-- Success screen copy updates to: "Thanks — your review will appear on the pro's profile once our team has checked it (usually within 24 hours)."
+Server-fn changes in `src/lib/reviews/reviews.functions.ts`:
+- `respondToReview` switches from a direct `update` to calling `upsert_pro_review_response` RPC, and after success runs the email step below (see §4).
+- New `deleteReviewResponse` server fn calling `clear_pro_review_response`. No email on delete.
+- Tighten `respondSchema` from `.max(2000)` to `.max(1000)`.
 
-## Admin `/admin/reviews` rewrite
+## 3. Public profile (`/pro/$slug`)
 
-Replaces the current "Flagged queue" mock with a real moderation queue:
-- KPI cards: Pending, Approved (30d), Removed (30d), Avg AI risk
-- Tabs: `Pending` (default) · `Approved` · `Removed` · `All`
-- Each row shows: rating, body preview, pro name, reviewer name+email (admin-only), submitted IP (admin-only), AI verdict pill (clean / warning / suspect) with hover-tooltip listing each flag + reason, and Approve / Remove buttons (shadcn AlertDialog confirm on Remove).
-- Suspect rows expand to show related-review list (same IP / same email) for context.
+`pro.$slug.index.tsx` currently renders a hardcoded `REVIEWS` mock array in the "What Clients Say" section. Wire it to real data:
 
-## Notifications
+- Fetch `listPublicReviewsBySlug({ slug, limit: 6 })` via React Query in the existing route loader pattern.
+- Replace the `REVIEWS.map(...)` block (lines ~738–762) with real rows: client name, "X months ago" via existing time helper, star row, `r.body`.
+- When `r.response` is set, render directly underneath in a `bg-reps-warm-white` panel with `border-l-2 border-reps-orange/40`:
+  - Line 1 (meta): `{pro.full_name}` · `Reply from the pro` · relative date · `· edited` suffix when `response_edited_at` is set.
+  - Line 2: `r.response`.
+- Stat tiles (rating dist, "based on N reviews") swap from the mock `RATING_DIST` / `pro.reviews` to `count` + a derived distribution from the same query (or hide the bar chart when n < 3 to avoid noise — keeps the visual but driven by real data).
+- "See all N reviews" anchor stays; out of scope to build an "all reviews" page in this pass.
 
-- Sidebar: add `ReviewsUnreadBadge` next to the existing `SupportUnreadBadge` in `DashboardShell.tsx`, wired to a new `useReviewsUnread()` hook (mirrors `useSupportUnread`) querying `review_notifications` for the current user.
-- Bell icon (admin top-bar): include review notifications in the existing notification feed; clicking jumps to `/admin/reviews?focus={id}`.
-- Pro dashboard: same `useReviewsUnread()` powers a badge on the pro's own `/dashboard/reviews` nav item. Pro sees a neutral "1 review awaiting REPs approval" row at the top of their reviews page until it's approved/removed.
-- Email: keep existing review-request emails as-is. No new transactional email for the held-state (in-app + bell only) — call out if you want one added.
+No other visual changes to the reviews section — typography, radii, colors all stay locked.
+
+## 4. Email reviewer on first publish
+
+New React Email template `src/lib/email-templates/review-reply.tsx`:
+- Subject: `{pro_full_name} replied to your review`
+- Body: 1-line context ("You left a {N}-star review on REPs"), the reply text in a quoted block, CTA button → `https://repsuk.org/pro/{slug}#reviews`.
+- Register in `src/lib/email-templates/registry.ts` as `review-reply`.
+
+Send wiring (inside `respondToReview` server fn, after RPC success):
+1. Resolve reviewer email server-side via `supabaseAdmin`:
+   - Prefer `reviews.client_email` (already populated for token-flow submissions).
+   - Fallback: join `profiles`/`auth.users` via `reviews.client_user_id`.
+   - If neither resolves, skip silently.
+2. Send only when `response_notified_at IS NULL`. Edits never re-trigger.
+3. Call existing `sendTransactionalEmail` with idempotency key `review-reply-{review_id}`.
+4. On success, stamp `response_notified_at = now()` via service-role update.
+5. Suppression + unsubscribe footer handled by the existing send route.
+
+No bell notification, no in-app badge for the reviewer — single email, that's it.
 
 ## Things explicitly NOT in scope
 
-- No automatic publish path. Every review waits for admin even if AI says clean.
-- No reviewer email on the held state.
-- No changes to the public profile review card visuals.
-
-## Technical notes
-
-- IP capture uses `getRequestIP({ xForwardedFor: true })` inside the server fn that calls the RPC — never trust client-supplied IP.
-- `ai_flags` + `submitter_ip` are admin-only; RLS on `reviews` extends the existing select policy so public/pro can't read those columns (use a `public_reviews` view that projects only safe columns, swap profile queries to it).
-- New badge query polls every 30s like `useSupportUnread`.
+- "All reviews" page on the public profile.
+- AI moderation of replies (admin can still remove the parent review, which hides the reply visually since profile renders only `moderation_status='approved'` rows).
+- Re-notifying reviewer on reply edits.
+- Email when a review is hidden/removed after a reply was already sent.

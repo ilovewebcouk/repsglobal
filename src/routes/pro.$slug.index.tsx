@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   BadgeCheck,
@@ -28,6 +29,7 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
+import { listPublicReviewsBySlug, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import {
   getProfessionLabel,
@@ -35,6 +37,19 @@ import {
   getProfessionSlugFromLabel,
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+
+function formatReviewWhen(iso: string): string {
+  const then = new Date(iso).getTime();
+  const days = Math.max(0, Math.floor((Date.now() - then) / 86_400_000));
+  if (days < 1) return "today";
+  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
+  const years = Math.floor(days / 365);
+  return `${years} year${years === 1 ? "" : "s"} ago`;
+}
 
 /* ------------------------------------------------------------------ */
 /* Static data (Phase 1)                                              */
@@ -283,6 +298,15 @@ function ProProfilePage() {
   const { slug } = Route.useParams();
   const { db } = Route.useLoaderData();
   const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
+
+  // Real reviews — only used to override fixtures when the DB has any.
+  const { data: liveReviews } = useQuery({
+    queryKey: ["public-reviews", slug],
+    queryFn: () => listPublicReviewsBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const realReviews: ReviewDTO[] = liveReviews?.reviews ?? [];
+  const hasRealReviews = realReviews.length > 0;
 
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -735,31 +759,92 @@ function ProProfilePage() {
                 </div>
 
                 <div className="space-y-5">
-                  {REVIEWS.map((r, i) => (
-                    <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
-                      <img
-                        src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}
-                        alt=""
-                        className="h-11 w-11 rounded-full object-cover"
-                      />
-                      <div>
-                        <div className="flex items-center justify-between">
+                  {hasRealReviews
+                    ? realReviews.slice(0, 6).map((r, i) => (
+                        <div key={r.id} className="grid grid-cols-[44px_1fr] gap-3">
+                          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-orange/10 text-[13px] font-semibold text-reps-orange">
+                            {r.client_name
+                              .split(" ")
+                              .map((p) => p[0])
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .join("")
+                              .toUpperCase() || "·"}
+                          </span>
                           <div>
-                            <div className="text-[13px] font-semibold text-reps-charcoal">{r.name}</div>
-                            <div className="text-[11px] text-reps-muted-light">{r.when}</div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-[13px] font-semibold text-reps-charcoal">
+                                  {r.client_name}
+                                </div>
+                                <div className="text-[11px] text-reps-muted-light">
+                                  {formatReviewWhen(r.published_at ?? r.created_at)}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-1 flex gap-0.5">
+                              {Array.from({ length: 5 }).map((_, k) => (
+                                <Star
+                                  key={k}
+                                  className={`h-3 w-3 ${
+                                    k < r.rating
+                                      ? "fill-reps-orange text-reps-orange"
+                                      : "text-reps-stone"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            {r.title ? (
+                              <p className="mt-2 text-[13px] font-semibold text-reps-charcoal">
+                                {r.title}
+                              </p>
+                            ) : null}
+                            <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light whitespace-pre-wrap">
+                              “{r.body}”
+                            </p>
+                            {r.response ? (
+                              <div className="mt-3 rounded-[12px] border-l-2 border-reps-orange/40 bg-reps-warm-white px-3 py-2.5">
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                                  Reply from {pro.firstName}
+                                  {r.response_edited_at ? (
+                                    <span className="ml-2 font-medium text-reps-muted-light normal-case tracking-normal">
+                                      · edited
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className="mt-1 text-[12.5px] leading-relaxed text-reps-charcoal whitespace-pre-wrap">
+                                  {r.response}
+                                </p>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
-                        <div className="mt-1 flex gap-0.5">
-                          {Array.from({ length: 5 }).map((_, k) => (
-                            <Star key={k} className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                          ))}
+                      ))
+                    : REVIEWS.map((r, i) => (
+                        <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
+                          <img
+                            src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}
+                            alt=""
+                            className="h-11 w-11 rounded-full object-cover"
+                          />
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-[13px] font-semibold text-reps-charcoal">{r.name}</div>
+                                <div className="text-[11px] text-reps-muted-light">{r.when}</div>
+                              </div>
+                            </div>
+                            <div className="mt-1 flex gap-0.5">
+                              {Array.from({ length: 5 }).map((_, k) => (
+                                <Star key={k} className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                              ))}
+                            </div>
+                            <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light">
+                              “{r.body}”
+                            </p>
+                          </div>
                         </div>
-                        <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light">
-                          “{r.body}”
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                      ))}
                 </div>
               </div>
             </div>

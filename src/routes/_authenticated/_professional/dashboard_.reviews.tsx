@@ -5,10 +5,12 @@ import { toast } from "sonner";
 import {
   ArrowUpRight,
   Flag,
+  Pencil,
   Reply,
   Search,
   Star,
   ThumbsUp,
+  Trash2,
   Mail,
   CheckCircle2,
   Clock,
@@ -30,9 +32,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   createReviewRequest,
+  deleteReviewResponse,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
@@ -114,19 +128,31 @@ function ReviewsPage() {
 
   const [replyOpen, setReplyOpen] = React.useState<string | null>(null);
   const [replyText, setReplyText] = React.useState("");
+  const [editingId, setEditingId] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<"all" | "5" | "4" | "awaiting">("all");
   const [search, setSearch] = React.useState("");
 
   const respond = useMutation({
     mutationFn: (vars: { id: string; response: string }) => respondToReview({ data: vars }),
-    onSuccess: () => {
-      toast.success("Reply published");
+    onSuccess: (_d, vars) => {
+      toast.success(editingId === vars.id ? "Reply updated" : "Reply published");
       setReplyOpen(null);
+      setEditingId(null);
       setReplyText("");
       qc.invalidateQueries({ queryKey: ["my-reviews"] });
       qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't publish reply"),
+  });
+
+  const deleteReply = useMutation({
+    mutationFn: (id: string) => deleteReviewResponse({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Reply deleted");
+      qc.invalidateQueries({ queryKey: ["my-reviews"] });
+      qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't delete reply"),
   });
 
   const thank = useMutation({
@@ -300,12 +326,59 @@ function ReviewsPage() {
                         </div>
                         {r.title && <p className="mt-2 text-[13px] font-semibold text-white">{r.title}</p>}
                         <p className="mt-2 text-[13px] leading-relaxed text-white/80">{r.body}</p>
-                        {r.response && (
+                        {r.response && editingId !== r.id && (
                           <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft p-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-                              Your reply
+                            <div className="flex items-center justify-between">
+                              <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                                Your reply
+                                {r.response_edited_at ? (
+                                  <span className="ml-2 text-white/45 normal-case tracking-normal">· edited</span>
+                                ) : null}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingId(r.id);
+                                    setReplyOpen(null);
+                                    setReplyText(r.response ?? "");
+                                  }}
+                                  className="flex h-7 items-center gap-1 rounded-[8px] px-2 text-[11px] font-semibold text-white/65 hover:bg-white/5 hover:text-white"
+                                >
+                                  <Pencil className="h-3 w-3" /> Edit
+                                </button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="flex h-7 items-center gap-1 rounded-[8px] px-2 text-[11px] font-semibold text-white/55 hover:bg-white/5 hover:text-white"
+                                    >
+                                      <Trash2 className="h-3 w-3" /> Delete
+                                    </button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete your reply?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Your reply will be removed from your public profile. The
+                                        reviewer won't be notified. You can post a new reply at any
+                                        time.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteReply.mutate(r.id)}
+                                        disabled={deleteReply.isPending}
+                                      >
+                                        Delete reply
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             </div>
-                            <p className="mt-1 text-[13px] text-white/85">{r.response}</p>
+                            <p className="mt-1 text-[13px] text-white/85 whitespace-pre-wrap">{r.response}</p>
                           </div>
                         )}
                         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -314,6 +387,7 @@ function ReviewsPage() {
                               type="button"
                               onClick={() => {
                                 setReplyOpen(r.id);
+                                setEditingId(null);
                                 setReplyText("");
                               }}
                               className="flex h-8 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
@@ -341,35 +415,41 @@ function ReviewsPage() {
                           </button>
                         </div>
 
-                        {!r.response && replyOpen === r.id && (
+                        {(replyOpen === r.id || editingId === r.id) && (
                           <div className="mt-3 space-y-2">
                             <Textarea
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               rows={3}
-                              maxLength={2000}
+                              maxLength={1000}
                               placeholder="Write a thoughtful, professional reply…"
                             />
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => respond.mutate({ id: r.id, response: replyText })}
-                                disabled={respond.isPending || replyText.trim().length < 1}
-                                className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover"
-                              >
-                                Publish reply
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setReplyOpen(null);
-                                  setReplyText("");
-                                }}
-                                className="h-8 rounded-[10px] border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80"
-                              >
-                                Cancel
-                              </Button>
+                            <div className="flex items-center justify-between">
+                              <div className="text-[11px] text-white/45">
+                                {replyText.length}/1000
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => respond.mutate({ id: r.id, response: replyText })}
+                                  disabled={respond.isPending || replyText.trim().length < 1}
+                                  className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover"
+                                >
+                                  {editingId === r.id ? "Save changes" : "Publish reply"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setReplyOpen(null);
+                                    setEditingId(null);
+                                    setReplyText("");
+                                  }}
+                                  className="h-8 rounded-[10px] border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         )}
