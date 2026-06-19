@@ -129,7 +129,7 @@ async function fetchFeaturedPool(
   if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
 
   const [profilesRes, subsRes, reviewsRes, locsRes] = await Promise.all([
-    supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
+    supabaseAdmin.from("profiles").select("id, full_name, avatar_url, avatar_qa_status").in("id", ids),
     supabaseAdmin
       .from("subscriptions")
       .select("user_id, tier, status")
