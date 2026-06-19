@@ -362,14 +362,9 @@ function LocationLanding() {
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
-  // Only swap the locked demo cards out once we have a FULL row of live
-  // pros with approved AI-cropped headshots — partial rows would mix demo
-  // imagery with live photos and break visual rhythm.
-  const liveWithApprovedPhoto = livePros.filter((r) => r.avatar_url);
-  const featured: FeaturedPro[] = liveWithApprovedPhoto.length >= 4
-    ? liveWithApprovedPhoto.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
+  const featured: FeaturedPro[] = livePros.length
+    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
     : FEATURED.slice(0, 4);
-
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({

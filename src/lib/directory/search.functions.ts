@@ -251,7 +251,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (!ids.length) return { rows: [], total, page, pageSize };
 
     const [profilesRes, locsRes, subsRes, servicesRes, reviewsRes, proGymsRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, avatar_url, avatar_qa_status").in("id", ids),
+      supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
       supabaseAdmin
         .from("professional_locations")
         .select("professional_id, postcode_outward, town, region, latitude, longitude")
@@ -331,12 +331,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         ...r,
         specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
         full_name: prof?.full_name ?? null,
-        // Only surface the avatar in directory cards once it's passed AI
-        // headshot QA; otherwise fall back to the monogram on the client.
-        avatar_url:
-          (prof as { avatar_qa_status?: string | null } | undefined)?.avatar_qa_status === "approved"
-            ? (prof?.avatar_url ?? null)
-            : null,
+        avatar_url: prof?.avatar_url ?? null,
         tier: tierById.get(r.id) ?? "free",
         from_price_pence: priceById.get(r.id) ?? null,
         review_count: agg?.count ?? 0,

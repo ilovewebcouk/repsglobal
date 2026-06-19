@@ -316,17 +316,10 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const url = data.path ? await signOneYearUrl(data.path) : null;
-    // Removing the photo also clears its QA approval — the next upload must
-    // re-pass the AI headshot check before it can appear on featured cards.
-    const patch = url
-      ? { avatar_url: url }
-      : {
-          avatar_url: null,
-          avatar_is_ai_generated: false,
-          avatar_qa_status: "unverified",
-          avatar_qa_source: null,
-        };
-    const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: url })
+      .eq("id", userId);
     if (error) throw error;
     return { ok: true, url };
   });
