@@ -67,9 +67,9 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // email-confirmed (i.e. actually signed up — invited-but-unaccepted
     // shells from `generateLink({ type: 'invite' })` are excluded).
     const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, ratingRows] = await Promise.all([
-      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: true, _verification: null }),
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: true }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
-      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30, _until: null }),
+      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
       supabaseAdmin.from('reviews').select('rating').eq('status', 'published').gte('created_at', sinceRating),
     ]);
