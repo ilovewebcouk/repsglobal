@@ -19,7 +19,7 @@ import { template as professionalInvite } from './professional-invite'
 import { template as professionalSuspended } from './professional-suspended'
 import { template as professionalReinstated } from './professional-reinstated'
 import { template as reviewRequest } from './review-request'
-import { template as reviewReply } from './review-reply'
+
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'client-invite': clientInvite,
@@ -32,6 +32,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'professional-suspended': professionalSuspended,
   'professional-reinstated': professionalReinstated,
   'review-request': reviewRequest,
-  'review-reply': reviewReply,
 }
+
 

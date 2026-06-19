@@ -802,25 +802,11 @@ function ProProfilePage() {
                             <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light whitespace-pre-wrap">
                               “{r.body}”
                             </p>
-                            {r.response ? (
-                              <div className="mt-3 rounded-[12px] border-l-2 border-reps-orange/40 bg-reps-warm-white px-3 py-2.5">
-                                <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
-                                  Reply from {pro.firstName}
-                                  {r.response_edited_at ? (
-                                    <span className="ml-2 font-medium text-reps-muted-light normal-case tracking-normal">
-                                      · edited
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <p className="mt-1 text-[12.5px] leading-relaxed text-reps-charcoal whitespace-pre-wrap">
-                                  {r.response}
-                                </p>
-                              </div>
-                            ) : null}
                           </div>
                         </div>
                       ))
                     : REVIEWS.map((r, i) => (
+
                         <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
                           <img
                             src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}

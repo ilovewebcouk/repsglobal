@@ -13,12 +13,10 @@ export type ReviewDTO = {
   title: string | null;
   body: string;
   status: "pending" | "published" | "hidden" | "flagged";
-  response: string | null;
-  responded_at: string | null;
-  response_edited_at: string | null;
   published_at: string | null;
   created_at: string;
 };
+
 
 const SubmitSchema = z.object({
   slug: z.string().min(1).max(120),
@@ -72,7 +70,7 @@ export const submitReview = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
     await fanOutReviewNotifications(supabaseAdmin, row.id, pro.id);
-    void runReviewModerationFireAndForget(row.id);
+    await runReviewModerationSafely(row.id);
     return { id: row.id };
   });
 
@@ -101,14 +99,16 @@ async function fanOutReviewNotifications(
     .eq("id", reviewId);
 }
 
-async function runReviewModerationFireAndForget(reviewId: string) {
+async function runReviewModerationSafely(reviewId: string) {
   try {
     const { runReviewModeration } = await import("@/lib/reviews/moderate.functions");
     await runReviewModeration({ data: { reviewId } });
   } catch (e) {
-    console.error("[reviews] moderation fire-and-forget failed", e);
+    // Never block a submit on moderation — admin queue still gets the row.
+    console.error("[reviews] moderation failed", e);
   }
 }
+
 
 export const listMyReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
@@ -117,7 +117,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_user_id, client_name, rating, title, body, status, response, responded_at, response_edited_at, published_at, created_at",
+        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
       )
       .eq("professional_id", context.userId)
       .order("created_at", { ascending: false })
@@ -126,135 +126,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     return (data ?? []) as ReviewDTO[];
   });
 
-const RespondSchema = z.object({
-  id: z.string().uuid(),
-  response: z.string().trim().min(1).max(1000),
-});
 
-export const respondToReview = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => RespondSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Load existing reply state so we can detect "first publish" for the email.
-    const { data: before } = await supabaseAdmin
-      .from("reviews")
-      .select("response, response_notified_at, professional_id, client_user_id, client_email, rating")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!before || before.professional_id !== context.userId) {
-      throw new Error("Review not found");
-    }
-    const wasUnreplied = before.response === null;
-
-    const { error } = await supabaseAdmin.rpc("upsert_pro_review_response", {
-      _review_id: data.id,
-      _response: data.response,
-    } as never);
-    if (error) throw error;
-
-    // First publish only — fire reviewer notification email (best-effort).
-    if (wasUnreplied && !before.response_notified_at) {
-      void sendReviewReplyEmailFireAndForget({
-        reviewId: data.id,
-        proUserId: context.userId,
-        reviewerEmail: before.client_email ?? null,
-        reviewerUserId: before.client_user_id ?? null,
-        rating: before.rating ?? 5,
-        replyText: data.response,
-      });
-    }
-
-    return { ok: true };
-  });
-
-const DeleteSchema = z.object({ id: z.string().uuid() });
-
-export const deleteReviewResponse = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => DeleteSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Defensive: confirm ownership before the RPC (RPC also checks).
-    const { data: row } = await supabaseAdmin
-      .from("reviews")
-      .select("professional_id")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!row || row.professional_id !== context.userId) {
-      throw new Error("Review not found");
-    }
-    const { error } = await supabaseAdmin.rpc("clear_pro_review_response", {
-      _review_id: data.id,
-    } as never);
-    if (error) throw error;
-    return { ok: true };
-  });
-
-async function sendReviewReplyEmailFireAndForget(args: {
-  reviewId: string;
-  proUserId: string;
-  reviewerEmail: string | null;
-  reviewerUserId: string | null;
-  rating: number;
-  replyText: string;
-}) {
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Resolve reviewer email — prefer the value stored on the review itself.
-    let to = args.reviewerEmail?.toLowerCase() ?? null;
-    if (!to && args.reviewerUserId) {
-      const { data: u } = await supabaseAdmin.auth.admin.getUserById(args.reviewerUserId);
-      to = u?.user?.email?.toLowerCase() ?? null;
-    }
-    if (!to) return; // No email on file — skip silently.
-
-    // Resolve pro display name + slug for the template.
-    const [{ data: profile }, { data: proRow }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("full_name, display_name").eq("id", args.proUserId).maybeSingle(),
-      supabaseAdmin.from("professionals").select("slug").eq("id", args.proUserId).maybeSingle(),
-    ]);
-    const proName = profile?.display_name || profile?.full_name || "Your trainer";
-    const proSlug = proRow?.slug ?? "";
-
-    const [{ render }, React, { template }, { sendViaMailgun }] = await Promise.all([
-      import("@react-email/render"),
-      import("react"),
-      import("@/lib/email-templates/review-reply"),
-      import("@/lib/email/mailgun.server"),
-    ]);
-    const props = {
-      proName,
-      proSlug,
-      reviewRating: args.rating,
-      replyText: args.replyText,
-    };
-    const element = React.createElement(template.component as React.ComponentType<any>, props);
-    const html = await render(element);
-    const text = await render(element, { plainText: true });
-    const subject =
-      typeof template.subject === "function" ? template.subject(props) : template.subject;
-
-    const result = await sendViaMailgun({
-      to,
-      subject,
-      html,
-      text,
-      templateName: "review-reply",
-      idempotencyKey: `review-reply:${args.reviewId}`,
-    });
-    if (result.ok) {
-      await supabaseAdmin
-        .from("reviews")
-        .update({ response_notified_at: new Date().toISOString() })
-        .eq("id", args.reviewId);
-    }
-  } catch (e) {
-    console.error("[reviews] review-reply email failed", e);
-  }
-}
 
 export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
@@ -272,8 +144,9 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
       const { data: rows } = await supabaseAdmin
         .from("reviews")
         .select(
-          "id, professional_id, client_user_id, client_name, rating, title, body, status, response, responded_at, response_edited_at, published_at, created_at",
+          "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
         )
+
         .eq("professional_id", pro.id)
         .eq("status", "published")
         .eq("moderation_status", "approved")
@@ -299,8 +172,6 @@ export type ReviewKpis = {
   review_count: number;
   last_30d_count: number;
   last_30d_avg: number;
-  response_rate: number;
-  awaiting_reply: number;
   flagged: number;
   breakdown: Array<{ stars: number; count: number; pct: number }>;
 };
@@ -311,14 +182,13 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("reviews")
-      .select("rating, status, response, created_at, flag_reason, flagged_at")
+      .select("rating, status, created_at, flag_reason, flagged_at")
       .eq("professional_id", context.userId)
       .limit(2000);
 
     const all = (rows ?? []) as Array<{
       rating: number;
       status: string;
-      response: string | null;
       created_at: string;
       flag_reason: string | null;
       flagged_at: string | null;
@@ -329,9 +199,6 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const recent = published.filter((r) => new Date(r.created_at).getTime() >= cutoff);
     const recentAvg = recent.length ? recent.reduce((s, r) => s + r.rating, 0) / recent.length : 0;
-    const responded = published.filter((r) => r.response).length;
-    const responseRate = count > 0 ? Math.round((responded / count) * 100) : 0;
-    const awaiting = published.filter((r) => !r.response).length;
     const flagged = all.filter((r) => r.status === "flagged" || r.flag_reason).length;
 
     const buckets = [5, 4, 3, 2, 1].map((stars) => {
@@ -344,12 +211,11 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
       review_count: count,
       last_30d_count: recent.length,
       last_30d_avg: Math.round(recentAvg * 10) / 10,
-      response_rate: responseRate,
-      awaiting_reply: awaiting,
       flagged,
       breakdown: buckets,
     };
   });
+
 
 // =====================================================================
 // Thank / Flag (professional actions)
@@ -586,7 +452,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       _user_agent: ua,
     } as never);
     if (error) throw error;
-    void runReviewModerationFireAndForget(id as string);
+    await runReviewModerationSafely(id as string);
     return { id: id as string };
   });
 
