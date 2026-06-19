@@ -1,31 +1,58 @@
-I was wrong earlier: the profile editor does have an AI headshot validation and crop flow, plus AI portrait regeneration. The gap is that featured cards only consume `profiles.avatar_url`, so they can display any existing/migrated avatar without knowing whether it came through that QA path.
+Plain-English version:
 
-Plan:
+You are right: cards should not have their own separate “headshot rules”. The correct system is:
 
-1. **Centralise the avatar QA model**
-   - Add explicit avatar/headshot metadata to the backend profile data model, e.g. approval status/category/reason, face box/crop metadata, quality score, and whether the image is AI-generated.
-   - Preserve the existing `avatar_is_ai_generated` flag.
+1. Trainer uploads one profile/avatar photo.
+2. AI checks that photo is actually a headshot.
+3. The upload flow crops it into the final square avatar.
+4. Every place that shows that trainer’s avatar should reuse that same processed avatar.
 
-2. **Update the existing profile upload flow**
-   - When `validateAvatar` accepts a photo, persist the AI result and face-box/crop metadata alongside the committed avatar.
-   - When it rejects a photo, persist/return the rejection reason as it does now.
-   - When AI portrait regeneration is accepted, mark it approved and AI-generated.
-   - When a photo is removed, clear the avatar QA metadata.
+So the card should not be trying to invent a crop. It should just show the already-approved, already-cropped avatar.
 
-3. **Apply the same rule to featured cards and directory surfaces**
-   - Update `getFeaturedPros`, `getFeaturedProIds`, and the city/profession/home featured-card data path so featured cards only use photos whose avatar QA status is approved.
-   - Keep the current fallback image only for static demo/fallback cards; live cards should not use unapproved user photos.
-   - Update the public directory search/card path consistently where it renders the same profile avatars.
+What went wrong:
 
-4. **Keep card alignment consistent with the profile crop**
-   - Because uploaded photos are already cropped to a square JPEG using the AI face box, keep the card image square but stop relying on arbitrary `object-top` as the “fix”.
-   - Use the processed/approved avatar as the source of truth so city/profession cards inherit the same headshot crop.
+- The current upload flow does have the AI check and crop.
+- But the app also has older/demo/migrated profile photos that did not go through that same current upload flow.
+- I then added a stricter “only show approved avatars” gate, but because the city cards had some live rows, the static demo card images were no longer being used as the fallback set.
+- That made the demo imagery disappear in places where we should have kept the locked demo cards until there are enough genuinely approved live headshots.
+- Some public surfaces still read the raw avatar URL directly, instead of going through the same approved-avatar rule.
 
-5. **Handle migrated legacy photos carefully**
-   - Legacy `bd_member_seed.profile_photo_status = 'ok'` exists, but the current app code does not show the AI classifier that set it.
-   - Treat existing/migrated avatars without new QA metadata as not eligible for live featured-card headshots unless explicitly marked approved/backfilled by a migration/admin pass.
+The fix is not to create different image rules per card. The fix is to make the uploaded avatar the single source of truth and make every avatar surface respect that.
 
-6. **QA checks after implementation**
-   - Verify the dashboard profile photo flow still validates, crops, commits, removes, and regenerates.
-   - Verify `/in/$location`, `/professions/$profession`, homepage featured cards, and `/find-a-professional` no longer surface unapproved live avatars as featured headshots.
-   - Confirm the REPs Verified badge-only card change remains intact.
+Implementation plan:
+
+1. Make the uploaded/cropped avatar canonical
+   - Keep the profile upload flow as the source of truth: AI validates, face-box crop runs, final square image is saved.
+   - Cards, directory listings, profile pages, shop-fronts, and avatar stacks should all use that same final avatar.
+
+2. Stop bad legacy photos from pretending they passed the new rule
+   - Do not treat old migrated photos as approved just because an old import status said “ok”.
+   - Those can remain stored, but they should not be used as polished public card headshots unless they pass the current avatar flow or are manually approved later.
+
+3. Restore the demo images properly
+   - City and profession featured rails should only switch from locked demo cards to live cards when there are enough approved live avatar photos to fill the row.
+   - If there are fewer than 4 approved live headshots, keep the original demo cards/images instead of showing blanks, monograms, or poor live photos.
+
+4. Align every avatar surface
+   - Directory result cards.
+   - City featured cards.
+   - Profession featured cards.
+   - Homepage avatar rail/cards.
+   - Public profile avatar.
+   - Coach shop-front avatar.
+   - Enquiry summary avatar.
+
+5. Simplify card image rendering
+   - Remove the special `object-top` card crop behaviour.
+   - Since the avatar is already processed at upload, cards should just display the processed square image normally.
+
+6. Data cleanup
+   - Reclassify legacy imported avatar approvals back to unverified where they only came from the old migration/import path.
+   - Keep actual AI-uploaded and AI-generated avatars approved.
+   - Do not delete demo assets or stored user images.
+
+7. QA
+   - Check the London city featured row from the screenshot.
+   - Confirm bad legacy photos no longer fill the cards.
+   - Confirm demo cards/images come back when live approved headshots are insufficient.
+   - Confirm a newly uploaded approved avatar appears consistently everywhere that trainer’s avatar appears.

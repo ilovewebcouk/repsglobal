@@ -34,7 +34,10 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
       <div className="relative">
-        <img src={pro.image} alt={pro.name} className="aspect-square w-full object-cover object-top" loading="lazy" />
+        {/* Avatars on cards are already AI-cropped at upload time (square,
+            face-box centred). No per-card crop hack — render as-is. */}
+        <img src={pro.image} alt={pro.name} className="aspect-square w-full object-cover" loading="lazy" />
+
         <div className="absolute left-3 top-3">
           <VerificationPill
             identityStatus={identityStatus}

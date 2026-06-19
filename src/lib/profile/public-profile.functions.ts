@@ -90,21 +90,26 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     const [{ data: prof }, locMap] = await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, avatar_url, avatar_qa_status")
         .eq("id", r.id)
         .maybeSingle(),
       fetchPrimaryLocations([r.id]),
     ]);
     const loc = locMap.get(r.id) ?? null;
+    // Public surfaces only show avatars that have passed the AI headshot
+    // QA pipeline. Legacy/unverified uploads fall back to the monogram.
+    const qaApproved =
+      (prof as { avatar_qa_status?: string | null } | undefined)?.avatar_qa_status === "approved";
 
     return {
       ...r,
       primary_profession: r.primary_profession ?? null,
       specialisms: Array.isArray(r.specialisms) ? r.specialisms : [],
       full_name: prof?.full_name ?? null,
-      avatar_url: prof?.avatar_url ?? null,
+      avatar_url: qaApproved ? (prof?.avatar_url ?? null) : null,
       location: loc,
     };
+
   });
 
 export const listPublishedProfessionals = createServerFn({ method: "GET" }).handler(
@@ -124,10 +129,20 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, avatar_url")
+        .select("id, full_name, avatar_url, avatar_qa_status")
         .in("id", ids);
       profileById = new Map(
-        (profs ?? []).map((p) => [p.id, { full_name: p.full_name, avatar_url: p.avatar_url }]),
+        (profs ?? []).map((p) => [
+          p.id,
+          {
+            full_name: p.full_name,
+            // Same headshot QA gate as the public profile + featured cards.
+            avatar_url:
+              (p as { avatar_qa_status?: string | null }).avatar_qa_status === "approved"
+                ? p.avatar_url
+                : null,
+          },
+        ]),
       );
     }
 
@@ -141,5 +156,6 @@ export const listPublishedProfessionals = createServerFn({ method: "GET" }).hand
       avatar_url: profileById.get(r.id)?.avatar_url ?? null,
       location: locMap.get(r.id) ?? null,
     }));
+
   },
 );
