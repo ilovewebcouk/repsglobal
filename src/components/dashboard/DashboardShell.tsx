@@ -59,6 +59,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { getEnquiryStats } from "@/lib/enquiries/enquiries.functions";
 import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
+import { useSessionUser } from "@/hooks/use-session-user";
 
 
 
@@ -317,22 +318,26 @@ function MemberCard({ member }: { member?: DashboardShellMember }) {
 
 
 function VerificationCountBadge() {
+  const { user } = useSessionUser();
   const fetchTrust = useServerFn(getTrustState);
   const { data } = useQuery({
     queryKey: ["my-trust-state"],
     queryFn: () => fetchTrust(),
     staleTime: 30_000,
+    enabled: !!user,
   });
   const completed = (data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
   return <VerifiedCountChip completed={completed} />;
 }
 
 function EnquiriesUnreadBadge() {
+  const { user } = useSessionUser();
   const fetchStats = useServerFn(getEnquiryStats);
   const { data } = useQuery({
     queryKey: ["my-enquiry-stats"],
     queryFn: () => fetchStats(),
     staleTime: 30_000,
+    enabled: !!user,
   });
   const unread = data?.unread ?? 0;
   if (!unread) return null;
@@ -342,6 +347,7 @@ function EnquiriesUnreadBadge() {
     </span>
   );
 }
+
 
 function SupportUnreadBadge() {
   const { unread } = useSupportUnread();
