@@ -319,7 +319,7 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
   const { data: due } = await supabaseAdmin
     .from("legacy_stripe_link")
     .select("bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price")
-    .eq("migration_status", "pending")
+    .eq("migration_status", "ready")
     .not("stripe_customer_id", "is", null)
     .lte("access_expires_at", new Date().toISOString())
     .limit(limit);
@@ -352,7 +352,16 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
         Boolean(customer.invoice_settings?.default_payment_method) ||
         Boolean(customer.default_source);
 
-      const useLegacy = Boolean(row.eligible_for_legacy_price) && legacyPrice !== null;
+      // Honour the £34 → £99 schedule ONLY if:
+      //   1. The member was flagged eligible at CSV import, AND
+      //   2. Their BD next_due_at is on/after the CSV import cutoff
+      //      (i.e. they weren't already long-overdue before we imported).
+      // Long-overdue members (e.g. last BD payment > 12 months ago) get
+      // £99/yr from launch with no honour year.
+      const accessExpires = new Date(row.access_expires_at);
+      const withinHonourWindow = accessExpires.getTime() >= LEGACY_HONOUR_CUTOFF.getTime();
+      const useLegacy =
+        Boolean(row.eligible_for_legacy_price) && withinHonourWindow && legacyPrice !== null;
       const baseMetadata = {
         reps_legacy_migration: "true",
         bd_member_id: String(row.bd_member_id),
