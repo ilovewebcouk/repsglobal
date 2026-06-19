@@ -124,7 +124,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     //    Source: legacy_stripe_link.next_due_at (primary), bd_member_seed.bd_next_due_date (fallback).
     const { data: legacyLinks } = await supabaseAdmin
       .from("legacy_stripe_link")
-      .select("bd_member_id, email, next_due_at, is_lifetime")
+      .select("bd_member_id, email, next_due_at, is_lifetime, last_paid_amount_pence, eligible_for_legacy_price")
       .eq("is_lifetime", false);
 
     const { data: bdSeeds } = await supabaseAdmin
@@ -136,13 +136,27 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       bdSeedByMember.set(row.bd_member_id, row);
     }
 
-    // Build the scheduled list. Each row is one upcoming £99 payment.
+    // Honour-window price helper. Year 1 = last_paid_amount_pence when
+    // eligible_for_legacy_price; otherwise £99. bd_seed fallbacks default to £99.
+    function nextDuePence(row: {
+      last_paid_amount_pence?: number | null;
+      eligible_for_legacy_price?: boolean | null;
+    }): number {
+      if (row.eligible_for_legacy_price && row.last_paid_amount_pence && row.last_paid_amount_pence > 0) {
+        return row.last_paid_amount_pence;
+      }
+      return TIER_PRICE_PENCE.verified;
+    }
+
+    // Build the scheduled list. Each row is one upcoming payment.
     type ScheduledRow = {
       memberId: number;
       email: string;
       dueAt: Date;
       source: "legacy_link" | "bd_seed";
       userId: string | null;
+      firstDuePence: number;   // year-1 amount (honour or £99)
+      isHonour: boolean;       // first payment is honour-priced; future renewals revert to £99
     };
     const scheduled: ScheduledRow[] = [];
     const legacyMemberIds = new Set<number>();
@@ -153,12 +167,15 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       const seed = bdSeedByMember.get(link.bd_member_id);
       const claimedUserId: string | null = seed?.claimed_user_id ?? null;
       if (claimedUserId && liveUserIds.has(claimedUserId)) continue;
+      const firstDuePence = nextDuePence(link);
       scheduled.push({
         memberId: link.bd_member_id,
         email: link.email,
         dueAt: new Date(link.next_due_at),
         source: "legacy_link",
         userId: claimedUserId,
+        firstDuePence,
+        isHonour: firstDuePence !== TIER_PRICE_PENCE.verified,
       });
     }
 
@@ -174,11 +191,14 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         dueAt: new Date(seed.bd_next_due_date as string),
         source: "bd_seed",
         userId: claimedUserId,
+        firstDuePence: TIER_PRICE_PENCE.verified,
+        isHonour: false,
       });
       bdFallbackCount += 1;
     }
 
     const verifiedScheduledCount = scheduled.length;
+    // ARR = steady-state run-rate at £99/member (honour window is year-1 only).
     const scheduledArr = verifiedScheduledCount * TIER_PRICE_PENCE.verified;
 
     // 3. Upcoming payments (14d): live sub renewals + scheduled Verified due.
@@ -197,11 +217,12 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     }
     for (const r of scheduled) {
       if (r.dueAt >= now && r.dueAt <= in14d) {
-        upcomingPence += TIER_PRICE_PENCE.verified;
+        upcomingPence += r.firstDuePence;
         upcomingCount += 1;
-        upcomingScheduled.push({ email: r.email, userId: r.userId, dueAt: r.dueAt, amountPence: TIER_PRICE_PENCE.verified });
+        upcomingScheduled.push({ email: r.email, userId: r.userId, dueAt: r.dueAt, amountPence: r.firstDuePence });
       }
     }
+
 
     // 4. Lifetime members (excluded from forecast but kept in Verified count).
     const lifetimeMembers = ((legacyLinks ?? []) as any[]).length
@@ -413,7 +434,7 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
     // 2. Project scheduled Verified payments (legacy_stripe_link + bd_seed fallback).
     const { data: legacyLinks } = await supabaseAdmin
       .from("legacy_stripe_link")
-      .select("bd_member_id, next_due_at, is_lifetime")
+      .select("bd_member_id, next_due_at, is_lifetime, last_paid_amount_pence, eligible_for_legacy_price")
       .eq("is_lifetime", false);
 
     const { data: bdSeeds } = await supabaseAdmin
@@ -430,11 +451,22 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
     for (const r of (bdSeeds ?? []) as any[]) bdSeedByMember.set(r.bd_member_id, r);
     const legacyMemberIds = new Set<number>();
 
-    function projectVerifiedRenewals(firstDue: Date, claimedUserId: string | null) {
+    // First scheduled payment honours the year-1 legacy price (e.g. £34); every
+    // subsequent annual renewal reverts to the standard Verified price (£99).
+    function projectVerifiedRenewals(
+      firstDue: Date,
+      claimedUserId: string | null,
+      firstDuePence: number,
+    ) {
       if (claimedUserId && liveUserIds.has(claimedUserId)) return;
       let due = new Date(firstDue);
+      let isFirst = true;
       while (due <= horizonEnd) {
-        if (due >= now) applyPayment(due, TIER_PRICE_PENCE.verified, "verified");
+        if (due >= now) {
+          const amount = isFirst ? firstDuePence : TIER_PRICE_PENCE.verified;
+          applyPayment(due, amount, "verified");
+        }
+        isFirst = false;
         const d = new Date(due);
         d.setUTCFullYear(d.getUTCFullYear() + 1);
         due = d;
@@ -446,12 +478,20 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       legacyMemberIds.add(link.bd_member_id);
       if (!link.next_due_at) continue;
       const seed = bdSeedByMember.get(link.bd_member_id);
-      projectVerifiedRenewals(new Date(link.next_due_at), seed?.claimed_user_id ?? null);
+      const firstDuePence =
+        link.eligible_for_legacy_price && link.last_paid_amount_pence && link.last_paid_amount_pence > 0
+          ? link.last_paid_amount_pence
+          : TIER_PRICE_PENCE.verified;
+      projectVerifiedRenewals(new Date(link.next_due_at), seed?.claimed_user_id ?? null, firstDuePence);
     }
     for (const seed of (bdSeeds ?? []) as any[]) {
       if (legacyMemberIds.has(seed.bd_member_id)) continue;
       if (!seed.bd_next_due_date) continue;
-      projectVerifiedRenewals(new Date(seed.bd_next_due_date as string), seed.claimed_user_id ?? null);
+      projectVerifiedRenewals(
+        new Date(seed.bd_next_due_date as string),
+        seed.claimed_user_id ?? null,
+        TIER_PRICE_PENCE.verified,
+      );
     }
 
     const months = monthKeys.map((k) => buckets.get(k)!);
