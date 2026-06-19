@@ -88,12 +88,19 @@ export type MembershipMetrics = {
   tiers: TierBreakdown[];
   distribution: { label: string; count: number; tone: "verified" | "scheduled" | "pro" | "studio" }[];
   diagnostics: {
-    nonGbpExcluded: number;
+    nonGbpExcluded: 0;
     lifetimeMembers: number;
     activeSubsTotal: number;
     cohortHonour: number;
     cohortAnomaly: number;
     cohortFutureDue: number;
+    orphanedSubsLive: number;
+    orphanedSubsList: Array<{
+      stripe_subscription_id: string | null;
+      tier: string;
+      status: string;
+      billing_period: BillingPeriod | null;
+    }>;
   };
 };
 
