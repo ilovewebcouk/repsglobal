@@ -350,7 +350,6 @@ function AdminProfessionalsPage() {
             <thead>
               <tr className="border-b border-reps-border text-left text-[11px] uppercase tracking-wider text-white/45">
                 <th className="px-5 py-3 font-semibold">Professional</th>
-                <th className="px-3 py-3 font-semibold">Location</th>
                 <th className="px-3 py-3 font-semibold">Profession</th>
                 <th className="px-3 py-3 font-semibold">Plan</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
@@ -363,9 +362,9 @@ function AdminProfessionalsPage() {
             </thead>
             <tbody>
               {listQ.isLoading && !listQ.data ? (
-                <tr><td colSpan={10} className="px-5 py-10 text-center text-white/55">Loading…</td></tr>
+                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">Loading…</td></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={10} className="px-5 py-10 text-center text-white/55">No professionals match.</td></tr>
+                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">No professionals match.</td></tr>
               ) : rows.map((r) => (
                 <ProRow key={r.id} row={r} />
               ))}
@@ -728,7 +727,7 @@ function ProRow({ row }: { row: AdminProRow }) {
           </div>
         </div>
       </td>
-      <td className="px-3 py-3 text-white/75">{row.location ?? "—"}</td>
+      
       <td className="px-3 py-3">
         {row.profession ? (
           <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/75">
