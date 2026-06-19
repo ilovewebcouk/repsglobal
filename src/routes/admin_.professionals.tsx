@@ -15,7 +15,6 @@ import {
   Play,
   Plus,
   ShieldCheck,
-  Star,
   Trash2,
   TrendingUp,
   Users,
@@ -248,25 +247,28 @@ function AdminProfessionalsPage() {
     {
       label: "Active professionals",
       value: kpisQ.data ? kpisQ.data.activeCount.toLocaleString() : "—",
-      delta: kpisQ.data ? `${kpisQ.data.newSignups30.toLocaleString()} this month` : "",
+      delta: "Confirmed signed-up members",
       icon: Users,
     },
     {
-      label: "Verified",
+      label: "Verified professionals",
       value: kpisQ.data ? kpisQ.data.verifiedCount.toLocaleString() : "—",
-      delta: kpisQ.data ? `${kpisQ.data.verifiedPct.toFixed(1)}% of base` : "",
+      delta: kpisQ.data
+        ? `${kpisQ.data.verifiedCount.toLocaleString()} of ${kpisQ.data.activeCount.toLocaleString()} active professionals`
+        : "",
       icon: ShieldCheck,
     },
     {
-      label: "Avg. rating",
-      value: kpisQ.data?.avgRating ? kpisQ.data.avgRating.toFixed(2) : "—",
-      delta: "Last 12 months", icon: Star,
+      label: "Paid members",
+      value: kpisQ.data ? kpisQ.data.paidCount.toLocaleString() : "—",
+      delta: "Active or trialing subscriptions",
+      icon: CreditCard,
     },
     {
       label: "New signups (30d)",
       value: kpisQ.data ? kpisQ.data.newSignups30.toLocaleString() : "—",
       delta: kpisQ.data?.newSignupsDeltaPct != null
-        ? `${kpisQ.data.newSignupsDeltaPct >= 0 ? "+" : ""}${kpisQ.data.newSignupsDeltaPct.toFixed(1)}% vs prev`
+        ? `${kpisQ.data.newSignupsDeltaPct >= 0 ? "+" : ""}${kpisQ.data.newSignupsDeltaPct.toFixed(1)}% vs prev 30d`
         : "",
       icon: TrendingUp,
     },
