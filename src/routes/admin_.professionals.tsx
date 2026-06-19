@@ -711,8 +711,8 @@ function ProRow({ row }: { row: AdminProRow }) {
           {STATUS_LABEL[row.status]}
         </span>
       </td>
-      <td className="px-3 py-3 text-white/75">{row.rating ?? "—"}</td>
-      <td className="px-3 py-3 text-white/75">{row.clients}</td>
+      <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
+      <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
       <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
       <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
       <td className="px-5 py-3 text-right">
