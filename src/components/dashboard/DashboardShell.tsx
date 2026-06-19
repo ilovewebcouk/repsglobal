@@ -59,6 +59,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { getEnquiryStats } from "@/lib/enquiries/enquiries.functions";
 import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
+import { useSessionUser } from "@/hooks/use-session-user";
 
 
 
