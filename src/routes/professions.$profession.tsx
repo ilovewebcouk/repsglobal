@@ -24,11 +24,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proJames from "@/assets/pro-james.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
-import proSophie from "@/assets/pro-sophie.jpg";
-import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
@@ -38,30 +34,11 @@ import {
 import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
 
-function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
-  const mode: FeaturedPro["mode"] =
-    r.in_person_available && r.online_available
-      ? "In-person & Online"
-      : r.online_available
-        ? "Online"
-        : "In-person";
-  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
-  return {
-    name: r.full_name ?? "REPs Professional",
-    role,
-    city: r.location?.town ?? r.city ?? "",
-    rating: 5.0,
-    reviews: 0,
-    mode,
-    tags: (r.specialisms ?? []),
-    image: r.avatar_url ?? fallbackImg,
-    identityStatus: r.identity_status,
-    verification: r.verification,
-    tier: r.tier,
-  };
-}
+// Kept for the related-profession card type; no static fallback image used.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UnusedSearchRow = SearchProfessionalRow;
 
-function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   const mode: FeaturedPro["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
@@ -77,7 +54,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
     reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []),
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? null,
     identityStatus: r.identity_status,
     verification: r.verification,
     tier: r.tier,
