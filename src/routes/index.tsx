@@ -34,10 +34,6 @@ import { HomeHeroSearch } from "@/components/home/HeroSearch";
 import heroCoaching from "@/assets/home-hero-coaching.jpg.asset.json";
 import ctaTrainersAsset from "@/assets/cta-band.jpg.asset.json";
 const ctaTrainers = ctaTrainersAsset.url;
-import proJames from "@/assets/pro-james.jpg";
-import proSophie from "@/assets/pro-sophie.jpg";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
 
 
 export const Route = createFileRoute("/")({
@@ -108,36 +104,7 @@ const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSea
   { icon: Users, label: "Fitness Instructor", search: { page: 1, sort: "nearest", profession: "fitness-instructor" } },
 ];
 
-// Static fallback in case the rail query fails — REPLACED at runtime by
-// `featuredCards` derived from `getFeaturedPros`. See HomeV2.
-
-
-const outcomes = [
-  {
-    img: proJames,
-    coach: "James Carter",
-    headline: "Down 12kg in 6 months.",
-    quote: "I'd tried every app. James gave me a plan I actually stuck to and a coach who held me to it.",
-    name: "Mark, 38",
-    metric: "12kg lost · 24-week plan",
-  },
-  {
-    img: proSophie,
-    coach: "Sophie Williams",
-    headline: "Back to running pain-free.",
-    quote: "After my second pregnancy I thought running was over. Sophie rebuilt my core and I'm doing 10ks again.",
-    name: "Priya, 34",
-    metric: "Post-natal · 12-week return",
-  },
-  {
-    img: proDaniel,
-    coach: "Daniel Roberts",
-    headline: "Deadlift PB +40kg.",
-    quote: "Programmed properly for the first time in my life. The progression was relentless and the results showed.",
-    name: "Tom, 29",
-    metric: "Strength · 16-week block",
-  },
-];
+// Featured rail is live-only now — no static fallback demo professionals.
 
 const trustPillars = [
   { icon: ShieldCheck, title: "Verified Professionals", body: "Every REP is qualified, insured and credential-checked. No exceptions." },
@@ -164,21 +131,12 @@ type HomeFeaturedCard = {
   rating: number;
   reviews: number;
   mode: string;
-  image: string;
+  image: string | null;
   online?: boolean;
   slug?: string;
 };
 
-const FALLBACK_FEATURED: HomeFeaturedCard[] = [
-  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
-  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
-  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
-  { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true },
-];
-
-const FALLBACK_IMGS = [proJames, proSophie, proDaniel, proLaura];
-
-function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard {
+function rowToHomeCard(r: FeaturedProRow): HomeFeaturedCard {
   const mode =
     r.in_person_available && r.online_available
       ? "In-person & Online"
@@ -193,7 +151,7 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
     rating: r.rating_avg ?? 5.0,
     reviews: r.review_count,
     mode,
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? null,
     online: !r.in_person_available && Boolean(r.online_available),
     slug: r.slug,
   };
@@ -206,9 +164,7 @@ function HomeV2() {
     staleTime: 60 * 60_000, // rotation only changes once per day
   });
   const liveFeatured = featuredResult?.pros ?? [];
-  const featuredCards: HomeFeaturedCard[] = liveFeatured.length
-    ? liveFeatured.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
-    : FALLBACK_FEATURED;
+  const featuredCards: HomeFeaturedCard[] = liveFeatured.slice(0, 4).map((r) => rowToHomeCard(r));
 
   return (
     <div className="min-h-screen bg-reps-ivory">
