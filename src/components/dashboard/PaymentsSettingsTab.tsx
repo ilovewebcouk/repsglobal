@@ -13,8 +13,18 @@ import {
 } from "@/lib/payments/connect.functions";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
+import { SubscriptionHistoryPanel } from "@/components/dashboard/SubscriptionHistoryPanel";
 
 export function PaymentsSettingsTab() {
+  return (
+    <div className="space-y-5">
+      <SubscriptionHistoryPanel />
+      <ConnectSection />
+    </div>
+  );
+}
+
+function ConnectSection() {
   const tier = useTrainerTier();
   const queryClient = useQueryClient();
   const fetchStatus = useServerFn(getConnectStatus);
