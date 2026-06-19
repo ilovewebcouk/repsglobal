@@ -118,11 +118,16 @@ export const mirrorBdSeedPhotos = createServerFn({ method: "POST" })
               .from("profiles")
               .update({
                 avatar_url: publicUrl,
-                avatar_qa_status: "approved",
-                avatar_qa_source: "bd_seed",
+                // Legacy BD mirror copies the raw imported image with no
+                // AI headshot validation — leave QA status as 'unverified'
+                // so it does NOT surface on public featured/directory cards.
+                // Trainers can re-upload through the AI-checked flow to approve.
+                avatar_qa_status: "unverified",
+                avatar_qa_source: null,
               })
               .eq("id", uid)
               .is("avatar_url", null);
+
             if (profUpdErr) {
               result.failed++;
               result.errors.push({ bd_member_id: bdId, reason: `profile: ${profUpdErr.message}` });
