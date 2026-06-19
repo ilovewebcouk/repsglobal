@@ -111,34 +111,8 @@ function ReviewsPage() {
     staleTime: 30_000,
   });
 
-  const [replyOpen, setReplyOpen] = React.useState<string | null>(null);
-  const [replyText, setReplyText] = React.useState("");
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [filter, setFilter] = React.useState<"all" | "5" | "4" | "awaiting">("all");
+  const [filter, setFilter] = React.useState<"all" | "5" | "4">("all");
   const [search, setSearch] = React.useState("");
-
-  const respond = useMutation({
-    mutationFn: (vars: { id: string; response: string }) => respondToReview({ data: vars }),
-    onSuccess: (_d, vars) => {
-      toast.success(editingId === vars.id ? "Reply updated" : "Reply published");
-      setReplyOpen(null);
-      setEditingId(null);
-      setReplyText("");
-      qc.invalidateQueries({ queryKey: ["my-reviews"] });
-      qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
-    },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't publish reply"),
-  });
-
-  const deleteReply = useMutation({
-    mutationFn: (id: string) => deleteReviewResponse({ data: { id } }),
-    onSuccess: () => {
-      toast.success("Reply deleted");
-      qc.invalidateQueries({ queryKey: ["my-reviews"] });
-      qc.invalidateQueries({ queryKey: ["my-review-kpis"] });
-    },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't delete reply"),
-  });
 
   const thank = useMutation({
     mutationFn: (id: string) => thankReview({ data: { id } }),
@@ -163,7 +137,6 @@ function ReviewsPage() {
     let rows: ReviewDTO[] = reviews;
     if (filter === "5") rows = rows.filter((r) => r.rating === 5);
     else if (filter === "4") rows = rows.filter((r) => r.rating === 4);
-    else if (filter === "awaiting") rows = rows.filter((r) => !r.response);
     if (search.trim()) {
       const q = search.toLowerCase();
       rows = rows.filter(
@@ -190,18 +163,6 @@ function ReviewsPage() {
       tone: kpis && kpis.last_30d_count > 0 ? ("up" as const) : ("neutral" as const),
     },
     {
-      label: "Response rate",
-      value: kpis ? `${kpis.response_rate}%` : "—",
-      delta: kpis && kpis.response_rate >= 80 ? "Strong" : "Room to improve",
-      tone: kpis && kpis.response_rate >= 80 ? ("up" as const) : ("warn" as const),
-    },
-    {
-      label: "Awaiting reply",
-      value: kpis ? String(kpis.awaiting_reply) : "—",
-      delta: kpis && kpis.awaiting_reply > 0 ? "Action needed" : "All caught up",
-      tone: kpis && kpis.awaiting_reply > 0 ? ("warn" as const) : ("neutral" as const),
-    },
-    {
       label: "Flagged",
       value: kpis ? String(kpis.flagged) : "—",
       delta: kpis && kpis.flagged > 0 ? "In admin queue" : "None",
@@ -215,9 +176,10 @@ function ReviewsPage() {
       tier={shellTier}
       active="Reviews"
       title="Reviews"
-      subtitle="Your public reviews, response composer and review requests."
+      subtitle="Your public reviews, rating breakdown and review requests."
       actions={<HeaderActions />}
     >
+
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         {kpiTiles.map((k) => (
