@@ -15,11 +15,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { LAUNCH_AT_UTC } from "@/lib/launch";
 import {
   type Tier,
+  type BillingPeriod,
   type BillingEnv,
-  TIER_CADENCE_MONTHS,
   TIER_PRICE_PENCE,
-  annualPence,
-  paymentPence,
+  annualPenceFor,
+  paymentPenceFor,
+  cadenceMonthsFor,
   currentBillingEnv,
   londonMonthKey,
   addMonths,
