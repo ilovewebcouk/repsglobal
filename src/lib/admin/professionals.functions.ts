@@ -384,3 +384,99 @@ export const setProfessionalFlag = createServerFn({ method: 'POST' })
 
     return { ok: true };
   });
+
+// --- Subscription cancel + account delete ---------------------------------
+
+async function cancelStripeSubsForUser(userId: string) {
+  const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+  const { data: subs } = await supabaseAdmin
+    .from('subscriptions')
+    .select('stripe_subscription_id, environment')
+    .eq('user_id', userId);
+  if (!subs || subs.length === 0) return { cancelled: 0 };
+
+  const { createStripeClient } = await import('@/lib/billing/stripe.server');
+  let cancelled = 0;
+  for (const s of subs as { stripe_subscription_id: string | null; environment: string | null }[]) {
+    if (!s.stripe_subscription_id) continue;
+    const env = (s.environment === 'live' ? 'live' : 'sandbox') as 'live' | 'sandbox';
+    try {
+      const stripe = createStripeClient(env);
+      await stripe.subscriptions.cancel(s.stripe_subscription_id);
+      cancelled++;
+    } catch (e) {
+      console.warn('[admin.cancelSub] stripe cancel failed', e);
+    }
+  }
+  return { cancelled };
+}
+
+export const cancelProfessionalSubscription = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { professional_id: string; reason?: string }) => {
+    if (!d.professional_id) throw new Error('professional_id required');
+    return { professional_id: d.professional_id, reason: d.reason?.trim() || null };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+
+    const { cancelled } = await cancelStripeSubsForUser(data.professional_id);
+
+    // Mark local subscription rows as canceled so the dashboard reflects state immediately.
+    await supabaseAdmin
+      .from('subscriptions')
+      .update({ status: 'canceled', canceled_at: new Date().toISOString() })
+      .eq('user_id', data.professional_id);
+
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: 'professional.cancel_subscription',
+      _target_table: 'subscriptions',
+      _target_id: data.professional_id,
+      _reason: data.reason ?? undefined,
+    });
+
+    return { ok: true, cancelled };
+  });
+
+export const deleteProfessional = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { professional_id: string; reason?: string }) => {
+    if (!d.professional_id) throw new Error('professional_id required');
+    return { professional_id: d.professional_id, reason: d.reason?.trim() || null };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    if (data.professional_id === context.userId) {
+      throw new Error('You cannot delete your own admin account from here.');
+    }
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+
+    // Snapshot for audit log before deletion.
+    const { data: prev } = await supabaseAdmin
+      .from('professionals')
+      .select('id, display_name, slug, is_published')
+      .eq('id', data.professional_id)
+      .maybeSingle();
+
+    // Best-effort: cancel Stripe subscriptions first.
+    await cancelStripeSubsForUser(data.professional_id).catch((e) =>
+      console.warn('[deleteProfessional] cancel subs failed', e),
+    );
+
+    // Auth user delete cascades via FKs to professionals + related rows.
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.professional_id);
+    if (error) throw error;
+
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: 'professional.delete',
+      _target_table: 'professionals',
+      _target_id: data.professional_id,
+      _before_state: prev,
+      _reason: data.reason ?? undefined,
+    });
+
+    return { ok: true };
+  });
