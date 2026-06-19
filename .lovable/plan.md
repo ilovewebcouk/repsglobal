@@ -1,57 +1,46 @@
 ## Goal
 
-Make the top KPI row on `/admin/professionals` honest and commercially meaningful. Drop "Avg. rating" (reviews aren't real yet), add "Paid members", and tighten subtext on the rest.
+Fold migrated Brilliant Directory members into the Verified tier everywhere on `/admin/memberships`, and make the forecast chart tooltip show Total + per-tier breakdown only (Verified, Pro, Studio).
 
-Final row:
+BD members are Verified — full stop. They just don't have a live Stripe subscription yet. The app treats their renewals as scheduled Verified payments.
 
-1. **Active professionals** — confirmed signed-up members
-2. **Verified professionals** — `N of M active professionals`
-3. **Paid members** — active or trialing subscriptions
-4. **New signups, 30d** — `±X% vs prev`
+## Changes (UI + server shape only — no Stripe calls, no migration logic, no public routes)
 
-## Changes
+### 1. `src/lib/admin/memberships.functions.ts` — `getRevenueForecast()`
+- Remove the separate `scheduled` series from the returned monthly buckets.
+- For each month, add legacy/BD Verified renewals into the `verified` bucket instead of a `scheduled` bucket.
+- Keep `total = verified + pro + studio`.
+- Return shape per month: `{ month, total, verified, pro, studio }` (drop `scheduled`).
 
-### 1. `src/lib/admin/professionals.functions.ts` — `getAdminProfessionalsKpis`
+### 2. `src/lib/admin/memberships.functions.ts` — `getMembershipMetrics()`
+- Tier card for Verified: collapse "Active" + "Scheduled" into a single Verified count (still allowed to show a small secondary line like "incl. N awaiting Stripe setup" inside the Verified card only — but no separate tier, no separate KPI, no "BD" label anywhere).
+- Remove any "Verified pending billing" framing from KPIs.
 
-- Remove the `reviews` query and `avgRating` field from the response.
-- Add a `paidCount` query: `subscriptions` where `status IN ('active','trialing')` AND `tier <> 'free'`, counted as distinct `user_id`. Read via `supabaseAdmin` (admin RPC already used here).
-- Keep `activeCount`, `verifiedCount`, `verifiedPct`, `newSignups30`, `newSignupsDeltaPct`.
-- Optional follow-up flagged below: `activeCount` currently passes `_only_published: true` to `count_confirmed_professionals`. Per your definition ("confirmed signed-up members"), unpublished but confirmed pros should also count, and the Verified subtext "N of M active" only reads right when both share the same denominator. **Question A below.**
+### 3. `src/routes/admin_.memberships.tsx` — chart
+- Remove the `scheduled` Line / Area from the Recharts chart.
+- Keep three tier lines: Verified, Pro, Studio (+ existing Total line if present).
+- Custom dark tooltip rows, in this exact order:
+  1. **Total** (projected cash due that month) — bold, white
+  2. Verified — orange dot
+  3. Pro — tier colour
+  4. Studio — tier colour
+- No "Scheduled" row. No "BD" row. No "Projected vs Scheduled" split.
 
-### 2. `src/routes/admin_.professionals.tsx` — KPI card config (~lines 247–275)
+### 4. `src/routes/admin_.memberships.tsx` — monthly forecast table
+- Drop any Scheduled column.
+- Columns: Month · Verified · Pro · Studio · Total (+ existing quarterly subtotal rows).
 
-Replace the 4-item `kpis` array:
-
-```
-Active professionals
-  value: activeCount
-  delta: "Confirmed signed-up members"
-
-Verified professionals
-  value: verifiedCount
-  delta: `${verifiedCount} of ${activeCount} active professionals`
-
-Paid members
-  value: paidCount
-  delta: "Active or trialing subscriptions"
-
-New signups (30d)
-  value: newSignups30
-  delta: `${±}${newSignupsDeltaPct.toFixed(1)}% vs prev 30d`  (unchanged)
-```
-
-Also update the "Active professionals" subtext — today it shows `+N this month`, which duplicates the New signups card. Switching it to "Confirmed signed-up members" removes that duplication.
-
-No schema changes, no Stripe changes, no UI structure changes — just KPI swap and copy.
+### 5. Copy sweep on the page
+- Remove the words "Scheduled", "BD", "Brilliant Directory", "migrated", "legacy" from any user-visible label on `/admin/memberships`.
+- Verified tier card may keep one subtle secondary line: "Includes N members awaiting Stripe setup" (internal-only language, no BD branding).
 
 ## Out of scope
+- No changes to `/admin/payments`, `/admin/stripe`, public routes, checkout, or BD migration logic.
+- No Stripe API calls on page load. No Stripe writes.
+- `legacy_stripe_link` / `bd_member_seed` tables stay as-is — only the aggregation/labelling on this page changes.
 
-- Avg rating, LTV, renewal due, MRR, insurance/identity/qualifications KPIs — stay as columns/filters/secondary panels.
-- Trialing breakout as its own card (you ruled it out for this page).
-- Any change to the table, filters, invite flow, or Stripe wiring.
-
-## Open question
-
-**A.** Should "Active professionals" count all email-confirmed pros, or only published ones?
-- **All confirmed** (recommended): matches your wording "confirmed signed-up members"; Verified subtext "9 of 400" reads correctly; unpublished-but-confirmed pros (mid-onboarding) still count as register size.
-- **Published only** (current behaviour): stricter, but means the Verified % denominator excludes pros who haven't published a profile yet.
+## Verification after build
+- Hover the forecast chart → tooltip shows Total + Verified + Pro + Studio only.
+- Verified count = active Stripe Verified + legacy Verified (one number).
+- No occurrence of "Scheduled" / "BD" / "Brilliant Directory" on `/admin/memberships`.
+- No new Stripe calls in network tab on page load.
