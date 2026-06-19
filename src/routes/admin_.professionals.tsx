@@ -345,8 +345,8 @@ function AdminProfessionalsPage() {
                 <th className="px-3 py-3 font-semibold">Profession</th>
                 <th className="px-3 py-3 font-semibold">Plan</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">Rating</th>
-                <th className="px-3 py-3 font-semibold">Clients</th>
+                <th className="px-3 py-3 font-semibold">Lifetime value</th>
+                <th className="px-3 py-3 font-semibold">Renewal date</th>
                 <th className="px-3 py-3 font-semibold">Plan MRR</th>
                 <th className="px-3 py-3 font-semibold">Joined</th>
                 <th className="px-5 py-3" />
