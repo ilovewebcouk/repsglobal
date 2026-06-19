@@ -170,8 +170,6 @@ export type ReviewKpis = {
   review_count: number;
   last_30d_count: number;
   last_30d_avg: number;
-  response_rate: number;
-  awaiting_reply: number;
   flagged: number;
   breakdown: Array<{ stars: number; count: number; pct: number }>;
 };
@@ -182,14 +180,13 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("reviews")
-      .select("rating, status, response, created_at, flag_reason, flagged_at")
+      .select("rating, status, created_at, flag_reason, flagged_at")
       .eq("professional_id", context.userId)
       .limit(2000);
 
     const all = (rows ?? []) as Array<{
       rating: number;
       status: string;
-      response: string | null;
       created_at: string;
       flag_reason: string | null;
       flagged_at: string | null;
@@ -200,9 +197,6 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const recent = published.filter((r) => new Date(r.created_at).getTime() >= cutoff);
     const recentAvg = recent.length ? recent.reduce((s, r) => s + r.rating, 0) / recent.length : 0;
-    const responded = published.filter((r) => r.response).length;
-    const responseRate = count > 0 ? Math.round((responded / count) * 100) : 0;
-    const awaiting = published.filter((r) => !r.response).length;
     const flagged = all.filter((r) => r.status === "flagged" || r.flag_reason).length;
 
     const buckets = [5, 4, 3, 2, 1].map((stars) => {
@@ -215,12 +209,11 @@ export const getMyReviewKpis = createServerFn({ method: "GET" })
       review_count: count,
       last_30d_count: recent.length,
       last_30d_avg: Math.round(recentAvg * 10) / 10,
-      response_rate: responseRate,
-      awaiting_reply: awaiting,
       flagged,
       breakdown: buckets,
     };
   });
+
 
 // =====================================================================
 // Thank / Flag (professional actions)
