@@ -27,7 +27,7 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
     const ids = pros.map((p) => p.id);
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, avatar_url")
+      .select("id, full_name, avatar_url, avatar_qa_status")
       .in("id", ids);
 
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
@@ -35,6 +35,8 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
     const result: HeroAvatar[] = [];
     for (const p of pros) {
       const prof = profMap.get(p.id);
+      // Hero strip is a row of headshots — only show photos that passed AI QA.
+      if (prof?.avatar_qa_status !== "approved") continue;
       const avatar = prof?.avatar_url ?? null;
       const name = prof?.full_name ?? null;
       const slug = p.slug ?? null;
