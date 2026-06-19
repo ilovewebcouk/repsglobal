@@ -191,9 +191,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     const profileMap = new Map(profilesData.map((p) => [p.id, p]));
     const subMap = new Map<string, string>();
+    const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null }>();
     for (const s of subsData) {
       if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
-      if (!subMap.has(s.user_id)) subMap.set(s.user_id, s.tier);
+      if (!subMap.has(s.user_id)) {
+        subMap.set(s.user_id, s.tier);
+        subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end });
+      }
     }
     const ratingAcc = new Map<string, { sum: number; n: number }>();
     for (const r of reviewsData) {
@@ -204,6 +208,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     const clientCount = new Map<string, number>();
     for (const c of ccData) {
       clientCount.set(c.professional_id, (clientCount.get(c.professional_id) ?? 0) + 1);
+    }
+
+    function computeLifetimeValue(tier: string, createdAt: string): number {
+      const mrr = planMrrPence(tier);
+      if (!mrr) return 0;
+      const months = (Date.now() - new Date(createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000);
+      return Math.round(mrr * Math.max(0, months));
     }
 
     let rows: AdminProRow[] = (pros ?? []).map(p => {
