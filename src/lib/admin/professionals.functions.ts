@@ -270,7 +270,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         verification: p.verification as string,
         email: null,
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
-        renewalDate: subDetail?.currentPeriodEnd ?? null,
+        renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
+        renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
       };
     });
 
