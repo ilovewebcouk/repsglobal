@@ -378,30 +378,29 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
                 />
                 <ChartTooltip
                   cursor={{ stroke: "rgba(255,255,255,0.15)" }}
-                  content={
-                    <ChartTooltipContent
-                      indicator="line"
-                      formatter={(value, name, item) => {
-                        const p = item.payload as any;
-                        return (
-                          <div className="flex w-44 flex-col gap-1 text-[12px]">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="text-white/70">Projected</span>
-                              <span className="font-semibold text-white">
-                                £{Number(value).toLocaleString("en-GB", { maximumFractionDigits: 0 })}
-                              </span>
-                            </div>
-                            {p.verified > 0 && (
-                              <Row label="Verified" v={p.verified} />
-                            )}
-                            {p.pro > 0 && <Row label="Pro" v={p.pro} />}
-                            {p.studio > 0 && <Row label="Studio" v={p.studio} />}
-                            {p.scheduled > 0 && <Row label="Scheduled" v={p.scheduled} />}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const p = payload[0].payload as any;
+                    return (
+                      <div className="rounded-[12px] border border-white/10 bg-[#0b1220]/95 px-3 py-2.5 shadow-xl backdrop-blur-sm">
+                        <div className="mb-1.5 text-[11px] uppercase tracking-wide text-white/55">
+                          {label}
+                        </div>
+                        <div className="flex w-48 flex-col gap-1 text-[12px]">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-white/70">Projected</span>
+                            <span className="font-semibold text-white">
+                              £{Number(p.total).toLocaleString("en-GB", { maximumFractionDigits: 0 })}
+                            </span>
                           </div>
-                        );
-                      }}
-                    />
-                  }
+                          {p.verified > 0 && <Row label="Verified" v={p.verified} />}
+                          {p.pro > 0 && <Row label="Pro" v={p.pro} />}
+                          {p.studio > 0 && <Row label="Studio" v={p.studio} />}
+                          {p.scheduled > 0 && <Row label="Scheduled" v={p.scheduled} />}
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
                 <Line
                   type="monotone"
