@@ -444,11 +444,25 @@ function LocationLanding() {
             See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p) => (
-            <FeaturedProCard key={p.name} pro={p} />
-          ))}
-        </div>
+        {featured.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => (
+              <FeaturedProCard key={p.name} pro={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-[18px] border border-dashed border-reps-stone bg-reps-warm-white p-8 text-center">
+            <p className="text-[14px] text-reps-muted-light">
+              No verified professionals listed in {loc.name} yet — be the first.
+            </p>
+            <Link
+              to="/for-professionals"
+              className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
+            >
+              List your practice
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Areas */}
