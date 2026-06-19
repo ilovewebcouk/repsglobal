@@ -15,6 +15,7 @@ export type ReviewDTO = {
   status: "pending" | "published" | "hidden" | "flagged";
   response: string | null;
   responded_at: string | null;
+  response_edited_at: string | null;
   published_at: string | null;
   created_at: string;
 };
