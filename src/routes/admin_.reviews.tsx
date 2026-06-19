@@ -305,7 +305,7 @@ function AdminReviewsPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8 rounded-[10px] border-reps-border px-3 text-[12px] font-semibold text-white/75"
+                              className="h-8 rounded-[10px] border-reps-border bg-transparent px-3 text-[12px] font-semibold text-white/75 hover:bg-white/5 hover:text-white"
                             >
                               Remove
                             </Button>
