@@ -118,7 +118,7 @@ function RevenueChart() {
 function PaymentsPage() {
   return (
     <DashboardShell role="trainer" tier="pro"
-      active="Payments"
+      active="Stripe"
       title="Payments"
       subtitle="Revenue, payouts, invoices and subscriptions across your REPS business."
       actions={

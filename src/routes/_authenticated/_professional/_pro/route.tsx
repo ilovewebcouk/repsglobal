@@ -226,7 +226,7 @@ const UPGRADE_BY_PATH: Record<string, UpgradeCopy> = {
     ],
   },
   "/dashboard/payments": {
-    active: "Payments",
+    active: "Stripe",
     title: "Payments",
     feature: "Payments & payouts",
     description:
