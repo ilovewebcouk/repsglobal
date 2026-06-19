@@ -341,8 +341,9 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
             Recurring income forecast
           </h2>
           <p className="text-[12px] text-white/55">
-            Projected membership income based on active subscriptions and scheduled renewals.
+            Projected cash due each month from all Verified, Pro and Studio memberships.
           </p>
+
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <ForecastTile label="Year 1" value={loading ? null : gbp(data?.yearOneTotalPence ?? 0)} />
