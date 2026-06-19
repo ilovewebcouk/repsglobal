@@ -586,25 +586,43 @@ function UpcomingPaymentsPanel({
       </div>
       <div className="p-5">
         {loading ? (
-          <Skeleton className="h-24 w-full bg-white/5" />
+          <Skeleton className="h-72 w-full bg-white/5" />
         ) : !data || data.upcoming14dCount === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
-              <EmptyDescription>
-                Renewals and Verified annual payments will list here as they approach.
-
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          <div className="flex h-72 items-center justify-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
+                <EmptyDescription>
+                  Renewals and Verified annual payments will list here as they approach.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
         ) : (
-          <div className="flex items-baseline gap-3">
-            <span className="font-display text-[28px] font-bold text-white">
-              {gbp(data.upcoming14dPence)}
-            </span>
-            <span className="text-[12px] text-white/55">
-              across {data.upcoming14dCount} member{data.upcoming14dCount === 1 ? "" : "s"}
-            </span>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-baseline gap-3">
+              <span className="font-display text-[28px] font-bold text-white">
+                {gbp(data.upcoming14dPence)}
+              </span>
+              <span className="text-[12px] text-white/55">
+                across {data.upcoming14dCount} member{data.upcoming14dCount === 1 ? "" : "s"}
+              </span>
+            </div>
+            <div className="h-56 overflow-y-auto rounded-[12px] border border-reps-border bg-white/[0.02]">
+              <ul className="divide-y divide-reps-border">
+                {data.upcomingItems.map((it, i) => (
+                  <li key={i} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-medium text-white">{it.name}</div>
+                      <div className="truncate text-[11px] text-white/55">
+                        {tierLabel(it.tier)} · {formatDueDate(it.dueAt)}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[13px] font-semibold text-white">{gbp(it.amountPence)}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>
@@ -624,27 +642,59 @@ function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: bo
       </div>
       <div className="p-5">
         {loading ? (
-          <Skeleton className="h-24 w-full bg-white/5" />
+          <Skeleton className="h-72 w-full bg-white/5" />
         ) : !data || data.pastDueCount === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>No past-due memberships</EmptyTitle>
-              <EmptyDescription>
-                Failed payments and unpaid subscriptions will list here.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          <div className="flex h-72 items-center justify-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No past-due memberships</EmptyTitle>
+                <EmptyDescription>
+                  Failed payments and unpaid subscriptions will list here.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
         ) : (
-          <div className="flex items-baseline gap-3">
-            <span className="font-display text-[28px] font-bold text-reps-orange">
-              {data.pastDueCount}
-            </span>
-            <span className="text-[12px] text-white/55">requires payment follow-up</span>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-baseline gap-3">
+              <span className="font-display text-[28px] font-bold text-reps-orange">
+                {data.pastDueCount}
+              </span>
+              <span className="text-[12px] text-white/55">requires payment follow-up</span>
+            </div>
+            <div className="h-56 overflow-y-auto rounded-[12px] border border-reps-border bg-white/[0.02]">
+              <ul className="divide-y divide-reps-border">
+                {data.pastDueItems.map((it, i) => (
+                  <li key={i} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-medium text-white">{it.name}</div>
+                      <div className="truncate text-[11px] text-white/55">
+                        {tierLabel(it.tier)} · {it.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[13px] font-semibold text-reps-orange">{gbp(it.amountPence)}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>
     </PPanel>
   );
+}
+
+function tierLabel(t: string) {
+  if (t === "verified") return "Verified";
+  if (t === "pro") return "Pro";
+  if (t === "studio") return "Studio";
+  return t;
+}
+
+function formatDueDate(iso: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 // ---------------------------------------------------------------- Activity (secondary)
