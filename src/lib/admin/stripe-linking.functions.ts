@@ -146,7 +146,7 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
 
     const { data: seedRows } = await supabaseAdmin
       .from("bd_member_seed")
-      .select("bd_member_id,email,legacy_signup_at,legacy_billing_period,legacy_plan");
+      .select("bd_member_id,email,legacy_signup_at,legacy_billing_period,legacy_plan,migration_canonical_stripe_customer_id");
     const todo = (seedRows ?? []).filter(
       (r) => !have.has((r as { bd_member_id: number }).bd_member_id),
     );
@@ -170,10 +170,28 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
         email: string;
         legacy_signup_at: string | null;
         legacy_billing_period: string | null;
+        migration_canonical_stripe_customer_id: string | null;
       };
       res.processed += 1;
       try {
-        const customer = await findStripeCustomerByEmail(stripe, row.email);
+        // Admin-pinned canonical customer takes priority over email search.
+        // Used when one email matches multiple Stripe customers (e.g. Joanna
+        // Forbes bd_member_id=759 → cus_RCPbzmBwTUKS9z, ignoring the older
+        // cus_QCi7KlNEBF73H8 that aligned with a different billing cycle).
+        let customer: { id: string; deleted?: boolean } | null = null;
+        if (row.migration_canonical_stripe_customer_id) {
+          try {
+            const c = (await stripe.customers.retrieve(
+              row.migration_canonical_stripe_customer_id,
+            )) as { id: string; deleted?: boolean };
+            if (!c.deleted) customer = c;
+          } catch {
+            customer = null;
+          }
+        }
+        if (!customer) {
+          customer = await findStripeCustomerByEmail(stripe, row.email);
+        }
 
         if (!customer) {
           await supabaseAdmin.from("legacy_stripe_link").insert({
