@@ -108,7 +108,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("professional_id", pro.id)
         .eq("is_published", true)
         .maybeSingle(),
-      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
+      supabaseAdmin.from("profiles").select("full_name, avatar_url, avatar_qa_status").eq("id", pro.id).maybeSingle(),
       supabaseAdmin
         .from("services")
         .select(
