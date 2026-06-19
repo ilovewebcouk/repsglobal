@@ -192,7 +192,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .from('legacy_stripe_payments')
           .select('user_id, amount_pence, refunded_amount_pence, status')
           .in('user_id', c)
-          .eq('status', 'succeeded')),
+          .eq('status', 'Paid')),
       fetchAll<{ claimed_user_id: string | null; bd_next_due_date: string | null }>((c) =>
         supabaseAdmin
           .from('bd_member_seed')
