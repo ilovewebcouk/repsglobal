@@ -59,6 +59,7 @@ export type PaymentListItem = {
   dueAt: string | null;
   amountPence: number;
   source: "stripe" | "scheduled";
+  cohort?: "honour_window" | "anomaly_launch_charge" | null;
 };
 
 export type PastDueItem = {
@@ -71,6 +72,8 @@ export type PastDueItem = {
 
 export type MembershipMetrics = {
   env: BillingEnv;
+  preLaunch: boolean;
+  launchAt: string;
   forecastArrPence: number;
   activeArrPence: number;
   scheduledArrPence: number;
@@ -87,10 +90,12 @@ export type MembershipMetrics = {
     nonGbpExcluded: number;
     lifetimeMembers: number;
     activeSubsTotal: number;
-    legacyLinkScheduled: number;
-    bdSeedFallbackScheduled: number;
+    cohortHonour: number;
+    cohortAnomaly: number;
+    cohortFutureDue: number;
   };
 };
+
 
 export const getMembershipMetrics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
