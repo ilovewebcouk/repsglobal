@@ -120,8 +120,8 @@ const SORT_OPTIONS: { value: AdminProSort; label: string; defaultDir: SortDir }[
   { value: "name", label: "Name", defaultDir: "asc" },
   { value: "plan", label: "Plan value", defaultDir: "desc" },
   { value: "mrr", label: "Plan MRR", defaultDir: "desc" },
-  { value: "rating", label: "Rating", defaultDir: "desc" },
-  { value: "clients", label: "Clients", defaultDir: "desc" },
+  { value: "lifetimeValue", label: "Lifetime value", defaultDir: "desc" },
+  { value: "renewalDate", label: "Renewal date", defaultDir: "desc" },
 ];
 
 const PROFESSION_OPTIONS = [
@@ -180,6 +180,11 @@ function gbp(pence: number) {
 
 function joinedLabel(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", year: "numeric" });
+}
+
+function renewalLabel(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
 function useDebounced<T>(value: T, ms = 250): T {
@@ -345,8 +350,8 @@ function AdminProfessionalsPage() {
                 <th className="px-3 py-3 font-semibold">Profession</th>
                 <th className="px-3 py-3 font-semibold">Plan</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">Rating</th>
-                <th className="px-3 py-3 font-semibold">Clients</th>
+                <th className="px-3 py-3 font-semibold">Lifetime value</th>
+                <th className="px-3 py-3 font-semibold">Renewal date</th>
                 <th className="px-3 py-3 font-semibold">Plan MRR</th>
                 <th className="px-3 py-3 font-semibold">Joined</th>
                 <th className="px-5 py-3" />
@@ -706,8 +711,8 @@ function ProRow({ row }: { row: AdminProRow }) {
           {STATUS_LABEL[row.status]}
         </span>
       </td>
-      <td className="px-3 py-3 text-white/75">{row.rating ?? "—"}</td>
-      <td className="px-3 py-3 text-white/75">{row.clients}</td>
+      <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
+      <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
       <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
       <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
       <td className="px-5 py-3 text-right">

@@ -20,6 +20,8 @@ export type AdminProRow = {
   suspensionReason: string | null;
   verification: string;
   email: string | null;
+  lifetimeValuePence: number | null;
+  renewalDate: string | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -85,7 +87,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
 
 const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'recent'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
-export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr';
+export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr' | 'lifetimeValue' | 'renewalDate';
 export type SortDir = 'asc' | 'desc';
 
 export type AdminProFilters = {
@@ -176,8 +178,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     const [profilesData, subsData, reviewsData, ccData, adminRolesData] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
-      fetchAll<{ user_id: string; tier: string; status: string; created_at: string }>((c) =>
-        supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at').in('user_id', c)),
+      fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
+        supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at, current_period_end, billing_period').in('user_id', c)),
       fetchAll<{ professional_id: string; rating: number }>((c) =>
         supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
       fetchAll<{ professional_id: string; status: string }>((c) =>
@@ -189,9 +191,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     const profileMap = new Map(profilesData.map((p) => [p.id, p]));
     const subMap = new Map<string, string>();
+    const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null }>();
     for (const s of subsData) {
       if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
-      if (!subMap.has(s.user_id)) subMap.set(s.user_id, s.tier);
+      if (!subMap.has(s.user_id)) {
+        subMap.set(s.user_id, s.tier);
+        subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end });
+      }
     }
     const ratingAcc = new Map<string, { sum: number; n: number }>();
     for (const r of reviewsData) {
@@ -202,6 +208,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     const clientCount = new Map<string, number>();
     for (const c of ccData) {
       clientCount.set(c.professional_id, (clientCount.get(c.professional_id) ?? 0) + 1);
+    }
+
+    function computeLifetimeValue(tier: string, createdAt: string): number {
+      const mrr = planMrrPence(tier);
+      if (!mrr) return 0;
+      const months = (Date.now() - new Date(createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000);
+      return Math.round(mrr * Math.max(0, months));
     }
 
     let rows: AdminProRow[] = (pros ?? []).map(p => {
@@ -215,6 +228,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
       const name = profile?.full_name ?? 'Unnamed';
+      const subDetail = subDetailMap.get(p.id);
       return {
         id: p.id,
         name,
@@ -234,6 +248,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         suspensionReason: p.suspension_reason ?? null,
         verification: p.verification as string,
         email: null,
+        lifetimeValuePence: subDetail ? computeLifetimeValue(tier, subDetail.createdAt) : null,
+        renewalDate: subDetail?.currentPeriodEnd ?? null,
       };
     });
 
@@ -264,6 +280,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         case 'mrr':     return (a.planMrrPence - b.planMrrPence) * dir;
         case 'rating':  return ((a.rating ?? -1) - (b.rating ?? -1)) * dir;
         case 'clients': return (a.clients - b.clients) * dir;
+        case 'lifetimeValue':  return ((a.lifetimeValuePence ?? -1) - (b.lifetimeValuePence ?? -1)) * dir;
+        case 'renewalDate':    return ((a.renewalDate ? new Date(a.renewalDate).getTime() : 0) - (b.renewalDate ? new Date(b.renewalDate).getTime() : 0)) * dir;
         case 'joined':
         default:        return (new Date(a.joined).getTime() - new Date(b.joined).getTime()) * dir;
       }
