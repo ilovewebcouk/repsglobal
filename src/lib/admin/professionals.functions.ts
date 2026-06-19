@@ -20,6 +20,8 @@ export type AdminProRow = {
   suspensionReason: string | null;
   verification: string;
   email: string | null;
+  lifetimeValuePence: number | null;
+  renewalDate: string | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
