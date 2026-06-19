@@ -64,14 +64,50 @@ export const submitReview = createServerFn({ method: "POST" })
         title: data.title || null,
         body: data.body,
         source: "client_submitted",
-        status: "published", // auto-publish; flag/moderate later
-        published_at: new Date().toISOString(),
+        status: "pending",
+        moderation_status: "pending",
       })
       .select("id")
       .single();
     if (error) throw error;
+    await fanOutReviewNotifications(supabaseAdmin, row.id, pro.id);
+    void runReviewModerationFireAndForget(row.id);
     return { id: row.id };
   });
+
+// Helper: insert notification rows for the pro + every admin.
+async function fanOutReviewNotifications(
+  supabaseAdmin: any,
+  reviewId: string,
+  professionalId: string,
+) {
+  const recipients: Array<{ review_id: string; recipient_user_id: string; recipient_role: string }> = [
+    { review_id: reviewId, recipient_user_id: professionalId, recipient_role: "professional" },
+  ];
+  const { data: admins } = await supabaseAdmin
+    .from("user_roles")
+    .select("user_id")
+    .eq("role", "admin");
+  for (const a of admins ?? []) {
+    recipients.push({ review_id: reviewId, recipient_user_id: a.user_id, recipient_role: "admin" });
+  }
+  if (recipients.length) {
+    await supabaseAdmin.from("review_notifications").insert(recipients);
+  }
+  await supabaseAdmin
+    .from("reviews")
+    .update({ admin_notified_at: new Date().toISOString(), pro_notified_at: new Date().toISOString() })
+    .eq("id", reviewId);
+}
+
+async function runReviewModerationFireAndForget(reviewId: string) {
+  try {
+    const { runReviewModeration } = await import("@/lib/reviews/moderate.functions");
+    await runReviewModeration({ data: { reviewId } });
+  } catch (e) {
+    console.error("[reviews] moderation fire-and-forget failed", e);
+  }
+}
 
 export const listMyReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
