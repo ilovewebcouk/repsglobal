@@ -595,12 +595,23 @@ function UpcomingPaymentsPanel({
   data?: MembershipMetrics;
   loading: boolean;
 }) {
+  const preLaunch = !!data?.preLaunch;
+  const launchDate = data?.launchAt
+    ? new Date(data.launchAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+    : null;
+  const title = preLaunch ? "Launch-day charges" : "Upcoming payments";
+  const subtitle = preLaunch
+    ? launchDate
+      ? `Locked V7 schedule · ${launchDate}`
+      : "Locked V7 schedule"
+    : "Next 14 days";
+  const acrossLabel = preLaunch ? "on launch day" : "next 14 days";
   return (
     <PPanel>
       <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
         <div>
-          <h2 className="font-display text-[16px] font-bold text-white">Upcoming payments</h2>
-          <p className="text-[12px] text-white/55">Next 14 days</p>
+          <h2 className="font-display text-[16px] font-bold text-white">{title}</h2>
+          <p className="text-[12px] text-white/55">{subtitle}</p>
         </div>
         <CalendarClock className="h-4 w-4 text-white/40" />
       </div>
@@ -611,9 +622,13 @@ function UpcomingPaymentsPanel({
           <div className="flex h-72 items-center justify-center">
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
+                <EmptyTitle>
+                  {preLaunch ? "No launch-day charges scheduled" : "No payments due in the next 14 days"}
+                </EmptyTitle>
                 <EmptyDescription>
-                  Renewals and Verified annual payments will list here as they approach.
+                  {preLaunch
+                    ? "Renewals and Verified annual payments will list here as launch approaches."
+                    : "Renewals and Verified annual payments will list here as they approach."}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -625,7 +640,7 @@ function UpcomingPaymentsPanel({
                 {gbp(data.upcoming14dPence)}
               </span>
               <span className="text-[12px] text-white/55">
-                across {data.upcoming14dCount} member{data.upcoming14dCount === 1 ? "" : "s"}
+                across {data.upcoming14dCount} member{data.upcoming14dCount === 1 ? "" : "s"} · {acrossLabel}
               </span>
             </div>
             <div className="h-56 overflow-y-auto rounded-[12px] border border-reps-border bg-white/[0.02]">
@@ -635,7 +650,7 @@ function UpcomingPaymentsPanel({
                     <div className="min-w-0">
                       <div className="truncate text-[13px] font-medium text-white">{it.name}</div>
                       <div className="truncate text-[11px] text-white/55">
-                        {tierLabel(it.tier)} · {formatDueDate(it.dueAt)}
+                        {cohortLabel(it.cohort) ?? `${tierLabel(it.tier)} · ${formatDueDate(it.dueAt)}`}
                       </div>
                     </div>
                     <div className="shrink-0 text-[13px] font-semibold text-white">{gbp(it.amountPence)}</div>
@@ -649,6 +664,13 @@ function UpcomingPaymentsPanel({
     </PPanel>
   );
 }
+
+function cohortLabel(c: string | null | undefined): string | null {
+  if (c === "honour_window") return "Honour window · £34 → £99 next year";
+  if (c === "anomaly_launch_charge") return "Anomaly · £99 at launch";
+  return null;
+}
+
 
 function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
   return (
