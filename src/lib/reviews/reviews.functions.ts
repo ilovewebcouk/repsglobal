@@ -1,6 +1,5 @@
 // Reviews: public submission (authenticated client), pro-side listing/response,
-// public read of published reviews. RLS allows only auth.uid()=client_user_id
-// to insert; pros can SELECT/UPDATE their own; public reads when status='published'.
+// public read of published reviews, request-by-email flow, and admin moderation.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";

@@ -160,19 +160,7 @@ const UPGRADE_BY_PATH: Record<string, UpgradeCopy> = {
       "Auto-reminders",
     ],
   },
-  "/dashboard/reviews": {
-    active: "Reviews",
-    title: "Reviews",
-    feature: "Reviews & reputation",
-    description:
-      "Collect verified client reviews after sessions and show them on your public REPs profile.",
-    bullets: [
-      "Post-session review prompts",
-      "Verified-client badges",
-      "Show on public profile",
-      "Respond publicly",
-    ],
-  },
+  // /dashboard/reviews removed — Reviews is a Verified-tier feature now.
   "/dashboard/reports": {
     active: "Reports",
     title: "Reports",
