@@ -30,6 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/account/UserAvatar";
 import { useAccountMenu, type AccountRole } from "@/hooks/use-account-menu";
+import { useEffectiveIdentity } from "@/hooks/use-effective-identity";
 import { cn } from "@/lib/utils";
 
 export type UserAccountMenuSurface = "public" | "dashboard";
