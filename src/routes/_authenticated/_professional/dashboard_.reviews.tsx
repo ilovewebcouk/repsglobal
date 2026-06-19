@@ -20,7 +20,6 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -30,30 +29,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   createReviewRequest,
-  deleteReviewResponse,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
   listMyReviews,
-  respondToReview,
   thankReview,
   type ReviewDTO,
   type ReviewRequestRow,
 } from "@/lib/reviews/reviews.functions";
+
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/reviews")({
   head: () => ({
