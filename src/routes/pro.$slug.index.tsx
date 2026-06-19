@@ -299,6 +299,15 @@ function ProProfilePage() {
   const { db } = Route.useLoaderData();
   const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
 
+  // Real reviews — only used to override fixtures when the DB has any.
+  const { data: liveReviews } = useQuery({
+    queryKey: ["public-reviews", slug],
+    queryFn: () => listPublicReviewsBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const realReviews: ReviewDTO[] = liveReviews?.reviews ?? [];
+  const hasRealReviews = realReviews.length > 0;
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
