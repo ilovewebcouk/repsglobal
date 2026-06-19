@@ -146,7 +146,7 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
 
     const { data: seedRows } = await supabaseAdmin
       .from("bd_member_seed")
-      .select("bd_member_id,email,legacy_signup_at,legacy_billing_period,legacy_plan");
+      .select("bd_member_id,email,legacy_signup_at,legacy_billing_period,legacy_plan,migration_canonical_stripe_customer_id");
     const todo = (seedRows ?? []).filter(
       (r) => !have.has((r as { bd_member_id: number }).bd_member_id),
     );
@@ -170,10 +170,28 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
         email: string;
         legacy_signup_at: string | null;
         legacy_billing_period: string | null;
+        migration_canonical_stripe_customer_id: string | null;
       };
       res.processed += 1;
       try {
-        const customer = await findStripeCustomerByEmail(stripe, row.email);
+        // Admin-pinned canonical customer takes priority over email search.
+        // Used when one email matches multiple Stripe customers (e.g. Joanna
+        // Forbes bd_member_id=759 → cus_RCPbzmBwTUKS9z, ignoring the older
+        // cus_QCi7KlNEBF73H8 that aligned with a different billing cycle).
+        let customer: { id: string; deleted?: boolean } | null = null;
+        if (row.migration_canonical_stripe_customer_id) {
+          try {
+            const c = (await stripe.customers.retrieve(
+              row.migration_canonical_stripe_customer_id,
+            )) as { id: string; deleted?: boolean };
+            if (!c.deleted) customer = c;
+          } catch {
+            customer = null;
+          }
+        }
+        if (!customer) {
+          customer = await findStripeCustomerByEmail(stripe, row.email);
+        }
 
         if (!customer) {
           await supabaseAdmin.from("legacy_stripe_link").insert({
@@ -332,9 +350,48 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
     eligible_for_legacy_price: boolean | null;
   }[];
 
+  // Pull admin cohort overrides for the rows we're about to process.
+  // Explicit overrides take priority over the computed BD-join-date logic.
+  // Honoured here so launch-day Stripe writes respect Scott-approved
+  // resolutions (e.g. Joanna Forbes 759 = future_due, do NOT charge).
+  const bdIds = rows.map((r) => r.bd_member_id);
+  const overrideMap = new Map<
+    number,
+    { cohort: string | null; reason: string | null }
+  >();
+  if (bdIds.length) {
+    const { data: overrides } = await supabaseAdmin
+      .from("bd_member_seed")
+      .select("bd_member_id,migration_cohort_override,migration_cohort_reason")
+      .in("bd_member_id", bdIds);
+    for (const o of (overrides ?? []) as {
+      bd_member_id: number;
+      migration_cohort_override: string | null;
+      migration_cohort_reason: string | null;
+    }[]) {
+      overrideMap.set(o.bd_member_id, {
+        cohort: o.migration_cohort_override,
+        reason: o.migration_cohort_reason,
+      });
+    }
+  }
+
   for (const row of rows) {
     res.processed += 1;
     try {
+      // Admin cohort overrides win over computed logic.
+      const ov = overrideMap.get(row.bd_member_id);
+      if (ov?.cohort && ov.cohort !== "honour_window" && ov.cohort !== "anomaly_launch_charge") {
+        // future_due / manual_review / blocked → do NOT charge or create a
+        // subscription on launch day. Skip and record why.
+        await markRow(row.bd_member_id, {
+          migration_status: "skipped",
+          last_attempt_at: new Date().toISOString(),
+          notes: `Skipped by admin cohort override "${ov.cohort}": ${ov.reason ?? "no reason recorded"}`.slice(0, 500),
+        });
+        continue;
+      }
+
       const customer = (await stripe.customers.retrieve(row.stripe_customer_id)) as {
         deleted?: boolean;
         invoice_settings?: { default_payment_method?: string | { id: string } | null };
