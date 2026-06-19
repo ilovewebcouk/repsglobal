@@ -175,7 +175,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return out;
     }
 
-    const [profilesData, subsData, reviewsData, ccData, adminRolesData] = await Promise.all([
+    const [profilesData, subsData, reviewsData, ccData, adminRolesData, paymentsData] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
@@ -186,6 +186,12 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', c).eq('status', 'active')),
       fetchAll<{ user_id: string }>((c) =>
         supabaseAdmin.from('user_roles').select('user_id').in('user_id', c).eq('role', 'admin')),
+      fetchAll<{ user_id: string | null; amount_pence: number; refunded_amount_pence: number; status: string }>((c) =>
+        supabaseAdmin
+          .from('legacy_stripe_payments')
+          .select('user_id, amount_pence, refunded_amount_pence, status')
+          .in('user_id', c)
+          .eq('status', 'succeeded')),
     ]);
     const adminSet = new Set(adminRolesData.map((r) => r.user_id));
 
@@ -210,11 +216,14 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       clientCount.set(c.professional_id, (clientCount.get(c.professional_id) ?? 0) + 1);
     }
 
-    function computeLifetimeValue(tier: string, createdAt: string): number {
-      const mrr = planMrrPence(tier);
-      if (!mrr) return 0;
-      const months = (Date.now() - new Date(createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000);
-      return Math.round(mrr * Math.max(0, months));
+    // Lifetime value = sum of all successful Stripe charges (net of refunds)
+    // sourced from legacy_stripe_payments, which holds the full historical
+    // import from the previous billing platform plus any backfilled rows.
+    const ltvMap = new Map<string, number>();
+    for (const p of paymentsData) {
+      if (!p.user_id) continue;
+      const net = (p.amount_pence ?? 0) - (p.refunded_amount_pence ?? 0);
+      ltvMap.set(p.user_id, (ltvMap.get(p.user_id) ?? 0) + net);
     }
 
     let rows: AdminProRow[] = (pros ?? []).map(p => {
