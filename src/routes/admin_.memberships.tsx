@@ -80,43 +80,14 @@ function AdminMembershipsPage() {
       subtitle="Recurring income, renewals, and projected cash from REPs memberships."
     >
       <EnvBadge env={metricsQ.data?.env} />
-      <KpiRow data={metricsQ.data} loading={metricsQ.isLoading} />
+      <KpiRow
+        data={metricsQ.data}
+        forecast={forecastQ.data}
+        loading={metricsQ.isLoading || forecastQ.isLoading}
+      />
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <TierCard
-          tier="verified"
-          title="Verified"
-          price="£99/year"
-          icon={<BadgeCheck className="h-4 w-4 text-reps-orange" />}
-          active={(metricsQ.data?.verifiedActive ?? 0) + (metricsQ.data?.verifiedScheduled ?? 0)}
-          footnote={
-            (metricsQ.data?.verifiedScheduled ?? 0) > 0
-              ? `Includes ${metricsQ.data!.verifiedScheduled} awaiting Stripe setup`
-              : undefined
-          }
-          loading={metricsQ.isLoading}
-        />
-        <TierCard
-          tier="pro"
-          title="Pro"
-          price="£59/month"
-          icon={<Crown className="h-4 w-4 text-reps-orange" />}
-          active={metricsQ.data?.tiers.find((t) => t.tier === "pro")?.active ?? 0}
-          trialing={metricsQ.data?.tiers.find((t) => t.tier === "pro")?.trialing ?? 0}
-          loading={metricsQ.isLoading}
-        />
-        <TierCard
-          tier="studio"
-          title="Studio"
-          price="£149/month"
-          icon={<Users className="h-4 w-4 text-reps-orange" />}
-          active={metricsQ.data?.tiers.find((t) => t.tier === "studio")?.active ?? 0}
-          loading={metricsQ.isLoading}
-        />
+      <TierCardRow data={metricsQ.data} loading={metricsQ.isLoading} />
 
-      </div>
-
-      <DistributionStrip data={metricsQ.data} loading={metricsQ.isLoading} />
 
       <ForecastChartPanel data={forecastQ.data} loading={forecastQ.isLoading} />
 
