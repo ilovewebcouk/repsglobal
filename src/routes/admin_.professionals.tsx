@@ -748,7 +748,19 @@ function ProRow({ row }: { row: AdminProRow }) {
         </span>
       </td>
       <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
-      <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
+      <td className="px-3 py-3 text-white/75">
+        <span className="inline-flex items-center gap-1.5">
+          {renewalLabel(row.renewalDate)}
+          {row.renewalDateSource === "bd" && row.renewalDate && (
+            <span
+              className="rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55"
+              title="From BD migration — will switch to Stripe once a subscription is created"
+            >
+              BD
+            </span>
+          )}
+        </span>
+      </td>
       <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
       <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
       <td className="px-5 py-3 text-right">

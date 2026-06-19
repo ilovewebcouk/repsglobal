@@ -22,6 +22,7 @@ export type AdminProRow = {
   email: string | null;
   lifetimeValuePence: number | null;
   renewalDate: string | null;
+  renewalDateSource: 'stripe' | 'bd' | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
@@ -175,7 +176,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return out;
     }
 
-    const [profilesData, subsData, reviewsData, ccData, adminRolesData, paymentsData] = await Promise.all([
+    const [profilesData, subsData, reviewsData, ccData, adminRolesData, paymentsData, bdSeedData] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
@@ -192,8 +193,19 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .select('user_id, amount_pence, refunded_amount_pence, status')
           .in('user_id', c)
           .eq('status', 'succeeded')),
+      fetchAll<{ claimed_user_id: string | null; bd_next_due_date: string | null }>((c) =>
+        supabaseAdmin
+          .from('bd_member_seed')
+          .select('claimed_user_id, bd_next_due_date')
+          .in('claimed_user_id', c)
+          .not('claimed_user_id', 'is', null)
+          .not('bd_next_due_date', 'is', null)),
     ]);
     const adminSet = new Set(adminRolesData.map((r) => r.user_id));
+    const bdDueMap = new Map<string, string>();
+    for (const r of bdSeedData) {
+      if (r.claimed_user_id && r.bd_next_due_date) bdDueMap.set(r.claimed_user_id, r.bd_next_due_date);
+    }
 
     const profileMap = new Map(profilesData.map((p) => [p.id, p]));
     const subMap = new Map<string, string>();
@@ -258,7 +270,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         verification: p.verification as string,
         email: null,
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
-        renewalDate: subDetail?.currentPeriodEnd ?? null,
+        renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
+        renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
       };
     });
 
