@@ -602,17 +602,20 @@ function UpcomingPaymentsPanel({
   data?: MembershipMetrics;
   loading: boolean;
 }) {
-  const preLaunch = !!data?.preLaunch;
   const launchDate = data?.launchAt
     ? new Date(data.launchAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
     : null;
-  const title = preLaunch ? "Launch-day charges" : "Upcoming payments";
-  const subtitle = preLaunch
-    ? launchDate
-      ? `Locked V7 schedule · ${launchDate}`
-      : "Locked V7 schedule"
-    : "Next 14 days";
-  const acrossLabel = preLaunch ? "on launch day" : "next 14 days";
+  const launchInWindow =
+    !!data &&
+    data.upcomingItems.some(
+      (it) => it.cohort === "honour_window" || it.cohort === "anomaly_launch_charge",
+    );
+  const title = "Payments in next 14 days";
+  const subtitle = launchInWindow && launchDate
+    ? `Renewals · trial conversions · launch cohort (${launchDate})`
+    : "Renewals · trial conversions · launch cohort";
+  const acrossLabel = "next 14 days";
+
   return (
     <PPanel>
       <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
@@ -629,17 +632,14 @@ function UpcomingPaymentsPanel({
           <div className="flex h-72 items-center justify-center">
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>
-                  {preLaunch ? "No launch-day charges scheduled" : "No payments due in the next 14 days"}
-                </EmptyTitle>
+                <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
                 <EmptyDescription>
-                  {preLaunch
-                    ? "Renewals and Verified annual payments will list here as launch approaches."
-                    : "Renewals and Verified annual payments will list here as they approach."}
+                  Renewals, trial conversions and launch-cohort charges will list here as they approach.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>
+
         ) : (
           <div className="flex flex-col gap-3">
             <div className="flex items-baseline gap-3">
