@@ -602,17 +602,20 @@ function UpcomingPaymentsPanel({
   data?: MembershipMetrics;
   loading: boolean;
 }) {
-  const preLaunch = !!data?.preLaunch;
   const launchDate = data?.launchAt
     ? new Date(data.launchAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
     : null;
-  const title = preLaunch ? "Launch-day charges" : "Upcoming payments";
-  const subtitle = preLaunch
-    ? launchDate
-      ? `Locked V7 schedule · ${launchDate}`
-      : "Locked V7 schedule"
-    : "Next 14 days";
-  const acrossLabel = preLaunch ? "on launch day" : "next 14 days";
+  const launchInWindow =
+    !!data &&
+    data.upcomingItems.some(
+      (it) => it.cohort === "honour_window" || it.cohort === "anomaly_launch_charge",
+    );
+  const title = "Payments in next 14 days";
+  const subtitle = launchInWindow && launchDate
+    ? `Renewals · trial conversions · launch cohort (${launchDate})`
+    : "Renewals · trial conversions · launch cohort";
+  const acrossLabel = "next 14 days";
+
   return (
     <PPanel>
       <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
