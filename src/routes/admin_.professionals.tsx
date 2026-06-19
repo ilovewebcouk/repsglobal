@@ -93,6 +93,8 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
+  cancelProfessionalSubscription,
+  deleteProfessional,
   type AdminProRow,
   type AdminProTab,
   type AdminProSort,
