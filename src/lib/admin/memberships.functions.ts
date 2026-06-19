@@ -241,9 +241,9 @@ export type ForecastMonth = {
   verifiedPence: number;
   proPence: number;
   studioPence: number;
-  scheduledPence: number;
   totalPence: number;
 };
+
 
 export type ForecastQuarter = {
   label: string;
@@ -285,7 +285,6 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
         verifiedPence: 0,
         proPence: 0,
         studioPence: 0,
-        scheduledPence: 0,
         totalPence: 0,
       });
     }
@@ -294,18 +293,18 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
     let currentMonthPence = 0;
     let next14dPence = 0;
 
-    function applyPayment(at: Date, amount: number, lane: "verified" | "pro" | "studio" | "scheduled") {
+    function applyPayment(at: Date, amount: number, lane: "verified" | "pro" | "studio") {
       const key = londonMonthKey(at);
       const bucket = buckets.get(key);
       if (!bucket) return;
       if (lane === "verified") bucket.verifiedPence += amount;
       else if (lane === "pro") bucket.proPence += amount;
-      else if (lane === "studio") bucket.studioPence += amount;
-      else bucket.scheduledPence += amount;
+      else bucket.studioPence += amount;
       bucket.totalPence += amount;
       if (key === startKey) currentMonthPence += amount;
       if (at >= now && at <= in14d) next14dPence += amount;
     }
+
 
     // 1. Project active/trialing Stripe subs forward.
     const { data: subsRaw } = await supabaseAdmin
@@ -355,12 +354,13 @@ export const getRevenueForecast = createServerFn({ method: "GET" })
       if (claimedUserId && liveUserIds.has(claimedUserId)) return;
       let due = new Date(firstDue);
       while (due <= horizonEnd) {
-        if (due >= now) applyPayment(due, TIER_PRICE_PENCE.verified, "scheduled");
+        if (due >= now) applyPayment(due, TIER_PRICE_PENCE.verified, "verified");
         const d = new Date(due);
         d.setUTCFullYear(d.getUTCFullYear() + 1);
         due = d;
       }
     }
+
 
     for (const link of (legacyLinks ?? []) as any[]) {
       legacyMemberIds.add(link.bd_member_id);
