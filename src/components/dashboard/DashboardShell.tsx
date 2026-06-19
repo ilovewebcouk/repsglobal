@@ -177,7 +177,7 @@ export function DashboardShell({
           } as React.CSSProperties
         }
       >
-        <DashboardSidebar role={role} tier={tier} active={active} member={member} variant="floating" />
+        <DashboardSidebar role={role} tier={tier} active={active} member={member} />
         <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-reps-ink">
           <ImpersonationBanner />
           <TopBar
