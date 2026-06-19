@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   Award,
   BadgeCheck,
@@ -22,10 +22,6 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import proJames from "@/assets/pro-james.jpg";
-import proSophie from "@/assets/pro-sophie.jpg";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 import { Breadcrumb } from "@/components/Breadcrumb";
