@@ -1,72 +1,86 @@
-## Goal
+# Migrate DashboardShell to shadcn Sidebar (sidebar-04)
 
-1. Make AI moderation actually run on every new review, and have it flag profanity / abuse / PII (not just `fake` / `promo`).
-2. Remove the "pro replies to a review" feature end-to-end — UI, server fns, email, RPCs, columns.
+Replace the hand-rolled sidebar in `src/components/dashboard/DashboardShell.tsx` with the shadcn `Sidebar` primitive, using the **sidebar-04** pattern: header (logo), grouped nav, footer user card, collapsible to a **3rem icon rail** with hover tooltips on collapsed items. Keep every existing behaviour — tier-aware nav, all badge counters, impersonation banner, admin badge, "Switch to Admin", "Upgrade to Pro", mobile sheet, `⌘K` search.
 
----
-
-## Part 1 — Fix AI moderation
-
-### 1a. Run moderation reliably (not fire-and-forget)
-
-In `src/lib/reviews/reviews.functions.ts`:
-- Replace `void runReviewModerationFireAndForget(row.id)` in `submitReviewByToken` (and the other call site around line 589) with an `await` of `runReviewModeration({ data: { reviewId: row.id } })`, wrapped in a try/catch so a moderation failure never blocks the submit. Adds ~1–2s to the submit response but guarantees `ai_verdict` is written before the row appears in the queue.
-- Remove the now-unused `runReviewModerationFireAndForget` helper.
-
-### 1b. Expand the moderation prompt
-
-In `src/lib/reviews/moderate.functions.ts`:
-- Update the system prompt + JSON schema to also return `profanity`, `abuse`, and `pii` (alongside `fake` and `promo`), each as `{ hit, reason }`.
-- Update verdict mapping so any `profanity.hit` or `abuse.hit` produces at minimum a `warning`; `abuse.hit` with strong signals (or 1★ + abuse) produces `suspect`.
-- Update the `AiFlags` type in `src/lib/reviews/reviews.functions.ts` (and any TS surface in `admin_.reviews.tsx`) to include the three new flag keys so the existing "flags" chip strip in the admin queue renders them automatically.
-
-### 1c. One-shot backfill of stuck rows
-
-- Run `runReviewModeration` for the two existing rows where `ai_verdict IS NULL` (the 18:11 and 20:55 submissions) via a quick admin-only invocation, so the queue stops showing them as "AI: pending".
+This is a shell swap, **not** a redesign. Tokens, colours, radii, copy, and route structure stay identical.
 
 ---
 
-## Part 2 — Remove the pro reply-to-review feature
+## 1. Wire `SidebarProvider` at the right level
 
-### 2a. Public profile (`src/routes/pro.$slug.index.tsx`)
-- Delete the "Reply from the pro" panel rendered under each review (the `bg-reps-warm-white` / `border-l-2 border-reps-orange/40` block).
-- Stop selecting `response` / `responded_at` / `response_edited_at` on the public query.
+The provider must wrap both the Sidebar and `SidebarInset` (main content). Cleanest spot is **inside `DashboardShell` itself** — not in `_authenticated/route.tsx` — because `/portal/*` (client portal) and other authenticated routes don't use this shell.
 
-### 2b. Pro dashboard (`src/routes/_authenticated/_professional/dashboard_.reviews.tsx`)
-- Remove the three reply states (Reply button + Textarea, "Your reply" panel, Edit/Save/Cancel, Delete + AlertDialog).
-- Remove the "Awaiting reply" KPI tile and the response-rate stat (they're meaningless once replies are gone).
-- Keep the rest of the page (list, filters, KPIs for total / avg rating / new this month).
+```text
+<SidebarProvider defaultOpen> (reads `repsuk:sidebar:open` cookie/localStorage)
+  <DashboardSidebar role tier active member />     ← collapsible="icon"
+  <SidebarInset>
+    <ImpersonationBanner />
+    <TopBar … with <SidebarTrigger /> for desktop collapse + existing mobile <Sheet /> swap-out >
+    <main>{children}</main>
+  </SidebarInset>
+</SidebarProvider>
+```
 
-### 2c. Server functions (`src/lib/reviews/reviews.functions.ts`)
-- Delete `respondToReview`, `deleteReviewResponse`, and `respondSchema`.
-- Drop `response`, `responded_at`, `response_edited_at` from `ReviewDTO` and from every `select(...)` projection (`listMyReviews`, `listPublicReviewsBySlug`, etc.).
-- Delete the `sendReviewReplyEmailFireAndForget` helper (and any imports).
+Persistence: rely on shadcn's built-in cookie (`sidebar_state`) so collapse survives navigation/refresh.
 
-### 2d. Email template
-- Delete `src/lib/email-templates/review-reply.tsx`.
-- Remove the `review-reply` entry from `src/lib/email-templates/registry.ts`.
+## 2. New file: `src/components/dashboard/DashboardSidebar.tsx`
 
-### 2e. Database (one migration)
-- `DROP FUNCTION public.upsert_pro_review_response(uuid, text);`
-- `DROP FUNCTION public.clear_pro_review_response(uuid);`
-- `ALTER TABLE public.reviews DROP COLUMN response, DROP COLUMN responded_at, DROP COLUMN response_edited_at, DROP COLUMN response_notified_at;`
-- Revert the pro-update RLS policy on `reviews` back to its pre-reply state (or drop it entirely if it only existed to allow reply writes).
+Extract the sidebar out of `DashboardShell.tsx` into its own file built on shadcn primitives:
 
-### 2f. Types
-- After the migration, `src/integrations/supabase/types.ts` will regenerate without the dropped columns; any leftover references in components will surface as TS errors and get cleaned up in the same pass.
+- `Sidebar collapsible="icon" variant="sidebar"` — dark theme via existing `bg-reps-midnight` class on the inner shell; sidebar tokens (`--sidebar-background` etc.) stay default so we don't fight the primitive.
+- `SidebarHeader` → `RepsWordmark` (full when expanded, mini "R" mark when collapsed via `group-data-[collapsible=icon]` selector).
+- `SidebarContent` → one `SidebarGroup` per existing nav group (`Account` / `Work` / `Deliver` / `Grow` / `Money & Admin` for trainer; `Manage` / `Platform` for admin). Each uses `SidebarGroupLabel` + `SidebarMenu` + `SidebarMenuItem` + `SidebarMenuButton asChild` wrapping `<Link to=…>`.
+  - `isActive` prop wired from `useRouterState` pathname (same logic as today).
+  - `tooltip={item.label}` on every `SidebarMenuButton` so labels still surface in collapsed icon-rail mode.
+  - Counter badges (`VerificationCountBadge`, `EnquiriesUnreadBadge`, `SupportUnreadBadge`, `ReviewsUnreadBadge`, BD chip) rendered via `SidebarMenuBadge` so they auto-hide in icon mode.
+- `SidebarFooter`:
+  - `AdminBadge` (admin only) — hidden in icon mode.
+  - `MemberCard` → collapsed mode swaps to just the avatar (size-8) inside a `SidebarMenuButton size="lg"` pattern (mirrors sidebar-04 NavUser).
+  - "Admin console" + "Upgrade to Pro" CTAs — hidden in icon mode (`group-data-[collapsible=icon]:hidden`).
+- `SidebarRail` at the end (sidebar-04 drag-to-collapse rail).
 
----
+Keep all `*Badge` helper components and `trainerNav` / `ADMIN_NAV` data exactly as-is; just move them with the sidebar.
 
-## Things explicitly NOT in scope
+## 3. Mobile behaviour
 
-- No change to the public review submission flow (`/r/$token`).
-- No change to AI moderation of replies (the feature is gone).
-- No change to admin reviews moderation UI other than the new flag chips (profanity / abuse / pii) appearing when the AI returns them.
-- No "report this review" or "contact the reviewer" replacement flow — pros simply have no public response mechanism anymore.
+shadcn `Sidebar` already provides a built-in `Sheet`-backed mobile drawer at `<lg`. Delete the bespoke `mobileNav` `<Sheet>` block in `DashboardShell` and the `<aside className="hidden lg:block">` wrapper — `SidebarTrigger` covers both desktop collapse and mobile sheet open.
 
----
+`SidebarTrigger` moves into `TopBar`, replacing the current `mobileNav` button slot. It auto-shows on mobile and stays visible on desktop for collapse toggle (this is the sidebar-04 default).
 
-## Order of operations
+## 4. ESLint exemption
 
-1. Ship Part 1 first (small, isolated, fixes the visible "AI: pending" bug).
-2. Then Part 2 in a single pass: migration → server fns → UI → email template → types cleanup.
+`mem://design/dashboard-ui-kit` bans `@/components/ui/*` imports under `_authenticated/`. The shadcn Sidebar lives at `@/components/ui/sidebar`. Add `sidebar` to the kit allowlist in `eslint.config.js` (or re-export it from `@/components/dashboard/ui/sidebar.ts` as a passthrough — preferred, matches existing pattern for `dialog`, `button` etc.). Pick the re-export approach for consistency.
+
+New file `src/components/dashboard/ui/sidebar.ts`:
+```ts
+export * from "@/components/ui/sidebar";
+```
+And add to `src/components/dashboard/ui/index.ts` barrel.
+
+## 5. Files touched
+
+- **New** `src/components/dashboard/DashboardSidebar.tsx` — extracted + shadcn-ified sidebar.
+- **New** `src/components/dashboard/ui/sidebar.ts` — re-export.
+- **Edit** `src/components/dashboard/ui/index.ts` — add sidebar export.
+- **Edit** `src/components/dashboard/DashboardShell.tsx` — slim down to `SidebarProvider` + `DashboardSidebar` + `SidebarInset` + `TopBar` + `<main>`. Remove old `Sidebar`, `NavSection`, `mobileNav`, desktop `<aside>`.
+- **Edit** `eslint.config.js` — only if the re-export approach doesn't satisfy the rule (verify after first build).
+- **Save** `mem://design/dashboard-ui-kit` — add Sidebar to the kit + note collapse persistence cookie.
+
+## 6. Out of scope
+
+- No changes to nav items, route paths, tier rules, or any page under `/dashboard/*` and `/admin/*`.
+- No visual redesign — tokens, badge styles, member card, CTAs render with the same classes.
+- No changes to `/portal/*` (client portal uses `ClientShell`, untouched).
+- No changes to TopBar contents beyond swapping the mobile menu button for `SidebarTrigger`.
+
+## 7. QA checklist (post-build)
+
+1. `/dashboard` (verified, pro, studio tiers) and `/admin` — sidebar renders, active state correct on each route.
+2. Click `SidebarTrigger` → collapses to icon rail (~3rem), labels hidden, tooltips show on hover.
+3. Refresh after collapse → state persists.
+4. Mobile (<lg) → trigger opens Sheet, nav fully visible, footer card visible.
+5. Counter badges (Verification chip, Enquiries unread, Support unread, Reviews unread, BD migration) render in expanded mode, hidden/dot in icon mode.
+6. Impersonation banner + admin-as-trainer "Admin console" CTA still appear.
+7. Verified trainer sees "Upgrade to Pro" CTA; Pro/Studio don't.
+8. `⌘K` still focuses search.
+9. ESLint passes; build clean.
