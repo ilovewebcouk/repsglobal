@@ -24,11 +24,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proJames from "@/assets/pro-james.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
-import proSophie from "@/assets/pro-sophie.jpg";
-import { searchProfessionals, type SearchProfessionalRow } from "@/lib/directory/search.functions";
+import { type SearchProfessionalRow } from "@/lib/directory/search.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getVerifiedProCount } from "@/lib/directory/counts.functions";
 import {
@@ -38,30 +34,11 @@ import {
 import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
 
 
-function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
-  const mode: FeaturedPro["mode"] =
-    r.in_person_available && r.online_available
-      ? "In-person & Online"
-      : r.online_available
-        ? "Online"
-        : "In-person";
-  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
-  return {
-    name: r.full_name ?? "REPs Professional",
-    role,
-    city: r.location?.town ?? r.city ?? "",
-    rating: 5.0,
-    reviews: 0,
-    mode,
-    tags: (r.specialisms ?? []),
-    image: r.avatar_url ?? fallbackImg,
-    identityStatus: r.identity_status,
-    verification: r.verification,
-    tier: r.tier,
-  };
-}
+// Kept for the related-profession card type; no static fallback image used.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UnusedSearchRow = SearchProfessionalRow;
 
-function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): FeaturedPro {
+function featuredRowToFeaturedPro(r: FeaturedProRow): FeaturedPro {
   const mode: FeaturedPro["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
@@ -77,7 +54,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
     reviews: r.review_count,
     mode,
     tags: (r.specialisms ?? []),
-    image: r.avatar_url ?? fallbackImg,
+    image: r.avatar_url ?? null,
     identityStatus: r.identity_status,
     verification: r.verification,
     tier: r.tier,
@@ -302,51 +279,8 @@ export const Route = createFileRoute("/professions/$profession")({
 });
 
 /* ------------------------------------------------------------------ */
-/* Featured pros (static, Phase 1)                                     */
+/* Featured pros — live only (no static demos)                         */
 /* ------------------------------------------------------------------ */
-
-const FEATURED: FeaturedPro[] = [
-  {
-    name: "James Wilson",
-    role: "Personal Trainer",
-    city: "London",
-    rating: 5.0,
-    reviews: 128,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Fat Loss", "Hypertrophy"],
-    image: proJames,
-  },
-  {
-    name: "Sophie Taylor",
-    role: "Pilates Instructor",
-    city: "London",
-    rating: 5.0,
-    reviews: 96,
-    mode: "In-person & Online",
-    tags: ["Reformer", "Posture", "Pre & Postnatal"],
-    image: proSophie,
-  },
-  {
-    name: "Liam Roberts",
-    role: "Strength Coach",
-    city: "Manchester",
-    rating: 4.9,
-    reviews: 74,
-    mode: "In-person",
-    tags: ["Powerlifting", "Hypertrophy", "Performance"],
-    image: proDaniel,
-  },
-  {
-    name: "Priya Sharma",
-    role: "Nutritionist",
-    city: "Bristol",
-    rating: 5.0,
-    reviews: 112,
-    mode: "Online",
-    tags: ["Sports Nutrition", "Fat Loss", "Habit Coaching"],
-    image: proLaura,
-  },
-];
 
 const CITIES = [
   { slug: "london", label: "London", count: 482 },
@@ -393,7 +327,6 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
   const { data: featuredResult } = useQuery({
     queryKey: ["profession-featured", meta.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
@@ -407,9 +340,7 @@ function ProfessionLanding() {
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map((r) => featuredRowToFeaturedPro(r));
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
   // profile, those are the ones we feature here. Falls back to the static
@@ -570,11 +501,25 @@ function ProfessionLanding() {
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p, i) => (
-            <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
-          ))}
-        </div>
+        {featured.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p, i) => (
+              <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-[18px] border border-dashed border-reps-stone bg-reps-warm-white p-8 text-center">
+            <p className="text-[14px] text-reps-muted-light">
+              No verified {meta.plural.toLowerCase()} listed yet — be the first.
+            </p>
+            <Link
+              to="/for-professionals"
+              className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
+            >
+              List your practice
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Cities */}

@@ -12,7 +12,8 @@ export type FeaturedPro = {
   reviews: number;
   mode: "In-person" | "Online" | "In-person & Online";
   tags: string[];
-  image: string;
+  /** AI-cropped headshot from the profile, or null to render a Monogram fallback. */
+  image: string | null;
   /** Identity/verification + tier — feeds the shared VerificationPill. */
   identityStatus?: string | null;
   verification?: string | null;
@@ -20,9 +21,27 @@ export type FeaturedPro = {
 };
 
 /**
+ * Initials fallback that fills the square card image slot when a pro has no
+ * AI-cropped headshot yet. Deterministic hue per name so the same person
+ * always renders the same colour. Never substitutes a stock photo.
+ */
+function initialsFor(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+function hueFor(name: string): number {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const band = h % 2;
+  return band === 0 ? 30 + ((h >>> 8) % 25) : 200 + ((h >>> 8) % 30);
+}
+
+/**
  * Shared featured-professional card used by /professions/$profession
  * and /in/$location. Locked vertical layout: image-top, Verified pill,
- * Save tooltip, rating row, city + mode row, two tag chips, full-width CTA.
+ * Save tooltip, rating row, city + mode row, tag chips, full-width CTA.
  */
 export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   const slug = pro.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -30,11 +49,25 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
   // so the locked demo grid still renders an emerald REPs Verified pill.
   const identityStatus = pro.identityStatus ?? "approved";
   const verification = pro.verification ?? "verified";
-  const tier = pro.tier ?? "verified";
+  const hue = hueFor(pro.name);
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
       <div className="relative">
-        <img src={pro.image} alt={pro.name} className="aspect-square w-full object-cover object-top" loading="lazy" />
+        {pro.image ? (
+          <img src={pro.image} alt={pro.name} className="aspect-square w-full object-cover object-top" loading="lazy" />
+        ) : (
+          <div
+            aria-hidden
+            className="flex aspect-square w-full select-none items-center justify-center font-display font-bold tracking-tight"
+            style={{
+              backgroundColor: `hsl(${hue} 22% 92%)`,
+              color: `hsl(${hue} 35% 32%)`,
+              fontSize: "64px",
+            }}
+          >
+            {initialsFor(pro.name)}
+          </div>
+        )}
         <div className="absolute left-3 top-3">
           <VerificationPill
             identityStatus={identityStatus}
