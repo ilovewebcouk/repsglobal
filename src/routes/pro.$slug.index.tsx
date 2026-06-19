@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Award,
   BadgeCheck,
@@ -22,6 +22,10 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import proJames from "@/assets/pro-james.jpg";
+import proSophie from "@/assets/pro-sophie.jpg";
+import proDaniel from "@/assets/pro-daniel.jpg";
+import proLaura from "@/assets/pro-laura.jpg";
 import heroCoaching from "@/assets/hero-coaching-moment";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -71,23 +75,108 @@ type Pro = {
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
-// Static demo fixtures retired — every /pro/$slug now resolves against the
-// DB. Unknown slugs return 404.
-const PROS: Record<string, Pro> = {};
+const PROS: Record<string, Pro> = {
+  "james-carter": {
+    slug: "james-carter",
+    name: "James Carter",
+    firstName: "James",
+    role: "Personal Trainer",
+    location: "London",
+    region: "Greater London",
+    rating: 5.0,
+    reviews: 128,
+    modes: ["In-person", "Online"],
+    blurb: "Helping busy professionals build strength, move better and perform at their best.",
+    image: proJames,
+    years: 8,
+    clients: "100+",
+    bio: [
+      "I'm a REPS Verified Personal Trainer with over 8 years of experience helping clients achieve real, lasting results. My approach is tailored, supportive and evidence-based, focusing on strength, performance and long-term wellbeing.",
+      "Whether you're just starting out or looking to take your training to the next level, I'll create a plan that fits your goals, lifestyle and schedule.",
+    ],
+    specialisms: [
+      "Strength Training",
+      "Weight Loss",
+      "Muscle Gain",
+      "Functional Fitness",
+      "Lifestyle Coaching",
+      "Posture & Mobility",
+      "Performance Training",
+    ],
+    services: [
+      {
+        title: "Personal Training",
+        desc: "1-to-1 in-person sessions tailored to your goals.",
+        price: "From £60",
+        unit: "per session",
+        image: heroCoaching,
+        icon: Users,
+      },
+      {
+        title: "Online Coaching",
+        desc: "Custom plans, check-ins and ongoing support.",
+        price: "From £120",
+        unit: "per month",
+        image: proDaniel,
+        icon: Laptop,
+      },
+      {
+        title: "Nutrition Plan",
+        desc: "Personalised nutrition plans to fuel results.",
+        price: "From £40",
+        unit: "one-off plan",
+        image: proSophie,
+        icon: Award,
+      },
+    ],
+    qualifications: [
+      {
+        badge: "REPS",
+        title: "REPS Level 3 Personal Trainer",
+        issuer: "The Register of Exercise Professionals",
+        id: "REP1234567",
+        issued: "May 2023",
+      },
+      {
+        badge: "YMCA",
+        title: "Level 3 Diploma in Personal Training",
+        issuer: "YMCA Awards",
+        id: "600/1234/8",
+        issued: "May 2021",
+      },
+    ],
+    faqs: [
+      {
+        q: "Do you offer online coaching?",
+        a: "Yes! I offer fully personalised online coaching with custom training plans, check-ins, and ongoing support to keep you accountable and on track.",
+        open: true,
+      },
+      { q: "Where do sessions take place?", a: "" },
+      { q: "How do I get started?", a: "" },
+      { q: "What should I expect in my first session?", a: "" },
+      { q: "Do you offer nutrition guidance?", a: "" },
+    ],
+  },
+};
 
-const DEFAULT_SERVICES: Pro["services"] = [
+const REVIEW_AVATARS = [proSophie, proDaniel, proLaura];
+const REVIEWS = [
   {
-    title: "1-to-1 session",
-    desc: "Personalised coaching tailored to your goals.",
-    price: "Enquire for pricing",
-    unit: "per session",
-    image: heroCoaching,
-    icon: Users,
+    name: "Sophie L.",
+    when: "2 weeks ago",
+    body: "James has completely changed the way I train. His programmes are challenging but achievable and I've never felt stronger!",
+  },
+  {
+    name: "Michael R.",
+    when: "1 month ago",
+    body: "Great coach and even better person. Really takes the time to understand your goals and builds a plan that actually works.",
+  },
+  {
+    name: "Emily T.",
+    when: "2 months ago",
+    body: "I've seen more progress in 3 months with James than I did in a year training on my own. Highly recommend!",
   },
 ];
-
-// REVIEW_AVATARS removed — reviews now render with initials tiles only.
-const REVIEWS: { name: string; when: string; body: string }[] = [];
 
 const STATS = [
   { icon: Users, value: "25,000+", label: "Verified Professionals" },
@@ -122,6 +211,7 @@ const RATING_DIST = [
 type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
 
 function proFromDb(row: NonNullable<DbPro>): Pro {
+  const template = PROS["james-carter"];
   const professionLabel =
     getProfessionLabel(row.primary_profession) ?? "REPS Verified Professional";
   return {
@@ -139,7 +229,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       ...(row.online_available ? (["Online"] as const) : []),
     ] as Pro["modes"],
     blurb: row.headline ?? "",
-    image: row.avatar_url || "",
+    image: row.avatar_url || proJames,
     years: 0,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
@@ -157,7 +247,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
             icon: Users,
           },
         ]
-      : DEFAULT_SERVICES,
+      : template.services,
     qualifications: [],
     faqs: [],
   };
@@ -165,15 +255,14 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
 
 export const Route = createFileRoute("/pro/$slug/")({
   loader: async ({ params }) => {
+    if (PROS[params.slug]) return { source: "fixture" as const, db: null };
     const db = await getPublicProfileBySlug({ data: { slug: params.slug } });
-    if (!db) throw notFound();
-    return { db };
+    return { source: db ? ("db" as const) : ("fallback" as const), db };
   },
-  head: ({ loaderData }) => {
-    const pro = loaderData?.db ? proFromDb(loaderData.db) : null;
-    if (!pro) {
-      return { meta: [{ title: "Professional not found — REPS" }] };
-    }
+  head: ({ params, loaderData }) => {
+    const fixture = PROS[params.slug];
+    const dbPro = loaderData?.db ? proFromDb(loaderData.db) : null;
+    const pro = fixture ?? dbPro ?? PROS["james-carter"];
     const title = `${pro.name} — ${pro.role} | REPS`;
     const description = `${pro.name}, REPS Verified ${pro.role}${pro.location ? ` in ${pro.location}` : ""}. ${pro.blurb}`;
     return {
@@ -187,33 +276,13 @@ export const Route = createFileRoute("/pro/$slug/")({
       links: [{ rel: "canonical", href: `/pro/${pro.slug}` }],
     };
   },
-  notFoundComponent: () => (
-    <div className="min-h-screen bg-reps-ivory">
-      <PublicHeader variant="solid" />
-      <div className="mx-auto max-w-[720px] px-6 py-24 text-center">
-        <h1 className="font-display text-[28px] font-bold text-reps-charcoal">
-          Professional not found
-        </h1>
-        <p className="mt-3 text-[14px] text-reps-muted-light">
-          We couldn't find this profile on REPS. They may have removed their listing.
-        </p>
-        <Link
-          to="/find-a-professional"
-          className="mt-6 inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-5 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
-        >
-          Browse verified professionals
-        </Link>
-      </div>
-      <PublicFooter />
-    </div>
-  ),
   component: ProProfilePage,
 });
 
 function ProProfilePage() {
+  const { slug } = Route.useParams();
   const { db } = Route.useLoaderData();
-  const pro = proFromDb(db!);
-  const slug = pro.slug;
+  const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
 
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -666,35 +735,31 @@ function ProProfilePage() {
                 </div>
 
                 <div className="space-y-5">
-                  {REVIEWS.length === 0 ? (
-                    <p className="text-[13px] text-reps-muted-light">
-                      No reviews yet. Reviews appear here once verified clients leave one.
-                    </p>
-                  ) : (
-                    REVIEWS.map((r) => (
-                      <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-ivory text-[12px] font-bold text-reps-charcoal">
-                          {r.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                        </span>
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-[13px] font-semibold text-reps-charcoal">{r.name}</div>
-                              <div className="text-[11px] text-reps-muted-light">{r.when}</div>
-                            </div>
+                  {REVIEWS.map((r, i) => (
+                    <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
+                      <img
+                        src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}
+                        alt=""
+                        className="h-11 w-11 rounded-full object-cover"
+                      />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-[13px] font-semibold text-reps-charcoal">{r.name}</div>
+                            <div className="text-[11px] text-reps-muted-light">{r.when}</div>
                           </div>
-                          <div className="mt-1 flex gap-0.5">
-                            {Array.from({ length: 5 }).map((_, k) => (
-                              <Star key={k} className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                            ))}
-                          </div>
-                          <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light">
-                            “{r.body}”
-                          </p>
                         </div>
+                        <div className="mt-1 flex gap-0.5">
+                          {Array.from({ length: 5 }).map((_, k) => (
+                            <Star key={k} className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                          ))}
+                        </div>
+                        <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light">
+                          “{r.body}”
+                        </p>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

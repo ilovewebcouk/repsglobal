@@ -25,6 +25,10 @@ import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
+import proDaniel from "@/assets/pro-daniel.jpg";
+import proJames from "@/assets/pro-james.jpg";
+import proLaura from "@/assets/pro-laura.jpg";
+import proSophie from "@/assets/pro-sophie.jpg";
 
 export const Route = createFileRoute("/reviews")({
   head: () => ({
@@ -64,13 +68,127 @@ type Review = {
   proName: string;
   proSlug: string;
   proRole: string;
-  proImage: string | null;
+  proImage: string;
   programme: string;
 };
 
-// Demo reviews retired — feed will populate once verified-booking reviews go live.
-const EDITOR_PICKS: Review[] = [];
-const REVIEWS: Review[] = [];
+const EDITOR_PICKS: Review[] = [
+  {
+    id: "ep1",
+    author: "Natalie S.",
+    authorCity: "London",
+    rating: 5,
+    date: "2 weeks ago",
+    title: "Changed how I think about training",
+    body:
+      "Six months in, I'm stronger than I've ever been and — more importantly — actually enjoy my sessions. The programming is thoughtful and James adjusts when life gets in the way.",
+    helpful: 42,
+    proName: "James Wilson",
+    proSlug: "james-wilson",
+    proRole: "Personal Trainer",
+    proImage: proJames,
+    programme: "1:1 Strength · 24 sessions",
+  },
+  {
+    id: "ep2",
+    author: "Marcus H.",
+    authorCity: "Manchester",
+    rating: 5,
+    date: "1 month ago",
+    title: "Best Pilates teacher I've worked with",
+    body:
+      "Sophie is patient, knowledgeable and genuinely cares about long-term mobility, not just \"feeling the burn\". My lower back issues have basically vanished.",
+    helpful: 38,
+    proName: "Sophie Taylor",
+    proSlug: "sophie-taylor",
+    proRole: "Pilates Instructor",
+    proImage: proSophie,
+    programme: "Reformer · Weekly",
+  },
+  {
+    id: "ep3",
+    author: "Tom W.",
+    authorCity: "Edinburgh",
+    rating: 5,
+    date: "2 months ago",
+    title: "Genuinely transformed my running",
+    body:
+      "Started with Liam to prep for a marathon and ended up rebuilding my whole training base. PB'd by 14 minutes. Couldn't recommend more highly.",
+    helpful: 31,
+    proName: "Liam Roberts",
+    proSlug: "liam-roberts",
+    proRole: "Strength Coach",
+    proImage: proDaniel,
+    programme: "Marathon Prep · 20 weeks",
+  },
+];
+
+const REVIEWS: Review[] = [
+  {
+    id: "r4",
+    author: "Priya M.",
+    authorCity: "Bristol",
+    rating: 5,
+    date: "3 weeks ago",
+    title: "Finally a nutritionist who gets it",
+    body:
+      "Laura gave me a plan I can actually live with. No food rules, no shame. We adjust monthly based on what's working. Down 8kg in 5 months and energy is the best it's been in years.",
+    helpful: 27,
+    proName: "Laura Bennett",
+    proSlug: "laura-bennett",
+    proRole: "Nutritionist",
+    proImage: proLaura,
+    programme: "Nutrition Plan · 6 months",
+  },
+  {
+    id: "r5",
+    author: "Daniel O.",
+    authorCity: "Leeds",
+    rating: 5,
+    date: "5 days ago",
+    title: "Took 30kg off my deadlift in 4 months",
+    body:
+      "Liam knows his stuff. Programming is challenging but never reckless, and he picks up form issues I'd never have noticed.",
+    helpful: 19,
+    proName: "Liam Roberts",
+    proSlug: "liam-roberts",
+    proRole: "Strength Coach",
+    proImage: proDaniel,
+    programme: "Powerlifting · 16 weeks",
+  },
+  {
+    id: "r6",
+    author: "Aisha K.",
+    authorCity: "Birmingham",
+    rating: 5,
+    date: "1 month ago",
+    title: "Postnatal Pilates that understands postpartum",
+    body:
+      "Sophie's postnatal sessions have been a lifeline. She knows when to push and when to ease back. Felt safe from session one.",
+    helpful: 23,
+    proName: "Sophie Taylor",
+    proSlug: "sophie-taylor",
+    proRole: "Pilates Instructor",
+    proImage: proSophie,
+    programme: "Postnatal Pilates · 12 weeks",
+  },
+  {
+    id: "r7",
+    author: "Ben J.",
+    authorCity: "Glasgow",
+    rating: 5,
+    date: "2 weeks ago",
+    title: "First gym I've actually stuck with",
+    body:
+      "Coaches know your name, programming is on the wall every week, the kit is properly maintained. Two years in and still showing up.",
+    helpful: 14,
+    proName: "James Wilson",
+    proSlug: "james-wilson",
+    proRole: "Personal Trainer",
+    proImage: proJames,
+    programme: "Open Gym Membership",
+  },
+];
 
 const STATS = [
   { v: "12,400+", k: "Verified reviews" },
@@ -371,17 +489,11 @@ function ReviewsPage() {
             heading="This week's stand-out reviews."
             lede="Three reviews from across the register, chosen for the detail and context they give a future client — not the score."
           />
-          {EDITOR_PICKS.length === 0 ? (
-            <div className="mt-12 rounded-[18px] border border-dashed border-reps-border bg-reps-panel/40 p-10 text-center text-[14px] text-white/65">
-              Editor's picks appear here once verified-booking reviews start landing.
-            </div>
-          ) : (
-            <div className="mt-12 grid gap-5 lg:grid-cols-3">
-              {EDITOR_PICKS.map((r) => (
-                <ReviewCard key={r.id} review={r} variant="pick" />
-              ))}
-            </div>
-          )}
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {EDITOR_PICKS.map((r) => (
+              <ReviewCard key={r.id} review={r} variant="pick" />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -452,28 +564,20 @@ function ReviewsPage() {
             </div>
           </div>
 
-          {REVIEWS.length === 0 ? (
-            <div className="mt-10 rounded-[18px] border border-dashed border-reps-border bg-reps-panel/40 p-10 text-center text-[14px] text-white/65">
-              The feed is empty for now — verified-booking reviews will appear here as clients leave them.
-            </div>
-          ) : (
-            <>
-              <div className="mt-10 grid gap-5 lg:grid-cols-2">
-                {REVIEWS.map((r) => (
-                  <ReviewCard key={r.id} review={r} />
-                ))}
-              </div>
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+            {REVIEWS.map((r) => (
+              <ReviewCard key={r.id} review={r} />
+            ))}
+          </div>
 
-              <div className="mt-10 flex items-center justify-center">
-                <button
-                  type="button"
-                  className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel px-6 text-[14px] font-semibold text-white/80 shadow-none hover:border-reps-orange/40 hover:text-white"
-                >
-                  Load more reviews
-                </button>
-              </div>
-            </>
-          )}
+          <div className="mt-10 flex items-center justify-center">
+            <button
+              type="button"
+              className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel px-6 text-[14px] font-semibold text-white/80 shadow-none hover:border-reps-orange/40 hover:text-white"
+            >
+              Load more reviews
+            </button>
+          </div>
         </div>
       </section>
 
@@ -633,18 +737,12 @@ function ReviewCard({
           params={{ slug: r.proSlug }}
           className="group flex items-center gap-2.5"
         >
-          {r.proImage ? (
-            <img
-              src={r.proImage}
-              alt={r.proName}
-              className="h-9 w-9 rounded-[12px] object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-reps-ink text-[10.5px] font-bold text-white/80">
-              {r.proName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-            </span>
-          )}
+          <img
+            src={r.proImage}
+            alt={r.proName}
+            className="h-9 w-9 rounded-[12px] object-cover"
+            loading="lazy"
+          />
           <div>
             <div className="text-[13px] font-semibold text-white group-hover:text-reps-orange">
               {r.proName}
