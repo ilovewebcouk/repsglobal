@@ -63,18 +63,21 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const since60 = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString();
     const sinceRating = new Date(Date.now() - 365 * 24 * 60 * 60_000).toISOString();
 
-    const [active, verified, signups30, signupsPrev30, ratingRows] = await Promise.all([
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).eq('is_published', true),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).eq('verification', 'verified'),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).gte('created_at', since30),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).gte('created_at', since60).lt('created_at', since30),
+    // KPI counts only include professionals whose underlying auth user is
+    // email-confirmed (i.e. actually signed up — invited-but-unaccepted
+    // shells from `generateLink({ type: 'invite' })` are excluded).
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, ratingRows] = await Promise.all([
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: true }),
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
+      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
+      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
       supabaseAdmin.from('reviews').select('rating').eq('status', 'published').gte('created_at', sinceRating),
     ]);
 
-    const activeCount = active.count ?? 0;
-    const verifiedCount = verified.count ?? 0;
-    const signups = signups30.count ?? 0;
-    const prevSignups = signupsPrev30.count ?? 0;
+    const activeCount = (activeRes.data as number | null) ?? 0;
+    const verifiedCount = (verifiedRes.data as number | null) ?? 0;
+    const signups = (signups30Res.data as number | null) ?? 0;
+    const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
     const ratings = (ratingRows.data ?? []).map(r => r.rating as number).filter(Boolean);
     const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
@@ -147,15 +150,28 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     // Order by member_since desc so the "Joined" slice reflects BD signup
     // dates for imported pros (created_at is the import event, not signup).
-    const { data: pros, count, error } = await query
+    const { data: pros, error } = await query
       .order('member_since', { ascending: false, nullsFirst: false })
       .limit(FETCH_CAP);
     if (error) throw error;
 
-    const ids = (pros ?? []).map(p => p.id);
-    if (ids.length === 0) {
-      return { rows: [] as AdminProRow[], total: count ?? 0, page: data.page, pageSize: data.pageSize };
+    const allIds = (pros ?? []).map(p => p.id);
+    if (allIds.length === 0) {
+      return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
+
+    // Filter to professionals whose auth user is email-confirmed (actually
+    // signed up). Invited-but-unaccepted shells from `generateLink({ type:
+    // 'invite' })` are hidden — they are not members yet.
+    const { data: confirmedRows, error: confirmedErr } = await supabaseAdmin
+      .rpc('get_confirmed_professional_ids', { _ids: allIds });
+    if (confirmedErr) throw confirmedErr;
+    const confirmedSet = new Set(((confirmedRows ?? []) as string[]).map(String));
+    const ids = allIds.filter(id => confirmedSet.has(id));
+    if (ids.length === 0) {
+      return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
+    }
+    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
@@ -238,7 +254,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       ltvMap.set(p.user_id, (ltvMap.get(p.user_id) ?? 0) + net);
     }
 
-    let rows: AdminProRow[] = (pros ?? []).map(p => {
+    let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
       const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
       const ra = ratingAcc.get(p.id);

@@ -3143,6 +3143,14 @@ export type Database = {
       admin_seed_demo_pros: { Args: never; Returns: number }
       compute_pro_quality_score: { Args: { _pro_id: string }; Returns: number }
       convert_lead_to_client: { Args: { _enquiry_id: string }; Returns: string }
+      count_confirmed_pro_signups: {
+        Args: { _since: string; _until?: string }
+        Returns: number
+      }
+      count_confirmed_professionals: {
+        Args: { _only_published?: boolean; _verification?: string }
+        Returns: number
+      }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: {
@@ -3158,6 +3166,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_confirmed_professional_ids: {
+        Args: { _ids: string[] }
+        Returns: string[]
       }
       get_invite_by_token: {
         Args: { _token_hash: string }
