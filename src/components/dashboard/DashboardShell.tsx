@@ -397,7 +397,7 @@ function Sidebar({
 
       <div className="flex flex-col gap-3 px-3 pb-5">
         <MemberCard member={member} />
-        {role === "trainer" && account.isAdmin ? (
+        {role === "trainer" && account.isAdmin && !id.isImpersonating ? (
           <Button
             asChild
             variant="outline"
@@ -412,7 +412,7 @@ function Sidebar({
             </Link>
           </Button>
         ) : null}
-        {role === "trainer" && tier === "verified" ? (
+        {role === "trainer" && tier === "verified" && !id.isImpersonating ? (
           <Button asChild className="justify-between">
             <Link to="/pricing">
               <span className="flex items-center gap-2">
@@ -423,6 +423,7 @@ function Sidebar({
             </Link>
           </Button>
         ) : null}
+
 
       </div>
     </div>
