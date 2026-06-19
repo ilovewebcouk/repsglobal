@@ -142,8 +142,9 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
       const { data: rows } = await supabaseAdmin
         .from("reviews")
         .select(
-          "id, professional_id, client_user_id, client_name, rating, title, body, status, response, responded_at, response_edited_at, published_at, created_at",
+          "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
         )
+
         .eq("professional_id", pro.id)
         .eq("status", "published")
         .eq("moderation_status", "approved")
