@@ -190,13 +190,12 @@ function ReviewsPage() {
               className={`mt-2 text-[11px] font-medium ${
                 k.tone === "up"
                   ? "text-emerald-300"
-                  : k.tone === "warn"
-                    ? "text-reps-orange"
-                    : k.tone === "down"
-                      ? "text-rose-300"
-                      : "text-white/55"
+                  : k.tone === "down"
+                    ? "text-rose-300"
+                    : "text-white/55"
               }`}
             >
+
               {k.delta}
             </div>
           </PCard>
