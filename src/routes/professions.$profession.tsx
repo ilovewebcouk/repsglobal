@@ -327,8 +327,6 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
-  const fallbackImgs: never[] = [];
-  void fallbackImgs;
   const { data: featuredResult } = useQuery({
     queryKey: ["profession-featured", meta.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
