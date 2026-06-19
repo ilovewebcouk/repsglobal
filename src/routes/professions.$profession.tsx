@@ -279,51 +279,8 @@ export const Route = createFileRoute("/professions/$profession")({
 });
 
 /* ------------------------------------------------------------------ */
-/* Featured pros (static, Phase 1)                                     */
+/* Featured pros — live only (no static demos)                         */
 /* ------------------------------------------------------------------ */
-
-const FEATURED: FeaturedPro[] = [
-  {
-    name: "James Wilson",
-    role: "Personal Trainer",
-    city: "London",
-    rating: 5.0,
-    reviews: 128,
-    mode: "In-person & Online",
-    tags: ["Strength Training", "Fat Loss", "Hypertrophy"],
-    image: proJames,
-  },
-  {
-    name: "Sophie Taylor",
-    role: "Pilates Instructor",
-    city: "London",
-    rating: 5.0,
-    reviews: 96,
-    mode: "In-person & Online",
-    tags: ["Reformer", "Posture", "Pre & Postnatal"],
-    image: proSophie,
-  },
-  {
-    name: "Liam Roberts",
-    role: "Strength Coach",
-    city: "Manchester",
-    rating: 4.9,
-    reviews: 74,
-    mode: "In-person",
-    tags: ["Powerlifting", "Hypertrophy", "Performance"],
-    image: proDaniel,
-  },
-  {
-    name: "Priya Sharma",
-    role: "Nutritionist",
-    city: "Bristol",
-    rating: 5.0,
-    reviews: 112,
-    mode: "Online",
-    tags: ["Sports Nutrition", "Fat Loss", "Habit Coaching"],
-    image: proLaura,
-  },
-];
 
 const CITIES = [
   { slug: "london", label: "London", count: 482 },
@@ -370,7 +327,8 @@ function ProfessionLanding() {
   const { profession } = Route.useParams();
   const meta = getProfession(profession);
 
-  const fallbackImgs = [proJames, proSophie, proDaniel, proLaura];
+  const fallbackImgs: never[] = [];
+  void fallbackImgs;
   const { data: featuredResult } = useQuery({
     queryKey: ["profession-featured", meta.slug],
     queryFn: () => getFeaturedPros({ data: { scope: "profession", value: meta.slug, limit: 8 } }),
@@ -384,9 +342,7 @@ function ProfessionLanding() {
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros.slice(0, 4).map((r) => featuredRowToFeaturedPro(r));
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
   // profile, those are the ones we feature here. Falls back to the static
