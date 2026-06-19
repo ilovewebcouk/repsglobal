@@ -182,6 +182,11 @@ function joinedLabel(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", year: "numeric" });
 }
 
+function renewalLabel(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
 function useDebounced<T>(value: T, ms = 250): T {
   const [v, setV] = React.useState(value);
   React.useEffect(() => {
