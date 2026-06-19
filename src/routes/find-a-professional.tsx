@@ -35,9 +35,6 @@ import { VENUES } from "@/components/marketing/VenueWordmarks";
 import { Monogram } from "@/components/directory/Monogram";
 import { VerificationPill } from "@/components/directory/VerificationPill";
 
-import proSophie from "@/assets/pro-sophie.jpg";
-import proDaniel from "@/assets/pro-daniel.jpg";
-import proLaura from "@/assets/pro-laura.jpg";
 
 const VALID_VENUE_SLUGS = new Set([
   "puregym",
@@ -175,32 +172,8 @@ const trustItems = [
   { icon: Users, title: "Trusted Worldwide", sub: "In-person & online" },
 ];
 
-const testimonials = [
-  {
-    quote:
-      "I'd been burned by PTs who weren't actually qualified. REPS let me see credentials before I even booked. My coach is brilliant.",
-    name: "Natalie S.",
-    role: "Strength training",
-    city: "London",
-    image: proLaura,
-  },
-  {
-    quote:
-      "Found a Pilates instructor who understood my back rehab brief on the first message. Verified, insured, and genuinely good.",
-    name: "Maya R.",
-    role: "Pilates",
-    city: "Manchester",
-    image: proSophie,
-  },
-  {
-    quote:
-      "I work shifts so I needed someone flexible and remote. REPS filtered down to qualified online coaches in minutes.",
-    name: "Tom B.",
-    role: "Online coaching",
-    city: "Bristol",
-    image: proDaniel,
-  },
-];
+// Testimonials removed — no demo client photos until real verified-booking
+// reviews are wired into this surface.
 
 const PAGE_SIZE = 24;
 
