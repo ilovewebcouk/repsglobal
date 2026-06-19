@@ -23,6 +23,8 @@ export type AdminProRow = {
   lifetimeValuePence: number | null;
   renewalDate: string | null;
   renewalDateSource: 'stripe' | 'bd' | null;
+  isTrial: boolean;
+  trialDaysLeft: number | null;
 };
 
 const PROFESSION_LABEL: Record<string, string> = {
