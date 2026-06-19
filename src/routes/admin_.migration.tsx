@@ -1,7 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LAUNCH_AT_UTC } from "@/lib/launch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/route-gates";
 import {
   AlertCircle,
@@ -545,6 +557,14 @@ function StripeLinkingPanel() {
   const csvFn = useServerFn(linkLegacyFromStripeCsv);
   const [env, setEnv] = useState<"sandbox" | "live">("live");
   const [log, setLog] = useState<string | null>(null);
+  const [launchDialogOpen, setLaunchDialogOpen] = useState(false);
+  const [launchConfirmText, setLaunchConfirmText] = useState("");
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery<LegacyLinkingStats>({
     queryKey: ["admin", "legacy-stripe-link", "stats"],
@@ -572,6 +592,25 @@ function StripeLinkingPanel() {
     },
     onError: (e) => setLog(`Renewal pass failed: ${(e as Error).message}`),
   });
+
+  const launchPass = useMutation({
+    mutationFn: () => renewFn({ data: { environment: env, limit: 500 } }),
+    onSuccess: (res) => {
+      setLog(
+        `LAUNCH RUN (${env}): processed ${res.processed}, charged ${res.charged}, awaiting payment method ${res.awaiting_payment_method}, errors ${res.errors}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "legacy-stripe-link"] });
+      setLaunchDialogOpen(false);
+      setLaunchConfirmText("");
+    },
+    onError: (e) => {
+      setLog(`LAUNCH RUN failed: ${(e as Error).message}`);
+      setLaunchDialogOpen(false);
+      setLaunchConfirmText("");
+    },
+  });
+
+
 
   const resetPass = useMutation({
     mutationFn: () => resetFn(),
@@ -623,8 +662,15 @@ function StripeLinkingPanel() {
     renewPass.isPending ||
     resetPass.isPending ||
     csvImport.isPending ||
+    launchPass.isPending ||
     isFetching;
 
+  const launchUnlocked = now.getTime() >= LAUNCH_AT_UTC.getTime();
+  const launchEnvOk = env === "live";
+  const launchConfirmOk = launchConfirmText.trim().toUpperCase() === "LAUNCH";
+  const launchCountdown = launchUnlocked
+    ? null
+    : formatCountdown(LAUNCH_AT_UTC.getTime() - now.getTime());
 
   return (
     <PPanel className="mt-6">
@@ -699,6 +745,92 @@ function StripeLinkingPanel() {
 
         </div>
       </div>
+
+      <div className="border-b border-reps-border bg-reps-ink/40 px-5 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-5 items-center rounded-[6px] border border-reps-orange/40 bg-reps-orange/10 px-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-reps-orange">
+                v7 locked
+              </span>
+              <h3 className="font-display text-[14px] font-bold text-white">
+                Launch-day billing run
+              </h3>
+            </div>
+            <p className="mt-1 text-[12px] text-white/65">
+              Honour 6 × £34 + anomaly 1 × £99 = <span className="font-semibold text-white">£303</span>.
+              No long-overdue cohort, no lifetime cohort, no renewable £34 subs.
+            </p>
+            <p className="mt-1 text-[11px] text-white/50">
+              Available from 26 Jun 2026, 00:00 BST · Environment must be Live ·{" "}
+              {launchUnlocked ? (
+                <span className="text-reps-green">Window open</span>
+              ) : (
+                <span className="text-white/70">Unlocks in {launchCountdown}</span>
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLaunchDialogOpen(true)}
+            disabled={busy || !launchUnlocked || !launchEnvOk}
+            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white shadow-none disabled:opacity-40"
+            title={
+              !launchEnvOk
+                ? "Switch environment to Live to enable"
+                : !launchUnlocked
+                  ? `Unlocks ${LAUNCH_AT_UTC.toUTCString()}`
+                  : "Execute launch-day billing run"
+            }
+          >
+            <CreditCard className="h-4 w-4" />
+            {launchPass.isPending ? "Running…" : "Execute launch-day billing run"}
+          </button>
+        </div>
+      </div>
+
+      <AlertDialog open={launchDialogOpen} onOpenChange={(o) => {
+        setLaunchDialogOpen(o);
+        if (!o) setLaunchConfirmText("");
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Execute launch-day billing run?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-[13px]">
+                <p>This runs the approved v7 logic against <strong>Live Stripe</strong>. Cannot be undone.</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>honour_window: 6 × £34 = £204</li>
+                  <li>anomaly_launch_charge: 1 × £99 = £99</li>
+                  <li><strong>Launch-day total: £303</strong></li>
+                  <li>No long-overdue cohort. No lifetime cohort. No renewable £34 subs.</li>
+                </ul>
+                <p>Type <code className="rounded bg-muted px-1 font-mono">LAUNCH</code> to confirm:</p>
+                <Input
+                  autoFocus
+                  value={launchConfirmText}
+                  onChange={(e) => setLaunchConfirmText(e.target.value)}
+                  placeholder="LAUNCH"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={launchPass.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!launchConfirmOk || !launchUnlocked || !launchEnvOk || launchPass.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                launchPass.mutate();
+              }}
+              className="bg-reps-orange text-white hover:bg-reps-orange/90"
+            >
+              {launchPass.isPending ? "Running…" : "Execute"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {isLoading || !data ? (
         <div className="p-5 text-[12px] text-white/55">Loading linking stats…</div>
       ) : (
@@ -741,4 +873,15 @@ function StripeLinkingPanel() {
       </div>
     </PPanel>
   );
+}
+
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return "now";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
