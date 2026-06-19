@@ -632,17 +632,14 @@ function UpcomingPaymentsPanel({
           <div className="flex h-72 items-center justify-center">
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>
-                  {preLaunch ? "No launch-day charges scheduled" : "No payments due in the next 14 days"}
-                </EmptyTitle>
+                <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
                 <EmptyDescription>
-                  {preLaunch
-                    ? "Renewals and Verified annual payments will list here as launch approaches."
-                    : "Renewals and Verified annual payments will list here as they approach."}
+                  Renewals, trial conversions and launch-cohort charges will list here as they approach.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>
+
         ) : (
           <div className="flex flex-col gap-3">
             <div className="flex items-baseline gap-3">
