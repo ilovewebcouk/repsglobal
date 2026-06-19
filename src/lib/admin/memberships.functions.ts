@@ -200,11 +200,11 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     const verifiedTotal = verifiedActive + verifiedScheduledCount + lifetimeMembers;
 
     const distribution = [
-      { label: "Verified active", count: verifiedActive, tone: "verified" as const },
-      { label: "Verified scheduled", count: verifiedScheduledCount, tone: "scheduled" as const },
+      { label: "Verified", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
       { label: "Pro", count: tierMap.pro.active + tierMap.pro.trialing, tone: "pro" as const },
       { label: "Studio", count: tierMap.studio.active + tierMap.studio.trialing, tone: "studio" as const },
     ].filter((d) => d.count > 0);
+
 
     return {
       env,
