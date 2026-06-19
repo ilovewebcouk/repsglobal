@@ -99,14 +99,16 @@ async function fanOutReviewNotifications(
     .eq("id", reviewId);
 }
 
-async function runReviewModerationFireAndForget(reviewId: string) {
+async function runReviewModerationSafely(reviewId: string) {
   try {
     const { runReviewModeration } = await import("@/lib/reviews/moderate.functions");
     await runReviewModeration({ data: { reviewId } });
   } catch (e) {
-    console.error("[reviews] moderation fire-and-forget failed", e);
+    // Never block a submit on moderation — admin queue still gets the row.
+    console.error("[reviews] moderation failed", e);
   }
 }
+
 
 export const listMyReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
