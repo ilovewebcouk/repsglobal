@@ -37,25 +37,37 @@ export type TierBreakdown = {
   scheduled: number; // Verified-only: migrated members with no Stripe sub yet
 };
 
+export type PaymentListItem = {
+  name: string;
+  email: string | null;
+  tier: Tier;
+  dueAt: string | null;
+  amountPence: number;
+  source: "stripe" | "scheduled";
+};
+
+export type PastDueItem = {
+  name: string;
+  email: string | null;
+  tier: Tier;
+  status: string;
+  amountPence: number;
+};
+
 export type MembershipMetrics = {
   env: BillingEnv;
-  // KPI 1 — Forecast ARR
   forecastArrPence: number;
   activeArrPence: number;
   scheduledArrPence: number;
-  // KPI 2 — Upcoming 14d
   upcoming14dPence: number;
   upcoming14dCount: number;
-  // KPI 3 — Verified split
+  upcomingItems: PaymentListItem[];
   verifiedActive: number;
   verifiedScheduled: number;
-  // KPI 4 — Past due
   pastDueCount: number;
-  // Tier cards
+  pastDueItems: PastDueItem[];
   tiers: TierBreakdown[];
-  // Plan distribution (compact strip under tier cards)
   distribution: { label: string; count: number; tone: "verified" | "scheduled" | "pro" | "studio" }[];
-  // Diagnostics for acceptance report
   diagnostics: {
     nonGbpExcluded: number;
     lifetimeMembers: number;
