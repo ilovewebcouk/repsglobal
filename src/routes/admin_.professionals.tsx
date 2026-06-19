@@ -15,7 +15,6 @@ import {
   Play,
   Plus,
   ShieldCheck,
-  CreditCard,
   Trash2,
   TrendingUp,
   Users,
