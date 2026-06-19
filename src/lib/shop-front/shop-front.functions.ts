@@ -134,7 +134,11 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         published_at: sf.published_at,
         slug: pro.slug,
         full_name: prof?.full_name ?? null,
-        avatar_url: prof?.avatar_url ?? null,
+        avatar_url:
+          (prof as { avatar_qa_status?: string | null } | undefined)?.avatar_qa_status === "approved"
+            ? (prof?.avatar_url ?? null)
+            : null,
+
         headline: pro.headline,
         primary_profession: pro.primary_profession,
         specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
