@@ -169,7 +169,10 @@ export const validateBdAvatarBytes = createServerFn({ method: "POST" })
         model: "google/gemini-3-flash-preview",
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: `${SYSTEM_PROMPT}\n\nSchema:\n${VALIDATION_SCHEMA}` },
+          {
+            role: "system",
+            content: `${AVATAR_SYSTEM_PROMPT}\n\nSchema:\n${AVATAR_VALIDATION_SCHEMA}`,
+          },
           {
             role: "user",
             content: [
@@ -188,36 +191,25 @@ export const validateBdAvatarBytes = createServerFn({ method: "POST" })
       choices?: Array<{ message?: { content?: string } }>;
     };
     const raw = body.choices?.[0]?.message?.content ?? "";
-    let parsed: any;
+    let parsed: RawAvatarValidation;
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw) as RawAvatarValidation;
     } catch {
       throw new Error("AI returned invalid JSON.");
     }
 
-    if (!parsed.isHeadshot) {
-      return {
-        ok: false,
-        reason: (parsed.rejectionReason ?? "").toString().trim() || "Not a headshot.",
-        category: (parsed.rejectionCategory ?? "other").toString(),
-      };
+    // SAME decision function the dashboard uses — no looser bar for BD.
+    const decision = decideAvatar(parsed);
+    if (!decision.ok) {
+      return { ok: false, reason: decision.reason, category: decision.category };
     }
-    const box = parsed.faceBox;
-    const safe =
-      box && ["x", "y", "width", "height"].every((k) => typeof box[k] === "number")
-        ? {
-            x: Math.max(0, Math.min(1, box.x)),
-            y: Math.max(0, Math.min(1, box.y)),
-            width: Math.max(0.05, Math.min(1, box.width)),
-            height: Math.max(0.05, Math.min(1, box.height)),
-          }
-        : { x: 0.15, y: 0.1, width: 0.7, height: 0.8 };
     return {
       ok: true,
-      faceBox: safe,
-      qualityScore: (parsed.qualityScore as 1 | 2 | 3 | 4 | 5) ?? 3,
+      faceBox: decision.faceBox,
+      qualityScore: decision.qualityScore,
     };
   });
+
 
 /* -------------------------------------------------------------------------- */
 /* Commit cropped JPEG                                                         */
