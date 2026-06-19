@@ -1,13 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import {
+  AVATAR_SYSTEM_PROMPT,
+  AVATAR_VALIDATION_SCHEMA,
+  decideAvatar,
+  type RawAvatarValidation,
+} from "@/lib/avatar/validate.shared";
 
 /**
  * BD avatar re-crop — admin-only batch job that re-frames the 124 BD-seeded
- * "ok" photos through the dashboard's face-box + square-crop step. Validation
- * (Gemini) and storage I/O are server-side; the actual canvas crop runs
- * client-side from the admin page because Jimp's PNG decoder is incompatible
- * with our Cloudflare Workers runtime (see comments in avatar-ai.functions.ts).
+ * "ok" photos through the SAME validator + face-box + square-crop step that
+ * the dashboard runs on a fresh upload. Validation (Gemini) and storage I/O
+ * are server-side; the canvas crop runs client-side from the admin page
+ * because Jimp's PNG decoder is incompatible with our Cloudflare Workers
+ * runtime (see comments in avatar-ai.functions.ts).
+ *
+ * Pass → square 1024² JPEG written to avatars/{uid}/…, profiles.avatar_url updated.
+ * Fail → profiles.avatar_url cleared (card falls back to Monogram), reason stored.
  */
 
 export type BdRecropCandidate = {
@@ -27,29 +37,6 @@ export type BdRecropStats = {
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 
-const SYSTEM_PROMPT = `You are a strict gatekeeper for professional headshots on a verified fitness-professional directory.
-
-REJECT the image unless ALL of these are true:
-- It is a real photograph (not an illustration, drawing, 3D render, AI-generated cartoon, logo, icon, or text/wordmark).
-- It shows exactly ONE human being.
-- The face is clearly visible, roughly front-facing, well-lit, in focus.
-- It is a head-and-shoulders or similar portrait — NOT a full-body, distant, or group shot.
-- The face is not heavily obscured (e.g. both sunglasses AND a hat covering the face = reject; mask covering most of face = reject).
-
-If you reject, set isHeadshot=false and pick the single best matching category and a short, user-facing reason in plain English (1 sentence).
-
-If you accept, set isHeadshot=true and return a faceBox with normalized coordinates (0..1) relative to the original image. The faceBox MUST enclose the WHOLE HEAD — from the top of the hair (NOT the eyebrows) down to the chin, and from the left ear to the right ear. Always include any hair above the forehead. Quality score 1-5 reflects sharpness, lighting, and framing.
-
-Return ONLY valid JSON.`;
-
-const VALIDATION_SCHEMA = `{
-  "isHeadshot": boolean,
-  "rejectionReason": string | null,
-  "rejectionCategory": "logo" | "illustration" | "group" | "full_body" | "face_obscured" | "low_quality" | "not_a_person" | "other" | null,
-  "faceBox": { "x": number, "y": number, "width": number, "height": number } | null,
-  "qualityScore": 1 | 2 | 3 | 4 | 5
-}`;
-
 async function assertAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
@@ -57,6 +44,7 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   });
   if (!isAdmin) throw new Response("Forbidden", { status: 403 });
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* Stats                                                                       */
