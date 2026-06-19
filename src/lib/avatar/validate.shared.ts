@@ -111,6 +111,7 @@ function clampCategory(c: unknown): AvatarRejectCategory {
     "face_obscured",
     "low_quality",
     "not_a_person",
+    "distracting_background",
     "other",
   ];
   const s = String(c ?? "").toLowerCase();
