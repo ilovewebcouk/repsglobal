@@ -63,18 +63,21 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const since60 = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString();
     const sinceRating = new Date(Date.now() - 365 * 24 * 60 * 60_000).toISOString();
 
-    const [active, verified, signups30, signupsPrev30, ratingRows] = await Promise.all([
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).eq('is_published', true),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).eq('verification', 'verified'),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).gte('created_at', since30),
-      supabaseAdmin.from('professionals').select('id', { count: 'exact', head: true }).gte('created_at', since60).lt('created_at', since30),
+    // KPI counts only include professionals whose underlying auth user is
+    // email-confirmed (i.e. actually signed up — invited-but-unaccepted
+    // shells from `generateLink({ type: 'invite' })` are excluded).
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, ratingRows] = await Promise.all([
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: true, _verification: null }),
+      supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
+      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30, _until: null }),
+      supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
       supabaseAdmin.from('reviews').select('rating').eq('status', 'published').gte('created_at', sinceRating),
     ]);
 
-    const activeCount = active.count ?? 0;
-    const verifiedCount = verified.count ?? 0;
-    const signups = signups30.count ?? 0;
-    const prevSignups = signupsPrev30.count ?? 0;
+    const activeCount = (activeRes.data as number | null) ?? 0;
+    const verifiedCount = (verifiedRes.data as number | null) ?? 0;
+    const signups = (signups30Res.data as number | null) ?? 0;
+    const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
     const ratings = (ratingRows.data ?? []).map(r => r.rating as number).filter(Boolean);
     const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
