@@ -452,7 +452,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       _user_agent: ua,
     } as never);
     if (error) throw error;
-    void runReviewModerationFireAndForget(id as string);
+    await runReviewModerationSafely(id as string);
     return { id: id as string };
   });
 
