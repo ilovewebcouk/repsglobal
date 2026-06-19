@@ -251,7 +251,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (!ids.length) return { rows: [], total, page, pageSize };
 
     const [profilesRes, locsRes, subsRes, servicesRes, reviewsRes, proGymsRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
+      supabaseAdmin.from("profiles").select("id, full_name, avatar_url, avatar_qa_status").in("id", ids),
       supabaseAdmin
         .from("professional_locations")
         .select("professional_id, postcode_outward, town, region, latitude, longitude")
