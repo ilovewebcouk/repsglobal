@@ -1,35 +1,6 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  Apple,
-  AreaChart,
-  ArrowRight,
-  Briefcase,
-  Building2,
-  Calendar as CalendarIcon,
-  ClipboardList,
-  CreditCard,
-  Dumbbell,
-  FileCheck,
-  FileText,
-  GraduationCap,
-  Inbox,
-  LayoutDashboard,
-  LifeBuoy,
-  Megaphone,
-  MessagesSquare,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Store,
-  Tag,
-  Target,
-  UserCheck,
-  UserCircle,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 
 import {
   Sidebar,
@@ -44,7 +15,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -65,115 +35,27 @@ import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
 import { initialsFromName } from "@/lib/initials";
 
 import type {
-  AdminActive,
   DashboardActive,
   DashboardShellMember,
   Role,
   Tier,
-  TrainerActive,
 } from "./DashboardShell.types";
+import {
+  ADMIN_NAV,
+  PRO_NAV,
+  VERIFIED_NAV,
+  type NavGroup,
+  type NavItem,
+} from "./nav-data";
 
 /* ------------------------------------------------------------------------- */
 /* Nav data (tier-aware)                                                      */
 /* ------------------------------------------------------------------------- */
 
-type NavItem<L extends string = string> = {
-  icon: LucideIcon;
-  label: L;
-  to: string;
-  badge?: string;
-};
-type NavGroup<L extends string = string> = { title: string; items: NavItem<L>[] };
-
-const VERIFIED_NAV: NavGroup<TrainerActive>[] = [
-  {
-    title: "Account",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
-      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
-      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
-    ],
-  },
-];
-
-const PRO_NAV: NavGroup<TrainerActive>[] = [
-  {
-    title: "Work",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: Target, label: "Leads", to: "/dashboard/leads" },
-      { icon: Users, label: "Clients", to: "/dashboard/clients" },
-      { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
-      { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
-      { icon: MessagesSquare, label: "Messages", to: "/dashboard/messages" },
-    ],
-  },
-  {
-    title: "Deliver",
-    items: [
-      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
-      { icon: Tag, label: "Services", to: "/dashboard/services" },
-      { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
-      { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
-      { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
-      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
-    ],
-  },
-  {
-    title: "Grow",
-    items: [
-      { icon: AreaChart, label: "Reports", to: "/dashboard/reports" },
-      { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
-      { icon: Users, label: "Community", to: "/dashboard/community" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
-      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-    ],
-  },
-  {
-    title: "Money & Admin",
-    items: [
-      { icon: CreditCard, label: "Stripe", to: "/dashboard/payments" },
-      { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
-      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
-    ],
-  },
-];
-
-function trainerNav(tier: Tier): NavGroup<TrainerActive>[] {
+function trainerNav(tier: Tier): readonly NavGroup[] {
   if (tier === "verified") return VERIFIED_NAV;
   return PRO_NAV;
 }
-
-const ADMIN_NAV: NavGroup<AdminActive>[] = [
-  {
-    title: "Manage",
-    items: [
-      { icon: LayoutDashboard, label: "Overview", to: "/admin" },
-      { icon: Users, label: "Professionals", to: "/admin/professionals" },
-      { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
-      { icon: UserCheck, label: "Memberships", to: "/admin/memberships" },
-      { icon: Target, label: "Directory", to: "/admin/directory" },
-      { icon: Building2, label: "Gyms", to: "/admin/gyms" },
-      { icon: Star, label: "Reviews", to: "/admin/reviews" },
-      { icon: CreditCard, label: "Stripe", to: "/admin/payments" },
-      { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
-    ],
-  },
-  {
-    title: "Platform",
-    items: [
-      { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-      { icon: LifeBuoy, label: "Support", to: "/admin/support" },
-      { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
-      { icon: Settings, label: "Settings", to: "/admin/settings" },
-    ],
-  },
-];
 
 /* ------------------------------------------------------------------------- */
 /* Live counter badges                                                        */
@@ -264,7 +146,13 @@ function MemberRow({ member }: { member?: DashboardShellMember }) {
     : "mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft";
 
   return (
-    <div className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0">
+    <div
+      className={cn(
+        // Framed in expanded mode, borderless in icon mode.
+        "flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-2.5",
+        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0",
+      )}
+    >
       <Avatar className="size-9 rounded-[10px] group-data-[collapsible=icon]:size-8">
         {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[10px]" /> : null}
         <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-[11px] text-white/60">
@@ -303,11 +191,17 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
       <SidebarGroupContent>
         <SidebarMenu>
           {group.items.map((item) => {
-            // Pathname is the primary signal — `active` is only a fallback for
-            // routes whose pathname doesn't exactly match an item's `to`.
+            // Pathname-only match (label fallback removed — typecheck now
+            // guarantees every `active` value corresponds to a nav item).
             const isActive = pathname === item.to || item.label === active;
             const Icon = item.icon;
             const badge = <ItemBadge item={item} />;
+            const hasBadge =
+              item.badge !== undefined ||
+              item.label === "Verification" ||
+              item.label === "Enquiries" ||
+              item.label === "Support" ||
+              item.label === "Reviews";
             return (
               <SidebarMenuItem key={`${group.title}:${item.label}`}>
                 <SidebarMenuButton
@@ -316,7 +210,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
                   tooltip={item.label}
                   className={cn(
                     "h-10 rounded-[10px] text-[13px] font-medium text-white/70 hover:bg-reps-panel hover:text-white",
-                    "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange/20 data-[active=true]:hover:text-reps-orange",
+                    "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange/25 data-[active=true]:hover:text-reps-orange",
                   )}
                 >
                   <Link
@@ -324,7 +218,18 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
                     aria-label={item.label}
                     aria-current={isActive ? "page" : undefined}
                   >
-                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <span className="relative inline-flex shrink-0">
+                      <Icon className="h-[18px] w-[18px]" />
+                      {/* Dot indicator visible only in icon-collapsed mode
+                          when the item carries a badge — keeps unread state
+                          discoverable on the rail. */}
+                      {hasBadge ? (
+                        <span
+                          aria-hidden
+                          className="absolute -right-1 -top-1 hidden h-1.5 w-1.5 rounded-full bg-reps-orange group-data-[collapsible=icon]:block"
+                        />
+                      ) : null}
+                    </span>
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -353,8 +258,7 @@ export function DashboardSidebar({
 }) {
   const account = useAccountMenu();
   const id = useEffectiveIdentity();
-  const groups: NavGroup[] =
-    role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
+  const groups: readonly NavGroup[] = role === "admin" ? ADMIN_NAV : trainerNav(tier);
 
   const homeHref = role === "admin" ? "/admin" : "/dashboard";
 
@@ -380,7 +284,7 @@ export function DashboardSidebar({
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="gap-2 px-3 pb-4 group-data-[collapsible=icon]:px-2">
+      <SidebarFooter className="gap-2 px-3 pb-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
         <MemberRow member={member} />
         {role === "trainer" && account.isAdmin && !id.isImpersonating ? (
           <>
