@@ -293,6 +293,8 @@ function ReviewsPage() {
                           </button>
                         </div>
 
+                        <ReplyBlock review={r} />
+
                       </div>
                     </div>
                   </li>
