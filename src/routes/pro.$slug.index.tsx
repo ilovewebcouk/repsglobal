@@ -664,7 +664,11 @@ function ProProfilePage() {
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
                 <div className="mt-3 grid grid-cols-[1fr_1.1fr] gap-3">
                   <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
-                    <MapPlaceholder />
+                    {pro.lat != null && pro.lng != null ? (
+                      <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} />
+                    ) : (
+                      <MapPlaceholder />
+                    )}
                   </div>
                   <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
                     <div>
@@ -676,16 +680,21 @@ function ProProfilePage() {
                       <br />
                       studio or local gym
                     </div>
-                    <button
-                      type="button"
-                      className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
-                    >
-                      <MapPin className="h-3.5 w-3.5" />
-                      View on map
-                    </button>
+                    {pro.lat != null && pro.lng != null ? (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${pro.lat},${pro.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        View on map
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               </div>
+
 
               <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
