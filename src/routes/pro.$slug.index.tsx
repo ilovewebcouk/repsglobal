@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -38,6 +39,7 @@ import {
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
 import { LocationMap } from "@/components/pro/LocationMap";
+import { PhotoLightbox } from "@/components/pro/PhotoLightbox";
 
 function formatReviewWhen(iso: string): string {
   const then = new Date(iso).getTime();
@@ -98,6 +100,7 @@ type Pro = {
     insuranceExpiry: string | null;
     cpd?: { done: number; total: number } | null;
   };
+  gallery?: { id: string; url: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
@@ -339,6 +342,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       insuranceExpiry: row.trust?.insurance_expiry ?? null,
       cpd: null,
     },
+    gallery: (row as { gallery?: { id: string; url: string }[] }).gallery ?? [],
     faqs: [],
   };
 }
@@ -373,6 +377,21 @@ function ProProfilePage() {
   const { slug } = Route.useParams();
   const { db } = Route.useLoaderData();
   const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
+
+  // Lightbox: portrait first, then any gallery photos.
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const lightboxImages = React.useMemo(
+    () => [
+      { id: "portrait", url: pro.image, alt: `${pro.name} portrait` },
+      ...(pro.gallery ?? []).map((g) => ({
+        id: g.id,
+        url: g.url,
+        alt: `${pro.name} photo`,
+      })),
+    ],
+    [pro.image, pro.gallery, pro.name],
+  );
+  const totalPhotos = lightboxImages.length;
 
   // Real reviews — only used to override fixtures when the DB has any.
   const { data: liveReviews } = useQuery({
@@ -442,19 +461,29 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
-            <div className="relative overflow-hidden rounded-[24px] bg-reps-stone">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="group relative block overflow-hidden rounded-[24px] bg-reps-stone text-left focus:outline-none focus:ring-2 focus:ring-reps-orange focus:ring-offset-2"
+              aria-label={`View all ${totalPhotos} photos of ${pro.name}`}
+            >
               <img
                 src={pro.image}
                 alt={`${pro.name} — ${pro.role}`}
-                className="aspect-[4/3] h-full w-full object-cover"
+                className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 width={920}
                 height={690}
               />
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm transition group-hover:bg-black/70">
                 <Camera className="h-3 w-3" />
-                12 photos
+                {totalPhotos} {totalPhotos === 1 ? "photo" : "photos"}
               </span>
-            </div>
+            </button>
+            <PhotoLightbox
+              images={lightboxImages}
+              open={lightboxOpen}
+              onOpenChange={setLightboxOpen}
+            />
 
             {/* Right info */}
             <div className="flex flex-col">

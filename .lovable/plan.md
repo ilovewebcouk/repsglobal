@@ -1,50 +1,78 @@
-# Wire the Qualifications & Credentials section
+# Profile Gallery Photos — end to end
 
-Right now the panel is hard-coded to `pro.qualifications` from the fixture map. For DB‑backed pros (like `katie-gibbs`), `proFromDb` sets `qualifications: []`, so the panel renders blank with a misleading "View all qualifications (3)" link.
+Right now the "12 photos" badge on `/pro/$slug` is hardcoded and the only real image on the profile is the single avatar/portrait (`pro.image`). There is no separate "hero/cover" — the portrait *is* the cover. So the plan treats the portrait as a standalone field and the gallery as a new, separate collection of additional photos.
 
-## What to change
+## 1. Database & storage
 
-### 1. Server: surface approved qualifications
+Migration:
 
-Edit `src/lib/profile/public-profile.functions.ts` (`getPublicProfileBySlug` only):
+- New table `public.professional_photos`
+  - `id uuid pk`, `professional_id uuid → professionals(id) on delete cascade`
+  - `storage_path text not null` (object key in the bucket)
+  - `sort_order int not null default 0`
+  - `width int`, `height int`, `byte_size int`, `mime_type text`
+  - `created_at timestamptz default now()`, `updated_at timestamptz default now()`
+  - indexes on `(professional_id, sort_order)`
+- GRANTs for `authenticated` + `service_role`; `anon` SELECT (public read for profile pages)
+- RLS:
+  - `select` to `anon`+`authenticated` (gallery is public)
+  - `insert/update/delete` only where `professional_id = auth.uid()` (or admin via `has_role`)
+- New storage bucket `pro-photos` (public read)
+- `storage.objects` policies:
+  - public `select` for `bucket_id = 'pro-photos'`
+  - `insert/update/delete` where first path segment = `auth.uid()::text`
 
-- After fetching the pro row, also query `verification_submissions` for that `professional_id` where `status = 'approved'`, ordered by `issue_date desc nulls last, created_at desc`.
-- Select: `id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified`.
-- Return a new `qualifications` array on the response shape.
+## 2. Tier limits
 
-(No change to `listPublishedProfessionals` — list cards don't need this.)
+- Verified: 3 gallery photos
+- Pro / Studio: unlimited (soft cap 50 in UI)
+- Enforced in the upload server function via `has_active_tier` + a count query. UI also disables the upload button when at cap and shows an upgrade nudge for Verified.
 
-### 2. Route: map DB rows into the existing `Qualification` shape
+## 3. Server functions (`src/lib/profile/photos.functions.ts`)
 
-In `src/routes/pro.$slug.index.tsx`, inside `proFromDb`, build `qualifications` from `db.qualifications` using the existing shape `{ id, title, issuer, badge, issued }`:
+- `listMyPhotos()` — `requireSupabaseAuth`, returns rows for the signed-in pro
+- `createPhotoUploadUrl({ filename, mimeType })` — `requireSupabaseAuth`
+  - checks tier + current count vs limit
+  - generates a path `<userId>/<uuid>.<ext>` and returns a signed upload URL via `supabase.storage.from('pro-photos').createSignedUploadUrl(...)`
+- `registerUploadedPhoto({ storage_path, width, height, byte_size, mime_type })` — inserts the row, appended to end of `sort_order`
+- `reorderPhotos({ orderedIds })` — `requireSupabaseAuth`, bulk update of `sort_order`
+- `deletePhoto({ id })` — removes row + storage object
 
-- `title` → `qualification` (Title-cased; the row stores it ALL CAPS like "NCFE LEVEL 3 CERTIFICATE…", convert to sentence/Title case so it matches the design).
-- `issuer` → `awarding_body`.
-- `badge` → 3–4 char code derived from `awarding_body_slug` (uppercased) or initials of `awarding_body` (e.g. "NCFE", "YMCA").
-- `id` → `qualification_number` if present, otherwise the short submission id (`first 8 chars`).
-- `issued` → formatted `issue_date` ("Dec 2017") or fallback to `year` as string.
+## 4. Public read path
 
-### 3. UI: honour the real count + handle empty state
+Extend `public-profile.functions.ts` (`getPublicProfileBySlug`):
 
-In the same file, around the existing block (lines 661–696):
+- Join/select `professional_photos` ordered by `sort_order`
+- Map into `pro.gallery: { id, url, width, height }[]` where `url` is the public storage URL
+- Wire `pro.gallery.length` into the portrait badge in `pro.$slug.index.tsx` (line ~454) — hide the badge entirely if `length === 0`
 
-- Replace the hard-coded `View all qualifications (3)` with `View all qualifications ({pro.qualifications.length})`, and hide the link entirely when the count is 0.
-- When `pro.qualifications.length === 0`, render a quiet empty state inside the card:
-  - Muted line: "Verified qualifications will appear here once added." (text-[13px] text-reps-muted-light).
-  - Keeps the card height reasonable so the right‑hand Trust panel still aligns.
-- Keep the existing "Verified" green tick only when the row has `regulator_verified = true`; otherwise show a neutral "Approved" label so we don't overstate Ofqual cross‑checks.
+## 5. Public profile lightbox
 
-## Out of scope
+In `pro.$slug.index.tsx`:
 
-- Fixtures (`james-carter`, etc.) keep their current static qualifications.
-- No new tables, no migration, no schema changes.
-- Insurance / CPD points are not part of this wire-up (Trust panel stays as-is for now).
-- No change to the dashboard or admin moderation flows.
+- Make the portrait + badge clickable → opens a shadcn `Dialog` lightbox containing the portrait (`pro.image`) followed by every `pro.gallery` photo
+- Lightbox: full-bleed image, prev/next buttons, keyboard arrows, thumbnail strip, photo counter `n / total`, close button
+- Pure presentation, no auth required
+
+## 6. Dashboard photo manager
+
+New route: `src/routes/_authenticated/dashboard/photos.tsx` (and a link in the existing dashboard sidebar where Profile lives):
+
+- Grid of current photos with drag-to-reorder (using `@dnd-kit` if already installed, otherwise simple ↑/↓ buttons — confirmed during build)
+- "Add photos" button: opens file picker, uploads via signed URL, then calls `registerUploadedPhoto`
+- Per-tile delete (confirm dialog)
+- Tier banner at top: "Verified: 3 of 3 used — upgrade to Pro for unlimited photos" with link to `/pricing`
+- Client-side validation: jpeg/png/webp, max 8 MB, min 800×800
+
+## 7. Out of scope (this pass)
+
+- AI moderation / EXIF stripping (note for later)
+- Pro can swap their main portrait photo (`profiles.avatar_url`) — that flow already lives elsewhere; we just feed `pro.gallery` into the new lightbox
 
 ## Verification
 
-After the build, visit `/pro/katie-gibbs#qualifications`:
-- Shows one row: "NCFE Level 3 Certificate in Personal Training", issuer "NCFE", badge "NCFE", Issued "Dec 2017", "Approved" label (not "Verified" — `regulator_verified=false`).
-- Footer reads "View all qualifications (1)".
-
-Visit `/pro/james-carter#qualifications` — unchanged (fixture path).
+- Build passes
+- `/pro/katie-gibbs` shows correct real count (or no badge if 0), portrait click opens lightbox
+- Dashboard upload → photo appears on public profile after refresh
+- Verified pro blocked at 3 uploads with upgrade CTA; Pro/Studio unlimited
+- Delete removes row + storage object
