@@ -135,14 +135,13 @@ export function WelcomeBanner({
             <>
               <Button
                 size="sm"
-                variant="outline"
                 onClick={copyUrl}
-                className="rounded-[10px]"
+                className="rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]"
                 title="Copy public URL"
               >
                 <Copy className="mr-1.5 size-4" /> Copy link
               </Button>
-              <Button asChild size="sm" className="rounded-[10px]">
+              <Button asChild size="sm" className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
                 <Link to={publicUrl as any} target="_blank">
                   View public profile
                   <ExternalLink className="ml-1.5 size-4" />
@@ -150,7 +149,7 @@ export function WelcomeBanner({
               </Button>
             </>
           ) : (
-            <Button asChild size="sm" className="rounded-[10px]">
+            <Button asChild size="sm" className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
               <Link to="/dashboard/profile">Finish profile</Link>
             </Button>
           )}
@@ -373,7 +372,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </li>
         ))}
       </ul>
-      <Button asChild size="sm" variant="outline" className="mt-4 w-full rounded-[10px]">
+      <Button asChild size="sm" className="mt-4 w-full rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
         <Link to="/dashboard/profile">Edit profile</Link>
       </Button>
     </PPanel>
@@ -562,7 +561,7 @@ export function VerificationStatusCard({
           </li>
         ))}
       </ul>
-      <Button asChild size="sm" variant="outline" className="mt-4 w-full rounded-[10px]">
+      <Button asChild size="sm" className="mt-4 w-full rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
         <Link to="/dashboard/verification">Manage verification</Link>
       </Button>
     </PPanel>
@@ -580,7 +579,7 @@ export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
         title="Reviews"
         icon={Star}
         action={
-          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px]">
+          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px] text-white/70 hover:bg-white/[0.06] hover:text-white">
             <Link to="/dashboard/reviews">All reviews</Link>
           </Button>
         }
@@ -624,7 +623,7 @@ export function CpdMini({
         title="Education & CPD"
         icon={GraduationCap}
         action={
-          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px]">
+          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px] text-white/70 hover:bg-white/[0.06] hover:text-white">
             <Link to="/dashboard/cpd">Open CPD</Link>
           </Button>
         }
@@ -659,7 +658,7 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
         description="Shown on your public listing and enquiry form."
         icon={Sparkles}
         action={
-          <Button asChild size="sm" variant="outline" className="rounded-[10px]">
+          <Button asChild size="sm" className="rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
             <Link to="/dashboard/services">Manage services</Link>
           </Button>
         }
@@ -719,7 +718,7 @@ export function ProUpsellStrip() {
             in-app messaging — every Pro feature, no add-ons.
           </p>
         </div>
-        <Button asChild size="sm" className="shrink-0 rounded-[10px]">
+        <Button asChild size="sm" className="shrink-0 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
           <Link to="/pricing">See Pro features</Link>
         </Button>
       </div>
