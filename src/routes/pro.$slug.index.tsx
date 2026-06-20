@@ -448,29 +448,15 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
-            <button
-              type="button"
-              onClick={() => setLightboxOpen(true)}
-              className="group relative block overflow-hidden rounded-[24px] bg-reps-stone text-left focus:outline-none focus:ring-2 focus:ring-reps-orange focus:ring-offset-2"
-              aria-label={`View all ${totalPhotos} photos of ${pro.name}`}
-            >
+            <div className="relative block overflow-hidden rounded-[24px] bg-reps-stone">
               <img
                 src={pro.image}
                 alt={`${pro.name} — ${pro.role}`}
-                className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                className="aspect-[4/3] h-full w-full object-cover"
                 width={920}
                 height={690}
               />
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm transition group-hover:bg-black/70">
-                <Camera className="h-3 w-3" />
-                {totalPhotos} {totalPhotos === 1 ? "photo" : "photos"}
-              </span>
-            </button>
-            <PhotoLightbox
-              images={lightboxImages}
-              open={lightboxOpen}
-              onOpenChange={setLightboxOpen}
-            />
+            </div>
 
             {/* Right info */}
             <div className="flex flex-col">
