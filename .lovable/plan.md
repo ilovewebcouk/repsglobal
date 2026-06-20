@@ -1,52 +1,48 @@
-
 ## Goal
+When an admin removes a review, capture a reason and tell the trainer why — with an AI-drafted reason they can edit before sending.
 
-Trainers can write/edit/delete a reply to each of their reviews from `/dashboard/reviews`. Admins see the reply (read-only) on `/admin/reviews`. Public pages (`/pro/$slug`, etc.) stay untouched — the reply is held in the DB but never rendered publicly.
+## Admin side (`/admin/reviews`)
 
-The backend (columns, RPCs, `replyToReview`/`clearReviewReply`, email template) is already in place from the previous turn. This plan only adds DTO fields + UI.
+1. Replace the bare "Remove" button with a **Remove dialog**:
+   - Reason category (radio): Off-topic · Abusive / hateful · Fake or incentivised · Personal data / privacy · Defamatory · Spam · Other.
+   - "Reason shown to trainer" textarea (required, 20–600 chars).
+   - **✨ Draft with AI** button — calls Lovable AI (`google/gemini-3-flash-preview`) with the review body + chosen category, returns a 2–4 sentence professional reason. Trainer-safe tone, no client PII repeated back, explains the policy hit and what they can do next.
+   - "Internal note (admin only)" optional textarea.
+   - Confirm → calls existing `admin_moderate_review(_review_id, 'remove', _note)` where `_note` becomes the trainer-visible reason; internal note stored separately.
+2. Approve stays one-click.
 
-## 1. Extend DTOs in `src/lib/reviews/reviews.functions.ts`
+## Schema (small additive migration)
+Add to `public.reviews`:
+- `removal_reason text` (trainer-visible)
+- `removal_category text`
+- `removal_internal_note text` (admin-only)
+- `removal_notified_at timestamptz`
 
-- `ReviewDTO`: add `response: string | null`, `responded_at: string | null`, `response_edited_at: string | null`, `response_notified_at: string | null`, `moderation_status: string`.
-- `listMyReviews` select: add `response, responded_at, response_edited_at, response_notified_at, moderation_status`.
-- `AdminReviewRow`: add the same four `response*` fields.
-- `adminListReviews` select + row mapping: add the four fields.
-- `listPublicReviewsBySlug`: **leave untouched** — public surface stays reply-free.
+Update `admin_moderate_review` to write these on `'remove'` and clear them on `'approve'`. Also create one row in `review_notifications` for the pro with `recipient_role='professional'` and a new kind so the trainer's bell pings (existing notifications fan-out trigger only fires on insert, so we insert explicitly here).
 
-## 2. Trainer dashboard reply composer (`src/routes/_authenticated/_professional/dashboard_.reviews.tsx`)
+## Trainer side (`/dashboard/reviews`)
+- Add a **"Removed by REPs"** section above "All reviews" listing reviews where `moderation_status='removed'` and `removal_reason IS NOT NULL`:
+  - Greyed card: client name, stars, snippet of body, "Removed on {date}", and the reason in an orange-bordered callout.
+  - Acknowledge button → marks the review_notification read.
+- "All reviews" continues to filter removed ones out (already done).
 
-For each review in the list, render a new "Your reply" block under the existing review body:
+## Email
+- Queue a `review-removed` branded email (same `contact-autoresponse`-style template family) to the trainer with the reason + a "View in dashboard" link. Sent via existing email queue pipeline.
 
-- If `response` exists: show the reply text in an orange-bordered card with timestamp ("Replied {date}" + "edited {date}" when applicable), plus **Edit** and **Delete** buttons.
-- If no reply: show an inline "Reply to this review" button that expands a textarea (1–1000 chars, char counter) with **Send reply** / **Cancel**.
-- Reply controls are only enabled when `moderation_status === 'approved'` (RPC enforces this anyway — UI just disables and shows a small "Reply available once approved" hint otherwise).
-- Mutations:
-  - `replyMutation` → `replyToReview({ data: { review_id, response } })`, invalidate `["my-reviews"]`, toast.
-  - `clearMutation` → `clearReviewReply({ data: { review_id } })`, invalidate, toast.
-- Small note under the composer: "Your client will get a one-off email when you publish your first reply."
+## AI endpoint
+- New `draftReviewRemovalReason` server function (TanStack `createServerFn`, admin-gated via `has_role`) — input `{ reviewId, category }`, returns `{ draft: string }`. Uses Lovable AI Gateway helper (already standard in project).
 
-No changes to KPIs panel, sent-requests panel, or "How reviews work" copy.
+## Files touched
+- `supabase/migrations/<new>.sql` — columns + updated `admin_moderate_review` + notification insert.
+- `src/lib/reviews/reviews.functions.ts` — extend `adminModerateReview` input (category, reason, internal note), extend `AdminReviewRow` / `ReviewDTO` with removal fields, add `draftReviewRemovalReason`, enqueue removal email.
+- `src/lib/email-templates/review-removed.tsx` — new branded template; register in `registry.ts`.
+- `src/routes/admin_.reviews.tsx` — Remove dialog with AI draft.
+- `src/routes/_authenticated/_professional/dashboard_.reviews.tsx` — "Removed by REPs" section.
 
-## 3. Admin moderation visibility (`src/routes/admin_.reviews.tsx`)
+## Out of scope
+- No public-facing changes.
+- No change to flag/approve flow beyond the dialog swap.
+- Admin can still leave reason blank only if they tick "skip notification" (off by default) — TBD whether you want that escape hatch.
 
-For each row, when `response` is set, render a read-only reply card beneath the review body:
-
-- Label: "Trainer reply"
-- Body: `response` (whitespace-preserved)
-- Meta line: "Replied {responded_at}" · "Edited {response_edited_at}" (if set) · "Client notified {response_notified_at}" (if set)
-- Styling: muted panel, no edit affordance. Admin does NOT moderate replies in this pass.
-
-## 4. Out of scope (explicit)
-
-- `src/routes/pro.$slug.index.tsx` — public profile, untouched.
-- `src/routes/reviews.tsx`, city pages, homepage rating tiles — untouched.
-- `listPublicReviewsBySlug` — does not return `response`.
-- No reply-moderation flow for admin (can add later if needed).
-- No tier-gating on replies (every trainer with approved reviews can reply — matches old behaviour).
-
-## Technical notes
-
-- `replyToReview` already handles first-publish email (idempotent via `response_notified_at`) and edit-vs-create branching via the `upsert_pro_review_response` RPC.
-- `clearReviewReply` clears all four columns including `response_notified_at`, so a later re-publish will re-send the notification email — acceptable for now.
-- All new DTO fields are nullable; existing consumers that don't read them are unaffected.
-- Total diff: ~3 files, ~150 LOC.
+## One thing to confirm
+Should the trainer also get an **email** for removals, or in-app notification only? (Plan above includes email; happy to drop it.)
