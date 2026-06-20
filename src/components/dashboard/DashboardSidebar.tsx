@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Store,
+  Tag,
   Target,
   UserCheck,
   UserCircle,
@@ -113,6 +115,8 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
   {
     title: "Deliver",
     items: [
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
+      { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
       { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
       { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
