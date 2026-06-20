@@ -821,7 +821,7 @@ function ProProfilePage() {
                     on: trust.verified,
                     t: "REPS Verified Professional",
                     s: trust.verified
-                      ? "Identity, qualifications & insurance verified"
+                      ? "ID verified and top-tier qualification approved"
                       : "Verification pending",
                   },
                   {
