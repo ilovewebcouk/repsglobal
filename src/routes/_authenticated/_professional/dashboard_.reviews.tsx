@@ -34,11 +34,13 @@ import {
 } from "@/components/ui/dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
+  clearReviewReply,
   createReviewRequest,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
   listMyReviews,
+  replyToReview,
   thankReview,
   type ReviewDTO,
   type ReviewRequestRow,
