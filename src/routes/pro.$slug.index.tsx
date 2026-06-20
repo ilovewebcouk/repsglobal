@@ -92,6 +92,11 @@ type Pro = {
   gyms?: { label: string; branch: string }[];
   lat?: number | null;
   lng?: number | null;
+  trust?: {
+    verified: boolean;
+    insuranceExpiry: string | null;
+    cpd?: { done: number; total: number } | null;
+  };
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
