@@ -12,6 +12,8 @@ const SearchSchema = z.object({
   in_person: z.boolean().optional(),
   verified: z.boolean().optional(),
   featured: z.boolean().optional(),
+  /** Minimum published review average (1–5). 0 / undefined = no filter. */
+  min_rating: z.number().int().min(0).max(5).optional(),
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
@@ -201,11 +203,33 @@ export const searchProfessionals = createServerFn({ method: "GET" })
 
 
 
+      // Rating aggregates for the FULL candidate set — needed so a
+      // `min_rating` cut happens BEFORE pagination. Otherwise the client
+      // sees "1-24 of 400" but only N cards survive the rating filter on
+      // the current page slice. Scan published reviews and filter in-memory
+      // by allIdSet (same URL-length caveat as locsForRank).
+      const minRating = data.min_rating ?? 0;
+      const ratingById = new Map<string, { count: number; sum: number }>();
+      if (minRating > 0) {
+        const ratingsRes = await supabaseAdmin
+          .from("reviews")
+          .select("professional_id, rating, status")
+          .eq("status", "published")
+          .limit(5000);
+        for (const r of ratingsRes.data ?? []) {
+          if (!allIdSet.has(r.professional_id)) continue;
+          const prev = ratingById.get(r.professional_id) ?? { count: 0, sum: 0 };
+          prev.count += 1;
+          prev.sum += Number(r.rating) || 0;
+          ratingById.set(r.professional_id, prev);
+        }
+      }
+
       const origin = nearestMode
         ? { lat: data.viewer_lat!, lng: data.viewer_lng! }
         : null;
 
-      const decoratedAll = (allRows ?? []).map((r) => {
+      let decoratedAll = (allRows ?? []).map((r) => {
         const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
@@ -221,6 +245,18 @@ export const searchProfessionals = createServerFn({ method: "GET" })
           updatedAt: row.updated_at ?? "",
         };
       });
+
+      // Apply min_rating cut BEFORE sort + pagination. A pro with no
+      // published reviews has avg = 0 and is excluded when min_rating > 0.
+      if (minRating > 0) {
+        decoratedAll = decoratedAll.filter((x) => {
+          const id = (x.row as { id: string }).id;
+          const agg = ratingById.get(id);
+          if (!agg || agg.count === 0) return false;
+          return agg.sum / agg.count >= minRating;
+        });
+        total = decoratedAll.length;
+      }
 
       // Nearest: raw distance ALWAYS wins. No buckets — closest is closest.
       // Tie-breakers (same exact distance, e.g. online-only pros at infinity):

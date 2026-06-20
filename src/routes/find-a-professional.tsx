@@ -237,7 +237,7 @@ function DirectoryPage() {
     queryKey: [
       "directory",
       "search",
-      { city, profession, specialism, q, page, mode, verified, featured, useNearestServer,
+      { city, profession, specialism, q, page, mode, verified, featured, min_rating, useNearestServer,
         vlat: useNearestServer ? viewerOriginEarly?.latitude : null,
         vlng: useNearestServer ? viewerOriginEarly?.longitude : null },
     ],
@@ -254,6 +254,7 @@ function DirectoryPage() {
           in_person: serverFilters.in_person,
           verified,
           featured,
+          min_rating: min_rating > 0 ? min_rating : undefined,
           sort_by_nearest: useNearestServer,
           viewer_lat: useNearestServer ? viewerOriginEarly!.latitude : undefined,
           viewer_lng: useNearestServer ? viewerOriginEarly!.longitude : undefined,
@@ -336,10 +337,9 @@ function DirectoryPage() {
   );
 
   // Client-side filter: rating + radius. Auto-widen when a radius leaves <5 results.
-  const ratingFiltered = React.useMemo(
-    () => (min_rating > 0 ? decorated.filter((p) => p.rating >= min_rating) : decorated),
-    [decorated, min_rating],
-  );
+  // Rating filter is now server-side (passed into searchProfessionals as
+  // `min_rating`), so `total` already reflects the filtered set.
+  const ratingFiltered = decorated;
 
   const withinRadius = React.useMemo(() => {
     if (!origin || radius_mi <= 0) return ratingFiltered;
@@ -386,11 +386,11 @@ function DirectoryPage() {
   const goToPage = (n: number) =>
     navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
 
-  // When a client-side filter is active (rating or radius), pagination must
-  // reflect the FILTERED visible set, not the raw server total. Otherwise a
-  // 4★ filter showing 4 cards still offers 17 pages.
-  const clientFilterActive = (Boolean(origin) && radius_mi > 0) || min_rating > 0;
-  const visibleTotal = clientFilterActive ? visiblePros.length : total;
+  // When a radius is active with an origin, pagination must reflect the
+  // FILTERED visible set (client-side filter), not the raw server total.
+  // Rating filtering is handled server-side so `total` already accounts for it.
+  const radiusActive = Boolean(origin) && radius_mi > 0;
+  const visibleTotal = radiusActive ? visiblePros.length : total;
   const totalPages = Math.max(1, Math.ceil(visibleTotal / PAGE_SIZE));
   const rangeStart = visibleTotal === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, visibleTotal);
