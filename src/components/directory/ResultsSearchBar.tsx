@@ -173,7 +173,6 @@ export function ResultsSearchBar({
   const activeFilterCount =
     (state.mode !== "any" ? 1 : 0) +
     (state.verified ? 1 : 0) +
-    (state.featured ? 1 : 0) +
     (state.min_rating > 0 ? 1 : 0) +
     (state.radius_mi > 0 ? 1 : 0) +
     (state.venue ? 1 : 0);
@@ -1147,21 +1146,6 @@ function FiltersBody({
         </p>
       </FilterBlock>
 
-      <FilterBlock label="Featured only">
-        <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-[13px] text-reps-charcoal">
-            <Star className="size-4 fill-reps-orange text-reps-orange" />
-            Featured only
-          </span>
-          <Switch
-            checked={state.featured}
-            onCheckedChange={(v) => onChange({ featured: v })}
-          />
-        </label>
-        <p className="text-[11px] leading-snug text-reps-muted-light">
-          Hand-picked pros currently rotated on the homepage and city pages.
-        </p>
-      </FilterBlock>
 
       <FilterBlock label="Minimum rating">
         <RadioGroup
@@ -1307,13 +1291,6 @@ function ActiveChipsRow({
       key: "verified",
       label: "Verified only",
       clear: { verified: false },
-    });
-  }
-  if (state.featured) {
-    chips.push({
-      key: "featured",
-      label: "Featured only",
-      clear: { featured: false },
     });
   }
   if (state.min_rating > 0) {
