@@ -56,6 +56,7 @@ type ProPublicRow = {
   hourly_rate_pence: number | null;
   verification_status: string | null;
   is_published: boolean | null;
+  member_since: string | null;
 };
 
 type ProListRow = {
