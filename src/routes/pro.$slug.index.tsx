@@ -378,6 +378,21 @@ function ProProfilePage() {
   const { db } = Route.useLoaderData();
   const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
 
+  // Lightbox: portrait first, then any gallery photos.
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const lightboxImages = React.useMemo(
+    () => [
+      { id: "portrait", url: pro.image, alt: `${pro.name} portrait` },
+      ...(pro.gallery ?? []).map((g) => ({
+        id: g.id,
+        url: g.url,
+        alt: `${pro.name} photo`,
+      })),
+    ],
+    [pro.image, pro.gallery, pro.name],
+  );
+  const totalPhotos = lightboxImages.length;
+
   // Real reviews — only used to override fixtures when the DB has any.
   const { data: liveReviews } = useQuery({
     queryKey: ["public-reviews", slug],
