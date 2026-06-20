@@ -7,7 +7,6 @@ import {
   Briefcase,
   Building2,
   Calendar as CalendarIcon,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   Dumbbell,
@@ -29,12 +28,6 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 
 import {
   Sidebar,
@@ -303,54 +296,41 @@ function AdminBadgeRow() {
 
 function NavSectionGroup({ group, active }: { group: NavGroup; active: DashboardActive }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const containsActive = group.items.some(
-    (item) => item.label === active || pathname === item.to,
-  );
   return (
-    <Collapsible defaultOpen={containsActive} className="group/collapsible">
-      <SidebarGroup>
-        <SidebarGroupLabel
-          asChild
-          className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40 hover:text-white/70"
-        >
-          <CollapsibleTrigger>
-            {group.title}
-            <ChevronRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-          </CollapsibleTrigger>
-        </SidebarGroupLabel>
-        <CollapsibleContent>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {group.items.map((item) => {
-                const isActive = item.label === active || pathname === item.to;
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={`${group.title}:${item.label}`}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.label}
-                      className={cn(
-                        "h-10 rounded-[10px] text-[13px] font-medium text-white/70 hover:bg-reps-panel hover:text-white",
-                        "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange-soft data-[active=true]:hover:text-reps-orange",
-                      )}
-                    >
-                      <Link to={item.to} aria-label={item.label}>
-                        <Icon className="h-[18px] w-[18px] shrink-0" />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuBadge className="bg-transparent p-0 text-inherit">
-                      <ItemBadge item={item} />
-                    </SidebarMenuBadge>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </CollapsibleContent>
-      </SidebarGroup>
-    </Collapsible>
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
+        {group.title}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {group.items.map((item) => {
+            const isActive = item.label === active || pathname === item.to;
+            const Icon = item.icon;
+            return (
+              <SidebarMenuItem key={`${group.title}:${item.label}`}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  tooltip={item.label}
+                  className={cn(
+                    "h-10 rounded-[10px] text-[13px] font-medium text-white/70 hover:bg-reps-panel hover:text-white",
+                    "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange-soft data-[active=true]:hover:text-reps-orange",
+                  )}
+                >
+                  <Link to={item.to} aria-label={item.label}>
+                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+                <SidebarMenuBadge className="bg-transparent p-0 text-inherit">
+                  <ItemBadge item={item} />
+                </SidebarMenuBadge>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
 
@@ -371,7 +351,7 @@ export function DashboardSidebar({
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
   return (
-    <Sidebar variant="floating" collapsible="icon">
+    <Sidebar collapsible="icon" className="border-r border-reps-border">
       <SidebarHeader className="px-4 pb-2 pt-4 group-data-[collapsible=icon]:px-2">
         <Link
           to="/"
