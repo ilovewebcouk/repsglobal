@@ -122,7 +122,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
+        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at, moderation_status, response, responded_at, response_edited_at, response_notified_at",
       )
       .eq("professional_id", context.userId)
       .order("created_at", { ascending: false })
