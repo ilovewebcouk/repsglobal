@@ -223,6 +223,60 @@ function ReviewsPage() {
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* LEFT — reviews feed */}
         <div className="space-y-6 xl:col-span-8">
+          {removed.length > 0 && (
+            <PPanel>
+              <div className="flex items-start justify-between gap-3 border-b border-reps-border px-5 py-4">
+                <div>
+                  <h3 className="text-[14px] font-semibold text-white">
+                    Removed by REPS · {removed.length}
+                  </h3>
+                  <p className="mt-0.5 text-[12px] text-white/55">
+                    These reviews are hidden from your public profile. Here's why.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-red-300">
+                  <XCircle className="h-3 w-3" /> Moderation
+                </span>
+              </div>
+              <ul className="divide-y divide-reps-border/60">
+                {removed.map((r) => (
+                  <li key={r.id} className="px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5 text-[11px] font-semibold text-white/45">
+                        {initials(r.client_name)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[13px] font-semibold text-white/75 line-through">
+                            {r.client_name}
+                          </span>
+                          <Stars n={r.rating} />
+                          <span className="text-[11px] text-white/45">
+                            · removed {r.moderated_at ? formatDate(r.moderated_at) : ""}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 line-clamp-2 text-[12.5px] italic leading-relaxed text-white/55">
+                          "{r.body}"
+                        </p>
+                        <div className="mt-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft/40 px-3 py-2">
+                          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+                            <MessageSquare className="h-3 w-3" /> Reason from REPS
+                            {r.removal_category ? ` · ${r.removal_category}` : ""}
+                          </div>
+                          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/90">
+                            {r.removal_reason}
+                          </p>
+                          <p className="mt-1 text-[10.5px] text-white/45">
+                            Reply to the REPS email if you'd like us to take another look.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </PPanel>
+          )}
           <PPanel>
             <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">All reviews</h3>
