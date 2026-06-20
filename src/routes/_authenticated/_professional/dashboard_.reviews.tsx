@@ -141,12 +141,11 @@ function ReviewsPage() {
   const removed = React.useMemo(
     () =>
       reviews.filter(
-        (r) =>
-          (r.moderation_status ?? "approved") === "removed" &&
-          (r.removal_reason ?? "").trim().length > 0,
+        (r) => (r.moderation_status ?? "approved") === "removed",
       ),
     [reviews],
   );
+
 
   const filtered = React.useMemo(() => {
     // Hide reviews admin has removed — trainer shouldn't see them in their feed.
@@ -264,12 +263,15 @@ function ReviewsPage() {
                             {r.removal_category ? ` · ${r.removal_category}` : ""}
                           </div>
                           <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/90">
-                            {r.removal_reason}
+                            {r.removal_reason?.trim()
+                              ? r.removal_reason
+                              : "This review was removed by REPS moderation. No detailed reason was recorded at the time."}
                           </p>
                           <p className="mt-1 text-[10.5px] text-white/45">
                             Reply to the REPS email if you'd like us to take another look.
                           </p>
                         </div>
+
                       </div>
                     </div>
                   </li>
