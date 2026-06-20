@@ -10,7 +10,7 @@ import { PCard } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
 import {
   Field,
   FieldDescription,

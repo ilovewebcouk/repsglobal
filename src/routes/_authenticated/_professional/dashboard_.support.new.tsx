@@ -9,8 +9,8 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { DashboardInput as Input } from "@/components/dashboard/ui/input";
+import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textarea";
 import {
   Field,
   FieldDescription,
@@ -19,12 +19,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DashboardSelect as Select,
+  DashboardSelectContent as SelectContent,
+  DashboardSelectItem as SelectItem,
+  DashboardSelectTrigger as SelectTrigger,
+  DashboardSelectValue as SelectValue,
+} from "@/components/dashboard/ui/select";
 import {
   SupportAttachmentsField,
   uploadPendingFiles,
