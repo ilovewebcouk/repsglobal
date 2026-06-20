@@ -1,78 +1,74 @@
-# Profile Gallery Photos — end to end
+# Passwordless SMS sign-in
 
-Right now the "12 photos" badge on `/pro/$slug` is hardcoded and the only real image on the profile is the single avatar/portrait (`pro.image`). There is no separate "hero/cover" — the portrait *is* the cover. So the plan treats the portrait as a standalone field and the gallery as a new, separate collection of additional photos.
+Replace (or sit alongside) email/password with a phone-number + one-time SMS code flow, available to every user — pros, clients, and admin.
 
-## 1. Database & storage
+## How hard is it?
 
-Migration:
+Genuinely easy. Supabase has native Phone Auth built in — we don't write any auth backend ourselves. The work is roughly:
+- ~1 hour: wire an SMS provider (Twilio) so Supabase can actually send codes
+- ~2–3 hours: build the 2-step UI (enter phone → enter 6-digit code)
+- ~30 mins: tidy account settings so existing email users can add a phone
 
-- New table `public.professional_photos`
-  - `id uuid pk`, `professional_id uuid → professionals(id) on delete cascade`
-  - `storage_path text not null` (object key in the bucket)
-  - `sort_order int not null default 0`
-  - `width int`, `height int`, `byte_size int`, `mime_type text`
-  - `created_at timestamptz default now()`, `updated_at timestamptz default now()`
-  - indexes on `(professional_id, sort_order)`
-- GRANTs for `authenticated` + `service_role`; `anon` SELECT (public read for profile pages)
-- RLS:
-  - `select` to `anon`+`authenticated` (gallery is public)
-  - `insert/update/delete` only where `professional_id = auth.uid()` (or admin via `has_role`)
-- New storage bucket `pro-photos` (public read)
-- `storage.objects` policies:
-  - public `select` for `bucket_id = 'pro-photos'`
-  - `insert/update/delete` where first path segment = `auth.uid()::text`
+The hard parts are operational, not technical: **SMS costs real money** (~£0.04 per UK SMS, more for some countries) and SMS is the #1 target for "SMS pumping" fraud (bots hammering send-code to rack up your bill). We mitigate both below.
 
-## 2. Tier limits
+## Scope decision needed before build
 
-- Verified: 3 gallery photos
-- Pro / Studio: unlimited (soft cap 50 in UI)
-- Enforced in the upload server function via `has_active_tier` + a count query. UI also disables the upload button when at cap and shows an upgrade nudge for Verified.
+Two viable shapes — pick one:
 
-## 3. Server functions (`src/lib/profile/photos.functions.ts`)
+1. **SMS as the only login** — remove email/password entirely. Cleanest UX, but every sign-in costs an SMS and locked-out-of-phone = locked-out-of-account.
+2. **SMS + email/password side by side** — user picks on `/auth`. Safer, slightly more UI. Recommended.
 
-- `listMyPhotos()` — `requireSupabaseAuth`, returns rows for the signed-in pro
-- `createPhotoUploadUrl({ filename, mimeType })` — `requireSupabaseAuth`
-  - checks tier + current count vs limit
-  - generates a path `<userId>/<uuid>.<ext>` and returns a signed upload URL via `supabase.storage.from('pro-photos').createSignedUploadUrl(...)`
-- `registerUploadedPhoto({ storage_path, width, height, byte_size, mime_type })` — inserts the row, appended to end of `sort_order`
-- `reorderPhotos({ orderedIds })` — `requireSupabaseAuth`, bulk update of `sort_order`
-- `deletePhoto({ id })` — removes row + storage object
+I've planned (2) below because it's reversible and protects existing accounts. Say the word if you want (1).
 
-## 4. Public read path
+## What gets built
 
-Extend `public-profile.functions.ts` (`getPublicProfileBySlug`):
+### 1. Provider setup (Twilio via Lovable connector)
+- Connect Twilio through the standard connector (you'll authorise it once).
+- Enable **Phone provider** in Lovable Cloud auth settings, pointed at Twilio.
+- Enable **SMS Pumping Protection** and restrict **Geo Permissions** to the countries REPs actually serves (UK + whichever others you name). This is the single most important anti-fraud step.
 
-- Join/select `professional_photos` ordered by `sort_order`
-- Map into `pro.gallery: { id, url, width, height }[]` where `url` is the public storage URL
-- Wire `pro.gallery.length` into the portrait badge in `pro.$slug.index.tsx` (line ~454) — hide the badge entirely if `length === 0`
+### 2. `/auth` route — add a "Continue with phone" path
+Two-step flow inside the existing card:
+- **Step 1:** phone input (with country selector, defaults to +44). Button: "Send code". Calls `supabase.auth.signInWithOtp({ phone })`.
+- **Step 2:** 6-digit code input + "Resend in 30s" timer. Calls `supabase.auth.verifyOtp({ phone, token, type: 'sms' })`. On success, runs the same `redirectAfterAuth` we already use for password sign-in (so checkout-redirect, dashboard routing all keep working).
+- Toggle at the top: "Use email & password instead" — keeps the existing form available.
 
-## 5. Public profile lightbox
+### 3. `/signup` route — same two-step phone option
+Mirror the flow. First-time phone sign-in via OTP creates the auth user automatically; no separate "sign up" call needed for the phone path.
 
-In `pro.$slug.index.tsx`:
+### 4. Profile setup after phone-only signup
+A phone-first user has no email on file. Add a one-time "Complete your profile" step after first verify that captures email + name (writes to `profiles`). Skippable for clients, required for pros (matches existing pro-onboarding gate).
 
-- Make the portrait + badge clickable → opens a shadcn `Dialog` lightbox containing the portrait (`pro.image`) followed by every `pro.gallery` photo
-- Lightbox: full-bleed image, prev/next buttons, keyboard arrows, thumbnail strip, photo counter `n / total`, close button
-- Pure presentation, no auth required
+### 5. Dashboard → Settings → Security
+- Show current sign-in method(s).
+- "Add a phone number" / "Add a password" — lets users link the other method so they're not locked to one channel.
+- "Remove phone" with confirmation.
 
-## 6. Dashboard photo manager
+### 6. Anti-abuse guardrails (server-side)
+A small `createServerFn` wrapper around `signInWithOtp` that enforces:
+- Max 3 codes per phone per hour
+- Max 10 codes per IP per hour
+- Block disposable/VOIP ranges (basic E.164 validation + optional Twilio Lookup later)
 
-New route: `src/routes/_authenticated/dashboard/photos.tsx` (and a link in the existing dashboard sidebar where Profile lives):
+This sits in front of Supabase so a botnet can't just hammer the client SDK directly.
 
-- Grid of current photos with drag-to-reorder (using `@dnd-kit` if already installed, otherwise simple ↑/↓ buttons — confirmed during build)
-- "Add photos" button: opens file picker, uploads via signed URL, then calls `registerUploadedPhoto`
-- Per-tile delete (confirm dialog)
-- Tier banner at top: "Verified: 3 of 3 used — upgrade to Pro for unlimited photos" with link to `/pricing`
-- Client-side validation: jpeg/png/webp, max 8 MB, min 800×800
+### 7. Admin visibility
+Add "Phone verified" column to `/admin/professionals` and the user detail view (reads `auth.users.phone_confirmed_at` via the existing SECURITY DEFINER pattern).
 
-## 7. Out of scope (this pass)
+## Out of scope (call out separately if wanted)
+- WhatsApp OTP (Twilio supports it but needs business verification)
+- TOTP / authenticator-app 2FA
+- Backup recovery codes
+- Step-up auth (re-prompt SMS for sensitive actions like changing payout details)
 
-- AI moderation / EXIF stripping (note for later)
-- Pro can swap their main portrait photo (`profiles.avatar_url`) — that flow already lives elsewhere; we just feed `pro.gallery` into the new lightbox
+## Cost & risk summary (so you can decide)
+- **Cost:** ~£0.04 per UK SMS × every login + every failed attempt. For ~1,000 active users logging in twice a week, that's ~£300/month at full passwordless. Mixed mode (option 2) cuts that significantly because power users will use password.
+- **Fraud:** without geo-restriction + pumping protection, a single bad actor can burn hundreds of £ overnight. The guardrails above are mandatory, not optional.
+- **Lock-out:** users who change phone numbers and have no email/password fallback will need admin recovery. Option 2 avoids this.
 
-## Verification
+## What I need from you before I build
+1. **Confirm option 2** (SMS alongside email/password) or switch to option 1 (SMS only).
+2. **Country list** for Twilio Geo Permissions (default: UK only — confirm or add others).
+3. **Twilio account** — I'll trigger the connector flow; you'll paste an API key when prompted. If you don't have a Twilio account yet, ~10 min to sign up at twilio.com and buy one UK number (~£1/month).
 
-- Build passes
-- `/pro/katie-gibbs` shows correct real count (or no badge if 0), portrait click opens lightbox
-- Dashboard upload → photo appears on public profile after refresh
-- Verified pro blocked at 3 uploads with upgrade CTA; Pro/Studio unlimited
-- Delete removes row + storage object
+Once those are confirmed I'll execute in this order: connector → auth config → server guardrails → `/auth` UI → `/signup` UI → settings → admin column.
