@@ -805,29 +805,67 @@ function ProProfilePage() {
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Trust &amp; Assurance
               </h2>
-              <ul className="mt-4 space-y-3 text-[13px]">
-                {[
-                  { t: "REPS Verified Professional", s: "Identity, qualifications & insurance verified" },
-                  { t: "Professional Indemnity Insurance", s: "Active until 12 Dec 2025" },
-                  { t: "CPD Compliant", s: "18 / 20 points this cycle" },
-                ].map((i) => (
-                  <li key={i.t} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-reps-green text-white">
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                    </span>
-                    <div>
-                      <div className="font-semibold text-reps-charcoal">{i.t}</div>
-                      <div className="text-[12px] text-reps-muted-light">{i.s}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-5">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-reps-stone">
-                  <div className="h-full w-[90%] rounded-full bg-reps-orange" />
-                </div>
-                <div className="mt-1 text-right text-[11px] font-medium text-reps-muted-light">90%</div>
-              </div>
+              {(() => {
+                const isFixture = !!PROS[slug];
+                const trust = pro.trust ?? {
+                  verified: true,
+                  insuranceExpiry: "2025-12-12",
+                  cpd: { done: 18, total: 20 },
+                };
+                const insuranceLabel = trust.insuranceExpiry
+                  ? `Active until ${new Date(trust.insuranceExpiry).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                  : "Not on file";
+                const cpd = trust.cpd ?? (isFixture ? { done: 18, total: 20 } : null);
+                const items = [
+                  {
+                    on: trust.verified,
+                    t: "REPS Verified Professional",
+                    s: trust.verified
+                      ? "Identity, qualifications & insurance verified"
+                      : "Verification pending",
+                  },
+                  {
+                    on: !!trust.insuranceExpiry,
+                    t: "Professional Indemnity Insurance",
+                    s: insuranceLabel,
+                  },
+                  ...(cpd
+                    ? [{
+                        on: cpd.done >= cpd.total * 0.5,
+                        t: "CPD Compliant",
+                        s: `${cpd.done} / ${cpd.total} points this cycle`,
+                      }]
+                    : []),
+                ];
+                const pct = cpd ? Math.min(100, Math.round((cpd.done / Math.max(1, cpd.total)) * 100)) : null;
+                return (
+                  <>
+                    <ul className="mt-4 space-y-3 text-[13px]">
+                      {items.map((i) => (
+                        <li key={i.t} className="flex items-start gap-3">
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${i.on ? "bg-reps-green" : "bg-reps-stone"}`}
+                          >
+                            <Check className="h-3 w-3" strokeWidth={3} />
+                          </span>
+                          <div>
+                            <div className="font-semibold text-reps-charcoal">{i.t}</div>
+                            <div className="text-[12px] text-reps-muted-light">{i.s}</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    {pct !== null ? (
+                      <div className="mt-5">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-reps-stone">
+                          <div className="h-full rounded-full bg-reps-orange" style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="mt-1 text-right text-[11px] font-medium text-reps-muted-light">{pct}%</div>
+                      </div>
+                    ) : null}
+                  </>
+                );
+              })()}
               <a
                 href="#qualifications"
                 className="mt-2 flex items-center justify-between text-[13px] font-semibold text-reps-orange hover:underline"
